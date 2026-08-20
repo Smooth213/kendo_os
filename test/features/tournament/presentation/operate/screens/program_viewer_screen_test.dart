@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';

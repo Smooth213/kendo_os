@@ -20,6 +20,10 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_option_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_dynamic_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_section_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_category_preview_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_selection_card.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -640,110 +644,15 @@ class _SetupMatchFormatScreenState
     );
   }
 
-  // ★ 不要になった _buildImmersiveAppBar を削除し、スッキリさせます
-
   Widget _buildDynamicHeader() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // ★ Phase 8-1: 画面が横向き（かつ高さ500以下）のスマホ・タブレットではヘッダーを隠して作業領域を確保
-        final isLandscape =
-            MediaQuery.of(context).orientation == Orientation.landscape;
-        if (isLandscape && MediaQuery.of(context).size.height < 500) {
-          return const SizedBox.shrink();
-        }
-
-        final t = (_currentPage / 1).clamp(0.0, 1.0);
-
-        final color1 = _themeColors.primaryAccent;
-        final color2 = _themeColors.primaryAccent.withValues(alpha: 0.8);
-        final endColor = _themeColors.softAccent;
-
-        final gradientColor = Color.lerp(color1, color2, t)!;
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: 20,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [gradientColor, endColor],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(AppRadius.giantValue),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '試合ルールの設定',
-                style: TextStyle(
-                  fontSize: AppFontSize.heroLarge,
-                  fontWeight: AppFontWeight.bold,
-                  color: AppKendoColors.pureWhite,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '魔法のウィザードに従って、\n2つのステップで条件を設定しましょう',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
-                  fontWeight: AppFontWeight.medium,
-                ),
-              ),
-              const SizedBox(height: 20),
-              LinearProgressIndicator(
-                value: (_currentPage + 1) / 2,
-                backgroundColor: AppKendoColors.pureWhite.withValues(
-                  alpha: 0.3,
-                ),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppKendoColors.pureWhite,
-                ),
-                minHeight: 6,
-                borderRadius: AppRadius.tiny,
-              ),
-            ],
-          ),
-        );
-      },
+    return MatchFormatDynamicHeader(
+      currentPage: _currentPage,
+      themeColors: _themeColors,
     );
   }
 
   Widget _buildSectionHeader(String title, Color accentColor) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.modernValue,
-        bottom: AppSpacing.subValue,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 13,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: AppRadius.micro,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: AppFontSize.small,
-              fontWeight: AppFontWeight.bold,
-              color: accentColor,
-            ),
-          ),
-        ],
-      ),
-    );
+    return MatchFormatSectionHeader(title: title, accentColor: accentColor);
   }
 
   // ==========================================
@@ -1037,10 +946,6 @@ class _SetupMatchFormatScreenState
   Widget _buildPage1Category() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = context.appColors.textColor;
-    final themeColors =
-        Theme.of(context).extension<AppThemeColors>() ??
-        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final inputBgColor = themeColors.cardBackground;
 
     return ListView(
       // ★ Phase 8-2: 余白のないページ（2ページ目以降）に合わせるため、パディングを調整
@@ -1113,44 +1018,10 @@ class _SetupMatchFormatScreenState
         const SizedBox(height: AppSpacing.lg),
 
         // ★ 修正：最終的に設定されるカテゴリ名のプレビュー表示
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: _themeColors.softAccent,
-            borderRadius: AppRadius.medium,
-            border: Border.all(
-              color: _themeColors.primaryAccent.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: _themeColors.primaryAccent),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '設定されるカテゴリ名',
-                      style: TextStyle(
-                        fontSize: AppFontSize.small,
-                        color: _themeColors.primaryAccent,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      _category,
-                      style: TextStyle(
-                        fontWeight: AppFontWeight.bold,
-                        fontSize: AppFontSize.headline,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        MatchFormatCategoryPreviewCard(
+          category: _category,
+          themeColors: _themeColors,
+          textColor: textColor,
         ),
 
         const SizedBox(height: 40),
@@ -1237,139 +1108,17 @@ class _SetupMatchFormatScreenState
                 return Column(
                   children: filteredTeams.map((team) {
                     final isSelected = _selectedTeamId == team.id;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      elevation: isSelected ? (isDark ? 0 : 2) : 0,
-                      color: isSelected
-                          ? _themeColors.softAccent
-                          : inputBgColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.large,
-                        side: BorderSide(
-                          color: isSelected
-                              ? _themeColors.primaryAccent
-                              : (isDark
-                                    ? const Color(0xFF38383A)
-                                    : const Color(0x33000000)),
-                          width: isSelected ? 2 : 1.5,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            onTap: () => setState(() {
-                              _selectedTeamId = team.id;
-                              _matchType = team.matchType;
-                            }),
-                            contentPadding: EdgeInsets.only(
-                              left: 20,
-                              right: AppSpacing.lg,
-                              top: AppSpacing.md,
-                              bottom: isSelected ? 4 : 12,
-                            ),
-                            leading: CircleAvatar(
-                              radius: 24,
-                              backgroundColor: isSelected
-                                  ? _themeColors.softAccent
-                                  : (isDark
-                                        ? const Color(0xFF2C2C2E)
-                                        : const Color(0xFFF2F2F7)),
-                              child: Icon(
-                                Icons.shield,
-                                color: isSelected
-                                    ? _themeColors.primaryAccent
-                                    : context.appColors.subTextColor,
-                                size: 24,
-                              ),
-                            ),
-                            title: Text(
-                              team.teamName,
-                              style: TextStyle(
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.headline,
-                                color: isSelected
-                                    ? _themeColors.primaryAccent
-                                    : textColor,
-                              ),
-                            ),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(
-                                top: AppSpacing.xs,
-                              ),
-                              child: Text(
-                                '${team.matchType} / 選手: ${team.playerNames.where((n) => n.isNotEmpty).join(", ")}',
-                                style: TextStyle(
-                                  fontSize: AppFontSize.small,
-                                  color: isSelected
-                                      ? _themeColors.primaryAccent.withValues(
-                                          alpha: 0.8,
-                                        )
-                                      : context.appColors.subTextColor,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            trailing: Icon(
-                              isSelected
-                                  ? Icons.check_circle
-                                  : Icons.circle_outlined,
-                              color: isSelected
-                                  ? _themeColors.primaryAccent
-                                  : (isDark
-                                        ? const Color(0xFFFFFFFF)
-                                        : const Color(0x33000000)),
-                              size: 28,
-                            ),
-                          ),
-                          if (isSelected)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 20,
-                                right: AppSpacing.lg,
-                                bottom: AppSpacing.lg,
-                                top: AppSpacing.xs,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  OutlinedButton.icon(
-                                    onPressed: () =>
-                                        _showTeamDetailDialog(context, team),
-                                    icon: Icon(
-                                      Icons.swap_horizontal_circle,
-                                      color: _themeColors.primaryAccent,
-                                      size: 20,
-                                    ),
-                                    label: Text(
-                                      'オーダーを調整',
-                                      style: TextStyle(
-                                        color: _themeColors.primaryAccent,
-                                        fontWeight: AppFontWeight.bold,
-                                      ),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      backgroundColor: isDark
-                                          ? const Color(0xFF1C1C1E)
-                                          : const Color(0xFFFFFFFF),
-                                      side: BorderSide(
-                                        color: _themeColors.primaryAccent,
-                                        width: 1.5,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: AppRadius.medium,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.lg,
-                                        vertical: AppSpacing.sm,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
+                    return MatchFormatTeamSelectionCard(
+                      team: team,
+                      isSelected: isSelected,
+                      themeColors: _themeColors,
+                      textColor: textColor,
+                      isDark: isDark,
+                      onSelect: () => setState(() {
+                        _selectedTeamId = team.id;
+                        _matchType = team.matchType;
+                      }),
+                      onAdjustOrder: () => _showTeamDetailDialog(context, team),
                     );
                   }).toList(),
                 );

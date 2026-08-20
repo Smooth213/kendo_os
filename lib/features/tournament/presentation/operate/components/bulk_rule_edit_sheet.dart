@@ -1,9 +1,7 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -13,6 +11,8 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_preset_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_target_select_section.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_detail_setting_cards.dart';
 
 void showBulkRuleEditSheet(
   BuildContext context,
@@ -429,10 +429,6 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       return isCategoryMatch && isTypeMatch;
     }).toList();
 
-    final selectedUnitsCount = currentFilteredUnits.where((unit) {
-      return unit.matchIds.every((id) => _selectedMatchIds.contains(id));
-    }).length;
-
     final allUnits = _buildGroupUnits();
     final totalSelectedUnitsCount = allUnits.where((unit) {
       return unit.matchIds.every((id) => _selectedMatchIds.contains(id));
@@ -473,153 +469,69 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
               padding: const EdgeInsets.all(AppSpacing.roundValue),
               children: [
                 // STEP 1. 対象選択
-                _buildSectionHeader('STEP 1: 変更対象の試合を選択'),
-                const SizedBox(height: AppSpacing.sm),
-
-                // カテゴリフィルター
-                _buildFilterRow(
-                  label: 'カテゴリ',
-                  value: _selectedCategoryFilter,
-                  options: _categories,
-                  onChanged: (val) {
+                BulkRuleTargetSelectSection(
+                  categories: _categories,
+                  matchTypes: _matchTypes,
+                  selectedCategoryFilter: _selectedCategoryFilter,
+                  selectedTypeFilter: _selectedTypeFilter,
+                  filteredUnits: currentFilteredUnits,
+                  selectedMatchIds: _selectedMatchIds,
+                  primaryAccent: widget.themeColors.primaryAccent,
+                  isDark: isDark,
+                  textColor: textColor,
+                  onCategoryChanged: (val) {
                     if (val != null) {
                       setState(() => _selectedCategoryFilter = val);
                       _applyFiltersAndSelectAll();
                     }
                   },
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                // 形式フィルター
-                _buildFilterRow(
-                  label: '形式・種別',
-                  value: _selectedTypeFilter,
-                  options: _matchTypes,
-                  onChanged: (val) {
+                  onTypeChanged: (val) {
                     if (val != null) {
                       setState(() => _selectedTypeFilter = val);
                       _applyFiltersAndSelectAll();
                     }
                   },
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 対象試合チェックリスト
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 180),
-                  decoration: BoxDecoration(
-                    borderRadius: AppRadius.medium,
-                    border: Border.all(color: context.appColors.separatorColor),
-                  ),
-                  child: Material(
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : context.appColors.cardBackground,
-                    borderRadius: AppRadius.medium,
-                    child: currentFilteredUnits.isEmpty
-                        ? const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(AppSpacing.lg),
-                              child: Text('条件に一致する試合がありません'),
-                            ),
-                          )
-                        : Scrollbar(
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: currentFilteredUnits.length,
-                              itemBuilder: (context, index) {
-                                final unit = currentFilteredUnits[index];
-                                final isChecked = unit.matchIds.every(
-                                  (id) => _selectedMatchIds.contains(id),
-                                );
-
-                                return CheckboxListTile(
-                                  controlAffinity:
-                                      ListTileControlAffinity.leading,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.sm,
-                                  ),
-                                  title: Text(
-                                    unit.displayName,
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.bodySmall,
-                                      color: textColor,
-                                    ),
-                                  ),
-                                  value: isChecked,
-                                  activeColor: widget.themeColors.primaryAccent,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      if (val == true) {
-                                        for (final id in unit.matchIds) {
-                                          if (!_selectedMatchIds.contains(id)) {
-                                            _selectedMatchIds.add(id);
-                                          }
-                                        }
-                                      } else {
-                                        for (final id in unit.matchIds) {
-                                          _selectedMatchIds.remove(id);
-                                        }
-                                      }
-                                      _updateLoadedTemplateIfNecessary();
-                                    });
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '現在 $selectedUnitsCount 件を選択中 / 全 ${currentFilteredUnits.length} 件中',
-                      style: TextStyle(
-                        fontSize: AppFontSize.small,
-                        fontWeight: AppFontWeight.bold,
-                        color: widget.themeColors.primaryAccent,
-                      ),
-                    ),
-                    if (currentFilteredUnits.isNotEmpty)
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            final allSelected = currentFilteredUnits.every(
-                              (unit) => unit.matchIds.every(
-                                (id) => _selectedMatchIds.contains(id),
-                              ),
-                            );
-                            if (allSelected) {
-                              for (final unit in currentFilteredUnits) {
-                                for (final id in unit.matchIds) {
-                                  _selectedMatchIds.remove(id);
-                                }
-                              }
-                            } else {
-                              for (final unit in currentFilteredUnits) {
-                                for (final id in unit.matchIds) {
-                                  if (!_selectedMatchIds.contains(id)) {
-                                    _selectedMatchIds.add(id);
-                                  }
-                                }
-                              }
-                            }
-                            _updateLoadedTemplateIfNecessary();
-                          });
-                        },
-                        child: Text(
-                          currentFilteredUnits.every(
-                                (unit) => unit.matchIds.every(
-                                  (id) => _selectedMatchIds.contains(id),
-                                ),
-                              )
-                              ? '全解除'
-                              : '全選択',
+                  onToggleUnit: (unit, val) {
+                    setState(() {
+                      if (val == true) {
+                        for (final id in unit.matchIds) {
+                          if (!_selectedMatchIds.contains(id)) {
+                            _selectedMatchIds.add(id);
+                          }
+                        }
+                      } else {
+                        for (final id in unit.matchIds) {
+                          _selectedMatchIds.remove(id);
+                        }
+                      }
+                      _updateLoadedTemplateIfNecessary();
+                    });
+                  },
+                  onToggleAll: () {
+                    setState(() {
+                      final allSelected = currentFilteredUnits.every(
+                        (unit) => unit.matchIds.every(
+                          (id) => _selectedMatchIds.contains(id),
                         ),
-                      ),
-                  ],
+                      );
+                      if (allSelected) {
+                        for (final unit in currentFilteredUnits) {
+                          for (final id in unit.matchIds) {
+                            _selectedMatchIds.remove(id);
+                          }
+                        }
+                      } else {
+                        for (final unit in currentFilteredUnits) {
+                          for (final id in unit.matchIds) {
+                            if (!_selectedMatchIds.contains(id)) {
+                              _selectedMatchIds.add(id);
+                            }
+                          }
+                        }
+                      }
+                      _updateLoadedTemplateIfNecessary();
+                    });
+                  },
                 ),
                 const SizedBox(height: AppSpacing.xl),
 
@@ -701,225 +613,37 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   const SizedBox(height: AppSpacing.md),
                 ],
 
-                // 基本ルールカード
-                _buildCardGroup(
-                  title: '⏱️ 基本ルール',
-                  children: [
-                    _buildDropdownRow<double>(
-                      label: '試合時間',
-                      value: _matchTime,
-                      items: [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0],
-                      labelBuilder: (v) => '${v == v.toInt() ? v.toInt() : v}分',
-                      onChanged: (v) => setState(() => _matchTime = v!),
-                    ),
-                    const Divider(height: 20),
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '一本勝負形式にする',
-                        style: TextStyle(fontSize: AppFontSize.body),
-                      ),
-                      subtitle: const Text(
-                        '先に1本取った側を勝者とします',
-                        style: TextStyle(fontSize: AppFontSize.caption),
-                      ),
-                      value: _isIpponShobu,
-                      activeTrackColor: widget.themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _isIpponShobu = v),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 延長ルールカード
-                _buildCardGroup(
-                  title: '🔄 延長ルール（本戦・通常試合）',
-                  children: [
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '通常試合の延長戦を行う',
-                        style: TextStyle(fontSize: AppFontSize.body),
-                      ),
-                      value: _hasExtension,
-                      activeTrackColor: widget.themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasExtension = v),
-                    ),
-                    if (_hasExtension) ...[
-                      const Divider(height: 20),
-                      _buildDropdownRow<double>(
-                        label: '延長時間',
-                        value: _enchoTime,
-                        items: [1.0, 1.5, 2.0, 3.0],
-                        labelBuilder: (v) =>
-                            '${v == v.toInt() ? v.toInt() : v}分',
-                        onChanged: (v) => setState(() => _enchoTime = v!),
-                      ),
-                      const Divider(height: 20),
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          '時間無制限とする（サドンデス）',
-                          style: TextStyle(fontSize: AppFontSize.body),
-                        ),
-                        value: _isEnchoUnlimited,
-                        activeTrackColor: widget.themeColors.primaryAccent,
-                        onChanged: (v) => setState(() => _isEnchoUnlimited = v),
-                      ),
-                      if (!_isEnchoUnlimited) ...[
-                        const Divider(height: 20),
-                        _buildDropdownRow<int>(
-                          label: '延長回数上限',
-                          value: _enchoCount,
-                          items: [1, 2, 3, 5],
-                          labelBuilder: (v) => '$v回',
-                          onChanged: (v) => setState(() => _enchoCount = v!),
-                        ),
-                      ],
-                    ],
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 個人戦：判定ルール
-                _buildCardGroup(
-                  title: '⚖️ 個人戦ルール',
-                  children: [
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '判定（ハンテイ）の適用',
-                        style: TextStyle(fontSize: AppFontSize.body),
-                      ),
-                      subtitle: const Text(
-                        '延長時間終了時、または引き分け時に判定を行います',
-                        style: TextStyle(fontSize: AppFontSize.caption),
-                      ),
-                      value: _hasHantei,
-                      activeTrackColor: widget.themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _hasHantei = v),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 団体戦：代表戦ルール
-                _buildCardGroup(
-                  title: '⚔️ 団体戦・代表戦ルール',
-                  children: [
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '代表戦の適用',
-                        style: TextStyle(fontSize: AppFontSize.body),
-                      ),
-                      subtitle: const Text(
-                        'チーム引き分け時の決定戦を有効にします',
-                        style: TextStyle(fontSize: AppFontSize.caption),
-                      ),
-                      value: _hasRepresentativeMatch,
-                      activeTrackColor: widget.themeColors.primaryAccent,
-                      onChanged: (v) =>
-                          setState(() => _hasRepresentativeMatch = v),
-                    ),
-                    if (_hasRepresentativeMatch) ...[
-                      const Divider(height: 20),
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          '代表戦は一本勝負',
-                          style: TextStyle(fontSize: AppFontSize.body),
-                        ),
-                        value: _isDaihyoIpponShobu,
-                        activeTrackColor: widget.themeColors.primaryAccent,
-                        onChanged: (v) =>
-                            setState(() => _isDaihyoIpponShobu = v),
-                      ),
-                      const Divider(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.info_outline,
-                              color: AppKendoColors.blue,
-                              size: 16,
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(
-                                '代表戦の延長戦は、自動的に「時間無制限・一本勝負（サドンデス）」として行われます。',
-                                style: TextStyle(
-                                  fontSize: AppFontSize.caption,
-                                  color: isDark
-                                      ? const Color(0xFF2196F3)
-                                      : const Color(0xFF2196F3),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // 錬成会ルール
-                _buildCardGroup(
-                  title: '🏆 錬成会（練習マッチ）設定',
-                  children: [
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        '錬成会モードを有効化',
-                        style: TextStyle(fontSize: AppFontSize.body),
-                      ),
-                      value: _isRenseikai,
-                      activeTrackColor: widget.themeColors.primaryAccent,
-                      onChanged: (v) => setState(() => _isRenseikai = v),
-                    ),
-                    if (_isRenseikai) ...[
-                      const Divider(height: 20),
-                      _buildDropdownRow<String>(
-                        label: '試合方式',
-                        value: _renseikaiType,
-                        items: const ['一試合制', '複数試合制', '時間制'],
-                        labelBuilder: (v) => v,
-                        onChanged: (v) => setState(() => _renseikaiType = v!),
-                      ),
-                      const Divider(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '総試合時間（分）',
-                            style: TextStyle(fontSize: AppFontSize.body),
-                          ),
-                          SizedBox(
-                            width: 100,
-                            child: AppTextField(
-                              controller: _overallTimeController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              textAlign: TextAlign.right,
-                              decoration: const InputDecoration(
-                                suffixText: '分',
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm,
-                                  vertical: AppSpacing.xs,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
+                // STEP 2 詳細設定カード群
+                BulkRuleDetailSettingCards(
+                  matchTime: _matchTime,
+                  isIpponShobu: _isIpponShobu,
+                  hasExtension: _hasExtension,
+                  enchoTime: _enchoTime,
+                  enchoCount: _enchoCount,
+                  isEnchoUnlimited: _isEnchoUnlimited,
+                  hasHantei: _hasHantei,
+                  hasRepresentativeMatch: _hasRepresentativeMatch,
+                  isDaihyoIpponShobu: _isDaihyoIpponShobu,
+                  isRenseikai: _isRenseikai,
+                  renseikaiType: _renseikaiType,
+                  overallTimeController: _overallTimeController,
+                  primaryAccent: widget.themeColors.primaryAccent,
+                  isDark: isDark,
+                  onMatchTimeChanged: (v) => setState(() => _matchTime = v),
+                  onIpponShobuChanged: (v) => setState(() => _isIpponShobu = v),
+                  onExtensionChanged: (v) => setState(() => _hasExtension = v),
+                  onEnchoTimeChanged: (v) => setState(() => _enchoTime = v),
+                  onEnchoCountChanged: (v) => setState(() => _enchoCount = v),
+                  onEnchoUnlimitedChanged: (v) =>
+                      setState(() => _isEnchoUnlimited = v),
+                  onHanteiChanged: (v) => setState(() => _hasHantei = v),
+                  onRepresentativeMatchChanged: (v) =>
+                      setState(() => _hasRepresentativeMatch = v),
+                  onDaihyoIpponShobuChanged: (v) =>
+                      setState(() => _isDaihyoIpponShobu = v),
+                  onRenseikaiChanged: (v) => setState(() => _isRenseikai = v),
+                  onRenseikaiTypeChanged: (v) =>
+                      setState(() => _renseikaiType = v),
                 ),
                 const SizedBox(height: AppSpacing.xxl),
               ],
@@ -1017,146 +741,4 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       ),
     );
   }
-
-  Widget _buildCardGroup({
-    required String title,
-    required List<Widget> children,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.large,
-        border: Border.all(color: context.appColors.separatorColor),
-      ),
-      child: Material(
-        color: isDark
-            ? context.appColors.textColor.withAlpha(128)
-            : context.appColors.cardBackground,
-        borderRadius: AppRadius.large,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.bodySmall,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ...children,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // フィルター用の汎用Row
-  Widget _buildFilterRow({
-    required String label,
-    required String value,
-    required List<String> options,
-    required ValueChanged<String?> onChanged,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = context.appColors.textColor;
-
-    final resolvedOptions = options.contains(value)
-        ? options
-        : [value, ...options];
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: AppFontSize.body,
-            fontWeight: AppFontWeight.bold,
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-            borderRadius: AppRadius.medium,
-          ),
-          child: DropdownButton<String>(
-            value: value,
-            underline: const SizedBox(),
-            style: TextStyle(color: textColor, fontSize: AppFontSize.body),
-            onChanged: onChanged,
-            items: resolvedOptions.map((opt) {
-              return DropdownMenuItem(
-                value: opt,
-                child: Text(opt.isEmpty ? '未設定' : opt),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // 新規ルール入力用のドロップダウンRow
-  Widget _buildDropdownRow<T>({
-    required String label,
-    required T value,
-    required List<T> items,
-    required String Function(T) labelBuilder,
-    required ValueChanged<T?> onChanged,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = context.appColors.textColor;
-
-    final resolvedItems = items.contains(value) ? items : [value, ...items];
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: AppFontSize.body)),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF2C2C2E)
-                : context.appColors.cardBackground,
-            borderRadius: AppRadius.medium,
-          ),
-          child: DropdownButton<T>(
-            value: value,
-            underline: const SizedBox(),
-            style: TextStyle(color: textColor, fontSize: AppFontSize.body),
-            onChanged: onChanged,
-            items: resolvedItems.map((item) {
-              return DropdownMenuItem<T>(
-                value: item,
-                child: Text(labelBuilder(item)),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class MatchGroupUnit {
-  final String id;
-  final String displayName;
-  final List<String> matchIds;
-  final String category;
-  final String resolvedType;
-
-  MatchGroupUnit({
-    required this.id,
-    required this.displayName,
-    required this.matchIds,
-    required this.category,
-    required this.resolvedType,
-  });
 }

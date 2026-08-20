@@ -20,6 +20,9 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_position_slot.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_static_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_info_banner.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_team_autocomplete_field.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -555,66 +558,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
   }
 
   Widget _buildStaticHeader() {
-    // ★ Phase 8-1: 横画面ではヘッダーを隠す
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-    if (isLandscape && MediaQuery.of(context).size.height < 500) {
-      return const SizedBox.shrink();
-    }
-
-    final color1 = _themeColors.primaryAccent;
-    final endColor = _themeColors.softAccent;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: 20,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color1, endColor],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(AppRadius.giantValue),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '最終ステップ: オーダー編成',
-            style: TextStyle(
-              fontSize: AppFontSize.display,
-              fontWeight: AppFontWeight.bold,
-              color: AppKendoColors.pureWhite,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            '対戦相手と出場選手を決定し、\n試合枠を生成します',
-            style: TextStyle(
-              fontSize: AppFontSize.bodySmall,
-              color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
-              fontWeight: AppFontWeight.medium,
-            ),
-          ),
-          const SizedBox(height: 20),
-          LinearProgressIndicator(
-            value: 1.0,
-            backgroundColor: AppKendoColors.pureWhite.withValues(alpha: 0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              AppKendoColors.pureWhite,
-            ),
-            minHeight: 6,
-            borderRadius: AppRadius.tiny,
-          ),
-        ],
-      ),
-    );
+    return OrderSetupStaticHeader(themeColors: _themeColors);
   }
 
   @override
@@ -664,27 +608,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                   padding: EdgeInsets.zero,
                   children: [
                     _buildStaticHeader(),
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      color: _themeColors.softAccent,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: _themeColors.primaryAccent,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              '自チームの選手を選択し、必要に応じて相手のチーム・選手名を入力してください。',
-                              style: TextStyle(
-                                color: context.appColors.subTextColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    OrderSetupInfoBanner(themeColors: _themeColors),
                     if (rule.isLeague)
                       Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1759,7 +1683,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     );
   }
 
-  // ★ 追加：予測変換（サジェスト）と手入力を両立する、最強の入力フィールドビルダー
+  // ★ 予測変換（サジェスト）と手入力を両立するチーム名入力フィールド
   Widget _buildTeamAutocomplete({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -1772,117 +1696,18 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     required Color subTextColor,
     required bool isDark,
   }) {
-    return RawAutocomplete<String>(
-      textEditingController: controller,
+    return OrderSetupTeamAutocompleteField(
+      controller: controller,
       focusNode: focusNode,
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        if (!focusNode.hasFocus) {
-          return const Iterable<String>.empty();
-        }
-        if (textEditingValue.text.isEmpty) {
-          return suggestions;
-        }
-        return const Iterable<String>.empty();
-      },
-      fieldViewBuilder:
-          (context, fieldController, textFieldFocusNode, onFieldSubmitted) {
-            return AppTextField(
-              controller: fieldController,
-              focusNode: textFieldFocusNode,
-              onTap: () {
-                if (fieldController.text.isEmpty) {
-                  // ★ 修正: 1回目のタップ時にフォーカスが確実に当たるのを待つため、フレーム描画後に実行する
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    final currentVal = fieldController.value;
-                    fieldController.value = const TextEditingValue(text: ' ');
-                    fieldController.value = currentVal;
-                  });
-                }
-              },
-              onChanged: (text) {},
-              style: TextStyle(
-                color: textColor,
-                fontWeight: AppFontWeight.bold,
-              ),
-              decoration: InputDecoration(
-                labelText: labelText,
-                labelStyle: TextStyle(color: subTextColor),
-                hintText: hintText,
-                hintStyle: TextStyle(color: subTextColor),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
-                  borderSide: BorderSide(color: borderColor),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
-                  borderSide: BorderSide(color: borderColor),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
-                  borderSide: BorderSide(color: _themeColors.primaryAccent),
-                ),
-                prefixIcon: Icon(
-                  Icons.shield_outlined,
-                  color: isDark
-                      ? const Color(0xFF607D8B)
-                      : const Color(0xFF607D8B),
-                ),
-                suffixIcon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: AppKendoColors.grey,
-                ), // ▼アイコン
-                fillColor: fillColor,
-                filled: true,
-                isDense: true,
-              ),
-            );
-          },
-      // 浮かび上がる候補リストのデザイン
-      optionsViewBuilder: (context, onSelected, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 8.0,
-            borderRadius: AppRadius.medium,
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
-            child: ConstrainedBox(
-              // 幅を画面に合わせる
-              constraints: BoxConstraints(
-                maxHeight: 250,
-                maxWidth: MediaQuery.of(context).size.width - 48,
-              ),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final option = options.elementAt(index);
-                  return ListTile(
-                    title: Text(
-                      option,
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                    trailing: Icon(
-                      Icons.add_circle_outline,
-                      color: _themeColors.primaryAccent,
-                      size: 18,
-                    ),
-                    onTap: () {
-                      onSelected(option); // 選んだら入力完了
-                      FocusScope.of(
-                        context,
-                      ).unfocus(); // ★ 追加：フォーカスを外してサジェストとキーボードをスッと消す
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-      },
+      suggestions: suggestions,
+      labelText: labelText,
+      hintText: hintText,
+      fillColor: fillColor,
+      borderColor: borderColor,
+      textColor: textColor,
+      subTextColor: subTextColor,
+      primaryAccent: _themeColors.primaryAccent,
+      isDark: isDark,
     );
   }
 }

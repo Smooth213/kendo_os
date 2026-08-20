@@ -1,5 +1,4 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -8,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import '../providers/match_list_provider.dart';
-import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_leaderboard_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_share_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_single_player_select_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 // ★ Phase 8: 削除機能と権限管理用プロバイダを追加
 import '../providers/match_command_provider.dart';
@@ -16,21 +17,17 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 import '../components/home/match_edit_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_score_marks.dart';
 
 import 'package:uuid/uuid.dart';
-import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -216,47 +213,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             : CustomScrollView(
                 slivers: [
                   if (hasInfiniteKachinuki) ...[
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Card(
-                          color: isDark
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFFFFFFFF),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.large,
-                          ),
-                          elevation: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.local_fire_department,
-                                      color: AppKendoColors.deepOrange,
-                                    ),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    Text(
-                                      '無限勝ち抜き 連勝ランキング',
-                                      style: TextStyle(
-                                        fontSize: AppFontSize.subhead,
-                                        fontWeight: AppFontWeight.bold,
-                                        color: context.appColors.textColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(),
-                                const InfiniteStreakLeaderboard(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    const SliverToBoxAdapter(child: BunaiksenLeaderboardCard()),
                   ],
                   SliverToBoxAdapter(
                     child: Container(
@@ -664,67 +621,11 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     String dateDisplay,
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
-    // 🛡️ ドメイン同期パッチ：部内戦の管理ホーム（BunaiksenHomeScreen）側QR共有リンクも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
-    final String shareUrl =
-        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
-
-    showAppDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: '$dateDisplay 観戦リンク',
-        content: SizedBox(
-          width: 300,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'この部内戦の全試合・スコアを\n観客用に安全に共有できます。',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: AppFontSize.bodySmall),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                color: AppKendoColors.pureWhite,
-                child: QrImageView(
-                  data: shareUrl,
-                  version: QrVersions.auto,
-                  size: 200.0,
-                  backgroundColor: AppKendoColors.pureWhite,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton.icon(
-                // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(
-                    text:
-                        '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
-                        'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                        'リンク: $shareUrl',
-                  ),
-                ),
-                icon: const Icon(Icons.share),
-                label: const Text('LINEやSNSでURLを送る'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF607D8B),
-                  foregroundColor: AppKendoColors.pureWhite,
-                  elevation: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              '閉じる',
-              style: TextStyle(color: AppKendoColors.grey),
-            ),
-          ),
-        ],
-      ),
+    BunaiksenShareDialog.show(
+      context,
+      tournamentId: tournamentId,
+      dateDisplay: dateDisplay,
+      dojoId: dojoId,
     );
   }
 
@@ -1279,223 +1180,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
     WidgetRef ref,
     String sideName,
     Color accentColor,
-  ) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final repo = ref.read(playerRepositoryProvider);
-    final masterPlayers = await repo.getPlayers().first;
-
-    if (!context.mounted) return null;
-
-    String searchText = '';
-    String selectedFilter = 'すべて';
-
-    return showAppBottomSheet<String>(
-      context: context,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.75,
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (modalCtx, setModalState) {
-            final filtered = masterPlayers.where((p) {
-              final matchSearch =
-                  searchText.isEmpty ||
-                  p.name.contains(searchText) ||
-                  p.nameKana.contains(searchText);
-
-              bool matchFilter = true;
-              if (selectedFilter == '初心者') {
-                matchFilter = p.isBeginner;
-              } else if (selectedFilter == '幼年') {
-                matchFilter = p.grade == 0 && !p.isBeginner;
-              } else if (selectedFilter == '低学年') {
-                matchFilter = p.grade >= 1 && p.grade <= 4 && !p.isBeginner;
-              } else if (selectedFilter == '高学年') {
-                matchFilter = p.grade >= 5 && p.grade <= 6 && !p.isBeginner;
-              } else if (selectedFilter == '中学生') {
-                matchFilter = p.grade >= 7 && p.grade <= 9 && !p.isBeginner;
-              } else if (selectedFilter == '高校生') {
-                matchFilter = p.grade >= 10 && p.grade <= 12 && !p.isBeginner;
-              } else if (selectedFilter == '一般') {
-                matchFilter = p.grade >= 13 && !p.isBeginner;
-              }
-
-              return matchSearch && matchFilter;
-            }).toList();
-
-            return AppBottomSheetContent(
-              title: '$sideName の選手を選択',
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: AppSpacing.lg),
-                    Row(
-                      children: [
-                        Icon(Icons.person_search, color: accentColor, size: 24),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          '$sideNameの選手を選択',
-                          style: TextStyle(
-                            fontSize: AppFontSize.headline,
-                            fontWeight: AppFontWeight.bold,
-                            color: context.appColors.textColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    // 検索窓・自由テキスト入力
-                    AppTextField(
-                      autofocus: false,
-                      decoration: InputDecoration(
-                        hintText: '名前を入力または名簿から1タップ選択',
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: searchText.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(
-                                  Icons.check_circle,
-                                  color: AppKendoColors.green,
-                                ),
-                                onPressed: () => Navigator.pop(ctx, searchText),
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : const Color(0xFFF2F2F7),
-                        border: OutlineInputBorder(
-                          borderRadius: AppRadius.medium,
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.md,
-                        ),
-                      ),
-                      onChanged: (val) => setModalState(() => searchText = val),
-                      onSubmitted: (val) {
-                        if (val.trim().isNotEmpty) {
-                          Navigator.pop(ctx, val.trim());
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    // カテゴリフィルター
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children:
-                            [
-                              'すべて',
-                              '初心者',
-                              '幼年',
-                              '低学年',
-                              '高学年',
-                              '中学生',
-                              '高校生',
-                              '一般',
-                            ].map((filterName) {
-                              final isSel = selectedFilter == filterName;
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                  right: AppSpacing.subValue,
-                                ),
-                                child: AppChoiceChip(
-                                  label: Text(filterName),
-                                  selected: isSel,
-                                  customSelectedColor: accentColor,
-                                  onSelected: (selected) {
-                                    if (selected) {
-                                      setModalState(
-                                        () => selectedFilter = filterName,
-                                      );
-                                    }
-                                  },
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    // 名簿リスト (ワンタップ決定)
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Text(
-                                searchText.isNotEmpty
-                                    ? '「$searchText」をタップして決定できます'
-                                    : '該当する選手がいません',
-                                style: TextStyle(
-                                  color: isDark
-                                      ? const Color(
-                                          0xFFFFFFFF,
-                                        ).withValues(alpha: 0.54)
-                                      : const Color(0x8A000000),
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              itemCount: filtered.length,
-                              itemBuilder: (itemCtx, index) {
-                                final p = filtered[index];
-                                return Card(
-                                  margin: const EdgeInsets.only(
-                                    bottom: AppSpacing.sm,
-                                  ),
-                                  color: isDark
-                                      ? const Color(0xFF2C2C2E)
-                                      : const Color(0xFFF2F2F7),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: AppRadius.medium,
-                                  ),
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: accentColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      child: Text(
-                                        p.name.isNotEmpty
-                                            ? p.name.substring(0, 1)
-                                            : '?',
-                                        style: TextStyle(
-                                          color: accentColor,
-                                          fontWeight: AppFontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      p.name,
-                                      style: TextStyle(
-                                        fontWeight: AppFontWeight.bold,
-                                        color: context.appColors.textColor,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      p.gradeName,
-                                      style: TextStyle(
-                                        color: accentColor,
-                                        fontSize: AppFontSize.small,
-                                      ),
-                                    ),
-                                    trailing: Icon(
-                                      Icons.touch_app,
-                                      color: accentColor,
-                                    ),
-                                    onTap: () => Navigator.pop(ctx, p.name),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+  ) {
+    return BunaiksenSinglePlayerSelectSheet.show(
+      context,
+      ref,
+      sideName: sideName,
+      accentColor: accentColor,
     );
   }
 }

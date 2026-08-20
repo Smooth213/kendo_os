@@ -11,12 +11,14 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
 import 'package:kendo_os/shared/utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
-import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_selection_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_dynamic_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_app_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_autocomplete_field.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -163,101 +165,16 @@ class _TeamRegistrationScreenState
     super.dispose();
   }
 
-  // ★ 修正：大会作成画面に合わせ、独自の余計な上部パディングを廃止したシンプルなAppBar
+  // ★ AppBar
   Widget _buildImmersiveAppBar(BuildContext context) {
-    return Container(
-      // SafeArea や Scaffold が既にパディングを処理するため、ここでは最小限の余白のみ設定
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        bottom: AppSpacing.sm,
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new,
-              color: context.appColors.iconColor,
-              size: 24,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const Spacer(),
-          // ★ ヘルプボタンもここに組み込む
-          const ManualHelpButton(
-            manualPath: 'docs/manuals/operator/team_registration.md',
-          ),
-        ],
-      ),
-    );
+    return TeamRegistrationAppBar(onBack: () => Navigator.pop(context));
   }
 
   // ★ Tealグラデーションヘッダー
   Widget _buildDynamicHeader() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final t = (_currentPage / 2).clamp(0.0, 1.0);
-        final gradientColor = Color.lerp(
-          _themeColors.primaryAccent,
-          _themeColors.primaryAccent.withValues(alpha: 0.8),
-          t,
-        )!;
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: 20,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [gradientColor, _themeColors.softAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(AppRadius.giantValue),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'チームとオーダー登録',
-                style: TextStyle(
-                  fontSize: AppFontSize.heroLarge,
-                  fontWeight: AppFontWeight.bold,
-                  color: AppKendoColors.pureWhite,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '魔法のウィザードに従って、\n3つのステップで編成を完了しましょう',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
-                  fontWeight: AppFontWeight.medium,
-                ),
-              ),
-              const SizedBox(height: 20),
-              LinearProgressIndicator(
-                value: (_currentPage + 1) / 3,
-                backgroundColor: AppKendoColors.pureWhite.withValues(
-                  alpha: 0.3,
-                ),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppKendoColors.pureWhite,
-                ),
-                minHeight: 6,
-                borderRadius: AppRadius.tiny,
-              ),
-            ],
-          ),
-        );
-      },
+    return TeamRegistrationDynamicHeader(
+      currentPage: _currentPage,
+      themeColors: _themeColors,
     );
   }
 
@@ -1431,10 +1348,10 @@ class _TeamRegistrationScreenState
     );
   }
 
-  // ★ 追加：予測変換（サジェスト）と手入力を両立する入力フィールドビルダー
+  // ★ 予測変換（サジェスト）と手入力を両立する入力フィールド
   Widget _buildTeamAutocomplete({
     required TextEditingController controller,
-    required FocusNode focusNode, // ★ 追加
+    required FocusNode focusNode,
     required List<String> suggestions,
     required String labelText,
     required String hintText,
@@ -1444,102 +1361,17 @@ class _TeamRegistrationScreenState
     required Color subTextColor,
     required bool isDark,
   }) {
-    return RawAutocomplete<String>(
-      textEditingController: controller,
-      focusNode: focusNode, // ★ 修正：再生成を防ぐ
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        // ★ 真の解決：IME入力（日本語変換中）のゴースト状態を正確に捉えるため、textEditingValueを使用する
-        final text = textEditingValue.text;
-
-        if (text.isEmpty) {
-          return suggestions;
-        }
-        return suggestions.where((option) => option.contains(text));
-      },
-      fieldViewBuilder:
-          (context, fieldController, focusNode, onFieldSubmitted) {
-            return AppTextField(
-              controller: fieldController,
-              focusNode: focusNode,
-              style: TextStyle(
-                color: textColor,
-                fontWeight: AppFontWeight.bold,
-              ),
-              decoration: InputDecoration(
-                labelText: labelText,
-                labelStyle: TextStyle(
-                  color: subTextColor,
-                  fontWeight: AppFontWeight.bold,
-                ),
-                hintText: hintText,
-                hintStyle: TextStyle(color: AppKendoColors.grey),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
-                  borderSide: BorderSide(color: borderColor),
-                ),
-                border: OutlineInputBorder(borderRadius: AppRadius.medium),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
-                  borderSide: BorderSide(color: subTextColor, width: 2),
-                ),
-                prefixIcon: Icon(Icons.shield, color: subTextColor),
-                suffixIcon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: AppKendoColors.grey,
-                ),
-                fillColor: fillColor,
-                filled: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: AppSpacing.lg,
-                ),
-              ),
-            );
-          },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 8.0,
-            borderRadius: AppRadius.medium,
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: 250,
-                maxWidth: MediaQuery.of(context).size.width - 48,
-              ),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final option = options.elementAt(index);
-                  return ListTile(
-                    title: Text(
-                      option,
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                    trailing: Icon(
-                      Icons.add_circle_outline,
-                      color: subTextColor,
-                      size: 18,
-                    ),
-                    onTap: () {
-                      onSelected(option);
-                      FocusScope.of(
-                        context,
-                      ).unfocus(); // ★ 追加：タップ直後にキーボードとサジェストを隠す
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-      },
+    return TeamRegistrationAutocompleteField(
+      controller: controller,
+      focusNode: focusNode,
+      suggestions: suggestions,
+      labelText: labelText,
+      hintText: hintText,
+      fillColor: fillColor,
+      borderColor: borderColor,
+      textColor: textColor,
+      subTextColor: subTextColor,
+      isDark: isDark,
     );
   }
 }

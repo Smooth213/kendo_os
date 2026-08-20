@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart'
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/domain/entities/audit_log.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
-import 'package:kendo_os/features/match/domain/match_context.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart'; // ★ Userモデル用に追加
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
@@ -29,9 +28,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_m
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart'; // ★ 追加
 import 'package:kendo_os/admin/providers/metrics_provider.dart'; // ★ 追加: メトリクス基盤
-import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // ★ 追加: Web環境での直接クエリ用
+import 'package:kendo_os/features/match/application/services/match_auto_progression_service.dart';
+import 'package:kendo_os/features/match/application/services/match_persistence_helper.dart';
 
 // ==========================================
 // ★ ApplicationService設計：フローの完全集約と安全網
@@ -42,16 +41,23 @@ class MatchApplicationService {
   final Ref _ref;
   final AddScoreUseCase _addScore;
   final TimeUpUseCase _timeUp;
-  final MatchDomainService _domainService;
   final ScorerLockUseCase _scorerLock;
+  final MatchPersistenceHelper _persistenceHelper;
+  final MatchAutoProgressionService _progressionService;
 
   MatchApplicationService(
     this._ref,
     this._addScore,
     this._timeUp,
-    this._domainService, {
+    MatchDomainService domainService, {
     ScorerLockUseCase scorerLock = const ScorerLockUseCase(),
-  }) : _scorerLock = scorerLock;
+    MatchPersistenceHelper? persistenceHelper,
+    MatchAutoProgressionService? progressionService,
+  }) : _scorerLock = scorerLock,
+       _persistenceHelper = persistenceHelper ?? MatchPersistenceHelper(_ref),
+       _progressionService =
+           progressionService ??
+           MatchAutoProgressionService(_ref, domainService);
 
   // ==========================================
   // ★ Phase 1-Step 1: 実行主体(User)の取得ヘルパー
@@ -114,115 +120,16 @@ class MatchApplicationService {
     }
   }
 
-  // =========================================================================
-  // 🛡️ Webアプリ・スコア入力バグ完全修正パッチ
-  // Web環境では Isar をバイパスするため localRepo が null を返し、
-  // かつ matchListProvider が空になることがある。
-  // その場合、Firestore から直接最新の試合データを取得するヘルパーメソッド。
-  // =========================================================================
-  Future<MatchModel?> _getMatchSafely(String matchId) async {
-    final localRepo = _ref.read(localMatchRepositoryProvider);
-    MatchModel? match;
-    try {
-      match = await localRepo.getMatch(matchId);
-    } catch (_) {}
+  Future<MatchModel?> _getMatchSafely(String matchId) =>
+      _persistenceHelper.getMatchSafely(matchId);
 
-    match ??= _ref
-        .read(matchListProvider)
-        .where((m) => m.id == matchId)
-        .firstOrNull;
-
-    if (match == null && kIsWeb) {
-      try {
-        final dojoId = _ref.read(currentDojoIdProvider);
-        final tournamentId = _ref.read(currentTournamentIdProvider);
-        final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
-        final tournament = tournamentId.isNotEmpty
-            ? tournamentId
-            : 'default_tournament';
-
-        final docSnapshot = await FirebaseFirestore.instance
-            .collection('organizations')
-            .doc(dojo)
-            .collection('tournaments')
-            .doc(tournament)
-            .collection('matches')
-            .doc(matchId)
-            .get();
-
-        if (docSnapshot.exists) {
-          final data = docSnapshot.data()!;
-          data['id'] = docSnapshot.id;
-
-          // Timestamp の安全な再帰的変換 (eventsの深い階層にある日付データも漏らさずパースする)
-          void safeConvertTimestamps(dynamic obj) {
-            if (obj is Map) {
-              for (var key in obj.keys.toList()) {
-                final value = obj[key];
-                if (value == null) continue;
-                if (value.runtimeType.toString() == 'Timestamp') {
-                  obj[key] = (value as Timestamp).toDate().toIso8601String();
-                } else {
-                  safeConvertTimestamps(value);
-                }
-              }
-            } else if (obj is List) {
-              for (int i = 0; i < obj.length; i++) {
-                final value = obj[i];
-                if (value == null) continue;
-                if (value.runtimeType.toString() == 'Timestamp') {
-                  obj[i] = (value as Timestamp).toDate().toIso8601String();
-                } else {
-                  safeConvertTimestamps(value);
-                }
-              }
-            }
-          }
-
-          safeConvertTimestamps(data);
-          match = MatchModel.fromJson(data);
-          debugPrint(
-            '🌐 [Web Sync] Firestoreから試合を復元成功: ${match.redName} vs ${match.whiteName}',
-          );
-        } else {
-          debugPrint(
-            '⚠️ [MatchApplicationService] Firestoreに試合データが存在しません: $matchId',
-          );
-        }
-      } catch (e, st) {
-        debugPrint('⚠️ [MatchApplicationService] Firestore直接取得エラー: $e\n$st');
-      }
-    }
-    return match;
-  }
-
-  // =========================================================================
-  // 🛡️ Webアプリ・保存リトライ防波堤 (1秒制限・一瞬の通信断の克服)
-  // =========================================================================
   Future<int> _saveToFirestoreWithRetry(
     MatchModel match, {
     int maxAttempts = 3,
-  }) async {
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        final newVersion = await _ref
-            .read(matchRepositoryProvider)
-            .saveMatch(match);
-        return newVersion; // 成功したら新バージョンを返す
-      } catch (e) {
-        if (attempt == maxAttempts) {
-          rethrow; // 最終的にダメなら上位に投げて UI エラーとする
-        }
-        final delayMs =
-            500 * attempt; // 500ms, 1000ms... と待機時間を増やす (Exponential Backoff)
-        debugPrint(
-          '⚠️ [MatchApplicationService] Firestore保存をリトライします ($attempt/$maxAttempts) ${delayMs}ms後: $e',
-        );
-        await Future.delayed(Duration(milliseconds: delayMs));
-      }
-    }
-    throw Exception('Firestore保存エラー: リトライ上限に達しました');
-  }
+  }) => _persistenceHelper.saveToFirestoreWithRetry(
+    match,
+    maxAttempts: maxAttempts,
+  );
 
   // --------------------------------------------------
   // 1. 一本入力フロー
@@ -971,100 +878,19 @@ class MatchApplicationService {
   }
 
   // --------------------------------------------------
-  // 6. 試合終了時の自動判定・進行処理（UIから移動してきたロジック）
+  // 6. 試合終了時の自動判定・進行処理
   // --------------------------------------------------
   Future<void> _finalizeIfNeeded(
     MatchModel updatedMatch,
     MatchModel oldMatch,
-  ) async {
-    // 1. 自動で不戦勝を入れる処理
-    await _autoProcessFusenIfNeeded(updatedMatch);
-
-    // 2. 勝敗が決定（規定本数到達）していれば自動で終了処理へ
-    if (updatedMatch.status != 'finished' &&
-        updatedMatch.status != 'approved') {
-      final MatchRule rule = updatedMatch.rule ?? _ref.read(matchRuleProvider);
-      final engine = KendoRuleEngine();
-      final analysis = engine.analyzeHistory(
-        updatedMatch.events,
-        updatedMatch,
-        rule,
-      );
-      final result = engine.decideResult(analysis.context, rule);
-
-      if (result != MatchResultStatus.inProgress &&
-          result != MatchResultStatus.draw) {
-        final settings = _ref.read(settingsProvider);
-        if (settings.confirmBehavior == 'single') {
-          await approveMatch(updatedMatch.id);
-        } else {
-          await finishMatch(updatedMatch.id);
-        }
-        return;
-      }
-    }
-
-    // 3. 試合が終了した場合の次への引き継ぎ処理
-    if (updatedMatch.status == 'finished' && oldMatch.status != 'finished') {
-      await _propagateNameToNextMatch(updatedMatch);
-      await _generateNextKachinukiMatchIfNeeded(updatedMatch);
-      _autoActivateNextMatch(updatedMatch);
-    }
-  }
-
-  Future<void> _autoProcessFusenIfNeeded(MatchModel match) async {
-    final fusenEvents = _domainService.generateAutoFusenEvents(match);
-    for (var event in fusenEvents) {
-      await addIppon(match.id, event.side, event.type);
-    }
-    if (match.redName.contains('欠員') &&
-        match.whiteName.contains('欠員') &&
-        match.status != 'finished') {
-      await finishMatch(match.id);
-    }
-  }
-
-  Future<void> _generateNextKachinukiMatchIfNeeded(MatchModel match) async {
-    // ★ 修正
-    final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
-    final nextMatch = _domainService.generateNextKachinukiMatch(match, rule);
-    if (nextMatch != null) {
-      await _saveAndSync(nextMatch);
-    }
-  }
-
-  Future<void> _propagateNameToNextMatch(MatchModel finishedMatch) async {
-    // 🛡️ 監査：大会IDをfinishedMatchから抽出し、Isarのローカルリポジトリから試合一覧を取得
-    final localRepo = _ref.read(localMatchRepositoryProvider);
-    final matches = await localRepo.getPendingMatches();
-    final updatedMatches = _domainService.propagateNameToNextMatches(
-      finishedMatch,
-      matches,
-    );
-    for (var m in updatedMatches) {
-      await _saveAndSync(m);
-    }
-  }
-
-  void _autoActivateNextMatch(MatchModel finishedMatch) async {
-    if (finishedMatch.groupName == null || finishedMatch.groupName!.isEmpty) {
-      return;
-    }
-    final matches = _ref.read(matchListProvider);
-    final groupMatches = matches
-        .where((m) => m.groupName == finishedMatch.groupName)
-        .toList();
-    groupMatches.sort((a, b) => a.order.compareTo(b.order));
-    final currentIndex = groupMatches.indexWhere(
-      (m) => m.id == finishedMatch.id,
-    );
-    if (currentIndex != -1 && currentIndex < groupMatches.length - 1) {
-      final nextMatch = groupMatches[currentIndex + 1];
-      if (nextMatch.status == 'waiting') {
-        await _saveAndSync(nextMatch.copyWith(status: 'in_progress'));
-      }
-    }
-  }
+  ) => _progressionService.finalizeIfNeeded(
+    updatedMatch: updatedMatch,
+    oldMatch: oldMatch,
+    onApprove: approveMatch,
+    onFinish: finishMatch,
+    onAddIppon: addIppon,
+    onSaveAndSync: _saveAndSync,
+  );
 }
 
 final matchApplicationServiceProvider = Provider<MatchApplicationService>((

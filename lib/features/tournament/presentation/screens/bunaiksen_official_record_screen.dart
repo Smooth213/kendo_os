@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/pdf/pdf_service.dart' deferred as pdf_service;
-import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart'; // 勝ち抜き戦描画用
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
@@ -19,12 +18,10 @@ import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-
-class OfficialPointDisplay {
-  final String mark;
-  final bool isFirstMatchPoint;
-  OfficialPointDisplay(this.mark, this.isFirstMatchPoint);
-}
+import 'package:kendo_os/features/viewer/components/viewer_point_box_cell.dart';
+import 'package:kendo_os/features/viewer/components/viewer_vertical_player_name_cell.dart';
+import 'package:kendo_os/features/viewer/painters/league_table_painters.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_kachinuki_record_card.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -305,68 +302,10 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     List<MatchModel> matches,
     bool isDark,
   ) {
-    final first = matches.first;
-    final rTeam = first.redName.split(':').first.trim();
-    final wTeam = first.whiteName.split(':').first.trim();
-    final canvasWidth = 60.0 + ((matches.length + 5) * 60.0);
-
-    final engine = KendoRuleEngine();
-    final projections = matches.map((m) {
-      final analysis = engine.analyzeHistory(m.events, m, m.rule);
-      return MatchProjectionMapper.toProjection(m, analysis);
-    }).toList();
-
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        vertical: AppSpacing.sm,
-        horizontal: AppSpacing.xs,
-      ),
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
-        side: BorderSide(
-          color: isDark
-              ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
-              : const Color(0x33000000),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            color: isDark
-                ? const Color(0xFF3F51B5).withValues(alpha: 0.4)
-                : const Color(0xFF3F51B5),
-            width: double.infinity,
-            child: Text(
-              '勝ち抜き戦：$rTeam vs $wTeam',
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                color: isDark
-                    ? const Color(0xFF3F51B5)
-                    : const Color(0xFF3F51B5),
-              ),
-            ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              width: canvasWidth,
-              height: 480,
-              child: CustomPaint(
-                painter: KachinukiBracketPainter(
-                  matches: projections,
-                  isDark: isDark,
-                  ref: ref,
-                ),
-                size: Size.infinite,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return BunaiksenKachinukiRecordCard(
+      matches: matches,
+      isDark: isDark,
+      ref: ref,
     );
   }
 
@@ -908,117 +847,19 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     bool isRed,
     bool isDark,
   ) {
-    final color = isRed
-        ? (isDark ? const Color(0xFFE53935) : const Color(0xFFE53935))
-        : (isDark ? const Color(0xFF2196F3) : const Color(0xFF2196F3));
-    return SizedBox(
-      width: 36,
-      height: 36,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (isWinner)
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: color.withValues(alpha: 0.4),
-                  width: 1.5,
-                ),
-              ),
-            ),
-          if (pts.isNotEmpty)
-            Positioned(
-              top: AppSpacing.xs,
-              left: 6,
-              child: _renderMark(pts[0], color),
-            ),
-          if (pts.length > 1)
-            Positioned(
-              bottom: AppSpacing.xs,
-              right: 6,
-              child: _renderMark(pts[1], color),
-            ),
-        ],
-      ),
+    return ViewerPointBoxCell(
+      pts: pts,
+      isWinner: isWinner,
+      isRed: isRed,
+      isDark: isDark,
     );
   }
-
-  Widget _renderMark(OfficialPointDisplay p, Color color) {
-    String displayMark = p.mark == '判定' ? '判' : p.mark;
-    if (p.isFirstMatchPoint && displayMark != '反') {
-      return Container(
-        width: 14,
-        height: 14,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: color, width: 0.8),
-        ),
-        child: Text(
-          displayMark,
-          style: TextStyle(
-            fontSize: AppFontSize.micro,
-            color: color,
-            fontWeight: AppFontWeight.bold,
-            height: 1.1,
-          ),
-        ),
-      );
-    }
-    return Text(
-      displayMark,
-      style: TextStyle(
-        fontSize: AppFontSize.badge,
-        color: color,
-        fontWeight: AppFontWeight.bold,
-        height: 1.1,
-      ),
-    );
-  }
-
-  // --- 共通ロジック & ヘルパー ---
 
   Widget _buildVerticalName(String text, String initial, bool isDark) {
-    final style = TextStyle(
-      fontSize: AppFontSize.caption,
-      fontWeight: AppFontWeight.bold,
-      color: isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000),
-    );
-
-    Widget nameCol = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: text.split('').map((char) {
-        if (char == 'ー' || char == '-') {
-          return RotatedBox(quarterTurns: 1, child: Text(char, style: style));
-        }
-        if (char == '(' || char == ')' || char == '（' || char == '）') {
-          return RotatedBox(quarterTurns: 1, child: Text(char, style: style));
-        }
-        return Text(char, style: style.copyWith(height: 1.1));
-      }).toList(),
-    );
-
-    if (initial.isEmpty) return nameCol;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        nameCol,
-        Padding(
-          padding: const EdgeInsets.only(left: 1, bottom: 0),
-          child: Text(
-            initial,
-            style: style.copyWith(
-              fontSize: AppFontSize.micro,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
-            ),
-          ),
-        ),
-      ],
+    return ViewerVerticalPlayerNameCell(
+      text: text,
+      initial: initial,
+      isDark: isDark,
     );
   }
 
@@ -1837,98 +1678,6 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
   }
 
   Widget _buildTechMark(OfficialPointDisplay p, Color color) {
-    final displayTech = p.mark == '判定' ? '判' : p.mark;
-    if (p.isFirstMatchPoint && displayTech != '◯' && displayTech != '反') {
-      return Container(
-        width: 14,
-        height: 14,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: color, width: 0.8),
-        ),
-        child: Text(
-          displayTech,
-          style: TextStyle(
-            fontSize: AppFontSize.micro,
-            color: color,
-            fontWeight: AppFontWeight.bold,
-            height: 1.1,
-          ),
-        ),
-      );
-    }
-    return Text(
-      displayTech,
-      style: TextStyle(
-        fontSize: AppFontSize.badge,
-        color: color,
-        fontWeight: AppFontWeight.bold,
-        height: 1.1,
-      ),
-    );
+    return OfficialTechMarkBadge(point: p, color: color);
   }
-}
-
-// ★ 追加：表の「自分自身」のセルに斜め線を引くためのクラス
-class DiagonalLinePainter extends CustomPainter {
-  final Color color;
-  DiagonalLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// ★ ◯・△・□ を描画する究極のペインター
-class ResultShapePainter extends CustomPainter {
-  final String result; // 'win', 'loss', 'draw'
-  final Color color;
-  ResultShapePainter({required this.result, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()
-      ..color = color.withValues(alpha: 0.1)
-      ..style = PaintingStyle.fill;
-    final strokePaint = Paint()
-      ..color = color
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.42;
-
-    if (result == 'win') {
-      canvas.drawCircle(center, radius, bgPaint);
-      canvas.drawCircle(center, radius, strokePaint);
-    } else if (result == 'loss') {
-      final path = Path();
-      path.moveTo(center.dx, center.dy - radius);
-      path.lineTo(center.dx + radius * 1.1, center.dy + radius * 0.8);
-      path.lineTo(center.dx - radius * 1.1, center.dy + radius * 0.8);
-      path.close();
-      canvas.drawPath(path, bgPaint);
-      canvas.drawPath(path, strokePaint);
-    } else {
-      // PDFと同様に四角形(□)を描画する (円と同じくらいの視覚サイズにする)
-      final rectSize = radius * 1.8;
-      final rect = Rect.fromCenter(
-        center: center,
-        width: rectSize,
-        height: rectSize,
-      );
-      canvas.drawRect(rect, bgPaint);
-      canvas.drawRect(rect, strokePaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

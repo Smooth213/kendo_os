@@ -23,6 +23,8 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_custom_time_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen_setup/bunaiksen_infinite_tab.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen_setup/bunaiksen_league_tab.dart';
 
 class BunaiksenSetupScreen extends ConsumerStatefulWidget {
   const BunaiksenSetupScreen({super.key});
@@ -55,13 +57,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     growable: true,
   ); // ★ 修正：長さを変更可能(growable)にする
 
-  // リーグ戦用ステート
-  final _leagueInputController = TextEditingController();
-  final List<String> _leagueParticipants = [];
-
-  // 無限勝ち抜き用ステート
-  final _infiniteInputController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -90,8 +85,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
     _redPlayerController.dispose();
     _whitePlayerController.dispose();
     _poolInputController.dispose();
-    _leagueInputController.dispose();
-    _infiniteInputController.dispose();
     super.dispose();
   }
 
@@ -443,8 +436,8 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                 children: [
                   _buildIndividualTab(context, ref),
                   _buildTeamTab(context, ref, masterPlayers, isDark),
-                  _buildLeagueTab(context, ref),
-                  _buildInfiniteTab(context, ref),
+                  BunaiksenLeagueTab(themeColors: _themeColors),
+                  BunaiksenInfiniteTab(themeColors: _themeColors),
                 ],
               ),
             ),
@@ -943,340 +936,6 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
                     .saveMatchesBulk(matchesToSave); // ★ 修正
                 if (context.mounted) context.pop();
               },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // リーグ戦タブのプレースホルダー
-  Widget _buildLeagueTab(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.sm,
-        AppSpacing.lg,
-        AppSpacing.lg,
-      ),
-      child: Column(
-        children: [
-          // ★ 修正：リーグ戦も一気に複数選択できるように置き換え
-          MultiPlayerSelectInput(
-            initialSelected: _leagueParticipants,
-            label: 'リーグ戦メンバーを選択（複数可）',
-            onConfirm: (selectedList) {
-              setState(() {
-                _leagueParticipants.clear();
-                _leagueParticipants.addAll(selectedList);
-              });
-            },
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Expanded(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: context.appColors.inputBackground,
-                borderRadius: AppRadius.medium,
-                border: Border.all(color: context.appColors.separatorColor),
-              ),
-              child: Material(
-                color: AppKendoColors.transparent,
-                child: _leagueParticipants.isEmpty
-                    ? Center(
-                        child: Text(
-                          '選手を追加してください',
-                          style: TextStyle(
-                            color: context.appColors.subTextColor,
-                          ),
-                        ),
-                      )
-                    : ReorderableListView.builder(
-                        itemCount: _leagueParticipants.length,
-                        onReorderItem: (oldIndex, newIndex) {
-                          setState(() {
-                            final item = _leagueParticipants.removeAt(oldIndex);
-                            _leagueParticipants.insert(newIndex, item);
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final p = _leagueParticipants[index];
-                          return ListTile(
-                            key: ValueKey(p),
-                            leading: CircleAvatar(
-                              backgroundColor: _themeColors.primaryAccent
-                                  .withValues(alpha: 0.2),
-                              child: Text(
-                                '${index + 1}',
-                                style: TextStyle(
-                                  color: _themeColors.primaryAccent,
-                                  fontSize: AppFontSize.small,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            title: Text(p),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: AppKendoColors.grey,
-                              ),
-                              onPressed: () =>
-                                  setState(() => _leagueParticipants.remove(p)),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          SizedBox(
-            width: double.infinity,
-            child: GlassButton(
-              icon: Icons.grid_on,
-              label: '総当たり対戦表を作成（${_leagueParticipants.length}人）',
-              color: _themeColors.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              expandContent: false,
-              onPressed: _leagueParticipants.length < 2
-                  ? null
-                  : () async {
-                      final rule = ref.read(bunaiksenRuleProvider);
-                      final now = ref.read(timeSourceProvider).now();
-                      final dateStr = DateFormat('yyyyMMdd').format(
-                        DateTime.now(),
-                      ); // 🍏 タイムゾーン修正：常に日本時間(JST)を基準に今日の日付文字列を生成する
-                      final todayId = 'bunaiksen_$dateStr';
-                      final groupId = const Uuid().v4();
-                      final baseOrder = now.millisecondsSinceEpoch.toDouble();
-
-                      List<MatchModel> matchesToSave = [];
-                      int matchCount = 0;
-                      for (int i = 0; i < _leagueParticipants.length; i++) {
-                        for (
-                          int j = i + 1;
-                          j < _leagueParticipants.length;
-                          j++
-                        ) {
-                          final matchId = const Uuid().v4();
-                          matchesToSave.add(
-                            MatchModel(
-                              id: matchId,
-                              tournamentId: todayId,
-                              groupName: groupId,
-                              matchType: 'リーグ戦',
-                              redName: _leagueParticipants[i],
-                              whiteName: _leagueParticipants[j],
-                              matchTimeMinutes: rule.matchTimeMinutes,
-                              hasExtension:
-                                  rule.enchoTimeMinutes > 0 ||
-                                  rule.isEnchoUnlimited,
-                              extensionTimeMinutes: rule.enchoTimeMinutes,
-                              status: 'waiting',
-                              order: baseOrder + matchCount,
-                              rule: rule.copyWith(
-                                isLeague: true,
-                                winPoint: 3,
-                                drawPoint: 1,
-                                lossPoint: 0,
-                              ), // ★ 修正：リーグ戦として認識させるためのフラグを付与
-                              note: '[リーグ戦] 部内戦',
-                            ),
-                          );
-                          matchCount++;
-                        }
-                      }
-
-                      await ref
-                          .read(matchApplicationServiceProvider)
-                          .saveMatchesBulk(matchesToSave); // ★ 修正
-                      if (context.mounted) context.pop();
-                    },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 無限勝ち抜きタブのプレースホルダー
-  Widget _buildInfiniteTab(BuildContext context, WidgetRef ref) {
-    final queue = ref.watch(bunaiksenInfiniteQueueProvider);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.sm,
-        AppSpacing.lg,
-        AppSpacing.lg,
-      ),
-      child: Column(
-        children: [
-          // ★ 修正：1人ずつの追加と「＋」ボタンを廃止し、ボトムシートから複数選択できるように変更
-          MultiPlayerSelectInput(
-            initialSelected: queue,
-            label: '待機列のメンバーを選択（複数可）',
-            onConfirm: (selectedList) {
-              ref
-                  .read(bunaiksenInfiniteQueueProvider.notifier)
-                  .setPlayers(selectedList);
-            },
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '待機列 (${queue.length}人)',
-                style: const TextStyle(fontWeight: AppFontWeight.bold),
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.shuffle),
-                label: const Text('シャッフル'),
-                onPressed: () =>
-                    ref.read(bunaiksenInfiniteQueueProvider.notifier).shuffle(),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: context.appColors.inputBackground,
-                borderRadius: AppRadius.medium,
-                border: Border.all(color: context.appColors.separatorColor),
-              ),
-              child: Material(
-                color: AppKendoColors.transparent,
-                child: queue.isEmpty
-                    ? Center(
-                        child: Text(
-                          '選手を追加してください',
-                          style: TextStyle(
-                            color: context.appColors.subTextColor,
-                          ),
-                        ),
-                      )
-                    : ReorderableListView.builder(
-                        itemCount: queue.length,
-                        onReorderItem: (oldIndex, newIndex) {
-                          ref
-                              .read(bunaiksenInfiniteQueueProvider.notifier)
-                              .reorder(oldIndex, newIndex);
-                        },
-                        itemBuilder: (context, index) {
-                          final p = queue[index];
-                          return ListTile(
-                            key: ValueKey(p),
-                            leading: CircleAvatar(
-                              backgroundColor: index < 2
-                                  ? AppKendoColors.hansokuRed
-                                  : context.appColors.separatorColor,
-                              child: Text(
-                                '${index + 1}',
-                                style: TextStyle(
-                                  color: index < 2
-                                      ? AppKendoColors.hansokuRed
-                                      : context.appColors.textColor,
-                                  fontSize: AppFontSize.small,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              p,
-                              style: TextStyle(
-                                fontWeight: index < 2
-                                    ? AppFontWeight.bold
-                                    : AppFontWeight.regular,
-                              ),
-                            ),
-                            subtitle: index == 0
-                                ? const Text(
-                                    '最初の赤選手',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.badge,
-                                      color: AppKendoColors.red,
-                                    ),
-                                  )
-                                : index == 1
-                                ? const Text(
-                                    '最初の白選手',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.badge,
-                                      color: AppKendoColors.blueGrey,
-                                    ),
-                                  )
-                                : null,
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.close,
-                                color: AppKendoColors.grey,
-                              ),
-                              onPressed: () => ref
-                                  .read(bunaiksenInfiniteQueueProvider.notifier)
-                                  .removePlayer(p),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          SizedBox(
-            width: double.infinity,
-            child: GlassButton(
-              icon: Icons.local_fire_department,
-              label: '無限稽古スタート',
-              color: _themeColors.primaryAccent,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              expandContent: false,
-              onPressed: queue.length < 2
-                  ? null
-                  : () async {
-                      final notifier = ref.read(
-                        bunaiksenInfiniteQueueProvider.notifier,
-                      );
-                      final p1 = notifier.popFirst();
-                      final p2 = notifier.popFirst();
-                      if (p1 == null || p2 == null) return;
-
-                      final rule = ref.read(bunaiksenRuleProvider);
-                      final now = ref.read(timeSourceProvider).now();
-                      final dateStr = DateFormat('yyyyMMdd').format(
-                        DateTime.now(),
-                      ); // 🍏 タイムゾーン修正：常に日本時間(JST)を基準に今日の日付文字列を生成する
-                      final todayId = 'bunaiksen_$dateStr';
-                      final groupId = 'infinite_$dateStr';
-                      final matchId = const Uuid().v4();
-
-                      final newMatch = MatchModel(
-                        id: matchId,
-                        tournamentId: todayId,
-                        groupName: groupId,
-                        matchType: '無限勝ち抜き',
-                        redName: p1,
-                        whiteName: p2,
-                        matchTimeMinutes: rule.matchTimeMinutes,
-                        hasExtension: false,
-                        extensionTimeMinutes: 0.0,
-                        status: 'in_progress',
-                        order: now.millisecondsSinceEpoch.toDouble(),
-                        rule: rule,
-                        note: '無限勝ち抜き',
-                        isKachinuki: true,
-                      );
-
-                      ref
-                          .read(bunaiksenInfiniteStreakProvider.notifier)
-                          .clearAll();
-
-                      await ref.read(matchCommandProvider).addMatch(newMatch);
-                      if (context.mounted) context.push('/match/$matchId');
-                    },
             ),
           ),
         ],

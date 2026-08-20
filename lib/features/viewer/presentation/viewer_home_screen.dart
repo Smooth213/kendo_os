@@ -5,9 +5,6 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
@@ -27,9 +24,14 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'components/viewer_match_list_tile_card.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'components/viewer_settings_bottom_sheet.dart';
+import 'components/viewer_share_dialog.dart';
+import 'components/viewer_tournament_info_card.dart';
 
 export 'components/viewer_match_list_tile_card.dart';
+export 'components/viewer_settings_bottom_sheet.dart';
+export 'components/viewer_share_dialog.dart';
+export 'components/viewer_tournament_info_card.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -275,7 +277,11 @@ class ViewerHomeScreen extends ConsumerWidget {
                         : themeColors.primaryAccent,
                   ),
                   tooltip: '大会を共有する',
-                  onPressed: () => _showShareDialog(context, ref, tournamentId),
+                  onPressed: () => ViewerShareDialog.show(
+                    context,
+                    tournamentId: tournamentId,
+                    dojoId: ref.read(currentDojoIdProvider),
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
               ],
@@ -417,10 +423,8 @@ class ViewerHomeScreen extends ConsumerWidget {
                           .when(
                             data: (tournament) {
                               if (tournament != null) {
-                                return _buildTournamentInfoCard(
-                                  context,
-                                  ref,
-                                  tournament,
+                                return ViewerTournamentInfoCard(
+                                  tournament: tournament,
                                 );
                               }
                               // ★ デバッグ支援: 大会情報が見つからない場合は原因切り分け用の表示を出す
@@ -2666,134 +2670,6 @@ class ViewerHomeScreen extends ConsumerWidget {
       );
     }
   } // buildメソッドの終わり
-
-  Widget _buildTournamentInfoCard(
-    BuildContext context,
-    WidgetRef ref,
-    dynamic tournament,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeColors =
-        Theme.of(context).extension<AppThemeColors>() ??
-        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final cardColor = themeColors.cardBackground;
-    final borderColor = context.appColors.separatorColor;
-    final textColor = context.appColors.textColor;
-    final subTextColor = isDark
-        ? const Color(0xFF8E8E93)
-        : context.appColors.textColor;
-    final iconBgColor = isDark
-        ? context.appColors.warningColor.withValues(alpha: 0.3)
-        : context.appColors.warningColor;
-    final noteBgColor = isDark
-        ? const Color(0xFF2C2C2E)
-        : context.appColors.cardBackground;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.medium,
-        side: BorderSide(color: borderColor, width: isDark ? 0.5 : 1.0),
-      ),
-      color: cardColor,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.roundValue),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: iconBgColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.emoji_events,
-                    color: AppKendoColors.amber,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    tournament.name,
-                    style: TextStyle(
-                      fontSize: AppFontSize.headline,
-                      fontWeight: AppFontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
-                ),
-                // 編集用PopupMenuButtonは削除
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-              child: Divider(height: 1, color: borderColor),
-            ),
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  color: const Color(0x8A000000),
-                  size: 16,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  DateFormat('yyyy年MM月dd日').format(tournament.date),
-                  style: TextStyle(
-                    color: subTextColor,
-                    fontSize: AppFontSize.bodySmall,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.lg),
-                Icon(
-                  Icons.location_on,
-                  color: const Color(0x8A000000),
-                  size: 16,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    tournament.venue,
-                    style: TextStyle(
-                      color: subTextColor,
-                      fontSize: AppFontSize.bodySmall,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            if (tournament.notes.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.md),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: noteBgColor,
-                  borderRadius: AppRadius.small,
-                ),
-                child: Text(
-                  tournament.notes,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: AppFontSize.bodySmall,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
 } // ★ ViewerHomeScreen クラスを一旦ここで安全にクローズします
 
 class ViewerHomeScreenUtils {
@@ -2864,76 +2740,6 @@ String _reverseWhiteName(String whiteName) {
   final teamName = parts[0].trim();
   final playerName = parts[1].trim();
   return '$playerName : $teamName';
-}
-
-void _showShareDialog(
-  BuildContext context,
-  WidgetRef ref,
-  String tournamentId,
-) {
-  final dojoId = ref.read(currentDojoIdProvider);
-  // 🛡️ ドメイン同期パッチ：大会ホーム画面側のQRコード共有URLも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
-  final String shareUrl =
-      'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
-
-  showAppDialog(
-    context: context,
-    builder: (ctx) => AppDialog(
-      title: '大会観戦リンク',
-      content: SizedBox(
-        width: 300,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'この大会の全試合・スコアを\n観客用に安全に共有できます。',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: AppFontSize.bodySmall),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              color: AppKendoColors.pureWhite,
-              child: QrImageView(
-                data: shareUrl,
-                version: QrVersions.auto,
-                size: 200.0,
-                backgroundColor: AppKendoColors.pureWhite,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            ElevatedButton.icon(
-              // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
-              onPressed: () => SharePlus.instance.share(
-                ShareParams(
-                  text:
-                      '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
-                      'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                      'リンク: $shareUrl',
-                ),
-              ),
-              icon: const Icon(Icons.share),
-              label: const Text('LINEやSNSでURLを送る'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF607D8B),
-                foregroundColor: AppKendoColors.pureWhite,
-                elevation: 0,
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text(
-            '閉じる',
-            style: TextStyle(color: AppKendoColors.grey),
-          ),
-        ),
-      ],
-    ),
-  );
 }
 
 String _generateDescriptiveLeagueTitle(
@@ -3134,160 +2940,3 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
     yield null;
   }
 });
-
-// ============================================================================
-// ★ 観客用 表示設定ボトムシート (Liquid Glass & テーマ切り替え)
-// ============================================================================
-class ViewerSettingsBottomSheet extends ConsumerWidget {
-  const ViewerSettingsBottomSheet({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
-    final notifier = ref.read(settingsProvider.notifier);
-
-    return Container(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        bottom: 32,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.roundValue),
-        ),
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.xl),
-                  decoration: BoxDecoration(
-                    color: AppKendoColors.grey.withValues(alpha: 0.5),
-                    borderRadius: AppRadius.micro,
-                  ),
-                ),
-              ),
-              Center(
-                child: Text(
-                  '表示設定',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: AppFontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              Row(
-                children: [
-                  const Icon(Icons.palette_outlined),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'テーマの切り替え',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppKendoColors.grey.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: AppRadius.small,
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: settings.themeMode,
-                    isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'system',
-                        child: Text('📱 システム設定に従う'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'light',
-                        child: Text('☀️ ライトモード'),
-                      ),
-                      DropdownMenuItem(value: 'dark', child: Text('🌙 ダークモード')),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-                        notifier.state = notifier.state.copyWith(
-                          themeMode: value,
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                '・システム: お使いの端末の設定に自動で連動します。\n'
-                '・ライト: 明るく見やすい標準的なデザインです。\n'
-                '・ダーク: 暗い背景で目に優しく、バッテリー消費も抑えます。',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              Row(
-                children: [
-                  const Icon(Icons.auto_awesome),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'すりガラス効果',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Switch(
-                    value: settings.enableLiquidGlass,
-                    onChanged: (value) {
-                      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-                      notifier.state = notifier.state.copyWith(
-                        enableLiquidGlass: value,
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                '・背景の試合状況が美しく透けて見えるモダンなデザインになります。\n'
-                '・動作が重く感じる場合や、古い端末をお使いの場合は「OFF」にするとパフォーマンスが向上します。',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

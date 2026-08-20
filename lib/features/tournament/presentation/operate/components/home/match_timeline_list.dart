@@ -37,6 +37,7 @@ import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import '../cards/match_list_tile_card.dart';
 import '../sheets/order_reorder_bottom_sheet.dart';
+import 'match_timeline_control_bar.dart';
 import 'tournament_header_card.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -207,201 +208,24 @@ class MatchTimelineList extends ConsumerWidget {
               error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
             ),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (!ref.watch(isSearchVisibleProvider))
-                Text(
-                  '試合リスト',
-                  style: TextStyle(
-                    fontSize: AppFontSize.subhead,
-                    fontWeight: AppFontWeight.bold,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : const Color(0xDE000000),
-                  ),
-                ),
-
-              if (ref.watch(isSearchVisibleProvider))
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.sm),
-                    child: SizedBox(
-                      height: 32,
-                      child: AppTextField(
-                        autofocus: true,
-                        style: TextStyle(
-                          fontSize: AppFontSize.bodySmall,
-                          color: context.appColors.textColor,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: '選手名・チーム名で検索...',
-                          hintStyle: TextStyle(
-                            fontSize: AppFontSize.small,
-                            color: context.appColors.subTextColor,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: 0,
-                          ),
-                          filled: true,
-                          fillColor: isDark
-                              ? const Color(0xFF2C2C2E)
-                              : context.appColors.inputBackground,
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.small,
-                            borderSide: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF38383A)
-                                  : const Color(0x33000000),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: AppRadius.small,
-                            borderSide: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF38383A)
-                                  : const Color(0x33000000),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: AppRadius.small,
-                            borderSide: BorderSide(
-                              color: const Color(0xFF3F51B5),
-                            ),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.close, size: 16),
-                            onPressed: () {
-                              ref.read(searchQueryProvider.notifier).state = '';
-                              ref.read(isSearchVisibleProvider.notifier).state =
-                                  false;
-                            },
-                          ),
-                        ),
-                        onChanged: (val) =>
-                            ref.read(searchQueryProvider.notifier).state = val,
-                      ),
-                    ),
-                  ),
-                ),
-
-              if (!ref.watch(isSearchVisibleProvider))
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.search,
-                            color: isDark
-                                ? const Color(0xFF3F51B5)
-                                : const Color(0xFF3F51B5),
-                            size: 22,
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () =>
-                              ref.read(isSearchVisibleProvider.notifier).state =
-                                  true,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
-                          OutlinedButton.icon(
-                            onPressed: () => showBulkRuleEditSheet(
-                              context,
-                              tournamentId,
-                              allMatches,
-                              isBunaiksen: false,
-                            ),
-                            icon: Icon(
-                              Icons.gavel,
-                              size: 16,
-                              color: isDark
-                                  ? context.appColors.primaryAccent
-                                  : context.appColors.primaryAccent,
-                            ),
-                            label: Text(
-                              'ルール一括変更',
-                              style: TextStyle(
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.small,
-                                color: isDark
-                                    ? const Color(0xFF3F51B5)
-                                    : const Color(0xFF3F51B5),
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: isDark
-                                  ? const Color(0xFF3F51B5)
-                                  : const Color(0xFF3F51B5),
-                              side: BorderSide(
-                                color: isDark
-                                    ? const Color(0xFF38383A)
-                                    : const Color(0xFF3F51B5),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.compact,
-                                vertical: 0,
-                              ),
-                              minimumSize: const Size(0, 32),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppRadius.small,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                        ],
-                        OutlinedButton.icon(
-                          onPressed: () =>
-                              ref.read(categorySortProvider.notifier).state =
-                                  !ref.read(categorySortProvider),
-                          icon: Icon(
-                            ref.watch(categorySortProvider)
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward,
-                            size: 16,
-                          ),
-                          label: Text(
-                            ref.watch(categorySortProvider)
-                                ? 'カテゴリ昇順'
-                                : 'カテゴリ降順',
-                            style: const TextStyle(
-                              fontWeight: AppFontWeight.bold,
-                              fontSize: AppFontSize.small,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: isDark
-                                ? const Color(0xFF3F51B5)
-                                : const Color(0xFF3F51B5),
-                            side: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF38383A)
-                                  : const Color(0xFF3F51B5),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                              vertical: 0,
-                            ),
-                            minimumSize: const Size(0, 32),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.small,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+        MatchTimelineControlBar(
+          isSearchVisible: ref.watch(isSearchVisibleProvider),
+          searchQuery: ref.watch(searchQueryProvider),
+          isSortAscending: ref.watch(categorySortProvider),
+          isReadOnlyUI: isReadOnlyUI,
+          allMatches: allMatches,
+          isDark: isDark,
+          onSearchVisibilityChanged: (val) =>
+              ref.read(isSearchVisibleProvider.notifier).state = val,
+          onSearchQueryChanged: (val) =>
+              ref.read(searchQueryProvider.notifier).state = val,
+          onToggleSort: () => ref.read(categorySortProvider.notifier).state =
+              !ref.read(categorySortProvider),
+          onBulkRuleEdit: () => showBulkRuleEditSheet(
+            context,
+            tournamentId,
+            allMatches,
+            isBunaiksen: false,
           ),
         ),
 

@@ -10,7 +10,6 @@ import 'dart:async';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart'; // ★ Phase 6: バイブレーション用
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -35,6 +34,7 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'components/match_screen/match_finished_navigation_dialog.dart';
 import 'components/match_screen/match_hantei_dialog.dart';
 import 'components/match_screen/match_infinite_next_dialog.dart';
+import 'components/match_screen/match_mini_log_undo_section.dart';
 import 'components/match_screen/match_operate_action_buttons_grid.dart';
 import 'components/match_screen/match_snapshot_history_dialog.dart';
 import 'components/match_screen/renseikai_master_timer_widget.dart';
@@ -569,256 +569,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   final canUndoReal = validEvents.isNotEmpty;
 
                                   // ★ Phase 6-4: 操作履歴の透明化（ミニログ ＋ Undoボタン）
-                                  final undoArea = Column(
-                                    children: [
-                                      // 1. 直近3件のミニログ表示エリア（★高さを完全に固定し、ボタンの圧迫を防ぐ）
-                                      Container(
-                                        height: 62,
-                                        margin: const EdgeInsets.symmetric(
-                                          // ★ 左右の余白を完全に0にパージし、画面の横幅いっぱいにフィット
-                                          horizontal: 0,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 2,
-                                          horizontal: AppSpacing.sm,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: isDark
-                                              ? const Color(
-                                                  0xFFFFFFFF,
-                                                ).withValues(alpha: 0.10)
-                                              : const Color(0xFFF2F2F7),
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(
-                                                  AppRadius.smallValue,
-                                                ),
-                                              ),
-                                        ),
-                                        alignment: Alignment
-                                            .bottomCenter, // 下から積み上がるように配置
-                                        child: validEvents.isNotEmpty
-                                            ? Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                children: validEvents.reversed.take(3).toList().asMap().entries.map((
-                                                  entry,
-                                                ) {
-                                                  final e = entry.value;
-                                                  final isLast = entry.key == 0;
-                                                  final sideColor =
-                                                      e.side == Side.red
-                                                      ? AppKendoColors
-                                                            .hansokuRed
-                                                      : (e.side == Side.white
-                                                            ? (isDark
-                                                                  ? AppKendoColors
-                                                                        .pureWhite
-                                                                  : Colors
-                                                                        .black87)
-                                                            : AppKendoColors
-                                                                  .grey);
-                                                  return Padding(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          vertical: 1,
-                                                        ),
-                                                    child: Row(
-                                                      children: [
-                                                        Text(
-                                                          '${validEvents.indexOf(e) + 1}.',
-                                                          style: const TextStyle(
-                                                            fontSize:
-                                                                AppFontSize
-                                                                    .badge,
-                                                            color:
-                                                                AppKendoColors
-                                                                    .grey,
-                                                            fontWeight:
-                                                                AppFontWeight
-                                                                    .bold,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 8,
-                                                        ),
-                                                        Icon(
-                                                          Icons.circle,
-                                                          size: 8,
-                                                          color: sideColor,
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 8,
-                                                        ),
-                                                        Text(
-                                                          e.type ==
-                                                                  PointType.men
-                                                              ? 'メン'
-                                                              : e.type ==
-                                                                    PointType
-                                                                        .kote
-                                                              ? 'コテ'
-                                                              : e.type ==
-                                                                    PointType
-                                                                        .doIdo
-                                                              ? 'ドウ'
-                                                              : e.type ==
-                                                                    PointType
-                                                                        .tsuki
-                                                              ? 'ツキ'
-                                                              : e.type ==
-                                                                    PointType
-                                                                        .hansoku
-                                                              ? '反則'
-                                                              : '判定',
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                AppFontSize
-                                                                    .small,
-                                                            fontWeight: isLast
-                                                                ? FontWeight
-                                                                      .w900
-                                                                : FontWeight
-                                                                      .normal,
-                                                            color: isLast
-                                                                ? sideColor
-                                                                : sideColor
-                                                                      .withValues(
-                                                                        alpha:
-                                                                            0.7,
-                                                                      ),
-                                                          ),
-                                                        ),
-                                                        const Spacer(),
-                                                        Text(
-                                                          DateFormat(
-                                                            'HH:mm:ss',
-                                                          ).format(e.timestamp),
-                                                          style: const TextStyle(
-                                                            fontSize:
-                                                                AppFontSize
-                                                                    .badge,
-                                                            color:
-                                                                AppKendoColors
-                                                                    .grey,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                              )
-                                            : const Center(
-                                                child: Text(
-                                                  '操作履歴',
-                                                  style: TextStyle(
-                                                    color: AppKendoColors.grey,
-                                                    fontSize: AppFontSize.badge,
-                                                    fontWeight:
-                                                        AppFontWeight.bold,
-                                                    letterSpacing: 2,
-                                                  ),
-                                                ),
-                                              ),
-                                      ),
-                                      // 2. Undoボタン（ログの直下に配置して一体化）
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          // ★ 左右の余白を完全に0にパージし、画面の両端まで美しくフィット
-                                          horizontal: 0,
-                                          vertical: 0,
-                                        ),
-                                        child: InkWell(
-                                          onTap: canUndoReal
-                                              ? () {
-                                                  HapticFeedback.mediumImpact();
-                                                  ref
-                                                      .read(
-                                                        matchCommandProvider,
-                                                      )
-                                                      .undoLastEvent(match.id);
-                                                }
-                                              : null,
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                bottom: Radius.circular(
-                                                  AppRadius.smallValue,
-                                                ),
-                                              ),
-                                          child: Container(
-                                            height: 36, // ★ さらに縮小
-                                            decoration: BoxDecoration(
-                                              color: isDark
-                                                  ? const Color(
-                                                      0xFFFFFFFF,
-                                                    ).withValues(alpha: 0.15)
-                                                  : AppKendoColors
-                                                        .grey
-                                                        .shade200,
-                                              borderRadius:
-                                                  validEvents.isNotEmpty
-                                                  ? const BorderRadius.vertical(
-                                                      bottom: Radius.circular(
-                                                        AppRadius.smallValue,
-                                                      ),
-                                                    )
-                                                  : AppRadius.small,
-                                              border: Border.all(
-                                                color: isDark
-                                                    ? const Color(
-                                                        0xFFFFFFFF,
-                                                      ).withValues(alpha: 0.24)
-                                                    : AppKendoColors.pureBlack
-                                                          .withValues(
-                                                            alpha: 0.12,
-                                                          ),
-                                              ),
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.undo,
-                                                  color: canUndoReal
-                                                      ? (isDark
-                                                            ? Colors
-                                                                  .amber
-                                                                  .shade300
-                                                            : Colors
-                                                                  .indigo
-                                                                  .shade700)
-                                                      : AppKendoColors.grey,
-                                                  size: 24,
-                                                ),
-                                                const SizedBox(
-                                                  width: AppSpacing.md,
-                                                ),
-                                                Text(
-                                                  canUndoReal
-                                                      ? '１つ前の操作を取り消す'
-                                                      : '操作履歴なし',
-                                                  style: TextStyle(
-                                                    fontSize: AppFontSize.body,
-                                                    fontWeight:
-                                                        AppFontWeight.black,
-                                                    color: canUndoReal
-                                                        ? (context
-                                                              .appColors
-                                                              .textColor)
-                                                        : AppKendoColors.grey,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 0,
-                                      ), // ★ 操作履歴の下にある余白を限界まで削除
-                                    ],
+                                  final undoArea = MatchMiniLogUndoSection(
+                                    validEvents: validEvents,
+                                    canUndo: canUndoReal,
+                                    isDark: isDark,
+                                    onUndo: () => ref
+                                        .read(matchCommandProvider)
+                                        .undoLastEvent(match.id),
                                   );
 
                                   final isRenseikaiTimeBased =

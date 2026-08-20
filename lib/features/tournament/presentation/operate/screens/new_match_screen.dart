@@ -1,17 +1,11 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/domain/entities/organization.dart';
-import '../providers/match_generator_provider.dart';
-import 'package:kendo_os/features/match/application/usecases/match_application_service.dart'; // ★ 追加
-import 'package:kendo_os/shared/infrastructure/repository/organization_repository.dart';
 
 // ★ Phase 3 追加: サジェスト用のデータソース
 import '../providers/match_list_provider.dart';
@@ -20,13 +14,13 @@ import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
-import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
-import '../components/new_match/new_match_smart_autocomplete.dart';
-import '../components/new_match/new_match_team_selector_card.dart';
 import '../components/new_match/new_match_heading_notes_card.dart';
+import '../components/new_match/new_match_mode_input_section.dart';
+import '../components/new_match/new_match_scene_rule_selector_section.dart';
+import '../services/new_match_submission_service.dart';
 
 // 選手マスタ取得用プロバイダ
 final newMatchPlayerMasterProvider =
@@ -97,9 +91,6 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final orgsStream = ref
-        .watch(organizationRepositoryProvider)
-        .watchOrganizations();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final asyncTournament = widget.tournamentId != null
@@ -179,104 +170,35 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     const Divider(height: 32),
 
                     // 3. モード別の入力UI
-                    if (_creationMode == '単発試合') ...[
-                      // ★ Phase 3 追加: 最強のオートコンプリートに差し替え
-                      NewMatchSmartAutocomplete(
-                        controller: _redNameController,
-                        focusNode: _redFocusNode,
-                        suggestions: combinedSuggestions,
-                        labelText: '赤の選手名（またはチーム名）',
-                        isDark: isDark,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      NewMatchSmartAutocomplete(
-                        controller: _whiteNameController,
-                        focusNode: _whiteFocusNode,
-                        suggestions: combinedSuggestions,
-                        labelText: '白の選手名（またはチーム名）',
-                        isDark: isDark,
-                      ),
-                    ] else if (_creationMode == 'リーグ戦自動生成') ...[
-                      const Text(
-                        '参加チーム（選手）をカンマ( , )区切りで入力してください\n例: Aチーム, Bチーム, C道場, D剣友会',
-                        style: TextStyle(color: AppKendoColors.blueGrey),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      AppTextField(
-                        controller: _leagueParticipantsController,
-                        decoration: const InputDecoration(
-                          labelText: '参加者リスト',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                      ),
-                    ] else if (_creationMode == '団体戦テンプレ生成') ...[
-                      StreamBuilder<List<Organization>>(
-                        stream: orgsStream,
-                        builder: (context, snapshot) {
-                          final orgs = snapshot.data ?? [];
-                          if (orgs.isEmpty) {
-                            return const Text(
-                              'マスタ管理で組織とチームを登録してください',
-                              style: TextStyle(color: AppKendoColors.red),
-                            );
-                          }
-                          return Column(
-                            children: [
-                              StreamBuilder<List<TeamTemplate>>(
-                                stream: _redOrg != null
-                                    ? ref
-                                          .watch(organizationRepositoryProvider)
-                                          .watchTeamTemplates(_redOrg!.id)
-                                    : const Stream.empty(),
-                                builder: (context, teamSnap) {
-                                  return NewMatchTeamSelectorCard(
-                                    colorLabel: '赤',
-                                    orgs: orgs,
-                                    isRed: true,
-                                    selectedOrg: _redOrg,
-                                    selectedTeam: _redTeam,
-                                    teamTemplates: teamSnap.data ?? [],
-                                    onOrgChanged: (val) => setState(() {
-                                      _redOrg = val;
-                                      _redTeam = null;
-                                    }),
-                                    onTeamChanged: (val) => setState(() {
-                                      _redTeam = val;
-                                    }),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: AppSpacing.lg),
-                              StreamBuilder<List<TeamTemplate>>(
-                                stream: _whiteOrg != null
-                                    ? ref
-                                          .watch(organizationRepositoryProvider)
-                                          .watchTeamTemplates(_whiteOrg!.id)
-                                    : const Stream.empty(),
-                                builder: (context, teamSnap) {
-                                  return NewMatchTeamSelectorCard(
-                                    colorLabel: '白',
-                                    orgs: orgs,
-                                    isRed: false,
-                                    selectedOrg: _whiteOrg,
-                                    selectedTeam: _whiteTeam,
-                                    teamTemplates: teamSnap.data ?? [],
-                                    onOrgChanged: (val) => setState(() {
-                                      _whiteOrg = val;
-                                      _whiteTeam = null;
-                                    }),
-                                    onTeamChanged: (val) => setState(() {
-                                      _whiteTeam = val;
-                                    }),
-                                  );
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+                    NewMatchModeInputSection(
+                      creationMode: _creationMode,
+                      redNameController: _redNameController,
+                      redFocusNode: _redFocusNode,
+                      whiteNameController: _whiteNameController,
+                      whiteFocusNode: _whiteFocusNode,
+                      leagueParticipantsController:
+                          _leagueParticipantsController,
+                      suggestions: combinedSuggestions,
+                      redOrg: _redOrg,
+                      redTeam: _redTeam,
+                      whiteOrg: _whiteOrg,
+                      whiteTeam: _whiteTeam,
+                      onRedOrgChanged: (val) => setState(() {
+                        _redOrg = val;
+                        _redTeam = null;
+                      }),
+                      onRedTeamChanged: (val) => setState(() {
+                        _redTeam = val;
+                      }),
+                      onWhiteOrgChanged: (val) => setState(() {
+                        _whiteOrg = val;
+                        _whiteTeam = null;
+                      }),
+                      onWhiteTeamChanged: (val) => setState(() {
+                        _whiteTeam = val;
+                      }),
+                      isDark: isDark,
+                    ),
 
                     const SizedBox(height: AppSpacing.xxl),
 
@@ -324,7 +246,14 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                     const SizedBox(height: AppSpacing.lg),
 
                     // ★ 適用ルールのインタラクティブカード選択
-                    _buildRuleSelectionSection(categoryRules, isDark),
+                    NewMatchSceneRuleSelectorSection(
+                      categoryRules: categoryRules,
+                      category: _categoryController.text,
+                      selectedScene: _selectedScene,
+                      onSceneSelected: (scene) =>
+                          setState(() => _selectedScene = scene),
+                      isDark: isDark,
+                    ),
                     const SizedBox(height: AppSpacing.lg),
                     // ★ 統合された「試合場・進行見出し」および「試合メモ」入力セクション
                     NewMatchHeadingNotesCard(
@@ -380,8 +309,10 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     });
   }
 
+  final NewMatchSubmissionService _submissionService =
+      const NewMatchSubmissionService();
+
   Future<void> _submit() async {
-    final generator = ref.read(matchGeneratorProvider);
     final courtText = _courtController.text.trim();
     final userNote = _noteController.text.trim();
     final noteCombined = courtText.isNotEmpty
@@ -397,269 +328,27 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
         AppSnackBar.showError(context, '大会IDが不明なため保存できません');
         return;
       }
-
-      final newMatch = MatchModel(
-        id: const Uuid().v4(),
-        matchType: '個人戦',
-        redName: _redNameController.text,
-        whiteName: _whiteNameController.text,
-        source: 'manual',
-        countForStandings: _countForStandings,
-        tournamentId: widget.tournamentId,
-        category: _categoryController.text,
-        note: noteCombined,
-        matchScene: _selectedScene,
-      );
-      await ref
-          .read(matchApplicationServiceProvider)
-          .saveMatch(newMatch); // ★ 修正
-    } else if (_creationMode == 'リーグ戦自動生成') {
-      final participants = _leagueParticipantsController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-      if (participants.length < 2) {
-        return;
-      }
-      await generator.generateLeagueMatches(
-        _categoryController.text,
-        participants,
-        _countForStandings,
-        noteCombined,
-        widget.tournamentId,
-      );
-    } else if (_creationMode == '団体戦テンプレ生成') {
-      if (_redOrg == null ||
-          _redTeam == null ||
-          _whiteOrg == null ||
-          _whiteTeam == null) {
-        return;
-      }
-      await generator.generateTeamMatchBouts(
-        _redTeam!.name,
-        _redTeam!.orderedMemberNames,
-        _whiteTeam!.name,
-        _whiteTeam!.orderedMemberNames,
-        _countForStandings,
-        category: _categoryController.text,
-        note: noteCombined,
-        tournamentId: widget.tournamentId,
-      );
     }
 
-    if (!mounted) {
-      return;
+    final success = await _submissionService.submitMatch(
+      ref: ref,
+      creationMode: _creationMode,
+      tournamentId: widget.tournamentId,
+      redName: _redNameController.text,
+      whiteName: _whiteNameController.text,
+      leagueParticipantsRaw: _leagueParticipantsController.text,
+      redOrg: _redOrg,
+      redTeam: _redTeam,
+      whiteOrg: _whiteOrg,
+      whiteTeam: _whiteTeam,
+      category: _categoryController.text,
+      noteCombined: noteCombined,
+      countForStandings: _countForStandings,
+      selectedScene: _selectedScene,
+    );
+
+    if (success && mounted) {
+      Navigator.pop(context);
     }
-    Navigator.pop(context);
-  }
-
-  Widget _buildRuleSelectionSection(
-    Map<String, CategoryRuleSet> categoryRules,
-    bool isDark,
-  ) {
-    final cleanCategory = _categoryController.text.trim();
-    final ruleSet = categoryRules[cleanCategory];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '現在適用するルール（タップして選択）',
-              style: TextStyle(
-                fontSize: AppFontSize.bodySmall,
-                color: AppKendoColors.grey,
-                fontWeight: AppFontWeight.bold,
-              ),
-            ),
-            if (ruleSet != null)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3F51B5),
-                  borderRadius: AppRadius.medium,
-                  border: Border.all(color: const Color(0xFF3F51B5)),
-                ),
-                child: Text(
-                  '部門ルール適用中: $cleanCategory',
-                  style: TextStyle(
-                    fontSize: AppFontSize.caption,
-                    color: const Color(0xFF3F51B5),
-                    fontWeight: AppFontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-
-        if (ruleSet != null && ruleSet.isMultiScene) ...[
-          _buildRuleCard(
-            sceneId: 'renseikai',
-            title: '⚔️ 錬成会ルール（午前・練習試合）',
-            subText:
-                '時間: ${ruleSet.renseikaiRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.renseikaiRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.renseikaiRule.hasHantei ? 'あり' : 'なし'} / ${ruleSet.renseikaiRule.renseikaiType}',
-            accentColor: AppKendoColors.amber,
-            isDark: isDark,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildRuleCard(
-            sceneId: 'honsen',
-            title: '🏆 本戦ルール（午後・トーナメント）',
-            subText:
-                '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
-            accentColor: AppKendoColors.indigo,
-            isDark: isDark,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildRuleCard(
-            sceneId: 'moushiawase',
-            title: '🤝 申し合わせルール（終了後・自由戦）',
-            subText:
-                '時間: ${ruleSet.moushiawaseRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.moushiawaseRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.moushiawaseRule.hasHantei ? 'あり' : 'なし'}',
-            accentColor: AppKendoColors.teal,
-            isDark: isDark,
-          ),
-        ] else if (ruleSet != null) ...[
-          _buildRuleCard(
-            sceneId: 'honsen',
-            title: '🏆 本戦（通常戦）ルール',
-            subText:
-                '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
-            accentColor: AppKendoColors.indigo,
-            isDark: isDark,
-          ),
-        ] else ...[
-          _buildRuleCard(
-            sceneId: 'renseikai',
-            title: '⚔️ 錬成会（練習試合）',
-            subText: '2分流し / 引き分けあり',
-            accentColor: AppKendoColors.amber,
-            isDark: isDark,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildRuleCard(
-            sceneId: 'honsen',
-            title: '🏆 本戦（通常戦）',
-            subText: '3分正式 / 代表戦・勝敗重視',
-            accentColor: AppKendoColors.indigo,
-            isDark: isDark,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildRuleCard(
-            sceneId: 'moushiawase',
-            title: '🤝 申し合わせ（自由対戦）',
-            subText: '2分流し / 引き分けあり',
-            accentColor: AppKendoColors.teal,
-            isDark: isDark,
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildRuleCard({
-    required String sceneId,
-    required String title,
-    required String subText,
-    required MaterialColor accentColor,
-    required bool isDark,
-  }) {
-    final isSelected = _selectedScene == sceneId;
-
-    return Material(
-      color: AppKendoColors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedScene = sceneId;
-          });
-        },
-        borderRadius: AppRadius.medium,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark
-                      ? accentColor.shade900.withValues(alpha: 0.4)
-                      : accentColor.shade50)
-                : (isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF)),
-            borderRadius: AppRadius.medium,
-            border: Border.all(
-              color: isSelected
-                  ? (isDark ? accentColor.shade300 : accentColor.shade700)
-                  : (isDark
-                        ? const Color(0xFF38383A)
-                        : const Color(0x33000000)),
-              width: isSelected ? 2.0 : 1.0,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.2),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Row(
-            children: [
-              Icon(
-                isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: isSelected
-                    ? (isDark ? accentColor.shade300 : accentColor.shade700)
-                    : AppKendoColors.grey,
-                size: 22,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: AppFontSize.body,
-                        fontWeight: AppFontWeight.bold,
-                        color: isSelected
-                            ? (isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : accentColor.shade900)
-                            : (context.appColors.subTextColor),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subText,
-                      style: TextStyle(
-                        fontSize: AppFontSize.small,
-                        color: isSelected
-                            ? (isDark
-                                  ? context.appColors.textColor.withValues(
-                                      alpha: 0.7,
-                                    )
-                                  : accentColor.shade800)
-                            : context.appColors.subTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

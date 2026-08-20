@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_player_slot_tile.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart';
 
 /// 🏆 試合・団体戦対戦枠の詳細編集を行うボトムシート
 class MatchEditSheet extends ConsumerStatefulWidget {
@@ -381,7 +382,15 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 _buildTeamAndPlayersTab(isDark, textColor),
 
                 // Tab 2: コート・グループ
-                _buildCourtAndGroupTab(isDark, textColor),
+                MatchEditCourtAndGroupTab(
+                  themeColors: widget.themeColors,
+                  courtController: _courtController,
+                  noteController: _noteController,
+                  isDark: isDark,
+                  textColor: textColor,
+                  onToggleHeadingPreset: _toggleHeadingPreset,
+                  onClearCourt: () => setState(() => _courtController.clear()),
+                ),
 
                 // Tab 3: ルール・メモ
                 _buildRuleAndMemoTab(isDark, textColor),
@@ -554,182 +563,6 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       items.add(preset);
     }
     _courtController.text = items.join(', ');
-  }
-
-  // --- Tab 2: コート・グループ ---
-  Widget _buildCourtAndGroupTab(bool isDark, Color textColor) {
-    final currentText = _courtController.text;
-    final selectedItems = currentText.split(',').map((e) => e.trim()).toSet();
-
-    final courtPresets = ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'];
-    final roundPresets = [
-      '1回戦',
-      '2回戦',
-      '3回戦',
-      '準決勝',
-      '決勝戦',
-      '1試合目',
-      '2試合目',
-      '3試合目',
-      'Aリーグ',
-      'Bリーグ',
-    ];
-
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.roundValue),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: widget.themeColors.primaryAccent.withAlpha(isDark ? 25 : 12),
-            borderRadius: AppRadius.large,
-            border: Border.all(
-              color: widget.themeColors.primaryAccent.withAlpha(
-                isDark ? 80 : 40,
-              ),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.stadium,
-                    size: 18,
-                    color: widget.themeColors.primaryAccent,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    '試合場・進行見出しの一括設定',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_courtController.text.isNotEmpty)
-                    TextButton.icon(
-                      icon: const Icon(Icons.clear, size: 14),
-                      label: const Text(
-                        'クリア',
-                        style: TextStyle(fontSize: AppFontSize.caption),
-                      ),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                        ),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _courtController.clear();
-                        });
-                      },
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildTextField(
-                controller: _courtController,
-                label: '試合場・進行見出し (カンマ区切り)',
-                hint: '例: 第1試合場, 1回戦, 3試合目 (未入力時は空欄になります)',
-                isDark: isDark,
-                textColor: textColor,
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 13,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : const Color(0x8A000000),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        color: isDark
-                            ? const Color(0xFFFFFFFF)
-                            : const Color(0x8A000000),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Text(
-                '🏟️ 試合場（コート）を選択',
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  fontWeight: AppFontWeight.bold,
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xDE000000),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: courtPresets.map((preset) {
-                  final isSelected = selectedItems.contains(preset);
-                  return AppFilterChip(
-                    selected: isSelected,
-                    label: Text(preset),
-                    onSelected: (_) {
-                      setState(() {
-                        _toggleHeadingPreset(preset);
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 14),
-              Text(
-                '🏆 回戦・ラウンド・試合順を選択',
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  fontWeight: AppFontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: roundPresets.map((preset) {
-                  final isSelected = selectedItems.contains(preset);
-                  return AppFilterChip(
-                    selected: isSelected,
-                    label: Text(preset),
-                    onSelected: (_) {
-                      setState(() {
-                        _toggleHeadingPreset(preset);
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        _buildTextField(
-          controller: _noteController,
-          label: '📝 試合のメモ・詳細コメント',
-          hint: '注意事項や備考を入力',
-          isDark: isDark,
-          textColor: textColor,
-          maxLines: 3,
-        ),
-      ],
-    );
   }
 
   // --- Tab 3: 一括ルール・メモ ---

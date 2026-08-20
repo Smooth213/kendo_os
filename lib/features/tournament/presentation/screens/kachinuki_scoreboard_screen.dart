@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_team_life_card.dart';
+import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_center_battle_card.dart';
 
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
@@ -68,7 +69,10 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               indicatorWeight: 3,
               tabs: const [
                 Tab(text: '大会公式 記録表', icon: Icon(Icons.table_chart_outlined)),
-                Tab(text: '試合タイムライン', icon: Icon(Icons.timeline)),
+                Tab(
+                  text: 'リアルタイム進行 (スマホ用)',
+                  icon: Icon(Icons.view_timeline_outlined),
+                ),
               ],
             ),
           ),
@@ -103,10 +107,21 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
   Widget _buildTimelineTab(
     BuildContext context,
     WidgetRef ref,
-    List<MatchProjection> teamMatches,
+    List<MatchProjection> matches,
     bool isDark,
   ) {
-    final latestMatch = teamMatches.last;
+    if (matches.isEmpty) {
+      return Center(
+        child: Text(
+          '試合データがありません',
+          style: TextStyle(
+            color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
+          ),
+        ),
+      );
+    }
+
+    final latestMatch = matches.last;
     final rTeam = latestMatch.redName.contains(':')
         ? latestMatch.redName.split(':').first.trim()
         : '赤チーム';
@@ -114,9 +129,9 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         ? latestMatch.whiteName.split(':').first.trim()
         : '白チーム';
 
-    final List<String> rAllRaw = teamMatches.map((m) => m.redName).toList()
+    final List<String> rAllRaw = matches.map((m) => m.redName).toList()
       ..addAll(latestMatch.redRemaining);
-    final List<String> wAllRaw = teamMatches.map((m) => m.whiteName).toList()
+    final List<String> wAllRaw = matches.map((m) => m.whiteName).toList()
       ..addAll(latestMatch.whiteRemaining);
     final redLastNames = rAllRaw
         .map((n) => _parseName(n)['last']!)
@@ -127,52 +142,47 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         .where((s) => s.isNotEmpty)
         .toList();
 
+    final uiStates = <Map<String, dynamic>>[];
+    int curRStreak = 0, curWStreak = 0;
     int redDead = 0, whiteDead = 0;
-    int currentRStreak = 0, currentWStreak = 0;
-    String currentRName = '', currentWName = '';
-    List<Map<String, dynamic>> uiStates = [];
 
-    for (var m in teamMatches) {
-      final rName = m.redName;
-      final wName = m.whiteName;
+    for (int i = 0; i < matches.length; i++) {
+      final m = matches[i];
+      final rName = m.redName, wName = m.whiteName;
+      final isDone = m.status == 'finished' || m.status == 'approved';
+      final isApproved = m.status == 'approved';
 
-      if (rName != currentRName) {
-        currentRStreak = 0;
-        currentRName = rName;
-      }
-      if (wName != currentWName) {
-        currentWStreak = 0;
-        currentWName = wName;
-      }
+      int rPts = m.redScore;
+      int wPts = m.whiteScore;
 
-      bool isDone = m.status == 'finished' || m.status == 'approved';
-      if (isDone) {
-        int rPts = m.redScore;
-        int wPts = m.whiteScore;
+      bool rWin = isDone && rPts > wPts;
+      bool wWin = isDone && wPts > rPts;
+      bool isDraw = isDone && rPts == wPts;
 
-        if (rPts < wPts) {
-          redDead++;
-          currentWStreak++;
-          currentRStreak = 0;
-        } else if (wPts < rPts) {
-          whiteDead++;
-          currentRStreak++;
-          currentWStreak = 0;
-        } else {
+      if (rWin) {
+        curRStreak++;
+        curWStreak = 0;
+        if (isApproved) whiteDead++;
+      } else if (wWin) {
+        curWStreak++;
+        curRStreak = 0;
+        if (isApproved) redDead++;
+      } else if (isDraw) {
+        curRStreak = 0;
+        curWStreak = 0;
+        if (isApproved) {
           redDead++;
           whiteDead++;
-          currentRStreak = 0;
-          currentWStreak = 0;
         }
       }
 
       uiStates.add({
         'match': m,
-        'rStreak': currentRStreak,
-        'wStreak': currentWStreak,
+        'isDone': isDone,
         'rName': rName,
         'wName': wName,
-        'isDone': isDone,
+        'rStreak': curRStreak,
+        'wStreak': curWStreak,
       });
     }
 
@@ -214,455 +224,16 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               vertical: AppSpacing.sm,
             ),
             itemCount: uiStates.length,
-            itemBuilder: (context, index) => _buildCenterBattleCard(
-              ref,
-              uiStates[index],
-              index + 1,
-              isDark,
-              redLastNames,
-              whiteLastNames,
+            itemBuilder: (context, index) => KachinukiCenterBattleCard(
+              uiState: uiStates[index],
+              matchNumber: index + 1,
+              isDark: isDark,
+              rLasts: redLastNames,
+              wLasts: whiteLastNames,
             ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCenterBattleCard(
-    WidgetRef ref,
-    Map<String, dynamic> uiState,
-    int matchNumber,
-    bool isDark,
-    List<String> rLasts,
-    List<String> wLasts,
-  ) {
-    final MatchProjection match = uiState['match'];
-    final bool isDone = uiState['isDone'];
-    final int rStreak = uiState['rStreak'], wStreak = uiState['wStreak'];
-    final String rNameRaw = uiState['rName'], wNameRaw = uiState['wName'];
-
-    int rPts = match.redScore;
-    int wPts = match.whiteScore;
-
-    bool isDraw = isDone && rPts == wPts,
-        rWin = isDone && rPts > wPts,
-        wWin = isDone && wPts > rPts;
-    bool rIsStreaking = !isDone && rStreak > 0,
-        wIsStreaking = !isDone && wStreak > 0;
-
-    Widget buildTimelineName(
-      String raw,
-      List<String> teamLastNames,
-      bool isWin,
-      bool isFaded,
-      Color winColor,
-    ) {
-      if (raw.contains('欠員')) {
-        return Text(
-          '(欠員)',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: AppFontSize.subhead,
-            fontWeight: AppFontWeight.bold,
-            color: const Color(0x8A000000),
-          ),
-        );
-      }
-
-      final parsed = _parseName(raw);
-      final showInitial =
-          teamLastNames.where((n) => n == parsed['last']).length > 1 &&
-          parsed['first']!.isNotEmpty;
-
-      return RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: TextStyle(
-            fontSize: AppFontSize.subhead,
-            fontWeight: isWin ? AppFontWeight.black : AppFontWeight.bold,
-            color: isFaded ? const Color(0x8A000000) : winColor,
-          ),
-          children: [
-            TextSpan(text: parsed['last']),
-            if (showInitial)
-              WidgetSpan(
-                alignment: PlaceholderAlignment.bottom,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.xxs,
-                    bottom: 1,
-                  ),
-                  child: Text(
-                    parsed['first']!.substring(0, 1),
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      fontWeight: AppFontWeight.bold,
-                      color: isFaded
-                          ? const Color(0x8A000000)
-                          : winColor.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Column(
-        children: [
-          Text(
-            '$matchNumber試合目',
-            style: TextStyle(
-              fontSize: AppFontSize.caption,
-              fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.lg,
-                    horizontal: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: rWin
-                        ? (isDark
-                              ? const Color(0xFFE53935).withValues(alpha: 0.15)
-                              : const Color(0xFFE53935))
-                        : (isDark
-                              ? const Color(0xFF1C1C1E)
-                              : const Color(0xFFFFFFFF)),
-                    borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(AppRadius.largeValue),
-                    ),
-                    border: Border.all(
-                      color: rWin
-                          ? (isDark
-                                ? const Color(0xFFE53935)
-                                : const Color(0xFFE53935))
-                          : (isDark
-                                ? const Color(0xFF38383A)
-                                : const Color(0x33000000)),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      buildTimelineName(
-                        rNameRaw,
-                        rLasts,
-                        rWin,
-                        isDraw || wWin,
-                        isDark
-                            ? const Color(0xFFE53935)
-                            : const Color(0xFFE53935),
-                      ),
-                      if (rWin && rStreak >= 2) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.3)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                          ),
-                          child: Text(
-                            '🔥 $rStreak人抜き',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ] else if (rIsStreaking) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.1)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                            ),
-                          ),
-                          child: Text(
-                            '🔥 $rStreak人抜き中',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                width: 90,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                decoration: BoxDecoration(
-                  color: isDone
-                      ? (isDark
-                            ? const Color(0xFF2C2C2E)
-                            : const Color(0xFFF2F2F7))
-                      : (isDark
-                            ? const Color(0xFF009688).withValues(alpha: 0.15)
-                            : const Color(0xFF009688)),
-                  border: Border.symmetric(
-                    horizontal: BorderSide(
-                      color: isDone
-                          ? (isDark
-                                ? const Color(0xFF38383A)
-                                : const Color(0x33000000))
-                          : (isDark
-                                ? const Color(0xFF009688)
-                                : const Color(0xFF009688)),
-                    ),
-                  ),
-                ),
-                child: isDone
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildScoreMarks(
-                            match.redDisplays,
-                            isDark
-                                ? const Color(0xFFE53935)
-                                : const Color(0xFFE53935),
-                            isDraw || wWin,
-                            isDark,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.xs,
-                            ),
-                            child: Text(
-                              '-',
-                              style: TextStyle(
-                                color: isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : AppKendoColors.grey,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          _buildScoreMarks(
-                            match.whiteDisplays,
-                            isDark
-                                ? const Color(0xFF607D8B)
-                                : const Color(0xFF607D8B),
-                            isDraw || rWin,
-                            isDark,
-                          ),
-                        ],
-                      )
-                    : Center(
-                        child: Text(
-                          'VS',
-                          style: TextStyle(
-                            fontWeight: AppFontWeight.black,
-                            color: isDark
-                                ? const Color(0xFF009688)
-                                : const Color(0xFF009688),
-                          ),
-                        ),
-                      ),
-              ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.lg,
-                    horizontal: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: wWin
-                        ? (isDark
-                              ? const Color(0xFF607D8B).withValues(alpha: 0.2)
-                              : const Color(0xFF607D8B))
-                        : (isDark
-                              ? const Color(0xFF1C1C1E)
-                              : const Color(0xFFFFFFFF)),
-                    borderRadius: const BorderRadius.horizontal(
-                      right: Radius.circular(AppRadius.largeValue),
-                    ),
-                    border: Border.all(
-                      color: wWin
-                          ? (isDark
-                                ? const Color(0xFF607D8B)
-                                : const Color(0xFF607D8B))
-                          : (isDark
-                                ? const Color(0xFF38383A)
-                                : const Color(0x33000000)),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      buildTimelineName(
-                        wNameRaw,
-                        wLasts,
-                        wWin,
-                        isDraw || rWin,
-                        isDark
-                            ? const Color(0xFF607D8B)
-                            : const Color(0xFF607D8B),
-                      ),
-                      if (wWin && wStreak >= 2) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.3)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                          ),
-                          child: Text(
-                            '🔥 $wStreak人抜き',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ] else if (wIsStreaking) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.1)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                            ),
-                          ),
-                          child: Text(
-                            '🔥 $wStreak人抜き中',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (isDraw)
-            Container(
-              margin: const EdgeInsets.only(top: AppSpacing.xs),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF38383A)
-                    : const Color(0x33000000),
-                borderRadius: AppRadius.medium,
-              ),
-              child: Text(
-                '引き分け',
-                style: TextStyle(
-                  fontSize: AppFontSize.badge,
-                  fontWeight: AppFontWeight.bold,
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xFF000000).withValues(alpha: 0.54),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScoreMarks(
-    List<PointDisplay> pts,
-    Color color,
-    bool isFaded,
-    bool isDark,
-  ) {
-    if (pts.isEmpty) return const SizedBox(width: 20);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: pts.map((p) {
-        final textColor = isFaded
-            ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
-            : color;
-        if (p.isFirstMatchPoint && p.mark != '◯') {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: textColor, width: 2),
-            ),
-            child: Text(
-              p.mark,
-              style: TextStyle(
-                fontSize: AppFontSize.small,
-                fontWeight: AppFontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-          child: Text(
-            p.mark,
-            style: TextStyle(
-              fontSize: AppFontSize.subhead,
-              fontWeight: AppFontWeight.black,
-              color: textColor,
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 
