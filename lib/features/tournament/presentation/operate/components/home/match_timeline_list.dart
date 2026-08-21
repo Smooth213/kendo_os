@@ -1,4 +1,3 @@
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
@@ -11,29 +10,30 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import '../bulk_rule_edit_sheet.dart';
 import '../rule_info_bottom_sheet.dart';
-import 'match_edit_sheet.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import '../cards/match_list_tile_card.dart';
-import '../sheets/order_reorder_bottom_sheet.dart';
 import 'match_timeline_control_bar.dart';
 import 'tournament_header_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_summary_input_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_tie_break_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_rename_team_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_title_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_inner_comment_widget.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_edit_comment_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_reorder_helper.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 export '../cards/match_list_tile_card.dart';
@@ -650,12 +650,13 @@ class MatchTimelineList extends ConsumerWidget {
                                       size: 20,
                                     ),
                                     tooltip: 'チーム名を修正して統合',
-                                    onPressed: () => _showRenameTeamSheet(
-                                      context,
-                                      ref,
-                                      tournamentId,
-                                      teamName,
-                                    ),
+                                    onPressed: () =>
+                                        TimelineRenameTeamSheet.show(
+                                          context: context,
+                                          ref: ref,
+                                          tournamentId: tournamentId,
+                                          oldName: teamName,
+                                        ),
                                   ),
                               ],
                             ],
@@ -707,7 +708,7 @@ class MatchTimelineList extends ConsumerWidget {
                               buildDefaultDragHandles:
                                   !isReadOnlyUI, // ★ 追加: 閲覧モードの時はドラッグ用のハンドルをつまませない
                               onReorderItem: (oldIndex, newIndex) =>
-                                  _onReorderTimeline(
+                                  TimelineReorderHelper.onReorderTimeline(
                                     timelineItems,
                                     oldIndex,
                                     newIndex,
@@ -790,7 +791,7 @@ class MatchTimelineList extends ConsumerWidget {
                                               children: [
                                                 SlidableAction(
                                                   onPressed: (context) =>
-                                                      _showEditCommentDialog(
+                                                      TimelineEditCommentDialog.show(
                                                         context,
                                                         ref,
                                                         c,
@@ -1030,7 +1031,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                     children: [
                                                       SlidableAction(
                                                         onPressed: (context) =>
-                                                            _showEditGroupNoteDialog(
+                                                            TimelineDialogHelper.showEditGroupNoteDialog(
                                                               context,
                                                               ref,
                                                               groupList,
@@ -1395,7 +1396,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               ? context.appColors.infoColor
                                                                               : context.appColors.infoColor,
                                                                         ),
-                                                                        onPressed: () => _showOrderReorderSheet(
+                                                                        onPressed: () => TimelineDialogHelper.showOrderReorderSheet(
                                                                           context,
                                                                           ref,
                                                                           groupList,
@@ -1636,7 +1637,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                       children: [
                                                                         Expanded(
                                                                           child: Text(
-                                                                            _generateDescriptiveLeagueTitle(
+                                                                            TimelineLeagueTitleHelper.generateDescriptiveLeagueTitle(
                                                                               groupList,
                                                                               ownTeams,
                                                                             ),
@@ -2004,7 +2005,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         (
                                                                           oldIndex,
                                                                           newIndex,
-                                                                        ) => _onReorderInnerTimeline(
+                                                                        ) => TimelineReorderHelper.onReorderInnerTimeline(
                                                                           normalItems,
                                                                           oldIndex,
                                                                           newIndex,
@@ -2032,12 +2033,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               key: ValueKey(
                                                                                 'inner_comment_${i.id}',
                                                                               ),
-                                                                              child: _buildInnerCommentWidget(
-                                                                                context,
-                                                                                ref,
-                                                                                i,
-                                                                                permissions,
-                                                                                isDark,
+                                                                              child: TimelineInnerCommentWidget(
+                                                                                comment: i,
+                                                                                permissions: permissions,
+                                                                                isDark: isDark,
+                                                                                ref: ref,
                                                                               ),
                                                                             );
                                                                           }
@@ -2135,12 +2135,15 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           key: ValueKey(
                                                                             'inner_comment_${c.id}',
                                                                           ),
-                                                                          child: _buildInnerCommentWidget(
-                                                                            context,
-                                                                            ref,
-                                                                            c,
-                                                                            permissions,
-                                                                            isDark,
+                                                                          child: TimelineInnerCommentWidget(
+                                                                            comment:
+                                                                                c,
+                                                                            permissions:
+                                                                                permissions,
+                                                                            isDark:
+                                                                                isDark,
+                                                                            ref:
+                                                                                ref,
                                                                           ),
                                                                         );
                                                                       }
@@ -2694,7 +2697,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         (
                                                                           oldIndex,
                                                                           newIndex,
-                                                                        ) => _onReorderInnerTimeline(
+                                                                        ) => TimelineReorderHelper.onReorderInnerTimeline(
                                                                           normalItems,
                                                                           oldIndex,
                                                                           newIndex,
@@ -2722,12 +2725,11 @@ class MatchTimelineList extends ConsumerWidget {
                                                                               key: ValueKey(
                                                                                 'inner_comment_${i.id}',
                                                                               ),
-                                                                              child: _buildInnerCommentWidget(
-                                                                                context,
-                                                                                ref,
-                                                                                i,
-                                                                                permissions,
-                                                                                isDark,
+                                                                              child: TimelineInnerCommentWidget(
+                                                                                comment: i,
+                                                                                permissions: permissions,
+                                                                                isDark: isDark,
+                                                                                ref: ref,
                                                                               ),
                                                                             );
                                                                           }
@@ -2767,12 +2769,15 @@ class MatchTimelineList extends ConsumerWidget {
                                                                           key: ValueKey(
                                                                             'inner_comment_${i.id}',
                                                                           ),
-                                                                          child: _buildInnerCommentWidget(
-                                                                            context,
-                                                                            ref,
-                                                                            i,
-                                                                            permissions,
-                                                                            isDark,
+                                                                          child: TimelineInnerCommentWidget(
+                                                                            comment:
+                                                                                i,
+                                                                            permissions:
+                                                                                permissions,
+                                                                            isDark:
+                                                                                isDark,
+                                                                            ref:
+                                                                                ref,
                                                                           ),
                                                                         );
                                                                       }
@@ -2830,7 +2835,7 @@ class MatchTimelineList extends ConsumerWidget {
                                                                         (
                                                                           oldIndex,
                                                                           newIndex,
-                                                                        ) => _onReorderMatches(
+                                                                        ) => TimelineReorderHelper.onReorderMatches(
                                                                           tieBreakMatches,
                                                                           oldIndex,
                                                                           newIndex,
@@ -3170,7 +3175,7 @@ class MatchTimelineList extends ConsumerWidget {
                                             const NeverScrollableScrollPhysics(),
                                         buildDefaultDragHandles: !isReadOnlyUI,
                                         onReorderItem: (oldIndex, newIndex) =>
-                                            _onReorderInnerTimeline(
+                                            TimelineReorderHelper.onReorderInnerTimeline(
                                               playerMixedItems,
                                               oldIndex,
                                               newIndex,
@@ -3194,12 +3199,12 @@ class MatchTimelineList extends ConsumerWidget {
                                                     'inner_comment_${i.id}',
                                                   ),
                                                   child:
-                                                      _buildInnerCommentWidget(
-                                                        context,
-                                                        ref,
-                                                        i,
-                                                        permissions,
-                                                        isDark,
+                                                      TimelineInnerCommentWidget(
+                                                        comment: i,
+                                                        permissions:
+                                                            permissions,
+                                                        isDark: isDark,
+                                                        ref: ref,
                                                       ),
                                                 );
                                               }
@@ -3231,165 +3236,7 @@ class MatchTimelineList extends ConsumerWidget {
 
 // ============================================================================
 // 🛡️ ファイル内トップレベル共有関数防衛要塞
-// クラスのメンバーからファイル直下の関数へ大解放することで、双方のWidgetから100%安全に呼べるようになり、未定義エラーを完全粉砕します。
 // ============================================================================
-
-void _showRenameTeamSheet(
-  BuildContext context,
-  WidgetRef ref,
-  String tournamentId,
-  String oldName,
-) {
-  final controller = TextEditingController(text: oldName);
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  final primaryColor = isDark
-      ? context.appColors.primaryAccent
-      : context.appColors.primaryAccent;
-
-  showAppBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    builder: (ctx) => Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        top: AppSpacing.lg,
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0x33000000),
-                borderRadius: AppRadius.medium,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            'チーム名の修正・統合',
-            style: TextStyle(
-              fontWeight: AppFontWeight.bold,
-              color: primaryColor,
-              fontSize: AppFontSize.headline,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          const Text(
-            '名前を修正すると、この大会内のすべての試合データが自動で書き換わり、同じ名前のチームと合流します。',
-            style: TextStyle(
-              fontSize: AppFontSize.small,
-              color: AppKendoColors.grey,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          AppTextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: '新しいチーム名',
-              filled: true,
-              fillColor: isDark
-                  ? const Color(0xFF2C2C2E)
-                  : const Color(0xFFF2F2F7),
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.medium,
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                final newName = controller.text.trim();
-                if (newName.isEmpty || newName == oldName) {
-                  Navigator.pop(ctx);
-                  return;
-                }
-                await ref
-                    .read(matchCommandProvider)
-                    .renameTeamBulk(
-                      tournamentId: tournamentId,
-                      oldTeamName: oldName,
-                      newTeamName: newName,
-                    );
-                if (ctx.mounted) {
-                  Navigator.pop(ctx);
-                  AppSnackBar.showSuccess(context, 'チーム名を一括更新しました ✨');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: AppKendoColors.pureWhite,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-              ),
-              child: const Text(
-                '一括修正して統合する',
-                style: TextStyle(fontWeight: AppFontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-String _generateDescriptiveLeagueTitle(
-  List<MatchModel> matches,
-  List<String> ownTeams,
-) {
-  final participantsSet = <String>{};
-  for (var m in matches) {
-    participantsSet.add(m.redName.split(':').first.trim());
-    participantsSet.add(m.whiteName.split(':').first.trim());
-  }
-  final int n = participantsSet.length;
-  final int mCount = n * (n - 1) ~/ 2;
-  final bool isIndiv = matches.any(
-    (m) =>
-        m.matchType == 'individual' ||
-        m.matchType == '選手' ||
-        m.matchType.contains('個人戦'),
-  );
-
-  String selfInfo = "";
-  if (isIndiv) {
-    final myMatch = matches.firstWhere(
-      (m) => ownTeams.any(
-        (ot) => m.redName.contains(ot) || m.whiteName.contains(ot),
-      ),
-      orElse: () => matches.first,
-    );
-    final isRedOwn = ownTeams.any((ot) => myMatch.redName.contains(ot));
-    final rawName = isRedOwn ? myMatch.redName : myMatch.whiteName;
-    final team = rawName.split(':').first.trim();
-    final name = rawName.contains(':')
-        ? rawName.split(':').last.replaceAll(')', '').trim()
-        : rawName;
-    selfInfo = "$name（$team）";
-  } else {
-    selfInfo = participantsSet.firstWhere(
-      (p) => ownTeams.contains(p),
-      orElse: () => participantsSet.first,
-    );
-  }
-  return "$selfInfo : ${isIndiv ? "$n人リーグ" : "$nチームリーグ"}（全$mCount試合）";
-}
 
 void _showRuleInfoSheet(BuildContext context, MatchModel match) {
   showRuleInfoBottomSheet(context, match);
@@ -3419,136 +3266,6 @@ void _showSummaryInputDialog(
   TimelineSummaryInputDialog.show(context, ref, matches);
 }
 
-void _onReorderInnerTimeline(
-  List<TimelineItem> list,
-  int oldIndex,
-  int newIndex,
-  WidgetRef ref,
-) async {
-  final permissions = ref.read(permissionProvider);
-  if (permissions.isReadOnly) {
-    return;
-  }
-  if (oldIndex == newIndex) {
-    return;
-  }
-
-  final item = list[oldIndex];
-  double newOrder;
-  if (newIndex == 0) {
-    newOrder = list.first.timelineOrder - 100.0;
-  } else if (newIndex == list.length - 1) {
-    newOrder = list.last.timelineOrder + 100.0;
-  } else {
-    final prevOrder =
-        list[newIndex > oldIndex ? newIndex : newIndex - 1].timelineOrder;
-    final nextOrder =
-        list[newIndex > oldIndex ? newIndex + 1 : newIndex].timelineOrder;
-    newOrder = (prevOrder + nextOrder) / 2.0;
-  }
-  if (newOrder == list[newIndex].timelineOrder) {
-    newOrder += 0.001;
-  }
-
-  if (item is MatchCommentModel) {
-    try {
-      await ref.read(commentCommandProvider).updateCommentOrder(item, newOrder);
-    } catch (e) {
-      debugPrint('コメント並び替え保存エラー: $e');
-    }
-  } else if (item is MatchModel) {
-    try {
-      await ref.read(matchApplicationServiceProvider).saveMatchesBulk([
-        item.copyWith(order: newOrder),
-      ]);
-    } catch (e) {
-      debugPrint('試合並び替え保存エラー: $e');
-    }
-  }
-}
-
-void _onReorderMatches(
-  List<MatchModel> list,
-  int oldIndex,
-  int newIndex,
-  WidgetRef ref,
-) async {
-  final permissions = ref.read(permissionProvider);
-  if (permissions.isReadOnly) return;
-  if (oldIndex == newIndex) return;
-
-  final item = list[oldIndex];
-  double newOrder;
-  if (newIndex == 0) {
-    newOrder = list.first.order - 100.0;
-  } else if (newIndex == list.length - 1) {
-    newOrder = list.last.order + 100.0;
-  } else {
-    final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1].order;
-    final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
-    newOrder = (prevOrder + nextOrder) / 2.0;
-  }
-  if (newOrder == list[newIndex].order) {
-    newOrder += 0.001;
-  }
-
-  try {
-    await ref.read(matchApplicationServiceProvider).saveMatchesBulk([
-      item.copyWith(order: newOrder),
-    ]);
-  } catch (e) {
-    debugPrint('並び替え保存エラー: $e');
-  }
-}
-
-void _onReorderTimeline(
-  List<ReorderableTimelineItem> list,
-  int oldIndex,
-  int newIndex,
-  WidgetRef ref,
-) async {
-  final permissions = ref.read(permissionProvider);
-  if (permissions.isReadOnly) return;
-  if (oldIndex == newIndex) return;
-
-  final item = list[oldIndex];
-  double newOrder;
-  if (newIndex == 0) {
-    newOrder = list.first.order - 100.0;
-  } else if (newIndex == list.length - 1) {
-    newOrder = list.last.order + 100.0;
-  } else {
-    final prevOrder = list[newIndex > oldIndex ? newIndex : newIndex - 1].order;
-    final nextOrder = list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
-    newOrder = (prevOrder + nextOrder) / 2.0;
-  }
-  if (newOrder == list[newIndex].order) {
-    newOrder += 0.001;
-  }
-
-  if (item is CommentTimelineItem) {
-    try {
-      await ref
-          .read(commentCommandProvider)
-          .updateCommentOrder(item.comment, newOrder);
-    } catch (e) {
-      debugPrint('コメント並び替え保存エラー: $e');
-    }
-  } else if (item is MatchGroupTimelineItem) {
-    final offsetOrder = newOrder - item.order;
-    final updatedMatches = item.matches
-        .map((m) => m.copyWith(order: m.order + offsetOrder))
-        .toList();
-    try {
-      await ref
-          .read(matchApplicationServiceProvider)
-          .saveMatchesBulk(updatedMatches);
-    } catch (e) {
-      debugPrint('グループ並び替え保存エラー: $e');
-    }
-  }
-}
-
 void showUnifiedAnnounceDialog(
   BuildContext context,
   WidgetRef ref,
@@ -3566,254 +3283,5 @@ void showUnifiedAnnounceDialog(
     groupName,
     order,
     matchGroupId: matchGroupId,
-  );
-}
-
-void _showEditCommentDialog(
-  BuildContext context,
-  WidgetRef ref,
-  dynamic comment,
-) {
-  final controller = TextEditingController(text: comment.text);
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  showAppDialog(
-    context: context,
-    builder: (ctx) => AppDialog(
-      backgroundColor: isDark
-          ? const Color(0xFF1C1C1E)
-          : context.appColors.inputBackground,
-      titleWidget: Text(
-        '見出し（コメント）の編集',
-        style: TextStyle(
-          fontWeight: AppFontWeight.bold,
-          color: context.appColors.textColor,
-        ),
-      ),
-      content: AppTextField(
-        controller: controller,
-        autofocus: true,
-        style: TextStyle(color: context.appColors.textColor),
-        decoration: InputDecoration(
-          hintText: '見出しやコメントを入力',
-          filled: true,
-          fillColor: isDark
-              ? const Color(0xFF2C2C2E)
-              : context.appColors.cardBackground,
-          border: OutlineInputBorder(
-            borderRadius: AppRadius.small,
-            borderSide: BorderSide.none,
-          ),
-        ),
-        maxLines: 2,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text(
-            'キャンセル',
-            style: TextStyle(color: AppKendoColors.grey),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            final text = controller.text.trim();
-            if (text.isNotEmpty && text != comment.text) {
-              try {
-                await ref
-                    .read(commentCommandProvider)
-                    .updateComment(comment.copyWith(text: text));
-              } catch (e) {
-                debugPrint('コメントの更新に失敗しました: $e');
-              }
-            }
-            if (ctx.mounted) {
-              Navigator.pop(ctx);
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppKendoColors.indigo,
-            foregroundColor: AppKendoColors.pureWhite,
-            elevation: 0,
-          ),
-          child: const Text(
-            '保存',
-            style: TextStyle(fontWeight: AppFontWeight.bold),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-void _showEditGroupNoteDialog(
-  BuildContext context,
-  WidgetRef ref,
-  List<MatchModel> groupList,
-) {
-  if (groupList.isEmpty) return;
-  final firstMatch = groupList.first;
-
-  showAppBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    builder: (ctx) {
-      return MatchEditSheet(
-        matches: groupList,
-        tournamentId: firstMatch.tournamentId,
-        themeColors: AppThemeColors.ofMode(
-          isDark: Theme.of(context).brightness == Brightness.dark,
-          mode: 'operate',
-        ),
-      );
-    },
-  );
-}
-
-Widget _buildInnerCommentWidget(
-  BuildContext context,
-  WidgetRef ref,
-  MatchCommentModel c,
-  AppPermissions permissions,
-  bool isDark,
-) {
-  final commentWidget = Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.lg,
-      vertical: AppSpacing.sm,
-    ),
-    decoration: BoxDecoration(
-      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-      borderRadius: AppRadius.small,
-      border: Border.all(
-        color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
-      ),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          Icons.label_outline,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
-          size: 16,
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
-            c.text,
-            style: TextStyle(
-              fontSize: AppFontSize.bodySmall,
-              fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-
-  if (!permissions.canManageTournament) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      child: commentWidget,
-    );
-  }
-
-  return Container(
-    margin: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.lg,
-      vertical: AppSpacing.xs,
-    ),
-    child: Slidable(
-      key: ValueKey('slidable_inner_comment_${c.id}'),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (context) => _showEditCommentDialog(context, ref, c),
-            backgroundColor: AppKendoColors.blueAccent,
-            foregroundColor: AppKendoColors.pureWhite,
-            icon: Icons.edit,
-            label: '編集',
-          ),
-          SlidableAction(
-            onPressed: (context) async {
-              final confirm = await showAppDialog<bool>(
-                context: context,
-                builder: (ctx) => AppDialog(
-                  backgroundColor: isDark
-                      ? const Color(0xFF1C1C1E)
-                      : context.appColors.inputBackground,
-                  titleWidget: Text(
-                    '内部見出しの削除',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
-                    ),
-                  ),
-                  content: Text(
-                    'この見出しを削除しますか？\n(取り消せません)',
-                    style: TextStyle(color: context.appColors.textColor),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text(
-                        'キャンセル',
-                        style: TextStyle(color: AppKendoColors.grey),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text(
-                        '削除',
-                        style: TextStyle(
-                          color: AppKendoColors.red,
-                          fontWeight: AppFontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                await ref
-                    .read(commentCommandProvider)
-                    .deleteComment(c.id, c.tournamentId ?? '');
-              }
-            },
-            backgroundColor: AppKendoColors.redAccent,
-            foregroundColor: AppKendoColors.pureWhite,
-            icon: Icons.delete,
-            borderRadius: const BorderRadius.horizontal(
-              right: Radius.circular(AppRadius.smallValue),
-            ),
-            label: '削除',
-          ),
-        ],
-      ),
-      child: commentWidget,
-    ),
-  );
-}
-
-void _showOrderReorderSheet(
-  BuildContext context,
-  WidgetRef ref,
-  List<MatchModel> groupList,
-) {
-  final sortedMatches = List<MatchModel>.from(groupList)
-    ..sort((a, b) => a.order.compareTo(b.order));
-
-  if (sortedMatches.isEmpty) return;
-  // firstMatch unused variable removed
-
-  showAppBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    builder: (context) {
-      return OrderReorderBottomSheet(sortedMatches: sortedMatches);
-    },
   );
 }
