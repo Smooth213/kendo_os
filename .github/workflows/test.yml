@@ -8,14 +8,28 @@ on:
 
 jobs:
   quality-gate:
+    name: Release Quality Gate & Multi-Layer Governance
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python環境の構築
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📏 ファイル行数ガバナンス監査 (500行上限の厳格チェック)
+        run: python3 scripts/check_file_lines.py
+
+      - name: 🎨 デザインシステム ガバナンス監査 (18項目100%遵守)
+        run: python3 scripts/check_design_tokens.py --strict
 
       - name: 🚀 Flutter安定版環境の構築
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: 📦 依存パッケージの解決
         run: flutter pub get
