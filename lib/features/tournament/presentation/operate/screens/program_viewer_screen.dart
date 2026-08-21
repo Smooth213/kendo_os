@@ -1,32 +1,32 @@
-import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'dart:async';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_image_body.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_stroke_eraser.dart';
+import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
-import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
-import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
-import '../providers/role_provider.dart';
-import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権限を識別するためのインポート
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
-import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
-import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import '../providers/permission_provider.dart';
+import '../providers/role_provider.dart';
 
-// ★ 追加: Viewer画面を開いたままでもOCR完了をリアルタイムで検知するための専用プロバイダ
 final viewerProgramListProvider =
     StreamProvider.family<List<ProgramModel>, String>((ref, tournamentId) {
       return ref.watch(programRepositoryProvider).watchPrograms(tournamentId);
@@ -48,7 +48,6 @@ class ProgramViewerScreen extends ConsumerStatefulWidget {
 }
 
 class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
-  // ★ 追加: 白背景における黄色ペンの視認性を向上させたダークイエローゴールド
   static const Color _yellowPenColor = Color(0xFFCA8A04);
 
   late PageController _pageController;
@@ -58,39 +57,30 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   @visibleForTesting
   Map<String, int> get pdfPageCountsForTesting => _pdfPageCounts;
 
-  // ★ 追加: ピンチズーム（拡大）時のジェスチャ競合防止用コントローラー
   final TransformationController _transformationController =
       TransformationController();
   bool _isZoomed = false;
 
-  // ★ 追加: ペンツールと消しゴム機能の状態管理
-  String _selectedTool = 'pen'; // 'pen', 'marker', 'eraser'
+  String _selectedTool = 'pen';
   List<StrokeModel> _cachedSharedStrokes = [];
   List<LocalStrokeModel> _cachedPrivateStrokes = [];
 
-  // ★ PDF検索用のコントローラーと状態管理
   final PdfViewerController _pdfViewerController = PdfViewerController();
   PdfTextSearchResult _searchResult = PdfTextSearchResult();
   final TextEditingController _searchTextController = TextEditingController();
   bool _isSearchMode = false;
-
-  // ★ 画像OCR検索用の状態管理
   String _currentSearchText = "";
 
   bool _isDrawingMode = false;
-  Color _selectedPenColor = AppKendoColors.pink; // ★ 4色を管理（デフォルトはピンク）
+  Color _selectedPenColor = AppKendoColors.pink;
   bool get _isSharedPen =>
       _selectedPenColor == AppKendoColors.pink ||
       _selectedPenColor == _yellowPenColor;
   List<Offset> _currentPoints = [];
 
-  // ★ 画像サイズ取得用キャッシュ（描画ごとのチラつき・無限クルクルを防止）
   final Map<String, Future<Size>> _imageSizeCache = {};
-
-  // ★ 追加: setStateの度にURLが変わりPDF・画像が再レンダリングされてクラッシュするのを防ぐ固定セッションID
   final int _sessionBuster = DateTime.now().millisecondsSinceEpoch;
 
-  // ★ 追加: Web特有のCORSエラーキャッシュを回避するURLジェネレーター
   String _getSafeUrl(String url) {
     if (!kIsWeb || url.isEmpty || !url.startsWith('http')) return url;
     final separator = url.contains('?') ? '&' : '?';
@@ -106,51 +96,18 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   @visibleForTesting
   Future<Uint8List> getCachedPdfBytesViaSdk(String url) {
     if (!_sdkPdfBytesCache.containsKey(url)) {
-      // 匿名認証済みのセッションを用いて最大32MB（大会パンフレットを完全網羅）のバイナリを一発で安全に落とし込みます
       _sdkPdfBytesCache[url] = FirebaseStorage.instance
           .refFromURL(url)
           .getData(32 * 1024 * 1024)
           .then((value) {
-            if (value != null) {
-              debugPrint(
-                '📂 [PDF Debug] Bytes fetched via SDK. Size = ${value.length} bytes.',
-              );
-              if (value.length >= 4) {
-                final signature = String.fromCharCodes(value.take(4));
-                debugPrint('📂 [PDF Debug] First 4 bytes (Char): "$signature"');
-                debugPrint(
-                  '📂 [PDF Debug] First 4 bytes (Hex): ${value.take(4).map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}',
-                );
-                if (signature == '%PDF') {
-                  debugPrint(
-                    '📂 [PDF Debug] Signature check: Valid PDF structure confirmed.',
-                  );
-                } else {
-                  debugPrint(
-                    '🚨 [PDF Debug] Signature check: INVALID PDF signature. The data might be corrupted or an HTML/XML error page.',
-                  );
-                  final preview = String.fromCharCodes(
-                    value.take(200).where((c) => c >= 32 && c <= 126),
-                  );
-                  debugPrint(
-                    '🚨 [PDF Debug] Preview of loaded payload: "$preview"',
-                  );
-                }
-              } else {
-                debugPrint('🚨 [PDF Debug] Data is too small to be a PDF.');
-              }
-            } else {
-              debugPrint('🚨 [PDF Debug] Fetched data is null.');
-            }
             return value!;
           });
     }
     return _sdkPdfBytesCache[url]!;
   }
 
-  // ★ 追加：環境に応じてリポジトリを安全に切り替える調停メソッド
   dynamic _getActiveRepository(WidgetRef ref) {
-    return ref.read(strokeRepositoryProvider); // Web/ネイティブ共通でFirestoreを使用
+    return ref.read(strokeRepositoryProvider);
   }
 
   @override
@@ -158,8 +115,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
-
-    // ★ ズーム状態の変更検知リスナーを登録
     _transformationController.addListener(_handleTransformationChanged);
   }
 
@@ -173,7 +128,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
   void _handleTransformationChanged() {
     final double scale = _transformationController.value.getMaxScaleOnAxis();
-    // わずかな計算上の誤差を考慮し、1.01 を超えた場合にズームと見なします
     final bool zoomed = scale > 1.01;
     if (zoomed != _isZoomed) {
       setState(() {
@@ -182,11 +136,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     }
   }
 
-  /// 消しゴム機能：指定されたタッチ位置から近接する手書き線を検出し、Firestore / Isar から個別に削除します
   Future<void> _eraseStrokeAt(Offset touchPoint) async {
-    const double threshold = 25.0; // 消しゴムの反応半径
-
-    // 1. 共有ペンの消去判定
+    const double threshold = 25.0;
     final currentRole = ref.read(activeRoleProvider);
     final canUseSharedPen =
         currentRole == Role.admin ||
@@ -195,16 +146,19 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
     if (canUseSharedPen) {
       for (final stroke in _cachedSharedStrokes) {
-        if (_isNearStroke(touchPoint, stroke.points, threshold)) {
+        if (ProgramViewerStrokeEraser.isNearStroke(
+          touchPoint,
+          stroke.points,
+          threshold,
+        )) {
           await _getActiveRepository(ref).deleteStroke(stroke.id);
           return;
         }
       }
     }
 
-    // 2. 個人ペンの消去判定
     for (final stroke in _cachedPrivateStrokes) {
-      if (_isNearLocalStroke(
+      if (ProgramViewerStrokeEraser.isNearLocalStroke(
         touchPoint,
         stroke.pointsX,
         stroke.pointsY,
@@ -218,40 +172,10 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     }
   }
 
-  bool _isNearStroke(
-    Offset touchPoint,
-    List<Offset> strokePoints,
-    double threshold,
-  ) {
-    for (final pt in strokePoints) {
-      if ((touchPoint - pt).distance <= threshold) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool _isNearLocalStroke(
-    Offset touchPoint,
-    List<double> xs,
-    List<double> ys,
-    double threshold,
-  ) {
-    final len = xs.length;
-    for (int i = 0; i < len; i++) {
-      if ((touchPoint - Offset(xs[i], ys[i])).distance <= threshold) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   Future<Size> _fetchImageSize(String url) async {
-    // ★ 追加: ダミーURLや無効なURLの場合は、ネットワークリクエストを行わずに即座にサイズを返し、エラーを防止する
     if (url.isEmpty || url.contains('placehold.co')) {
       return const Size(400, 600);
     }
-
     final Completer<Size> completer = Completer();
     final safeUrl = _getSafeUrl(url);
     final Image image = Image.network(safeUrl);
@@ -266,30 +190,25 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
       },
       onError: (dynamic exception, StackTrace? stackTrace) {
         if (!completer.isCompleted) {
-          completer.complete(const Size(800, 1000)); // エラー時のフォールバック
+          completer.complete(const Size(800, 1000));
         }
       },
     );
 
     image.image.resolve(const ImageConfiguration()).addListener(listener);
-
-    // ★ 修正: Web特有のCORSストールを回避するため、タイムアウトを設けて無限クルクルを強制的に遮断する
     return completer.future.timeout(
       const Duration(seconds: 3),
       onTimeout: () {
         if (!completer.isCompleted) {
-          // ストールしたリスナーを安全に解除
           image.image
               .resolve(const ImageConfiguration())
               .removeListener(listener);
         }
-        // タイムアウト時は適当な仮想サイズを返して強制的に画像を表示させる
         return const Size(800, 1000);
       },
     );
   }
 
-  // ★ 追加: FutureBuilderが毎フレーム再フェッチするのを防ぐキャッシュメソッド
   Future<Size> _getCachedImageSize(String url) {
     if (!_imageSizeCache.containsKey(url)) {
       _imageSizeCache[url] = _fetchImageSize(url);
@@ -299,17 +218,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ★ Phase 3: 閲覧専用ガードの取得
     final permissions = ref.watch(permissionProvider);
-
-    // ★ role_providerから「現在の有効な役割」を取得し、共有ペンが使えるか判定
     final currentRole = ref.watch(activeRoleProvider);
     final canUseSharedPen =
         currentRole == Role.admin ||
         currentRole == Role.scorer ||
         currentRole == Role.editor;
 
-    // 権限がないのに共有ペンが選ばれている場合のフォールバック（強制的に青にする）
     final activePenColor = (!canUseSharedPen && _isSharedPen)
         ? AppKendoColors.blue
         : _selectedPenColor;
@@ -319,7 +234,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ★ 修正: 画面を開いた時の過去データ(widget.programs)ではなく、最新のデータをリアルタイム監視する
     final tournamentId = widget.programs.isNotEmpty
         ? widget.programs.first.tournamentId
         : '';
@@ -328,22 +242,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         ? ref.watch(viewerProgramListProvider(tournamentId))
         : const AsyncData<List<ProgramModel>?>(null);
 
-    // ネットワーク読込前は渡された初期データを表示し、読込後はリアルタイムデータを表示
-    // ★ 修正: Firebaseのインデックス不足等でエラーが発生した場合も考慮し、安全にフォールバックする
     final displayPrograms = realtimeProgramsAsync.when(
       data: (realtimeList) => realtimeList ?? widget.programs,
-      // ローディング中とエラー発生時は、最初に渡された静的なプログラムリストを表示し続ける
       loading: () => widget.programs,
-      error: (error, stackTrace) {
-        // 本来はここでエラーログを送信する
-        debugPrint('🚨 Program Viewer failed to get realtime updates: $error');
-        return widget.programs;
-      },
+      error: (error, stackTrace) => widget.programs,
     );
 
-    // ★ 致命的クラッシュの防止:
-    // リアルタイム更新や初期読み込み時にプログラムリストが空になった場合に、
-    // 存在しないインデックスにアクセスしてクラッシュするのを防ぐ安全ガード。
     if (displayPrograms.isEmpty) {
       return LiquidBackground(
         child: Scaffold(
@@ -354,15 +258,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
       );
     }
 
-    // ★ 致命的クラッシュの防止:
-    // リストが空でないことを保証した上で、現在のインデックスがリストの範囲外になっていないか
-    // 確認し、安全な範囲に収まるように補正（クランプ）します。
     final safeIndex = _currentIndex.clamp(0, displayPrograms.length - 1);
-
-    // ★ 修正: 常に安全なインデックスを使って現在のプログラムを取得する
     final currentProgram = displayPrograms[safeIndex];
 
-    // ★ 材料データ化（URL未生成）のプログラムであるか安全に判定
     final isMaterialOnly =
         currentProgram.fileUrl.isEmpty ||
         !currentProgram.fileUrl.startsWith('http');
@@ -400,21 +298,15 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       });
                       return;
                     }
-
                     setState(() {
                       _currentSearchText = value;
                     });
-
                     if (isFilePdf) {
-                      // PDFの文字検索を実行
                       _searchResult = _pdfViewerController.searchText(value);
-
-                      // ★ 検索が完了したことを検知して画面を更新し、ハイライトを表示したままにする
                       _searchResult.addListener(() {
                         if (mounted) setState(() {});
                       });
                     } else {
-                      // 画像OCR検索の処理
                       if (!(currentProgram.isOcrProcessed ?? false)) {
                         AppSnackBar.show(context, '現在クラウドで解析中です。しばらくお待ちください。');
                       } else if (currentProgram.ocrWords == null ||
@@ -433,7 +325,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   ),
                 ),
           actions: [
-            // ★ 検索モード時のナビゲーションと「閉じる」ボタン（画像・PDF共通）
             if (_isSearchMode) ...[
               if (isFilePdf) ...[
                 IconButton(
@@ -456,8 +347,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 }),
               ),
             ],
-
-            // ★ 通常時のボタン群
             if (!_isSearchMode) ...[
               if (!isFilePdf)
                 Tooltip(
@@ -477,19 +366,14 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     ),
                   ),
                 ),
-              // 検索ボタン
               IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () => setState(() => _isSearchMode = true),
               ),
             ],
-
-            // ★ 書き込むボタン（検索モードでも常に見えるように外に出しました！）
-            // ★ 修正: 閲覧専用権限（保護者）の時は、ボタンを物理的に非表示にして「書けない・見るだけ」を徹底保証
             if (!permissions.isReadOnly)
               Padding(
                 padding: const EdgeInsets.only(right: AppSpacing.sm),
-                // ★ はみ出しエラー修正: 検索モード中や画面幅が狭い場合(600px未満)は、ラベルなしのアイコンボタンに変形してAppBarのパンクを完全防御します
                 child: MediaQuery.of(context).size.width < 600 || _isSearchMode
                     ? IconButton(
                         onPressed: () => setState(() {
@@ -523,10 +407,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
               ),
           ],
         ),
-        // ★ body全体をColumnで包み、上にツールバー、下に画像を配置する
         body: Column(
           children: [
-            // --- 新設：2段目の専用ツールバー（書き込みモード時のみ出現） ---
             if (_isDrawingMode)
               ProgramViewerDrawingToolbar(
                 selectedTool: _selectedTool,
@@ -556,8 +438,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   }
                 },
               ),
-
-            // --- 共通ビューア部分（PDF/画像の両方で手書き可能） ---
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -572,7 +452,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 itemBuilder: (context, index) {
                   final program = displayPrograms[index];
 
-                  // ★ 超重要：材料データ化によるファイルURL欠損時のクラッシュ防止ガード
                   final isItemMaterialOnly =
                       program.fileUrl.isEmpty ||
                       !program.fileUrl.startsWith('http');
@@ -590,11 +469,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       ? program.id
                       : program.fileUrl;
 
-                  // ★ 引数にペンの太さ(penWidth)を追加
                   Widget buildOverlayLayers({required double penWidth}) {
                     return Stack(
                       children: [
-                        // --- 中層：描画レイヤー（共有 ＋ 個人） ---
                         Positioned.fill(
                           child: StreamBuilder<List<StrokeModel>>(
                             stream: ref
@@ -602,8 +479,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                 .watchStrokes(programId),
                             builder: (context, sharedSnapshot) {
                               final sharedStrokes = sharedSnapshot.data ?? [];
-                              _cachedSharedStrokes =
-                                  sharedStrokes; // ★ 消しゴム用にキャッシュ
+                              _cachedSharedStrokes = sharedStrokes;
                               return StreamBuilder<List<LocalStrokeModel>>(
                                 stream: ref
                                     .watch(localStrokeRepositoryProvider)
@@ -611,8 +487,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                 builder: (context, privateSnapshot) {
                                   final privateStrokes =
                                       privateSnapshot.data ?? [];
-                                  _cachedPrivateStrokes =
-                                      privateStrokes; // ★ 消しゴム用にキャッシュ
+                                  _cachedPrivateStrokes = privateStrokes;
 
                                   final isMarker = _selectedTool == 'marker';
                                   final paintColor = isMarker
@@ -636,12 +511,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                             },
                           ),
                         ),
-
-                        // --- 上層：入力レイヤー（書き込みモード時のみ） ---
                         if (_isDrawingMode)
                           Positioned.fill(
                             child: Listener(
-                              // ★ GestureDetectorからListenerに変更し、判定の「遊び（遅延）」をゼロに！
                               behavior: HitTestBehavior.opaque,
                               onPointerDown: (event) {
                                 if (_selectedTool == 'eraser') {
@@ -728,236 +600,39 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     maxScale: 5.0,
                     child: Center(
                       child: isFilePdf
-                          ? FittedBox(
-                              // ★ PDFも画像と同じく「FittedBox」で包み、仮想サイズ(1000x1415)で固定します
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                // ★ 物理調停パッチ: 高さを 1415 * ページ数 に拡張することで、
-                                // 複数ページPDFをスクロール可能（縦並びの1つのキャンバス）として綺麗にレンダリングします。
-                                width: 1000,
-                                height:
-                                    1415 *
-                                    (_pdfPageCounts[program.fileUrl] ?? 1)
-                                        .toDouble(),
-                                child: Stack(
-                                  children: [
-                                    // --- 下層：PDF本体 ---
-                                    Positioned.fill(
-                                      // ★ 物理調停パッチ: Web環境下（kIsWeb）では、認証済みSDK経由 of FutureBuilderを用いて一括フェッチし、
-                                      // SfPdfViewer.memoryに安全に流し込むことで、ブラウザ特有のあらゆるCORS/403壁を完全突破します。
-                                      child: kIsWeb
-                                          ? FutureBuilder<Uint8List>(
-                                              future: getCachedPdfBytesViaSdk(
-                                                program.fileUrl,
-                                              ),
-                                              builder: (context, bytesSnapshot) {
-                                                if (bytesSnapshot.hasError) {
-                                                  return Center(
-                                                    child: Text(
-                                                      'PDFロード失敗: ${bytesSnapshot.error}',
-                                                      style: const TextStyle(
-                                                        color: AppKendoColors
-                                                            .redAccent,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                                if (!bytesSnapshot.hasData) {
-                                                  return const Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          color: AppKendoColors
-                                                              .ipponGold,
-                                                        ),
-                                                  );
-                                                }
-                                                return SfPdfViewer.memory(
-                                                  bytesSnapshot.data!,
-                                                  key: ValueKey(
-                                                    program.fileUrl,
-                                                  ),
-                                                  controller:
-                                                      _pdfViewerController,
-                                                  canShowScrollHead: false,
-                                                  enableDoubleTapZooming: false,
-                                                  enableTextSelection: false,
-                                                  onDocumentLoaded: (details) {
-                                                    final String pdfUrl =
-                                                        program.fileUrl;
-                                                    final int loadedPageCount =
-                                                        details
-                                                            .document
-                                                            .pages
-                                                            .count;
-                                                    if (mounted &&
-                                                        _pdfPageCounts[pdfUrl] !=
-                                                            loadedPageCount) {
-                                                      WidgetsBinding.instance
-                                                          .addPostFrameCallback((
-                                                            _,
-                                                          ) {
-                                                            if (mounted) {
-                                                              setState(() {
-                                                                _pdfPageCounts[pdfUrl] =
-                                                                    loadedPageCount;
-                                                              });
-                                                            }
-                                                          });
-                                                    }
-                                                  },
-                                                  onDocumentLoadFailed: (details) {
-                                                    debugPrint(
-                                                      '🚨 PDF Load Failed (Memory): ${details.error} - ${details.description}',
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                            )
-                                          : SfPdfViewer.network(
-                                              program.fileUrl,
-                                              key: ValueKey(program.fileUrl),
-                                              controller: _pdfViewerController,
-                                              canShowScrollHead: false,
-                                              enableDoubleTapZooming: false,
-                                              enableTextSelection: false,
-                                              onDocumentLoaded: (details) {
-                                                final String pdfUrl =
-                                                    program.fileUrl;
-                                                final int loadedPageCount =
-                                                    details
-                                                        .document
-                                                        .pages
-                                                        .count;
-                                                if (mounted &&
-                                                    _pdfPageCounts[pdfUrl] !=
-                                                        loadedPageCount) {
-                                                  WidgetsBinding.instance
-                                                      .addPostFrameCallback((
-                                                        _,
-                                                      ) {
-                                                        if (mounted) {
-                                                          setState(() {
-                                                            _pdfPageCounts[pdfUrl] =
-                                                                loadedPageCount;
-                                                          });
-                                                        }
-                                                      });
-                                                }
-                                              },
-                                              onDocumentLoadFailed: (details) {
-                                                debugPrint(
-                                                  '🚨 PDF Load Failed: ${details.error} - ${details.description}',
-                                                );
-                                              },
-                                            ),
-                                    ),
-
-                                    // --- 上層：描画レイヤー（PDF用も8.0〜10.0程度の太さに固定） ---
-                                    buildOverlayLayers(penWidth: 10.0),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : FutureBuilder<Size>(
-                              // ★ 修正: FutureBuilder にキャッシュしたFutureを渡し、毎フレームごとの無限クルクルを防止
-                              future: _getCachedImageSize(program.fileUrl),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
+                          ? ProgramViewerPdfBody(
+                              program: program,
+                              pageCount: _pdfPageCounts[program.fileUrl] ?? 1,
+                              pdfViewerController: _pdfViewerController,
+                              sdkPdfBytesFuture: kIsWeb
+                                  ? getCachedPdfBytesViaSdk(program.fileUrl)
+                                  : null,
+                              onPageCountLoaded: (count) {
+                                if (mounted &&
+                                    _pdfPageCounts[program.fileUrl] != count) {
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) {
+                                    if (mounted) {
+                                      setState(() {
+                                        _pdfPageCounts[program.fileUrl] = count;
+                                      });
+                                    }
+                                  });
                                 }
-                                final imgSize = snapshot.data!;
-
-                                // ★ 致命的なレンダリングクラッシュの回避策：
-                                // WebGLのテクスチャ上限を超える巨大な画像(4K写真など)を、
-                                // 安全なサイズ(最大2048px)に縮小して仮想キャンバスを作成します。
-                                const double maxDimension = 2048.0;
-                                final bool isTooLarge =
-                                    imgSize.width > maxDimension ||
-                                    imgSize.height > maxDimension;
-                                final double scale = isTooLarge
-                                    ? (maxDimension /
-                                          (imgSize.width > imgSize.height
-                                              ? imgSize.width
-                                              : imgSize.height))
-                                    : 1.0;
-                                final Size displaySize = Size(
-                                  imgSize.width * scale,
-                                  imgSize.height * scale,
-                                );
-
-                                // ★ 縮小後の仮想キャンバスサイズに合わせてペンの太さを自動計算
-                                final double imagePenWidth =
-                                    (displaySize.width * 0.005).clamp(
-                                      8.0,
-                                      50.0,
-                                    );
-
-                                // ★ 究極の解決策：画像そのものと同じサイズの透明な枠を作り、丸ごと縮小させる
-                                return FittedBox(
-                                  fit: BoxFit.contain,
-                                  child: SizedBox(
-                                    width: displaySize.width,
-                                    height: displaySize.height,
-                                    child: Stack(
-                                      children: [
-                                        // ★ 修正: WebGLの巨大テクスチャ上限突破エラーを防ぐためRepaintBoundaryを解除
-                                        Positioned.fill(
-                                          child: Image.network(
-                                            _getSafeUrl(program.fileUrl),
-                                            fit: BoxFit.fill,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Container(
-                                                    color: AppKendoColors
-                                                        .grey
-                                                        .shade200,
-                                                    child: const Center(
-                                                      child: Icon(
-                                                        Icons.broken_image,
-                                                        size: 64,
-                                                        color:
-                                                            AppKendoColors.grey,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                          ),
-                                        ),
-
-                                        // --- OCRハイライトレイヤー ---
-                                        Builder(
-                                          builder: (context) {
-                                            final ocrWords = program.ocrWords;
-                                            if (_isSearchMode &&
-                                                _currentSearchText.isNotEmpty &&
-                                                ocrWords != null) {
-                                              return Positioned.fill(
-                                                child: CustomPaint(
-                                                  painter: OcrHighlightPainter(
-                                                    ocrWords: ocrWords,
-                                                    searchText:
-                                                        _currentSearchText,
-                                                    originalImageSize:
-                                                        imgSize, // ★ 追加：座標計算のため元の画像サイズを渡す
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                            return const SizedBox.shrink();
-                                          },
-                                        ),
-
-                                        // 手書きレイヤー
-                                        buildOverlayLayers(
-                                          penWidth: imagePenWidth,
-                                        ), // ★ 自動計算した太さを渡す
-                                      ],
-                                    ),
-                                  ),
-                                );
                               },
+                              overlayLayers: buildOverlayLayers(penWidth: 10.0),
+                            )
+                          : ProgramViewerImageBody(
+                              program: program,
+                              imageSizeFuture: _getCachedImageSize(
+                                program.fileUrl,
+                              ),
+                              safeUrl: _getSafeUrl(program.fileUrl),
+                              isSearchMode: _isSearchMode,
+                              currentSearchText: _currentSearchText,
+                              buildOverlayLayers: (w) =>
+                                  buildOverlayLayers(penWidth: w),
                             ),
                     ),
                   );

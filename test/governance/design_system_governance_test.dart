@@ -771,8 +771,9 @@ void main() {
           if (file.path.contains('pdf') ||
               file.path.contains('record') ||
               file.path.contains('export')) {
-            if (content.contains('Colors.redAccent') ||
-                content.contains('Colors.black54')) {
+            if (RegExp(
+              r'(?<!AppKendo)Colors\.(redAccent|black54)\b',
+            ).hasMatch(content)) {
               violations.add('${file.path} (PDF/出力ボタンで非統一硬直色が使用されています)');
             }
           }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 class FakeSyncEngine implements SyncEngine {
   @override
@@ -19,6 +20,7 @@ Widget _baseRouterTestApp(Widget child, List<Override> overrides) {
 
   final defaultOverrides = [
     syncEngineProvider.overrideWithValue(FakeSyncEngine()),
+    isEcoModeProvider.overrideWith((ref) => false),
   ];
 
   return ProviderScope(

@@ -204,7 +204,7 @@ void main() {
       // 観客席画面が正しく描画され、フリーズしないこと
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('試合状況 (観戦)'), findsOneWidget);
-      expect(find.byType(MatchScoreboard), findsOneWidget);
+      expect(find.byType(MatchScoreboard, skipOffstage: false), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();

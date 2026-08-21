@@ -1,39 +1,31 @@
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/match/domain/score/score_event.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_daihyo_handler.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_table_builder.dart';
+
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
-import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart'; // ★ Phase 7: 計算機の結線
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
-import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/shared/time/time_source.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
-class TeamPointDisplay {
-  final String mark;
-  final bool isFirstMatchPoint;
-  TeamPointDisplay(this.mark, this.isFirstMatchPoint);
-}
+export 'components/team_scoreboard/team_scoreboard_table_builder.dart'
+    show TeamPointDisplay;
 
 class TeamScoreboardScreen extends ConsumerWidget {
   final String? groupName;
-  final List<MatchModel>? matches; // ★ 追加：特定の試合リストを直接受け取れるようにする
+  final List<MatchModel>? matches;
 
   const TeamScoreboardScreen({super.key, this.groupName, this.matches});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ★ 修正：URLエンコードされたグループ名（日本語の文字化け状態）を安全に元に戻す
     String safeDecodeComponent(String? input) {
       if (input == null) return '';
       try {
@@ -44,37 +36,29 @@ class TeamScoreboardScreen extends ConsumerWidget {
     }
 
     final decodedGroupName = safeDecodeComponent(groupName);
-
-    // ★ 修正：matches が直接渡されている場合はそれを使用し、なければ decodedGroupName と URLの tournamentId で監視する
     List<MatchModel> teamMatches = matches ?? [];
     final urlTournamentId = GoRouterState.of(
       context,
     ).uri.queryParameters['tournamentId'];
 
-    // ★ 常にメモリ上の最新試合リストを監視
     final allMatches = ref.watch(matchListProvider);
     final asyncMatches = (urlTournamentId != null && urlTournamentId.isNotEmpty)
         ? ref.watch(matchListByTournamentProvider(urlTournamentId))
         : null;
 
     if (matches == null && decodedGroupName.isNotEmpty) {
-      // 1. 最優先でメモリから即座に探す（一覧画面から遷移してきた場合は必ずここで見つかるため、クルクルしない）
       teamMatches = allMatches
           .where(
             (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,
           )
           .toList();
 
-      // 2. メモリに見つからない場合（F5更新などで空になった場合）はクラウドからの読み込みを待つ
       if (teamMatches.isEmpty && asyncMatches != null) {
         if (asyncMatches.isLoading &&
             (asyncMatches.valueOrNull == null ||
                 asyncMatches.valueOrNull!.isEmpty)) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
-            backgroundColor: isDark
-                ? context.appColors.scaffoldBackground
-                : context.appColors.scaffoldBackground,
+            backgroundColor: context.appColors.scaffoldBackground,
             appBar: const AppHeader(title: 'スコアボード'),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -92,108 +76,42 @@ class TeamScoreboardScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: Text('データがありません')));
     }
 
-    // ★ 解決の鍵：ここで「勝ち抜き戦」なら、私たちが作った専用画面をそのまま返す！
     final firstMatch = teamMatches.first;
     if (firstMatch.isKachinuki || (firstMatch.rule?.isKachinuki ?? false)) {
       return KachinukiScoreboardScreen(groupName: firstMatch.groupName ?? '');
     }
 
-    // ★ 修正：今設定中のルールではなく、その試合自体が持っている「保存されたルール」を最優先で使う
-    final rule = (teamMatches.isNotEmpty && teamMatches.first.rule != null)
-        ? teamMatches.first.rule!
-        : ref.watch(matchRuleProvider);
-
     teamMatches.sort((a, b) => a.order.compareTo(b.order));
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(
-      settingsProvider.select((s) => s.enableLiquidGlass),
-    );
-    final themeColors =
-        Theme.of(context).extension<AppThemeColors>() ??
-        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final cardColor = themeColors.cardBackground;
-    final headerColor = isDark
-        ? const Color(0xFFFFFFFF)
-        : context.appColors.primaryAccent;
-    final borderColor = isDark
-        ? const Color(0xFF38383A)
-        : context.appColors.separatorColor;
+    final isDaihyoAllowed =
+        teamMatches.first.rule?.hasRepresentativeMatch ?? true;
 
-    if (teamMatches.isEmpty) {
-      return LiquidBackground(
-        child: Scaffold(
-          backgroundColor: AppKendoColors.transparent,
-          appBar: AppHeader(
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: headerColor,
-                size: 20,
-              ),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/');
-                }
-              },
-            ),
-            title: 'スコアボード',
-            backgroundColor: enableLiquidGlass
-                ? AppKendoColors.transparent
-                : cardColor,
-            elevation: 0,
-          ),
-          body: Center(
-            child: Text(
-              'データなし',
-              style: TextStyle(color: context.appColors.textColor),
-            ),
-          ),
-        ),
-      );
-    }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final cardColor = isDark
+        ? const Color(0xFF1C1C1E)
+        : context.appColors.cardBackground;
+    final borderColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : context.appColors.separatorColor;
 
     final redTeam = _cleanName(teamMatches.first.redName, true);
     final whiteTeam = _cleanName(teamMatches.first.whiteName, true);
 
-    // ★ Phase 8: 試合詳細（メモ）を取得
-    final matchNote = teamMatches.first.note;
-
-    // ★ Phase 7: UI内での計算を完全排除し、ドメインの計算機に委ねる
     final result = TeamMatchCalculator.calculate(teamMatches);
-    // ★ 修正：古いデータでも「[リーグ戦]」という文字があればリーグ戦として扱い、代表戦ボタンを隠す
-    final bool isLegacyLeague =
-        teamMatches.isNotEmpty && teamMatches.first.note.contains('[リーグ戦]');
-    final bool isLeague = rule.isLeague || isLegacyLeague;
 
-    bool isDaihyoAllowed = isLeague
-        ? (rule.isLeague ? rule.hasLeagueDaihyo : false)
-        : rule.hasRepresentativeMatch;
+    final matchNote = teamMatches
+        .map((m) => m.note)
+        .firstWhere(
+          (n) => n.isNotEmpty && !n.contains('[SUMMARY]'),
+          orElse: () => '',
+        );
 
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: headerColor, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else if (teamMatches.isNotEmpty &&
-                  teamMatches.first.tournamentId != null) {
-                context.go('/home/${teamMatches.first.tournamentId}');
-              } else {
-                context.go('/');
-              }
-            },
-          ),
-          title: '団体戦 スコアボード',
-          backgroundColor: enableLiquidGlass
-              ? AppKendoColors.transparent
-              : cardColor,
-          elevation: 0,
+          title: decodedGroupName.isNotEmpty ? decodedGroupName : '団体戦スコアボード',
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -267,9 +185,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             4: FlexColumnWidth(2.0),
                           },
                           children: [
-                            _buildHeaderRow(redTeam, whiteTeam, isDark),
+                            TeamScoreboardTableBuilder.buildHeaderRow(
+                              redTeam,
+                              whiteTeam,
+                              isDark,
+                            ),
                             ...teamMatches.map(
-                              (m) => _buildMatchRow(
+                              (m) => TeamScoreboardTableBuilder.buildMatchRow(
                                 m,
                                 context,
                                 isDark,
@@ -291,11 +213,12 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     .toList(),
                               ),
                             ),
-                            // ★ Phase 7: 計算結果オブジェクトをそのまま渡す
-                            _buildTotalRow(result, isDark),
+                            TeamScoreboardTableBuilder.buildTotalRow(
+                              result,
+                              isDark,
+                            ),
                           ],
                         ),
-                        // ★ 復活: スコアボード全体の簡易入力オーバーレイ
                         if (teamMatches.any(
                           (m) => m.note.contains('[SUMMARY]'),
                         ))
@@ -303,12 +226,13 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             top: 40,
                             child: Container(
                               color: isDark
-                                  ? const Color(
-                                      0xFF000000,
-                                    ).withValues(alpha: 0.3)
-                                  : const Color(
-                                      0xFFFFFFFF,
-                                    ).withValues(alpha: 0.6),
+                                  ? AppKendoColors.pureBlack.withValues(
+                                      alpha: 0.3,
+                                    )
+                                  : AppKendoColors.pureWhite.withValues(
+                                      alpha: 0.6,
+                                    ),
+
                               child: Center(
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
@@ -316,9 +240,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                     vertical: AppSpacing.sm,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: isDark
-                                        ? context.appColors.cardBackground
-                                        : context.appColors.cardBackground,
+                                    color: context.appColors.cardBackground,
                                     borderRadius: AppRadius.small,
                                     border: Border.all(
                                       color: context.appColors.separatorColor,
@@ -339,7 +261,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
                                       fontWeight: AppFontWeight.bold,
                                       color: isDark
                                           ? const Color(0xFFFFFFFF)
-                                          : const Color(0xDE000000),
+                                          : const Color(0xFF1E293B),
                                     ),
                                   ),
                                 ),
@@ -357,564 +279,46 @@ class TeamScoreboardScreen extends ConsumerWidget {
         bottomNavigationBar: (result.isTie && isDaihyoAllowed)
             ? SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg), // 他の画面のボタンと同じ余白
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 54, // 他の画面の確定ボタンと同じ高さ
+                    height: 54,
                     child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final first = teamMatches.first;
-                        final now = ref.read(timeSourceProvider).now();
-                        final nextMatchId =
-                            'match_${now.millisecondsSinceEpoch}';
-                        final rule = first.rule;
-                        final isDaihyoIppon = rule?.isDaihyoIpponShobu ?? true;
-                        final double daihyoTime = rule != null
-                            ? rule.daihyoMatchTimeMinutes
-                            : (isDaihyoIppon
-                                  ? 0.0
-                                  : first.matchTimeMinutes.toDouble());
-                        final bool hasExt = rule != null
-                            ? rule.daihyoHasExtension
-                            : true;
-                        final double extTime = rule != null
-                            ? rule.daihyoEnchoTimeMinutes
-                            : 3.0;
-                        final int extCount = rule != null
-                            ? rule.daihyoEnchoCount
-                            : -2;
-                        final bool hasHantei = rule != null
-                            ? rule.daihyoHasHantei
-                            : false;
-
-                        final newMatch = first.copyWith(
-                          id: nextMatchId,
-                          order: teamMatches.last.order + 1,
-                          matchType: '代表戦',
-                          redName: '$redTeam : 代表選手',
-                          whiteName: '$whiteTeam : 代表選手',
-                          status: 'scheduled',
-                          redScore: 0,
-                          whiteScore: 0,
-                          events: [],
-                          matchTimeMinutes: daihyoTime,
-                          hasExtension: hasExt,
-                          extensionTimeMinutes: extTime,
-                          extensionCount: extCount,
-                          hasHantei: hasHantei,
-                        );
-                        await ref.read(matchCommandProvider).addMatch(newMatch);
-
-                        if (!context.mounted) return;
-
-                        // ★ 成功したAppleライクなダイアログ
-                        showAppDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          barrierColor: AppKendoColors.pureBlack.withValues(
-                            alpha: 0.4,
+                      onPressed: () =>
+                          TeamScoreboardDaihyoHandler.handleAddDaihyo(
+                            context: context,
+                            ref: ref,
+                            teamMatches: teamMatches,
+                            redTeam: redTeam,
+                            whiteTeam: whiteTeam,
+                            isDark: isDark,
                           ),
-                          builder: (ctx) => Dialog(
-                            backgroundColor: isDark
-                                ? const Color(0xFF2C2C2E)
-                                : context.appColors.cardBackground,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.round,
-                            ),
-                            elevation: 0,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.xl,
-                                AppSpacing.xxl,
-                                AppSpacing.xl,
-                                AppSpacing.xxl,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(
-                                      AppSpacing.lg,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppKendoColors.green.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.check,
-                                      color: AppKendoColors.green,
-                                      size: 36,
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.xl),
-                                  Text(
-                                    '代表戦を追加しました',
-                                    style: TextStyle(
-                                      fontWeight: AppFontWeight.bold,
-                                      fontSize: AppFontSize.title,
-                                      color: context.appColors.textColor,
-                                    ),
-                                  ),
-                                  const SizedBox(height: AppSpacing.sm),
-                                  Text(
-                                    '試合画面へ移動します...',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.body,
-                                      color: isDark
-                                          ? context.appColors.subTextColor
-                                          : context.appColors.subTextColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-
-                        await Future.delayed(const Duration(seconds: 2));
-
-                        if (!context.mounted) return;
-                        Navigator.pop(context); // ダイアログを閉じる
-                        context.push('/match/$nextMatchId'); // 試合入力画面へ自動遷移
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppKendoColors.red,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.lg,
+                      icon: const Icon(
+                        Icons.add,
+                        color: AppKendoColors.pureWhite,
+                      ),
+                      label: const Text(
+                        '代表戦を追加する',
+                        style: TextStyle(
+                          fontSize: AppFontSize.subhead,
+                          fontWeight: AppFontWeight.bold,
+                          color: AppKendoColors.pureWhite,
                         ),
                       ),
-                      icon: const Icon(Icons.add_circle),
-                      label: const Text('同点のため、代表戦を追加する'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppKendoColors.hansokuRed,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: AppRadius.large,
+                        ),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                 ),
               )
             : null,
-      ), // Scaffold
-    ); // LiquidBackground
-  }
-
-  // ★ 修正：ヘッダーのチーム名もサイズアップ＆配色最適化
-  TableRow _buildHeaderRow(String r, String w, bool isDark) {
-    final headerBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9);
-    final textColor = isDark
-        ? const Color(0xFFFFFFFF)
-        : const Color(0xFF1E293B);
-    return TableRow(
-      decoration: BoxDecoration(color: headerBg),
-      children: [
-        _cell('', isH: true, color: textColor, fs: 12),
-        _cell(
-          r,
-          isH: true,
-          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
-          fs: 16,
-        ),
-        _cell(
-          '赤',
-          isH: true,
-          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
-          fs: 14,
-        ),
-        _cell(
-          '白',
-          isH: true,
-          color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
-          fs: 14,
-        ),
-        _cell(
-          w,
-          isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B),
-          fs: 16,
-        ),
-      ],
-    );
-  }
-
-  // ★ 追加：同姓がいる場合に名前の1文字目を右下に添える専用セル
-  Widget _buildNameCell(
-    String rawName,
-    bool isDark,
-    List<String> teamLastNames,
-  ) {
-    final subTextColor = isDark
-        ? const Color(0xFF8E8E93)
-        : const Color(0x8A000000);
-    final textColor = isDark
-        ? const Color(0xFFFFFFFF)
-        : const Color(0xFF000000);
-
-    if (rawName.contains('欠員')) {
-      return _cell(
-        '(欠員)',
-        fs: 17,
-        color: subTextColor,
-        fontWeight: AppFontWeight.bold,
-      );
-    }
-
-    final parsed = NameFormatter.parse(rawName);
-    final count = teamLastNames.where((n) => n == parsed['last']).length;
-    final showInitial = count > 1 && parsed['first']!.isNotEmpty;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-      child: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: TextStyle(
-            fontSize: AppFontSize.title,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-          ),
-          children: [
-            TextSpan(text: parsed['last']),
-            if (showInitial) // 被りがある場合のみ右下に添える
-              WidgetSpan(
-                alignment: PlaceholderAlignment.bottom,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.xxs,
-                    bottom: AppSpacing.xxs,
-                  ),
-                  child: Text(
-                    parsed['first']!.substring(0, 1),
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      fontWeight: AppFontWeight.bold,
-                      color: subTextColor,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
       ),
     );
-  }
-
-  // ★ 修正：同姓判定を組み込んだ試合行の構築
-  TableRow _buildMatchRow(
-    MatchModel m,
-    BuildContext ctx,
-    bool isDark,
-    List<String> redLastNames,
-    List<String> whiteLastNames,
-  ) {
-    final isDone = m.status == 'approved' || m.status == 'finished';
-    final rS = (m.redScore as num).toInt();
-    final wS = (m.whiteScore as num).toInt();
-    final isDraw = isDone && (rS == wS);
-
-    final ptsMap = _calcPts(m);
-    final rPts = ptsMap['red'] ?? [];
-    final wPts = ptsMap['white'] ?? [];
-
-    // ★ Phase 8: 代表戦の行を上品な薄い赤Tintにし、文字も赤くハイライトする
-    final isDaihyo = m.matchType == '代表戦';
-    final daihyoBgColor = isDark
-        ? const Color(0xFFE53935).withValues(alpha: 0.15)
-        : const Color(0xFFFFF5F5);
-    final matchTypeColor = isDaihyo
-        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xDE000000));
-
-    return TableRow(
-      decoration: isDaihyo ? BoxDecoration(color: daihyoBgColor) : null,
-      children: [
-        _clickableCell(
-          ctx,
-          m,
-          _cell(
-            m.matchType,
-            fs: 12,
-            fontWeight: AppFontWeight.bold,
-            color: matchTypeColor,
-          ),
-        ),
-        _clickableCell(
-          ctx,
-          m,
-          _buildNameCell(m.redName, isDark, redLastNames),
-        ), // ★ 修正
-        _clickableCell(
-          ctx,
-          m,
-          _buildMatchScoreBox(rPts, isDone && rS > wS, isDraw, true, isDark),
-        ),
-        _clickableCell(
-          ctx,
-          m,
-          _buildMatchScoreBox(wPts, isDone && wS > rS, false, false, isDark),
-        ),
-        _clickableCell(
-          ctx,
-          m,
-          _buildNameCell(m.whiteName, isDark, whiteLastNames),
-        ), // ★ 修正
-      ],
-    );
-  }
-
-  // 修正後 (TableCellを削除し、中のコンテンツだけを返すように変更)
-  Widget _buildMatchScoreBox(
-    List<TeamPointDisplay> pts,
-    bool isWinner,
-    bool isDraw,
-    bool isRed,
-    bool isDark,
-  ) {
-    final color = isRed
-        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
-
-    final isFusen = pts.any((p) => p.mark == '◯');
-
-    return SizedBox(
-      // TableCellではなくSizedBoxを返す
-      height: 84,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          // ★ 修正：大丸をさらに拡大し、境界線を少し太くして視認性をアップ
-          if (isWinner)
-            Container(
-              width: 62,
-              height: 62, // 52→62
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: color.withValues(alpha: 0.5),
-                  width: 2.4,
-                ),
-              ),
-            ),
-
-          // 技マークの表示エリアも少し広げて配置のバランスを取る
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: isFusen
-                ? Center(
-                    child: Text(
-                      '◯',
-                      style: TextStyle(
-                        fontSize: AppFontSize.hero,
-                        color: color,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: pts
-                        .map((p) => _ptMark(p, color, isDark))
-                        .toList(),
-                  ),
-          ),
-
-          if (isRed && isDraw)
-            Positioned(
-              right: -14,
-              child: Text(
-                '✕',
-                style: TextStyle(
-                  fontSize: AppFontSize.hero,
-                  color: isDark
-                      ? const Color(0xFFFF6B6B).withValues(alpha: 0.6)
-                      : AppKendoColors.hansokuRed,
-                  fontWeight: AppFontWeight.light,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // 修正後
-  Widget _clickableCell(BuildContext ctx, MatchModel m, Widget child) {
-    return TableCell(
-      verticalAlignment: TableCellVerticalAlignment.middle,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => ctx.push('/match/${m.id}'),
-        child: child,
-      ),
-    );
-  }
-
-  Widget _ptMark(TeamPointDisplay p, Color color, bool isDark) {
-    if (p.isFirstMatchPoint && p.mark != '◯') {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-        padding: const EdgeInsets.all(AppSpacing.xxs),
-        // ★ 修正：ダークモード時は丸の枠線を半透明(alpha: 0.4)にして、発光現象（白浮き）を抑える
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: color.withValues(alpha: isDark ? 0.4 : 1.0),
-            width: 1.5,
-          ),
-        ),
-        child: Text(
-          p.mark,
-          style: TextStyle(
-            fontSize: AppFontSize.badge,
-            color: color,
-            fontWeight: AppFontWeight.bold,
-          ),
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-      child: Text(
-        p.mark,
-        style: TextStyle(
-          fontSize: AppFontSize.body,
-          color: color,
-          fontWeight: AppFontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _cell(
-    String txt, {
-    bool isH = false,
-    Color? color,
-    double fs = 13,
-    FontWeight? fontWeight,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-      child: Text(
-        txt,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: fs,
-          fontWeight: isH
-              ? AppFontWeight.bold
-              : (fontWeight ?? AppFontWeight.regular),
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  // ★ Phase 7: UI内での勝敗計算を削除し、引数を Result オブジェクトに統一＆配色最適化
-  TableRow _buildTotalRow(TeamMatchResult result, bool isDark) {
-    final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8FAFC);
-    final textColor = isDark
-        ? const Color(0xFFFFFFFF)
-        : const Color(0xFF1E293B);
-    final isTeamTie = (result.teamWinner == 'draw');
-
-    return TableRow(
-      decoration: BoxDecoration(color: bg),
-      children: [
-        const SizedBox.shrink(),
-        _cell(
-          '${result.redPoints} / ${result.redWins}',
-          isH: true,
-          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
-          fs: 18,
-        ),
-
-        TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: SizedBox(
-            height: 64,
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                if (result.allFinished) ...[
-                  if (isTeamTie)
-                    Positioned(
-                      right: -36,
-                      child: Text(
-                        '引き分け',
-                        style: TextStyle(
-                          fontWeight: AppFontWeight.bold,
-                          fontSize: AppFontSize.headline,
-                          color: isDark
-                              ? AppKendoColors.ipponGold
-                              : const Color(0xFFD97706),
-                        ),
-                      ),
-                    )
-                  else
-                    _cell(
-                      result.teamWinner == 'red' ? '勝' : '負',
-                      isH: true,
-                      color: result.teamWinner == 'red'
-                          ? AppKendoColors.red
-                          : textColor,
-                      fs: 20,
-                    ),
-                ],
-              ],
-            ),
-          ),
-        ),
-
-        TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: SizedBox(
-            height: 64,
-            child: Center(
-              child: (result.allFinished && !isTeamTie)
-                  ? _cell(
-                      result.teamWinner == 'white' ? '勝' : '負',
-                      isH: true,
-                      color: result.teamWinner == 'white'
-                          ? AppKendoColors.red
-                          : textColor,
-                      fs: 20,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ),
-        ),
-
-        _cell(
-          '${result.whitePoints} / ${result.whiteWins}',
-          isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
-          fs: 18,
-        ),
-      ],
-    );
-  }
-
-  Map<String, List<TeamPointDisplay>> _calcPts(MatchModel m) {
-    final engine = KendoRuleEngine();
-    final analysis = engine.analyzeHistory(m.events, m, m.rule);
-
-    final redPts = (analysis.displays[Side.red] ?? [])
-        .map(
-          (d) => TeamPointDisplay(
-            d.mark == '判定' ? '判' : d.mark,
-            d.isFirstMatchPoint,
-          ),
-        )
-        .toList();
-    final whitePts = (analysis.displays[Side.white] ?? [])
-        .map(
-          (d) => TeamPointDisplay(
-            d.mark == '判定' ? '判' : d.mark,
-            d.isFirstMatchPoint,
-          ),
-        )
-        .toList();
-
-    return {'red': redPts, 'white': whitePts};
   }
 
   String _cleanName(String n, bool team) {
