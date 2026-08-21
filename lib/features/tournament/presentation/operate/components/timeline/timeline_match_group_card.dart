@@ -3,20 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_inner_comment_widget.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_reorder_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_children_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_summary_input_dialog.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_tie_break_detector.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_tie_break_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
-import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -399,237 +394,25 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           ],
                           if (!label.contains('リーグ戦')) ...[
                             const SizedBox(height: AppSpacing.sm),
-                            Builder(
-                              builder: (context) {
-                                int redWins = 0;
-                                int redPts = 0;
-                                int whiteWins = 0;
-                                int whitePts = 0;
-
-                                for (var m in groupList) {
-                                  if (m.matchType == '代表戦') {
-                                    continue;
-                                  }
-                                  final r = m.redScore;
-                                  final w = m.whiteScore;
-                                  redPts += (r as num).toInt();
-                                  whitePts += (w as num).toInt();
-                                  final mFinished =
-                                      m.status == 'finished' ||
-                                      m.status == 'approved';
-                                  if (mFinished) {
-                                    if (r > w) {
-                                      redWins++;
-                                    } else if (w > r) {
-                                      whiteWins++;
-                                    }
-                                  }
-                                }
-
-                                final ruleTeamName =
-                                    groupList.firstOrNull?.rule?.teamName;
-                                final bool isOwnRed =
-                                    (ruleTeamName != null &&
-                                        rTeam == ruleTeamName) ||
-                                    ownTeams.contains(rTeam);
-                                final bool isOwnWhite =
-                                    (ruleTeamName != null &&
-                                        wTeam == ruleTeamName) ||
-                                    ownTeams.contains(wTeam);
-
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          if (isOwnRed) ...[
-                                            Container(
-                                              margin: const EdgeInsets.only(
-                                                right: AppSpacing.xs,
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: AppSpacing.xs,
-                                                    vertical: AppSpacing.xxs,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: isDark
-                                                    ? const Color(0xFF2C2C2E)
-                                                    : context
-                                                          .appColors
-                                                          .separatorColor,
-                                                borderRadius: AppRadius.tiny,
-                                              ),
-                                              child: Text(
-                                                '自道場',
-                                                style: TextStyle(
-                                                  fontSize: AppFontSize.badge,
-                                                  fontWeight:
-                                                      AppFontWeight.bold,
-                                                  color: context
-                                                      .appColors
-                                                      .primaryAccent,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                          Expanded(
-                                            child: Text(
-                                              rTeam,
-                                              style: TextStyle(
-                                                fontSize: AppFontSize.body,
-                                                fontWeight: isOwnRed
-                                                    ? AppFontWeight.bold
-                                                    : AppFontWeight.semiBold,
-
-                                                color: titleColor,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.sm,
-                                        vertical: AppSpacing.xxs,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? const Color(0xFF2C2C2E)
-                                            : const Color(0xFFE5E5EA),
-                                        borderRadius: AppRadius.sub,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            '$redWins',
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.bodySmall,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: redWins > whiteWins
-                                                  ? AppKendoColors.hansokuRed
-                                                  : titleColor,
-                                            ),
-                                          ),
-                                          Text(
-                                            '($redPts)',
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.bodySmall,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: redWins > whiteWins
-                                                  ? AppKendoColors.hansokuRed
-                                                  : titleColor,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: AppSpacing.xs,
-                                            ),
-                                            child: Text(
-                                              '-',
-                                              style: TextStyle(
-                                                fontSize: AppFontSize.badge,
-                                                color: context
-                                                    .appColors
-                                                    .subTextColor,
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            '$whiteWins',
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.bodySmall,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: whiteWins > redWins
-                                                  ? context
-                                                        .appColors
-                                                        .primaryAccent
-                                                  : titleColor,
-                                            ),
-                                          ),
-                                          Text(
-                                            '($whitePts)',
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.bodySmall,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: whiteWins > redWins
-                                                  ? context
-                                                        .appColors
-                                                        .primaryAccent
-                                                  : titleColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              wTeam,
-                                              textAlign: TextAlign.end,
-                                              style: TextStyle(
-                                                fontSize: AppFontSize.body,
-                                                fontWeight: isOwnWhite
-                                                    ? AppFontWeight.bold
-                                                    : AppFontWeight.semiBold,
-
-                                                color: titleColor,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (isOwnWhite) ...[
-                                            Container(
-                                              margin: const EdgeInsets.only(
-                                                left: AppSpacing.xs,
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: AppSpacing.xs,
-                                                    vertical: AppSpacing.xxs,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: isDark
-                                                    ? const Color(0xFF2C2C2E)
-                                                    : context
-                                                          .appColors
-                                                          .separatorColor,
-                                                borderRadius: AppRadius.tiny,
-                                              ),
-                                              child: Text(
-                                                '自道場',
-                                                style: TextStyle(
-                                                  fontSize: AppFontSize.badge,
-                                                  fontWeight:
-                                                      AppFontWeight.bold,
-                                                  color: context
-                                                      .appColors
-                                                      .primaryAccent,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
+                            TimelineGroupScoreSummary(
+                              groupList: groupList,
+                              rTeam: rTeam,
+                              wTeam: wTeam,
+                              ownTeams: ownTeams,
+                              titleColor: titleColor,
+                              isDark: isDark,
                             ),
                           ],
                         ],
                       ),
-
-                      children: _buildExpansionChildren(
+                      children: TimelineGroupChildrenBuilder.buildChildren(
                         context: context,
                         ref: ref,
+                        groupList: groupList,
+                        groupComments: groupComments,
+                        label: label,
+                        isReadOnlyUI: isReadOnlyUI,
+                        isDark: isDark,
                         permissions: permissions,
                         rule: rule,
                         firstMatch: firstMatch,
@@ -643,119 +426,5 @@ class TimelineMatchGroupCard extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  List<Widget> _buildExpansionChildren({
-    required BuildContext context,
-    required WidgetRef ref,
-    required PermissionState permissions,
-    required MatchRule rule,
-    required MatchModel firstMatch,
-  }) {
-    final normalMatches = groupList.where((m) => m.matchType != '代表戦').toList();
-    final normalItems = <dynamic>[...normalMatches, ...groupComments];
-    normalItems.sort(
-      (a, b) => (a.order as double).compareTo(b.order as double),
-    );
-
-    final childrenWidgets = <Widget>[const Divider(height: 1)];
-
-    if (label.contains('リーグ戦')) {
-      if (allGroupFinished(groupList)) {
-        final tieGroups = TimelineTieBreakDetector.detectTieGroups(
-          normalMatches: normalMatches,
-          rule: rule,
-        );
-
-        if (tieGroups.isNotEmpty) {
-          childrenWidgets.add(
-            Container(
-              margin: const EdgeInsets.all(AppSpacing.md),
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFFFF9800).withValues(alpha: 0.2)
-                    : const Color(0xFFFF9800),
-                border: Border.all(color: context.appColors.warningColor),
-                borderRadius: AppRadius.medium,
-              ),
-              child: Column(
-                children: tieGroups.map((group) {
-                  return ElevatedButton.icon(
-                    onPressed: () => TimelineTieBreakDialog.show(
-                      context,
-                      ref,
-                      firstMatch,
-                      group,
-                      rule,
-                    ),
-                    icon: const Icon(Icons.add_circle),
-                    label: const Text('順位決定戦を作成'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.appColors.warningColor,
-                      foregroundColor: AppKendoColors.pureWhite,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          );
-        }
-      }
-    }
-
-    if (label.contains('リーグ戦') && label.contains('個人戦')) {
-      childrenWidgets.add(
-        ReorderableListView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          buildDefaultDragHandles: !isReadOnlyUI,
-          onReorderItem: (oldIndex, newIndex) =>
-              TimelineReorderHelper.onReorderInnerTimeline(
-                normalItems.cast<TimelineItem>(),
-                oldIndex,
-                newIndex,
-                ref,
-              ),
-          children: normalItems
-              .map<Widget?>((i) {
-                if (i is MatchModel) {
-                  return Container(
-                    key: ValueKey(i.id),
-                    child: MatchListTileCard(
-                      key: ValueKey(i.id),
-                      initialMatch: i,
-                    ),
-                  );
-                } else if (i is MatchCommentModel) {
-                  return Container(
-                    key: ValueKey('inner_comment_${i.id}'),
-                    child: TimelineInnerCommentWidget(
-                      comment: i,
-                      permissions: permissions,
-                      isDark: isDark,
-                      ref: ref,
-                    ),
-                  );
-                }
-                return null;
-              })
-              .whereType<Widget>()
-              .toList(),
-        ),
-      );
-    } else {
-      childrenWidgets.addAll(
-        normalMatches.map(
-          (m) => MatchListTileCard(key: ValueKey(m.id), initialMatch: m),
-        ),
-      );
-    }
-
-    return childrenWidgets;
-  }
-
-  bool allGroupFinished(List<MatchModel> list) {
-    return list.every((m) => m.status == 'finished' || m.status == 'approved');
   }
 }

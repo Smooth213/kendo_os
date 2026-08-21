@@ -1,18 +1,18 @@
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_data_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_detail_setting_cards.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_preset_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_target_select_section.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_detail_setting_cards.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 void showBulkRuleEditSheet(
   BuildContext context,
@@ -58,7 +58,6 @@ class BulkRuleEditSheet extends ConsumerStatefulWidget {
 }
 
 class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
-  // 1. 対象選択の絞り込み状態
   String _selectedCategoryFilter = 'すべて';
   String _selectedTypeFilter = 'すべて';
   List<String> _selectedMatchIds = [];
@@ -66,7 +65,6 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   String? _selectedCategoryRuleName;
   String _selectedSceneType = 'normal';
 
-  // 2. 新ルールの状態変数
   late double _matchTime;
   late bool _isIpponShobu;
   late bool _hasExtension;
@@ -75,9 +73,15 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   late bool _isEnchoUnlimited;
   late bool _hasHantei;
 
-  // 団体戦
   late bool _hasRepresentativeMatch;
   late bool _isDaihyoIpponShobu;
+
+  late bool _isRenseikai;
+  late String _renseikaiType;
+  final _overallTimeController = TextEditingController();
+
+  late List<String> _categories;
+  late List<String> _matchTypes;
 
   bool get _isCurrentFilterTeamMatch {
     if (_selectedTypeFilter.contains('団体')) return true;
@@ -86,7 +90,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         .where((m) => _selectedMatchIds.contains(m.id))
         .toList();
     if (selectedMatches.isEmpty) return false;
-    return selectedMatches.any((m) => _getResolvedType(m).contains('団体'));
+    return selectedMatches.any(
+      (m) => BulkRuleDataHelper.getResolvedType(m).contains('団体'),
+    );
   }
 
   bool get _isCurrentFilterIndividualMatch {
@@ -96,7 +102,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         .where((m) => _selectedMatchIds.contains(m.id))
         .toList();
     if (selectedMatches.isEmpty) return false;
-    return selectedMatches.any((m) => _getResolvedType(m).contains('個人'));
+    return selectedMatches.any(
+      (m) => BulkRuleDataHelper.getResolvedType(m).contains('個人'),
+    );
   }
 
   void _applyCategoryRuleSet(MatchRule targetRule, {String? sceneKey}) {
@@ -108,16 +116,17 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
         targetRule.matchScene == 'renseikai' ||
         targetRule.matchScene == 'moushiawase';
 
-    // 1. 基本ルール
     _matchTime = targetRule.matchTimeMinutes;
     _isIpponShobu = targetRule.isIpponShobu;
 
-    // 2. 延長ルール (錬成会・申し合わせ時は完全強制 OFF！)
     if (isRenseikaiOrMoushiawase) {
       _hasExtension = false;
       _isEnchoUnlimited = false;
       _enchoTime = 0.0;
       _enchoCount = 0;
+      _hasHantei = false;
+      _hasRepresentativeMatch = false;
+      _isDaihyoIpponShobu = false;
     } else {
       final bool extensionEnabled =
           (targetRule.enchoTimeMinutes > 0) || targetRule.isEnchoUnlimited;
@@ -129,14 +138,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           ? targetRule.enchoTimeMinutes
           : 3.0;
       _enchoCount = targetRule.enchoCount > 0 ? targetRule.enchoCount : 1;
-    }
 
-    // 3. 個人戦判定 & 団体戦代表戦ルール (錬成会・申し合わせ時は判定・代表戦ともに完全強制 OFF！)
-    if (isRenseikaiOrMoushiawase) {
-      _hasHantei = false;
-      _hasRepresentativeMatch = false;
-      _isDaihyoIpponShobu = false;
-    } else {
       final isTeam = _isCurrentFilterTeamMatch;
       final isIndiv = _isCurrentFilterIndividualMatch;
 
@@ -159,46 +161,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       }
     }
 
-    // 4. 錬成会設定
     _isRenseikai = isRenseikaiOrMoushiawase || targetRule.isRenseikai;
     _renseikaiType = targetRule.renseikaiType;
     _overallTimeController.text = targetRule.overallTimeMinutes.toString();
-  }
-
-  // 錬成会
-  late bool _isRenseikai;
-  late String _renseikaiType;
-  final _overallTimeController = TextEditingController();
-
-  // カテゴリと種別の抽出
-  late List<String> _categories;
-  late List<String> _matchTypes;
-
-  String _getResolvedType(MatchModel m) {
-    if (m.isKachinuki || m.matchType == '無限勝ち抜き' || m.matchType == '勝ち抜き戦') {
-      return '勝ち抜き戦';
-    }
-    final isLeague =
-        m.note.contains('リーグ戦') ||
-        m.note.contains('[リーグ戦]') ||
-        m.matchType.contains('リーグ');
-    final isTeam =
-        m.matchType.contains('団体') ||
-        const {
-          '先鋒',
-          '次鋒',
-          '中堅',
-          '副将',
-          '大将',
-          '代表戦',
-          '代',
-          '大将延長戦',
-        }.contains(m.matchType);
-    if (isLeague) {
-      return isTeam ? 'リーグ団体戦' : 'リーグ個人戦';
-    } else {
-      return isTeam ? '団体戦' : '個人戦';
-    }
   }
 
   void _loadTemplateRules(MatchModel m) {
@@ -267,8 +232,6 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   @override
   void initState() {
     super.initState();
-
-    // カテゴリと試合形式のリストを動的抽出
     _categories = [
       'すべて',
       ...widget.matches
@@ -278,9 +241,11 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           .toSet(),
     ];
 
-    _matchTypes = ['すべて', ...widget.matches.map(_getResolvedType).toSet()];
+    _matchTypes = [
+      'すべて',
+      ...widget.matches.map(BulkRuleDataHelper.getResolvedType).toSet(),
+    ];
 
-    // デフォルトのルール状態の初期化
     _matchTime = 3.0;
     _isIpponShobu = false;
     _hasExtension = false;
@@ -294,10 +259,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     _renseikaiType = '一試合制';
     _overallTimeController.text = '30';
 
-    // 初期状態で全対象を選択
     _applyFiltersAndSelectAll();
 
-    // 選択された最初の試合のルールを仮の初期表示として読み込む
     final initialSelected = widget.matches
         .where((m) => _selectedMatchIds.contains(m.id))
         .toList();
@@ -312,98 +275,17 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     super.dispose();
   }
 
-  List<MatchGroupUnit> _buildGroupUnits() {
-    final List<MatchGroupUnit> units = [];
-    final Map<String, List<MatchModel>> teamGroups = {};
-
-    for (final m in widget.matches) {
-      final type = _getResolvedType(m);
-      final category = m.category ?? '';
-
-      if (type == '団体戦' || type == 'リーグ団体戦') {
-        final groupName = m.groupName != null && m.groupName!.isNotEmpty
-            ? m.groupName!
-            : '団体戦';
-        final key = '$category::$type::$groupName';
-        teamGroups.putIfAbsent(key, () => []).add(m);
-      } else {
-        final displayName = m.category != null && m.category!.isNotEmpty
-            ? '[${m.category}] ${m.redName} vs ${m.whiteName}'
-            : '${m.redName} vs ${m.whiteName}';
-
-        units.add(
-          MatchGroupUnit(
-            id: 'single:${m.id}',
-            displayName: displayName,
-            matchIds: [m.id],
-            category: category,
-            resolvedType: type,
-          ),
-        );
-      }
-    }
-
-    teamGroups.forEach((key, list) {
-      final parts = key.split('::');
-      final category = parts[0];
-      final type = parts[1];
-      final groupNameVal = parts[2];
-
-      // Resolve human-readable name for the group if it's a UUID
-      String displayGroupName = groupNameVal;
-      final uuidRegex = RegExp(
-        r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-      );
-      if (uuidRegex.hasMatch(groupNameVal) || groupNameVal.length > 20) {
-        String rTeam = '';
-        String wTeam = '';
-        for (final m in list) {
-          if (m.redName.contains(':') && m.whiteName.contains(':')) {
-            rTeam = m.redName.split(':').first.trim();
-            wTeam = m.whiteName.split(':').first.trim();
-            break;
-          }
-        }
-        if (rTeam.isNotEmpty && wTeam.isNotEmpty) {
-          displayGroupName = '$rTeam vs $wTeam';
-        } else {
-          if (list.isNotEmpty) {
-            final first = list.first;
-            displayGroupName = '${first.redName} vs ${first.whiteName}';
-          } else {
-            displayGroupName = '団体戦対戦';
-          }
-        }
-      }
-
-      final displayName = category.isNotEmpty
-          ? '[$category] $displayGroupName'
-          : displayGroupName;
-
-      units.add(
-        MatchGroupUnit(
-          id: 'team:$key',
-          displayName: displayName,
-          matchIds: list.map((m) => m.id).toList(),
-          category: category,
-          resolvedType: type,
-        ),
-      );
-    });
-
-    return units;
-  }
-
   void _applyFiltersAndSelectAll() {
-    final filteredUnits = _buildGroupUnits().where((unit) {
-      final isCategoryMatch =
-          _selectedCategoryFilter == 'すべて' ||
-          unit.category == _selectedCategoryFilter;
-      final isTypeMatch =
-          _selectedTypeFilter == 'すべて' ||
-          unit.resolvedType == _selectedTypeFilter;
-      return isCategoryMatch && isTypeMatch;
-    });
+    final filteredUnits = BulkRuleDataHelper.buildGroupUnits(widget.matches)
+        .where((unit) {
+          final isCategoryMatch =
+              _selectedCategoryFilter == 'すべて' ||
+              unit.category == _selectedCategoryFilter;
+          final isTypeMatch =
+              _selectedTypeFilter == 'すべて' ||
+              unit.resolvedType == _selectedTypeFilter;
+          return isCategoryMatch && isTypeMatch;
+        });
 
     setState(() {
       _selectedMatchIds = filteredUnits
@@ -418,18 +300,18 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = context.appColors.textColor;
 
-    // 現在のフィルターに該当する全試合（グループ化された表示単位）
-    final currentFilteredUnits = _buildGroupUnits().where((unit) {
-      final isCategoryMatch =
-          _selectedCategoryFilter == 'すべて' ||
-          unit.category == _selectedCategoryFilter;
-      final isTypeMatch =
-          _selectedTypeFilter == 'すべて' ||
-          unit.resolvedType == _selectedTypeFilter;
-      return isCategoryMatch && isTypeMatch;
-    }).toList();
+    final currentFilteredUnits =
+        BulkRuleDataHelper.buildGroupUnits(widget.matches).where((unit) {
+          final isCategoryMatch =
+              _selectedCategoryFilter == 'すべて' ||
+              unit.category == _selectedCategoryFilter;
+          final isTypeMatch =
+              _selectedTypeFilter == 'すべて' ||
+              unit.resolvedType == _selectedTypeFilter;
+          return isCategoryMatch && isTypeMatch;
+        }).toList();
 
-    final allUnits = _buildGroupUnits();
+    final allUnits = BulkRuleDataHelper.buildGroupUnits(widget.matches);
     final totalSelectedUnitsCount = allUnits.where((unit) {
       return unit.matchIds.every((id) => _selectedMatchIds.contains(id));
     }).length;
@@ -536,7 +418,14 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // STEP 2. 新ルールの設定
-                _buildSectionHeader('STEP 2: 新しいルールを設定'),
+                Text(
+                  'STEP 2: 新しいルールを設定',
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    fontWeight: AppFontWeight.bold,
+                    color: widget.themeColors.primaryAccent,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.lg),
 
                 // 部門別ルールプリセットからの選択UI
@@ -580,7 +469,9 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: Color(0xFFD97706).withAlpha(isDark ? 30 : 15),
+                      color: const Color(
+                        0xFFD97706,
+                      ).withAlpha(isDark ? 30 : 15),
                       borderRadius: AppRadius.small,
                       border: Border.all(
                         color: const Color(
@@ -613,7 +504,6 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                   const SizedBox(height: AppSpacing.md),
                 ],
 
-                // STEP 2 詳細設定カード群
                 BulkRuleDetailSettingCards(
                   matchTime: _matchTime,
                   isIpponShobu: _isIpponShobu,
@@ -726,18 +616,6 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // 小さなセクションヘッダー
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: AppFontSize.body,
-        fontWeight: AppFontWeight.bold,
-        color: widget.themeColors.primaryAccent,
       ),
     );
   }

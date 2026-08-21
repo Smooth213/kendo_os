@@ -1,18 +1,14 @@
-import 'dart:async';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_image_body.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_stroke_eraser.dart';
-import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
-import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
@@ -62,8 +58,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   bool _isZoomed = false;
 
   String _selectedTool = 'pen';
-  List<StrokeModel> _cachedSharedStrokes = [];
-  List<LocalStrokeModel> _cachedPrivateStrokes = [];
 
   final PdfViewerController _pdfViewerController = PdfViewerController();
   PdfTextSearchResult _searchResult = PdfTextSearchResult();
@@ -76,39 +70,16 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   bool get _isSharedPen =>
       _selectedPenColor == AppKendoColors.pink ||
       _selectedPenColor == _yellowPenColor;
-  List<Offset> _currentPoints = [];
 
-  final Map<String, Future<Size>> _imageSizeCache = {};
-  final int _sessionBuster = DateTime.now().millisecondsSinceEpoch;
-
-  String _getSafeUrl(String url) {
-    if (!kIsWeb || url.isEmpty || !url.startsWith('http')) return url;
-    final separator = url.contains('?') ? '&' : '?';
-    return '$url${separator}_cb=$_sessionBuster';
-  }
-
-  final Map<String, Future<Uint8List>> _sdkPdfBytesCache = {};
+  final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache();
 
   @visibleForTesting
   Map<String, Future<Uint8List>> get sdkPdfBytesCacheForTesting =>
-      _sdkPdfBytesCache;
+      _mediaCache.sdkPdfBytesCache;
 
   @visibleForTesting
-  Future<Uint8List> getCachedPdfBytesViaSdk(String url) {
-    if (!_sdkPdfBytesCache.containsKey(url)) {
-      _sdkPdfBytesCache[url] = FirebaseStorage.instance
-          .refFromURL(url)
-          .getData(32 * 1024 * 1024)
-          .then((value) {
-            return value!;
-          });
-    }
-    return _sdkPdfBytesCache[url]!;
-  }
-
-  dynamic _getActiveRepository(WidgetRef ref) {
-    return ref.read(strokeRepositoryProvider);
-  }
+  Future<Uint8List> getCachedPdfBytesViaSdk(String url) =>
+      _mediaCache.getCachedPdfBytesViaSdk(url);
 
   @override
   void initState() {
@@ -123,6 +94,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     _transformationController.removeListener(_handleTransformationChanged);
     _transformationController.dispose();
     _pageController.dispose();
+    _searchTextController.dispose();
     super.dispose();
   }
 
@@ -134,86 +106,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         _isZoomed = zoomed;
       });
     }
-  }
-
-  Future<void> _eraseStrokeAt(Offset touchPoint) async {
-    const double threshold = 25.0;
-    final currentRole = ref.read(activeRoleProvider);
-    final canUseSharedPen =
-        currentRole == Role.admin ||
-        currentRole == Role.scorer ||
-        currentRole == Role.editor;
-
-    if (canUseSharedPen) {
-      for (final stroke in _cachedSharedStrokes) {
-        if (ProgramViewerStrokeEraser.isNearStroke(
-          touchPoint,
-          stroke.points,
-          threshold,
-        )) {
-          await _getActiveRepository(ref).deleteStroke(stroke.id);
-          return;
-        }
-      }
-    }
-
-    for (final stroke in _cachedPrivateStrokes) {
-      if (ProgramViewerStrokeEraser.isNearLocalStroke(
-        touchPoint,
-        stroke.pointsX,
-        stroke.pointsY,
-        threshold,
-      )) {
-        await ref
-            .read(localStrokeRepositoryProvider)
-            .deleteStroke(stroke.id, firestoreId: stroke.firestoreId);
-        return;
-      }
-    }
-  }
-
-  Future<Size> _fetchImageSize(String url) async {
-    if (url.isEmpty || url.contains('placehold.co')) {
-      return const Size(400, 600);
-    }
-    final Completer<Size> completer = Completer();
-    final safeUrl = _getSafeUrl(url);
-    final Image image = Image.network(safeUrl);
-
-    final listener = ImageStreamListener(
-      (ImageInfo info, bool _) {
-        if (!completer.isCompleted) {
-          completer.complete(
-            Size(info.image.width.toDouble(), info.image.height.toDouble()),
-          );
-        }
-      },
-      onError: (dynamic exception, StackTrace? stackTrace) {
-        if (!completer.isCompleted) {
-          completer.complete(const Size(800, 1000));
-        }
-      },
-    );
-
-    image.image.resolve(const ImageConfiguration()).addListener(listener);
-    return completer.future.timeout(
-      const Duration(seconds: 3),
-      onTimeout: () {
-        if (!completer.isCompleted) {
-          image.image
-              .resolve(const ImageConfiguration())
-              .removeListener(listener);
-        }
-        return const Size(800, 1000);
-      },
-    );
-  }
-
-  Future<Size> _getCachedImageSize(String url) {
-    if (!_imageSizeCache.containsKey(url)) {
-      _imageSizeCache[url] = _fetchImageSize(url);
-    }
-    return _imageSizeCache[url]!;
   }
 
   @override
@@ -421,7 +313,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     setState(() => _selectedPenColor = color),
                 onUndo: () {
                   if (activeIsShared) {
-                    _getActiveRepository(ref).undoLastStroke(programId);
+                    ref
+                        .read(strokeRepositoryProvider)
+                        .undoLastStroke(programId);
                   } else {
                     ref
                         .read(localStrokeRepositoryProvider)
@@ -430,7 +324,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 },
                 onClearAll: () {
                   if (activeIsShared) {
-                    _getActiveRepository(ref).clearStrokes(programId);
+                    ref.read(strokeRepositoryProvider).clearStrokes(programId);
                   } else {
                     ref
                         .read(localStrokeRepositoryProvider)
@@ -465,130 +359,20 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                   final isFilePdf =
                       program.fileType == 'pdf' ||
                       program.fileUrl.toLowerCase().contains('.pdf');
-                  final programId = program.id.isNotEmpty
+                  final itemProgramId = program.id.isNotEmpty
                       ? program.id
                       : program.fileUrl;
 
-                  Widget buildOverlayLayers({required double penWidth}) {
-                    return Stack(
-                      children: [
-                        Positioned.fill(
-                          child: StreamBuilder<List<StrokeModel>>(
-                            stream: ref
-                                .watch(strokeRepositoryProvider)
-                                .watchStrokes(programId),
-                            builder: (context, sharedSnapshot) {
-                              final sharedStrokes = sharedSnapshot.data ?? [];
-                              _cachedSharedStrokes = sharedStrokes;
-                              return StreamBuilder<List<LocalStrokeModel>>(
-                                stream: ref
-                                    .watch(localStrokeRepositoryProvider)
-                                    .watchStrokes(programId),
-                                builder: (context, privateSnapshot) {
-                                  final privateStrokes =
-                                      privateSnapshot.data ?? [];
-                                  _cachedPrivateStrokes = privateStrokes;
-
-                                  final isMarker = _selectedTool == 'marker';
-                                  final paintColor = isMarker
-                                      ? activePenColor.withAlpha(90)
-                                      : activePenColor;
-                                  final paintWidth = isMarker
-                                      ? penWidth * 3.0
-                                      : penWidth;
-
-                                  return CustomPaint(
-                                    painter: StrokePainter(
-                                      sharedStrokes: sharedStrokes,
-                                      privateStrokes: privateStrokes,
-                                      currentPoints: _currentPoints,
-                                      currentLineColor: paintColor,
-                                      activePenWidth: paintWidth,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        if (_isDrawingMode)
-                          Positioned.fill(
-                            child: Listener(
-                              behavior: HitTestBehavior.opaque,
-                              onPointerDown: (event) {
-                                if (_selectedTool == 'eraser') {
-                                  _eraseStrokeAt(event.localPosition);
-                                } else {
-                                  setState(
-                                    () =>
-                                        _currentPoints = [event.localPosition],
-                                  );
-                                }
-                              },
-                              onPointerMove: (event) {
-                                if (_selectedTool == 'eraser') {
-                                  _eraseStrokeAt(event.localPosition);
-                                } else {
-                                  setState(
-                                    () =>
-                                        _currentPoints.add(event.localPosition),
-                                  );
-                                }
-                              },
-                              onPointerUp: (event) async {
-                                if (_selectedTool == 'eraser') {
-                                  return;
-                                }
-                                if (_currentPoints.isNotEmpty) {
-                                  final pointsToSave = List<Offset>.from(
-                                    _currentPoints,
-                                  );
-                                  setState(() => _currentPoints.clear());
-
-                                  final isMarker = _selectedTool == 'marker';
-                                  final savedColor = isMarker
-                                      ? activePenColor.withAlpha(90)
-                                      : activePenColor;
-                                  final savedWidth = isMarker
-                                      ? penWidth * 3.0
-                                      : penWidth;
-
-                                  if (activeIsShared && canUseSharedPen) {
-                                    final newStroke = StrokeModel(
-                                      id: DateTime.now().millisecondsSinceEpoch
-                                          .toString(),
-                                      programId: programId,
-                                      points: pointsToSave,
-                                      color: savedColor,
-                                      strokeWidth: savedWidth,
-                                      isShared: activeIsShared,
-                                      pageIndex: _currentIndex,
-                                    );
-                                    await _getActiveRepository(
-                                      ref,
-                                    ).addStroke(newStroke);
-                                  } else {
-                                    final newLocalStroke = LocalStrokeModel()
-                                      ..programId = programId
-                                      ..pointsX = pointsToSave
-                                          .map((p) => p.dx)
-                                          .toList()
-                                      ..pointsY = pointsToSave
-                                          .map((p) => p.dy)
-                                          .toList()
-                                      ..colorValue = savedColor.toARGB32()
-                                      ..strokeWidth = savedWidth
-                                      ..createdAt = DateTime.now();
-                                    await ref
-                                        .read(localStrokeRepositoryProvider)
-                                        .addStroke(newLocalStroke);
-                                  }
-                                }
-                              },
-                              child: const SizedBox.expand(),
-                            ),
-                          ),
-                      ],
+                  Widget buildCanvas({required double penWidth}) {
+                    return ProgramViewerCanvasOverlay(
+                      programId: itemProgramId,
+                      pageIndex: _currentIndex,
+                      penWidth: penWidth,
+                      isDrawingMode: _isDrawingMode,
+                      selectedTool: _selectedTool,
+                      activePenColor: activePenColor,
+                      activeIsShared: activeIsShared,
+                      canUseSharedPen: canUseSharedPen,
                     );
                   }
 
@@ -621,18 +405,18 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                                   });
                                 }
                               },
-                              overlayLayers: buildOverlayLayers(penWidth: 10.0),
+                              overlayLayers: buildCanvas(penWidth: 10.0),
                             )
                           : ProgramViewerImageBody(
                               program: program,
-                              imageSizeFuture: _getCachedImageSize(
+                              imageSizeFuture: _mediaCache.getCachedImageSize(
                                 program.fileUrl,
                               ),
-                              safeUrl: _getSafeUrl(program.fileUrl),
+                              safeUrl: _mediaCache.getSafeUrl(program.fileUrl),
                               isSearchMode: _isSearchMode,
                               currentSearchText: _currentSearchText,
                               buildOverlayLayers: (w) =>
-                                  buildOverlayLayers(penWidth: w),
+                                  buildCanvas(penWidth: w),
                             ),
                     ),
                   );

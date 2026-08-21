@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_card_result_list.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_models.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_strike_stat_row.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'expedition_stats_models.dart';
 
 /// 遠征成績 詳細分析ボトムシート
 class ExpeditionDetailBottomSheet {
@@ -25,8 +27,6 @@ class ExpeditionDetailBottomSheet {
       context: context,
       isScrollControlled: true,
       builder: (ctx) {
-        final totalStrikes =
-            teamMen + teamKote + teamDou + teamTsuki + teamHansoku + teamOther;
         return Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(ctx).size.height * 0.85,
@@ -97,49 +97,12 @@ class ExpeditionDetailBottomSheet {
                       ),
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildStrikeStatBadge(
-                                  '面 (メ)',
-                                  teamMen,
-                                  totalStrikes,
-                                  AppKendoColors.teal,
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildStrikeStatBadge(
-                                  '小手 (コ)',
-                                  teamKote,
-                                  totalStrikes,
-                                  AppKendoColors.indigo,
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildStrikeStatBadge(
-                                  '胴 (ド)',
-                                  teamDou,
-                                  totalStrikes,
-                                  const Color(0xFFD97706),
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildStrikeStatBadge(
-                                  '突き (ツ)',
-                                  teamTsuki,
-                                  totalStrikes,
-                                  const Color(0xFF8B5CF6),
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildStrikeStatBadge(
-                                  '反則 (反)',
-                                  teamHansoku,
-                                  totalStrikes,
-                                  AppKendoColors.hansokuRed,
-                                ),
-                              ),
-                            ],
+                          ExpeditionStrikeStatRow(
+                            men: teamMen,
+                            kote: teamKote,
+                            dou: teamDou,
+                            tsuki: teamTsuki,
+                            hansoku: teamHansoku,
                           ),
                           const SizedBox(height: AppSpacing.md),
                           const Divider(height: 1),
@@ -190,119 +153,10 @@ class ExpeditionDetailBottomSheet {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    if (cardResults.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                        child: Center(
-                          child: Text(
-                            '団体戦の対戦履歴はありません',
-                            style: TextStyle(color: AppKendoColors.grey),
-                          ),
-                        ),
-                      )
-                    else
-                      ...cardResults.map((res) {
-                        final Color badgeBg = res.isWin
-                            ? AppKendoColors.teal.withValues(alpha: 0.15)
-                            : (res.isDraw
-                                  ? AppKendoColors.grey.withValues(alpha: 0.15)
-                                  : AppKendoColors.hansokuRed.withValues(
-                                      alpha: 0.15,
-                                    ));
-                        final Color badgeText = res.isWin
-                            ? AppKendoColors.teal
-                            : (res.isDraw
-                                  ? AppKendoColors.grey
-                                  : AppKendoColors.hansokuRed);
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.sm,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF2C2C2E)
-                                : const Color(0xFFFFFFFF),
-                            borderRadius: AppRadius.medium,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(
-                                      0xFFFFFFFF,
-                                    ).withValues(alpha: 0.1)
-                                  : const Color(
-                                      0xFF000000,
-                                    ).withValues(alpha: 0.08),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      res.cardTitle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: AppFontSize.caption,
-                                        color: AppKendoColors.grey,
-                                        fontWeight: AppFontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'vs ${res.opponentTeamName}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: AppFontSize.body,
-                                        fontWeight: AppFontWeight.bold,
-                                        color: context.appColors.textColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '${res.myWins}(${res.myPoints}) - ${res.oppWins}(${res.oppPoints})',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.bodyMedium,
-                                      fontWeight: AppFontWeight.bold,
-                                      color: context.appColors.textColor,
-                                    ),
-                                  ),
-                                  const SizedBox(width: AppSpacing.xs),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.sm,
-                                      vertical: AppSpacing.xxs,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: badgeBg,
-                                      borderRadius: AppRadius.round,
-                                    ),
-                                    child: Text(
-                                      res.resultType,
-                                      style: TextStyle(
-                                        fontSize: AppFontSize.caption,
-                                        fontWeight: AppFontWeight.bold,
-                                        color: badgeText,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
+                    ExpeditionCardResultList(
+                      cardResults: cardResults,
+                      isDark: isDark,
+                    ),
                   ],
                 ),
               ),
@@ -327,13 +181,6 @@ class ExpeditionDetailBottomSheet {
         final winRate = totalMatches > 0
             ? (stats.win / totalMatches * 100).toStringAsFixed(1)
             : '0.0';
-        final totalStrikes =
-            stats.men +
-            stats.kote +
-            stats.dou +
-            stats.tsuki +
-            stats.hansoku +
-            stats.other;
 
         return Container(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -414,49 +261,12 @@ class ExpeditionDetailBottomSheet {
                         : const Color(0xFF000000).withValues(alpha: 0.05),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildStrikeStatBadge(
-                        '面 (メ)',
-                        stats.men,
-                        totalStrikes,
-                        AppKendoColors.teal,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildStrikeStatBadge(
-                        '小手 (コ)',
-                        stats.kote,
-                        totalStrikes,
-                        AppKendoColors.indigo,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildStrikeStatBadge(
-                        '胴 (ド)',
-                        stats.dou,
-                        totalStrikes,
-                        const Color(0xFFD97706),
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildStrikeStatBadge(
-                        '突き (ツ)',
-                        stats.tsuki,
-                        totalStrikes,
-                        const Color(0xFF8B5CF6),
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildStrikeStatBadge(
-                        '反則 (反)',
-                        stats.hansoku,
-                        totalStrikes,
-                        AppKendoColors.hansokuRed,
-                      ),
-                    ),
-                  ],
+                child: ExpeditionStrikeStatRow(
+                  men: stats.men,
+                  kote: stats.kote,
+                  dou: stats.dou,
+                  tsuki: stats.tsuki,
+                  hansoku: stats.hansoku,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -464,42 +274,6 @@ class ExpeditionDetailBottomSheet {
           ),
         );
       },
-    );
-  }
-
-  static Widget _buildStrikeStatBadge(
-    String label,
-    int count,
-    int total,
-    Color color,
-  ) {
-    final pct = total > 0 ? (count / total * 100).toStringAsFixed(0) : '0';
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: AppFontSize.caption,
-            fontWeight: AppFontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '$count本',
-          style: const TextStyle(
-            fontSize: AppFontSize.bodyMedium,
-            fontWeight: AppFontWeight.bold,
-          ),
-        ),
-        Text(
-          '$pct%',
-          style: const TextStyle(
-            fontSize: AppFontSize.caption,
-            color: AppKendoColors.grey,
-          ),
-        ),
-      ],
     );
   }
 
