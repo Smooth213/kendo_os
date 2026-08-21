@@ -1,21 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/isar_projection_store.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
-/// 🥋 試合データの安全な取得（ローカル・メモリ・Web直接Firestore）および保存リトライヘルパー
+/// 🥋 試合データの安全な取得（ローカル・メモリ・Web直接Firestore）および保存リトライ・永続化ヘルパー
 class MatchPersistenceHelper {
   final Ref _ref;
 
   MatchPersistenceHelper(this._ref);
 
-  // =========================================================================
-  // 🛡️ Webアプリ・セーフガード (キャッシュ消失・ブラウザ再読み込み時の復旧)
-  // =========================================================================
   Future<MatchModel?> getMatchSafely(String matchId) async {
     final localRepo = _ref.read(localMatchRepositoryProvider);
     MatchModel? match;
@@ -50,7 +52,6 @@ class MatchPersistenceHelper {
           final data = docSnapshot.data()!;
           data['id'] = docSnapshot.id;
 
-          // Timestamp の安全な再帰的変換
           void safeConvertTimestamps(dynamic obj) {
             if (obj is Map) {
               for (var key in obj.keys.toList()) {
@@ -92,30 +93,185 @@ class MatchPersistenceHelper {
     return match;
   }
 
-  // =========================================================================
-  // 🛡️ Webアプリ・保存リトライ防波堤 (1秒制限・一瞬の通信断の克服)
-  // =========================================================================
   Future<int> saveToFirestoreWithRetry(
     MatchModel match, {
     int maxAttempts = 3,
   }) async {
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+    final matchRepo = _ref.read(matchRepositoryProvider);
+    int attempts = 0;
+    while (attempts < maxAttempts) {
+      attempts++;
       try {
-        final newVersion = await _ref
-            .read(matchRepositoryProvider)
-            .saveMatch(match);
-        return newVersion;
+        final version = await matchRepo.saveMatch(match);
+        return version;
       } catch (e) {
-        if (attempt == maxAttempts) {
-          rethrow;
-        }
-        final delayMs = 500 * attempt;
-        debugPrint(
-          '⚠️ [MatchPersistenceHelper] Firestore保存をリトライします ($attempt/$maxAttempts) ${delayMs}ms後: $e',
-        );
-        await Future.delayed(Duration(milliseconds: delayMs));
+        debugPrint('⚠️ [Save Retry] Attempt $attempts failed: $e');
+        if (attempts >= maxAttempts) rethrow;
+        await Future.delayed(Duration(milliseconds: 300 * attempts));
       }
     }
-    throw Exception('Firestore保存エラー: リトライ上限に達しました');
+    return 1;
+  }
+
+  Future<void> saveMatch(MatchModel match) async {
+    final dojoId = _ref.read(currentDojoIdProvider);
+    final matchWithId = match.id.isEmpty
+        ? match.copyWith(id: const Uuid().v4())
+        : match;
+    final matchToSave = matchWithId.copyWith(
+      organizationId:
+          (matchWithId.organizationId == 'default_org' ||
+              matchWithId.organizationId.isEmpty)
+          ? dojoId
+          : matchWithId.organizationId,
+      syncState: SyncState.localOnly,
+      lastUpdatedAt: DateTime.now(),
+    );
+
+    if (kIsWeb) {
+      final webSafeMatch = matchToSave.copyWith(snapshots: const []);
+      final currentMatches = _ref.read(webCurrentTournamentMatchesProvider);
+      final index = currentMatches.indexWhere((m) => m.id == webSafeMatch.id);
+      if (index != -1) {
+        final newMatches = List<MatchModel>.from(currentMatches);
+        newMatches[index] = webSafeMatch;
+        _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+            newMatches;
+      } else {
+        _ref.read(webCurrentTournamentMatchesProvider.notifier).state = [
+          ...currentMatches,
+          webSafeMatch,
+        ];
+      }
+
+      final newVersion = await saveToFirestoreWithRetry(webSafeMatch);
+      final finalMatches = _ref.read(webCurrentTournamentMatchesProvider);
+      final fIndex = finalMatches.indexWhere((m) => m.id == webSafeMatch.id);
+      if (fIndex != -1) {
+        final newMatches = List<MatchModel>.from(finalMatches);
+        newMatches[fIndex] = webSafeMatch.copyWith(version: newVersion);
+        _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+            newMatches;
+      }
+    } else {
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      await localRepo.saveMatch(matchToSave);
+
+      bool isViewer = false;
+      try {
+        final currentUserAuth = FirebaseAuth.instance.currentUser;
+        if (currentUserAuth != null && currentUserAuth.isAnonymous) {
+          isViewer = true;
+        }
+      } catch (_) {}
+
+      if (!isViewer) {
+        final action = MatchCommandModel(
+          id: const Uuid().v4(),
+          type: CommandType.updateMatch,
+          payload: matchToSave.toJson(),
+          createdAt: DateTime.now(),
+          status: CommandStatus.pending,
+        );
+        await localRepo.savePendingCommand(action);
+      }
+
+      _ref.read(syncEngineProvider).processQueue();
+      _ref.invalidate(matchListProvider);
+    }
+  }
+
+  Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
+    if (newMatches.isEmpty) return;
+    final dojoId = _ref.read(currentDojoIdProvider);
+
+    final preparedMatches = newMatches.map((m) {
+      final mWithId = m.id.isEmpty ? m.copyWith(id: const Uuid().v4()) : m;
+      return mWithId.copyWith(
+        organizationId:
+            (mWithId.organizationId == 'default_org' ||
+                mWithId.organizationId.isEmpty)
+            ? dojoId
+            : mWithId.organizationId,
+        syncState: SyncState.localOnly,
+        lastUpdatedAt: DateTime.now(),
+      );
+    }).toList();
+
+    if (kIsWeb) {
+      final webSafeMatches = preparedMatches
+          .map((m) => m.copyWith(snapshots: const []))
+          .toList();
+
+      var currentMatches = _ref.read(webCurrentTournamentMatchesProvider);
+      var newMatches = List<MatchModel>.from(currentMatches);
+      for (final m in webSafeMatches) {
+        final index = newMatches.indexWhere((em) => em.id == m.id);
+        if (index != -1) {
+          newMatches[index] = m;
+        } else {
+          newMatches.add(m);
+        }
+      }
+      _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+          newMatches;
+
+      for (final m in webSafeMatches) {
+        await saveToFirestoreWithRetry(m);
+      }
+    } else {
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      await localRepo.saveMatchesBulk(preparedMatches);
+
+      bool isViewer = false;
+      try {
+        final currentUserAuth = FirebaseAuth.instance.currentUser;
+        if (currentUserAuth != null && currentUserAuth.isAnonymous) {
+          isViewer = true;
+        }
+      } catch (_) {}
+
+      if (!isViewer) {
+        for (final m in preparedMatches) {
+          final action = MatchCommandModel(
+            id: const Uuid().v4(),
+            type: CommandType.updateMatch,
+            payload: m.toJson(),
+            createdAt: DateTime.now(),
+            status: CommandStatus.pending,
+          );
+          await localRepo.savePendingCommand(action);
+        }
+      }
+
+      _ref.read(syncEngineProvider).processQueue();
+      _ref.invalidate(matchListProvider);
+    }
+  }
+
+  Future<void> saveAndSync(MatchModel match) async {
+    if (!kIsWeb) {
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      final existingLocal = await localRepo.getMatch(match.id);
+      if (existingLocal != null) {
+        if ((existingLocal.events.length) > match.events.length) {
+          debugPrint(
+            '🛡️ [Conflict Resolution] 既存のローカルデータが新しいため上書きスキップ: ${match.id}',
+          );
+          return;
+        }
+      }
+    }
+
+    await saveMatch(match);
+
+    if (!kIsWeb) {
+      try {
+        final isarProjectionStore = _ref.read(isarProjectionStoreProvider);
+        await isarProjectionStore.saveMatchProjection(match);
+      } catch (e) {
+        debugPrint('⚠️ [Projection Cache] Isar Projection 書き込み失敗: $e');
+      }
+    }
   }
 }

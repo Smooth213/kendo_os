@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_data_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_rule_and_memo_tab.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_save_button.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_save_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_team_and_players_tab.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 /// 🏆 試合・団体戦対戦枠の詳細編集を行うボトムシート
 class MatchEditSheet extends ConsumerStatefulWidget {
@@ -401,168 +401,39 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           ),
 
           // Footer Save Button
-          SafeArea(
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF000000).withAlpha(isDark ? 50 : 20),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  icon: const Icon(
-                    Icons.check,
-                    color: AppKendoColors.pureWhite,
-                  ),
-                  label: Text(
-                    _isDantai ? '団体戦全体を一括保存' : '変更内容を保存',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.subhead,
-                      fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.pureWhite,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.themeColors.primaryAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.large,
-                    ),
-                  ),
-                  onPressed: _saveChanges,
-                ),
-              ),
-            ),
+          MatchEditSaveButton(
+            isDantai: _isDantai,
+            backgroundColor: backgroundColor,
+            primaryAccent: widget.themeColors.primaryAccent,
+            isDark: isDark,
+            onSave: _saveChanges,
           ),
         ],
       ),
     );
   }
 
-  void _saveChanges() async {
-    final groupInput = _groupNameController.text.trim();
-    final redTeamInput = _redTeamController.text.trim();
-    final whiteTeamInput = _whiteTeamController.text.trim();
-    final courtInput = _courtController.text.trim();
-
-    final firstMatch = widget.matches.first;
-    final rawGroup = firstMatch.groupName ?? '';
-    final isUuidGroup = RegExp(
-      r'^[a-f0-9\-]{20,}$',
-      caseSensitive: false,
-    ).hasMatch(rawGroup);
-
-    final String fallbackGroupKey =
-        (rawGroup.isNotEmpty &&
-            !isUuidGroup &&
-            rawGroup != '1回戦' &&
-            rawGroup != '2回戦')
-        ? rawGroup
-        : 'group_${firstMatch.id}';
-
-    final String finalGroupName = _isDantai
-        ? (courtInput.isNotEmpty
-              ? courtInput
-              : (groupInput.isNotEmpty ? groupInput : fallbackGroupKey))
-        : (courtInput.isNotEmpty ? courtInput : groupInput);
-
-    final bool currentOwnIsRed = _isSwapped
-        ? !_initialOwnIsRed
-        : _initialOwnIsRed;
-    final String targetOwnTeamName = currentOwnIsRed
-        ? redTeamInput
-        : whiteTeamInput;
-
-    final String sceneKey = _selectedPresetKey ?? 'honsen';
-    final bool isRenseikaiBool = sceneKey == 'renseikai';
-    final bool isRenseikaiOrMoushiawase =
-        sceneKey == 'renseikai' || sceneKey == 'moushiawase';
-
-    final updatedMatches = <MatchModel>[];
-
-    for (int i = 0; i < widget.matches.length; i++) {
-      final m = widget.matches[i];
-      final baseRule = _selectedPresetRule ?? m.rule ?? const MatchRule();
-
-      final updatedRule = baseRule.copyWith(
-        matchScene: sceneKey,
-        isRenseikai: isRenseikaiBool,
-        matchTimeMinutes: _matchTime,
-        isIpponShobu: _isIpponShobu,
-        hasHantei: isRenseikaiOrMoushiawase ? false : _hasHantei,
-        enchoTimeMinutes: isRenseikaiOrMoushiawase
-            ? 0.0
-            : baseRule.enchoTimeMinutes,
-        isEnchoUnlimited: isRenseikaiOrMoushiawase
-            ? false
-            : baseRule.isEnchoUnlimited,
-        hasRepresentativeMatch: isRenseikaiOrMoushiawase
-            ? false
-            : baseRule.hasRepresentativeMatch,
-        teamName: targetOwnTeamName.isNotEmpty
-            ? targetOwnTeamName
-            : baseRule.teamName,
-      );
-
-      final redPlayer = _redPlayerControllers[i].text.trim();
-      final whitePlayer = _whitePlayerControllers[i].text.trim();
-
-      final finalRedName = _isDantai
-          ? (redTeamInput.isNotEmpty
-                ? (redPlayer.isNotEmpty
-                      ? '$redTeamInput: $redPlayer'
-                      : redTeamInput)
-                : redPlayer)
-          : redPlayer;
-
-      final finalWhiteName = _isDantai
-          ? (whiteTeamInput.isNotEmpty
-                ? (whitePlayer.isNotEmpty
-                      ? '$whiteTeamInput: $whitePlayer'
-                      : whiteTeamInput)
-                : whitePlayer)
-          : whitePlayer;
-
-      final userNote = _noteController.text.trim();
-      final prefixParts = <String>[];
-      if (courtInput.isNotEmpty) prefixParts.add(courtInput);
-      if (groupInput.isNotEmpty) prefixParts.add(groupInput);
-
-      final headerPrefix = prefixParts.join(' ');
-      final noteCombined = headerPrefix.isNotEmpty
-          ? (userNote.isNotEmpty ? '$headerPrefix\n$userNote' : headerPrefix)
-          : userNote;
-
-      final updatedMatch = m.copyWith(
-        redName: finalRedName,
-        whiteName: finalWhiteName,
-        groupName: finalGroupName,
-        note: noteCombined,
-        rule: updatedRule,
-        matchScene: sceneKey,
-        status: _status,
-      );
-
-      updatedMatches.add(updatedMatch);
-    }
-
-    await ref
-        .read(matchApplicationServiceProvider)
-        .saveMatchesBulk(updatedMatches);
-
-    if (mounted) {
-      AppSnackBar.showSuccess(
-        context,
-        _isDantai ? '団体戦の全試合情報を一括保存しました' : '試合情報を保存・更新しました',
-      );
-      Navigator.pop(context);
-    }
+  void _saveChanges() {
+    MatchEditSaveHelper.executeSave(
+      context: context,
+      ref: ref,
+      matches: widget.matches,
+      isDantai: _isDantai,
+      isSwapped: _isSwapped,
+      initialOwnIsRed: _initialOwnIsRed,
+      groupInput: _groupNameController.text.trim(),
+      redTeamInput: _redTeamController.text.trim(),
+      whiteTeamInput: _whiteTeamController.text.trim(),
+      courtInput: _courtController.text.trim(),
+      selectedPresetKey: _selectedPresetKey,
+      selectedPresetRule: _selectedPresetRule,
+      matchTime: _matchTime,
+      isIpponShobu: _isIpponShobu,
+      hasHantei: _hasHantei,
+      userNote: _noteController.text.trim(),
+      status: _status,
+      redPlayerControllers: _redPlayerControllers,
+      whitePlayerControllers: _whitePlayerControllers,
+    );
   }
 }

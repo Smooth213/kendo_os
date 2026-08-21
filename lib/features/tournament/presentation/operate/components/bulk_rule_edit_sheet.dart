@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_apply_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_bottom_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_data_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_differing_banner.dart';
+
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_detail_setting_cards.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_preset_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_target_select_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
@@ -108,79 +112,44 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
   }
 
   void _applyCategoryRuleSet(MatchRule targetRule, {String? sceneKey}) {
-    final effectiveScene = sceneKey ?? targetRule.matchScene;
-    final isRenseikaiOrMoushiawase =
-        effectiveScene == 'renseikai' ||
-        effectiveScene == 'moushiawase' ||
-        targetRule.isRenseikai ||
-        targetRule.matchScene == 'renseikai' ||
-        targetRule.matchScene == 'moushiawase';
+    final res = BulkRuleApplyHelper.computeRuleParams(
+      targetRule: targetRule,
+      isTeam: _isCurrentFilterTeamMatch,
+      isIndiv: _isCurrentFilterIndividualMatch,
+      sceneKey: sceneKey,
+    );
 
-    _matchTime = targetRule.matchTimeMinutes;
-    _isIpponShobu = targetRule.isIpponShobu;
-
-    if (isRenseikaiOrMoushiawase) {
-      _hasExtension = false;
-      _isEnchoUnlimited = false;
-      _enchoTime = 0.0;
-      _enchoCount = 0;
-      _hasHantei = false;
-      _hasRepresentativeMatch = false;
-      _isDaihyoIpponShobu = false;
-    } else {
-      final bool extensionEnabled =
-          (targetRule.enchoTimeMinutes > 0) || targetRule.isEnchoUnlimited;
-      _hasExtension = extensionEnabled;
-      _isEnchoUnlimited = extensionEnabled
-          ? targetRule.isEnchoUnlimited
-          : false;
-      _enchoTime = targetRule.enchoTimeMinutes > 0
-          ? targetRule.enchoTimeMinutes
-          : 3.0;
-      _enchoCount = targetRule.enchoCount > 0 ? targetRule.enchoCount : 1;
-
-      final isTeam = _isCurrentFilterTeamMatch;
-      final isIndiv = _isCurrentFilterIndividualMatch;
-
-      if (isTeam && !isIndiv) {
-        _hasHantei = false;
-        _hasRepresentativeMatch = targetRule.hasRepresentativeMatch;
-        _isDaihyoIpponShobu = targetRule.hasRepresentativeMatch
-            ? targetRule.isDaihyoIpponShobu
-            : false;
-      } else if (isIndiv && !isTeam) {
-        _hasRepresentativeMatch = false;
-        _isDaihyoIpponShobu = false;
-        _hasHantei = targetRule.hasHantei;
-      } else {
-        _hasHantei = targetRule.hasHantei;
-        _hasRepresentativeMatch = targetRule.hasRepresentativeMatch;
-        _isDaihyoIpponShobu = targetRule.hasRepresentativeMatch
-            ? targetRule.isDaihyoIpponShobu
-            : false;
-      }
-    }
-
-    _isRenseikai = isRenseikaiOrMoushiawase || targetRule.isRenseikai;
-    _renseikaiType = targetRule.renseikaiType;
-    _overallTimeController.text = targetRule.overallTimeMinutes.toString();
+    setState(() {
+      _matchTime = res.matchTime;
+      _isIpponShobu = res.isIpponShobu;
+      _hasExtension = res.hasExtension;
+      _enchoTime = res.enchoTime;
+      _enchoCount = res.enchoCount;
+      _isEnchoUnlimited = res.isEnchoUnlimited;
+      _hasHantei = res.hasHantei;
+      _hasRepresentativeMatch = res.hasRepresentativeMatch;
+      _isDaihyoIpponShobu = res.isDaihyoIpponShobu;
+      _isRenseikai = res.isRenseikai;
+      _renseikaiType = res.renseikaiType;
+      _overallTimeController.text = res.overallTimeMinutes.toString();
+    });
   }
 
   void _loadTemplateRules(MatchModel m) {
     _loadedMatchId = m.id;
-    final r = m.rule ?? const MatchRule();
-    _matchTime = m.matchTimeMinutes;
-    _isIpponShobu = r.isIpponShobu;
-    _hasExtension = m.hasExtension;
-    _enchoTime = m.extensionTimeMinutes ?? 3.0;
-    _enchoCount = m.extensionCount ?? 1;
-    _isEnchoUnlimited = r.isEnchoUnlimited;
-    _hasHantei = m.hasHantei;
-    _hasRepresentativeMatch = r.hasRepresentativeMatch;
-    _isDaihyoIpponShobu = r.isDaihyoIpponShobu;
-    _isRenseikai = r.isRenseikai;
-    _renseikaiType = r.renseikaiType;
-    _overallTimeController.text = r.overallTimeMinutes.toString();
+    final res = BulkRuleApplyHelper.loadTemplate(m);
+    _matchTime = res.matchTime;
+    _isIpponShobu = res.isIpponShobu;
+    _hasExtension = res.hasExtension;
+    _enchoTime = res.enchoTime;
+    _enchoCount = res.enchoCount;
+    _isEnchoUnlimited = res.isEnchoUnlimited;
+    _hasHantei = res.hasHantei;
+    _hasRepresentativeMatch = res.hasRepresentativeMatch;
+    _isDaihyoIpponShobu = res.isDaihyoIpponShobu;
+    _isRenseikai = res.isRenseikai;
+    _renseikaiType = res.renseikaiType;
+    _overallTimeController.text = res.overallTimeMinutes.toString();
   }
 
   void _updateLoadedTemplateIfNecessary() {
@@ -201,32 +170,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
     final selectedMatches = widget.matches
         .where((m) => _selectedMatchIds.contains(m.id))
         .toList();
-    if (selectedMatches.length <= 1) return false;
-
-    final first = selectedMatches.first;
-    final firstRule = first.rule ?? const MatchRule();
-
-    for (int i = 1; i < selectedMatches.length; i++) {
-      final current = selectedMatches[i];
-      final currentRule = current.rule ?? const MatchRule();
-
-      if (current.matchTimeMinutes != first.matchTimeMinutes ||
-          current.hasExtension != first.hasExtension ||
-          current.extensionTimeMinutes != first.extensionTimeMinutes ||
-          current.extensionCount != first.extensionCount ||
-          current.hasHantei != first.hasHantei ||
-          currentRule.isIpponShobu != firstRule.isIpponShobu ||
-          currentRule.isEnchoUnlimited != firstRule.isEnchoUnlimited ||
-          currentRule.hasRepresentativeMatch !=
-              firstRule.hasRepresentativeMatch ||
-          currentRule.isDaihyoIpponShobu != firstRule.isDaihyoIpponShobu ||
-          currentRule.isRenseikai != firstRule.isRenseikai ||
-          currentRule.renseikaiType != firstRule.renseikaiType ||
-          currentRule.overallTimeMinutes != firstRule.overallTimeMinutes) {
-        return true;
-      }
-    }
-    return false;
+    return BulkRuleDataHelper.hasDifferingRules(selectedMatches);
   }
 
   @override
@@ -463,44 +407,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                 })(),
 
                 if (_hasDifferingRules()) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(
-                        0xFFD97706,
-                      ).withAlpha(isDark ? 30 : 15),
-                      borderRadius: AppRadius.small,
-                      border: Border.all(
-                        color: const Color(
-                          0xFFD4AF37,
-                        ).withAlpha(isDark ? 60 : 30),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Color(0xFFD97706),
-                          size: 18,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            '選択した対戦の中に、設定が異なる試合が含まれています（先頭の試合のルールを表示中）',
-                            style: TextStyle(
-                              fontSize: AppFontSize.small,
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  BulkRuleDifferingBanner(isDark: isDark),
                   const SizedBox(height: AppSpacing.md),
                 ],
 
@@ -541,79 +448,42 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
           ),
 
           // 下部固定実行ボタン
-          SafeArea(
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1C1C1E)
-                    : const Color(0xFFFFFFFF),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF000000).withAlpha(isDark ? 50 : 20),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: _selectedMatchIds.isEmpty
-                    ? null
-                    : () async {
-                        final newRule = MatchRule(
-                          matchTimeMinutes: _matchTime,
-                          isIpponShobu: _isIpponShobu,
-                          hasHantei: _hasHantei,
-                          isEnchoUnlimited: _isEnchoUnlimited,
-                          enchoTimeMinutes: _hasExtension ? _enchoTime : 0.0,
-                          enchoCount: _isEnchoUnlimited ? 0 : _enchoCount,
-                          hasRepresentativeMatch: _hasRepresentativeMatch,
-                          isDaihyoIpponShobu: _isDaihyoIpponShobu,
-                          isRenseikai: _isRenseikai,
-                          renseikaiType: _renseikaiType,
-                          overallTimeMinutes:
-                              int.tryParse(_overallTimeController.text) ?? 30,
-                        );
+          BulkRuleBottomBar(
+            totalSelectedUnitsCount: totalSelectedUnitsCount,
+            hasSelection: _selectedMatchIds.isNotEmpty,
+            primaryAccent: widget.themeColors.primaryAccent,
+            isDark: isDark,
+            onApply: () async {
+              final newRule = MatchRule(
+                matchTimeMinutes: _matchTime,
+                isIpponShobu: _isIpponShobu,
+                hasHantei: _hasHantei,
+                isEnchoUnlimited: _isEnchoUnlimited,
+                enchoTimeMinutes: _hasExtension ? _enchoTime : 0.0,
+                enchoCount: _isEnchoUnlimited ? 0 : _enchoCount,
+                hasRepresentativeMatch: _hasRepresentativeMatch,
+                isDaihyoIpponShobu: _isDaihyoIpponShobu,
+                isRenseikai: _isRenseikai,
+                renseikaiType: _renseikaiType,
+                overallTimeMinutes:
+                    int.tryParse(_overallTimeController.text) ?? 30,
+              );
 
-                        await ref
-                            .read(matchCommandProvider)
-                            .bulkUpdateMatchRules(
-                              targetMatchIds: _selectedMatchIds,
-                              newRule: newRule,
-                            );
+              await ref
+                  .read(matchCommandProvider)
+                  .bulkUpdateMatchRules(
+                    targetMatchIds: _selectedMatchIds,
+                    newRule: newRule,
+                  );
 
-                        if (context.mounted) {
-                          AppSnackBar.showSuccess(
-                            context,
-                            '$totalSelectedUnitsCount件の対戦ルールを一括変更しました。',
-                          );
-                          Navigator.pop(context);
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.themeColors.primaryAccent,
-                  foregroundColor: AppKendoColors.pureWhite,
-                  disabledBackgroundColor: context.appColors.separatorColor,
-                  disabledForegroundColor: isDark
-                      ? context.appColors.textColor.withValues(alpha: 0.3)
-                      : context.appColors.cardBackground.withValues(
-                          alpha: 0.38,
-                        ),
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-                  elevation: 0,
-                ),
-                child: Text(
-                  _selectedMatchIds.isEmpty
-                      ? '適用対象の試合を選択してください'
-                      : '選択した $totalSelectedUnitsCount 件にルールを適用する',
-                  style: const TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.subhead,
-                  ),
-                ),
-              ),
-            ),
+              if (context.mounted) {
+                AppSnackBar.showSuccess(
+                  context,
+                  '$totalSelectedUnitsCount件の対戦ルールを一括変更しました。',
+                );
+                Navigator.pop(context);
+              }
+            },
           ),
         ],
       ),

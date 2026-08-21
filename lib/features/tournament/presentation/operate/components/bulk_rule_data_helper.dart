@@ -1,4 +1,5 @@
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_target_select_section.dart';
 
 /// 一括ルール編集用のデータ解析・グループ化ヘルパー
@@ -109,5 +110,34 @@ class BulkRuleDataHelper {
     });
 
     return units;
+  }
+
+  static bool hasDifferingRules(List<MatchModel> selectedMatches) {
+    if (selectedMatches.length <= 1) return false;
+
+    final first = selectedMatches.first;
+    final firstRule = first.rule ?? const MatchRule();
+
+    for (int i = 1; i < selectedMatches.length; i++) {
+      final current = selectedMatches[i];
+      final currentRule = current.rule ?? const MatchRule();
+
+      if (current.matchTimeMinutes != first.matchTimeMinutes ||
+          current.hasExtension != first.hasExtension ||
+          current.extensionTimeMinutes != first.extensionTimeMinutes ||
+          current.extensionCount != first.extensionCount ||
+          current.hasHantei != first.hasHantei ||
+          currentRule.isIpponShobu != firstRule.isIpponShobu ||
+          currentRule.isEnchoUnlimited != firstRule.isEnchoUnlimited ||
+          currentRule.hasRepresentativeMatch !=
+              firstRule.hasRepresentativeMatch ||
+          currentRule.isDaihyoIpponShobu != firstRule.isDaihyoIpponShobu ||
+          currentRule.isRenseikai != firstRule.isRenseikai ||
+          currentRule.renseikaiType != firstRule.renseikaiType ||
+          currentRule.overallTimeMinutes != firstRule.overallTimeMinutes) {
+        return true;
+      }
+    }
+    return false;
   }
 }
