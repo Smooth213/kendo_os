@@ -6,6 +6,8 @@
 | :--- | :--- | :--- | :--- |
 | [001](./001_rule_engine_pluginization.md) | 剣道ルールエンジンのプラグイン化と階層型Configの導入 | Accepted | 2026-05 |
 | 010 | Documentation = Runtime Knowledge (運用知識のガバナンス化) | Accepted | 2026-05 |
+| [011](./ADR_011_file_size_and_single_responsibility_governance.md) | File Size & Single Responsibility Governance (肥大化防止・単一責任原則のガバナンス化) | Accepted | 2026-08 |
+
 
 ---
 
