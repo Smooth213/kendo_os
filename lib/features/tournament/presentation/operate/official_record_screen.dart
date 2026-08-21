@@ -15,7 +15,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 // ★ Phase 7: 権限プロバイダのインポート
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/shared/application/services/csv_service.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
@@ -23,14 +22,13 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_expedition_summary_card.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_grid_table.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_individual_matches_list.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
-import 'package:kendo_os/shared/widgets/match_tables/league_grid_card.dart';
-import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
-import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
@@ -526,13 +524,26 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                               ),
 
                               // 1. ブラッシュアップされた星取表（マトリックス）
-                              _buildLeagueGridTable(
-                                context,
-                                groupName,
-                                matches,
+                              OfficialRecordLeagueGridTable(
+                                groupName: groupName,
+                                matches: matches,
                                 cardColor: cardColor,
                                 isDark: isDark,
-                                ref: ref,
+                                scoreTableBuilder: (name, bouts) =>
+                                    _buildScoreTable(
+                                      name,
+                                      bouts,
+                                      cardColor: AppKendoColors.transparent,
+                                      isDark: isDark,
+                                    ),
+                                individualListBuilder: (name, bouts) =>
+                                    OfficialRecordIndividualMatchesList(
+                                      groupName: name,
+                                      matches: bouts,
+                                      cardColor: AppKendoColors.transparent,
+                                      isDark: isDark,
+                                      applySort: false,
+                                    ),
                               ),
 
                               const SizedBox(height: AppSpacing.xxl),
@@ -557,12 +568,11 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                   padding: const EdgeInsets.only(
                                     bottom: AppSpacing.xl,
                                   ),
-                                  child: _buildIndividualMatchesList(
-                                    '対戦スコア詳細',
-                                    normalMatches,
+                                  child: OfficialRecordIndividualMatchesList(
+                                    groupName: '対戦スコア詳細',
+                                    matches: normalMatches,
                                     cardColor: cardColor,
                                     isDark: isDark,
-                                    ref: ref,
                                     applySort: false,
                                   ),
                                 )
@@ -604,16 +614,15 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                     padding: const EdgeInsets.only(
                                       bottom: AppSpacing.lg,
                                     ),
-                                    child: _buildIndividualMatchesList(
-                                      '順位決定戦',
-                                      tieBouts,
+                                    child: OfficialRecordIndividualMatchesList(
+                                      groupName: '順位決定戦',
+                                      matches: tieBouts,
                                       cardColor: isDark
                                           ? const Color(
                                               0xFFFF9800,
                                             ).withValues(alpha: 0.1)
                                           : const Color(0xFFFF9800),
                                       isDark: isDark,
-                                      ref: ref,
                                       applySort: false,
                                     ),
                                   )
@@ -649,12 +658,11 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                   m.matchType.contains('個人戦'),
                             )) {
                           // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
-                          return _buildIndividualMatchesList(
-                            groupName,
-                            matches,
+                          return OfficialRecordIndividualMatchesList(
+                            groupName: groupName,
+                            matches: matches,
                             cardColor: cardColor,
                             isDark: isDark,
-                            ref: ref,
                             applySort: true,
                           );
                         } else {
@@ -882,415 +890,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
     return ScoreTableCard(
       info: info,
-      matches: matchItems,
-      cardColor: cardColor,
-      isDark: isDark,
-    );
-  }
-
-  // ★ 追加：印刷画面用のリーグ星取表描画メソッド
-  Widget _buildLeagueGridTable(
-    BuildContext context,
-    String groupName,
-    List<MatchModel> matches, {
-    Color? cardColor,
-    required bool isDark,
-    required WidgetRef ref,
-  }) {
-    final normalMatches = matches
-        .where((m) => !m.note.contains('[順位決定戦]'))
-        .toList();
-    if (normalMatches.isEmpty) return const SizedBox();
-
-    final rule = normalMatches.first.rule ?? ref.read(matchRuleProvider);
-    final nonNullRule = rule!;
-    final stats = KendoRuleEngine.calculateLeagueStandings(
-      normalMatches,
-      nonNullRule,
-    );
-    final isIndiv = normalMatches.any(
-      (m) =>
-          m.matchType == 'individual' ||
-          m.matchType == '選手' ||
-          m.matchType.contains('個人戦'),
-    );
-    final allFinished = matches.every(
-      (m) => m.status == 'approved' || m.status == 'finished',
-    );
-    final hasMatchPoints = nonNullRule.isLeague;
-
-    String getEntityName(String fullName) {
-      if (isIndiv) {
-        return fullName.contains(':')
-            ? fullName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
-            : fullName.trim();
-      }
-      return fullName.contains(':')
-          ? fullName.split(':').first.trim()
-          : fullName.trim();
-    }
-
-    final teams = <String>{};
-    for (var m in normalMatches) {
-      teams.add(getEntityName(m.redName));
-      teams.add(getEntityName(m.whiteName));
-    }
-    final teamList = teams.toList()..sort();
-
-    final leagueTeams = teamList.map((rowTeam) {
-      final stat = stats.firstWhere(
-        (s) => s.name == rowTeam,
-        orElse: () => stats.first,
-      );
-      final rankStr = allFinished
-          ? '${stats.indexWhere((s) => s.name == rowTeam) + 1}'
-          : '-';
-      return LeagueGridTeamInfo(
-        teamName: rowTeam,
-        matchWins: '${stat.matchWins}',
-        individualWinners: '${stat.individualWinners}',
-        totalPoints: '${stat.totalPointsScored}',
-        customPoints: stat.customPoints.toStringAsFixed(
-          stat.customPoints.truncateToDouble() == stat.customPoints ? 0 : 1,
-        ),
-        rank: rankStr,
-      );
-    }).toList();
-
-    final matrix = <String, Map<String, LeagueGridCellData>>{};
-    for (var rowTeam in teamList) {
-      matrix[rowTeam] = {};
-      for (var colTeam in teamList) {
-        if (rowTeam == colTeam) continue;
-
-        final bouts = normalMatches.where((m) {
-          final r = getEntityName(m.redName);
-          final w = getEntityName(m.whiteName);
-          return (r == rowTeam && w == colTeam) ||
-              (r == colTeam && w == rowTeam);
-        }).toList();
-
-        if (bouts.isEmpty) continue;
-
-        int rWins = 0,
-            cWins = 0,
-            rPoints = 0,
-            cPoints = 0,
-            rWinners = 0,
-            cWinners = 0;
-        List<PointMark> techs = [];
-        for (var m in bouts) {
-          final isRowRed = getEntityName(m.redName) == rowTeam;
-          final rs = (m.redScore as num).toInt();
-          final ws = (m.whiteScore as num).toInt();
-          if (rs > ws) {
-            isRowRed ? rWins++ : cWins++;
-            isRowRed ? rWinners++ : cWinners++;
-          } else if (ws > rs) {
-            isRowRed ? cWins++ : rWins++;
-            isRowRed ? cWinners++ : rWinners++;
-          }
-          isRowRed ? rPoints += rs : cPoints += rs;
-          isRowRed ? cPoints += ws : rPoints += ws;
-          if (isIndiv) {
-            final extractedMap = MatchCalculatorHelper.extractPointsFromModel(
-              m,
-            );
-            final extracted = List<PointMark>.from(
-              isRowRed ? extractedMap['red']! : extractedMap['white']!,
-            );
-
-            final bool isSummary = m.note.contains('[SUMMARY]');
-            if (isSummary || extracted.isEmpty) {
-              extracted.clear();
-              for (int k = 0; k < (isRowRed ? rs : ws); k++) {
-                extracted.add(const PointMark(mark: '◯', isFirst: false));
-              }
-            }
-            techs.addAll(extracted);
-          }
-        }
-
-        String result = 'draw';
-        if (rWins > cWins) {
-          result = 'win';
-        } else if (cWins > rWins) {
-          result = 'loss';
-        }
-
-        if (!bouts.every(
-          (m) => m.status == 'approved' || m.status == 'finished',
-        )) {
-          continue;
-        }
-
-        matrix[rowTeam]![colTeam] = LeagueGridCellData(
-          result: result,
-          isIndiv: isIndiv,
-          techMarks: techs,
-          rPoints: rPoints,
-          rWinners: rWinners,
-          onTap: () {
-            showGeneralDialog(
-              context: context,
-              barrierDismissible: true,
-              barrierLabel: '閉じる',
-              barrierColor: AppKendoColors.pureBlack.withValues(alpha: 0.7),
-              transitionDuration: const Duration(milliseconds: 350),
-              pageBuilder: (ctx, anim1, anim2) {
-                return Center(
-                  child: Dialog(
-                    backgroundColor: AppKendoColors.transparent,
-                    elevation: 0,
-                    insetPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.roundValue,
-                      vertical: AppSpacing.giant,
-                    ),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 550),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1C1C1E)
-                            : const Color(0xFFFFFFFF),
-                        borderRadius: AppRadius.round,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppKendoColors.pureBlack.withValues(
-                              alpha: 0.3,
-                            ),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(AppSpacing.roundValue),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: isIndiv
-                                ? _buildIndividualMatchesList(
-                                    '$rowTeam vs $colTeam',
-                                    bouts,
-                                    cardColor: AppKendoColors.transparent,
-                                    isDark: isDark,
-                                    ref: ref,
-                                    applySort: false,
-                                  )
-                                : _buildScoreTable(
-                                    '$rowTeam vs $colTeam',
-                                    bouts,
-                                    cardColor: AppKendoColors.transparent,
-                                    isDark: isDark,
-                                  ),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: context.appColors.separatorColor,
-                              foregroundColor: context.appColors.textColor,
-                              shape: const StadiumBorder(),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                                vertical: AppSpacing.md,
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              '閉じる',
-                              style: TextStyle(fontWeight: AppFontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-              transitionBuilder: (ctx, anim1, anim2, child) {
-                return FadeTransition(
-                  opacity: anim1,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.9, end: 1.0).animate(
-                      CurvedAnimation(
-                        parent: anim1,
-                        curve: Curves.easeOutCubic,
-                      ),
-                    ),
-                    child: child,
-                  ),
-                );
-              },
-            );
-          },
-        );
-      }
-    }
-
-    return LeagueGridCard(
-      teams: leagueTeams,
-      matrix: matrix,
-      hasMatchPoints: hasMatchPoints,
-      cardColor: cardColor,
-      isDark: isDark,
-    );
-  }
-
-  // 👇 ここから追加：個人戦専用の縦並びリスト描画エンジン
-  Widget _buildIndividualMatchesList(
-    String groupName,
-    List<MatchModel> matches, {
-    Color? cardColor,
-    required bool isDark,
-    required WidgetRef ref,
-    required bool applySort,
-  }) {
-    List<MatchModel> displayMatches = List.from(matches);
-
-    if (applySort) {
-      final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-
-      int getTeamPriority(MatchModel m) {
-        final rTeam = m.redName.contains(':')
-            ? m.redName.split(':').first.trim()
-            : '';
-        final wTeam = m.whiteName.contains(':')
-            ? m.whiteName.split(':').first.trim()
-            : '';
-        final ruleTeamName = m.rule?.teamName;
-        bool rOwn =
-            ownTeams.contains(rTeam) ||
-            m.redName.contains('自チーム') ||
-            (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
-        bool wOwn =
-            ownTeams.contains(wTeam) ||
-            m.whiteName.contains('自チーム') ||
-            (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
-        if (rOwn && wOwn) return 1; // 同門
-        if (rOwn || wOwn) return 2; // 自チーム vs 他チーム
-        return 3; // 他チーム同士
-      }
-
-      String getSortName(MatchModel m) {
-        final rTeam = m.redName.contains(':')
-            ? m.redName.split(':').first.trim()
-            : '';
-        final wTeam = m.whiteName.contains(':')
-            ? m.whiteName.split(':').first.trim()
-            : '';
-        final rName = m.redName.contains(':')
-            ? m.redName.split(':').last.trim()
-            : m.redName;
-        final wName = m.whiteName.contains(':')
-            ? m.whiteName.split(':').last.trim()
-            : m.whiteName;
-        final ruleTeamName = m.rule?.teamName;
-
-        bool rOwn =
-            ownTeams.contains(rTeam) ||
-            m.redName.contains('自チーム') ||
-            (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
-        bool wOwn =
-            ownTeams.contains(wTeam) ||
-            m.whiteName.contains('自チーム') ||
-            (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
-
-        if (rOwn && wOwn) return rName; // 同門は赤優先
-        if (rOwn) return rName;
-        if (wOwn) return wName;
-        return rName;
-      }
-
-      displayMatches.sort((a, b) {
-        int pA = getTeamPriority(a);
-        int pB = getTeamPriority(b);
-        if (pA != pB) return pA.compareTo(pB);
-
-        String nameA = getSortName(a);
-        String nameB = getSortName(b);
-        int nameCompare = nameA.compareTo(nameB);
-        if (nameCompare != 0) return nameCompare;
-
-        return a.order.compareTo(b.order); // 同じ選手なら試合順
-      });
-    }
-
-    // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
-    final uuidRegex = RegExp(
-      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-    );
-    String displayGroupName = groupName;
-    if (uuidRegex.hasMatch(groupName) ||
-        groupName.length > 20 ||
-        groupName == '__default__' ||
-        groupName.contains(' vs ')) {
-      displayGroupName = '';
-    }
-
-    String headerTitle = '【個人戦】';
-    if (displayGroupName.isNotEmpty) {
-      headerTitle += ' $displayGroupName';
-    }
-
-    final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-
-    final matchItems = displayMatches.map((m) {
-      final rTeam = m.redName.contains(':')
-          ? m.redName.split(':').first.trim()
-          : '';
-      final wTeam = m.whiteName.contains(':')
-          ? m.whiteName.split(':').first.trim()
-          : '';
-      final rName = m.redName.contains(':')
-          ? m.redName.split(':').last.replaceAll(')', '').trim()
-          : m.redName;
-      final wName = m.whiteName.contains(':')
-          ? m.whiteName.split(':').last.replaceAll(')', '').trim()
-          : m.whiteName;
-
-      final isDone = m.status == 'finished' || m.status == 'approved';
-      final rScore = (m.redScore as num).toInt();
-      final wScore = (m.whiteScore as num).toInt();
-      final isDraw = isDone && rScore == wScore;
-      final rWin = isDone && rScore > wScore;
-      final wWin = isDone && wScore > rScore;
-
-      final ptsMap = MatchCalculatorHelper.extractPointsFromModel(m);
-
-      final ruleTeamName = m.rule?.teamName;
-      final bool rOwn =
-          ownTeams.contains(rTeam) ||
-          m.redName.contains('自チーム') ||
-          (ruleTeamName?.isNotEmpty == true && rTeam == ruleTeamName);
-      final bool wOwn =
-          ownTeams.contains(wTeam) ||
-          m.whiteName.contains('自チーム') ||
-          (ruleTeamName?.isNotEmpty == true && wTeam == ruleTeamName);
-      final bool hasOwnTeam = rOwn || wOwn;
-
-      return IndividualMatchItem(
-        id: m.id,
-        note: m.note,
-        redTeam: rTeam,
-        whiteTeam: wTeam,
-        redName: rName,
-        whiteName: wName,
-        redScore: rScore,
-        whiteScore: wScore,
-        isFinished: isDone,
-        isSummary: m.note.contains('[SUMMARY]'),
-        isDraw: isDraw,
-        rWin: rWin,
-        wWin: wWin,
-        hasOwnTeam: hasOwnTeam,
-        redPoints: ptsMap['red'] ?? [],
-        whitePoints: ptsMap['white'] ?? [],
-      );
-    }).toList();
-
-    return IndividualListCard(
-      headerTitle: headerTitle,
       matches: matchItems,
       cardColor: cardColor,
       isDark: isDark,

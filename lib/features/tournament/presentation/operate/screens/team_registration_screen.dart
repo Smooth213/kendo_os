@@ -1,5 +1,4 @@
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -15,12 +14,11 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_selection_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_dynamic_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_app_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_autocomplete_field.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 // ★ 安定したProvider定義
@@ -101,39 +99,8 @@ class _TeamRegistrationScreenState
     }
   }
 
-  // ★ 修正：カテゴリ大分類を分け、「もっと見る」対応にする
-  final List<String> _mainMajorCategories = ['初心者', '幼年', '小学生', '中学生'];
-  final List<String> _extraMajorCategories = ['高校生', '大学・一般'];
   bool _showExtraMajorCategories = false;
-
-  List<String> _getMinorCategories(String major) {
-    if (major == '初心者' || major == '幼年') {
-      return ['全体', '男子', '女子'];
-    }
-    if (major == '小学生') {
-      return [
-        '全体',
-        '低学年',
-        '高学年',
-        '1年',
-        '2年',
-        '3年',
-        '4年',
-        '5年',
-        '6年',
-        '男子',
-        '女子',
-      ];
-    }
-    if (major == '中学生' || major == '高校生') {
-      return ['全体', '1年', '2年', '3年', '男子', '女子'];
-    }
-    if (major == '大学・一般') {
-      return ['全体', '大学生', '一般', 'シニア', '男子', '女子'];
-    }
-    return ['全体'];
-  }
-
+  bool _showExtraMatchTypes = false;
   String _matchType = '団体戦（5人制）';
   String? _editingTeamId;
 
@@ -141,16 +108,6 @@ class _TeamRegistrationScreenState
 
   final _teamNameController = TextEditingController();
   final FocusNode _teamNameFocusNode = FocusNode(); // ★ 追加：フォーカス状態を永続化
-
-  // ★ 修正：ルール設定画面と完全に一致するよう「勝ち抜き戦」と「団体戦（それ以上）」を追加
-  final List<String> _mainMatchTypes = ['団体戦（5人制）', '団体戦（3人制）', '勝ち抜き戦', '個人戦'];
-  final List<String> _extraMatchTypes = [
-    'リーグ団体戦',
-    'リーグ個人戦',
-    '団体戦（7人制）',
-    '団体戦（それ以上）',
-  ];
-  bool _showExtraMatchTypes = false;
 
   final Map<int, String> _tempSelectedPlayers = {};
 
@@ -178,287 +135,23 @@ class _TeamRegistrationScreenState
     );
   }
 
-  // ★ 修正：カテゴリ連動フィルタリング ＋ よみがな順ソートを搭載した最強の選択ダイアログ
+  // ★ 修正：カテゴリ連動フィルタリング ＋ よみがな順ソートを搭載した選択ダイアログ
   Future<void> _selectPlayerDialog(
     int index,
     List<PlayerModel> players,
     List<String> posNames,
   ) async {
-    final TextEditingController customNameController = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = context.appColors.textColor;
-
-    // 手入力選手の抽出
-    final helperEntries = _tempSelectedPlayers.entries
-        .where((e) => e.value.isNotEmpty && e.value != '欠員')
-        .where((e) => !players.any((p) => p.name == e.value))
-        .toList();
-
-    bool showAllPlayers = false; // フィルタ解除フラグ
-
-    final selected = await showAppBottomSheet<String>(
+    final selected = await TeamRegistrationPlayerSelectBottomSheet.show(
       context: context,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      builder: (ctx) => StatefulBuilder(
-        // 内部で「全員表示」を切り替えるため
-        builder: (context, setStateBottomSheet) {
-          // --- フィルタリングロジックの実行 ---
-          List<PlayerModel> displayList = players;
-          if (!showAllPlayers) {
-            if (_selectedMajorCategory == '初心者') {
-              displayList = players.where((p) => p.isBeginner).toList();
-            } else if (_selectedMajorCategory == '幼年') {
-              displayList = players.where((p) => p.grade == 0).toList();
-            } else if (_selectedMajorCategory == '小学生') {
-              if (_selectedMinorCategory == '低学年') {
-                displayList = players
-                    .where((p) => p.grade >= 1 && p.grade <= 4)
-                    .toList();
-              } else if (_selectedMinorCategory == '高学年') {
-                displayList = players
-                    .where((p) => p.grade >= 5 && p.grade <= 6)
-                    .toList();
-              } else if (_selectedMinorCategory.contains('年')) {
-                int targetGrade =
-                    int.tryParse(_selectedMinorCategory.replaceAll('年', '')) ??
-                    0;
-                displayList = players
-                    .where((p) => p.grade == targetGrade)
-                    .toList();
-              } else {
-                displayList = players
-                    .where((p) => p.grade >= 1 && p.grade <= 6)
-                    .toList();
-              }
-            } else if (_selectedMajorCategory == '中学生') {
-              displayList = players
-                  .where((p) => p.grade >= 7 && p.grade <= 9)
-                  .toList();
-            } else if (_selectedMajorCategory == '高校生') {
-              displayList = players
-                  .where((p) => p.grade >= 10 && p.grade <= 12)
-                  .toList();
-            } else if (_selectedMajorCategory == '大学・一般') {
-              displayList = players.where((p) => p.grade >= 13).toList();
-            }
-          }
-
-          // よみがな順でソート（常に美しく並ぶ）
-          displayList.sort((a, b) => a.nameKana.compareTo(b.nameKana));
-
-          return AppBottomSheetContent(
-            title: '選手の選択 (${posNames[index]})',
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Column(
-                children: [
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '選手の選択 (${posNames[index]})',
-                          style: TextStyle(
-                            fontSize: AppFontSize.headline,
-                            fontWeight: AppFontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
-                      ),
-                      // ★ 修正：フィルタ切り替えボタン
-                      TextButton.icon(
-                        onPressed: () => setStateBottomSheet(
-                          () => showAllPlayers = !showAllPlayers,
-                        ),
-                        icon: Icon(
-                          showAllPlayers
-                              ? Icons.filter_alt
-                              : Icons.filter_alt_off,
-                          size: 14,
-                        ),
-                        label: Text(
-                          showAllPlayers ? 'フィルタ適用' : '全員表示',
-                          style: const TextStyle(
-                            fontSize: AppFontSize.caption,
-                            fontWeight: AppFontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: _themeColors.primaryAccent,
-                          backgroundColor: _themeColors.softAccent,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  // 助っ人直接入力
-                  AppTextField(
-                    controller: customNameController,
-                    style: TextStyle(color: textColor),
-                    decoration:
-                        _buildTextFieldDecoration(
-                          labelText: '助っ人の名前を直接入力',
-                          prefixIcon: Icon(
-                            Icons.person_add_alt_1,
-                            color: _themeColors.primaryAccent,
-                          ),
-                        ).copyWith(
-                          suffixIcon: Padding(
-                            padding: const EdgeInsets.only(
-                              right: AppSpacing.sm,
-                              top: AppSpacing.xs,
-                              bottom: AppSpacing.xs,
-                            ),
-                            child: ElevatedButton(
-                              onPressed: () =>
-                                  Navigator.pop(ctx, customNameController.text),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _themeColors.primaryAccent,
-                                foregroundColor: AppKendoColors.pureWhite,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: AppRadius.medium,
-                                ),
-                                elevation: 0,
-                              ),
-                              child: const Text('確定'),
-                            ),
-                          ),
-                        ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        if (helperEntries.isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.sm,
-                            ),
-                            child: Text(
-                              '現在チームにいる手入力選手',
-                              style: TextStyle(
-                                fontSize: AppFontSize.small,
-                                fontWeight: AppFontWeight.bold,
-                                color: const Color(0xFFFF9800),
-                              ),
-                            ),
-                          ),
-                          ...helperEntries.map((entry) {
-                            if (entry.key == index) {
-                              return const SizedBox.shrink();
-                            }
-                            return TeamRegistrationSelectionCard(
-                              name: entry.value,
-                              subtitle: '手入力選手',
-                              isUsed: true,
-                              usedPos: posNames[entry.key],
-                              isDark: isDark,
-                              isHelper: true,
-                              onTap: () => Navigator.pop(ctx, entry.value),
-                            );
-                          }),
-                          const SizedBox(height: AppSpacing.lg),
-                        ],
-
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppSpacing.sm,
-                          ),
-                          child: Text(
-                            showAllPlayers ? '名簿の全選手' : 'おすすめの選手',
-                            style: TextStyle(
-                              fontSize: AppFontSize.small,
-                              fontWeight: AppFontWeight.bold,
-                              color: _themeColors.primaryAccent,
-                            ),
-                          ),
-                        ),
-
-                        // 欠員・未定ボタン
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () =>
-                                    Navigator.pop(ctx, 'CLEAR_FLAG'),
-                                child: const Text('未定'),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.pop(ctx, '欠員'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppKendoColors.red,
-                                ),
-                                child: const Text('欠員'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        if (displayList.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(AppSpacing.xxl),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.person_search,
-                                  size: 48,
-                                  color: AppKendoColors.grey.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-                                Text(
-                                  '該当する選手がいません',
-                                  style: TextStyle(
-                                    color: const Color(0x8A000000),
-                                    fontSize: AppFontSize.bodySmall,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        ...displayList.map((p) {
-                          int? usedIdx;
-                          _tempSelectedPlayers.forEach((k, v) {
-                            if (v == p.name) usedIdx = k;
-                          });
-                          final isUsed = usedIdx != null && usedIdx != index;
-
-                          return TeamRegistrationSelectionCard(
-                            name: p.name,
-                            subtitle:
-                                '${p.gradeName}${p.isBeginner ? " (🔰初心者)" : ""}',
-                            isUsed: isUsed,
-                            usedPos: usedIdx != null
-                                ? (usedIdx! < posNames.length
-                                      ? posNames[usedIdx!]
-                                      : '補欠')
-                                : '',
-                            isDark: isDark,
-                            isBeginner: p.isBeginner,
-                            onTap: () => Navigator.pop(ctx, p.name),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+      index: index,
+      players: players,
+      posNames: posNames,
+      tempSelectedPlayers: _tempSelectedPlayers,
+      selectedMajorCategory: _selectedMajorCategory,
+      selectedMinorCategory: _selectedMinorCategory,
+      themeColors: _themeColors,
     );
+
     if (selected == 'CLEAR_FLAG') {
       setState(() => _tempSelectedPlayers.remove(index));
     } else if (selected != null && selected.trim().isNotEmpty) {
@@ -479,34 +172,6 @@ class _TeamRegistrationScreenState
         _tempSelectedPlayers[index] = selected;
       });
     }
-  }
-
-  InputDecoration _buildTextFieldDecoration({
-    required String labelText,
-    String? hintText,
-    Widget? prefixIcon,
-    String? suffixText,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: TextStyle(color: _themeColors.subTextColor),
-      hintText: hintText,
-      hintStyle: TextStyle(color: _themeColors.hintColor),
-      suffixText: suffixText,
-      suffixStyle: TextStyle(color: _themeColors.subTextColor),
-      prefixIcon: prefixIcon,
-      filled: true,
-      fillColor: _themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: AppRadius.medium),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
-        borderSide: BorderSide(color: _themeColors.separatorColor, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
-        borderSide: BorderSide(color: _themeColors.primaryAccent, width: 2),
-      ),
-    );
   }
 
   @override
@@ -571,7 +236,34 @@ class _TeamRegistrationScreenState
                   onPageChanged: (index) =>
                       setState(() => _currentPage = index),
                   children: [
-                    _buildPage1CategoryFormat(),
+                    TeamRegistrationCategoryStep(
+                      selectedMajorCategory: _selectedMajorCategory,
+                      selectedMinorCategory: _selectedMinorCategory,
+                      selectedCategory: _selectedCategory,
+                      matchType: _matchType,
+                      showExtraMajorCategories: _showExtraMajorCategories,
+                      showExtraMatchTypes: _showExtraMatchTypes,
+                      themeColors: _themeColors,
+                      onMajorCategoryChanged: (cat) => setState(() {
+                        _selectedMajorCategory = cat;
+                        _selectedMinorCategory = '全体';
+                      }),
+                      onMinorCategoryChanged: (cat) => setState(() {
+                        _selectedMinorCategory = cat;
+                      }),
+                      onMatchTypeChanged: (type) => setState(() {
+                        _matchType = type;
+                        _tempSelectedPlayers.clear();
+                        _substituteCount = 0;
+                      }),
+                      onToggleExtraMajorCategories: () => setState(
+                        () => _showExtraMajorCategories =
+                            !_showExtraMajorCategories,
+                      ),
+                      onToggleExtraMatchTypes: () => setState(
+                        () => _showExtraMatchTypes = !_showExtraMatchTypes,
+                      ),
+                    ),
                     playerListAsync.when(
                       data: (players) => _buildPage2TeamAndOrder(
                         totalPlayerCount,
@@ -602,180 +294,6 @@ class _TeamRegistrationScreenState
   }
 
   // ===== ウィザード構成部品 =====
-
-  Widget _buildPage1CategoryFormat() {
-    final textColor = context.appColors.textColor;
-
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        Text(
-          '出場するカテゴリと\n試合形式を選んでください',
-          style: TextStyle(
-            fontSize: AppFontSize.titleLarge,
-            fontWeight: AppFontWeight.bold,
-            height: 1.4,
-            color: textColor,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-
-        // ★ 修正：カテゴリ大分類
-        _buildSectionTitle('1. 出場カテゴリ（大分類）'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ..._mainMajorCategories.map(
-              (cat) => AppChoiceChip(
-                label: Text(cat),
-                selected: _selectedMajorCategory == cat,
-                onSelected: (s) => s
-                    ? setState(() {
-                        _selectedMajorCategory = cat;
-                        _selectedMinorCategory = '全体';
-                      })
-                    : null,
-              ),
-            ),
-            if (_showExtraMajorCategories)
-              ..._extraMajorCategories.map(
-                (cat) => AppChoiceChip(
-                  label: Text(cat),
-                  selected: _selectedMajorCategory == cat,
-                  onSelected: (s) => s
-                      ? setState(() {
-                          _selectedMajorCategory = cat;
-                          _selectedMinorCategory = '全体';
-                        })
-                      : null,
-                ),
-              ),
-            AppActionChip(
-              icon: _showExtraMajorCategories
-                  ? Icons.expand_less
-                  : Icons.expand_more,
-              label: Text(_showExtraMajorCategories ? '閉じる' : 'もっと見る'),
-              onPressed: () => setState(
-                () => _showExtraMajorCategories = !_showExtraMajorCategories,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
-
-        // ★ 修正：カテゴリ小分類（大分類に応じて動的に現れる）
-        _buildSectionTitle('2. 出場カテゴリ（小分類）'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _getMinorCategories(_selectedMajorCategory).map((cat) {
-            // ★ 小学生の時だけ、学年範囲をラベルに補足（内部データは変えない）
-            String label = cat;
-            if (_selectedMajorCategory == '小学生') {
-              if (cat == '低学年') {
-                label = '低学年 (1-4年)';
-              }
-              if (cat == '高学年') {
-                label = '高学年 (5-6年)';
-              }
-            }
-            return AppChoiceChip(
-              label: Text(label),
-              selected: _selectedMinorCategory == cat,
-              onSelected: (s) =>
-                  s ? setState(() => _selectedMinorCategory = cat) : null,
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-
-        // ★ 修正：最終的に生成されるカテゴリ名のプレビュー表示
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: _themeColors.softAccent,
-            borderRadius: AppRadius.medium,
-            border: Border.all(
-              color: _themeColors.primaryAccent.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: _themeColors.primaryAccent),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '生成されるカテゴリ名',
-                      style: TextStyle(
-                        fontSize: AppFontSize.small,
-                        color: _themeColors.primaryAccent,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      _selectedCategory,
-                      style: TextStyle(
-                        fontWeight: AppFontWeight.bold,
-                        fontSize: AppFontSize.headline,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-        _buildSectionTitle('3. 試合形式'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ..._mainMatchTypes.map(
-              (type) => AppChoiceChip(
-                label: Text(type),
-                selected: _matchType == type,
-                onSelected: (s) => s
-                    ? setState(() {
-                        _matchType = type;
-                        _tempSelectedPlayers.clear();
-                        _substituteCount = 0;
-                      })
-                    : null,
-              ),
-            ),
-            if (_showExtraMatchTypes)
-              ..._extraMatchTypes.map(
-                (type) => AppChoiceChip(
-                  label: Text(type),
-                  selected: _matchType == type,
-                  onSelected: (s) => s
-                      ? setState(() {
-                          _matchType = type;
-                          _tempSelectedPlayers.clear();
-                          _substituteCount = 0;
-                        })
-                      : null,
-                ),
-              ),
-            AppActionChip(
-              icon: _showExtraMatchTypes
-                  ? Icons.expand_less
-                  : Icons.expand_more,
-              label: Text(_showExtraMatchTypes ? '閉じる' : 'もっと見る'),
-              onPressed: () =>
-                  setState(() => _showExtraMatchTypes = !_showExtraMatchTypes),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 
   Widget _buildPage2TeamAndOrder(
     int playerCount,

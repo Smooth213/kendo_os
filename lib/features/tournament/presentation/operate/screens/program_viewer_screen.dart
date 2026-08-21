@@ -17,12 +17,11 @@ import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart
 import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
 import '../providers/role_provider.dart';
 import '../providers/permission_provider.dart'; // ★ 追加: 閲覧専用権限を識別するためのインポート
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_controls.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
 import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -529,292 +528,33 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           children: [
             // --- 新設：2段目の専用ツールバー（書き込みモード時のみ出現） ---
             if (_isDrawingMode)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF1C1C1E)
-                      : const Color(0xFFFFFFFF),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppKendoColors.pureBlack.withAlpha(26),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    // 🎨 1. 【描画グループ】(ペン選択 + ペン + マーカー)
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF424242)
-                              : const Color(0xFFF5F5F5),
-                          borderRadius: AppRadius.small,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: 2,
-                        ),
-                        child: Row(
-                          children: [
-                            // ペン選択ボタン
-                            Expanded(
-                              child: InkWell(
-                                onTap: () {
-                                  if (_selectedTool == 'eraser') {
-                                    setState(() => _selectedTool = 'pen');
-                                  }
-                                  _showPenPicker(context, ref, canUseSharedPen);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.sm,
-                                    horizontal: AppSpacing.md,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: activePenColor.withAlpha(26),
-                                    borderRadius: AppRadius.small,
-                                    border: Border.all(
-                                      color: activePenColor.withAlpha(128),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        _selectedTool == 'marker'
-                                            ? Icons.border_color
-                                            : Icons.edit,
-                                        size: 18,
-                                        color: activePenColor,
-                                      ),
-                                      const SizedBox(width: AppSpacing.sm),
-                                      Expanded(
-                                        child: Text(
-                                          _selectedTool == 'marker'
-                                              ? '${_getPenName(activePenColor)} (マーカー)'
-                                              : activeIsShared
-                                              ? '${_getPenName(activePenColor)} (共有)'
-                                              : '${_getPenName(activePenColor)} (個人)',
-                                          style: TextStyle(
-                                            color: activePenColor,
-                                            fontWeight: AppFontWeight.bold,
-                                            fontSize: AppFontSize.body,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_drop_down,
-                                        color: activePenColor,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                            // ペンツール
-                            ProgramViewerToolButton(
-                              tool: 'pen',
-                              icon: Icons.edit,
-                              tooltip: 'ペン',
-                              isSelected: _selectedTool == 'pen',
-                              isDark: isDark,
-                              activeColor: activePenColor,
-                              onTap: () =>
-                                  setState(() => _selectedTool = 'pen'),
-                            ),
-                            // 蛍光マーカー
-                            ProgramViewerToolButton(
-                              tool: 'marker',
-                              icon: Icons.border_color,
-                              tooltip: '蛍光マーカー',
-                              isSelected: _selectedTool == 'marker',
-                              isDark: isDark,
-                              activeColor: activePenColor,
-                              onTap: () =>
-                                  setState(() => _selectedTool = 'marker'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // 2つのグループの間の区切り
-                    const SizedBox(width: AppSpacing.md),
-
-                    // 🧹 2. 【消去・履歴グループ】(消しゴム + 1つ戻る + 全消し)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF424242)
-                            : const Color(0xFFECEFF1).withAlpha(220),
-                        borderRadius: AppRadius.small,
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF616161)
-                              : const Color(0xFFCFD8DC),
-                          width: 1,
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.xs,
-                        vertical: 2,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // 消しゴムツール
-                          ProgramViewerToolButton(
-                            tool: 'eraser',
-                            icon: Icons.cleaning_services,
-                            tooltip: '消しゴム',
-                            isSelected: _selectedTool == 'eraser',
-                            isDark: isDark,
-                            activeColor: const Color(0xFF607D8B),
-                            onTap: () =>
-                                setState(() => _selectedTool = 'eraser'),
-                          ),
-
-                          // 小さな縦仕切り線
-                          Container(
-                            height: 20,
-                            width: 1,
-                            color: isDark
-                                ? const Color(0xFFFFFFFF)
-                                : const Color(0xFF607D8B),
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.xs,
-                            ),
-                          ),
-
-                          // 1つ戻る (Undo)
-                          IconButton(
-                            constraints: const BoxConstraints(
-                              minWidth: 36,
-                              minHeight: 36,
-                            ),
-                            padding: const EdgeInsets.all(AppSpacing.subValue),
-                            iconSize: 20,
-                            icon: Icon(
-                              Icons.undo,
-                              color: isDark
-                                  ? const Color(
-                                      0xFFFFFFFF,
-                                    ).withValues(alpha: 0.7)
-                                  : const Color(0xFF607D8B),
-                            ),
-                            tooltip: '1つ戻す',
-                            onPressed: () {
-                              if (activeIsShared) {
-                                _getActiveRepository(
-                                  ref,
-                                ).undoLastStroke(programId);
-                              } else {
-                                ref
-                                    .read(localStrokeRepositoryProvider)
-                                    .undoLastStroke(programId);
-                              }
-                            },
-                          ),
-
-                          // 全消去 (Delete Sweep)
-                          IconButton(
-                            constraints: const BoxConstraints(
-                              minWidth: 36,
-                              minHeight: 36,
-                            ),
-                            padding: const EdgeInsets.all(AppSpacing.subValue),
-                            iconSize: 20,
-                            icon: Icon(
-                              Icons.delete_sweep,
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : const Color(0xFF607D8B),
-                            ),
-                            tooltip: 'すべて消す',
-                            onPressed: () async {
-                              // ★ いきなり消さず、まずダイアログを表示して「はい/いいえ」を聞く
-                              final shouldDelete = await showAppDialog<bool>(
-                                context: context,
-                                builder: (context) => AppDialog(
-                                  title: '全消去の確認',
-                                  content: Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: activeIsShared
-                                              ? 'このプログラムに引かれた【共有ペン】をすべて消去しますか？\n'
-                                              : 'このプログラムに引かれた【個人ペン】をすべて消去しますか？\n',
-                                        ),
-                                        if (activeIsShared)
-                                          const TextSpan(
-                                            text:
-                                                '※他の人の画面からも消えてしまいます。間違いないですか？\n',
-                                            style: TextStyle(
-                                              color: AppKendoColors.redAccent,
-                                              fontWeight: AppFontWeight.bold,
-                                            ),
-                                          ),
-                                        const TextSpan(
-                                          text: '※一度削除したデータは元に戻すことができません。',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(
-                                        context,
-                                        false,
-                                      ), // キャンセル
-                                      child: const Text(
-                                        'キャンセル',
-                                        style: TextStyle(
-                                          color: AppKendoColors.grey,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true), // 実行
-                                      style: TextButton.styleFrom(
-                                        foregroundColor:
-                                            AppKendoColors.redAccent,
-                                      ),
-                                      child: const Text('すべて消去する'),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              // ★ ダイアログで「消去する(true)」が選ばれた時だけ、本当に削除する
-                              if (shouldDelete == true) {
-                                if (activeIsShared) {
-                                  _getActiveRepository(
-                                    ref,
-                                  ).clearStrokes(programId);
-                                } else {
-                                  ref
-                                      .read(localStrokeRepositoryProvider)
-                                      .clearStrokes(programId);
-                                }
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              ProgramViewerDrawingToolbar(
+                selectedTool: _selectedTool,
+                activePenColor: activePenColor,
+                activeIsShared: activeIsShared,
+                canUseSharedPen: canUseSharedPen,
+                isDark: isDark,
+                onSelectTool: (tool) => setState(() => _selectedTool = tool),
+                onSelectPenColor: (color) =>
+                    setState(() => _selectedPenColor = color),
+                onUndo: () {
+                  if (activeIsShared) {
+                    _getActiveRepository(ref).undoLastStroke(programId);
+                  } else {
+                    ref
+                        .read(localStrokeRepositoryProvider)
+                        .undoLastStroke(programId);
+                  }
+                },
+                onClearAll: () {
+                  if (activeIsShared) {
+                    _getActiveRepository(ref).clearStrokes(programId);
+                  } else {
+                    ref
+                        .read(localStrokeRepositoryProvider)
+                        .clearStrokes(programId);
+                  }
+                },
               ),
 
             // --- 共通ビューア部分（PDF/画像の両方で手書き可能） ---
@@ -837,57 +577,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       program.fileUrl.isEmpty ||
                       !program.fileUrl.startsWith('http');
                   if (isItemMaterialOnly) {
-                    return Center(
-                      child: Container(
-                        margin: const EdgeInsets.all(AppSpacing.xxl),
-                        padding: const EdgeInsets.all(AppSpacing.xl),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1C1C1E)
-                              : context.appColors.textColor,
-                          borderRadius: AppRadius.large,
-                          border: Border.all(
-                            color: context.appColors.separatorColor,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              program.fileType == 'pdf'
-                                  ? Icons.picture_as_pdf_outlined
-                                  : Icons.image_not_supported_outlined,
-                              size: 64,
-                              color: context.appColors.primaryAccent,
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              program.title,
-                              style: const TextStyle(
-                                fontSize: AppFontSize.subhead,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            Text(
-                              '【材料データ同期済み】\nオフラインファースト最適化の規約に基づき、通信帯域を圧迫する実ファイル（バイナリ）の自動ロードは行われません。プログラムの構成情報は安全に保護されています。',
-                              style: TextStyle(
-                                fontSize: AppFontSize.small,
-                                color: isDark
-                                    ? const Color(
-                                        0xFFFFFFFF,
-                                      ).withValues(alpha: 0.7)
-                                    : const Color(
-                                        0xFF000000,
-                                      ).withValues(alpha: 0.54),
-                                height: 1.5,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
+                    return ProgramViewerMaterialPlaceholder(
+                      program: program,
+                      isDark: isDark,
                     );
                   }
 
@@ -1275,139 +967,6 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  // ペンの名前を返す補助関数
-  String _getPenName(Color color) {
-    if (color == AppKendoColors.pink) {
-      return 'ピンク';
-    }
-    if (color == _yellowPenColor || color == AppKendoColors.yellow) {
-      return 'イエロー';
-    }
-    if (color == AppKendoColors.blue) {
-      return 'ブルー';
-    }
-    if (color == AppKendoColors.pureBlack) {
-      return 'ブラック';
-    }
-    return 'ペン';
-  }
-
-  // ペン選択用のボトムシートを表示
-  void _showPenPicker(
-    BuildContext context,
-    WidgetRef ref,
-    bool canUseSharedPen,
-  ) {
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true, // ★ 追加: ボトムシートの高さ制限を解除
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: AppSpacing.roundValue,
-              left: AppSpacing.roundValue,
-              right: AppSpacing.roundValue,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20.0,
-            ),
-            child: SingleChildScrollView(
-              // ★ 追加: はみ出しを防ぐためスクロール可能に
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'ペンの選択',
-                    style: TextStyle(
-                      fontSize: AppFontSize.headline,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  if (canUseSharedPen) ...[
-                    const Text(
-                      '📢 共有ペン (全員の画面に反映されます)',
-                      style: TextStyle(
-                        fontSize: AppFontSize.bodySmall,
-                        color: AppKendoColors.pureBlack,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        ProgramViewerPenOption(
-                          color: AppKendoColors.pink,
-                          label: 'ピンク (共有)',
-                          isSelected: _selectedPenColor == AppKendoColors.pink,
-                          onTap: () {
-                            setState(
-                              () => _selectedPenColor = AppKendoColors.pink,
-                            );
-                            Navigator.pop(context);
-                          },
-                        ),
-                        const SizedBox(width: 10),
-                        ProgramViewerPenOption(
-                          color: _yellowPenColor,
-                          label: 'イエロー (共有)',
-                          isSelected: _selectedPenColor == _yellowPenColor,
-                          onTap: () {
-                            setState(() => _selectedPenColor = _yellowPenColor);
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 25),
-                  ],
-                  const Text(
-                    '📝 個人ペン (自分だけのメモです)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      color: AppKendoColors.pureBlack,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      ProgramViewerPenOption(
-                        color: AppKendoColors.blue,
-                        label: 'ブルー (個人)',
-                        isSelected: _selectedPenColor == AppKendoColors.blue,
-                        onTap: () {
-                          setState(
-                            () => _selectedPenColor = AppKendoColors.blue,
-                          );
-                          Navigator.pop(context);
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      ProgramViewerPenOption(
-                        color: AppKendoColors.pureBlack,
-                        label: 'ブラック (個人)',
-                        isSelected:
-                            _selectedPenColor == AppKendoColors.pureBlack,
-                        onTap: () {
-                          setState(
-                            () => _selectedPenColor = AppKendoColors.pureBlack,
-                          );
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
