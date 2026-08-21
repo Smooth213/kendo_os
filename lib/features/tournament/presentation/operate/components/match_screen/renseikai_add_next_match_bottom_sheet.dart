@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_player_candidate_resolver.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_player_input_field.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/last_used_settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -13,9 +15,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:uuid/uuid.dart';
 import '../../match_screen.dart' show playerListProvider;
 
@@ -65,65 +65,6 @@ class _RenseikaiAddNextMatchBottomSheetState
     super.dispose();
   }
 
-  bool _isCategoryMatch(String teamCat, String matchCat) {
-    final tCat = teamCat.trim();
-    final mCat = matchCat.trim();
-    if (mCat.isEmpty || tCat.isEmpty) return true;
-    if (tCat == mCat || mCat.contains(tCat) || tCat.contains(mCat)) {
-      return true;
-    }
-    final keywords = ['低学年', '高学年', '小学生', '中学生', '高校生', '一般'];
-    for (final kw in keywords) {
-      if (mCat.contains(kw) && tCat.contains(kw)) return true;
-      if (mCat.contains(kw) && !tCat.contains(kw)) return false;
-    }
-    return true;
-  }
-
-  bool _isDojoPlayerGradeMatch(int grade, String matchCat) {
-    if (matchCat.isEmpty) return true;
-    if ((matchCat.contains('低学年') ||
-            matchCat.contains('1・2年') ||
-            matchCat.contains('3・4年')) &&
-        (grade >= 1 && grade <= 4)) {
-      return true;
-    }
-    if ((matchCat.contains('高学年') || matchCat.contains('5・6年')) &&
-        (grade >= 5 && grade <= 6)) {
-      return true;
-    }
-    if ((matchCat.contains('小学生') ||
-            matchCat.contains('学童') ||
-            matchCat.contains('児童')) &&
-        (grade >= 1 && grade <= 6)) {
-      return true;
-    }
-    if ((matchCat.contains('中学生') || matchCat.contains('中学')) &&
-        (grade >= 7 && grade <= 9)) {
-      return true;
-    }
-    if ((matchCat.contains('高校生') || matchCat.contains('高校')) &&
-        (grade >= 10 && grade <= 12)) {
-      return true;
-    }
-    if ((matchCat.contains('一般') ||
-            matchCat.contains('成人') ||
-            matchCat.contains('社会人') ||
-            matchCat.contains('大学')) &&
-        (grade >= 13 || grade == 0)) {
-      return true;
-    }
-
-    final hasKnownSchoolLevel =
-        matchCat.contains('低学年') ||
-        matchCat.contains('高学年') ||
-        matchCat.contains('小学生') ||
-        matchCat.contains('中学生') ||
-        matchCat.contains('高校生') ||
-        matchCat.contains('一般');
-    return !hasKnownSchoolLevel;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -148,61 +89,12 @@ class _RenseikaiAddNextMatchBottomSheetState
         .where((m) => m.groupName == widget.currentMatch.groupName)
         .toList();
 
-    final List<String> baseRedPlayers = [];
-    for (final m in teamMatches) {
-      if (m.redName.contains(':')) {
-        final parts = m.redName.split(':');
-        final tName = parts.first.trim();
-        final pName = parts.last.trim();
-        if (tName == rTeam &&
-            pName.isNotEmpty &&
-            !pName.contains('未定') &&
-            !pName.contains('欠員') &&
-            !pName.contains('代表選手')) {
-          baseRedPlayers.add(pName);
-        }
-      }
-      if (m.whiteName.contains(':')) {
-        final parts = m.whiteName.split(':');
-        final tName = parts.first.trim();
-        final pName = parts.last.trim();
-        if (tName == rTeam &&
-            pName.isNotEmpty &&
-            !pName.contains('未定') &&
-            !pName.contains('欠員') &&
-            !pName.contains('代表選手')) {
-          baseRedPlayers.add(pName);
-        }
-      }
-    }
-
-    final List<String> baseWhitePlayers = [];
-    for (final m in teamMatches) {
-      if (m.redName.contains(':')) {
-        final parts = m.redName.split(':');
-        final tName = parts.first.trim();
-        final pName = parts.last.trim();
-        if (tName == wTeam &&
-            pName.isNotEmpty &&
-            !pName.contains('未定') &&
-            !pName.contains('欠員') &&
-            !pName.contains('代表選手')) {
-          baseWhitePlayers.add(pName);
-        }
-      }
-      if (m.whiteName.contains(':')) {
-        final parts = m.whiteName.split(':');
-        final tName = parts.first.trim();
-        final pName = parts.last.trim();
-        if (tName == wTeam &&
-            pName.isNotEmpty &&
-            !pName.contains('未定') &&
-            !pName.contains('欠員') &&
-            !pName.contains('代表選手')) {
-          baseWhitePlayers.add(pName);
-        }
-      }
-    }
+    final baseRedPlayers = RenseikaiPlayerCandidateResolver.extractBasePlayers(
+      teamMatches,
+      rTeam,
+    );
+    final baseWhitePlayers =
+        RenseikaiPlayerCandidateResolver.extractBasePlayers(teamMatches, wTeam);
 
     List<PlayerModel> localPlayers = [];
     try {
@@ -222,89 +114,21 @@ class _RenseikaiAddNextMatchBottomSheetState
 
     final matchCat = widget.currentMatch.category?.trim() ?? '';
 
-    final matchingRedTeams = registeredTeams.where((t) {
-      final nameMatch =
-          t.teamName.trim() == rTeam.trim() ||
-          rTeam.trim().contains(t.teamName.trim()) ||
-          t.teamName.trim().contains(rTeam.trim());
-      return nameMatch;
-    }).toList();
+    final redPlayers = RenseikaiPlayerCandidateResolver.resolveTeamPlayers(
+      teamName: rTeam,
+      matchCat: matchCat,
+      registeredTeams: registeredTeams,
+      localPlayers: localPlayers,
+      basePlayers: baseRedPlayers,
+    );
 
-    final redTeamData =
-        matchingRedTeams.firstWhereOrNull(
-          (t) => _isCategoryMatch(t.category, matchCat),
-        ) ??
-        matchingRedTeams.firstOrNull;
-
-    final List<String> redMasterPlayers =
-        redTeamData?.playerNames
-            .map((n) => n.trim())
-            .where(
-              (n) => n.isNotEmpty && !n.contains('未定') && !n.contains('欠員'),
-            )
-            .toList() ??
-        [];
-
-    final List<String> redDojoPlayers = localPlayers
-        .where((p) {
-          final org = p.organization.trim();
-          if (org.isEmpty) return false;
-          final orgMatch =
-              org == rTeam.trim() ||
-              rTeam.trim().contains(org) ||
-              org.contains(rTeam.trim());
-          if (!orgMatch) return false;
-          return _isDojoPlayerGradeMatch(p.grade, matchCat);
-        })
-        .map((p) => p.name.trim())
-        .where((n) => n.isNotEmpty)
-        .toList();
-
-    final List<String> redPlayers = redMasterPlayers.isNotEmpty
-        ? {...redMasterPlayers, ...baseRedPlayers}.toList()
-        : {...redDojoPlayers, ...baseRedPlayers}.toList();
-
-    final matchingWhiteTeams = registeredTeams.where((t) {
-      final nameMatch =
-          t.teamName.trim() == wTeam.trim() ||
-          wTeam.trim().contains(t.teamName.trim()) ||
-          t.teamName.trim().contains(wTeam.trim());
-      return nameMatch;
-    }).toList();
-
-    final whiteTeamData =
-        matchingWhiteTeams.firstWhereOrNull(
-          (t) => _isCategoryMatch(t.category, matchCat),
-        ) ??
-        matchingWhiteTeams.firstOrNull;
-
-    final List<String> whiteMasterPlayers =
-        whiteTeamData?.playerNames
-            .map((n) => n.trim())
-            .where(
-              (n) => n.isNotEmpty && !n.contains('未定') && !n.contains('欠員'),
-            )
-            .toList() ??
-        [];
-
-    final List<String> whiteDojoPlayers = localPlayers
-        .where((p) {
-          final org = p.organization.trim();
-          if (org.isEmpty) return false;
-          final orgMatch =
-              org == wTeam.trim() ||
-              wTeam.trim().contains(org) ||
-              org.contains(wTeam.trim());
-          if (!orgMatch) return false;
-          return _isDojoPlayerGradeMatch(p.grade, matchCat);
-        })
-        .map((p) => p.name.trim())
-        .where((n) => n.isNotEmpty)
-        .toList();
-
-    final List<String> whitePlayers = whiteMasterPlayers.isNotEmpty
-        ? {...whiteMasterPlayers, ...baseWhitePlayers}.toList()
-        : {...whiteDojoPlayers, ...baseWhitePlayers}.toList();
+    final whitePlayers = RenseikaiPlayerCandidateResolver.resolveTeamPlayers(
+      teamName: wTeam,
+      matchCat: matchCat,
+      registeredTeams: registeredTeams,
+      localPlayers: localPlayers,
+      basePlayers: baseWhitePlayers,
+    );
 
     final Set<String> redMasterSet = redPlayers.toSet();
     final Set<String> whiteMasterSet = whitePlayers.toSet();
@@ -363,178 +187,29 @@ class _RenseikaiAddNextMatchBottomSheetState
                 padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                 children: [
                   const SizedBox(height: AppSpacing.md),
-                  if (redPlayers.isNotEmpty) ...[
-                    Text(
-                      '$rTeam の選手を選択:',
-                      style: const TextStyle(
-                        fontSize: AppFontSize.bodySmall,
-                        color: Color(0xFF009688),
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: redPlayers.map((p) {
-                        final isMaster = redMasterSet.contains(p);
-                        return AppChoiceChip(
-                          label: Text(p),
-                          selected: _redCtrl.text == p,
-                          selectedColor: const Color(0xFF009688),
-                          backgroundColor: _redCtrl.text == p
-                              ? const Color(0xFF009688)
-                              : (isMaster
-                                    ? (isDark
-                                          ? const Color(0xFF2C2C2E)
-                                          : context.appColors.inputBackground)
-                                    : (isDark
-                                          ? const Color(0xFF1E1E20)
-                                          : context.appColors.cardBackground)),
-                          side: BorderSide(
-                            color: _redCtrl.text == p
-                                ? AppKendoColors.transparent
-                                : (isMaster
-                                      ? AppKendoColors.transparent
-                                      : (context.appColors.separatorColor)),
-                            width: 1.0,
-                          ),
-                          labelStyle: TextStyle(
-                            color: _redCtrl.text == p
-                                ? AppKendoColors.pureWhite
-                                : (isMaster
-                                      ? textColor
-                                      : context.appColors.subTextColor),
-                            fontWeight: AppFontWeight.bold,
-                          ),
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _redCtrl.text = p;
-                              });
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
-                  AppTextField(
+                  RenseikaiPlayerInputField(
+                    teamName: rTeam,
+                    players: redPlayers,
+                    masterSet: redMasterSet,
                     controller: _redCtrl,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                    onChanged: (val) => setState(() {}),
-                    decoration: InputDecoration(
-                      labelText: '$rTeam の選手名を入力',
-                      labelStyle: const TextStyle(color: AppKendoColors.grey),
-                      filled: true,
-                      fillColor: inputBgColor,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.lg,
-                        horizontal: AppSpacing.lg,
-                      ),
-                      prefixIcon: const Icon(Icons.person_outline, size: 20),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                        borderSide: const BorderSide(
-                          color: Color(0xFF009688),
-                          width: 2,
-                        ),
-                      ),
-                    ),
+                    isDark: isDark,
+                    textColor: textColor,
+                    inputBgColor: inputBgColor,
+                    borderColor: borderColor,
+                    onPlayerSelected: (p) => setState(() => _redCtrl.text = p),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  if (whitePlayers.isNotEmpty) ...[
-                    Text(
-                      '$wTeam の選手を選択:',
-                      style: const TextStyle(
-                        fontSize: AppFontSize.bodySmall,
-                        color: Color(0xFF009688),
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: whitePlayers.map((p) {
-                        final isMaster = whiteMasterSet.contains(p);
-                        return AppChoiceChip(
-                          label: Text(p),
-                          selected: _whiteCtrl.text == p,
-                          selectedColor: const Color(0xFF009688),
-                          backgroundColor: _whiteCtrl.text == p
-                              ? const Color(0xFF009688)
-                              : (isMaster
-                                    ? (isDark
-                                          ? const Color(0xFF2C2C2E)
-                                          : context.appColors.inputBackground)
-                                    : (isDark
-                                          ? const Color(0xFF1E1E20)
-                                          : context.appColors.cardBackground)),
-                          side: BorderSide(
-                            color: _whiteCtrl.text == p
-                                ? AppKendoColors.transparent
-                                : (isMaster
-                                      ? AppKendoColors.transparent
-                                      : (context.appColors.separatorColor)),
-                            width: 1.0,
-                          ),
-                          labelStyle: TextStyle(
-                            color: _whiteCtrl.text == p
-                                ? AppKendoColors.pureWhite
-                                : (isMaster
-                                      ? textColor
-                                      : context.appColors.subTextColor),
-                            fontWeight: AppFontWeight.bold,
-                          ),
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() {
-                                _whiteCtrl.text = p;
-                              });
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
-                  AppTextField(
+                  RenseikaiPlayerInputField(
+                    teamName: wTeam,
+                    players: whitePlayers,
+                    masterSet: whiteMasterSet,
                     controller: _whiteCtrl,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                    onChanged: (val) => setState(() {}),
-                    decoration: InputDecoration(
-                      labelText: '$wTeam の選手名を入力',
-                      labelStyle: const TextStyle(color: AppKendoColors.grey),
-                      filled: true,
-                      fillColor: inputBgColor,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.lg,
-                        horizontal: AppSpacing.lg,
-                      ),
-                      prefixIcon: const Icon(Icons.person_outline, size: 20),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                        borderSide: const BorderSide(
-                          color: Color(0xFF009688),
-                          width: 2,
-                        ),
-                      ),
-                    ),
+                    isDark: isDark,
+                    textColor: textColor,
+                    inputBgColor: inputBgColor,
+                    borderColor: borderColor,
+                    onPlayerSelected: (p) =>
+                        setState(() => _whiteCtrl.text = p),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                 ],
@@ -651,15 +326,4 @@ class _RenseikaiAddNextMatchBottomSheetState
       ),
     );
   }
-}
-
-extension _FirstWhereOrNullExtension<T> on Iterable<T> {
-  T? firstWhereOrNull(bool Function(T element) test) {
-    for (var element in this) {
-      if (test(element)) return element;
-    }
-    return null;
-  }
-
-  T? get firstOrNull => isEmpty ? null : first;
 }

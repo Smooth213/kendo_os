@@ -1,7 +1,6 @@
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -14,14 +13,12 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import '../bulk_rule_edit_sheet.dart';
 import '../rule_info_bottom_sheet.dart';
 
-import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'; // 検索プロバイダなどを参照するため
-import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
-import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
+    show tournamentProvider;
 import '../cards/match_list_tile_card.dart';
 import 'match_timeline_control_bar.dart';
 import 'tournament_header_card.dart';
@@ -38,127 +35,11 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 export '../cards/match_list_tile_card.dart';
 
-// ★ 画面間で共有する状態をここに集約
-final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
-final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
-final isSearchVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
-final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
-  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
-});
-final timelinePlayerListProvider =
-    StreamProvider.autoDispose<List<PlayerModel>>((ref) {
-      return ref.watch(playerRepositoryProvider).getPlayers();
-    });
+import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_category_team_resolver.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_player_match_classifier.dart';
 
-// =========================================================================
-// 🛡️ Webアプリ・リスト消失バグ完全修正パッチ
-// 全件取得(matchListProvider)に依存していた timelineMatchesByCategoryProvider が
-// Web環境でフリーズ・空配列になる問題を回避するため、対象大会のみを直接取得する
-// 安全な専用プロバイダーを定義し、UI側へ供給します。
-// =========================================================================
-// ★ 修正: Record 型に hasError と errorMessage を追加
-typedef SafeTimelineResult = ({
-  List<MapEntry<String, List<MatchModel>>> entries,
-  Set<String> matchedGroupNames,
-  Set<String> matchedMatchIds,
-  bool isLoading,
-  bool hasError,
-  String? errorMessage,
-});
-
-final safeTimelineProvider = Provider.family
-    .autoDispose<SafeTimelineResult, String>((ref, String tournamentId) {
-      // ★ 修正: ネイティブ(Isar)とWeb(Firestore)でデータソースを最適化し、完全な仕様一致(即時反映)を実現します
-      List<MatchModel> matches = [];
-      bool isLoading = false;
-      bool hasError = false;
-      String? errorMessage;
-
-      if (kIsWeb) {
-        final asyncMatches = ref.watch(
-          matchListByTournamentProvider(tournamentId),
-        );
-        hasError = asyncMatches.hasError;
-        errorMessage = asyncMatches.error?.toString();
-        isLoading = asyncMatches.isLoading;
-        matches = List<MatchModel>.from(asyncMatches.valueOrNull ?? []);
-      } else {
-        // ネイティブアプリ(iOS/Android)はIsarから0ミリ秒で同期取得
-        matches = ref
-            .watch(matchListProvider)
-            .where((m) => m.tournamentId == tournamentId)
-            .toList();
-      }
-
-      if (hasError) {
-        debugPrint('🚨 [safeTimelineProvider] エラーを検知しました: $errorMessage');
-      } else if (!isLoading) {
-        debugPrint('📊 [safeTimelineProvider] 試合リスト抽出完了: ${matches.length} 件');
-        if (matches.isEmpty) {
-          debugPrint(
-            '🤔 [safeTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。',
-          );
-        }
-      }
-
-      matches.sort((a, b) => a.order.compareTo(b.order));
-
-      final searchQuery = ref
-          .watch(searchQueryProvider)
-          .replaceAll(RegExp(r'\s+'), '')
-          .toLowerCase();
-      final isSortAscending = ref.watch(categorySortProvider);
-
-      final matchedGroupNames = <String>{};
-      final matchedMatchIds = <String>{};
-
-      if (searchQuery.isNotEmpty) {
-        for (var m in matches) {
-          final rName = m.redName.replaceAll(RegExp(r'\s+'), '').toLowerCase();
-          final wName = m.whiteName
-              .replaceAll(RegExp(r'\s+'), '')
-              .toLowerCase();
-          if (rName.contains(searchQuery) || wName.contains(searchQuery)) {
-            matchedMatchIds.add(m.id);
-            if (m.groupName != null && m.groupName!.isNotEmpty) {
-              matchedGroupNames.add(m.groupName!);
-            }
-          }
-        }
-      }
-
-      final categoryMap = <String, List<MatchModel>>{};
-      for (var m in matches) {
-        if (searchQuery.isNotEmpty) {
-          bool isMatch =
-              matchedMatchIds.contains(m.id) ||
-              (m.groupName != null && matchedGroupNames.contains(m.groupName!));
-          if (!isMatch) continue;
-        }
-        final cat = (m.category != null && m.category!.isNotEmpty)
-            ? m.category!
-            : '未分類';
-        categoryMap.putIfAbsent(cat, () => []).add(m);
-      }
-
-      final entries = categoryMap.entries.toList();
-      entries.sort((a, b) {
-        if (isSortAscending) {
-          return a.key.compareTo(b.key);
-        } else {
-          return b.key.compareTo(a.key);
-        }
-      });
-
-      return (
-        entries: entries,
-        matchedGroupNames: matchedGroupNames,
-        matchedMatchIds: matchedMatchIds,
-        isLoading: isLoading,
-        hasError: hasError,
-        errorMessage: errorMessage,
-      );
-    });
+export 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 
 class MatchTimelineList extends ConsumerWidget {
   final String tournamentId;
@@ -305,96 +186,11 @@ class MatchTimelineList extends ConsumerWidget {
             final categoryName = catEntry.key;
             final catMatches = catEntry.value;
             final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-            final matchesByTeam = <String, List<MatchModel>>{};
-
-            final groupToOwnTeams = <String, Set<String>>{};
-            final groupToRepresentativeTeam = <String, String>{};
-
-            for (var m in catMatches) {
-              if (m.groupName != null && m.groupName!.isNotEmpty) {
-                String rTeam = m.redName.contains(':')
-                    ? m.redName.split(':').first.trim()
-                    : m.redName;
-                String wTeam = m.whiteName.contains(':')
-                    ? m.whiteName.split(':').first.trim()
-                    : m.whiteName;
-                final isRedOwnForM =
-                    ownTeams.contains(rTeam) ||
-                    (m.rule?.teamName.isNotEmpty == true &&
-                        rTeam == m.rule!.teamName);
-                final isWhiteOwnForM =
-                    ownTeams.contains(wTeam) ||
-                    (m.rule?.teamName.isNotEmpty == true &&
-                        wTeam == m.rule!.teamName);
-                if (isRedOwnForM) {
-                  groupToOwnTeams
-                      .putIfAbsent(m.groupName!, () => {})
-                      .add(rTeam);
-                }
-                if (isWhiteOwnForM) {
-                  groupToOwnTeams
-                      .putIfAbsent(m.groupName!, () => {})
-                      .add(wTeam);
-                }
-
-                // ★ 追加: グループの代表チームを決定し、同じリーグが引き裂かれるのを防ぐ
-                if (!groupToRepresentativeTeam.containsKey(m.groupName!)) {
-                  groupToRepresentativeTeam[m.groupName!] =
-                      rTeam.isNotEmpty && !rTeam.contains('代表')
-                      ? rTeam
-                      : (wTeam.isNotEmpty && !wTeam.contains('代表')
-                            ? wTeam
-                            : '設定なし');
-                }
-              }
-            }
-
-            for (var m in catMatches) {
-              String rTeam = m.redName.contains(':')
-                  ? m.redName.split(':').first.trim()
-                  : m.redName;
-              String wTeam = m.whiteName.contains(':')
-                  ? m.whiteName.split(':').first.trim()
-                  : m.whiteName;
-
-              bool isRedOwn =
-                  ownTeams.contains(rTeam) ||
-                  (m.rule?.teamName.isNotEmpty == true &&
-                      rTeam == m.rule!.teamName);
-              bool isWhiteOwn =
-                  ownTeams.contains(wTeam) ||
-                  (m.rule?.teamName.isNotEmpty == true &&
-                      wTeam == m.rule!.teamName);
-
-              if (m.groupName != null && m.groupName!.isNotEmpty) {
-                if (groupToOwnTeams.containsKey(m.groupName!)) {
-                  for (String team in groupToOwnTeams[m.groupName!]!) {
-                    matchesByTeam.putIfAbsent(team, () => []).add(m);
-                  }
-                } else {
-                  // ★ 追加: 自チームが含まれないグループは、代表チームをキーにして全試合を一極集中させる
-                  final repTeam =
-                      groupToRepresentativeTeam[m.groupName!] ?? '設定なし';
-                  matchesByTeam.putIfAbsent(repTeam, () => []).add(m);
-                }
-              } else {
-                if (isRedOwn) matchesByTeam.putIfAbsent(rTeam, () => []).add(m);
-                if (isWhiteOwn && wTeam != rTeam) {
-                  matchesByTeam.putIfAbsent(wTeam, () => []).add(m);
-                }
-                if (!isRedOwn && !isWhiteOwn) {
-                  final keyTeam = rTeam.isNotEmpty && !rTeam.contains('代表')
-                      ? rTeam
-                      : (wTeam.isNotEmpty && !wTeam.contains('代表')
-                            ? wTeam
-                            : '設定なし');
-                  matchesByTeam.putIfAbsent(keyTeam, () => []).add(m);
-                }
-              }
-            }
-
-            final sortedTeams = matchesByTeam.entries.toList();
-            sortedTeams.sort((a, b) => a.key.compareTo(b.key));
+            final sortedTeams =
+                TimelineCategoryTeamResolver.resolveMatchesByTeam(
+                  catMatches: catMatches,
+                  ownTeams: ownTeams,
+                );
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,109 +230,17 @@ class MatchTimelineList extends ConsumerWidget {
                     return isIndividual ? '個人戦' : '団体戦';
                   }
 
-                  final catGroupedMatches = <String, List<MatchModel>>{};
-                  final catIndividualMatches = <MatchModel>[];
-
-                  for (var m in teamMatchesList) {
-                    bool forceIndividual =
-                        sanitizedQuery.isNotEmpty &&
-                        matchedMatchIds.contains(m.id) &&
-                        (m.groupName == null ||
-                            !matchedGroupNames.contains(m.groupName!));
-                    if (!forceIndividual &&
-                        m.groupName != null &&
-                        m.groupName!.isNotEmpty) {
-                      catGroupedMatches
-                          .putIfAbsent(m.groupName!, () => [])
-                          .add(m);
-                    } else {
-                      catIndividualMatches.add(m);
-                    }
-                  }
-
-                  final actualGroupedMatches = <String, List<MatchModel>>{};
-                  for (var entry in catGroupedMatches.entries) {
-                    final firstMatch = entry.value.first;
-                    final bool isLeagueMatch = firstMatch.note.contains(
-                      '[リーグ戦]',
-                    );
-                    final bool isPureIndividual =
-                        !firstMatch.isKachinuki &&
-                        (firstMatch.matchType == 'individual' ||
-                            firstMatch.matchType == '選手' ||
-                            firstMatch.matchType.contains('個人戦'));
-
-                    if (!isPureIndividual &&
-                        (entry.value.length > 1 || firstMatch.isKachinuki)) {
-                      actualGroupedMatches[entry.key] = entry.value;
-                    } else if (isLeagueMatch) {
-                      actualGroupedMatches[entry.key] = entry.value;
-                    } else {
-                      catIndividualMatches.addAll(entry.value);
-                    }
-                  }
-
-                  final matchesByPlayer = <String, List<MatchModel>>{};
-                  for (var m in catIndividualMatches) {
-                    String playerName = '選手名不明';
-                    bool forceIndividual =
-                        sanitizedQuery.isNotEmpty &&
-                        matchedMatchIds.contains(m.id) &&
-                        (m.groupName == null ||
-                            !matchedGroupNames.contains(m.groupName!));
-                    if (forceIndividual) {
-                      String rPlayer = m.redName.contains(':')
-                          ? m.redName.split(':').last.trim()
-                          : m.redName;
-                      String wPlayer = m.whiteName.contains(':')
-                          ? m.whiteName.split(':').last.trim()
-                          : m.whiteName;
-                      if (rPlayer
-                          .replaceAll(RegExp(r'\s+'), '')
-                          .toLowerCase()
-                          .contains(sanitizedQuery)) {
-                        playerName = rPlayer;
-                      } else if (wPlayer
-                          .replaceAll(RegExp(r'\s+'), '')
-                          .toLowerCase()
-                          .contains(sanitizedQuery)) {
-                        playerName = wPlayer;
-                      } else {
-                        playerName = m.redName.contains(teamName)
-                            ? rPlayer
-                            : wPlayer;
-                      }
-                    } else {
-                      if (m.redName.contains(teamName) ||
-                          ownTeams.any((ot) => m.redName.contains(ot)) ||
-                          (m.rule?.teamName.isNotEmpty == true &&
-                              m.redName.contains(m.rule!.teamName))) {
-                        playerName = m.redName.contains(':')
-                            ? m.redName.split(':').last.trim()
-                            : m.redName;
-                      } else if (m.whiteName.contains(teamName) ||
-                          ownTeams.any((ot) => m.whiteName.contains(ot)) ||
-                          (m.rule?.teamName.isNotEmpty == true &&
-                              m.whiteName.contains(m.rule!.teamName))) {
-                        playerName = m.whiteName.contains(':')
-                            ? m.whiteName.split(':').last.trim()
-                            : m.whiteName;
-                      } else {
-                        playerName = m.redName.contains(':')
-                            ? m.redName.split(':').last.trim()
-                            : m.redName;
-                      }
-                    }
-                    matchesByPlayer.putIfAbsent(playerName, () => []).add(m);
-                  }
-
-                  final sortedGroups = actualGroupedMatches.entries.toList()
-                    ..sort(
-                      (a, b) =>
-                          a.value.first.order.compareTo(b.value.first.order),
-                    );
-                  final sortedPlayers = matchesByPlayer.entries.toList()
-                    ..sort((a, b) => a.key.compareTo(b.key));
+                  final classified =
+                      TimelinePlayerMatchClassifier.classifyTeamMatches(
+                        teamMatchesList: teamMatchesList,
+                        teamName: teamName,
+                        sanitizedQuery: sanitizedQuery,
+                        matchedMatchIds: matchedMatchIds,
+                        matchedGroupNames: matchedGroupNames,
+                        ownTeams: ownTeams,
+                      );
+                  final sortedGroups = classified.sortedGroups;
+                  final sortedPlayers = classified.sortedPlayers;
 
                   return Container(
                     margin: const EdgeInsets.only(

@@ -30,7 +30,6 @@ import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'components/match_screen/match_finished_navigation_dialog.dart';
 import 'components/match_screen/match_hantei_dialog.dart';
-import 'components/match_screen/match_infinite_next_dialog.dart';
 import 'components/match_screen/match_mini_log_undo_section.dart';
 import 'components/match_screen/match_operate_action_buttons_grid.dart';
 import 'components/match_screen/match_snapshot_history_dialog.dart';
@@ -38,6 +37,10 @@ import 'components/match_screen/renseikai_master_timer_widget.dart';
 import 'components/match_screen/match_representative_modal_bottom_sheet.dart';
 import 'components/match_screen/renseikai_add_next_match_bottom_sheet.dart';
 import 'components/match_screen/match_player_name_edit_bottom_sheet.dart';
+import 'components/match_screen/match_view_only_notice_banner.dart';
+import 'components/match_screen/match_daihyo_overlay.dart';
+import 'components/match_screen/match_renseikai_next_button.dart';
+import 'components/match_screen/match_infinite_handler_helper.dart';
 // ★ Phase 3: 分割した専用Widgetをインポート
 import 'package:kendo_os/features/match/domain/services/match_strategy.dart'; // ★ Phase 5: 戦略ファクトリの読み込み
 import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★ 追加: SoundServiceを読み込むために追加
@@ -58,11 +61,8 @@ import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 // ★ 追加：システム設定プロバイダの読み込み
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/last_used_settings_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/bunaiksen_infinite_engine_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/share_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
     show registeredTeamsProvider;
@@ -470,91 +470,27 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                       : const SizedBox.shrink();
 
                                   final viewOnlyBanner =
-                                      (isSomeoneElseOperating &&
-                                          !isApproved &&
-                                          !permissions.isReadOnly)
-                                      ? Container(
-                                          width: double.infinity,
-                                          color: AppKendoColors.hansokuRed
-                                              .withValues(alpha: 0.9),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: AppSpacing.sm,
-                                            horizontal: AppSpacing.lg,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.warning_amber_rounded,
-                                                color: AppKendoColors.pureWhite,
-                                                size: 18,
-                                              ),
-                                              const SizedBox(
-                                                width: AppSpacing.md,
-                                              ),
-                                              const Expanded(
-                                                child: Text(
-                                                  '他の記録員が入力中です',
-                                                  style: TextStyle(
-                                                    color: AppKendoColors
-                                                        .pureWhite,
-                                                    fontWeight:
-                                                        AppFontWeight.bold,
-                                                    fontSize:
-                                                        AppFontSize.bodySmall,
-                                                  ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () async {
-                                                  final confirmed =
-                                                      await _showConfirmDialog(
-                                                        '入力権限の奪取',
-                                                        '他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？',
-                                                      );
-                                                  if (confirmed) {
-                                                    await ref
-                                                        .read(
-                                                          matchCommandProvider,
-                                                        )
-                                                        .forceClaimScorer(
-                                                          match.id,
-                                                          _myUserId!,
-                                                        );
-                                                  }
-                                                },
-                                                style: TextButton.styleFrom(
-                                                  backgroundColor:
-                                                      AppKendoColors.pureWhite
-                                                          .withValues(
-                                                            alpha: 0.2,
-                                                          ),
-                                                  foregroundColor:
-                                                      AppKendoColors.pureWhite,
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal:
-                                                            AppSpacing.md,
-                                                        vertical: 0,
-                                                      ),
-                                                  minimumSize: const Size(
-                                                    0,
-                                                    30,
-                                                  ),
-                                                ),
-                                                child: const Text(
-                                                  '自分に切り替える',
-                                                  style: TextStyle(
-                                                    fontSize:
-                                                        AppFontSize.caption,
-                                                    fontWeight:
-                                                        AppFontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : const SizedBox.shrink();
+                                      MatchViewOnlyNoticeBanner(
+                                        isSomeoneElseOperating:
+                                            isSomeoneElseOperating,
+                                        isApproved: isApproved,
+                                        isReadOnly: permissions.isReadOnly,
+                                        onClaimScorer: () async {
+                                          final confirmed =
+                                              await _showConfirmDialog(
+                                                "入力権限の奪取",
+                                                "他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？",
+                                              );
+                                          if (confirmed) {
+                                            await ref
+                                                .read(matchCommandProvider)
+                                                .forceClaimScorer(
+                                                  match.id,
+                                                  _myUserId!,
+                                                );
+                                          }
+                                        },
+                                      );
 
                                   // ★ 修正: KendoRuleEngineを使って正確に有効なイベントのみを抽出する
                                   final engine = KendoRuleEngine();
@@ -707,6 +643,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                               context.appColors.textColor,
                                           isLocked: isInputLocked,
                                         );
+
                                         return Row(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.stretch,
@@ -756,10 +693,39 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                     rule.positions.last ||
                                                 match.matchType == '錬成会') &&
                                             match.status == 'finished') {
-                                          return _buildRenseikaiNextButton(
-                                            context,
-                                            match,
-                                            isViewOnly,
+                                          return MatchRenseikaiNextButton(
+                                            match: match,
+                                            isViewOnly: isViewOnly,
+                                            currentUserId: _myUserId ?? '',
+                                            onAddNext: () =>
+                                                _showNextMatchDialog(
+                                                  context,
+                                                  ref,
+                                                  match,
+                                                ),
+                                            onConfirmAndFinish: () async {
+                                              if (settings.showConfirmDialog) {
+                                                final confirmed =
+                                                    await _showConfirmDialog(
+                                                      '記録の確定',
+                                                      'この試合の記録を確定して終了しますか？\n確定後は点数の修正ができなくなります。',
+                                                    );
+                                                if (!confirmed) return;
+                                              }
+
+                                              await ref
+                                                  .read(
+                                                    matchApplicationServiceProvider,
+                                                  )
+                                                  .approveMatch(match.id);
+
+                                              if (!context.mounted) return;
+                                              _showMatchFinishedDialog(
+                                                context,
+                                                match,
+                                                null,
+                                              );
+                                            },
                                           );
                                         }
 
@@ -811,11 +777,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                             CircularProgressIndicator(),
                                                       ),
                                                     );
-                                                    await _handleMatchFinish(
-                                                      context,
-                                                      ref,
-                                                      match,
-                                                      winnerColor,
+                                                    await MatchInfiniteHandlerHelper.handleMatchFinish(
+                                                      context: context,
+                                                      ref: ref,
+                                                      currentMatch: match,
+                                                      winnerColor: winnerColor,
                                                     );
                                                     return;
                                                   }
@@ -1089,11 +1055,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                                             CircularProgressIndicator(),
                                                       ),
                                                     );
-                                                    await _handleMatchFinish(
-                                                      context,
-                                                      ref,
-                                                      match,
-                                                      winnerColor,
+                                                    await MatchInfiniteHandlerHelper.handleMatchFinish(
+                                                      context: context,
+                                                      ref: ref,
+                                                      currentMatch: match,
+                                                      winnerColor: winnerColor,
                                                     );
                                                     return;
                                                   }
@@ -1468,46 +1434,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               match.whiteName.contains('未定') ||
                               match.redName.contains('代表選手') ||
                               match.whiteName.contains('代表選手')))
-                        Container(
-                          color: AppKendoColors.pureBlack.withValues(
-                            alpha: 0.8,
-                          ),
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.person_add,
-                                  color: AppKendoColors.pureWhite,
-                                  size: 80,
-                                ),
-                                const SizedBox(height: AppSpacing.xl),
-                                const Text(
-                                  '代表戦の選手が未設定です',
-                                  style: TextStyle(
-                                    color: AppKendoColors.pureWhite,
-                                    fontSize: AppFontSize.header,
-                                    fontWeight: AppFontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.xxl),
-                                SizedBox(
-                                  width: 250,
-                                  child: GlassButton(
-                                    onPressed: () =>
-                                        _showDaihyoSelectDialog(match),
-                                    color: AppKendoColors.indigo,
-                                    label: '代表者を選択する',
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: AppSpacing.roundValue,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        MatchDaihyoOverlay(
+                          onSelectDaihyo: () => _showDaihyoSelectDialog(match),
                         ),
                     ], // Stack children
                   ), // Stack
@@ -1597,109 +1525,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
       wTeam: wTeam,
       redPlayers: redPlayers,
       whitePlayers: whitePlayers,
-    );
-  }
-
-  Widget _buildRenseikaiNextButton(
-    BuildContext context,
-    MatchModel match,
-    bool isViewOnly,
-  ) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final masterTime = ref.watch(
-          renseikaiMasterTimerProvider(match.groupName ?? ''),
-        );
-        final isTimeUp = masterTime == 0;
-        final isInputLocked =
-            match.scorerId != null && match.scorerId != _myUserId;
-        final settings = ref.watch(settingsProvider);
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-
-        final confirmAction = isViewOnly
-            ? null
-            : () async {
-                if (settings.haptic) {
-                  HapticFeedback.heavyImpact();
-                }
-
-                if (settings.showConfirmDialog) {
-                  final confirmed = await _showConfirmDialog(
-                    '記録の確定',
-                    'この試合の記録を確定して終了しますか？\n確定後は点数の修正ができなくなります。',
-                  );
-                  if (!confirmed) return;
-                }
-
-                await ref
-                    .read(matchApplicationServiceProvider)
-                    .approveMatch(match.id);
-
-                if (!context.mounted) return;
-                _showMatchFinishedDialog(context, match, null);
-              };
-
-        return Row(
-          children: [
-            Expanded(
-              child: GlassButton(
-                onPressed: (isInputLocked || isTimeUp)
-                    ? null
-                    : () => _showNextMatchDialog(context, ref, match),
-                color: AppKendoColors.teal,
-                icon: Icons.autorenew,
-                label: '追加して継続',
-                expandContent: false,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: GestureDetector(
-                onDoubleTap: settings.confirmBehavior == 'double'
-                    ? confirmAction
-                    : null,
-                child: ElevatedButton.icon(
-                  onPressed: settings.confirmBehavior == 'single'
-                      ? confirmAction
-                      : (isViewOnly
-                            ? null
-                            : () => AppSnackBar.show(
-                                context,
-                                settings.confirmBehavior == 'double'
-                                    ? 'ダブルタップで確定してください'
-                                    : '長押しで確定してください',
-                              )),
-                  onLongPress: settings.confirmBehavior == 'long'
-                      ? confirmAction
-                      : null,
-                  icon: const Icon(Icons.verified, size: 24),
-                  label: const Text(
-                    '確定して終了',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodyMedium,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? const Color(0xFF3F51B5)
-                        : const Color(0xFF3F51B5),
-                    foregroundColor: const Color(0xFFFFFFFF),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
-                    elevation: 2,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -1806,85 +1631,5 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         },
       ),
     );
-  }
-
-  // =========================================================================
-  // ★ NEW: 無限勝ち抜きエンジンの試合終了処理
-  // =========================================================================
-  Future<void> _handleMatchFinish(
-    BuildContext context,
-    WidgetRef ref,
-    MatchModel currentMatch,
-    String winnerColor,
-  ) async {
-    final finishedMatch = currentMatch
-        .copyWith(status: 'finished', timerStartedAt: null)
-        .updateRemainingSeconds(0, ref.read(timeSourceProvider).now());
-    await ref
-        .read(matchApplicationServiceProvider)
-        .saveMatch(finishedMatch); // ★ 修正
-
-    final engine = ref.read(bunaiksenInfiniteEngineProvider);
-    final nextMatch = await engine.processMatchResult(
-      finishedMatch,
-      winnerColor,
-    );
-
-    if (!mounted || !context.mounted) return;
-    Navigator.of(context, rootNavigator: true).pop(); // プログレスダイアログを閉じる
-
-    if (nextMatch != null) {
-      final streaks = ref.read(bunaiksenInfiniteStreakProvider);
-      final winnerStreak = streaks[nextMatch.redName] ?? 0;
-
-      showAppDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext dialogContext) {
-          return MatchInfiniteNextDialog(
-            redName: nextMatch.redName,
-            whiteName: nextMatch.whiteName,
-            winnerStreak: winnerStreak,
-            onFinishInfinite: () {
-              Navigator.of(dialogContext).pop();
-              ref.read(bunaiksenInfiniteQueueProvider.notifier).setPlayers([]);
-              ref.read(bunaiksenInfiniteStreakProvider.notifier).clearAll();
-              context.pop();
-            },
-            onRestAndReturn: () {
-              Navigator.of(dialogContext).pop();
-              final queueNotifier = ref.read(
-                bunaiksenInfiniteQueueProvider.notifier,
-              );
-              final currentQueue = ref.read(bunaiksenInfiniteQueueProvider);
-              final filteredQueue = currentQueue
-                  .where(
-                    (p) => p != nextMatch.redName && p != nextMatch.whiteName,
-                  )
-                  .toList();
-              queueNotifier.setPlayers([
-                nextMatch.redName,
-                nextMatch.whiteName,
-                ...filteredQueue,
-              ]);
-              context.pop();
-            },
-            onStartNextMatchImmediately: () async {
-              Navigator.of(dialogContext).pop();
-              final startMatch = nextMatch.copyWith(status: 'in_progress');
-              await ref
-                  .read(matchApplicationServiceProvider)
-                  .saveMatch(startMatch);
-              if (context.mounted) {
-                context.pushReplacement('/match/${nextMatch.id}');
-              }
-            },
-          );
-        },
-      );
-    } else {
-      AppSnackBar.show(context, '待機列の選手がいなくなりました。無限稽古を終了します');
-      context.pop();
-    }
   }
 }

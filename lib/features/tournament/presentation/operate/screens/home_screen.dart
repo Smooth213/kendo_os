@@ -10,7 +10,6 @@ import 'package:kendo_os/features/match/presentation/components/announce_history
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
-import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -28,20 +27,14 @@ import '../components/home/operator_action_buttons.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
+export '../providers/safe_timeline_provider.dart';
+
 final tournamentProvider = StreamProvider.family<TournamentModel?, String>((
   ref,
   id,
 ) {
   final repo = ref.watch(tournamentRepositoryProvider);
   return repo.getTournamentStream(id);
-});
-
-final categorySortProvider = StateProvider.autoDispose<bool>((ref) => true);
-final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
-final isSearchVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
-
-final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
-  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
 });
 
 // 🌟 物理ネットワーク接続を監視するプロバイダ

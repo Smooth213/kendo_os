@@ -1,36 +1,25 @@
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/features/pdf/pdf_service.dart' deferred as pdf_service;
-// ★ 追加：先ほど作成した勝ち抜き戦の最強描画エンジンを呼び出す
-import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
-// ★ Phase 7: 権限プロバイダのインポート
-import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/shared/application/services/csv_service.dart';
-import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
-import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart'; // ★ 追加: 分離したヘルパー
-import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
-import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ★ ファイル上部に追加
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_expedition_summary_card.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_grid_table.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_individual_matches_list.dart';
-import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_kachinuki_card.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_section.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_score_table_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
-import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
-import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -50,7 +39,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExporting = ref.watch(isExportingProvider);
 
-    // ★ Phase 7: 権限プロバイダから取得
     final permissions = ref.watch(permissionProvider);
     final String screenTitle = permissions.isReadOnly ? '全試合スコア' : '大会 公式記録';
 
@@ -83,7 +71,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         .where((p) => p.isNotEmpty)
         .toSet();
 
-    // ★ Step 3-2: selectによる最適化
     final matchesForThisTournament = ref.watch(
       matchListProvider.select(
         (list) => list.where((m) => m.tournamentId == tournamentId).toList(),
@@ -135,7 +122,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
             title: screenTitle,
             backgroundColor: cardColor,
             actions: [
-              // ★ 記録の間違いに気づいた時のために「公式記録の直し方」へ直行
               ManualHelpButton(
                 manualPath: 'docs/manuals/operator/official_record.md',
                 color: headerTextColor,
@@ -219,14 +205,11 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 }
               });
 
-              // 統合された個人戦がある場合、特殊なキーで登録
               if (individualMergedList.isNotEmpty) {
-                // ★ 修正: match_screenでの並び替え順(order)を公式記録画面とPDFに100%反映するソートを強制
                 individualMergedList.sort((a, b) => a.order.compareTo(b.order));
                 mergedGroups['__merged_individual__'] = individualMergedList;
               }
 
-              // ソート対象を mergedGroups に変更
               final sortedGroupKeys = mergedGroups.keys.toList()
                 ..sort((a, b) {
                   final aLast = _getLastTimestamp(mergedGroups[a]!);
@@ -252,7 +235,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     .where((n) => n.isNotEmpty)
                     .toSet();
               } else if (registeredTeamNames.isNotEmpty) {
-                // 大会全体の登録チームから現在の部門の試合に合致するものがあるか確認
                 final matchedInCat = registeredTeamNames.where((tName) {
                   return categoryMatches.any((m) {
                     final r = m.redName.contains(':')
@@ -293,35 +275,45 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   OfficialRecordExportBar(
                     isExporting: isExporting,
                     isDark: isDark,
-                    onPdfPressed: () => _handleExport(
-                      context,
-                      ref,
-                      sortedGroupKeys,
-                      mergedGroups,
-                      cat,
-                      'pdf',
+                    onPdfPressed: () => OfficialRecordExportHelper.handleExport(
+                      context: context,
+                      ref: ref,
+                      isExportingController: ref.read(
+                        isExportingProvider.notifier,
+                      ),
+                      sortedGroupKeys: sortedGroupKeys,
+                      mergedGroups: mergedGroups,
+                      cat: cat,
+                      type: 'pdf',
                       tName: tName,
                       tDate: tDate,
                       tVenue: tVenue,
                     ),
-                    onImagePressed: () => _handleExport(
-                      context,
-                      ref,
-                      sortedGroupKeys,
-                      mergedGroups,
-                      cat,
-                      'image',
-                      tName: tName,
-                      tDate: tDate,
-                      tVenue: tVenue,
-                    ),
-                    onCsvPressed: () => _handleExport(
-                      context,
-                      ref,
-                      sortedGroupKeys,
-                      mergedGroups,
-                      cat,
-                      'csv',
+                    onImagePressed: () =>
+                        OfficialRecordExportHelper.handleExport(
+                          context: context,
+                          ref: ref,
+                          isExportingController: ref.read(
+                            isExportingProvider.notifier,
+                          ),
+                          sortedGroupKeys: sortedGroupKeys,
+                          mergedGroups: mergedGroups,
+                          cat: cat,
+                          type: 'image',
+                          tName: tName,
+                          tDate: tDate,
+                          tVenue: tVenue,
+                        ),
+                    onCsvPressed: () => OfficialRecordExportHelper.handleExport(
+                      context: context,
+                      ref: ref,
+                      isExportingController: ref.read(
+                        isExportingProvider.notifier,
+                      ),
+                      sortedGroupKeys: sortedGroupKeys,
+                      mergedGroups: mergedGroups,
+                      cat: cat,
+                      type: 'csv',
                       tName: tName,
                       tDate: tDate,
                       tVenue: tVenue,
@@ -329,326 +321,39 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      shrinkWrap: true, // ★ 追加
-                      physics: const ClampingScrollPhysics(), // ★ 追加
+                      shrinkWrap: true,
+                      physics: const ClampingScrollPhysics(),
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       itemCount: sortedGroupKeys.length,
                       itemBuilder: (context, index) {
                         final groupName = sortedGroupKeys[index];
-                        // 取得先を統合済みの mergedGroups に変更
                         final matches = mergedGroups[groupName]!
                           ..sort((a, b) => a.order.compareTo(b.order));
 
                         if (matches.isNotEmpty && matches.first.isKachinuki) {
-                          // 勝ち抜き戦の描画
-                          final firstMatch = matches.first;
-                          final note = firstMatch.note;
-                          final cleanNote = note
-                              .replaceAll('[', '')
-                              .replaceAll(']', '')
-                              .trim();
-                          final rTeam = firstMatch.redName.contains(':')
-                              ? firstMatch.redName.split(':').first.trim()
-                              : firstMatch.redName;
-                          final wTeam = firstMatch.whiteName.contains(':')
-                              ? firstMatch.whiteName.split(':').first.trim()
-                              : firstMatch.whiteName;
-
-                          // ヘッダーを【勝ち抜き戦】チーム名 vs チーム名 の形式に統一
-                          String titleText = '【勝ち抜き戦】 $rTeam vs $wTeam';
-                          if (cleanNote.isNotEmpty &&
-                              !cleanNote.contains('勝ち抜き戦')) {
-                            titleText += ' ($cleanNote)';
-                          }
-
-                          int redRem = matches.last.redRemaining.length;
-                          int whiteRem = matches.last.whiteRemaining.length;
-                          int maxRem = redRem > whiteRem ? redRem : whiteRem;
-                          int totalCols = matches.length + maxRem;
-
-                          // ★ 修正：画面幅以上の試合数がある場合に広がるよう余裕を持たせる
-                          final canvasWidth = 60.0 + (totalCols * 60.0) + 120.0;
-
-                          final engine = KendoRuleEngine();
-                          final projections = matches.map((m) {
-                            final analysis = engine.analyzeHistory(
-                              m.events,
-                              m,
-                              m.rule,
-                            );
-                            return MatchProjectionMapper.toProjection(
-                              m,
-                              analysis,
-                            );
-                          }).toList();
-
-                          return Card(
-                            margin: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.sm,
-                              horizontal: AppSpacing.xs,
-                            ),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.large,
-                              side: BorderSide(
-                                color: isDark
-                                    ? const Color(0xFF38383A)
-                                    : const Color(0x33000000),
-                              ),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(AppSpacing.md),
-                                  color: isDark
-                                      ? const Color(
-                                          0xFF3F51B5,
-                                        ).withValues(alpha: 0.4)
-                                      : const Color(0xFF3F51B5),
-                                  width: double.infinity,
-                                  child: Text(
-                                    titleText,
-                                    style: TextStyle(
-                                      fontWeight: AppFontWeight.bold,
-                                      color: isDark
-                                          ? const Color(0xFF3F51B5)
-                                          : const Color(0xFF3F51B5),
-                                    ),
-                                  ),
-                                ),
-                                // ★ 修正：InteractiveViewer を廃止し、確実に横に滑る SingleChildScrollView に変更
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(
-                                      AppSpacing.lg,
-                                    ),
-                                    color: isDark
-                                        ? context.appColors.cardBackground
-                                        : context.appColors.textColor,
-                                    width:
-                                        canvasWidth <
-                                            MediaQuery.of(context).size.width
-                                        ? MediaQuery.of(context).size.width
-                                        : canvasWidth,
-                                    height: 520, // 描画高さに固定
-                                    child: CustomPaint(
-                                      painter: KachinukiBracketPainter(
-                                        matches: projections,
-                                        isDark: isDark,
-                                        ref: ref, // ★ 最新のPainterに合わせて引数を修正
-                                      ),
-                                      size: Size.infinite,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          return OfficialRecordKachinukiCard(
+                            matches: matches,
+                            isDark: isDark,
+                            ref: ref,
                           );
                         } else if (matches.isNotEmpty &&
                             matches.any((m) => m.note.contains('[リーグ戦]'))) {
                           final ownTeams =
                               ref.watch(customTeamNamesProvider).value ?? [];
-                          final String leagueTitle =
-                              BunaiksenHelper.generateDescriptiveLeagueTitle(
-                                matches,
-                                ownTeams,
-                              );
-                          final textColor = isDark
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFF3F51B5);
-
-                          // 通常の試合と決定戦を分離
-                          final normalMatches = matches
-                              .where((m) => !m.note.contains('[順位決定戦]'))
-                              .toList();
-                          final tieBouts = matches
-                              .where((m) => m.note.contains('[順位決定戦]'))
-                              .toList();
-
-                          // 対戦カードごとのグルーピング（通常用）
-                          final boutsByMatchup = <String, List<MatchModel>>{};
-                          final matchupOrder = <String>[];
-                          for (var m in normalMatches) {
-                            final t1 = m.redName.split(':').first.trim();
-                            final t2 = m.whiteName.split(':').first.trim();
-                            final matchupName = '$t1 vs $t2';
-                            if (!boutsByMatchup.containsKey(matchupName)) {
-                              matchupOrder.add(matchupName);
-                              boutsByMatchup[matchupName] = [];
-                            }
-                            boutsByMatchup[matchupName]!.add(m);
-                          }
-
-                          // ★ 追加：対戦カードごとのグルーピング（順位決定戦用）
-                          final tieBoutsByMatchup =
-                              <String, List<MatchModel>>{};
-                          final tieMatchupOrder = <String>[];
-                          for (var m in tieBouts) {
-                            final t1 = m.redName.split(':').first.trim();
-                            final t2 = m.whiteName.split(':').first.trim();
-                            final matchupName = '$t1 vs $t2';
-                            if (!tieBoutsByMatchup.containsKey(matchupName)) {
-                              tieMatchupOrder.add(matchupName);
-                              tieBoutsByMatchup[matchupName] = [];
-                            }
-                            tieBoutsByMatchup[matchupName]!.add(m);
-                          }
-
-                          final isIndiv = matches.any(
-                            (m) =>
-                                m.matchType == 'individual' ||
-                                m.matchType == '選手' ||
-                                m.matchType.contains('個人戦'),
-                          );
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: AppSpacing.xl,
-                                  bottom: AppSpacing.md,
-                                  left: AppSpacing.sm,
-                                ),
-                                child: Text(
-                                  '【リーグ戦】 $leagueTitle',
-                                  style: TextStyle(
-                                    fontWeight: AppFontWeight.bold,
-                                    color: textColor,
-                                    fontSize: AppFontSize.subhead,
-                                  ),
-                                ),
-                              ),
-
-                              // 1. ブラッシュアップされた星取表（マトリックス）
-                              OfficialRecordLeagueGridTable(
-                                groupName: groupName,
-                                matches: matches,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                                scoreTableBuilder: (name, bouts) =>
-                                    _buildScoreTable(
+                          return OfficialRecordLeagueSection(
+                            groupName: groupName,
+                            matches: matches,
+                            cardColor: cardColor,
+                            isDark: isDark,
+                            ownTeams: ownTeams,
+                            scoreTableBuilder:
+                                (name, bouts, {cardColor, isDark = false}) =>
+                                    OfficialRecordScoreTableBuilder.buildScoreTable(
                                       name,
-                                      bouts,
-                                      cardColor: AppKendoColors.transparent,
-                                      isDark: isDark,
-                                    ),
-                                individualListBuilder: (name, bouts) =>
-                                    OfficialRecordIndividualMatchesList(
-                                      groupName: name,
-                                      matches: bouts,
-                                      cardColor: AppKendoColors.transparent,
-                                      isDark: isDark,
-                                      applySort: false,
-                                    ),
-                              ),
-
-                              const SizedBox(height: AppSpacing.xxl),
-                              const Padding(
-                                padding: EdgeInsets.only(
-                                  left: AppSpacing.sm,
-                                  bottom: AppSpacing.md,
-                                ),
-                                child: Text(
-                                  '▼ 対戦カード別 スコア詳細',
-                                  style: TextStyle(
-                                    fontWeight: AppFontWeight.bold,
-                                    fontSize: AppFontSize.body,
-                                    color: AppKendoColors.grey,
-                                  ),
-                                ),
-                              ),
-
-                              // 2. 詳細スコアの表示（個人戦なら中枠なしの一括リスト）
-                              if (isIndiv)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: AppSpacing.xl,
-                                  ),
-                                  child: OfficialRecordIndividualMatchesList(
-                                    groupName: '対戦スコア詳細',
-                                    matches: normalMatches,
-                                    cardColor: cardColor,
-                                    isDark: isDark,
-                                    applySort: false,
-                                  ),
-                                )
-                              else
-                                ...matchupOrder.map((matchupName) {
-                                  final bouts = boutsByMatchup[matchupName]!;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: AppSpacing.xl,
-                                    ),
-                                    child: _buildScoreTable(
-                                      matchupName,
                                       bouts,
                                       cardColor: cardColor,
                                       isDark: isDark,
                                     ),
-                                  );
-                                }),
-
-                              // 3. 順位決定戦
-                              if (tieBouts.isNotEmpty) ...[
-                                const SizedBox(height: AppSpacing.lg),
-                                const Padding(
-                                  padding: EdgeInsets.only(
-                                    left: AppSpacing.sm,
-                                    bottom: AppSpacing.sm,
-                                  ),
-                                  child: Text(
-                                    '▼ 順位決定戦',
-                                    style: TextStyle(
-                                      fontWeight: AppFontWeight.bold,
-                                      fontSize: AppFontSize.body,
-                                      color: AppKendoColors.orange,
-                                    ),
-                                  ),
-                                ),
-                                if (isIndiv)
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: AppSpacing.lg,
-                                    ),
-                                    child: OfficialRecordIndividualMatchesList(
-                                      groupName: '順位決定戦',
-                                      matches: tieBouts,
-                                      cardColor: isDark
-                                          ? const Color(
-                                              0xFFFF9800,
-                                            ).withValues(alpha: 0.1)
-                                          : const Color(0xFFFF9800),
-                                      isDark: isDark,
-                                      applySort: false,
-                                    ),
-                                  )
-                                else
-                                  ...tieMatchupOrder.map((matchupName) {
-                                    final bouts =
-                                        tieBoutsByMatchup[matchupName]!;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: AppSpacing.lg,
-                                      ),
-                                      child: _buildScoreTable(
-                                        matchupName,
-                                        bouts,
-                                        cardColor: isDark
-                                            ? const Color(
-                                                0xFFFF9800,
-                                              ).withValues(alpha: 0.1)
-                                            : const Color(0xFFFF9800),
-                                        isDark: isDark,
-                                      ),
-                                    );
-                                  }),
-                              ],
-                              const SizedBox(height: 48),
-                            ],
                           );
                         } else if (matches.isNotEmpty &&
                             matches.any(
@@ -657,7 +362,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                                   m.matchType == '選手' ||
                                   m.matchType.contains('個人戦'),
                             )) {
-                          // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
                           return OfficialRecordIndividualMatchesList(
                             groupName: groupName,
                             matches: matches,
@@ -666,8 +370,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                             applySort: true,
                           );
                         } else {
-                          // 通常団体戦の描画
-                          return _buildScoreTable(
+                          return OfficialRecordScoreTableBuilder.buildScoreTable(
                             groupName,
                             matches,
                             cardColor: cardColor,
@@ -681,9 +384,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               );
             }).toList(),
           ),
-        ), // Scaffold
+        ),
       ),
-    ); // LiquidBackground
+    );
   }
 
   DateTime _getLastTimestamp(List<MatchModel> ms) {
@@ -694,205 +397,5 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       }
     }
     return last;
-  }
-
-  // 出力処理の共通ハンドラ
-  Future<void> _handleExport(
-    BuildContext context,
-    WidgetRef ref,
-    List<String> sortedGroupKeys,
-    Map<String, List<MatchModel>> mergedGroups,
-    String cat,
-    String type, {
-    String? tName,
-    String? tDate,
-    String? tVenue,
-  }) async {
-    if (ref.read(isExportingProvider)) return;
-    ref.read(isExportingProvider.notifier).state = true;
-    final groupDataList = sortedGroupKeys
-        .map(
-          (key) => {
-            'groupName': key,
-            'matches': mergedGroups[key]!
-              ..sort((a, b) => a.order.compareTo(b.order)),
-          },
-        )
-        .toList();
-
-    BuildContext? dialogContext;
-    showAppDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        dialogContext = ctx;
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
-
-    try {
-      final now = ref.read(timeSourceProvider).now();
-      if (type == 'pdf') {
-        await pdf_service.loadLibrary();
-        await pdf_service.PdfService.printOfficialRecord(
-          cat,
-          groupDataList,
-          tournamentName: tName,
-          tournamentDate: tDate,
-          tournamentVenue: tVenue,
-          outputTime: now,
-        );
-      }
-      if (type == 'image') {
-        await pdf_service.loadLibrary();
-        await pdf_service.PdfService.shareOfficialRecordAsImage(
-          cat,
-          groupDataList,
-          tournamentName: tName,
-          tournamentDate: tDate,
-          tournamentVenue: tVenue,
-          outputTime: now,
-        );
-      }
-      // ★ CSVサービスを呼び出し
-      if (type == 'csv') {
-        await CsvService.shareOfficialRecordAsCsv(cat, groupDataList);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        AppSnackBar.showError(context, '出力に失敗しました: $e');
-      }
-    } finally {
-      ref.read(isExportingProvider.notifier).state = false;
-      if (dialogContext != null && dialogContext!.mounted) {
-        Navigator.pop(dialogContext!);
-      } else if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-    }
-  }
-
-  Widget _buildScoreTable(
-    String groupName,
-    List<MatchModel> matches, {
-    Color? cardColor,
-    bool isDark = false,
-  }) {
-    final note = matches.first.note;
-    final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
-
-    final redTeam = matches.first.redName.contains(':')
-        ? matches.first.redName.split(':').first.trim()
-        : matches.first.redName;
-    final whiteTeam = matches.first.whiteName.contains(':')
-        ? matches.first.whiteName.split(':').first.trim()
-        : matches.first.whiteName;
-
-    // 「赤」「白」ではなく実際のチーム名を表示するように変更
-    final String sideLabelRed = redTeam;
-    final String sideLabelWhite = whiteTeam;
-
-    // 試合形式に合わせてヘッダーテキストを生成
-    String matchTypeStr = '団体戦';
-    if (matches.any(
-      (m) =>
-          m.matchType == 'individual' ||
-          m.matchType == '選手' ||
-          m.matchType.contains('個人戦'),
-    )) {
-      matchTypeStr = '個人戦';
-    } else if (matches.first.isKachinuki) {
-      matchTypeStr = '勝ち抜き戦';
-    } else if (matches.any((m) => m.note.contains('リーグ戦'))) {
-      matchTypeStr = 'リーグ戦';
-    }
-
-    String headerTitle = '【$matchTypeStr】 $redTeam vs $whiteTeam';
-    if (cleanNote.isNotEmpty && !cleanNote.contains(matchTypeStr)) {
-      headerTitle += ' ($cleanNote)';
-    }
-
-    bool allFinished = matches.every(
-      (m) => m.status == 'approved' || m.status == 'finished',
-    );
-
-    String teamWinner = 'draw';
-    int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
-    MatchModel? daihyoMatch;
-
-    for (var m in matches) {
-      if (m.matchType == '代表戦') {
-        daihyoMatch = m;
-        continue; // ★ 代表戦のスコアは本戦の計算から除外する
-      }
-      final rs = (m.redScore as num).toInt();
-      final ws = (m.whiteScore as num).toInt();
-      rPts += rs;
-      wPts += ws;
-      if (rs > ws) {
-        rWins++;
-      } else if (ws > rs) {
-        wWins++;
-      }
-    }
-
-    if (rWins > wWins) {
-      teamWinner = 'red';
-    } else if (wWins > rWins) {
-      teamWinner = 'white';
-    } else if (rPts > wPts) {
-      teamWinner = 'red';
-    } else if (wPts > rPts) {
-      teamWinner = 'white';
-    } else if (daihyoMatch != null) {
-      final rs = (daihyoMatch.redScore as num).toInt();
-      final ws = (daihyoMatch.whiteScore as num).toInt();
-      if (rs > ws) {
-        teamWinner = 'red';
-      } else if (ws > rs) {
-        teamWinner = 'white';
-      }
-    }
-
-    final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
-
-    final info = ScoreTableGroupInfo(
-      groupName: groupName,
-      headerTitle: headerTitle,
-      sideLabelRed: sideLabelRed,
-      sideLabelWhite: sideLabelWhite,
-      isSummary: isSummary,
-      teamWinner: teamWinner,
-      redWins: rWins,
-      whiteWins: wWins,
-      redTotalPoints: rPts,
-      whiteTotalPoints: wPts,
-      allFinished: allFinished,
-    );
-
-    final matchItems = matches.map((m) {
-      final isFinished = m.status == 'approved' || m.status == 'finished';
-      final ptsMap = MatchCalculatorHelper.extractPointsFromModel(m);
-      return ScoreTableMatchItem(
-        id: m.id,
-        matchType: m.matchType,
-        redName: m.redName,
-        whiteName: m.whiteName,
-        redScore: (m.redScore as num).toInt(),
-        whiteScore: (m.whiteScore as num).toInt(),
-        isFinished: isFinished,
-        isSummary: m.note.contains('[SUMMARY]'),
-        isEncho: MatchCalculatorHelper.isEnchoFromModel(m),
-        redPoints: ptsMap['red'] ?? [],
-        whitePoints: ptsMap['white'] ?? [],
-      );
-    }).toList();
-
-    return ScoreTableCard(
-      info: info,
-      matches: matchItems,
-      cardColor: cardColor,
-      isDark: isDark,
-    );
   }
 }
