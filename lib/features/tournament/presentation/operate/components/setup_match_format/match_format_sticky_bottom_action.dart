@@ -33,7 +33,7 @@ class MatchFormatStickyBottomAction extends ConsumerWidget {
         ? AppKendoColors.transparent
         : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
     final borderColor = enableLiquidGlass
-        ? Colors.transparent
+        ? AppKendoColors.transparent
         : (isDark ? const Color(0xFF38383A) : const Color(0x33000000));
 
     return Container(

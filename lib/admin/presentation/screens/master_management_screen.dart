@@ -8,6 +8,7 @@ import 'package:kendo_os/admin/presentation/components/master_menu_bottom_sheet.
 import 'package:kendo_os/admin/presentation/components/master_organization_header_bar.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_edit_bottom_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_tile.dart';
+import 'package:kendo_os/admin/presentation/components/master_player_grouping_helper.dart';
 import 'package:kendo_os/admin/presentation/components/master_register_organization_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/security/feature_gate.dart';
@@ -167,17 +168,11 @@ class _MasterManagementScreenState
                 ? players.first.organization
                 : cloudDojoName;
 
-            final Map<String, List<PlayerModel>> groupedPlayers = {};
-            if (_groupingMode == 0) {
-              for (var p in players) {
-                groupedPlayers.putIfAbsent(p.gradeName, () => []).add(p);
-              }
-            } else {
-              for (var p in players) {
-                final String cat = _getCategoryName(p.grade);
-                groupedPlayers.putIfAbsent(cat, () => []).add(p);
-              }
-            }
+            final Map<String, List<PlayerModel>> groupedPlayers =
+                MasterPlayerGroupingHelper.groupPlayers(
+                  players: players,
+                  groupingMode: _groupingMode,
+                );
             final groupKeys = groupedPlayers.keys.toList();
 
             return Column(
@@ -302,16 +297,6 @@ class _MasterManagementScreenState
               ),
       ),
     );
-  }
-
-  String _getCategoryName(int grade) {
-    if (grade == -1) return '初心者の部';
-    if (grade == 0) return '幼年の部';
-    if (grade >= 1 && grade <= 4) return '小学生低学年の部';
-    if (grade >= 5 && grade <= 6) return '小学生高学年の部';
-    if (grade >= 7 && grade <= 9) return '中学生の部';
-    if (grade >= 10 && grade <= 12) return '高校生の部';
-    return '一般の部';
   }
 
   Widget _buildPlayerTile(

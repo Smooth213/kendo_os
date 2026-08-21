@@ -2,26 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_leaderboard_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_match_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_match_list_header_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_quick_match_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_share_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_home_action_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/bulk_rule_edit_sheet.dart';
-import '../components/home/match_edit_sheet.dart';
-import '../providers/match_command_provider.dart';
 import '../providers/match_list_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
@@ -79,13 +74,13 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.calendar_month),
               tooltip: '日付を選択して過去の記録を見る',
-              onPressed: () => _handleDatePicker(
-                context,
-                ref,
-                viewDate,
-                availableDates,
-                themeColors,
-                isDark,
+              onPressed: () => BunaiksenHomeActionHelper.handleDatePicker(
+                context: context,
+                ref: ref,
+                viewDate: viewDate,
+                availableDates: availableDates,
+                themeColors: themeColors,
+                isDark: isDark,
               ),
             ),
             IconButton(
@@ -102,8 +97,12 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.qr_code_2),
               tooltip: '観戦リンクを共有する',
-              onPressed: () =>
-                  _showShareDialog(context, ref, dateId, dateDisplay),
+              onPressed: () => BunaiksenHomeActionHelper.showShareDialog(
+                context: context,
+                ref: ref,
+                tournamentId: dateId,
+                dateDisplay: dateDisplay,
+              ),
             ),
             IconButton(
               icon: const Icon(Icons.leaderboard_outlined),
@@ -193,9 +192,17 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                           );
                         },
                         onEditNote: () =>
-                            _showEditNoteDialog(context, ref, match),
+                            BunaiksenHomeActionHelper.showEditNoteDialog(
+                              context: context,
+                              match: match,
+                              themeColors: themeColors,
+                            ),
                         onDelete: () =>
-                            _confirmDeleteMatch(context, ref, match.id),
+                            BunaiksenHomeActionHelper.confirmDeleteMatch(
+                              context: context,
+                              ref: ref,
+                              matchId: match.id,
+                            ),
                       );
                     }, childCount: matches.length),
                   ),
@@ -217,132 +224,6 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               )
             : null,
       ),
-    );
-  }
-
-  Future<void> _handleDatePicker(
-    BuildContext context,
-    WidgetRef ref,
-    DateTime viewDate,
-    Set<String> availableDates,
-    AppThemeColors themeColors,
-    bool isDark,
-  ) async {
-    final todayStr = DateFormat('yyyyMMdd').format(DateTime.now());
-    final viewDateStr = DateFormat('yyyyMMdd').format(viewDate);
-    final bool isViewDateSelectable =
-        viewDateStr == todayStr || availableDates.contains(viewDateStr);
-    final safeInitialDate = isViewDateSelectable ? viewDate : DateTime.now();
-
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: safeInitialDate,
-      firstDate: DateTime(2024),
-      lastDate: DateTime.now(),
-      selectableDayPredicate: (DateTime date) {
-        final dStr = DateFormat('yyyyMMdd').format(date);
-        final tStr = DateFormat('yyyyMMdd').format(DateTime.now());
-        return dStr == tStr || availableDates.contains(dStr);
-      },
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: isDark
-                ? ColorScheme.dark(
-                    primary: themeColors.primaryAccent,
-                    onPrimary: context.appColors.textColor,
-                    surface: themeColors.cardBackground,
-                    onSurface: AppKendoColors.pureWhite,
-                  )
-                : ColorScheme.light(
-                    primary: themeColors.primaryAccent,
-                    onPrimary: AppKendoColors.pureWhite,
-                    surface: themeColors.cardBackground,
-                    onSurface: AppKendoColors.pureBlack,
-                  ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: themeColors.cardBackground,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      ref.read(bunaiksenViewDateProvider.notifier).state = picked;
-    }
-  }
-
-  void _confirmDeleteMatch(
-    BuildContext context,
-    WidgetRef ref,
-    String matchId,
-  ) {
-    showAppDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: '試合の削除',
-        titleIcon: Icons.warning_amber_rounded,
-        iconColor: AppKendoColors.red,
-        content: const Text('この試合データを完全に削除します。この操作は取り消せません。よろしいですか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(matchCommandProvider).deleteMatch(matchId);
-            },
-            child: const Text(
-              '削除',
-              style: TextStyle(
-                color: AppKendoColors.red,
-                fontWeight: AppFontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditNoteDialog(
-    BuildContext context,
-    WidgetRef ref,
-    MatchModel match,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeColors =
-        Theme.of(context).extension<AppThemeColors>() ??
-        AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
-
-    showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return MatchEditSheet(
-          matches: [match],
-          tournamentId: match.tournamentId,
-          themeColors: themeColors,
-        );
-      },
-    );
-  }
-
-  void _showShareDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String tournamentId,
-    String dateDisplay,
-  ) {
-    final dojoId = ref.read(currentDojoIdProvider);
-    BunaiksenShareDialog.show(
-      context,
-      tournamentId: tournamentId,
-      dateDisplay: dateDisplay,
-      dojoId: dojoId,
     );
   }
 }

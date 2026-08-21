@@ -7,8 +7,6 @@ import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
-import '../providers/team_name_history_provider.dart'; // ★ 追加：履歴プロバイダ
-import 'package:kendo_os/shared/utils/text_sanitizer.dart'; // ★ お掃除フィルターを追加
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_dynamic_header.dart';
@@ -19,6 +17,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_confirm_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_sticky_bottom_bar.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_save_helper.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family
@@ -53,49 +54,18 @@ class _TeamRegistrationScreenState
   String _selectedMajorCategory = '小学生';
   String _selectedMinorCategory = '低学年';
 
-  // ★ 修正：最終的なカテゴリ名を生成。マスタ画面の判定と文字列を100%一致させる
-  String get _selectedCategory {
-    if (_selectedMajorCategory == '初心者') {
-      return '初心者の部';
-    }
-    if (_selectedMajorCategory == '幼年') {
-      return '幼年の部';
-    }
-    if (_selectedMinorCategory == '全体') {
-      return '$_selectedMajorCategoryの部';
-    }
-    if (_selectedMajorCategory == '大学・一般') {
-      return '$_selectedMinorCategoryの部';
-    }
-    return '$_selectedMajorCategory$_selectedMinorCategoryの部';
-  }
+  String get _selectedCategory =>
+      TeamRegistrationCategoryParser.formatCategoryName(
+        majorCategory: _selectedMajorCategory,
+        minorCategory: _selectedMinorCategory,
+      );
 
-  // ★ 修正：編集時に文字列からUI状態を復元するロジック
   void _parseCategoryToState(String categoryName) {
-    if (categoryName == '初心者の部') {
-      _selectedMajorCategory = '初心者';
-      _selectedMinorCategory = '全体';
-      return;
-    }
-    if (categoryName == '幼年の部') {
-      _selectedMajorCategory = '幼年';
-      _selectedMinorCategory = '全体';
-      return;
-    }
-    final cleanCat = categoryName.replaceAll('の部', '');
-    if (['大学生', '一般', 'シニア'].contains(cleanCat)) {
-      _selectedMajorCategory = '大学・一般';
-      _selectedMinorCategory = cleanCat;
-      return;
-    }
-    for (var major in ['幼年', '小学生', '中学生', '高校生']) {
-      if (cleanCat.startsWith(major)) {
-        _selectedMajorCategory = major;
-        final minor = cleanCat.substring(major.length);
-        _selectedMinorCategory = minor.isEmpty ? '全体' : minor;
-        return;
-      }
-    }
+    final res = TeamRegistrationCategoryParser.parseCategoryToState(
+      categoryName,
+    );
+    _selectedMajorCategory = res.majorCategory;
+    _selectedMinorCategory = res.minorCategory;
   }
 
   bool _showExtraMajorCategories = false;
@@ -388,23 +358,16 @@ class _TeamRegistrationScreenState
             AppSnackBar.showError(context, 'チーム名を入力してください');
             return;
           }
-          final cleanTeamName = TextSanitizer.clean(_teamNameController.text);
-          final team = TeamModel(
-            id: _editingTeamId ?? '',
+          await TeamRegistrationSaveHelper.saveTeamWithHistory(
+            ref: ref,
+            editingTeamId: _editingTeamId,
             tournamentId: widget.tournamentId,
             category: _selectedCategory,
-            teamName: cleanTeamName,
+            rawTeamName: _teamNameController.text,
             matchType: _matchType,
-            playerNames: List.generate(
-              playerCount,
-              (i) => _tempSelectedPlayers[i] ?? '',
-            ),
+            playerCount: playerCount,
+            tempSelectedPlayers: _tempSelectedPlayers,
           );
-          await ref.read(teamRepositoryProvider).saveTeam(team);
-
-          ref
-              .read(teamNameHistoryProvider.notifier)
-              .addHistory(_teamNameController.text);
 
           if (!mounted) return;
           setState(() {
@@ -430,25 +393,16 @@ class _TeamRegistrationScreenState
       onFinishToRules: () async {
         if (_teamNameController.text.trim().isNotEmpty) {
           try {
-            final cleanTeamName = TextSanitizer.clean(_teamNameController.text);
-            await ref
-                .read(teamRepositoryProvider)
-                .saveTeam(
-                  TeamModel(
-                    id: _editingTeamId ?? '',
-                    tournamentId: widget.tournamentId,
-                    category: _selectedCategory,
-                    teamName: cleanTeamName,
-                    matchType: _matchType,
-                    playerNames: List.generate(
-                      playerCount,
-                      (i) => _tempSelectedPlayers[i] ?? '',
-                    ),
-                  ),
-                );
-            ref
-                .read(teamNameHistoryProvider.notifier)
-                .addHistory(_teamNameController.text.trim());
+            await TeamRegistrationSaveHelper.saveTeamWithHistory(
+              ref: ref,
+              editingTeamId: _editingTeamId,
+              tournamentId: widget.tournamentId,
+              category: _selectedCategory,
+              rawTeamName: _teamNameController.text,
+              matchType: _matchType,
+              playerCount: playerCount,
+              tempSelectedPlayers: _tempSelectedPlayers,
+            );
           } catch (e) {
             debugPrint('チーム自動保存エラー: $e');
           }

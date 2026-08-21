@@ -9,6 +9,7 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_call_ban
 import 'package:kendo_os/features/viewer/presentation/components/viewer_category_section_list.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_list_search_bar.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_quick_action_buttons.dart';
+import 'package:kendo_os/features/viewer/presentation/components/viewer_match_filter_helper.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_settings_bottom_sheet.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_share_dialog.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_tournament_info_card.dart';
@@ -71,36 +72,8 @@ class ViewerHomeScreen extends ConsumerWidget {
       final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
         ..sort((a, b) => a.order.compareTo(b.order));
 
-      final uniqueInProgress = <MatchModel>[];
-      final uniqueWaiting = <MatchModel>[];
-      final seenMatchups = <String>{};
-
-      for (var match in allMatchesList) {
-        if (match.status == 'finished' || match.status == 'approved') continue;
-
-        String key;
-        if (match.note.contains('[リーグ戦]')) {
-          final t1 = match.redName.split(':').first.trim();
-          final t2 = match.whiteName.split(':').first.trim();
-          final sortedTeams = [t1, t2]..sort();
-          key = 'league_${match.groupName}_${sortedTeams.join("_")}';
-        } else if (match.isKachinuki) {
-          key = 'kachinuki_${match.groupName}';
-        } else if (match.groupName != null && match.groupName!.isNotEmpty) {
-          key = 'group_${match.groupName}';
-        } else {
-          key = 'match_${match.id}';
-        }
-
-        if (!seenMatchups.contains(key)) {
-          seenMatchups.add(key);
-          if (match.status == 'in_progress') {
-            uniqueInProgress.add(match);
-          } else if (match.status == 'waiting') {
-            uniqueWaiting.add(match);
-          }
-        }
-      }
+      final (uniqueInProgress, uniqueWaiting) =
+          ViewerMatchFilterHelper.extractActiveMatches(allMatchesList);
 
       final sanitizedQuery = ref
           .watch(searchQueryProvider)

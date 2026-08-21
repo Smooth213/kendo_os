@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_kachinuki_card.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_section.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_score_table_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_group_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
@@ -77,15 +78,9 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
       ),
     );
 
-    final categoryGroups = <String, Map<String, List<MatchModel>>>{};
-    for (var m in matchesForThisTournament) {
-      if (m.groupName == null || m.groupName!.isEmpty) continue;
-      final cat = (m.category != null && m.category!.isNotEmpty)
-          ? m.category!
-          : '一般';
-      categoryGroups.putIfAbsent(cat, () => {});
-      categoryGroups[cat]!.putIfAbsent(m.groupName!, () => []).add(m);
-    }
+    final categoryGroups = OfficialRecordGroupHelper.groupMatchesByCategory(
+      matchesForThisTournament,
+    );
 
     if (categoryGroups.isEmpty) {
       return LiquidBackground(
@@ -178,37 +173,8 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           body: TabBarView(
             children: categories.map((cat) {
               final groupsMap = categoryGroups[cat]!;
-
-              // 個人戦グループを統合するためのマップ
-              final mergedGroups = <String, List<MatchModel>>{};
-              final List<MatchModel> individualMergedList = [];
-              final uuidRegex = RegExp(
-                r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-              );
-
-              groupsMap.forEach((key, matches) {
-                final isIndiv = matches.any(
-                  (m) =>
-                      m.matchType == 'individual' ||
-                      m.matchType == '選手' ||
-                      m.matchType.contains('個人戦'),
-                );
-                final isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
-
-                // 通常の個人戦（リーグ戦以外）かつ、ID形式のグループ名を統合対象とする
-                if (isIndiv &&
-                    !isLeague &&
-                    (uuidRegex.hasMatch(key) || key.length > 20)) {
-                  individualMergedList.addAll(matches);
-                } else {
-                  mergedGroups[key] = matches;
-                }
-              });
-
-              if (individualMergedList.isNotEmpty) {
-                individualMergedList.sort((a, b) => a.order.compareTo(b.order));
-                mergedGroups['__merged_individual__'] = individualMergedList;
-              }
+              final mergedGroups =
+                  OfficialRecordGroupHelper.mergeIndividualGroups(groupsMap);
 
               final sortedGroupKeys = mergedGroups.keys.toList()
                 ..sort((a, b) {
@@ -224,45 +190,16 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 return cName == cat;
               }).toList();
 
-              final categoryRegisteredTeams = registeredTeams
-                  .where((t) => t.category == cat)
-                  .toList();
-
-              final Set<String> categoryRegisteredTeamNames;
-              if (categoryRegisteredTeams.isNotEmpty) {
-                categoryRegisteredTeamNames = categoryRegisteredTeams
-                    .map((t) => t.teamName.trim())
-                    .where((n) => n.isNotEmpty)
-                    .toSet();
-              } else if (registeredTeamNames.isNotEmpty) {
-                final matchedInCat = registeredTeamNames.where((tName) {
-                  return categoryMatches.any((m) {
-                    final r = m.redName.contains(':')
-                        ? m.redName.split(':').first.trim()
-                        : m.redName.trim();
-                    final w = m.whiteName.contains(':')
-                        ? m.whiteName.split(':').first.trim()
-                        : m.whiteName.trim();
-                    return r == tName || w == tName;
-                  });
-                }).toSet();
-                categoryRegisteredTeamNames = matchedInCat;
-              } else {
-                categoryRegisteredTeamNames = <String>{};
-              }
-
-              final Set<String> categoryRegisteredPlayerNames;
-              if (categoryRegisteredTeams.isNotEmpty) {
-                categoryRegisteredPlayerNames = categoryRegisteredTeams
-                    .expand((t) => t.playerNames)
-                    .map((p) => p.trim())
-                    .where((p) => p.isNotEmpty)
-                    .toSet();
-              } else if (registeredPlayerNames.isNotEmpty) {
-                categoryRegisteredPlayerNames = registeredPlayerNames;
-              } else {
-                categoryRegisteredPlayerNames = <String>{};
-              }
+              final (
+                categoryRegisteredTeamNames,
+                categoryRegisteredPlayerNames,
+              ) = OfficialRecordGroupHelper.resolveRegisteredNames(
+                category: cat,
+                categoryMatches: categoryMatches,
+                registeredTeams: registeredTeams,
+                allRegisteredTeamNames: registeredTeamNames,
+                allRegisteredPlayerNames: registeredPlayerNames,
+              );
 
               return Column(
                 children: [

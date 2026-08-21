@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
-import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
@@ -25,6 +24,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_sticky_bottom_action.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_sync_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_save_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
@@ -254,25 +255,13 @@ class _SetupMatchFormatScreenState
     if (_manualRoundTypeOverride != null) {
       return _manualRoundTypeOverride == 'advanced';
     }
-    return _isAdvancedMatchName(_noteController.text);
-  }
-
-  bool _isAdvancedMatchName(String note) {
-    final categoryName = _category;
-    final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
-    List<String>? customKeywords;
-    asyncTourney.whenData((tournament) {
-      if (tournament != null) {
-        final ruleSet = tournament.categoryRules[categoryName];
-        if (ruleSet != null && ruleSet.advancedKeywords.isNotEmpty) {
-          customKeywords = ruleSet.advancedKeywords;
-        }
-      }
-    });
-
-    return CategoryRuleMatchHelper.isAdvancedMatchName(
-      note,
-      customKeywords: customKeywords,
+    final tournament = ref
+        .read(tournamentProvider(widget.tournamentId))
+        .valueOrNull;
+    return MatchFormatRuleSyncHelper.isAdvancedMatchName(
+      note: _noteController.text,
+      categoryName: _category,
+      tournament: tournament,
     );
   }
 
@@ -284,59 +273,51 @@ class _SetupMatchFormatScreenState
     if (_manualRoundTypeOverride != null) return;
 
     final categoryName = _category;
-    final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
-    asyncTourney.whenData((tournament) {
-      if (tournament != null) {
-        final categoryRules = tournament.categoryRules;
-        if (categoryRules.containsKey(categoryName)) {
-          final ruleSet = categoryRules[categoryName]!;
-          if (ruleSet.useAdvancedRule) {
-            final isAdvanced = _isAdvancedMatchName(currentNote);
-            final targetRule = isAdvanced
-                ? ruleSet.advancedRule
-                : ruleSet.normalRule;
-            _applyMatchRuleToState(targetRule);
-          }
-        }
+    final tournament = ref
+        .read(tournamentProvider(widget.tournamentId))
+        .valueOrNull;
+    if (tournament != null) {
+      final ruleSet = tournament.categoryRules[categoryName];
+      if (ruleSet != null && ruleSet.useAdvancedRule) {
+        final isAdvanced = MatchFormatRuleSyncHelper.isAdvancedMatchName(
+          note: currentNote,
+          categoryName: categoryName,
+          tournament: tournament,
+        );
+        final targetRule = isAdvanced
+            ? ruleSet.advancedRule
+            : ruleSet.normalRule;
+        _applyMatchRuleToState(targetRule);
       }
-    });
+    }
   }
 
   void _loadCategoryRules() {
     final categoryName = _category;
-    final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
-    asyncTourney.whenData((tournament) {
-      if (tournament != null) {
-        final ruleSet = tournament.categoryRules[categoryName];
-        if (ruleSet != null) {
-          String targetScene = _selectedRuleScene;
-          if (!ruleSet.useHonsenRule && targetScene == 'honsen') {
-            targetScene = ruleSet.useRenseikaiRule
-                ? 'renseikai'
-                : (ruleSet.useMoushiawaseRule ? 'moushiawase' : 'honsen');
-          }
-          if (targetScene == 'honsen' &&
-              _isCurrentMatchAdvanced &&
-              ruleSet.useAdvancedRule) {
-            targetScene = 'advanced';
-          }
-          _applyCategoryRuleScene(targetScene, ruleSet);
-        }
+    final tournament = ref
+        .read(tournamentProvider(widget.tournamentId))
+        .valueOrNull;
+    if (tournament != null) {
+      final ruleSet = tournament.categoryRules[categoryName];
+      if (ruleSet != null) {
+        final targetScene = MatchFormatRuleSyncHelper.determineInitialScene(
+          ruleSet: ruleSet,
+          currentScene: _selectedRuleScene,
+          isAdvanced: _isCurrentMatchAdvanced,
+        );
+        _applyCategoryRuleScene(targetScene, ruleSet);
       }
-    });
+    }
   }
 
   void _applyCategoryRuleScene(String scene, CategoryRuleSet ruleSet) {
     setState(() {
       _selectedRuleScene = scene;
       final isRen = scene == 'renseikai' || scene == 'moushiawase';
-      final targetRule = scene == 'renseikai'
-          ? ruleSet.renseikaiRule
-          : (scene == 'moushiawase'
-                ? ruleSet.moushiawaseRule
-                : (scene == 'advanced'
-                      ? ruleSet.advancedRule
-                      : ruleSet.normalRule));
+      final targetRule = MatchFormatRuleSyncHelper.getRuleForScene(
+        scene: scene,
+        ruleSet: ruleSet,
+      );
       _isRenseikai = isRen;
       if (isRen) _renseikaiType = targetRule.renseikaiType;
       _applyMatchRuleToState(targetRule);
@@ -550,100 +531,35 @@ class _SetupMatchFormatScreenState
   }
 
   void _commitMatchFormatSetup() {
-    final courtText = _courtController.text.trim();
-    final userNote = _noteController.text.trim();
-    final noteCombined = courtText.isNotEmpty
-        ? (userNote.isNotEmpty ? '$courtText\n$userNote' : courtText)
-        : userNote;
-
-    if (userNote.isNotEmpty) {
-      final words = userNote.split(' ');
-      final currentHistory = ref.read(noteHistoryProvider);
-      final updatedHistory = {
-        ...words,
-        ...currentHistory,
-      }.toList().take(10).toList();
-      ref.read(noteHistoryProvider.notifier).state = updatedHistory;
-    }
-
     final registeredTeams =
         ref.read(registeredTeamsProvider(widget.tournamentId)).value ?? [];
 
-    List<String> selectedBaseOrder = [];
-    String teamNamePrefix = '';
-    if (_selectedTeamId != null) {
-      for (var t in registeredTeams) {
-        if (t.id == _selectedTeamId) {
-          selectedBaseOrder = t.playerNames;
-          teamNamePrefix = t.teamName;
-          break;
-        }
-      }
-    }
-
-    final teamSize = MatchFormatSetupHelper.calculateTeamSize(
-      matchType: _matchType,
-      selectedTeamId: _selectedTeamId,
+    MatchFormatSaveHelper.commitAndSaveRule(
+      ref: ref,
+      courtText: _courtController.text.trim(),
+      userNote: _noteController.text.trim(),
       registeredTeams: registeredTeams,
-    );
-
-    final isLeague = _matchType.contains('リーグ');
-    final isKachinuki = _matchType == '勝ち抜き戦';
-    final generatedPositions = MatchFormatSetupHelper.generatePositions(
-      teamSize,
-    );
-
-    final double winPt = double.tryParse(_winPointController.text) ?? 0;
-    final double lossPt = double.tryParse(_lossPointController.text) ?? 0;
-    final double drawPt = double.tryParse(_drawPointController.text) ?? 0;
-    final bool finalIsRunningTime = _isRenseikai ? _isRunningTime : false;
-
-    ref.read(lastUsedSettingsProvider.notifier).state = {
-      'matchType': _matchType,
-      'category': _category,
-      'matchTime': _matchTime,
-      'isRunningTime': finalIsRunningTime,
-      'hasExtension': _hasExtension,
-      'hasHantei': _hasHantei,
-      'extensionCount': _extCount,
-      'extensionTimeMinutes': _extTime,
-      'isRenseikai': _isRenseikai,
-      'kachinukiUnlimitedType': _kachinukiUnlimitedType,
-      'hasLeagueDaihyo': _hasLeagueDaihyo,
-      'renseikaiType': _renseikaiType,
-      'isDaihyoIpponShobu': _isDaihyoIpponShobu,
-      'winPoint': winPt,
-      'lossPoint': lossPt,
-      'drawPoint': drawPt,
-    };
-
-    final rule = MatchFormatSetupHelper.createMatchRule(
-      positions: generatedPositions,
-      matchTime: _matchTime,
-      isRunningTime: finalIsRunningTime,
-      isLeague: isLeague,
+      selectedTeamId: _selectedTeamId,
+      matchType: _matchType,
       category: _category,
-      noteCombined: noteCombined,
+      matchTime: _matchTime,
+      isRunningTime: _isRunningTime,
       isRenseikai: _isRenseikai,
-      baseOrder: selectedBaseOrder,
-      teamName: teamNamePrefix,
-      isKachinuki: isKachinuki,
+      hasExtension: _hasExtension,
+      hasHantei: _hasHantei,
+      extCount: _extCount,
+      extTime: _extTime,
       kachinukiUnlimitedType: _kachinukiUnlimitedType,
       hasLeagueDaihyo: _hasLeagueDaihyo,
       renseikaiType: _renseikaiType,
-      overallTimeMinutes: int.tryParse(_overallTimeController.text) ?? 30,
       isDaihyoIpponShobu: _isDaihyoIpponShobu,
-      hasExtension: _hasExtension,
-      extTime: _extTime,
-      extCount: _extCount,
-      hasHantei: _hasHantei,
-      winPoint: winPt,
-      lossPoint: lossPt,
-      drawPoint: drawPt,
+      winPointText: _winPointController.text,
+      lossPointText: _lossPointController.text,
+      drawPointText: _drawPointController.text,
+      overallTimeText: _overallTimeController.text,
       selectedRuleScene: _selectedRuleScene,
     );
 
-    ref.read(matchRuleProvider.notifier).updateRule(rule);
     context.push('/order-setup/${widget.tournamentId}');
   }
 

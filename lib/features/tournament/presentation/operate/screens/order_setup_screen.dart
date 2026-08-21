@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_base_order_actions_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_league_participants_section.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_match_generator.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_matchup_config_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_player_select_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_reorderable_slots_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_static_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_sticky_bottom_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_execution_helper.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/time/time_source.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
@@ -136,107 +132,21 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
 
   Future<void> _handleConfirmAndProceed(String matchType) async {
     final rule = ref.read(matchRuleProvider);
-
-    final bool? isStartNow = await showAppDialog<bool>(
+    await OrderSetupExecutionHelper.executeOrderSetup(
       context: context,
-      builder: (dialogCtx) => AppDialog(
-        title: '試合の登録',
-        content: const Text('このオーダーで試合を登録します。今すぐ試合画面に進みますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx, false),
-            child: const Text(
-              '後で（リストに保存）',
-              style: TextStyle(color: AppKendoColors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogCtx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _themeColors.primaryAccent,
-              foregroundColor: AppKendoColors.pureWhite,
-              elevation: 0,
-            ),
-            child: const Text(
-              '今すぐ試合開始',
-              style: TextStyle(fontWeight: AppFontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+      ref: ref,
+      tournamentId: widget.tournamentId,
+      rule: rule,
+      positions: _positions,
+      selectedPlayers: _selectedPlayers,
+      opponentPlayers: _opponentPlayers,
+      opponentTeamInput: _opponentTeamController.text,
+      isOwnTeamRed: _isOwnTeamRed,
+      leagueParticipants: _leagueParticipants,
+      leagueTeamOrders: _leagueTeamOrders,
+      matchType: matchType,
+      themeColors: _themeColors,
     );
-
-    if (isStartNow == null || !mounted) {
-      return;
-    }
-
-    showAppDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      if (rule.isLeague) {
-        if (_leagueParticipants.length < 2) {
-          AppSnackBar.showError(context, 'リーグ戦には少なくとも2つのチーム・選手が必要です');
-          if (mounted) Navigator.of(context, rootNavigator: true).pop();
-          return;
-        }
-        ref
-            .read(matchRuleProvider.notifier)
-            .updateRule(rule.copyWith(leagueOrder: _leagueParticipants));
-      }
-
-      final double baseOrder = ref
-          .read(timeSourceProvider)
-          .now()
-          .millisecondsSinceEpoch
-          .toDouble();
-
-      final matchesToSave = OrderSetupMatchGenerator.generateMatches(
-        tournamentId: widget.tournamentId,
-        rule: rule,
-        positions: _positions,
-        selectedPlayers: _selectedPlayers,
-        opponentPlayers: _opponentPlayers,
-        opponentTeamInput: _opponentTeamController.text,
-        isOwnTeamRed: _isOwnTeamRed,
-        leagueParticipants: _leagueParticipants,
-        leagueTeamOrders: _leagueTeamOrders,
-        matchType: matchType,
-        isStartNow: isStartNow,
-        baseOrder: baseOrder,
-      );
-
-      if (matchesToSave.isNotEmpty) {
-        await ref
-            .read(matchApplicationServiceProvider)
-            .saveMatchesBulk(matchesToSave);
-      }
-
-      if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
-
-      final String senpoMatchId = matchesToSave.isNotEmpty
-          ? matchesToSave.first.id
-          : '';
-
-      if (isStartNow) {
-        if (senpoMatchId.isNotEmpty) {
-          context.push('/match/$senpoMatchId');
-        } else {
-          context.go('/home/${widget.tournamentId}');
-        }
-      } else {
-        AppSnackBar.showSuccess(context, '試合をプールしました（待機リストに追加）');
-        context.go('/home/${widget.tournamentId}');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
-      AppSnackBar.showError(context, '保存に失敗しました: $e');
-    }
   }
 
   @override
