@@ -1,23 +1,22 @@
-// ignore_for_file: avoid_print
-import 'dart:io';
+#!/bin/bash
+# ==============================================================================
+# 🥋 Kendo OS - Git Hooks 自動セットアップスクリプト
+# ==============================================================================
 
-// ============================================================================
-// Git Hooks Setup Utility
-// 1. コードフォーマット自動修復 (dart fix & dart format)
-// 2. ファイル行数ガバナンス監査 (500行以上の肥大化防止)
-// 3. デザインシステムトークン厳格監査 (18項目100%遵守)
-// ============================================================================
-void main() {
-  print('🔧 Setting up Git pre-commit hooks for Governance...');
+set -e
 
-  final hookDir = Directory('.git/hooks');
-  if (!hookDir.existsSync()) {
-    print('❌ .git/hooks directory not found. Are you in the project root?');
-    exit(1);
-  }
+echo "🔧 Git pre-commit フックをセットアップしています..."
 
-  final preCommitFile = File('.git/hooks/pre-commit');
-  final hookContent = '''#!/bin/bash
+HOOK_DIR=".git/hooks"
+PRE_COMMIT_FILE="$HOOK_DIR/pre-commit"
+
+if [ ! -d "$HOOK_DIR" ]; then
+    echo "❌ .git/hooks ディレクトリが見つかりません。プロジェクトのルートで実行してください。"
+    exit 1
+fi
+
+cat << 'EOF' > "$PRE_COMMIT_FILE"
+#!/bin/bash
 # ==============================================================================
 # 🥋 Kendo OS - 自動ガバナンス pre-commit フック
 # ==============================================================================
@@ -30,7 +29,7 @@ git add -A
 
 echo "📏 kendo OS ファイル行数ガバナンス監査を実行中..."
 python3 scripts/check_file_lines.py
-if [ \$? -ne 0 ]; then
+if [ $? -ne 0 ]; then
     echo ""
     echo "🚨 【コミット拒否】500行以上の肥大化ファイルが検出されたため、コミットを中断しました。"
     echo "   単一責任原則に基づき、パーツやヘルパーに切り出して500行未満にスリム化してください。"
@@ -39,7 +38,7 @@ fi
 
 echo "🛡️ kendo OS デザインシステム ガバナンス自動監査を実行中..."
 python3 scripts/check_design_tokens.py --strict
-if [ \$? -ne 0 ]; then
+if [ $? -ne 0 ]; then
     echo ""
     echo "💡 デザインシステム違反が検出されたため、コミットを中断しました。"
     echo "   AIアシスタントに「デザインシステム違反を文脈に合わせて修正して」とご指示いただければ自動修復いたします。"
@@ -48,14 +47,9 @@ fi
 
 echo "✅ pre-commit ガバナンス監査・フォーマット自動修復完了"
 exit 0
-''';
+EOF
 
-  preCommitFile.writeAsStringSync(hookContent);
+chmod +x "$PRE_COMMIT_FILE"
 
-  if (!Platform.isWindows) {
-    Process.runSync('chmod', ['+x', preCommitFile.path]);
-  }
-
-  print('✅ [PASS] Git pre-commit hook installed successfully.');
-  print('💡 以降、git commit 実行時に行数監査（500行制限）とデザイン監査が自動実行されます。');
-}
+echo "✅ [PASS] Git pre-commit フックのインストールが完了しました！"
+echo "💡 以降、git commit 実行時にファイル行数監査（500行制限）とデザイン監査が自動実行されます。"

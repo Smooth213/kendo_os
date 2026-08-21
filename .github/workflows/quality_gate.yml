@@ -1,0 +1,41 @@
+name: Quality Gate & Anti-Bloat Governance
+
+on:
+  push:
+    branches: [ main, develop, stage2-beta ]
+  pull_request:
+    branches: [ main, develop, stage2-beta ]
+
+jobs:
+  quality-gate:
+    name: Code Quality & Line Limit Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📏 File Line Limit Audit (Max 500 lines)
+        run: python3 scripts/check_file_lines.py
+
+      - name: 🎨 Design System Governance Audit
+        run: python3 scripts/check_design_tokens.py --strict
+
+      - name: 🐦 Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      - name: 🔍 Static Analysis (flutter analyze)
+        run: flutter analyze
+
+      - name: 🧪 Run Core Tests
+        run: flutter test test/widget/sync_crdt_merger_test.dart test/widget/match_command_queue_test.dart test/widget/match_data_sanitizer_test.dart test/widget/match_rewind_service_test.dart test/widget/app_router_test.dart

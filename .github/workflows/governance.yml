@@ -68,8 +68,12 @@ jobs:
       - name: "🔍 Step 3: Governance Linter (API/State Audit)"
         run: dart run tools/governance/lint.dart
         
+      - name: "📏 Step 3.5: File Line Governance Check (Max 500 lines)"
+        run: python3 scripts/check_file_lines.py
+
       - name: "🤖 Step 4: Validate Machine-readable YAML"
         run: dart run scripts/validate_governance_yaml.dart
+
 
       - name: "📑 Step 5: ADR Consistency Analyzer"
         run: dart run scripts/adr_consistency_analyzer.dart
