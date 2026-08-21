@@ -1,8 +1,9 @@
-import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/admin/presentation/components/master_player_gender_selector.dart';
+import 'package:kendo_os/admin/presentation/helpers/auto_kana_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -96,8 +97,11 @@ class _MasterPlayerEditBottomSheetState
     _selectedGender = p?.gender ?? '男子';
     _isBeginner = p?.isBeginner ?? false;
 
-    _setupAutoKana(_lastNameController, _lastNameKanaController);
-    _setupAutoKana(_firstNameController, _firstNameKanaController);
+    AutoKanaHelper.setupAutoKana(_lastNameController, _lastNameKanaController);
+    AutoKanaHelper.setupAutoKana(
+      _firstNameController,
+      _firstNameKanaController,
+    );
   }
 
   @override
@@ -107,87 +111,6 @@ class _MasterPlayerEditBottomSheetState
     _lastNameKanaController.dispose();
     _firstNameKanaController.dispose();
     super.dispose();
-  }
-
-  void _setupAutoKana(
-    TextEditingController nameCtrl,
-    TextEditingController kanaCtrl,
-  ) {
-    String lastText = nameCtrl.text;
-    String lastValidKana = '';
-    DateTime lastClearedTime = DateTime.fromMillisecondsSinceEpoch(0);
-
-    String keepKanaOnly(String s) {
-      return s.replaceAll(RegExp(r'[^ぁ-んァ-ヶー]'), '');
-    }
-
-    String keepKanjiOnly(String s) {
-      return s.replaceAll(RegExp(r'[^一-龠々]'), '');
-    }
-
-    void processChange(String fromText, String toText) {
-      if (toText.isEmpty) {
-        if (kanaCtrl.text.isNotEmpty) {
-          lastValidKana = kanaCtrl.text;
-          lastClearedTime = clock.now();
-        }
-        kanaCtrl.text = '';
-        return;
-      }
-
-      final lastKana = keepKanaOnly(fromText);
-      final currentKana = keepKanaOnly(toText);
-
-      final lastKanjiCount = keepKanjiOnly(fromText).length;
-      final currentKanjiCount = keepKanjiOnly(toText).length;
-
-      // 1. かな文字が増加した場合
-      if (currentKana.startsWith(lastKana) &&
-          currentKana.length > lastKana.length) {
-        final added = currentKana.substring(lastKana.length);
-        kanaCtrl.text = kanaCtrl.text + added;
-        lastValidKana = kanaCtrl.text;
-      }
-      // 2. 文字が純粋に削除された場合
-      else if (toText.length < fromText.length &&
-          currentKanjiCount <= lastKanjiCount) {
-        final diffLen = fromText.length - toText.length;
-        if (kanaCtrl.text.length >= diffLen) {
-          kanaCtrl.text = kanaCtrl.text.substring(
-            0,
-            kanaCtrl.text.length - diffLen,
-          );
-        } else {
-          kanaCtrl.text = '';
-        }
-        lastValidKana = kanaCtrl.text;
-      }
-      // 3. 全クリアやひらがなのみのコピペ時のフォールバック
-      else if (RegExp(r'^[ぁ-んァ-ヶーa-zA-Z0-9]*$').hasMatch(toText)) {
-        kanaCtrl.text = toText;
-        lastValidKana = kanaCtrl.text;
-      }
-      // 4. Web等でIME確定時の自己修復
-      else if (kanaCtrl.text.isEmpty &&
-          lastValidKana.isNotEmpty &&
-          currentKanjiCount > 0 &&
-          clock.now().difference(lastClearedTime).inMilliseconds < 150) {
-        kanaCtrl.text = lastValidKana;
-      }
-    }
-
-    nameCtrl.addListener(() {
-      final text = nameCtrl.text;
-      if (text == lastText) return;
-
-      Future.microtask(() {
-        final finalText = nameCtrl.text;
-        if (finalText == lastText) return;
-
-        processChange(lastText, finalText);
-        lastText = finalText;
-      });
-    });
   }
 
   Future<void> _handleSave() async {
@@ -229,49 +152,6 @@ class _MasterPlayerEditBottomSheetState
       }
     }
     if (mounted) Navigator.pop(context);
-  }
-
-  Widget _buildGenderBtn({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required bool isSel,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    final finalColor = isSel ? color : context.appColors.subTextColor;
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: isSel
-            ? color.withValues(alpha: isDark ? 0.2 : 0.1)
-            : (isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF2F2F7)),
-        side: BorderSide(
-          color: isSel
-              ? color
-              : (isDark
-                    ? const Color(0xFFFFFFFF)
-                    : context.appColors.separatorColor),
-          width: isSel ? 2 : 1,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 28, color: finalColor),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: AppFontSize.body,
-              fontWeight: AppFontWeight.bold,
-              color: finalColor,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -473,39 +353,9 @@ class _MasterPlayerEditBottomSheetState
         ),
         SizedBox(height: gapLarge),
 
-        Text(
-          '性別',
-          style: TextStyle(
-            fontSize: AppFontSize.bodySmall,
-            fontWeight: AppFontWeight.bold,
-            color: isDark ? const Color(0xFFFFFFFF) : AppKendoColors.grey,
-          ),
-        ),
-        SizedBox(height: gapSmall),
-        Row(
-          children: [
-            Expanded(
-              child: _buildGenderBtn(
-                title: '男子',
-                icon: Icons.man,
-                color: AppKendoColors.blue,
-                isSel: _selectedGender == '男子',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedGender = '男子'),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.lg),
-            Expanded(
-              child: _buildGenderBtn(
-                title: '女子',
-                icon: Icons.woman,
-                color: AppKendoColors.pink,
-                isSel: _selectedGender == '女子',
-                isDark: isDark,
-                onTap: () => setState(() => _selectedGender = '女子'),
-              ),
-            ),
-          ],
+        MasterPlayerGenderSelector(
+          selectedGender: _selectedGender,
+          onGenderChanged: (gender) => setState(() => _selectedGender = gender),
         ),
         SizedBox(height: gapLarge),
 

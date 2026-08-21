@@ -2,7 +2,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
-import 'pdf_team_table.dart';
+import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart';
 
 class PdfIndividualList {
   static pw.Widget build(
@@ -126,7 +126,12 @@ class PdfIndividualList {
                 ),
               ),
               pw.SizedBox(width: 8),
-              PdfTeamTable.pdfPointBox(ptsMap['red']!, rWin, true, ttfBold),
+              PdfTeamTableCellRenderer.buildPointBox(
+                ptsMap['red']!,
+                rWin,
+                true,
+                ttfBold,
+              ),
               pw.Padding(
                 padding: const pw.EdgeInsets.symmetric(
                   horizontal: AppSpacing.subValue,
@@ -140,8 +145,14 @@ class PdfIndividualList {
                   ),
                 ),
               ),
-              PdfTeamTable.pdfPointBox(ptsMap['white']!, wWin, false, ttfBold),
+              PdfTeamTableCellRenderer.buildPointBox(
+                ptsMap['white']!,
+                wWin,
+                false,
+                ttfBold,
+              ),
               pw.SizedBox(width: 8),
+
               pw.Expanded(
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,

@@ -4,16 +4,14 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/features/match/domain/score/score_event.dart';
-import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_match_card.dart';
+
+import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_share_dialog.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
@@ -21,100 +19,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
 
   const ViewerBunaiksenHomeScreen({super.key, required this.tournamentId});
-
-  // ★ 究極版：記号化しつつ、区切り文字を「中央揃えのアイコン」で美しく表示するWidgetエンジン
-  Widget _buildScoreMarks(
-    MatchModel match,
-    bool isDark, {
-    bool isFinished = true,
-  }) {
-    final textColor = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000));
-    final iconColor = isFinished
-        ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000));
-
-    if (match.redScore == 0 && match.whiteScore == 0) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: Icon(Icons.close, size: 18, color: iconColor),
-      );
-    }
-
-    final engine = KendoRuleEngine();
-    final analysis = engine.analyzeHistory(match.events, match, match.rule);
-
-    final rDisplays = analysis.displays[Side.red] ?? [];
-    final wDisplays = analysis.displays[Side.white] ?? [];
-
-    String rMarksStr = rDisplays
-        .map((d) {
-          if (d.mark == 'メ') return d.isFirstMatchPoint ? '㋱' : 'メ';
-          if (d.mark == 'コ') return d.isFirstMatchPoint ? '㋙' : 'コ';
-          if (d.mark == 'ド') return d.isFirstMatchPoint ? '㋣' : 'ド';
-          if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
-          if (d.mark == '反') return '反';
-          if (d.mark == '判定') return '判';
-          if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
-          return d.mark;
-        })
-        .join('');
-
-    String wMarksStr = wDisplays
-        .map((d) {
-          if (d.mark == 'メ') return d.isFirstMatchPoint ? '㋱' : 'メ';
-          if (d.mark == 'コ') return d.isFirstMatchPoint ? '㋙' : 'コ';
-          if (d.mark == 'ド') return d.isFirstMatchPoint ? '㋣' : 'ド';
-          if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
-          if (d.mark == '反') return '反';
-          if (d.mark == '判定') return '判';
-          if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
-          return d.mark;
-        })
-        .join('');
-
-    final bool isDraw = match.redScore == match.whiteScore;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          rMarksStr,
-          style: TextStyle(
-            fontSize: AppFontSize.header,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-            height: 1.1,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          child: Icon(
-            isDraw ? Icons.close : Icons.remove,
-            size: 16,
-            color: iconColor,
-          ),
-        ),
-        Text(
-          wMarksStr,
-          style: TextStyle(
-            fontSize: AppFontSize.header,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -140,6 +49,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
         ref.watch(bunaiksenAvailableDatesProvider).value ?? const <String>{};
 
     final matches = ref.watch(bunaiksenMatchesProvider(tournamentId));
+    final dojoId = ref.watch(currentDojoIdProvider);
 
     // 🌟 本部一斉ポップアップ監視トリガーをアタッチ（運営スタッフ用フラグ: false）
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -245,7 +155,6 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                           picked;
                       final nextTournamentId =
                           'bunaiksen_${DateFormat('yyyyMMdd').format(picked)}';
-                      final dojoId = ref.read(currentDojoIdProvider);
                       if (!context.mounted) return;
                       context.pushReplacement(
                         '/bunaiksen-viewer-home/$nextTournamentId?role=viewer&dojoId=$dojoId',
@@ -267,12 +176,15 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.qr_code_2),
                 tooltip: '観戦リンクを共有する',
-                onPressed: () =>
-                    _showShareDialog(context, ref, tournamentId, dateDisplay),
+                onPressed: () => ViewerBunaiksenShareDialog.show(
+                  context,
+                  ref,
+                  tournamentId: tournamentId,
+                  dateDisplay: dateDisplay,
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.leaderboard_outlined),
-                // ★ 完全分離した部内戦専用の成績一覧への遷移
                 onPressed: () =>
                     context.push('/bunaiksen-viewer-record/$tournamentId'),
                 tooltip: '成績一覧',
@@ -360,285 +272,20 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                       ),
                     ],
                     SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final match = matches[index];
-                        final hasScore =
-                            match.redScore > 0 ||
-                            match.whiteScore > 0 ||
-                            match.events.isNotEmpty;
-                        final isPlaying = match.status == 'in_progress';
-                        final isFinished =
-                            (match.status == 'finished' ||
-                                match.status == 'approved' ||
-                                hasScore) &&
-                            !isPlaying;
-
-                        final Color bg = isFinished
-                            ? (isDark
-                                  ? const Color(0xFF161618)
-                                  : context.appColors.cardBackground)
-                            : (context.appColors.cardBackground);
-                        final Color textC = isFinished
-                            ? (isDark
-                                  ? context.appColors.subTextColor
-                                  : context.appColors.subTextColor)
-                            : (context.appColors.textColor);
-                        final Color noteC = isFinished
-                            ? (isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : context.appColors.subTextColor)
-                            : AppKendoColors.grey;
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.xs,
-                          ),
-                          child: Card(
-                            margin: EdgeInsets
-                                .zero, // 🛡️ 整合性パッチ：操作員画面(bunaiksen_home_screen)の設計と1ミリの狂いもなく横幅・サイズを完全統一
-                            elevation: 0,
-                            color: bg,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.large,
-                              side: BorderSide(
-                                color: isDark
-                                    ? const Color(
-                                        0xFFFFFFFF,
-                                      ).withValues(alpha: 0.10)
-                                    : const Color(
-                                        0xFF000000,
-                                      ).withValues(alpha: 0.05),
-                              ),
-                            ),
-                            child: InkWell(
-                              // ★ STEP 1, 5, 9：ウィジェット内部の構造変更に左右されない安定したテスト Keys 規約の適用
-                              key: Key('viewer_match_card_${match.id}'),
-                              borderRadius: AppRadius.large,
-                              onTap: () {
-                                final dojoId = ref.read(currentDojoIdProvider);
-                                // 🛡️ 閲覧スコープ防衛：観客席プレビューからの遷移のため、スコア入力画面(/match)ではなく、閲覧専用の一本速報詳細画面(/viewer)へ正しくルーティング
-                                context.push(
-                                  '/viewer/${match.id}?role=viewer&tournamentId=$tournamentId&dojoId=$dojoId',
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            match.note.isNotEmpty
-                                                ? match.note
-                                                : '部内稽古',
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.caption,
-                                              color: noteC,
-                                              fontWeight: AppFontWeight.bold,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSpacing.subValue,
-                                            vertical: AppSpacing.xxs,
-                                          ),
-                                          margin: const EdgeInsets.only(
-                                            right: AppSpacing.sm,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isPlaying
-                                                ? const Color(0xFF2196F3)
-                                                : (isFinished
-                                                      ? (isDark
-                                                            ? Colors
-                                                                  .grey
-                                                                  .shade800
-                                                            : Colors
-                                                                  .grey
-                                                                  .shade300)
-                                                      : (isDark
-                                                            ? const Color(
-                                                                0xFF2C2C2E,
-                                                              )
-                                                            : Colors
-                                                                  .grey
-                                                                  .shade200)),
-                                            borderRadius: AppRadius.tiny,
-                                          ),
-                                          child: Text(
-                                            isPlaying
-                                                ? '進行中'
-                                                : (isFinished ? '終了' : '待機中'),
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.badge,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: isPlaying
-                                                  ? AppKendoColors.pureWhite
-                                                  : (isFinished
-                                                        ? (isDark
-                                                              ? Colors
-                                                                    .grey
-                                                                    .shade400
-                                                              : Colors
-                                                                    .grey
-                                                                    .shade600)
-                                                        : (isDark
-                                                              ? Colors
-                                                                    .grey
-                                                                    .shade400
-                                                              : Colors
-                                                                    .grey
-                                                                    .shade700)),
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          '第${index + 1}試合',
-                                          style: TextStyle(
-                                            fontSize: AppFontSize.caption,
-                                            color: noteC,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: AppSpacing.md),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            match.redName,
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.subhead,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: textC,
-                                            ),
-                                            textAlign: TextAlign.right,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSpacing.lg,
-                                          ),
-                                          child: isFinished
-                                              ? _buildScoreMarks(
-                                                  match,
-                                                  isDark,
-                                                  isFinished: isFinished,
-                                                )
-                                              : Text(
-                                                  'VS',
-                                                  style: TextStyle(
-                                                    fontSize:
-                                                        AppFontSize.subhead,
-                                                    fontWeight:
-                                                        AppFontWeight.bold,
-                                                    color: textC,
-                                                  ),
-                                                ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            match.whiteName,
-                                            style: TextStyle(
-                                              fontSize: AppFontSize.subhead,
-                                              fontWeight: AppFontWeight.bold,
-                                              color: textC,
-                                            ),
-                                            textAlign: TextAlign.left,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }, childCount: matches.length),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => ViewerBunaiksenMatchCard(
+                          match: matches[index],
+                          index: index,
+                          tournamentId: tournamentId,
+                          dojoId: dojoId,
+                        ),
+                        childCount: matches.length,
+                      ),
                     ),
                   ],
                 ),
           floatingActionButton: null,
         ),
-      ),
-    );
-  }
-
-  void _showShareDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String tournamentId,
-    String dateDisplay,
-  ) {
-    final dojoId = ref.read(currentDojoIdProvider);
-    // 🛡️ ドメイン同期パッチ：部内戦の観客ホーム（ViewerBunaiksenHomeScreen）側QR共有リンクも、確実に本物のベータ環境（kendo-os-beta.web.app）を指すように修正
-    final String shareUrl =
-        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
-
-    showAppDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: '$dateDisplay 観戦リンク',
-        content: SizedBox(
-          width: 300,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'この部内戦の全試合・スコアを\n観客用に安全に共有できます。',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: AppFontSize.bodySmall),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                color: AppKendoColors.pureWhite,
-                child: QrImageView(
-                  data: shareUrl,
-                  version: QrVersions.auto,
-                  size: 200.0,
-                  backgroundColor: AppKendoColors.pureWhite,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton.icon(
-                // ★ Phase 9最適化: 名称から「AI/OS」を排し、現場に寄り添った文言へブラッシュアップ
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(
-                    text:
-                        '【剣道リアルタイムViewer共有】このリンクから今日の試合結果・スコアをリアルタイムにその場で観戦・確認できます！\n'
-                        'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                        'リンク: $shareUrl',
-                  ),
-                ),
-                icon: const Icon(Icons.share),
-                label: const Text('LINEやSNSでURLを送る'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF607D8B),
-                  foregroundColor: AppKendoColors.pureWhite,
-                  elevation: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              '閉じる',
-              style: TextStyle(color: AppKendoColors.grey),
-            ),
-          ),
-        ],
       ),
     );
   }

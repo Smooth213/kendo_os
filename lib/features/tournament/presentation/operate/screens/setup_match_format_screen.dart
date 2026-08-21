@@ -170,8 +170,10 @@ class _SetupMatchFormatScreenState
 
   void _onNoteChanged() {
     final cur = _noteController.text;
-    if (cur == _lastCheckedNote || _state.manualRoundTypeOverride != null)
+    if (cur == _lastCheckedNote || _state.manualRoundTypeOverride != null) {
       return;
+    }
+
     _lastCheckedNote = cur;
 
     final tourney = ref

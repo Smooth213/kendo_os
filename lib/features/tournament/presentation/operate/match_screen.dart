@@ -31,15 +31,18 @@ import 'components/match_screen/match_daihyo_overlay.dart';
 import 'components/match_screen/match_bottom_action_section.dart';
 import 'components/match_screen/match_timer_section.dart';
 import 'components/match_screen/match_score_action_section.dart';
+import 'components/match_screen/match_content_layout_builder.dart';
+import 'components/match_screen/match_header_widgets.dart';
 import 'components/match_screen/match_dialog_helper.dart';
+
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
 import 'package:kendo_os/features/match/domain/match_state.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
-import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
+
 import 'package:kendo_os/features/tournament/presentation/operate/providers/share_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
@@ -203,60 +206,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
             centerTitle: true,
             backgroundColor: context.appColors.primaryAccent,
             foregroundColor: AppKendoColors.pureWhite,
-            titleWidget: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  (match.category != null && match.category!.isNotEmpty)
-                      ? '${match.category} - ${match.matchType}'
-                      : match.matchType,
-                  style: const TextStyle(
-                    fontSize: AppFontSize.body,
-                    fontWeight: AppFontWeight.bold,
-                    color: AppKendoColors.pureWhite,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  '${match.redName} vs ${match.whiteName}',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
-                    fontWeight: AppFontWeight.medium,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-            actions: [
-              const ManualHelpButton(
-                manualPath: 'docs/manuals/quickstart/operator_1pager.md',
-                color: AppKendoColors.pureWhite,
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.view_list_rounded,
-                  color: AppKendoColors.pureWhite,
-                ),
-                tooltip: '大会ホーム（試合一覧）へ戻る',
-                onPressed: () {
-                  if (match.tournamentId != null &&
-                      match.tournamentId!.startsWith('bunaiksen_')) {
-                    context.go('/bunaiksen-home');
-                  } else {
-                    context.go('/home/${match.tournamentId}');
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.settings_outlined,
-                  color: AppKendoColors.pureWhite,
-                ),
-                onPressed: () => context.push('/settings'),
-              ),
-            ],
+            titleWidget: MatchHeaderTitle(match: match),
+            actions: [MatchHeaderActions(match: match)],
           ),
+
           body: LayoutBuilder(
             builder: (context, constraints) {
               final double maxWidth = constraints.maxWidth;
@@ -293,12 +246,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                               },
                               child: LayoutBuilder(
                                 builder: (context, constraints) {
-                                  final isLandscape =
-                                      MediaQuery.of(context).orientation ==
-                                      Orientation.landscape;
-                                  final isTabletLandscape =
-                                      isLandscape && constraints.maxWidth > 600;
-
                                   final isCorrupted =
                                       match.status == 'corrupted' ||
                                       MatchLifecycleStateLegacyExt.fromLegacyString(
@@ -458,96 +405,18 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         isDark: isDark,
                                       );
 
-                                  if (isTabletLandscape) {
-                                    return Column(
-                                      children: [
-                                        corruptedBanner,
-                                        viewOnlyBanner,
-                                        Expanded(
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: [
-                                              Expanded(
-                                                flex: 5,
-                                                child: Column(
-                                                  children: [
-                                                    timerPart,
-                                                    groupButtonPart,
-                                                    Expanded(
-                                                      child: scoreboardPart,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              VerticalDivider(
-                                                width: 1,
-                                                thickness: 1,
-                                                color: isDark
-                                                    ? const Color(
-                                                        0xFFFFFFFF,
-                                                      ).withValues(alpha: 0.10)
-                                                    : AppKendoColors.pureBlack
-                                                          .withValues(
-                                                            alpha: 0.12,
-                                                          ),
-                                              ),
-                                              Expanded(
-                                                flex: 6,
-                                                child: Column(
-                                                  children: [
-                                                    Expanded(
-                                                      child: actionPanelPart,
-                                                    ),
-                                                    undoArea,
-                                                    bottomButtonPart,
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  } else {
-                                    final double currentContentHeight =
-                                        constraints.maxHeight;
-                                    final bool needsScroll =
-                                        currentContentHeight < 610.0;
-                                    final double effectiveHeight = needsScroll
-                                        ? 610.0
-                                        : currentContentHeight;
-
-                                    final mainContent = Column(
-                                      children: [
-                                        corruptedBanner,
-                                        viewOnlyBanner,
-                                        timerPart,
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSpacing.sm,
-                                          ),
-                                          child: groupButtonPart,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        scoreboardPart,
-                                        Expanded(child: actionPanelPart),
-                                        undoArea,
-                                        bottomButtonPart,
-                                      ],
-                                    );
-
-                                    return needsScroll
-                                        ? SingleChildScrollView(
-                                            physics:
-                                                const ClampingScrollPhysics(),
-                                            child: SizedBox(
-                                              height: effectiveHeight,
-                                              child: mainContent,
-                                            ),
-                                          )
-                                        : mainContent;
-                                  }
+                                  return MatchContentLayoutBuilder(
+                                    constraints: constraints,
+                                    isDark: isDark,
+                                    corruptedBanner: corruptedBanner,
+                                    viewOnlyBanner: viewOnlyBanner,
+                                    timerPart: timerPart,
+                                    groupButtonPart: groupButtonPart,
+                                    scoreboardPart: scoreboardPart,
+                                    actionPanelPart: actionPanelPart,
+                                    undoArea: undoArea,
+                                    bottomButtonPart: bottomButtonPart,
+                                  );
                                 },
                               ),
                             ),

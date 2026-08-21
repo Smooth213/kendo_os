@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_player_roster_list_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart'
     show playerListProvider;
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -251,124 +252,6 @@ class _MatchPlayerNameEditBottomSheetState
       return true;
     }).toList();
 
-    Widget buildPlayerCard(PlayerModel p, {required bool isSub}) {
-      final isCurrentPosition = p.name == _playerName;
-      final currentPosition = playerPositions[p.name];
-
-      Color cardColor;
-      BorderSide borderSide;
-      if (isSub) {
-        cardColor = isDark
-            ? const Color(0xFF009688).withValues(alpha: 0.2)
-            : const Color(0xFF009688).withValues(alpha: 0.6);
-        borderSide = BorderSide(color: const Color(0xFF009688));
-      } else {
-        cardColor = isDark
-            ? const Color(0xFFFF9800).withValues(alpha: 0.15)
-            : const Color(0xFFFF9800).withValues(alpha: 0.6);
-        borderSide = BorderSide(color: const Color(0xFFFF9800));
-      }
-
-      return Card(
-        margin: const EdgeInsets.only(bottom: AppSpacing.subValue),
-        elevation: 0,
-        color: cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.compact,
-          side: borderSide,
-        ),
-        child: ListTile(
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: 0,
-          ),
-          leading: CircleAvatar(
-            radius: 14,
-            backgroundColor: isSub
-                ? const Color(0xFF009688)
-                : const Color(0xFFFF9800),
-            child: Text(
-              p.name.substring(0, 1),
-              style: TextStyle(
-                color: isSub
-                    ? (isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0xFF009688))
-                    : (isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0xFFFF9800)),
-                fontWeight: AppFontWeight.bold,
-                fontSize: AppFontSize.small,
-              ),
-            ),
-          ),
-          title: Text(
-            p.name,
-            style: TextStyle(
-              fontWeight: AppFontWeight.bold,
-              color: textColor,
-              fontSize: AppFontSize.body,
-            ),
-          ),
-          subtitle: Text(
-            currentPosition != null
-                ? (isCurrentPosition ? 'このポジション' : '$currentPositionで出場中')
-                : '${p.gradeName} / ${p.gender}',
-            style: TextStyle(
-              color: isSub ? const Color(0xFF009688) : const Color(0xFFFF9800),
-              fontSize: AppFontSize.caption,
-              fontWeight: currentPosition != null
-                  ? AppFontWeight.bold
-                  : AppFontWeight.regular,
-            ),
-          ),
-          trailing: Icon(
-            isSub ? Icons.check_circle_outline : Icons.swap_horiz,
-            size: 18,
-            color: isSub ? const Color(0xFF009688) : const Color(0xFFFF9800),
-          ),
-          onTap: isCurrentPosition
-              ? null
-              : () async {
-                  if (isSub) {
-                    await _updatePlayerName(p.name);
-                  } else {
-                    MatchModel? targetM;
-                    String? targetS;
-                    for (final m in currentGroupMatches) {
-                      if (m.redName.contains(':')) {
-                        final parts = m.redName.split(':');
-                        if (parts.first.trim() == _teamName &&
-                            parts.last.trim() == p.name) {
-                          targetM = m;
-                          targetS = 'red';
-                          break;
-                        }
-                      }
-                      if (m.whiteName.contains(':')) {
-                        final parts = m.whiteName.split(':');
-                        if (parts.first.trim() == _teamName &&
-                            parts.last.trim() == p.name) {
-                          targetM = m;
-                          targetS = 'white';
-                          break;
-                        }
-                      }
-                    }
-                    await _updatePlayerName(
-                      p.name,
-                      isSwap: true,
-                      targetMatch: targetM,
-                      targetSide: targetS,
-                    );
-                  }
-                  if (context.mounted) Navigator.pop(context);
-                },
-        ),
-      );
-    }
-
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -554,94 +437,49 @@ class _MatchPlayerNameEditBottomSheetState
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Expanded(
-                  child: players.isEmpty
-                      ? const Center(
-                          child: Text(
-                            '名簿に登録されている選手がいません',
-                            style: TextStyle(color: AppKendoColors.grey),
-                          ),
-                        )
-                      : ListView(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-                          children: [
-                            if (sameCatActive.isNotEmpty) ...[
-                              const Padding(
-                                padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                                child: Text(
-                                  '出場中の選手 (交代・スワップ)',
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.small,
-                                    fontWeight: AppFontWeight.bold,
-                                    color: Color(0xFFFF9800),
-                                  ),
-                                ),
-                              ),
-                              ...sameCatActive.map(
-                                (p) => buildPlayerCard(p, isSub: false),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                            ],
-                            if (dojoListSubstitutes.isNotEmpty) ...[
-                              const Padding(
-                                padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                                child: Text(
-                                  '同カテゴリの控え選手',
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.small,
-                                    fontWeight: AppFontWeight.bold,
-                                    color: Color(0xFF009688),
-                                  ),
-                                ),
-                              ),
-                              ...dojoListSubstitutes.map(
-                                (p) => buildPlayerCard(p, isSub: true),
-                              ),
-                              const SizedBox(height: AppSpacing.md),
-                            ],
-                            const Divider(),
-                            const SizedBox(height: AppSpacing.sm),
-                            Theme(
-                              data: Theme.of(context).copyWith(
-                                dividerColor: AppKendoColors.transparent,
-                              ),
-                              child: ExpansionTile(
-                                title: Text(
-                                  '他のカテゴリの選手を表示',
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.bodySmall,
-                                    fontWeight: AppFontWeight.bold,
-                                    color: context.appColors.primaryAccent,
-                                  ),
-                                ),
-                                tilePadding: EdgeInsets.zero,
-                                childrenPadding: EdgeInsets.zero,
-                                children: [
-                                  if (otherCategoryPlayers.isEmpty)
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: AppSpacing.lg,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '他のカテゴリに選手はいません',
-                                          style: TextStyle(
-                                            color: AppKendoColors.grey,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    ...otherCategoryPlayers.map((p) {
-                                      final isSub = !activePlayerNames.contains(
-                                        p.name,
-                                      );
-                                      return buildPlayerCard(p, isSub: isSub);
-                                    }),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                  child: MatchPlayerRosterListSection(
+                    sameCatActive: sameCatActive,
+                    dojoListSubstitutes: dojoListSubstitutes,
+                    otherCategoryPlayers: otherCategoryPlayers,
+                    activePlayerNames: activePlayerNames,
+                    playerPositions: playerPositions,
+                    currentPlayerName: _playerName,
+                    onPlayerSelected: (p, isSub) async {
+                      if (isSub) {
+                        await _updatePlayerName(p.name);
+                      } else {
+                        MatchModel? targetM;
+                        String? targetS;
+                        for (final m in currentGroupMatches) {
+                          if (m.redName.contains(':')) {
+                            final parts = m.redName.split(':');
+                            if (parts.first.trim() == _teamName &&
+                                parts.last.trim() == p.name) {
+                              targetM = m;
+                              targetS = 'red';
+                              break;
+                            }
+                          }
+                          if (m.whiteName.contains(':')) {
+                            final parts = m.whiteName.split(':');
+                            if (parts.first.trim() == _teamName &&
+                                parts.last.trim() == p.name) {
+                              targetM = m;
+                              targetS = 'white';
+                              break;
+                            }
+                          }
+                        }
+                        await _updatePlayerName(
+                          p.name,
+                          isSwap: true,
+                          targetMatch: targetM,
+                          targetSide: targetS,
+                        );
+                      }
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                  ),
                 ),
               ] else ...[
                 const Spacer(),
