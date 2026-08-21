@@ -26,13 +26,13 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_sync_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_save_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
 });
 
-// ★ 選手一覧を取得するProviderを追加
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
 });
@@ -49,139 +49,59 @@ class SetupMatchFormatScreen extends ConsumerStatefulWidget {
 class _SetupMatchFormatScreenState
     extends ConsumerState<SetupMatchFormatScreen> {
   late AppThemeColors _themeColors;
-  late String _matchType;
-  late bool _hasExtension;
-  late bool _hasHantei;
-  late double _matchTime;
-  late bool _isRunningTime;
-  late bool _isRenseikai;
-  String? _selectedTeamId;
+  final _state = MatchFormatFormState();
 
-  late String _kachinukiUnlimitedType;
-  late bool _hasLeagueDaihyo;
-  late String _renseikaiType;
   final _overallTimeController = TextEditingController(text: '30');
-  late bool _isDaihyoIpponShobu;
-
-  // 代表戦詳細
-  late double _daihyoMatchTime;
-  late bool _daihyoHasExtension;
-  late double _daihyoEnchoTime;
-  late int _daihyoEnchoCount;
-  late bool _daihyoHasHantei;
-
-  // 勝負方式・反則
-  late bool _isIpponShobu;
-  late int _ipponLimit;
-  late int _hansokuLimit;
-
-  // ★ リーグ戦拡張：勝ち点入力用のコントローラー
   final _winPointController = TextEditingController(text: '0');
   final _lossPointController = TextEditingController(text: '0');
   final _drawPointController = TextEditingController(text: '0');
+  final _noteController = TextEditingController();
+  final _courtController = TextEditingController();
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  String _lastCheckedNote = '';
 
-  // ★ 追加：2段階選択用の状態変数
-  late String _selectedMajorCategory;
-  late String _selectedMinorCategory;
-  String _selectedRuleScene =
-      'honsen'; // 'renseikai', 'honsen', 'moushiawase', 'advanced'
-
-  // ★ 追加：チーム登録画面と共通！最終的なカテゴリ名を生成
-  String get _category {
-    if (_selectedMajorCategory == '初心者') return '初心者の部';
-    if (_selectedMajorCategory == '幼年') return '幼年の部';
-    if (_selectedMinorCategory == '全体') return '$_selectedMajorCategoryの部';
-    if (_selectedMajorCategory == '大学・一般') return '$_selectedMinorCategoryの部';
-    return '$_selectedMajorCategory$_selectedMinorCategoryの部';
-  }
-
-  void _parseCategoryToState(String categoryName) {
-    final (major, minor) = MatchFormatSetupHelper.parseCategoryToState(
-      categoryName,
-    );
-    _selectedMajorCategory = major;
-    _selectedMinorCategory = minor;
-  }
+  String get _category => _state.getCategory();
 
   @override
   void initState() {
     super.initState();
-    final lastSettings = ref.read(lastUsedSettingsProvider);
-    _matchType = lastSettings['matchType'];
+    final last = ref.read(lastUsedSettingsProvider);
+    _state.matchType = last['matchType'] ?? '団体戦';
 
-    // 前回のカテゴリ設定を2段階UIの状態に復元
-    _parseCategoryToState(lastSettings['category'] ?? '小学生低学年の部');
+    final (maj, min) = MatchFormatSetupHelper.parseCategoryToState(
+      last['category'] ?? '小学生低学年の部',
+    );
+    _state.selectedMajorCategory = maj;
+    _state.selectedMinorCategory = min;
+    _state.matchTime = last['matchTime'] ?? 3.0;
+    _state.isRunningTime = last['isRunningTime'] ?? false;
+    _state.hasExtension = last['hasExtension'] ?? false;
+    _state.hasHantei = last['hasHantei'] ?? true;
+    _state.isRenseikai = last['isRenseikai'] ?? false;
+    _state.kachinukiUnlimitedType = last['kachinukiUnlimitedType'] ?? '大将対大将';
+    _state.hasLeagueDaihyo = last['hasLeagueDaihyo'] ?? false;
+    _state.renseikaiType = last['renseikaiType'] ?? '一試合制';
+    _state.isDaihyoIpponShobu = last['isDaihyoIpponShobu'] ?? true;
+    _state.daihyoMatchTime =
+        (last['daihyoMatchTime'] as num?)?.toDouble() ?? 0.0;
+    _state.daihyoHasExtension = last['daihyoHasExtension'] ?? true;
+    _state.daihyoEnchoTime =
+        (last['daihyoEnchoTime'] as num?)?.toDouble() ?? 3.0;
+    _state.daihyoEnchoCount = last['daihyoEnchoCount'] ?? -2;
+    _state.daihyoHasHantei = last['daihyoHasHantei'] ?? false;
+    _state.isIpponShobu = last['isIpponShobu'] ?? false;
+    _state.ipponLimit = last['ipponLimit'] ?? 2;
+    _state.hansokuLimit = last['hansokuLimit'] ?? 2;
 
-    _matchTime = lastSettings['matchTime'];
-    _isRunningTime = lastSettings['isRunningTime'];
-    _hasExtension = lastSettings['hasExtension'];
-    _hasHantei = lastSettings['hasHantei'];
-    _isRenseikai = lastSettings['isRenseikai'] ?? false;
+    _winPointController.text = (last['winPoint'] ?? 0).toString();
+    _lossPointController.text = (last['lossPoint'] ?? 0).toString();
+    _drawPointController.text = (last['drawPoint'] ?? 0).toString();
 
-    _kachinukiUnlimitedType = lastSettings['kachinukiUnlimitedType'] ?? '大将対大将';
-    _hasLeagueDaihyo = lastSettings['hasLeagueDaihyo'] ?? false;
-    _renseikaiType = lastSettings['renseikaiType'] ?? '一試合制';
-    _isDaihyoIpponShobu = lastSettings['isDaihyoIpponShobu'] ?? true;
-
-    // 代表戦詳細
-    _daihyoMatchTime =
-        (lastSettings['daihyoMatchTime'] as num?)?.toDouble() ?? 0.0;
-    _daihyoHasExtension = lastSettings['daihyoHasExtension'] ?? true;
-    _daihyoEnchoTime =
-        (lastSettings['daihyoEnchoTime'] as num?)?.toDouble() ?? 3.0;
-    _daihyoEnchoCount = lastSettings['daihyoEnchoCount'] ?? -2;
-    _daihyoHasHantei = lastSettings['daihyoHasHantei'] ?? false;
-
-    // 勝負方式・反則
-    _isIpponShobu = lastSettings['isIpponShobu'] ?? false;
-    _ipponLimit = lastSettings['ipponLimit'] ?? 2;
-    _hansokuLimit = lastSettings['hansokuLimit'] ?? 2;
-
-    // ★ 勝ち点の初期値を復元
-    _winPointController.text = (lastSettings['winPoint'] ?? 0).toString();
-    _lossPointController.text = (lastSettings['lossPoint'] ?? 0).toString();
-    _drawPointController.text = (lastSettings['drawPoint'] ?? 0).toString();
-
-    // Note変更監視
     _noteController.addListener(_onNoteChanged);
-
-    // 初期のカテゴリールール読み込み
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadCategoryRules();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCategoryRules());
   }
-
-  final _noteController = TextEditingController();
-  final _courtController = TextEditingController();
-
-  void _toggleHeadingPreset(String preset) {
-    final current = _courtController.text.trim();
-    if (current.isEmpty) {
-      setState(() {
-        _courtController.text = preset;
-      });
-      return;
-    }
-    final items = current
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (items.contains(preset)) {
-      items.remove(preset);
-    } else {
-      items.add(preset);
-    }
-    setState(() {
-      _courtController.text = items.join(', ');
-    });
-  }
-
-  int _extCount = -2;
-  double _extTime = -2.0;
 
   @override
   void dispose() {
@@ -196,15 +116,32 @@ class _SetupMatchFormatScreenState
     super.dispose();
   }
 
+  void _toggleHeadingPreset(String preset) {
+    final current = _courtController.text.trim();
+    if (current.isEmpty) {
+      setState(() => _courtController.text = preset);
+      return;
+    }
+    final items = current
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (items.contains(preset)) {
+      items.remove(preset);
+    } else {
+      items.add(preset);
+    }
+    setState(() => _courtController.text = items.join(', '));
+  }
+
   void _showTeamDetailDialog(BuildContext context, TeamModel team) {
     final baseLen = MatchFormatSetupHelper.calculateTeamSize(
       matchType: team.matchType,
       selectedTeamId: null,
       registeredTeams: [],
     );
-    final List<String> posNames = MatchFormatSetupHelper.generatePositions(
-      baseLen,
-    );
+    final posNames = MatchFormatSetupHelper.generatePositions(baseLen);
     final players = ref.read(playerListProvider).value ?? [];
 
     MatchFormatTeamDetailDialog.show(
@@ -213,96 +150,56 @@ class _SetupMatchFormatScreenState
       posNames: posNames,
       themeColors: _themeColors,
       players: players,
-      onTeamUpdated: (updatedTeam) {
-        setState(() {});
-      },
+      onTeamUpdated: (_) => setState(() {}),
     );
   }
-
-  InputDecoration _buildTextFieldDecoration({
-    required String labelText,
-    String? hintText,
-    Widget? prefixIcon,
-    String? suffixText,
-  }) {
-    return MatchFormatSetupHelper.buildTextFieldDecoration(
-      themeColors: _themeColors,
-      labelText: labelText,
-      hintText: hintText,
-      prefixIcon: prefixIcon,
-      suffixText: suffixText,
-    );
-  }
-
-  Widget _buildDynamicHeader() {
-    return MatchFormatDynamicHeader(
-      currentPage: _currentPage,
-      themeColors: _themeColors,
-    );
-  }
-
-  Widget _buildSectionHeader(String title, Color accentColor) {
-    return MatchFormatSectionHeader(title: title, accentColor: accentColor);
-  }
-
-  // ==========================================
-  // 部門別ルールの自動読み込み & 連動ロジック
-  // ==========================================
-  String? _manualRoundTypeOverride;
-  String _lastCheckedNote = '';
 
   bool get _isCurrentMatchAdvanced {
-    if (_manualRoundTypeOverride != null) {
-      return _manualRoundTypeOverride == 'advanced';
+    if (_state.manualRoundTypeOverride != null) {
+      return _state.manualRoundTypeOverride == 'advanced';
     }
-    final tournament = ref
+    final tourney = ref
         .read(tournamentProvider(widget.tournamentId))
         .valueOrNull;
     return MatchFormatRuleSyncHelper.isAdvancedMatchName(
       note: _noteController.text,
       categoryName: _category,
-      tournament: tournament,
+      tournament: tourney,
     );
   }
 
   void _onNoteChanged() {
-    final currentNote = _noteController.text;
-    if (currentNote == _lastCheckedNote) return;
-    _lastCheckedNote = currentNote;
+    final cur = _noteController.text;
+    if (cur == _lastCheckedNote || _state.manualRoundTypeOverride != null)
+      return;
+    _lastCheckedNote = cur;
 
-    if (_manualRoundTypeOverride != null) return;
-
-    final categoryName = _category;
-    final tournament = ref
+    final tourney = ref
         .read(tournamentProvider(widget.tournamentId))
         .valueOrNull;
-    if (tournament != null) {
-      final ruleSet = tournament.categoryRules[categoryName];
+    if (tourney != null) {
+      final ruleSet = tourney.categoryRules[_category];
       if (ruleSet != null && ruleSet.useAdvancedRule) {
-        final isAdvanced = MatchFormatRuleSyncHelper.isAdvancedMatchName(
-          note: currentNote,
-          categoryName: categoryName,
-          tournament: tournament,
+        final isAdv = MatchFormatRuleSyncHelper.isAdvancedMatchName(
+          note: cur,
+          categoryName: _category,
+          tournament: tourney,
         );
-        final targetRule = isAdvanced
-            ? ruleSet.advancedRule
-            : ruleSet.normalRule;
-        _applyMatchRuleToState(targetRule);
+        _applyRule(isAdv ? ruleSet.advancedRule : ruleSet.normalRule);
       }
     }
   }
 
   void _loadCategoryRules() {
-    final categoryName = _category;
-    final tournament = ref
+    final tourney = ref
         .read(tournamentProvider(widget.tournamentId))
         .valueOrNull;
-    if (tournament != null) {
-      final ruleSet = tournament.categoryRules[categoryName];
+    if (tourney != null) {
+      final ruleSet = tourney.categoryRules[_category];
       if (ruleSet != null) {
         final targetScene = MatchFormatRuleSyncHelper.determineInitialScene(
           ruleSet: ruleSet,
-          currentScene: _selectedRuleScene,
+          currentScene: _state.selectedRuleScene,
           isAdvanced: _isCurrentMatchAdvanced,
         );
         _applyCategoryRuleScene(targetScene, ruleSet);
@@ -312,62 +209,39 @@ class _SetupMatchFormatScreenState
 
   void _applyCategoryRuleScene(String scene, CategoryRuleSet ruleSet) {
     setState(() {
-      _selectedRuleScene = scene;
+      _state.selectedRuleScene = scene;
       final isRen = scene == 'renseikai' || scene == 'moushiawase';
       final targetRule = MatchFormatRuleSyncHelper.getRuleForScene(
         scene: scene,
         ruleSet: ruleSet,
       );
-      _isRenseikai = isRen;
-      if (isRen) _renseikaiType = targetRule.renseikaiType;
-      _applyMatchRuleToState(targetRule);
+      _state.isRenseikai = isRen;
+      if (isRen) _state.renseikaiType = targetRule.renseikaiType;
+      _applyRule(targetRule);
     });
   }
 
-  void _applyMatchRuleToState(MatchRule rule) {
+  void _applyRule(MatchRule rule) {
     setState(() {
-      _matchTime = rule.matchTimeMinutes;
-      _isRunningTime = rule.isRunningTime;
-      _hasExtension = rule.enchoCount > 0 || rule.isEnchoUnlimited;
-      _extCount = rule.isEnchoUnlimited ? -2 : rule.enchoCount;
-      _extTime = rule.enchoTimeMinutes;
-      _hasHantei = rule.hasHantei;
-      _isRenseikai = rule.isRenseikai;
-      _renseikaiType = rule.renseikaiType;
-      _overallTimeController.text = rule.overallTimeMinutes.toString();
-      _winPointController.text = rule.winPoint.toString();
-      _lossPointController.text = rule.lossPoint.toString();
-      _drawPointController.text = rule.drawPoint.toString();
-      _kachinukiUnlimitedType = rule.kachinukiUnlimitedType;
-      _hasLeagueDaihyo = rule.hasLeagueDaihyo;
-      _isDaihyoIpponShobu = rule.isDaihyoIpponShobu;
-      _daihyoMatchTime = rule.daihyoMatchTimeMinutes;
-      _daihyoHasExtension = rule.daihyoHasExtension;
-      _daihyoEnchoTime = rule.daihyoEnchoTimeMinutes;
-      _daihyoEnchoCount = rule.daihyoEnchoCount;
-      _daihyoHasHantei = rule.daihyoHasHantei;
-      _isIpponShobu = rule.isIpponShobu;
-      _ipponLimit = rule.ipponLimit;
-      _hansokuLimit = rule.hansokuLimit;
+      _state.applyMatchRule(
+        rule,
+        overallTimeController: _overallTimeController,
+        winPointController: _winPointController,
+        lossPointController: _lossPointController,
+        drawPointController: _drawPointController,
+      );
     });
   }
 
   void _setManualRoundType(String type) {
     setState(() {
-      _manualRoundTypeOverride = type;
-      final categoryName = _category;
-      final asyncTourney = ref.read(tournamentProvider(widget.tournamentId));
-      asyncTourney.whenData((tournament) {
-        if (tournament != null) {
-          final categoryRules = tournament.categoryRules;
-          if (categoryRules.containsKey(categoryName)) {
-            final ruleSet = categoryRules[categoryName]!;
-            final isAdvanced = type == 'advanced';
-            final targetRule = isAdvanced
-                ? ruleSet.advancedRule
-                : ruleSet.normalRule;
-            _applyMatchRuleToState(targetRule);
-          }
+      _state.manualRoundTypeOverride = type;
+      ref.read(tournamentProvider(widget.tournamentId)).whenData((tourney) {
+        if (tourney != null && tourney.categoryRules.containsKey(_category)) {
+          final ruleSet = tourney.categoryRules[_category]!;
+          _applyRule(
+            type == 'advanced' ? ruleSet.advancedRule : ruleSet.normalRule,
+          );
         }
       });
     });
@@ -379,7 +253,6 @@ class _SetupMatchFormatScreenState
     _themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return LiquidBackground(
@@ -399,14 +272,15 @@ class _SetupMatchFormatScreenState
         ),
         body: Column(
           children: [
-            // ★ キーボードが開いた時はヘッダーをスッと隠す
             AnimatedSize(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
-              // ★ 修正: 不要な Column と _buildImmersiveAppBar を削り、直接ヘッダーを描画する
               child: isKeyboardOpen
                   ? const SizedBox.shrink()
-                  : _buildDynamicHeader(),
+                  : MatchFormatDynamicHeader(
+                      currentPage: _currentPage,
+                      themeColors: _themeColors,
+                    ),
             ),
             Expanded(
               child: PageView(
@@ -417,25 +291,25 @@ class _SetupMatchFormatScreenState
                   MatchFormatCategoryStep(
                     tournamentId: widget.tournamentId,
                     category: _category,
-                    selectedMajorCategory: _selectedMajorCategory,
-                    selectedMinorCategory: _selectedMinorCategory,
-                    selectedTeamId: _selectedTeamId,
+                    selectedMajorCategory: _state.selectedMajorCategory,
+                    selectedMinorCategory: _state.selectedMinorCategory,
+                    selectedTeamId: _state.selectedTeamId,
                     majorCategories: MatchFormatSetupHelper.majorCategories,
                     getMinorCategories:
                         MatchFormatSetupHelper.getMinorCategories,
                     onCategoryChanged: (major, minor) {
                       setState(() {
-                        _selectedMajorCategory = major;
-                        _selectedMinorCategory = minor;
-                        _selectedTeamId = null;
-                        _manualRoundTypeOverride = null;
+                        _state.selectedMajorCategory = major;
+                        _state.selectedMinorCategory = minor;
+                        _state.selectedTeamId = null;
+                        _state.manualRoundTypeOverride = null;
                         _loadCategoryRules();
                       });
                     },
                     onTeamSelected: (team) {
                       setState(() {
-                        _selectedTeamId = team.id;
-                        _matchType = team.matchType;
+                        _state.selectedTeamId = team.id;
+                        _state.matchType = team.matchType;
                       });
                     },
                     onAdjustOrder: (team) =>
@@ -445,33 +319,43 @@ class _SetupMatchFormatScreenState
                     ),
                     themeColors: _themeColors,
                     isDark: isDark,
-                    buildSectionTitle: _buildSectionTitle,
+                    buildSectionTitle: (t) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: Text(
+                        t,
+                        style: TextStyle(
+                          fontSize: AppFontSize.subhead,
+                          fontWeight: AppFontWeight.bold,
+                          color: _themeColors.primaryAccent,
+                        ),
+                      ),
+                    ),
                   ),
                   MatchFormatRuleStep(
                     tournamentId: widget.tournamentId,
                     category: _category,
-                    selectedRuleScene: _selectedRuleScene,
+                    selectedRuleScene: _state.selectedRuleScene,
                     isCurrentMatchAdvanced: _isCurrentMatchAdvanced,
-                    hasExtension: _hasExtension,
-                    extTime: _extTime,
-                    extCount: _extCount,
-                    matchTime: _matchTime,
-                    isRunningTime: _isRunningTime,
-                    isRenseikai: _isRenseikai,
-                    renseikaiType: _renseikaiType,
-                    matchType: _matchType,
-                    isIpponShobu: _isIpponShobu,
-                    ipponLimit: _ipponLimit,
-                    hansokuLimit: _hansokuLimit,
-                    hasHantei: _hasHantei,
-                    kachinukiUnlimitedType: _kachinukiUnlimitedType,
-                    hasLeagueDaihyo: _hasLeagueDaihyo,
-                    isDaihyoIpponShobu: _isDaihyoIpponShobu,
-                    daihyoMatchTime: _daihyoMatchTime,
-                    daihyoHasExtension: _daihyoHasExtension,
-                    daihyoEnchoCount: _daihyoEnchoCount,
-                    daihyoEnchoTime: _daihyoEnchoTime,
-                    daihyoHasHantei: _daihyoHasHantei,
+                    hasExtension: _state.hasExtension,
+                    extTime: _state.extTime,
+                    extCount: _state.extCount,
+                    matchTime: _state.matchTime,
+                    isRunningTime: _state.isRunningTime,
+                    isRenseikai: _state.isRenseikai,
+                    renseikaiType: _state.renseikaiType,
+                    matchType: _state.matchType,
+                    isIpponShobu: _state.isIpponShobu,
+                    ipponLimit: _state.ipponLimit,
+                    hansokuLimit: _state.hansokuLimit,
+                    hasHantei: _state.hasHantei,
+                    kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
+                    hasLeagueDaihyo: _state.hasLeagueDaihyo,
+                    isDaihyoIpponShobu: _state.isDaihyoIpponShobu,
+                    daihyoMatchTime: _state.daihyoMatchTime,
+                    daihyoHasExtension: _state.daihyoHasExtension,
+                    daihyoEnchoCount: _state.daihyoEnchoCount,
+                    daihyoEnchoTime: _state.daihyoEnchoTime,
+                    daihyoHasHantei: _state.daihyoHasHantei,
                     winPoint: double.tryParse(_winPointController.text) ?? 0,
                     lossPoint: double.tryParse(_lossPointController.text) ?? 0,
                     drawPoint: double.tryParse(_drawPointController.text) ?? 0,
@@ -487,14 +371,30 @@ class _SetupMatchFormatScreenState
                         _toggleHeadingPreset(heading),
                     onClearCourt: () =>
                         setState(() => _courtController.clear()),
-                    buildTextFieldDecoration: _buildTextFieldDecoration,
-                    buildSectionHeader: _buildSectionHeader,
+                    buildTextFieldDecoration:
+                        ({
+                          required String labelText,
+                          String? hintText,
+                          Widget? prefixIcon,
+                          String? suffixText,
+                        }) => MatchFormatSetupHelper.buildTextFieldDecoration(
+                          themeColors: _themeColors,
+                          labelText: labelText,
+                          hintText: hintText,
+                          prefixIcon: prefixIcon,
+                          suffixText: suffixText,
+                        ),
+
+                    buildSectionHeader: (title, accent) =>
+                        MatchFormatSectionHeader(
+                          title: title,
+                          accentColor: accent,
+                        ),
                     formatMinutesText: CategoryRuleMatchHelper.formatMinutes,
                   ),
                 ],
               ),
             ),
-            // ★ キーボードが開いた時は下のボタンも隠す
             AnimatedSize(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
@@ -510,7 +410,8 @@ class _SetupMatchFormatScreenState
                       ),
                       onNextOrComplete: () {
                         if (_currentPage != 1) {
-                          if (_currentPage == 0 && _selectedTeamId == null) {
+                          if (_currentPage == 0 &&
+                              _state.selectedTeamId == null) {
                             AppSnackBar.show(context, '出場する自チームを選択してください');
                             return;
                           }
@@ -539,41 +440,27 @@ class _SetupMatchFormatScreenState
       courtText: _courtController.text.trim(),
       userNote: _noteController.text.trim(),
       registeredTeams: registeredTeams,
-      selectedTeamId: _selectedTeamId,
-      matchType: _matchType,
+      selectedTeamId: _state.selectedTeamId,
+      matchType: _state.matchType,
       category: _category,
-      matchTime: _matchTime,
-      isRunningTime: _isRunningTime,
-      isRenseikai: _isRenseikai,
-      hasExtension: _hasExtension,
-      hasHantei: _hasHantei,
-      extCount: _extCount,
-      extTime: _extTime,
-      kachinukiUnlimitedType: _kachinukiUnlimitedType,
-      hasLeagueDaihyo: _hasLeagueDaihyo,
-      renseikaiType: _renseikaiType,
-      isDaihyoIpponShobu: _isDaihyoIpponShobu,
+      matchTime: _state.matchTime,
+      isRunningTime: _state.isRunningTime,
+      isRenseikai: _state.isRenseikai,
+      hasExtension: _state.hasExtension,
+      hasHantei: _state.hasHantei,
+      extCount: _state.extCount,
+      extTime: _state.extTime,
+      kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
+      hasLeagueDaihyo: _state.hasLeagueDaihyo,
+      renseikaiType: _state.renseikaiType,
+      isDaihyoIpponShobu: _state.isDaihyoIpponShobu,
       winPointText: _winPointController.text,
       lossPointText: _lossPointController.text,
       drawPointText: _drawPointController.text,
       overallTimeText: _overallTimeController.text,
-      selectedRuleScene: _selectedRuleScene,
+      selectedRuleScene: _state.selectedRuleScene,
     );
 
     context.push('/order-setup/${widget.tournamentId}');
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: AppFontSize.subhead,
-          fontWeight: AppFontWeight.bold,
-          color: _themeColors.primaryAccent,
-        ),
-      ),
-    );
   }
 }

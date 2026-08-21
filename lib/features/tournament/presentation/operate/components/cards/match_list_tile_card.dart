@@ -15,8 +15,10 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/rul
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
-import '../home/match_timeline_list.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart'
+    show customTeamNamesProvider;
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
+
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';

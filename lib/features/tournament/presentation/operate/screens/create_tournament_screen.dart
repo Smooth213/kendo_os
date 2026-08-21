@@ -1,23 +1,22 @@
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_dynamic_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page1.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page2.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_sticky_bottom_action.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {
   const CreateTournamentScreen({super.key});
@@ -37,7 +36,6 @@ class _CreateTournamentScreenState
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
   double _currentProgress = 0.0;
 
   @override
@@ -100,85 +98,54 @@ class _CreateTournamentScreenState
     }
   }
 
-  // ★ 不要になった _buildImmersiveAppBar を削除し、スッキリさせます
+  Future<void> _handleSaveOrNext() async {
+    if (_currentPage == 0) {
+      if (_nameController.text.isEmpty) {
+        AppSnackBar.showError(context, '大会名を入力してください');
+        return;
+      }
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      if (_formKey.currentState!.validate()) {
+        try {
+          final dojoId = ref.read(currentDojoIdProvider);
+          debugPrint('🔥 [DEBUG] 現在の道場ID: "$dojoId"');
+          final uid = FirebaseAuth.instance.currentUser?.uid;
+          debugPrint('🔥 [DEBUG] 現在のUID: "$uid"');
 
-  Widget _buildDynamicHeader() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final t = (_currentProgress / 1).clamp(0.0, 1.0);
+          final newTournament = TournamentModel(
+            id: '',
+            organizationId: ref.read(settingsProvider).organizationId,
+            name: _nameController.text,
+            date: _selectedDate,
+            venue: _venueController.text,
+            categories: const [],
+            notes: _notesController.text.trim(),
+          );
 
-        // iOS Native: ダークモード時は彩度を抑えた深みのあるTealへ
-        final color1 = isDark
-            ? context.appColors.primaryAccent
-            : context.appColors.primaryAccent;
-        final color2 = isDark
-            ? context.appColors.primaryAccent
-            : context.appColors.primaryAccent;
-        final endColor = isDark
-            ? context.appColors.primaryAccent
-            : context.appColors.primaryAccent;
-        final gradientColor = Color.lerp(color1, color2, t)!;
+          final newId = await ref
+              .read(tournamentRepositoryProvider)
+              .saveTournament(newTournament);
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: 20,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [gradientColor, endColor],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(AppRadius.giantValue),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '大会を新規作成',
-                style: TextStyle(
-                  fontSize: AppFontSize.hero,
-                  fontWeight: AppFontWeight.bold,
-                  color: AppKendoColors.pureWhite,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '魔法のウィザードに従って、\n2つのステップで設定を完了しましょう',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  color: AppKendoColors.pureWhite.withValues(alpha: 0.9),
-                  fontWeight: AppFontWeight.medium,
-                ),
-              ),
-              const SizedBox(height: 20),
-              LinearProgressIndicator(
-                value: (_currentProgress + 1) / 2,
-                backgroundColor: AppKendoColors.pureWhite.withValues(
-                  alpha: 0.3,
-                ),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppKendoColors.pureWhite,
-                ),
-                minHeight: 6,
-                borderRadius: AppRadius.tiny,
-              ),
-            ],
-          ),
-        );
-      },
-    );
+          if (!mounted) return;
+
+          AppSnackBar.showSuccess(context, '基本情報を保存しました！');
+          context.push('/team-registration/$newId');
+        } catch (e) {
+          debugPrint('🔥 [ERROR] 大会保存エラー: $e');
+          if (mounted) {
+            AppSnackBar.showError(context, '保存エラー: $e');
+          }
+        }
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return LiquidBackground(
@@ -196,14 +163,14 @@ class _CreateTournamentScreenState
           children: [
             Column(
               children: [
-                // ★ キーボードが開いた時はヘッダーをスッと隠す
                 AnimatedSize(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeInOut,
-                  // ★ 修正: 不要な Column と _buildImmersiveAppBar を削り、直接ヘッダーを描画する
                   child: isKeyboardOpen
                       ? const SizedBox.shrink()
-                      : _buildDynamicHeader(),
+                      : CreateTournamentDynamicHeader(
+                          currentProgress: _currentProgress,
+                        ),
                 ),
                 Expanded(
                   child: Form(
@@ -213,333 +180,39 @@ class _CreateTournamentScreenState
                       physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (index) =>
                           setState(() => _currentPage = index),
-                      children: [_buildPage1(), _buildPage2()],
+                      children: [
+                        CreateTournamentPage1(
+                          nameController: _nameController,
+                          selectedDate: _selectedDate,
+                          onPickDate: _pickDate,
+                        ),
+                        CreateTournamentPage2(
+                          venueController: _venueController,
+                          notesController: _notesController,
+                          onOpenMap: _openMap,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                // ★ キーボードが開いた時は下のボタンも隠す
                 AnimatedSize(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeInOut,
                   child: isKeyboardOpen
                       ? const SizedBox.shrink()
-                      : _buildStickyBottomAction(),
+                      : CreateTournamentStickyBottomAction(
+                          currentPage: _currentPage,
+                          onPrevious: () => _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          ),
+                          onNextOrSave: _handleSaveOrNext,
+                        ),
                 ),
               ],
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildPage1() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color inputBgColor = isDark
-        ? const Color(0xFF1C1C1E)
-        : context.appColors.textColor;
-    final Color textColor = context.appColors.textColor;
-    final Color hintColor = isDark
-        ? const Color(0xFF8E8E93)
-        : const Color(0x8A000000);
-
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        Text(
-          '大会の名前と日付を\n教えてください',
-          style: TextStyle(
-            fontSize: AppFontSize.display,
-            fontWeight: AppFontWeight.bold,
-            height: 1.4,
-            color: textColor,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-        TextFormField(
-          controller: _nameController,
-          style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
-          decoration: InputDecoration(
-            labelText: '大会名',
-            labelStyle: const TextStyle(color: AppKendoColors.grey),
-            hintText: '例：第1回 〇〇剣道大会',
-            hintStyle: TextStyle(
-              color: hintColor,
-              fontSize: AppFontSize.bodySmall,
-            ),
-            prefixIcon: const Icon(
-              Icons.emoji_events,
-              color: Color(0xFFD97706),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
-              borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF38383A)
-                    : const Color(0x33000000),
-                width: 1.0,
-              ), // iOS Border
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
-              borderSide: BorderSide(
-                color: const Color(0xFF3F51B5),
-                width: 2.0,
-              ),
-            ),
-            filled: true,
-            fillColor: inputBgColor,
-          ),
-          validator: (v) => v == null || v.isEmpty ? '大会名を入力してください' : null,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        ListTile(
-          title: const Text(
-            '開催年月日',
-            style: TextStyle(
-              color: AppKendoColors.grey,
-              fontSize: AppFontSize.small,
-            ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.xs),
-            child: Text(
-              DateFormat('yyyy年MM月dd日').format(_selectedDate),
-              style: TextStyle(
-                fontSize: AppFontSize.header,
-                fontWeight: AppFontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ),
-          trailing: const Icon(
-            Icons.calendar_today,
-            color: AppKendoColors.indigo,
-          ),
-          shape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
-              width: 1.0,
-            ),
-            borderRadius: AppRadius.medium,
-          ),
-          tileColor: inputBgColor,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
-          ),
-          onTap: _pickDate,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPage2() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color inputBgColor = isDark
-        ? const Color(0xFF1C1C1E)
-        : context.appColors.textColor;
-    final Color textColor = context.appColors.textColor;
-    final Color hintColor = isDark
-        ? const Color(0xFF8E8E93)
-        : const Color(0x8A000000);
-
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        Text(
-          '開催場所とメモを\n入力してください',
-          style: TextStyle(
-            fontSize: AppFontSize.display,
-            fontWeight: AppFontWeight.bold,
-            height: 1.4,
-            color: textColor,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-        TextFormField(
-          controller: _venueController,
-          style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
-          decoration: InputDecoration(
-            labelText: '会場・住所',
-            labelStyle: const TextStyle(color: AppKendoColors.grey),
-            hintText: '例：〇〇県立武道館',
-            hintStyle: TextStyle(
-              color: hintColor,
-              fontSize: AppFontSize.bodySmall,
-            ),
-            prefixIcon: const Icon(
-              Icons.location_on,
-              color: AppKendoColors.blue,
-            ),
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.map, color: AppKendoColors.blue),
-              onPressed: _openMap,
-              tooltip: '地図で場所を確認',
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
-              borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF38383A)
-                    : const Color(0x33000000),
-                width: 1.0,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
-              borderSide: BorderSide(
-                color: const Color(0xFF3F51B5),
-                width: 2.0,
-              ),
-            ),
-            filled: true,
-            fillColor: inputBgColor,
-          ),
-          validator: (v) => v == null || v.isEmpty ? '会場を入力してください' : null,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        TextFormField(
-          controller: _notesController,
-          maxLines: 4,
-          style: TextStyle(color: textColor),
-          decoration: InputDecoration(
-            labelText: '大会メモ（任意）',
-            labelStyle: const TextStyle(color: AppKendoColors.grey),
-            hintText: '例：駐車場は第2駐車場を利用。\n開場は8:30〜。',
-            hintStyle: TextStyle(
-              color: hintColor,
-              fontSize: AppFontSize.bodySmall,
-            ),
-            prefixIcon: const Icon(Icons.note_alt, color: AppKendoColors.grey),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
-              borderSide: BorderSide(
-                color: isDark
-                    ? const Color(0xFF38383A)
-                    : const Color(0x33000000),
-                width: 1.0,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
-              borderSide: BorderSide(
-                color: const Color(0xFF3F51B5),
-                width: 2.0,
-              ),
-            ),
-            filled: true,
-            fillColor: inputBgColor,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStickyBottomAction() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
-    final isLastPage = _currentPage == 1;
-    final Color bottomBarColor = enableLiquidGlass
-        ? Colors.transparent
-        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
-    final Color separatorColor = enableLiquidGlass
-        ? Colors.transparent
-        : (isDark ? const Color(0xFF38383A) : const Color(0x33000000));
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        top: AppSpacing.xl,
-        bottom: MediaQuery.of(context).padding.bottom + 24,
-      ),
-      decoration: BoxDecoration(
-        color: bottomBarColor,
-        // iOS Native: 影の代わりに上部に細いBorderを引くのがモダンiOS風
-        border: Border(top: BorderSide(color: separatorColor, width: 0.5)),
-      ),
-      child: Row(
-        children: [
-          if (_currentPage > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.lg),
-              child: OutlinedButton(
-                onPressed: () => _pageController.previousPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  shape: const CircleBorder(),
-                  side: BorderSide(color: separatorColor),
-                ),
-                child: Icon(
-                  Icons.arrow_back_ios_new,
-                  size: 20,
-                  color: const Color(0xFF3F51B5),
-                ), // ダークでも見やすいIndigo
-              ),
-            ),
-          Expanded(
-            child: GlassButton(
-              onPressed: () async {
-                if (_currentPage == 0) {
-                  if (_nameController.text.isEmpty) {
-                    AppSnackBar.showError(context, '大会名を入力してください');
-                    return;
-                  }
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                } else {
-                  if (_formKey.currentState!.validate()) {
-                    try {
-                      // ★ デバッグ：現在の道場IDを出力
-                      final dojoId = ref.read(currentDojoIdProvider);
-                      debugPrint('🔥 [DEBUG] 現在の道場ID: "$dojoId"');
-                      final uid = FirebaseAuth.instance.currentUser?.uid;
-                      debugPrint('🔥 [DEBUG] 現在のUID: "$uid"');
-
-                      final newTournament = TournamentModel(
-                        id: '',
-                        organizationId: ref
-                            .read(settingsProvider)
-                            .organizationId,
-                        name: _nameController.text,
-                        date: _selectedDate,
-                        venue: _venueController.text,
-                        categories: const [],
-                        notes: _notesController.text.trim(),
-                      );
-
-                      final newId = await ref
-                          .read(tournamentRepositoryProvider)
-                          .saveTournament(newTournament);
-
-                      if (!mounted) return;
-
-                      AppSnackBar.showSuccess(context, '基本情報を保存しました！');
-
-                      context.push('/team-registration/$newId');
-                    } catch (e) {
-                      debugPrint('🔥 [ERROR] 大会保存エラー: $e');
-                      if (mounted) {
-                        AppSnackBar.showError(context, '保存エラー: $e');
-                      }
-                    }
-                  }
-                }
-              },
-              color: AppKendoColors.indigo,
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              icon: isLastPage ? Icons.check_circle : Icons.navigate_next,
-              label: isLastPage ? '保存してチーム登録へ' : '次へ進む',
-              expandContent: false,
-            ),
-          ),
-        ],
       ),
     );
   }

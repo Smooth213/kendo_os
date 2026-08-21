@@ -1,24 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/match/domain/score/score_event.dart';
-import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/match/application/usecases/match_rebuild_usecase.dart';
+import 'package:kendo_os/features/match/application/usecases/match_undo_redo_usecase.dart';
 import 'package:kendo_os/features/match/domain/match_context.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_state.dart';
+
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_provider.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart';
-import 'package:kendo_os/features/match/domain/match_state.dart'; // ★ Phase 1: FSMのインポート
-import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
+import 'package:kendo_os/shared/time/time_source.dart';
 
-// ==========================================
-// ★ ② UseCaseの役割明確化：「1 UseCase = 1 責務」
-// ここには「純粋な計算と判定」だけを書き、保存や音は一切鳴らさない
-// ==========================================
+export 'package:kendo_os/features/match/application/usecases/match_rebuild_usecase.dart';
+export 'package:kendo_os/features/match/application/usecases/match_undo_redo_usecase.dart';
 
 /// ① スコア追加 UseCase
 class AddScoreUseCase {
   final KendoRuleEngine _engine;
-  final PermissionService _permission; // ★ 関所を追加
+  final PermissionService _permission;
   final TimeSource _timeSource;
 
   AddScoreUseCase(this._engine, this._permission, this._timeSource);
@@ -29,17 +30,14 @@ class AddScoreUseCase {
     ScoreEvent newEvent,
     MatchRule rule,
   ) {
-    // 認可チェック
     if (!_permission.canAppend(user, newEvent)) {
       throw UnauthorizedException('この操作を実行する権限がありません');
     }
 
-    // ★ Phase 10: イベントに当時のルールバージョンを刻み込む
     var finalEvent = newEvent.copyWith(
       ruleVersion: rule.toRuleConfig.schemaVersion,
     );
 
-    // ★ Phase 3: Undo/Redo時は、消すべき(復活させるべき)対象のIDをtargetIdに刻む
     if (finalEvent.isUndo || finalEvent.type == PointType.undo) {
       final activeEvents = _engine.filterActiveEvents(currentMatch.events);
       if (activeEvents.isNotEmpty) {
@@ -47,7 +45,6 @@ class AddScoreUseCase {
       }
     }
 
-    // 競合チェック
     final expectedSequence = currentMatch.events.isEmpty
         ? 1
         : currentMatch.events.last.sequence + 1;
@@ -74,8 +71,6 @@ class AddScoreUseCase {
       currentMatch.pendingEvents,
     );
 
-    // ★ Phase 3: 過去のイベントの `isCanceled` を直接書き換える(Mutation)悪しきループを完全削除。
-    // 純粋に新しいイベントをリストの末尾に追記(Append)するだけに純化されました。
     updatedEvents.add(finalEvent);
     updatedPendingEvents.add(finalEvent);
 
@@ -118,7 +113,6 @@ class AddScoreUseCase {
 
     final bool isRunningTimerMode = rule.isRunningTime;
 
-    // ★ Phase 2: 通し(Running)以外のモードでスコアが入った時は、ストップ(Pause)処理を行う
     MatchModel updatedMatch = currentMatch;
     if (!isRunningTimerMode && currentMatch.timerIsRunning) {
       final elapsed = _timeSource
@@ -146,151 +140,10 @@ class AddScoreUseCase {
   }
 }
 
-/// ② Undo UseCase
-class UndoScoreUseCase {
-  final KendoRuleEngine _engine;
-  final PermissionService _permission;
-  final TimeSource _timeSource;
-
-  UndoScoreUseCase(this._engine, this._permission, this._timeSource);
-
-  MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
-    if (!_permission.canUndo(user)) {
-      throw UnauthorizedException('操作を取り消す権限がありません');
-    }
-
-    final activeEvents = _engine.filterActiveEvents(currentMatch.events);
-    if (activeEvents.isEmpty) return currentMatch;
-
-    // 取り消す対象のイベントIDを取得
-    final targetEventId = activeEvents.last.id;
-    final newSequence = currentMatch.events.isEmpty
-        ? 1
-        : currentMatch.events.last.sequence + 1;
-
-    final undoEvent = ScoreEvent(
-      id: 'undo-${_timeSource.now().microsecondsSinceEpoch}',
-      schemaVersion: 2,
-      side: Side.none,
-      strikeType: StrikeType.none,
-      isUndo: true,
-      targetId: targetEventId, // ★ Phase 3: 相殺対象を記録
-      timestamp: _timeSource.now(),
-      sequence: newSequence,
-      logicalClock: newSequence,
-      userId: user.id,
-      ruleVersion: rule.toRuleConfig.schemaVersion,
-    );
-
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)
-      ..add(undoEvent);
-    final updatedPendingEvents = List<ScoreEvent>.from(
-      currentMatch.pendingEvents,
-    )..add(undoEvent);
-    // ★ isCanceled を直接書き換えるMutationループを完全削除
-
-    final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
-
-    MatchLifecycleState currentState =
-        MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
-    if (currentState == MatchLifecycleState.completed ||
-        currentState == MatchLifecycleState.fusen) {
-      currentState = MatchStateMachine.transition(
-        currentState,
-        StateTransitionEvent.undo,
-      );
-    }
-
-    return currentMatch.copyWith(
-      events: updatedEvents,
-      status: currentState.toLegacyString(),
-      pendingEvents: kIsWeb ? <ScoreEvent>[] : updatedPendingEvents,
-      redScore: analysis.context.redIppon,
-      whiteScore: analysis.context.whiteIppon,
-      syncState: SyncState.localOnly,
-      lastUpdatedAt: _timeSource.now(),
-    );
-  }
-}
-
-/// ★ Phase 2-3: Redo(やり直し) UseCase
-class RedoScoreUseCase {
-  final KendoRuleEngine _engine;
-  final PermissionService _permission;
-  final TimeSource _timeSource;
-
-  RedoScoreUseCase(this._engine, this._permission, this._timeSource);
-
-  MatchModel execute(User user, MatchModel currentMatch, MatchRule rule) {
-    if (!_permission.canUndo(user)) {
-      throw UnauthorizedException('操作をやり直す権限がありません');
-    }
-
-    if (currentMatch.events.isEmpty) return currentMatch;
-
-    final newSequence = currentMatch.events.last.sequence + 1;
-
-    final redoEvent = ScoreEvent(
-      id: 'redo-${_timeSource.now().microsecondsSinceEpoch}',
-      schemaVersion: 2,
-      side: Side.none,
-      strikeType: StrikeType.none,
-      isRestore: true,
-      // targetId を省略した場合は、直近にUndoされたものが自動で復元される（KendoRuleEngineの機能）
-      timestamp: _timeSource.now(),
-      sequence: newSequence,
-      logicalClock: newSequence,
-      userId: user.id,
-      ruleVersion: rule.toRuleConfig.schemaVersion,
-    );
-
-    final updatedEvents = List<ScoreEvent>.from(currentMatch.events)
-      ..add(redoEvent);
-    final updatedPendingEvents = List<ScoreEvent>.from(
-      currentMatch.pendingEvents,
-    )..add(redoEvent);
-    // ★ isCanceled = false に直接書き換えるMutationループを完全削除
-
-    final analysis = _engine.analyzeHistory(updatedEvents, currentMatch, rule);
-
-    MatchLifecycleState currentState =
-        MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
-    final result = _engine.decideResult(analysis.context);
-
-    if (result != MatchResultStatus.inProgress) {
-      if (currentState != MatchLifecycleState.completed &&
-          currentState != MatchLifecycleState.fusen) {
-        currentState = MatchStateMachine.transition(
-          currentState,
-          StateTransitionEvent.decideWinner,
-        );
-      }
-    } else {
-      if (currentState == MatchLifecycleState.completed ||
-          currentState == MatchLifecycleState.fusen) {
-        currentState = MatchStateMachine.transition(
-          currentState,
-          StateTransitionEvent.undo,
-        );
-      }
-    }
-
-    return currentMatch.copyWith(
-      events: updatedEvents,
-      status: currentState.toLegacyString(),
-      pendingEvents: kIsWeb ? <ScoreEvent>[] : updatedPendingEvents,
-      redScore: analysis.context.redIppon,
-      whiteScore: analysis.context.whiteIppon,
-      syncState: SyncState.localOnly,
-      lastUpdatedAt: _timeSource.now(),
-    );
-  }
-}
-
 /// ③ 時間切れ処理 UseCase
 class TimeUpUseCase {
   final KendoRuleEngine _engine;
-  final PermissionService _permission; // ★ 関所を追加
+  final PermissionService _permission;
   final TimeSource _timeSource;
 
   TimeUpUseCase(this._engine, this._permission, this._timeSource);
@@ -320,7 +173,6 @@ class TimeUpUseCase {
       hasHantei: rule.hasHantei,
     );
 
-    // ★ Phase 1: FSMによる厳密な状態遷移
     MatchLifecycleState currentState =
         MatchLifecycleStateLegacyExt.fromLegacyString(currentMatch.status);
 
@@ -344,7 +196,6 @@ class TimeUpUseCase {
         status: currentState.toLegacyString(),
       );
 
-      // ★ 修正: 延長戦の時間を絶対時間エンジンにセットし直す
       updated = updated
           .updateRemainingSeconds(enchoSeconds, _timeSource.now())
           .copyWith(timerStartedAt: null);
@@ -355,7 +206,7 @@ class TimeUpUseCase {
         StateTransitionEvent.timeUp,
       );
       return currentMatch.copyWith(
-        status: currentState.toLegacyString(), // ★ FSMの判定結果のみを適用
+        status: currentState.toLegacyString(),
         syncState: SyncState.localOnly,
         lastUpdatedAt: _timeSource.now(),
       );
@@ -363,107 +214,8 @@ class TimeUpUseCase {
   }
 }
 
-/// ④ イベント履歴からの再構築 UseCase (読み取り専用なので関所不要)
-class RebuildMatchFromEventsUseCase {
-  final KendoRuleEngine _engine;
-  final TimeSource _timeSource;
-  RebuildMatchFromEventsUseCase(this._engine, this._timeSource);
-
-  MatchModel execute(MatchModel baseMatch, MatchRule currentSystemRule) {
-    // ==========================================
-    // ★ Phase 10: 10-2 Historical Replay 保証 & 10-3 Rule Migration Strategy
-    // 過去の試合を再構築する際、現在のシステム設定(currentSystemRule)で上書きしてしまうと、
-    // 「昔は1本勝負だったのに、今は3本勝負だから試合が再開されてしまう」という歴史改変(バグ)が起きる。
-    // これを防ぐため、イベントに刻まれた ruleVersion や baseMatch.rule を最優先する。
-    // ==========================================
-    MatchRule replayRule = currentSystemRule;
-
-    if (baseMatch.events.isNotEmpty) {
-      final oldestRuleVersion = baseMatch.events
-          .map((e) => e.ruleVersion)
-          .reduce((a, b) => a < b ? a : b);
-      // イベント当時のルールバージョンが現在のシステムより古い場合、
-      // 試合当時の設定（baseMatch.rule）を「真実のルール」として強制適用する（後方互換性）
-      if (oldestRuleVersion < currentSystemRule.toRuleConfig.schemaVersion ||
-          baseMatch.status == 'approved' ||
-          baseMatch.status == 'finished') {
-        replayRule = baseMatch.rule ?? currentSystemRule;
-      }
-    } else if (baseMatch.status == 'finished' ||
-        baseMatch.status == 'approved') {
-      // イベントが無くても終了済みの過去試合なら当時のルールを適用
-      replayRule = baseMatch.rule ?? currentSystemRule;
-    }
-
-    final analysis = _engine.analyzeHistory(
-      baseMatch.events,
-      baseMatch,
-      replayRule,
-    );
-    final result = _engine.decideResult(
-      analysis.context,
-      replayRule,
-    ); // ★ Replay用のルールを渡す
-
-    // ★ Phase 1: FSMによる厳密な状態遷移
-    MatchLifecycleState currentState =
-        MatchLifecycleStateLegacyExt.fromLegacyString(baseMatch.status);
-
-    bool isJustUndone = false;
-    if (baseMatch.events.isNotEmpty) {
-      final latestEvent = baseMatch.events.reduce(
-        (a, b) => a.timestamp.isAfter(b.timestamp) ? a : b,
-      );
-      if (latestEvent.isCanceled ||
-          latestEvent.isUndo ||
-          latestEvent.type == PointType.undo) {
-        isJustUndone = true;
-      }
-    }
-
-    if (isJustUndone && baseMatch.status != 'approved') {
-      if (currentState == MatchLifecycleState.completed ||
-          currentState == MatchLifecycleState.fusen) {
-        currentState = MatchStateMachine.transition(
-          currentState,
-          StateTransitionEvent.undo,
-        );
-      }
-    } else if (result != MatchResultStatus.inProgress &&
-        baseMatch.status != 'approved') {
-      if (currentState != MatchLifecycleState.completed &&
-          currentState != MatchLifecycleState.fusen) {
-        currentState = MatchStateMachine.transition(
-          currentState,
-          StateTransitionEvent.decideWinner,
-        );
-      }
-    }
-
-    return baseMatch.copyWith(
-      redScore: analysis.context.redIppon,
-      whiteScore: analysis.context.whiteIppon,
-      status: currentState.toLegacyString(),
-      syncState: SyncState.localOnly,
-      lastUpdatedAt: _timeSource.now(),
-    );
-  }
-}
-
-/// ⑤ ポイント表示計算 UseCase (読み取り専用なので関所不要)
-class CalculatePointDisplaysUseCase {
-  final KendoRuleEngine _engine;
-  CalculatePointDisplaysUseCase(this._engine);
-
-  Map<Side, List<PointDisplay>> execute(MatchModel match) {
-    return _engine.analyzeHistory(match.events, match, null).displays;
-  }
-}
-
 // ★ DI 用のプロバイダ定義
-final permissionServiceProvider = Provider(
-  (ref) => PermissionService(),
-); // ★ 追加
+final permissionServiceProvider = Provider((ref) => PermissionService());
 
 final addScoreUseCaseProvider = Provider(
   (ref) => AddScoreUseCase(
