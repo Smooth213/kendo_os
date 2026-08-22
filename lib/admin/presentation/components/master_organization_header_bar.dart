@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/admin/presentation/components/master_edit_organization_bottom_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_team_name_management_sheet.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
@@ -111,11 +112,19 @@ class MasterOrganizationHeaderBar extends StatelessWidget {
               onGroupingModeChanged(newSelection.first);
             },
             style: SegmentedButton.styleFrom(
-              selectedBackgroundColor: isDark
-                  ? const Color(0xFF9C27B0).withValues(alpha: 0.4)
-                  : const Color(0xFF9C27B0),
-              selectedForegroundColor: primaryColor,
+              selectedBackgroundColor: primaryColor,
+              selectedForegroundColor: AppKendoColors.pureWhite,
+              backgroundColor: isDark
+                  ? const Color(0xFF1E1E20)
+                  : context.appColors.cardBackground,
+              foregroundColor: isDark
+                  ? context.appColors.subTextColor
+                  : context.appColors.textColor,
               side: BorderSide(color: context.appColors.separatorColor),
+              textStyle: const TextStyle(
+                fontSize: AppFontSize.bodySmall,
+                fontWeight: AppFontWeight.bold,
+              ),
             ),
           ),
         ),

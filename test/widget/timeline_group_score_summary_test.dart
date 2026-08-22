@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
@@ -49,9 +50,14 @@ void main() {
           ),
         );
 
-        expect(find.text('青龍館'), findsOneWidget);
-        expect(find.text('白虎館'), findsOneWidget);
-        expect(find.text('自道場'), findsOneWidget);
+        final redText = tester.widget<Text>(find.text('青龍館'));
+        expect(redText.style?.color, equals(const Color(0xFFD97706)));
+        expect(redText.style?.fontWeight, equals(AppFontWeight.black));
+
+        final whiteText = tester.widget<Text>(find.text('白虎館'));
+        expect(whiteText.style?.color, equals(AppKendoColors.pureBlack));
+
+        expect(find.text('自道場'), findsNothing);
         expect(find.text('1'), findsOneWidget); // red wins: 1
         expect(find.text('(3)'), findsOneWidget); // red points: 3
         expect(find.text('0'), findsOneWidget); // white wins: 0

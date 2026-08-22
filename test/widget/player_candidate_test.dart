@@ -373,19 +373,43 @@ void main() {
         expect(find.text('木村 初心者'), findsOneWidget);
         expect(find.text('田中 ゲスト'), findsOneWidget);
 
-        // 五十音順（よみがな順）のソート並び順をアサーション検証
-        final listTiles = tester.widgetList<ListTile>(find.byType(ListTile));
-        final names = listTiles.map((tile) {
+        // 学年昇順（デフォルト）の並び順をアサーション検証
+        var listTiles = tester.widgetList<ListTile>(find.byType(ListTile));
+        var names = listTiles.map((tile) {
           final titleWidget = tile.title as Text;
           return titleWidget.data;
         }).toList();
         expect(names, [
           '田中 ゲスト', // ゲスト（出稽古）が最優先
-          '木村 初心者', // きむら（五十音順）
-          '佐藤 次郎', // さとう
-          '鈴木 三郎', // すずき
-          '山田 太郎', // やまだ
+          '木村 初心者', // grade 2
+          '山田 太郎', // grade 3
+          '佐藤 次郎', // grade 5
+          '鈴木 三郎', // grade 8
         ]);
+
+        // 学年降順へ切り替えテスト
+        final sortToggle = find.text('学年 昇順');
+        expect(sortToggle, findsOneWidget);
+        await tester.tap(sortToggle);
+        await tester.pumpAndSettle();
+
+        expect(find.text('学年 降順'), findsOneWidget);
+        listTiles = tester.widgetList<ListTile>(find.byType(ListTile));
+        names = listTiles.map((tile) {
+          final titleWidget = tile.title as Text;
+          return titleWidget.data;
+        }).toList();
+        expect(names, [
+          '田中 ゲスト',
+          '鈴木 三郎', // grade 8
+          '佐藤 次郎', // grade 5
+          '山田 太郎', // grade 3
+          '木村 初心者', // grade 2
+        ]);
+
+        // 昇順に戻す
+        await tester.tap(find.text('学年 降順'));
+        await tester.pumpAndSettle();
 
         // 5. Tap '低学年' filter chip
         final lowGradeChip = find.widgetWithText(ChoiceChip, '低学年');

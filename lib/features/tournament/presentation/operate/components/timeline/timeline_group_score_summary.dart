@@ -59,44 +59,14 @@ class TimelineGroupScoreSummary extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Row(
-            children: [
-              if (isOwnRed)
-                Container(
-                  margin: const EdgeInsets.only(right: AppSpacing.xs),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : context.appColors.separatorColor,
-                    borderRadius: AppRadius.tiny,
-                  ),
-                  child: Text(
-                    '自道場',
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.primaryAccent,
-                    ),
-                  ),
-                ),
-              Expanded(
-                child: Text(
-                  rTeam,
-                  style: TextStyle(
-                    fontSize: AppFontSize.body,
-                    fontWeight: isOwnRed
-                        ? AppFontWeight.bold
-                        : AppFontWeight.semiBold,
-                    color: titleColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          child: Text(
+            rTeam,
+            style: TextStyle(
+              fontSize: AppFontSize.body,
+              fontWeight: isOwnRed ? AppFontWeight.black : AppFontWeight.bold,
+              color: isOwnRed ? const Color(0xFFD97706) : titleColor,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         Container(
@@ -165,46 +135,15 @@ class TimelineGroupScoreSummary extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Text(
-                  wTeam,
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    fontSize: AppFontSize.body,
-                    fontWeight: isOwnWhite
-                        ? AppFontWeight.bold
-                        : AppFontWeight.semiBold,
-                    color: titleColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isOwnWhite)
-                Container(
-                  margin: const EdgeInsets.only(left: AppSpacing.xs),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF2C2C2E)
-                        : context.appColors.separatorColor,
-                    borderRadius: AppRadius.tiny,
-                  ),
-                  child: Text(
-                    '自道場',
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.primaryAccent,
-                    ),
-                  ),
-                ),
-            ],
+          child: Text(
+            wTeam,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              fontSize: AppFontSize.body,
+              fontWeight: isOwnWhite ? AppFontWeight.black : AppFontWeight.bold,
+              color: isOwnWhite ? const Color(0xFFD97706) : titleColor,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

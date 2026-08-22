@@ -47,6 +47,7 @@ class _MultiPlayerSelectInputState
 
     String searchText = '';
     String selectedFilter = 'すべて';
+    bool isAscending = true;
     // モーダル内でのみ操作する一時的な選択リスト
     List<String> tempSelected = List.from(widget.initialSelected);
 
@@ -98,8 +99,16 @@ class _MultiPlayerSelectInputState
               }
             }
 
-            // よみがな順でソート
-            filteredMaster.sort((a, b) => a.nameKana.compareTo(b.nameKana));
+            // 学年順（同一年齢内はよみがな順）でソート（昇順 / 降順）
+            filteredMaster.sort((a, b) {
+              final gradeCompare = isAscending
+                  ? a.grade.compareTo(b.grade)
+                  : b.grade.compareTo(a.grade);
+              if (gradeCompare != 0) return gradeCompare;
+              return isAscending
+                  ? a.nameKana.compareTo(b.nameKana)
+                  : b.nameKana.compareTo(a.nameKana);
+            });
 
             final filteredGuest =
                 (selectedFilter == 'すべて' || selectedFilter == 'ゲスト')
@@ -134,9 +143,7 @@ class _MultiPlayerSelectInputState
                           child: Text(
                             'キャンセル',
                             style: TextStyle(
-                              color: isDark
-                                  ? context.appColors.subTextColor
-                                  : context.appColors.subTextColor,
+                              color: context.appColors.subTextColor,
                             ),
                           ),
                         ),
@@ -166,14 +173,76 @@ class _MultiPlayerSelectInputState
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '選手を選択',
+                          style: TextStyle(
+                            fontWeight: AppFontWeight.bold,
+                            fontSize: AppFontSize.body,
+                            color: context.appColors.textColor,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            setStateSheet(() {
+                              isAscending = !isAscending;
+                            });
+                          },
+                          borderRadius: AppRadius.full,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : context.appColors.inputBackground,
+                              borderRadius: AppRadius.full,
+                              border: Border.all(
+                                color: context.appColors.separatorColor,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isAscending
+                                      ? Icons.arrow_upward
+                                      : Icons.arrow_downward,
+                                  size: 14,
+                                  color: _accentColor,
+                                ),
+                                const SizedBox(width: AppSpacing.xxs),
+                                Text(
+                                  isAscending ? '学年 昇順' : '学年 降順',
+                                  style: TextStyle(
+                                    fontSize: AppFontSize.badge,
+                                    fontWeight: AppFontWeight.bold,
+                                    color: context.appColors.textColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
                   // 検索窓
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,
                     ),
                     child: AppTextField(
-                      autofocus: true,
+                      autofocus: false, // 名簿から選択しやすくするため自動でキーボードを開かない
                       decoration: InputDecoration(
                         hintText: '名前で検索、または出稽古を追加',
                         prefixIcon: const Icon(Icons.search),

@@ -57,6 +57,7 @@ class _BunaiksenSinglePlayerSelectSheetState
     extends State<BunaiksenSinglePlayerSelectSheet> {
   String _searchText = '';
   String _selectedFilter = 'すべて';
+  bool _isAscending = true;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +89,17 @@ class _BunaiksenSinglePlayerSelectSheetState
       return matchSearch && matchFilter;
     }).toList();
 
+    // 学年順（同一年齢内はよみがな順）でソート（昇順 / 降順）
+    filtered.sort((a, b) {
+      final gradeCompare = _isAscending
+          ? a.grade.compareTo(b.grade)
+          : b.grade.compareTo(a.grade);
+      if (gradeCompare != 0) return gradeCompare;
+      return _isAscending
+          ? a.nameKana.compareTo(b.nameKana)
+          : b.nameKana.compareTo(a.nameKana);
+    });
+
     return AppBottomSheetContent(
       title: '${widget.sideName} の選手を選択',
       child: Padding(
@@ -100,12 +112,57 @@ class _BunaiksenSinglePlayerSelectSheetState
               children: [
                 Icon(Icons.person_search, color: widget.accentColor, size: 24),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  '${widget.sideName}の選手を選択',
-                  style: TextStyle(
-                    fontSize: AppFontSize.headline,
-                    fontWeight: AppFontWeight.bold,
-                    color: context.appColors.textColor,
+                Expanded(
+                  child: Text(
+                    '${widget.sideName}の選手を選択',
+                    style: TextStyle(
+                      fontSize: AppFontSize.headline,
+                      fontWeight: AppFontWeight.bold,
+                      color: context.appColors.textColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() => _isAscending = !_isAscending);
+                  },
+                  borderRadius: AppRadius.full,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : context.appColors.inputBackground,
+                      borderRadius: AppRadius.full,
+                      border: Border.all(
+                        color: context.appColors.separatorColor,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 14,
+                          color: widget.accentColor,
+                        ),
+                        const SizedBox(width: AppSpacing.xxs),
+                        Text(
+                          _isAscending ? '学年 昇順' : '学年 降順',
+                          style: TextStyle(
+                            fontSize: AppFontSize.badge,
+                            fontWeight: AppFontWeight.bold,
+                            color: context.appColors.textColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -162,6 +219,9 @@ class _BunaiksenSinglePlayerSelectSheetState
                           label: Text(filterName),
                           selected: isSel,
                           customSelectedColor: widget.accentColor,
+                          customTextColor: isSel
+                              ? AppKendoColors.pureWhite
+                              : null,
                           onSelected: (selected) {
                             if (selected) {
                               setState(() => _selectedFilter = filterName);
