@@ -22,11 +22,11 @@ class CreateTournamentPage1 extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color inputBgColor = isDark
         ? const Color(0xFF1C1C1E)
-        : context.appColors.textColor;
+        : context.appColors.inputBackground;
     final Color textColor = context.appColors.textColor;
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
-        : const Color(0x8A000000);
+        : context.appColors.hintColor;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),

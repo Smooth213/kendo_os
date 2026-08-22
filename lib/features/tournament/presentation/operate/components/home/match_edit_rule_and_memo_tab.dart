@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_rule_summary_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -166,75 +167,15 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
         ],
 
         // 🛡️ 適用中ルールの全内訳表示カード
-        Container(
-          margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF232326) : const Color(0xFF2196F3),
-            borderRadius: AppRadius.large,
-            border: Border.all(
-              color: isDark ? const Color(0xFF2196F3) : const Color(0xFF2196F3),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.verified,
-                    size: 18,
-                    color: AppKendoColors.blue,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '🛡️ 適用されるルールの全内訳 (リアルタイム同期)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      fontWeight: AppFontWeight.bold,
-                      color: isDark
-                          ? const Color(0xFF2196F3)
-                          : AppKendoColors.pureWhite,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  _buildSummaryChip(
-                    icon: Icons.timer,
-                    label:
-                        '試合時間: ${matchTime == matchTime.toInt() ? matchTime.toInt() : matchTime}分${currentRule.isRunningTime ? " (ランニング)" : ""}',
-                    isActive: true,
-                  ),
-                  _buildSummaryChip(
-                    icon: Icons.sports_mma,
-                    label: isIpponShobu ? '勝負: 一本勝負 ⚡' : '勝負: 三本勝負 ⚔️',
-                    isActive: true,
-                  ),
-                  _buildSummaryChip(
-                    icon: Icons.gavel,
-                    label: hasHantei ? '判定: ON ⭕' : '判定: 強制OFF ❌',
-                    isActive: hasHantei,
-                  ),
-                  _buildSummaryChip(
-                    icon: Icons.more_time,
-                    label:
-                        (currentRule.enchoTimeMinutes > 0 ||
-                            currentRule.isEnchoUnlimited)
-                        ? '延長: ${currentRule.isEnchoUnlimited ? "無制限" : "${currentRule.enchoTimeMinutes}分"}'
-                        : '延長: 強制OFF ❌',
-                    isActive:
-                        (currentRule.enchoTimeMinutes > 0 ||
-                        currentRule.isEnchoUnlimited),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        MatchRuleSummaryCard(
+          matchType: match.matchType,
+          currentRule: currentRule,
+          matchTime: matchTime,
+          isIpponShobu: isIpponShobu,
+          hasHantei: hasHantei,
+          primaryAccent: primaryAccent,
+          isDark: isDark,
+          textColor: textColor,
         ),
 
         // 一括ルールスイッチコントロール
@@ -334,19 +275,6 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSummaryChip({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-  }) {
-    return AppChoiceChip(
-      icon: icon,
-      label: Text(label),
-      selected: isActive,
-      onSelected: null,
     );
   }
 }

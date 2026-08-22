@@ -45,23 +45,13 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
                 fontSize: AppFontSize.subhead,
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: themeColors.primaryAccent.withValues(alpha: 0.15),
-                borderRadius: AppRadius.round,
-              ),
-              child: Text(
-                '${rule.matchTimeMinutes.toInt()}分 / ${rule.isIpponShobu ? "1本" : "3本"}勝負',
-                style: TextStyle(
-                  fontSize: AppFontSize.badge,
-                  fontWeight: AppFontWeight.bold,
-                  color: themeColors.primaryAccent,
-                ),
+            const SizedBox(width: AppSpacing.xs),
+            Flexible(
+              child: Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: 2,
+                alignment: WrapAlignment.end,
+                children: _buildRuleBadges(rule),
               ),
             ),
           ],
@@ -296,5 +286,61 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// ルール情報を個別のピルバッジのリストとして構築する
+  List<Widget> _buildRuleBadges(MatchRule rule) {
+    final badges = <Widget>[];
+
+    // メインバッジ: 試合時間 / 勝負形式
+    final shobu = rule.isIpponShobu ? '1本' : '3本';
+    badges.add(_buildBadge('${_formatTime(rule.matchTimeMinutes)} / $shobu'));
+
+    // 延長戦バッジ
+    if (rule.isEnchoUnlimited) {
+      badges.add(_buildBadge('延長∞'));
+    } else if (rule.enchoTimeMinutes > 0) {
+      badges.add(_buildBadge('延長'));
+    }
+
+    // 判定バッジ
+    if (rule.hasHantei) {
+      badges.add(_buildBadge('判定'));
+    }
+
+    return badges;
+  }
+
+  /// 丸付きピルバッジを生成する
+  Widget _buildBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: themeColors.primaryAccent.withValues(alpha: 0.15),
+        borderRadius: AppRadius.round,
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: AppFontSize.badge,
+          fontWeight: AppFontWeight.bold,
+          color: themeColors.primaryAccent,
+        ),
+      ),
+    );
+  }
+
+  /// 分数を「○分」または「○分○○秒」形式に変換する
+  String _formatTime(double minutes) {
+    final totalSeconds = (minutes * 60).round();
+    final mins = totalSeconds ~/ 60;
+    final secs = totalSeconds % 60;
+    if (secs == 0) {
+      return '$mins分';
+    }
+    return '$mins分${secs.toString().padLeft(2, '0')}秒';
   }
 }

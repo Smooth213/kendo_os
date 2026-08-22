@@ -54,10 +54,13 @@ void main() {
       );
 
       // Verify summary text
-      expect(find.text('🛡️ 適用されるルールの全内訳 (リアルタイム同期)'), findsOneWidget);
-      expect(find.text('試合時間: 3分'), findsOneWidget);
-      expect(find.text('勝負: 三本勝負 ⚔️'), findsOneWidget);
-      expect(find.text('判定: ON ⭕'), findsOneWidget);
+      expect(find.text('適用中のルール'), findsOneWidget);
+      expect(find.text('試合時間'), findsNWidgets(2)); // サマリーカードとドロップダウン設定
+      expect(find.text('3分（都度ストップ）'), findsOneWidget);
+      expect(find.text('勝負方式'), findsOneWidget);
+      expect(find.text('三本勝負（二本先取）'), findsOneWidget);
+      expect(find.text('判定'), findsOneWidget);
+      expect(find.text('あり'), findsOneWidget);
 
       // Toggle switch
       final ipponSwitch = find.widgetWithText(SwitchListTile, '一本勝負にする');
