@@ -168,7 +168,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Select Staff Only ChoiceChip
-      await tester.tap(find.text('🔒 スタッフ限定'));
+      await tester.tap(find.text('スタッフ限定'));
       await tester.pumpAndSettle();
 
       // Tap Send and Save

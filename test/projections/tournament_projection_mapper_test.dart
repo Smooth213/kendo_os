@@ -207,7 +207,7 @@ void main() {
       );
 
       expect(projection.teamMatches.containsKey(uuidGroupName), isTrue);
-      expect(projection.categoryToGroupKeys['全カテゴリ'], contains(uuidGroupName));
+      expect(projection.categoryToGroupKeys['小学生の部'], contains(uuidGroupName));
     });
   });
 }

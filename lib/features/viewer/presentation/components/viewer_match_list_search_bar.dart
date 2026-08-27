@@ -75,7 +75,7 @@ class ViewerMatchListSearchBar extends StatelessWidget {
                           fontWeight: AppFontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: AppSpacing.xs),
                       GestureDetector(
                         onTap: onCloseSearch,
                         child: Icon(

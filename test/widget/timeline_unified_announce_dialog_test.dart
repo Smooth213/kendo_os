@@ -49,8 +49,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('公式アナウンス・コメントの一斉発信'), findsOneWidget);
-    expect(find.text('📢 全員に通知'), findsOneWidget);
-    expect(find.text('🔒 スタッフ限定'), findsOneWidget);
+    expect(find.text('全員に通知'), findsOneWidget);
+    expect(find.text('スタッフ限定'), findsOneWidget);
+    expect(find.text('通知なし'), findsOneWidget);
     expect(find.text('一斉発信して保存'), findsOneWidget);
   });
 }

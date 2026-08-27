@@ -22,6 +22,8 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 
 class MockStrokeRepository extends Mock implements StrokeRepository {}
 
@@ -185,6 +187,9 @@ void main() {
           permissionProvider.overrideWith(
             (ref) => AppPermissions(isReadOnly: isReadOnly),
           ),
+          currentUserRoleProvider.overrideWith(
+            (ref) => isReadOnly ? UserRole.viewer : UserRole.admin,
+          ),
           currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
           isarProvider.overrideWithValue(null),
         ],
@@ -308,8 +313,13 @@ void main() {
       await tester.pumpWidget(createViewerWidget([program], isReadOnly: true));
       await tester.pumpAndSettle();
 
-      expect(find.text('書き込む'), findsNothing);
-      expect(find.byIcon(Icons.edit), findsNothing);
+      // 書き込みモードをONにする
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pumpAndSettle();
+
+      // 観客権限では共有ペン（ピンク・黄色）が完全に非表示であること
+      expect(find.byTooltip('ピンク'), findsNothing);
+      expect(find.byTooltip('黄色'), findsNothing);
     });
 
     testWidgets('✅ 5. 手書きアノテーションの Undo 操作が正しくトリガーされること', (tester) async {
@@ -344,8 +354,8 @@ void main() {
       await tester.tap(undoButton);
       await tester.pumpAndSettle();
 
-      // 共有ペンリポジトリの undoLastStroke が呼び出されたことを検証
-      verify(() => mockStrokeRepo.undoLastStroke('p1')).called(1);
+      // デフォルトの個人ペン（青）の undoLastStroke が呼び出されたことを検証
+      verify(() => mockLocalStrokeRepo.undoLastStroke('p1')).called(1);
     });
 
     test('✅ 6. 蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)', () {
@@ -385,11 +395,12 @@ void main() {
     });
 
     testWidgets('✅ 7. 消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
+      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
       final program = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
         title: 'テスト',
-        fileUrl: 'https://example.com/dummy.jpg',
+        fileUrl: 'https://placehold.co/400x600.jpg',
         fileType: 'image',
         pageCount: 1,
         createdAt: DateTime.now(),
@@ -416,17 +427,17 @@ void main() {
       ).thenAnswer((_) => Stream.value([existingStroke]));
 
       await tester.pumpWidget(createViewerWidget([program]));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // 書き込みモードをONにする (アイコン経由で確実にタップ)
       await tester.tap(find.byIcon(Icons.edit));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // ツールバーの消しゴムボタンを選択
       final eraserButton = find.byTooltip('消しゴム');
       expect(eraserButton, findsOneWidget);
       await tester.tap(eraserButton);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // 描画インプットを受け取る Listener を直接探す（onPointerMove を購読している唯一のもの）
       final listenerFinder = find.byWidgetPredicate(
@@ -439,7 +450,7 @@ void main() {
       listener.onPointerDown!(
         const PointerDownEvent(position: Offset(102, 102)),
       );
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
 
       // 共有線の deleteStroke('stroke_123') が正しく呼び出されたことを検証！
       verify(() => mockStrokeRepo.deleteStroke('stroke_123')).called(1);

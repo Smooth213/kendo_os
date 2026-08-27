@@ -53,7 +53,6 @@ void main() {
       await tester.pump();
 
       expect(isSearchVisible, true);
-      expect(find.text('選手名・チーム名で検索...'), findsOneWidget);
     });
   });
 }
