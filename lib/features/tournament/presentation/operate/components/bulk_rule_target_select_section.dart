@@ -105,18 +105,29 @@ class BulkRuleTargetSelectSection extends StatelessWidget {
           constraints: const BoxConstraints(maxHeight: 180),
           decoration: BoxDecoration(
             borderRadius: AppRadius.medium,
-            border: Border.all(color: context.appColors.separatorColor),
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF334155)
+                  : context.appColors.separatorColor,
+            ),
           ),
           child: Material(
             color: isDark
-                ? const Color(0xFFFFFFFF)
+                ? const Color(0xFF1E293B)
                 : context.appColors.cardBackground,
             borderRadius: AppRadius.medium,
             child: filteredUnits.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(AppSpacing.lg),
-                      child: Text('条件に一致する試合がありません'),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Text(
+                        '条件に一致する試合がありません',
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B),
+                        ),
+                      ),
                     ),
                   )
                 : Scrollbar(
@@ -138,6 +149,7 @@ class BulkRuleTargetSelectSection extends StatelessWidget {
                             unit.displayName,
                             style: TextStyle(
                               fontSize: AppFontSize.bodySmall,
+                              fontWeight: AppFontWeight.medium,
                               color: textColor,
                             ),
                           ),
@@ -190,9 +202,10 @@ class BulkRuleTargetSelectSection extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: AppFontSize.body,
             fontWeight: AppFontWeight.bold,
+            color: textColor,
           ),
         ),
         Container(

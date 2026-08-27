@@ -233,6 +233,10 @@ void main() {
         await tester.tap(find.byIcon(Icons.close));
         await tester.pumpAndSettle();
 
+        // 選手別成績アコーディオンを展開
+        await tester.tap(find.textContaining('選手別成績'));
+        await tester.pumpAndSettle();
+
         // 選手バッジ（山田）をタップして個人カルテボトムシートを展開
         final yamadaBadge = find.textContaining('山田:');
         expect(yamadaBadge, findsOneWidget);

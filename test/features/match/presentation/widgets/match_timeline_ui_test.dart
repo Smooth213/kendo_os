@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_control_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 // ★ 適合修正: テスト環境から Isar 依存を完全パージするためのプロバイダインポート
@@ -781,6 +782,113 @@ void main() {
             reason: 'メモは1段目のRowコントロール内部に配置されてはいけない',
           );
         }
+      },
+    );
+
+    testWidgets(
+      '15. 【検索入力視認性保証テスト】試合リストで検索アイコンを押下した際、入力欄が正しく展開され、テキスト入力可能な状態になること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final List<MatchModel> mockMatches = [
+          makeMockMatch(id: 'm1', redName: '選手A', whiteName: '選手B'),
+        ];
+
+        bool isSearchVisible = false;
+        String searchQuery = '';
+
+        await tester.pumpWidget(
+          StatefulBuilder(
+            builder: (context, setState) {
+              return MaterialApp(
+                home: Scaffold(
+                  body: MatchTimelineControlBar(
+                    isDark: false,
+                    isReadOnlyUI: false,
+                    isSearchVisible: isSearchVisible,
+                    searchQuery: searchQuery,
+                    isSortAscending: true,
+                    allMatches: mockMatches,
+                    onSearchVisibilityChanged: (val) {
+                      setState(() {
+                        isSearchVisible = val;
+                      });
+                    },
+                    onSearchQueryChanged: (val) {
+                      setState(() {
+                        searchQuery = val;
+                      });
+                    },
+                    onToggleSort: () {},
+                    onBulkRuleEdit: () {},
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 試合リスト内の検索ボタン（Icons.search）をタップ
+        final searchButton = find.byIcon(Icons.search);
+        expect(searchButton, findsOneWidget);
+        await tester.tap(searchButton);
+        await tester.pumpAndSettle();
+
+        // 検索中フラグがONになり、search_offアイコンに切り替わること
+        expect(isSearchVisible, true);
+        expect(find.byIcon(Icons.search_off), findsOneWidget);
+
+        // 検索クエリが存在する場合、検索バッジ（チップ）が表示されること
+        searchQuery = '選手A';
+        await tester.pumpWidget(
+          StatefulBuilder(
+            builder: (context, setState) {
+              return MaterialApp(
+                home: Scaffold(
+                  body: MatchTimelineControlBar(
+                    isDark: false,
+                    isReadOnlyUI: false,
+                    isSearchVisible: isSearchVisible,
+                    searchQuery: searchQuery,
+                    isSortAscending: true,
+                    allMatches: mockMatches,
+                    onSearchVisibilityChanged: (val) {
+                      setState(() {
+                        isSearchVisible = val;
+                      });
+                    },
+                    onSearchQueryChanged: (val) {
+                      setState(() {
+                        searchQuery = val;
+                      });
+                    },
+                    onToggleSort: () {},
+                    onBulkRuleEdit: () {},
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('「選手A」'), findsOneWidget);
+
+        // 検索チップの閉じるアイコンをタップしてクリアできること
+        final closeChipIcon = find.byIcon(Icons.close);
+        expect(closeChipIcon, findsOneWidget);
+        await tester.tap(closeChipIcon);
+        await tester.pumpAndSettle();
+
+        expect(searchQuery, '');
+        expect(isSearchVisible, false);
       },
     );
   });

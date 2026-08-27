@@ -203,12 +203,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
               return Column(
                 children: [
-                  OfficialRecordExpeditionSummaryCard(
-                    matches: categoryMatches,
-                    isDark: isDark,
-                    registeredTeamNames: categoryRegisteredTeamNames,
-                    registeredPlayerNames: categoryRegisteredPlayerNames,
-                  ),
+                  if (!permissions.isReadOnly)
+                    OfficialRecordExpeditionSummaryCard(
+                      matches: categoryMatches,
+                      isDark: isDark,
+                      registeredTeamNames: categoryRegisteredTeamNames,
+                      registeredPlayerNames: categoryRegisteredPlayerNames,
+                    ),
                   OfficialRecordExportBar(
                     isExporting: isExporting,
                     isDark: isDark,

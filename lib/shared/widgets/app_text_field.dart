@@ -29,6 +29,7 @@ class AppTextField extends StatelessWidget {
   final TextAlign textAlign;
   final TextStyle? style;
   final InputDecoration? decoration;
+  final EdgeInsets scrollPadding;
 
   const AppTextField({
     super.key,
@@ -56,6 +57,7 @@ class AppTextField extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.style,
     this.decoration,
+    this.scrollPadding = const EdgeInsets.all(AppSpacing.xxl),
   });
 
   @override
@@ -147,6 +149,7 @@ class AppTextField extends StatelessWidget {
       minLines: minLines,
       inputFormatters: inputFormatters as List<TextInputFormatter>?,
       textAlign: textAlign,
+      scrollPadding: scrollPadding,
       style: style != null ? defaultStyle.merge(style) : defaultStyle,
       decoration: decoration != null
           ? defaultDecoration.copyWith(

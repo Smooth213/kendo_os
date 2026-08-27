@@ -10,6 +10,7 @@ class MatchRuleSummaryCard extends StatelessWidget {
   const MatchRuleSummaryCard({
     super.key,
     required this.matchType,
+    this.isTeamOverride,
     required this.currentRule,
     required this.matchTime,
     required this.isIpponShobu,
@@ -20,6 +21,7 @@ class MatchRuleSummaryCard extends StatelessWidget {
   });
 
   final String matchType;
+  final bool? isTeamOverride;
   final MatchRule currentRule;
   final double matchTime;
   final bool isIpponShobu;
@@ -32,7 +34,8 @@ class MatchRuleSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // category_rule_detail_bottom_sheet と同じ判定ロジック
     final bool isTeam =
-        matchType == '団体戦' || matchType == '勝ち抜き戦' || matchType == 'リーグ団体戦';
+        isTeamOverride ??
+        (matchType == '団体戦' || matchType == '勝ち抜き戦' || matchType == 'リーグ団体戦');
     final bool isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
     final bool isKachinuki = matchType == '勝ち抜き戦';
     final bool isRenseikaiMode =

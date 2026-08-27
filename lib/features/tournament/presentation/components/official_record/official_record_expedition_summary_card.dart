@@ -33,6 +33,7 @@ class OfficialRecordExpeditionSummaryCard extends StatefulWidget {
 class _OfficialRecordExpeditionSummaryCardState
     extends State<OfficialRecordExpeditionSummaryCard> {
   String _selectedSummaryTeam = '全体';
+  bool _isPlayerStatsExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -253,86 +254,175 @@ class _OfficialRecordExpeditionSummaryCardState
             ],
           ),
           if (playerStatsMap.isNotEmpty) ...[
-            const Divider(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  '👤 選手別成績（タップでカルテ表示）',
-                  style: TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.bodySmall,
-                    color: AppKendoColors.grey,
-                  ),
+            const Divider(height: 20),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _isPlayerStatsExpanded = !_isPlayerStatsExpanded;
+                });
+              },
+              borderRadius: AppRadius.medium,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.xxs,
+                  horizontal: AppSpacing.xxs,
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: playerStatsMap.entries.map((entry) {
-                final pName = entry.key;
-                final st = entry.value;
-                return InkWell(
-                  onTap: () {
-                    ExpeditionDetailBottomSheet.showPlayerDetail(
-                      context: context,
-                      isDark: isDark,
-                      playerName: pName,
-                      stats: st,
-                    );
-                  },
-                  borderRadius: AppRadius.medium,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 16,
                       color: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : const Color(0xFFF2F2F7),
-                      borderRadius: AppRadius.medium,
-                      border: Border.all(
+                          ? const Color(0xFFCCCCCC)
+                          : AppKendoColors.grey,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      '選手別成績 (${playerStatsMap.length}名)',
+                      style: TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        fontSize: AppFontSize.bodySmall,
                         color: isDark
-                            ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
-                            : const Color(0xFF000000).withValues(alpha: 0.08),
+                            ? const Color(0xFFCCCCCC)
+                            : AppKendoColors.grey,
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
-                          style: TextStyle(
-                            fontSize: AppFontSize.small,
-                            fontWeight: AppFontWeight.bold,
-                            color: context.appColors.textColor,
-                          ),
-                        ),
-                        if (st.totalPoints > 0) ...[
-                          const SizedBox(width: AppSpacing.xxs),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF38383A)
+                            : themeColors.softAccent,
+                        borderRadius: AppRadius.round,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           Text(
-                            '(${st.totalPoints}本)',
-                            style: const TextStyle(
+                            _isPlayerStatsExpanded ? '閉じる' : '表示する',
+                            style: TextStyle(
                               fontSize: AppFontSize.caption,
                               fontWeight: AppFontWeight.bold,
-                              color: AppKendoColors.indigo,
+                              color: isDark
+                                  ? const Color(0xFFFFFFFF)
+                                  : context.appColors.primaryAccent,
                             ),
                           ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            _isPlayerStatsExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            size: 16,
+                            color: isDark
+                                ? const Color(0xFFFFFFFF)
+                                : context.appColors.primaryAccent,
+                          ),
                         ],
-                        const SizedBox(width: 2),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 14,
-                          color: AppKendoColors.grey.withValues(alpha: 0.7),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  ],
+                ),
+              ),
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '※タップで個人カルテを表示',
+                      style: TextStyle(
+                        fontSize: AppFontSize.caption,
+                        color: AppKendoColors.grey.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: playerStatsMap.entries.map((entry) {
+                        final pName = entry.key;
+                        final st = entry.value;
+                        return InkWell(
+                          onTap: () {
+                            ExpeditionDetailBottomSheet.showPlayerDetail(
+                              context: context,
+                              isDark: isDark,
+                              playerName: pName,
+                              stats: st,
+                            );
+                          },
+                          borderRadius: AppRadius.medium,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFF2F2F7),
+                              borderRadius: AppRadius.medium,
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(
+                                        0xFFFFFFFF,
+                                      ).withValues(alpha: 0.15)
+                                    : const Color(
+                                        0xFF000000,
+                                      ).withValues(alpha: 0.08),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$pName: ${st.win}勝${st.loss}敗${st.draw > 0 ? "${st.draw}分" : ""}',
+                                  style: TextStyle(
+                                    fontSize: AppFontSize.small,
+                                    fontWeight: AppFontWeight.bold,
+                                    color: context.appColors.textColor,
+                                  ),
+                                ),
+                                if (st.totalPoints > 0) ...[
+                                  const SizedBox(width: AppSpacing.xxs),
+                                  Text(
+                                    '(${st.totalPoints}本)',
+                                    style: const TextStyle(
+                                      fontSize: AppFontSize.caption,
+                                      fontWeight: AppFontWeight.bold,
+                                      color: AppKendoColors.indigo,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(width: 2),
+                                Icon(
+                                  Icons.chevron_right,
+                                  size: 14,
+                                  color: AppKendoColors.grey.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              crossFadeState: _isPlayerStatsExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
             ),
           ],
         ],

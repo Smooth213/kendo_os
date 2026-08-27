@@ -435,13 +435,16 @@ class _BunaiksenTeamTabState extends State<BunaiksenTeamTab> {
                           redName: _redTeam[i] ?? '未定',
                           whiteName: _whiteTeam[i] ?? '未定',
                           matchTimeMinutes: rule.matchTimeMinutes,
-                          hasExtension:
-                              rule.enchoTimeMinutes > 0 ||
-                              rule.isEnchoUnlimited,
-                          extensionTimeMinutes: rule.enchoTimeMinutes,
+                          hasExtension: false,
+                          extensionTimeMinutes: 0.0,
                           status: 'waiting',
                           order: baseOrder + i,
-                          rule: rule,
+                          rule: rule.copyWith(
+                            isEnchoUnlimited: false,
+                            enchoTimeMinutes: 0.0,
+                            enchoCount: 0,
+                            hasHantei: false,
+                          ),
                           note: '部内・団体戦',
                         ),
                       );

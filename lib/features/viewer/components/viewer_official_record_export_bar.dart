@@ -120,7 +120,7 @@ class ViewerOfficialRecordExportBar extends ConsumerWidget {
                 style: TextStyle(fontWeight: AppFontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: context.appColors.textColor,
+                backgroundColor: context.appColors.errorColor,
                 foregroundColor: AppKendoColors.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 elevation: 0,

@@ -12,12 +12,14 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
   final MatchRule rule;
   final bool isDark;
   final AppThemeColors themeColors;
+  final bool isTeam;
 
   const BunaiksenRuleSettingsCard({
     super.key,
     required this.rule,
     required this.isDark,
     required this.themeColors,
+    this.isTeam = false,
   });
 
   @override
@@ -201,85 +203,87 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '延長戦',
-                      style: TextStyle(fontWeight: AppFontWeight.bold),
-                    ),
-                    DropdownButton<String>(
-                      value: rule.isEnchoUnlimited
-                          ? 'unlimited'
-                          : (rule.enchoTimeMinutes > 0 ? 'limited' : 'none'),
-                      items: const [
-                        DropdownMenuItem(value: 'none', child: Text('なし')),
-                        DropdownMenuItem(
-                          value: 'limited',
-                          child: Text('区切りあり'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'unlimited',
-                          child: Text('無制限'),
-                        ),
-                      ],
-                      onChanged: (v) {
-                        if (v == 'none') {
-                          ref
-                              .read(bunaiksenRuleProvider.notifier)
-                              .update(
-                                (state) => state.copyWith(
-                                  isEnchoUnlimited: false,
-                                  enchoTimeMinutes: 0.0,
-                                  enchoCount: 0,
-                                ),
-                              );
-                        } else if (v == 'limited') {
-                          ref
-                              .read(bunaiksenRuleProvider.notifier)
-                              .update(
-                                (state) => state.copyWith(
-                                  isEnchoUnlimited: false,
-                                  enchoTimeMinutes: state.matchTimeMinutes,
-                                  enchoCount: 1,
-                                ),
-                              );
-                        } else if (v == 'unlimited') {
-                          ref
-                              .read(bunaiksenRuleProvider.notifier)
-                              .update(
-                                (state) => state.copyWith(
-                                  isEnchoUnlimited: true,
-                                  enchoTimeMinutes: 0.0,
-                                  enchoCount: 0,
-                                ),
-                              );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '判定',
-                      style: TextStyle(fontWeight: AppFontWeight.bold),
-                    ),
-                    Switch(
-                      value: rule.hasHantei,
-                      activeTrackColor: themeColors.primaryAccent.withValues(
-                        alpha: 0.5,
+                if (!isTeam) ...[
+                  const Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '延長戦',
+                        style: TextStyle(fontWeight: AppFontWeight.bold),
                       ),
-                      activeThumbColor: themeColors.primaryAccent,
-                      onChanged: (v) => ref
-                          .read(bunaiksenRuleProvider.notifier)
-                          .update((state) => state.copyWith(hasHantei: v)),
-                    ),
-                  ],
-                ),
+                      DropdownButton<String>(
+                        value: rule.isEnchoUnlimited
+                            ? 'unlimited'
+                            : (rule.enchoTimeMinutes > 0 ? 'limited' : 'none'),
+                        items: const [
+                          DropdownMenuItem(value: 'none', child: Text('なし')),
+                          DropdownMenuItem(
+                            value: 'limited',
+                            child: Text('区切りあり'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'unlimited',
+                            child: Text('無制限'),
+                          ),
+                        ],
+                        onChanged: (v) {
+                          if (v == 'none') {
+                            ref
+                                .read(bunaiksenRuleProvider.notifier)
+                                .update(
+                                  (state) => state.copyWith(
+                                    isEnchoUnlimited: false,
+                                    enchoTimeMinutes: 0.0,
+                                    enchoCount: 0,
+                                  ),
+                                );
+                          } else if (v == 'limited') {
+                            ref
+                                .read(bunaiksenRuleProvider.notifier)
+                                .update(
+                                  (state) => state.copyWith(
+                                    isEnchoUnlimited: false,
+                                    enchoTimeMinutes: state.matchTimeMinutes,
+                                    enchoCount: 1,
+                                  ),
+                                );
+                          } else if (v == 'unlimited') {
+                            ref
+                                .read(bunaiksenRuleProvider.notifier)
+                                .update(
+                                  (state) => state.copyWith(
+                                    isEnchoUnlimited: true,
+                                    enchoTimeMinutes: 0.0,
+                                    enchoCount: 0,
+                                  ),
+                                );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '判定',
+                        style: TextStyle(fontWeight: AppFontWeight.bold),
+                      ),
+                      Switch(
+                        value: rule.hasHantei,
+                        activeTrackColor: themeColors.primaryAccent.withValues(
+                          alpha: 0.5,
+                        ),
+                        activeThumbColor: themeColors.primaryAccent,
+                        onChanged: (v) => ref
+                            .read(bunaiksenRuleProvider.notifier)
+                            .update((state) => state.copyWith(hasHantei: v)),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -296,16 +300,18 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
     final shobu = rule.isIpponShobu ? '1本' : '3本';
     badges.add(_buildBadge('${_formatTime(rule.matchTimeMinutes)} / $shobu'));
 
-    // 延長戦バッジ
-    if (rule.isEnchoUnlimited) {
-      badges.add(_buildBadge('延長∞'));
-    } else if (rule.enchoTimeMinutes > 0) {
-      badges.add(_buildBadge('延長'));
-    }
+    if (!isTeam) {
+      // 延長戦バッジ
+      if (rule.isEnchoUnlimited) {
+        badges.add(_buildBadge('延長∞'));
+      } else if (rule.enchoTimeMinutes > 0) {
+        badges.add(_buildBadge('延長'));
+      }
 
-    // 判定バッジ
-    if (rule.hasHantei) {
-      badges.add(_buildBadge('判定'));
+      // 判定バッジ
+      if (rule.hasHantei) {
+        badges.add(_buildBadge('判定'));
+      }
     }
 
     return badges;

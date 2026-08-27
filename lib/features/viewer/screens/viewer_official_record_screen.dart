@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
 
     const String screenTitle = '大会 公式記録';
 
-    final bgColor = isDark ? const Color(0xFFFFFFFF) : const Color(0xFFF2F2F7);
+    final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF2F2F7);
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -30,11 +31,6 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     final headerTextColor = isDark
         ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
-
-    // ★ 運営側プロバイダ（tournamentProvider）への依存を完全に遮断し、安全なフォールバック値を適用
-    final String? tName = null;
-    final String? tDate = null;
-    final String? tVenue = null;
 
     final asyncProj = ref.watch(
       viewerTournamentProjectionProvider(tournamentId),
@@ -101,6 +97,15 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
         }
 
         final categories = proj.categoryToGroupKeys.keys.toList();
+        final String? tName = proj.tournament.name.isNotEmpty
+            ? proj.tournament.name
+            : null;
+        final String tDate = DateFormat(
+          'yyyy年MM月dd日',
+        ).format(proj.tournament.date);
+        final String? tVenue = proj.tournament.venue.isNotEmpty
+            ? proj.tournament.venue
+            : null;
 
         return DefaultTabController(
           length: categories.length,

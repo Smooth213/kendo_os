@@ -272,7 +272,7 @@ class _ProgramManagementScreenState
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
-          title: 'プログラム管理',
+          title: isViewerMode ? '大会プログラム' : 'プログラム管理',
           actions: [
             IconButton(
               icon: Icon(
@@ -307,12 +307,14 @@ class _ProgramManagementScreenState
                       programs: programs,
                       getSafeUrl: _getSafeUrl,
                       onDelete: _confirmDelete,
+                      isViewerMode: isViewerMode,
                     )
                   : ProgramManagementContentViews.buildListView(
                       context: context,
                       programs: programs,
                       getSafeUrl: _getSafeUrl,
                       onDelete: _confirmDelete,
+                      isViewerMode: isViewerMode,
                     );
             },
           );

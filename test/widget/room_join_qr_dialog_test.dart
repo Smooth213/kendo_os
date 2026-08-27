@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('🔒 現場安全弁 - 道場ルームID重複チェック＆警告ダイアログ検証テスト', () {
@@ -14,11 +15,18 @@ void main() {
     });
 
     /// テスト用のダイアログ表示環境をラッピング生成するヘルパー
-    Widget createTestTarget(ProviderContainer container) {
+    Widget createTestTarget(
+      ProviderContainer container, {
+      bool isDark = false,
+    }) {
       return UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
-          theme: ThemeData(splashFactory: NoSplash.splashFactory),
+          theme: ThemeData(
+            brightness: isDark ? Brightness.dark : Brightness.light,
+            splashFactory: NoSplash.splashFactory,
+            extensions: [AppThemeColors.ofMode(isDark: isDark, mode: 'normal')],
+          ),
           home: Scaffold(
             body: Builder(
               builder: (context) => ElevatedButton(
@@ -160,5 +168,118 @@ void main() {
         container.dispose();
       },
     );
+
+    testWidgets('【ダークモード視認性保証テスト】ダークモード時、説明文・注意書き・キャンセルボタンが黒潰れせず視認可能であること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+      );
+
+      // ダークモードでテストターゲットをマウント
+      await tester.pumpWidget(createTestTarget(container, isDark: true));
+
+      // ダイアログを開く
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // 1. 説明文テキストの視認性検証
+      final instructionFinder = find.textContaining('会場のQRコードをスキャンするか');
+      expect(instructionFinder, findsOneWidget);
+      final instructionText = tester.widget<Text>(instructionFinder);
+      expect(instructionText.style?.color, isNotNull);
+      // 黒系（0x8A000000や完全な黒）ではなく高コントラスト色であること
+      expect(
+        instructionText.style?.color,
+        isNot(equals(const Color(0x8A000000))),
+      );
+      expect(instructionText.style?.color, isNot(equals(Colors.black)));
+      expect(
+        instructionText.style?.color,
+        isNot(equals(const Color(0xFF000000))),
+      );
+
+      // 2. 注意書きテキストの視認性検証
+      final helperFinder = find.textContaining('※ 使用可能な文字');
+      expect(helperFinder, findsOneWidget);
+      final helperText = tester.widget<Text>(helperFinder);
+      expect(helperText.style?.color, isNotNull);
+      expect(helperText.style?.color, isNot(equals(const Color(0x8A000000))));
+      expect(helperText.style?.color, isNot(equals(Colors.black)));
+
+      // 3. キャンセルボタンの視認性検証 (OutlinedButton)
+      final cancelButtonFinder = find.widgetWithText(OutlinedButton, 'キャンセル');
+      expect(cancelButtonFinder, findsOneWidget);
+
+      // 4. 接続開始ボタンの存在検証
+      expect(find.widgetWithText(ElevatedButton, '接続開始'), findsOneWidget);
+
+      container.dispose();
+    });
+
+    testWidgets('【ライトモード視認性保証テスト】ライトモード時、説明文・注意書き・ボタンが適切に視認可能であること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+      );
+
+      // ライトモードでテストターゲットをマウント
+      await tester.pumpWidget(createTestTarget(container, isDark: false));
+
+      // ダイアログを開く
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // 1. タイトル、説明文、注意書きの描画検証
+      expect(find.text('道場ルームへの参加'), findsOneWidget);
+      expect(find.textContaining('会場のQRコードをスキャンするか'), findsOneWidget);
+      expect(find.textContaining('※ 使用可能な文字'), findsOneWidget);
+
+      // 2. ボタンの描画検証
+      expect(find.widgetWithText(OutlinedButton, 'キャンセル'), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, '接続開始'), findsOneWidget);
+
+      container.dispose();
+    });
+
+    testWidgets('【重複警告ダイアログ視認性保証テスト】ダークモード時、重複警告ポップアップ内の警告メッセージが黒潰れしないこと', (
+      WidgetTester tester,
+    ) async {
+      // 事前データ登録
+      await fakeFirestore.collection('organizations').doc('existing_room').set({
+        'createdAt': DateTime.now().toIso8601String(),
+        'createdBy': 'owner',
+      });
+
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+      );
+
+      await tester.pumpWidget(createTestTarget(container, isDark: true));
+
+      // ダイアログを開く
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // 既存の部屋名を入力
+      await tester.enterText(find.byType(TextField), 'existing_room');
+      await tester.pumpAndSettle();
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('接続開始'));
+        await Future.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+
+      // 警告ダイアログ内のメッセージ色検証
+      final warningMsgFinder = find.textContaining('はすでに存在しています。');
+      expect(warningMsgFinder, findsOneWidget);
+      final warningText = tester.widget<Text>(warningMsgFinder);
+      expect(warningText.style?.color, isNot(equals(const Color(0x8A000000))));
+      expect(warningText.style?.color, isNot(equals(Colors.black)));
+
+      container.dispose();
+    });
   });
 }

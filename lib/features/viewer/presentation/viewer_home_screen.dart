@@ -22,6 +22,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_search_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 
@@ -85,75 +86,90 @@ class ViewerHomeScreen extends ConsumerWidget {
       final matchedGroupNames = timelineResult.matchedGroupNames;
       final matchedMatchIds = timelineResult.matchedMatchIds;
       final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+      final isSearchVisible = ref.watch(isSearchVisibleProvider);
+      final searchQuery = ref.watch(searchQueryProvider);
 
       return PopScope(
         canPop: false,
         child: LiquidBackground(
           child: Scaffold(
             backgroundColor: AppKendoColors.transparent,
-            appBar: AppHeader(
-              leading: GoRouter.of(context).canPop()
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.exit_to_app,
-                        color: AppKendoColors.deepOrange,
+            appBar: isSearchVisible
+                ? AppSearchHeader(
+                    searchQuery: searchQuery,
+                    enableLiquidGlass: enableLiquidGlass,
+                    onSearchQueryChanged: (val) =>
+                        ref.read(searchQueryProvider.notifier).state = val,
+                    onClose: () {
+                      ref.read(searchQueryProvider.notifier).state = '';
+                      ref.read(isSearchVisibleProvider.notifier).state = false;
+                    },
+                  )
+                : AppHeader(
+                    leading: GoRouter.of(context).canPop()
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.exit_to_app,
+                              color: AppKendoColors.deepOrange,
+                            ),
+                            tooltip: '管理画面に戻る',
+                            onPressed: () => context.pop(),
+                          )
+                        : null,
+                    title: '大会ホーム (観客席)',
+                    backgroundColor: enableLiquidGlass
+                        ? AppKendoColors.transparent
+                        : (context.appColors.cardBackground),
+                    actions: [
+                      NotificationBellButton(
+                        tournamentId: tournamentId,
+                        isStaffRoom: false,
+                        color: isDark
+                            ? const Color(0xFFFFFFFF)
+                            : themeColors.primaryAccent,
                       ),
-                      tooltip: '管理画面に戻る',
-                      onPressed: () => context.pop(),
-                    )
-                  : null,
-              title: '大会ホーム (観客席)',
-              backgroundColor: enableLiquidGlass
-                  ? AppKendoColors.transparent
-                  : (context.appColors.cardBackground),
-              actions: [
-                NotificationBellButton(
-                  tournamentId: tournamentId,
-                  isStaffRoom: false,
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : themeColors.primaryAccent,
-                ),
-                ManualHelpButton(
-                  manualPath: 'docs/manuals/faq/viewer_faq.md',
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : themeColors.primaryAccent,
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.settings,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : themeColors.primaryAccent,
+                      ManualHelpButton(
+                        manualPath: 'docs/manuals/faq/viewer_faq.md',
+                        color: isDark
+                            ? const Color(0xFFFFFFFF)
+                            : themeColors.primaryAccent,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.settings,
+                          color: isDark
+                              ? const Color(0xFFFFFFFF)
+                              : themeColors.primaryAccent,
+                        ),
+                        tooltip: '表示設定',
+                        onPressed: () {
+                          showAppBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (context) =>
+                                const ViewerSettingsBottomSheet(),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.qr_code_2,
+                          color: isDark
+                              ? const Color(0xFFFFFFFF)
+                              : themeColors.primaryAccent,
+                        ),
+                        tooltip: '大会を共有する',
+                        onPressed: () => ViewerShareDialog.show(
+                          context,
+                          tournamentId: tournamentId,
+                          dojoId: ref.read(currentDojoIdProvider),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                    ],
                   ),
-                  tooltip: '表示設定',
-                  onPressed: () {
-                    showAppBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) => const ViewerSettingsBottomSheet(),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.qr_code_2,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : themeColors.primaryAccent,
-                  ),
-                  tooltip: '大会を共有する',
-                  onPressed: () => ViewerShareDialog.show(
-                    context,
-                    tournamentId: tournamentId,
-                    dojoId: ref.read(currentDojoIdProvider),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-              ],
-            ),
-            body: Column(
+            body: ListView(
+              padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
               children: [
                 ViewerCallBanner(
                   inProgressMatches: uniqueInProgress,
@@ -164,200 +180,186 @@ class ViewerHomeScreen extends ConsumerWidget {
                   enableLiquidGlass: enableLiquidGlass,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(
-                      bottom: AppSpacing.giant * 2,
-                    ),
-                    children: [
-                      ref
-                          .watch(viewerTournamentProvider(tournamentId))
-                          .when(
-                            data: (tournament) {
-                              if (tournament != null) {
-                                return ViewerTournamentInfoCard(
-                                  tournament: tournament,
-                                );
-                              }
-                              final dojoId = ref.watch(currentDojoIdProvider);
-                              return Padding(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                child: Container(
-                                  padding: const EdgeInsets.all(AppSpacing.lg),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF161618)
-                                        : context.appColors.inputBackground,
-                                    borderRadius: AppRadius.medium,
-                                    border: Border.all(
-                                      color: isDark
-                                          ? const Color(0xFF38383A)
-                                          : const Color(0x33000000),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        '大会情報が見つかりません',
-                                        style: TextStyle(
-                                          fontWeight: AppFontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: AppSpacing.sm),
-                                      Text('大会ID: $tournamentId'),
-                                      const SizedBox(height: AppSpacing.xs),
-                                      Text('現在の dojoId: $dojoId'),
-                                      const SizedBox(height: AppSpacing.sm),
-                                      const Text(
-                                        '原因候補: 道場IDが一致しない、または大会が他パスに存在します。管理者に確認してください。',
-                                        style: TextStyle(
-                                          color: AppKendoColors.grey,
-                                          fontSize: AppFontSize.small,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                            loading: () => const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(AppSpacing.lg),
-                                child: CircularProgressIndicator(),
+                ref
+                    .watch(viewerTournamentProvider(tournamentId))
+                    .when(
+                      data: (tournament) {
+                        if (tournament != null) {
+                          return ViewerTournamentInfoCard(
+                            tournament: tournament,
+                          );
+                        }
+                        final dojoId = ref.watch(currentDojoIdProvider);
+                        return Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF161618)
+                                  : context.appColors.inputBackground,
+                              borderRadius: AppRadius.medium,
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF38383A)
+                                    : const Color(0x33000000),
                               ),
                             ),
-                            error: (e, s) => Padding(
-                              padding: const EdgeInsets.all(AppSpacing.lg),
-                              child: Container(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF161618)
-                                      : const Color(0xFFFFFFFF),
-                                  borderRadius: AppRadius.medium,
-                                  border: Border.all(
-                                    color: isDark
-                                        ? const Color(0xFF38383A)
-                                        : const Color(0x33000000),
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      '大会情報の読み込みに失敗しました',
-                                      style: TextStyle(
-                                        fontWeight: AppFontWeight.bold,
-                                        color: AppKendoColors.red,
-                                      ),
-                                    ),
-                                    const SizedBox(height: AppSpacing.sm),
-                                    Text('$e'),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                      ViewerMatchListSearchBar(
-                        isSearchVisible: ref.watch(isSearchVisibleProvider),
-                        searchQuery: ref.watch(searchQueryProvider),
-                        isSortAscending: ref.watch(categorySortProvider),
-                        onSearchQueryChanged: (val) {
-                          ref.read(searchQueryProvider.notifier).state = val;
-                        },
-                        onOpenSearch: () {
-                          ref.read(isSearchVisibleProvider.notifier).state =
-                              true;
-                        },
-                        onCloseSearch: () {
-                          ref.read(searchQueryProvider.notifier).state = '';
-                          ref.read(isSearchVisibleProvider.notifier).state =
-                              false;
-                        },
-                        onToggleSort: () {
-                          ref.read(categorySortProvider.notifier).state = !ref
-                              .read(categorySortProvider);
-                        },
-                      ),
-                      if (timelineResult.hasError)
-                        Padding(
-                          padding: const EdgeInsets.all(AppSpacing.xxl),
-                          child: Center(
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  color: AppKendoColors.red,
-                                  size: 48,
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-                                Text(
-                                  'データの取得に失敗しました',
+                                const Text(
+                                  '大会情報が見つかりません',
                                   style: TextStyle(
-                                    color: isDark
-                                        ? const Color(0xFFE53935)
-                                        : AppKendoColors.red,
                                     fontWeight: AppFontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: AppSpacing.sm),
-                                Text(
-                                  timelineResult.errorMessage ??
-                                      '通信状況を確認してください',
-                                  style: const TextStyle(
+                                Text('大会ID: $tournamentId'),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text('現在の dojoId: $dojoId'),
+                                const SizedBox(height: AppSpacing.sm),
+                                const Text(
+                                  '原因候補: 道場IDが一致しない、または大会が他パスに存在します。管理者に確認してください。',
+                                  style: TextStyle(
                                     color: AppKendoColors.grey,
                                     fontSize: AppFontSize.small,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
                           ),
+                        );
+                      },
+                      loading: () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(AppSpacing.lg),
+                          child: CircularProgressIndicator(),
                         ),
-                      if (timelineResult.entries.isEmpty &&
-                          sanitizedQuery.isNotEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(AppSpacing.xxl),
-                          child: Center(
-                            child: Text(
-                              '該当する試合が見つかりません',
-                              style: TextStyle(color: AppKendoColors.grey),
-                            ),
-                          ),
-                        ),
-                      if (timelineResult.entries.isEmpty &&
-                          timelineResult.isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(AppSpacing.xxl),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                      if (timelineResult.entries.isEmpty &&
-                          !timelineResult.isLoading &&
-                          sanitizedQuery.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(AppSpacing.xxl),
-                          child: Center(
-                            child: Text(
-                              'まだ試合が登録されていません',
-                              style: TextStyle(
-                                color: AppKendoColors.grey,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ViewerCategorySectionList(
-                        entries: timelineResult.entries,
-                        ownTeams: ownTeams,
-                        sanitizedQuery: sanitizedQuery,
-                        matchedMatchIds: matchedMatchIds,
-                        matchedGroupNames: matchedGroupNames,
-                        isDark: isDark,
                       ),
-                    ],
+                      error: (e, s) => Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF161618)
+                                : const Color(0xFFFFFFFF),
+                            borderRadius: AppRadius.medium,
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF38383A)
+                                  : const Color(0x33000000),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '大会情報の読み込みに失敗しました',
+                                style: TextStyle(
+                                  fontWeight: AppFontWeight.bold,
+                                  color: AppKendoColors.red,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              Text('$e'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ViewerMatchListSearchBar(
+                  isSearchVisible: ref.watch(isSearchVisibleProvider),
+                  searchQuery: ref.watch(searchQueryProvider),
+                  isSortAscending: ref.watch(categorySortProvider),
+                  onSearchQueryChanged: (val) {
+                    ref.read(searchQueryProvider.notifier).state = val;
+                  },
+                  onOpenSearch: () {
+                    ref.read(isSearchVisibleProvider.notifier).state = true;
+                  },
+                  onCloseSearch: () {
+                    ref.read(searchQueryProvider.notifier).state = '';
+                    ref.read(isSearchVisibleProvider.notifier).state = false;
+                  },
+                  onToggleSort: () {
+                    ref.read(categorySortProvider.notifier).state = !ref.read(
+                      categorySortProvider,
+                    );
+                  },
+                ),
+                if (timelineResult.hasError)
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xxl),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppKendoColors.red,
+                            size: 48,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          Text(
+                            'データの取得に失敗しました',
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFFE53935)
+                                  : AppKendoColors.red,
+                              fontWeight: AppFontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            timelineResult.errorMessage ?? '通信状況を確認してください',
+                            style: const TextStyle(
+                              color: AppKendoColors.grey,
+                              fontSize: AppFontSize.small,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                if (timelineResult.entries.isEmpty && sanitizedQuery.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.xxl),
+                    child: Center(
+                      child: Text(
+                        '該当する試合が見つかりません',
+                        style: TextStyle(color: AppKendoColors.grey),
+                      ),
+                    ),
+                  ),
+                if (timelineResult.entries.isEmpty && timelineResult.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.xxl),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                if (timelineResult.entries.isEmpty &&
+                    !timelineResult.isLoading &&
+                    sanitizedQuery.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(AppSpacing.xxl),
+                    child: Center(
+                      child: Text(
+                        'まだ試合が登録されていません',
+                        style: TextStyle(
+                          color: AppKendoColors.grey,
+                          fontWeight: AppFontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ViewerCategorySectionList(
+                  entries: timelineResult.entries,
+                  ownTeams: ownTeams,
+                  sanitizedQuery: sanitizedQuery,
+                  matchedMatchIds: matchedMatchIds,
+                  matchedGroupNames: matchedGroupNames,
+                  isDark: isDark,
                 ),
               ],
             ),

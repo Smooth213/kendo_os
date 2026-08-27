@@ -17,6 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_search_header.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/home/home_screen_call_banner.dart';
@@ -123,6 +124,9 @@ class HomeScreen extends ConsumerWidget {
       }
     }
 
+    final isSearchVisible = ref.watch(isSearchVisibleProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
+
     return PopScope(
       canPop: !isReadOnly,
       child: LiquidBackground(
@@ -182,73 +186,86 @@ class HomeScreen extends ConsumerWidget {
             Expanded(
               child: Scaffold(
                 backgroundColor: AppKendoColors.transparent,
-                appBar: AppHeader(
-                  title: '大会ホーム',
-                  backgroundColor: enableLiquidGlass
-                      ? AppKendoColors.transparent
-                      : themeColors.cardBackground,
-                  actions: [
-                    NotificationBellButton(
-                      tournamentId: tournamentId,
-                      isStaffRoom: true,
-                    ),
-                    if (!isReadOnly)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.sm,
-                          horizontal: AppSpacing.sm,
-                        ),
-                        child: ElevatedButton.icon(
-                          onPressed: () => context.go('/'),
-                          icon: Icon(
-                            Icons.home,
-                            color: isDark
-                                ? const Color(0xFFFFFFFF)
-                                : themeColors.primaryAccent,
-                            size: 18,
+                appBar: isSearchVisible
+                    ? AppSearchHeader(
+                        searchQuery: searchQuery,
+                        enableLiquidGlass: enableLiquidGlass,
+                        onSearchQueryChanged: (val) =>
+                            ref.read(searchQueryProvider.notifier).state = val,
+                        onClose: () {
+                          ref.read(searchQueryProvider.notifier).state = '';
+                          ref.read(isSearchVisibleProvider.notifier).state =
+                              false;
+                        },
+                      )
+                    : AppHeader(
+                        title: '大会ホーム',
+                        backgroundColor: enableLiquidGlass
+                            ? AppKendoColors.transparent
+                            : themeColors.cardBackground,
+                        actions: [
+                          NotificationBellButton(
+                            tournamentId: tournamentId,
+                            isStaffRoom: true,
                           ),
-                          label: Text(
-                            'トップへ',
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(
+                          if (!isReadOnly)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.sm,
+                                horizontal: AppSpacing.sm,
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () => context.go('/'),
+                                icon: Icon(
+                                  Icons.home,
                                   color: isDark
                                       ? const Color(0xFFFFFFFF)
                                       : themeColors.primaryAccent,
-                                  fontWeight: AppFontWeight.bold,
+                                  size: 18,
                                 ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? context.appColors.textColor.withValues(
-                                    alpha: 0.1,
-                                  )
-                                : themeColors.softAccent,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
+                                label: Text(
+                                  'トップへ',
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: isDark
+                                            ? const Color(0xFFFFFFFF)
+                                            : themeColors.primaryAccent,
+                                        fontWeight: AppFontWeight.bold,
+                                      ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isDark
+                                      ? context.appColors.textColor.withValues(
+                                          alpha: 0.1,
+                                        )
+                                      : themeColors.softAccent,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: AppRadius.medium,
+                                  ),
+                                ),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.medium,
+                          IconButton(
+                            icon: Icon(
+                              Icons.qr_code_2,
+                              color: isDark
+                                  ? const Color(0xFFFFFFFF)
+                                  : themeColors.primaryAccent,
                             ),
+                            tooltip: '大会を共有する',
+                            onPressed: () =>
+                                _showShareDialog(context, ref, tournamentId),
                           ),
-                        ),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
                       ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.qr_code_2,
-                        color: isDark
-                            ? const Color(0xFFFFFFFF)
-                            : themeColors.primaryAccent,
-                      ),
-                      tooltip: '大会を共有する',
-                      onPressed: () =>
-                          _showShareDialog(context, ref, tournamentId),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                  ],
-                ),
-                body: Column(
-                  children: [
+                body: MatchTimelineList(
+                  tournamentId: tournamentId,
+                  headerWidgets: [
                     if (!isReadOnly && allMatchesList.isEmpty)
                       asyncTournament.maybeWhen(
                         data: (tournament) {
@@ -286,9 +303,6 @@ class HomeScreen extends ConsumerWidget {
                           tournamentId: tournamentId,
                         ),
                       ),
-                    Expanded(
-                      child: MatchTimelineList(tournamentId: tournamentId),
-                    ),
                   ],
                 ),
               ),

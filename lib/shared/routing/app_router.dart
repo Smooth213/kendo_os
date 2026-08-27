@@ -38,6 +38,8 @@ import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/routing/match_router.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -103,18 +105,16 @@ class RoleInjector extends ConsumerWidget {
     }
 
     if (roleStr == 'viewer') {
-      final currentSession = ref.read(authSessionProvider);
-      if (currentSession == null || currentSession.role == UserRole.viewer) {
-        Future.microtask(() {
-          ref
-              .read(authSessionProvider.notifier)
-              .establishSession(
-                UserRole.viewer,
-                dojoId ?? ref.read(currentDojoIdProvider),
-              );
-          debugPrint('🔐 [Role Injector] 一般観客席セッションロック');
-        });
-      }
+      return ProviderScope(
+        overrides: [
+          currentUserRoleProvider.overrideWithValue(UserRole.viewer),
+          activeRoleProvider.overrideWithValue(Role.viewer),
+          permissionProvider.overrideWithValue(
+            const PermissionState(role: UserRole.viewer, isReadOnly: true),
+          ),
+        ],
+        child: child,
+      );
     }
 
     return child;
@@ -183,16 +183,27 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/tournament/:id/programs',
-      builder: (context, state) =>
-          ProgramManagementScreen(tournamentId: state.pathParameters['id']!),
+      builder: (context, state) => RoleInjector(
+        roleStr: state.uri.queryParameters['role'],
+        dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.pathParameters['id']!,
+        child: ProgramManagementScreen(
+          tournamentId: state.pathParameters['id']!,
+        ),
+      ),
     ),
     GoRoute(
       path: '/program-viewer',
       builder: (context, state) {
         final args = state.extra as Map<String, dynamic>;
-        return ProgramViewerScreen(
-          programs: args['programs'] as List<ProgramModel>,
-          initialIndex: args['index'] as int,
+        return RoleInjector(
+          roleStr: state.uri.queryParameters['role'],
+          dojoId: state.uri.queryParameters['dojoId'],
+          tournamentId: state.uri.queryParameters['tournamentId'],
+          child: ProgramViewerScreen(
+            programs: args['programs'] as List<ProgramModel>,
+            initialIndex: args['index'] as int,
+          ),
         );
       },
     ),

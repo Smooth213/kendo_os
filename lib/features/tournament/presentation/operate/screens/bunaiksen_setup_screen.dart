@@ -36,6 +36,9 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
@@ -109,6 +112,7 @@ class _BunaiksenSetupScreenState extends ConsumerState<BunaiksenSetupScreen>
               rule: rule,
               isDark: isDark,
               themeColors: _themeColors,
+              isTeam: _tabController.index == 1,
             ),
             Expanded(
               child: TabBarView(

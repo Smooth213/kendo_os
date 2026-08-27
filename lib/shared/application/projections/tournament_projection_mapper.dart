@@ -19,7 +19,22 @@ class TournamentProjectionMapper {
       return MatchProjectionMapper.toListProjection(m, analysis);
     }).toList();
 
-    return _buildTournamentProjection(tournament, projections);
+    final Map<String, String> groupToCategory = {};
+    for (var m in matches) {
+      if (m.groupName == null || m.groupName!.isEmpty) continue;
+      final cat = (m.category != null && m.category!.isNotEmpty)
+          ? m.category!
+          : (tournament.categories.isNotEmpty
+                ? tournament.categories.first
+                : '一般');
+      groupToCategory.putIfAbsent(m.groupName!, () => cat);
+    }
+
+    return _buildTournamentProjection(
+      tournament,
+      projections,
+      groupToCategory: groupToCategory,
+    );
   }
 
   // ★ Phase 5: MatchProjection(詳細) ではなく MatchListProjection(軽量) を受け取るように修正
@@ -33,16 +48,21 @@ class TournamentProjectionMapper {
   /// 内部の共通組み立てロジック
   static TournamentProjection _buildTournamentProjection(
     TournamentModel tournament,
-    List<MatchListProjection> projections,
-  ) {
+    List<MatchListProjection> projections, {
+    Map<String, String>? groupToCategory,
+  }) {
     final Map<String, TeamMatchProjection> teamMatches = {};
     final Map<String, Set<String>> categoryToGroupKeys = {};
 
     for (var p in projections) {
       if (p.groupName.isEmpty) continue;
 
-      final cat = '全カテゴリ';
-      categoryToGroupKeys.putIfAbsent(cat, () => {}).add(p.groupName);
+      final cat =
+          groupToCategory?[p.groupName] ??
+          (tournament.categories.isNotEmpty
+              ? tournament.categories.first
+              : '一般');
+      categoryToGroupKeys.putIfAbsent(cat, () => <String>{}).add(p.groupName);
 
       if (!teamMatches.containsKey(p.groupName)) {
         final groupProjections = projections
@@ -111,13 +131,26 @@ class TournamentProjectionMapper {
       }
     }
 
+    // 順序の整合性を確保（大会設定のcategories順を優先）
+    final Map<String, List<String>> orderedCategoryToGroupKeys = {};
+    for (var cat in tournament.categories) {
+      if (categoryToGroupKeys.containsKey(cat)) {
+        orderedCategoryToGroupKeys[cat] = categoryToGroupKeys[cat]!.toList();
+      }
+    }
+    for (var entry in categoryToGroupKeys.entries) {
+      if (!orderedCategoryToGroupKeys.containsKey(entry.key)) {
+        orderedCategoryToGroupKeys[entry.key] = entry.value.toList();
+      }
+    }
+
     return TournamentProjection(
       tournament: tournament,
       allMatches: projections,
       teamMatches: teamMatches,
-      categoryToGroupKeys: categoryToGroupKeys.map(
-        (k, v) => MapEntry(k, v.toList()),
-      ),
+      categoryToGroupKeys: orderedCategoryToGroupKeys.isNotEmpty
+          ? orderedCategoryToGroupKeys
+          : categoryToGroupKeys.map((k, v) => MapEntry(k, v.toList())),
     );
   }
 }

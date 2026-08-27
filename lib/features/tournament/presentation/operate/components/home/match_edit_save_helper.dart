@@ -70,11 +70,11 @@ class MatchEditSaveHelper {
         isRenseikai: isRenseikaiBool,
         matchTimeMinutes: matchTime,
         isIpponShobu: isIpponShobu,
-        hasHantei: isRenseikaiOrMoushiawase ? false : hasHantei,
-        enchoTimeMinutes: isRenseikaiOrMoushiawase
+        hasHantei: (isRenseikaiOrMoushiawase || isDantai) ? false : hasHantei,
+        enchoTimeMinutes: (isRenseikaiOrMoushiawase || isDantai)
             ? 0.0
             : baseRule.enchoTimeMinutes,
-        isEnchoUnlimited: isRenseikaiOrMoushiawase
+        isEnchoUnlimited: (isRenseikaiOrMoushiawase || isDantai)
             ? false
             : baseRule.isEnchoUnlimited,
         hasRepresentativeMatch: isRenseikaiOrMoushiawase

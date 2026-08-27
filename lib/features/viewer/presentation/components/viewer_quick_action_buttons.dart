@@ -58,7 +58,7 @@ class ViewerQuickActionButtons extends StatelessWidget {
             Icons.print,
             '試合結果一覧 (PDF/CSV)',
             AppKendoColors.blueGrey,
-            () => context.push('/official-record/$tournamentId'),
+            () => context.push('/viewer-record/$tournamentId'),
           ),
           const SizedBox(height: AppSpacing.md),
           SizedBox(

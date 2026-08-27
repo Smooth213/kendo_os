@@ -5,6 +5,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/shared/routing/app_router.dart';
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
@@ -490,5 +491,102 @@ void main() {
         isNotEmpty,
       ); // Signature must be generated and healed!
     });
+
+    testWidgets(
+      '7. 本部ホーム画面の「観客・保護者側の画面を確認 (Viewer)」ボタンから観客用ホーム画面へ遷移し、完全に観客用ビュアーと一致した状態（閲覧専用）で表示されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        final router = GoRouter(
+          initialLocation: '/home/YwP7EKfZN0OAF7q1FvYo',
+          routes: [
+            GoRoute(
+              path: '/home/:tournamentId',
+              builder: (context, state) => RoleInjector(
+                roleStr: state.uri.queryParameters['role'],
+                dojoId: state.uri.queryParameters['dojoId'],
+                tournamentId: state.pathParameters['tournamentId']!,
+                child: HomeScreen(
+                  tournamentId: state.pathParameters['tournamentId']!,
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/viewer-home/:tournamentId',
+              builder: (context, state) => RoleInjector(
+                roleStr: state.uri.queryParameters['role'],
+                dojoId: state.uri.queryParameters['dojoId'],
+                tournamentId: state.pathParameters['tournamentId']!,
+                child: ViewerHomeScreen(
+                  tournamentId: state.pathParameters['tournamentId']!,
+                ),
+              ),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              tournamentRepositoryProvider.overrideWithValue(
+                mockTournamentRepo,
+              ),
+              playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+              syncEngineProvider.overrideWithValue(mockSyncEngine),
+              localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+              commentStreamProvider.overrideWith(
+                (ref, arg) => Stream.value([]),
+              ),
+              dojoRoomSyncProvider.overrideWithValue(null),
+              permissionProvider.overrideWith(
+                (ref) => const AppPermissions(
+                  isReadOnly: false,
+                  canManageTournament: true,
+                  canCreateMatch: true,
+                  canChangeSettings: true,
+                  canDeleteData: true,
+                ),
+              ),
+              currentDojoIdProvider.overrideWith((ref) => 'dojo_123'),
+              currentTournamentIdProvider.overrideWith(
+                (ref) => 'YwP7EKfZN0OAF7q1FvYo',
+              ),
+              matchListByTournamentProvider.overrideWith(
+                (ref, id) => Stream.value(mockMatches),
+              ),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 本部画面に「観客・保護者側の画面を確認 (Viewer)」ボタンが存在することを確認
+        final viewerButton = find.text('観客・保護者側の画面を確認 (Viewer)');
+        expect(viewerButton, findsOneWidget);
+
+        // ボタンをタップして観客席画面へ遷移
+        await tester.tap(viewerButton);
+        await tester.pumpAndSettle();
+
+        // 観客席画面に遷移し、観客用UI（閲覧専用）が完全に一致して描画されること
+        expect(find.text('大会ホーム (観客席)'), findsOneWidget);
+        expect(find.text('試合結果一覧 (PDF/CSV)'), findsOneWidget);
+        expect(find.text('大会プログラムを見る（閲覧専用）'), findsOneWidget);
+
+        // 本部用ボタン（試合開始・部門別ルール設定など）は一切表示されないこと
+        expect(find.text('試合開始（新しく作成）'), findsNothing);
+        expect(find.text('部門別ルール設定'), findsNothing);
+      },
+    );
   });
 }

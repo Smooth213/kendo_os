@@ -68,16 +68,22 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
     required String title,
     required List<Widget> children,
   }) {
+    final textColor = context.appColors.textColor;
+    final cardBgColor = isDark
+        ? const Color(0xFF1E293B)
+        : context.appColors.cardBackground;
+    final borderColor = isDark
+        ? const Color(0xFF334155)
+        : context.appColors.separatorColor;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: AppRadius.large,
-        border: Border.all(color: context.appColors.separatorColor),
+        border: Border.all(color: borderColor),
       ),
       child: Material(
-        color: isDark
-            ? context.appColors.textColor.withAlpha(128)
-            : context.appColors.cardBackground,
+        color: cardBgColor,
         borderRadius: AppRadius.large,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -86,9 +92,10 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: AppFontWeight.bold,
                   fontSize: AppFontSize.bodySmall,
+                  color: textColor,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -114,14 +121,18 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: AppFontSize.body)),
+        Text(
+          label,
+          style: TextStyle(fontSize: AppFontSize.body, color: textColor),
+        ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF2C2C2E)
-                : context.appColors.cardBackground,
+            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
             borderRadius: AppRadius.medium,
+            border: Border.all(
+              color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+            ),
           ),
           child: DropdownButton<T>(
             value: value,

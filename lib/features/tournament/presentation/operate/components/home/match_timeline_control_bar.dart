@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 🥋 試合タイムライン用 検索・ルール一括変更・ソートコントロールバー（純粋UIコンポーネント）
 class MatchTimelineControlBar extends StatelessWidget {
@@ -41,146 +40,101 @@ class MatchTimelineControlBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (!isSearchVisible)
-            Text(
-              '試合リスト',
-              style: TextStyle(
-                fontSize: AppFontSize.subhead,
-                fontWeight: AppFontWeight.bold,
-                color: isDark
-                    ? const Color(0xFFFFFFFF)
-                    : const Color(0xDE000000),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '試合リスト',
+                style: TextStyle(
+                  fontSize: AppFontSize.subhead,
+                  fontWeight: AppFontWeight.bold,
+                  color: isDark
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xDE000000),
+                ),
               ),
-            ),
-
-          if (isSearchVisible)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: SizedBox(
-                  height: 32,
-                  child: AppTextField(
-                    autofocus: true,
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      color: context.appColors.textColor,
+              if (searchQuery.isNotEmpty) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.appColors.primaryAccent.withValues(
+                      alpha: 0.15,
                     ),
-                    decoration: InputDecoration(
-                      hintText: '選手名・チーム名で検索...',
-                      hintStyle: TextStyle(
-                        fontSize: AppFontSize.small,
-                        color: context.appColors.subTextColor,
+                    borderRadius: AppRadius.small,
+                    border: Border.all(
+                      color: context.appColors.primaryAccent.withValues(
+                        alpha: 0.5,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 0,
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : context.appColors.inputBackground,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.small,
-                        borderSide: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF38383A)
-                              : const Color(0x33000000),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.small,
-                        borderSide: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF38383A)
-                              : const Color(0x33000000),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.small,
-                        borderSide: BorderSide(
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '「$searchQuery」',
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
                           color: context.appColors.primaryAccent,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.close, size: 16),
-                        onPressed: () {
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
                           onSearchQueryChanged('');
                           onSearchVisibilityChanged(false);
                         },
-                      ),
-                    ),
-                    onChanged: onSearchQueryChanged,
-                  ),
-                ),
-              ),
-            ),
-
-          if (!isSearchVisible)
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.search,
-                        color: context.appColors.primaryAccent,
-                        size: 22,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => onSearchVisibilityChanged(true),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
-                      OutlinedButton.icon(
-                        onPressed: onBulkRuleEdit,
-                        icon: Icon(
-                          Icons.gavel,
-                          size: 16,
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
                           color: context.appColors.primaryAccent,
                         ),
-                        label: Text(
-                          'ルール一括変更',
-                          style: TextStyle(
-                            fontWeight: AppFontWeight.bold,
-                            fontSize: AppFontSize.small,
-                            color: context.appColors.primaryAccent,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: context.appColors.primaryAccent,
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF38383A)
-                                : context.appColors.primaryAccent,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.compact,
-                            vertical: 0,
-                          ),
-                          minimumSize: const Size(0, 32),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.small,
-                          ),
-                        ),
                       ),
-                      const SizedBox(width: AppSpacing.sm),
                     ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      isSearchVisible ? Icons.search_off : Icons.search,
+                      color: isDark
+                          ? const Color(0xFFFFFFFF)
+                          : context.appColors.primaryAccent,
+                      size: 22,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: isSearchVisible ? '検索を閉じる' : '試合を検索',
+                    onPressed: () =>
+                        onSearchVisibilityChanged(!isSearchVisible),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
                     OutlinedButton.icon(
-                      onPressed: onToggleSort,
+                      onPressed: onBulkRuleEdit,
                       icon: Icon(
-                        isSortAscending
-                            ? Icons.arrow_downward
-                            : Icons.arrow_upward,
+                        Icons.gavel,
                         size: 16,
+                        color: context.appColors.primaryAccent,
                       ),
                       label: Text(
-                        isSortAscending ? 'カテゴリ昇順' : 'カテゴリ降順',
-                        style: const TextStyle(
+                        'ルール一括変更',
+                        style: TextStyle(
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.small,
+                          color: context.appColors.primaryAccent,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -191,7 +145,7 @@ class MatchTimelineControlBar extends StatelessWidget {
                               : context.appColors.primaryAccent,
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
+                          horizontal: AppSpacing.compact,
                           vertical: 0,
                         ),
                         minimumSize: const Size(0, 32),
@@ -200,10 +154,44 @@ class MatchTimelineControlBar extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.sm),
                   ],
-                ),
+                  OutlinedButton.icon(
+                    onPressed: onToggleSort,
+                    icon: Icon(
+                      isSortAscending
+                          ? Icons.arrow_downward
+                          : Icons.arrow_upward,
+                      size: 16,
+                    ),
+                    label: Text(
+                      isSortAscending ? 'カテゴリ昇順' : 'カテゴリ降順',
+                      style: const TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        fontSize: AppFontSize.small,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: context.appColors.primaryAccent,
+                      side: BorderSide(
+                        color: isDark
+                            ? const Color(0xFF38383A)
+                            : context.appColors.primaryAccent,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: 0,
+                      ),
+                      minimumSize: const Size(0, 32),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.small,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );

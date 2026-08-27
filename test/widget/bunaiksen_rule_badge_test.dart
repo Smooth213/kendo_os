@@ -4,7 +4,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen_setup/bunaiksen_rule_settings_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_setup_screen.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/widgets/smart_player_input.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class _FakeBunaiksenGuestNotifier extends StateNotifier<List<String>>
+    implements BunaiksenGuestNotifier {
+  _FakeBunaiksenGuestNotifier() : super([]);
+
+  @override
+  Future<void> addGuest(String name) async {
+    state = [...state, name];
+  }
+
+  @override
+  void update(List<String> Function(List<String> p1) fn) {
+    state = fn(state);
+  }
+}
 
 /// テスト用 AppThemeColors
 const _testThemeColors = AppThemeColors(
@@ -25,7 +45,7 @@ const _testThemeColors = AppThemeColors(
 );
 
 /// テスト用ウィジェットラッパー
-Widget _buildTestWidget(MatchRule rule) {
+Widget _buildTestWidget(MatchRule rule, {bool isTeam = false}) {
   return ProviderScope(
     overrides: [bunaiksenRuleProvider.overrideWith((ref) => rule)],
     child: MaterialApp(
@@ -35,6 +55,7 @@ Widget _buildTestWidget(MatchRule rule) {
             rule: rule,
             isDark: false,
             themeColors: _testThemeColors,
+            isTeam: isTeam,
           ),
         ),
       ),
@@ -314,5 +335,133 @@ void main() {
       );
       expect(enchoContainer, findsWidgets);
     });
+  });
+
+  group('🥋 団体戦（isTeam: true）ルール表示テスト', () {
+    testWidgets('11. 団体戦時: 延長・判定が有効なMatchRuleでもバッジに延長・判定が表示されないこと', (
+      WidgetTester tester,
+    ) async {
+      const rule = MatchRule(
+        matchTimeMinutes: 3.0,
+        isIpponShobu: false,
+        enchoTimeMinutes: 2.0,
+        isEnchoUnlimited: true,
+        hasHantei: true,
+      );
+
+      // isTeam: true でウィジェット構築
+      await tester.pumpWidget(_buildTestWidget(rule, isTeam: true));
+      await tester.pumpAndSettle();
+
+      // メインバッジのみ表示
+      expect(find.text('3分 / 3本'), findsOneWidget);
+
+      // 延長戦・判定バッジは団体戦では表示されない
+      expect(find.text('延長'), findsNothing);
+      expect(find.text('延長∞'), findsNothing);
+      expect(find.text('判定'), findsNothing);
+    });
+
+    testWidgets('12. 団体戦時: アコーディオン展開時も延長戦・判定の設定UIが表示されないこと', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const rule = MatchRule(
+        matchTimeMinutes: 3.0,
+        isIpponShobu: false,
+        enchoTimeMinutes: 2.0,
+        isEnchoUnlimited: true,
+        hasHantei: true,
+      );
+
+      // isTeam: true でウィジェット構築
+      await tester.pumpWidget(_buildTestWidget(rule, isTeam: true));
+      await tester.pumpAndSettle();
+
+      // タイトル行をタップしてアコーディオンを展開
+      await tester.tap(find.text('部内戦ルール設定'));
+      await tester.pumpAndSettle();
+
+      // 試合時間・勝敗条件は表示される
+      expect(find.text('試合時間'), findsOneWidget);
+      expect(find.text('勝敗条件'), findsOneWidget);
+
+      // 団体戦では延長戦・判定の設定行は表示されない
+      expect(find.text('延長戦'), findsNothing);
+      expect(find.text('判定'), findsNothing);
+    });
+
+    testWidgets(
+      '13. BunaiksenSetupScreen: タブ切り替えで個人戦と団体戦の延長・判定表示が連動して切り替わること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              bunaiksenPlayerMasterProvider.overrideWith(
+                (ref) => Stream<List<PlayerModel>>.value([]),
+              ),
+              bunaiksenGuestProvider.overrideWith(
+                (ref) => _FakeBunaiksenGuestNotifier(),
+              ),
+            ],
+            child: MaterialApp(
+              theme: ThemeData(
+                extensions: [
+                  AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+                ],
+              ),
+              home: const BunaiksenSetupScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // アコーディオンを展開して判定をONにする
+        await tester.tap(find.text('部内戦ルール設定'));
+        await tester.pumpAndSettle();
+
+        // 判定スイッチをタップしてONにする
+        final hanteiSwitch = find.byType(Switch);
+        expect(hanteiSwitch, findsOneWidget);
+        await tester.tap(hanteiSwitch);
+        await tester.pumpAndSettle();
+
+        // 個人戦タブ: 判定バッジが表示される
+        expect(find.text('判定'), findsWidgets);
+
+        // 団体戦タブをタップ
+        await tester.tap(find.text('団体戦 (紅白戦)'));
+        await tester.pumpAndSettle();
+
+        // 団体戦タブ: 判定バッジおよび判定設定UIが非表示になる
+        expect(find.text('判定'), findsNothing);
+        expect(find.text('延長戦'), findsNothing);
+
+        // 個人戦タブに戻る
+        await tester.tap(find.text('個人戦 (即スタート)'));
+        await tester.pumpAndSettle();
+
+        // 再び判定が表示される
+        expect(find.text('判定'), findsWidgets);
+        expect(find.text('延長戦'), findsOneWidget);
+      },
+    );
   });
 }

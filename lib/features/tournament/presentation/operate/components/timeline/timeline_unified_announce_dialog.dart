@@ -9,7 +9,6 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
@@ -89,62 +88,206 @@ class TimelineUnifiedAnnounceDialog {
                       padding: const EdgeInsets.all(AppSpacing.xs),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : context.appColors.cardBackground,
-                        borderRadius: AppRadius.small,
+                            ? const Color(0xFF242426)
+                            : const Color(0xFFF2F2F7),
+                        borderRadius: AppRadius.medium,
                       ),
                       child: Row(
                         children: [
                           Expanded(
-                            child: AppChoiceChip(
-                              label: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  '📢 全員に通知',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
+                            child: InkWell(
+                              key: const Key('timeline_target_all_chip'),
+                              onTap: () {
+                                setDialogState(() => selectedTarget = 'all');
+                              },
+                              borderRadius: AppRadius.small,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.sm,
+                                  horizontal: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: selectedTarget == 'all'
+                                      ? const Color(0xFFFF69B4).withValues(
+                                          alpha: isDark ? 0.25 : 0.15,
+                                        )
+                                      : AppKendoColors.transparent,
+                                  borderRadius: AppRadius.small,
+                                  border: Border.all(
                                     color: selectedTarget == 'all'
-                                        ? (context.appColors.textColor)
-                                        : AppKendoColors.grey,
+                                        ? const Color(0xFFFF69B4)
+                                        : (isDark
+                                              ? AppKendoColors.pureWhite
+                                                    .withValues(alpha: 0.1)
+                                              : AppKendoColors.pureBlack
+                                                    .withValues(alpha: 0.12)),
+                                    width: selectedTarget == 'all' ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.campaign,
+                                        size: 15,
+                                        color: selectedTarget == 'all'
+                                            ? const Color(0xFFFF69B4)
+                                            : AppKendoColors.grey,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '全員に通知',
+                                        style: TextStyle(
+                                          fontSize: AppFontSize.small,
+                                          fontWeight: selectedTarget == 'all'
+                                              ? AppFontWeight.bold
+                                              : AppFontWeight.regular,
+                                          color: selectedTarget == 'all'
+                                              ? (isDark
+                                                    ? AppKendoColors.pureWhite
+                                                    : AppKendoColors.pureBlack)
+                                              : AppKendoColors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              selected: selectedTarget == 'all',
-                              customSelectedColor: const Color(
-                                0xFFFF69B4,
-                              ).withValues(alpha: 0.2),
-                              onSelected: (val) {
-                                if (val) {
-                                  setDialogState(() => selectedTarget = 'all');
-                                }
-                              },
                             ),
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Expanded(
-                            child: AppChoiceChip(
-                              label: SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  '🔒 スタッフ限定',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
+                            child: InkWell(
+                              key: const Key('timeline_target_staff_chip'),
+                              onTap: () {
+                                setDialogState(() => selectedTarget = 'staff');
+                              },
+                              borderRadius: AppRadius.small,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.sm,
+                                  horizontal: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: selectedTarget == 'staff'
+                                      ? AppKendoColors.deepOrange.withValues(
+                                          alpha: isDark ? 0.25 : 0.15,
+                                        )
+                                      : AppKendoColors.transparent,
+                                  borderRadius: AppRadius.small,
+                                  border: Border.all(
                                     color: selectedTarget == 'staff'
-                                        ? (context.appColors.textColor)
-                                        : AppKendoColors.grey,
+                                        ? AppKendoColors.deepOrange
+                                        : (isDark
+                                              ? AppKendoColors.pureWhite
+                                                    .withValues(alpha: 0.1)
+                                              : AppKendoColors.pureBlack
+                                                    .withValues(alpha: 0.12)),
+                                    width: selectedTarget == 'staff'
+                                        ? 1.5
+                                        : 1.0,
+                                  ),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.lock_outline,
+                                        size: 14,
+                                        color: selectedTarget == 'staff'
+                                            ? AppKendoColors.deepOrange
+                                            : AppKendoColors.grey,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        'スタッフ限定',
+                                        style: TextStyle(
+                                          fontSize: AppFontSize.small,
+                                          fontWeight: selectedTarget == 'staff'
+                                              ? AppFontWeight.bold
+                                              : AppFontWeight.regular,
+                                          color: selectedTarget == 'staff'
+                                              ? (isDark
+                                                    ? AppKendoColors.pureWhite
+                                                    : AppKendoColors.pureBlack)
+                                              : AppKendoColors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              selected: selectedTarget == 'staff',
-                              customSelectedColor: AppKendoColors.deepOrange
-                                  .withValues(alpha: 0.2),
-                              onSelected: (val) {
-                                if (val) {
-                                  setDialogState(
-                                    () => selectedTarget = 'staff',
-                                  );
-                                }
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: InkWell(
+                              key: const Key('timeline_target_none_chip'),
+                              onTap: () {
+                                setDialogState(() => selectedTarget = 'none');
                               },
+                              borderRadius: AppRadius.small,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.sm,
+                                  horizontal: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: selectedTarget == 'none'
+                                      ? AppKendoColors.blue.withValues(
+                                          alpha: isDark ? 0.25 : 0.15,
+                                        )
+                                      : AppKendoColors.transparent,
+                                  borderRadius: AppRadius.small,
+                                  border: Border.all(
+                                    color: selectedTarget == 'none'
+                                        ? AppKendoColors.blue
+                                        : (isDark
+                                              ? AppKendoColors.pureWhite
+                                                    .withValues(alpha: 0.1)
+                                              : AppKendoColors.pureBlack
+                                                    .withValues(alpha: 0.12)),
+                                    width: selectedTarget == 'none' ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.notifications_off_outlined,
+                                        size: 14,
+                                        color: selectedTarget == 'none'
+                                            ? AppKendoColors.blue
+                                            : AppKendoColors.grey,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '通知なし',
+                                        style: TextStyle(
+                                          fontSize: AppFontSize.small,
+                                          fontWeight: selectedTarget == 'none'
+                                              ? AppFontWeight.bold
+                                              : AppFontWeight.regular,
+                                          color: selectedTarget == 'none'
+                                              ? (isDark
+                                                    ? AppKendoColors.pureWhite
+                                                    : AppKendoColors.pureBlack)
+                                              : AppKendoColors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -161,7 +304,8 @@ class TimelineUnifiedAnnounceDialog {
                     style: TextStyle(color: AppKendoColors.grey),
                   ),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
+                  key: const Key('timeline_submit_announce_button'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: themeColors.primaryAccent,
                     foregroundColor: AppKendoColors.pureWhite,
@@ -172,56 +316,63 @@ class TimelineUnifiedAnnounceDialog {
                   onPressed: () {
                     final String title = titleController.text.trim();
                     final String body = bodyController.text.trim();
-                    if (body.isEmpty) return;
+                    if (body.isEmpty && title.isEmpty) return;
 
-                    final String finalTitle = title.isNotEmpty
-                        ? title
-                        : '大会本部からのお知らせ';
+                    final String commentText = title.isNotEmpty
+                        ? (body.isNotEmpty ? '$title\n$body' : title)
+                        : body;
 
                     if (dialogCtx.mounted) {
                       Navigator.pop(dialogCtx);
                     }
 
                     Future(() async {
-                      FirebaseFirestore firestore;
                       try {
-                        firestore = ref.read(firestoreProvider);
-                      } catch (_) {
-                        firestore = FirebaseFirestore.instance;
-                      }
+                        if (selectedTarget != 'none') {
+                          FirebaseFirestore firestore;
+                          try {
+                            firestore = ref.read(firestoreProvider);
+                          } catch (_) {
+                            firestore = FirebaseFirestore.instance;
+                          }
 
-                      final String announceId = firestore
-                          .collection('announcements')
-                          .doc()
-                          .id;
+                          final String finalTitle = title.isNotEmpty
+                              ? title
+                              : '大会本部からのお知らせ';
 
-                      registerMySentAnnounceId(announceId);
+                          final String announceId = firestore
+                              .collection('announcements')
+                              .doc()
+                              .id;
 
-                      try {
-                        await firestore
-                            .collection('announcements')
-                            .doc(announceId)
-                            .set({
-                              'id': announceId,
-                              'tournamentId': tournamentId,
-                              'title': finalTitle,
-                              'body': body,
-                              'timestamp': FieldValue.serverTimestamp(),
-                              'type': 'emergency',
-                              'target': selectedTarget,
-                              'isRead': false,
-                              'createdBy': () {
-                                try {
-                                  return FirebaseAuth.instance.currentUser?.uid;
-                                } catch (_) {
-                                  return null;
-                                }
-                              }(),
-                            });
+                          registerMySentAnnounceId(announceId);
 
-                        final String commentText = title.isNotEmpty
-                            ? '$title\n$body'
-                            : body;
+                          await firestore
+                              .collection('announcements')
+                              .doc(announceId)
+                              .set({
+                                'id': announceId,
+                                'tournamentId': tournamentId,
+                                'title': finalTitle,
+                                'body': body.isNotEmpty ? body : finalTitle,
+                                'timestamp': FieldValue.serverTimestamp(),
+                                'type': 'emergency',
+                                'target': selectedTarget,
+                                'isRead': false,
+                                'createdBy': () {
+                                  try {
+                                    return FirebaseAuth
+                                        .instance
+                                        .currentUser
+                                        ?.uid;
+                                  } catch (_) {
+                                    return null;
+                                  }
+                                }(),
+                              });
+                        }
+
+                        // タイムラインコメント保存
                         await ref
                             .read(commentCommandProvider)
                             .addComment(
@@ -234,27 +385,43 @@ class TimelineUnifiedAnnounceDialog {
                             );
 
                         if (context.mounted) {
-                          AppSnackBar.showSuccess(
-                            context,
-                            selectedTarget == 'staff'
-                                ? 'スタッフ限定業務連絡を発信しました'
-                                : '全員向け緊急アナウンスを一斉配信しました',
-                          );
+                          if (selectedTarget == 'none') {
+                            AppSnackBar.showSuccess(
+                              context,
+                              'タイムラインにコメントを追加しました（通知なし）',
+                            );
+                          } else if (selectedTarget == 'staff') {
+                            AppSnackBar.showSuccess(
+                              context,
+                              'スタッフ限定業務連絡を発信しました',
+                            );
+                          } else {
+                            AppSnackBar.showSuccess(
+                              context,
+                              '全員向け緊急アナウンスを一斉配信しました',
+                            );
+                          }
                         }
                       } catch (e) {
                         debugPrint('🚨 [AnnounceDialog] 送信エラー: $e');
                         if (context.mounted) {
                           AppSnackBar.showError(
                             context,
-                            '送信に失敗しました: ${e.toString()}',
+                            '処理に失敗しました: ${e.toString()}',
                           );
                         }
                       }
                     });
                   },
-                  child: const Text(
-                    '一斉発信して保存',
-                    style: TextStyle(fontWeight: AppFontWeight.bold),
+                  icon: Icon(
+                    selectedTarget == 'none'
+                        ? Icons.chat_bubble_outline
+                        : Icons.campaign,
+                    size: 18,
+                  ),
+                  label: Text(
+                    selectedTarget == 'none' ? 'コメントを保存' : '一斉発信して保存',
+                    style: const TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                 ),
               ],

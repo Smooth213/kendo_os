@@ -115,13 +115,13 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final cardBgColor = isDark
-            ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-            : const Color(0xFFFFFFFF).withValues(alpha: 0.85);
+            ? const Color(0xFF1E293B).withValues(alpha: 0.95)
+            : const Color(0xFFFFFFFF).withValues(alpha: 0.95);
         final textColor = context.appColors.textColor;
-        final subTextColor = const Color(0x8A000000);
+        final subTextColor = context.appColors.subTextColor;
         final borderColor = isDark
-            ? context.appColors.textColor.withValues(alpha: 0.2)
-            : context.appColors.textColor.withValues(alpha: 0.7);
+            ? const Color(0xFF334155)
+            : const Color(0xFFE2E8F0);
 
         return Dialog(
           backgroundColor: AppKendoColors.transparent,
@@ -236,16 +236,16 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBgColor = isDark
-        ? const Color(0xFF1C1C1E).withValues(alpha: 0.4)
-        : const Color(0xFFFFFFFF).withValues(alpha: 0.85);
+        ? const Color(0xFF1E293B).withValues(alpha: 0.95)
+        : const Color(0xFFFFFFFF).withValues(alpha: 0.95);
     final textColor = context.appColors.textColor;
-    final subTextColor = const Color(0x8A000000);
+    final subTextColor = context.appColors.subTextColor;
     final borderColor = isDark
-        ? context.appColors.textColor.withValues(alpha: 0.2)
-        : context.appColors.textColor.withValues(alpha: 0.7);
+        ? const Color(0xFF334155)
+        : const Color(0xFFCBD5E1);
     final inputBgColor = isDark
-        ? context.appColors.textColor.withValues(alpha: 0.05)
-        : context.appColors.cardBackground.withValues(alpha: 0.05);
+        ? const Color(0xFF0F172A)
+        : const Color(0xFFF8FAFC);
 
     return Dialog(
       backgroundColor: AppKendoColors.transparent,
@@ -437,16 +437,26 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                     spacing: 12,
                     runSpacing: 8,
                     children: [
-                      TextButton(
+                      OutlinedButton(
                         onPressed: _isLoading
                             ? null
                             : () => Navigator.of(context).pop(),
-                        child: Text(
-                          'キャンセル',
-                          style: TextStyle(
-                            color: subTextColor,
-                            fontWeight: AppFontWeight.bold,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isDark
+                              ? const Color(0xFFE2E8F0)
+                              : const Color(0xFF475569),
+                          side: BorderSide(
+                            color: isDark
+                                ? const Color(0xFF475569)
+                                : const Color(0xFFCBD5E1),
                           ),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.medium,
+                          ),
+                        ),
+                        child: const Text(
+                          'キャンセル',
+                          style: TextStyle(fontWeight: AppFontWeight.bold),
                         ),
                       ),
                       _isLoading

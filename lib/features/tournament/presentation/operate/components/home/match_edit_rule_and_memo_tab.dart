@@ -17,6 +17,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
     required this.textColor,
     required this.tournamentId,
     required this.match,
+    this.isDantai = false,
     required this.selectedPresetKey,
     required this.selectedPresetRule,
     required this.matchTime,
@@ -33,6 +34,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
   final Color textColor;
   final String? tournamentId;
   final MatchModel match;
+  final bool isDantai;
   final String? selectedPresetKey;
   final MatchRule? selectedPresetRule;
   final double matchTime;
@@ -169,6 +171,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
         // 🛡️ 適用中ルールの全内訳表示カード
         MatchRuleSummaryCard(
           matchType: match.matchType,
+          isTeamOverride: isDantai,
           currentRule: currentRule,
           matchTime: matchTime,
           isIpponShobu: isIpponShobu,
@@ -231,46 +234,48 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
                   onChanged: onIpponShobuChanged,
                 ),
               ),
-              const Divider(),
-              Material(
-                color: AppKendoColors.transparent,
-                child: SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    '個人戦の判定（ハンテイ）を適用',
-                    style: TextStyle(
-                      color:
-                          currentRule.isRenseikai ||
-                              currentRule.matchScene == 'renseikai' ||
-                              currentRule.matchScene == 'moushiawase'
-                          ? AppKendoColors.grey
-                          : textColor,
+              if (!isDantai) ...[
+                const Divider(),
+                Material(
+                  color: AppKendoColors.transparent,
+                  child: SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      '個人戦の判定（ハンテイ）を適用',
+                      style: TextStyle(
+                        color:
+                            currentRule.isRenseikai ||
+                                currentRule.matchScene == 'renseikai' ||
+                                currentRule.matchScene == 'moushiawase'
+                            ? AppKendoColors.grey
+                            : textColor,
+                      ),
                     ),
-                  ),
-                  subtitle:
-                      currentRule.isRenseikai ||
-                          currentRule.matchScene == 'renseikai' ||
-                          currentRule.matchScene == 'moushiawase'
-                      ? const Text(
-                          '※錬成会・申し合わせルールのため強制OFFに固定されています',
-                          style: TextStyle(
-                            fontSize: AppFontSize.badge,
-                            color: AppKendoColors.orange,
-                          ),
-                        )
-                      : null,
-                  value: hasHantei,
-                  activeTrackColor: primaryAccent,
-                  onChanged: (v) {
-                    final isRenseikaiOrMoushiawase =
+                    subtitle:
                         currentRule.isRenseikai ||
-                        currentRule.matchScene == 'renseikai' ||
-                        currentRule.matchScene == 'moushiawase';
-                    if (isRenseikaiOrMoushiawase) return;
-                    onHanteiChanged(v);
-                  },
+                            currentRule.matchScene == 'renseikai' ||
+                            currentRule.matchScene == 'moushiawase'
+                        ? const Text(
+                            '※錬成会・申し合わせルールのため強制OFFに固定されています',
+                            style: TextStyle(
+                              fontSize: AppFontSize.badge,
+                              color: AppKendoColors.orange,
+                            ),
+                          )
+                        : null,
+                    value: hasHantei,
+                    activeTrackColor: primaryAccent,
+                    onChanged: (v) {
+                      final isRenseikaiOrMoushiawase =
+                          currentRule.isRenseikai ||
+                          currentRule.matchScene == 'renseikai' ||
+                          currentRule.matchScene == 'moushiawase';
+                      if (isRenseikaiOrMoushiawase) return;
+                      onHanteiChanged(v);
+                    },
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

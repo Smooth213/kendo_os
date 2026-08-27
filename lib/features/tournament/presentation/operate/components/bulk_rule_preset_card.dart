@@ -121,8 +121,8 @@ class BulkRulePresetCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppFontSize.caption,
                 color: isDark
-                    ? const Color(0xFFFFFFFF)
-                    : const Color(0x8A000000),
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
                 fontWeight: AppFontWeight.bold,
               ),
             ),

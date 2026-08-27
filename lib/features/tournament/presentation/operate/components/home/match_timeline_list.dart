@@ -20,7 +20,13 @@ export 'package:kendo_os/features/tournament/presentation/operate/providers/safe
 
 class MatchTimelineList extends ConsumerWidget {
   final String tournamentId;
-  const MatchTimelineList({super.key, required this.tournamentId});
+  final List<Widget> headerWidgets;
+
+  const MatchTimelineList({
+    super.key,
+    required this.tournamentId,
+    this.headerWidgets = const [],
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,6 +49,7 @@ class MatchTimelineList extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
       children: [
+        ...headerWidgets,
         // ============================================================
         // ★ 移設: 大会ヘッダー（HomeScreen から移動。リストと一緒にスクロールさせる）
         // ============================================================

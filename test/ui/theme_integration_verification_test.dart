@@ -48,12 +48,16 @@ void main() {
   });
 
   group('🛡️ Theme Integration & Color Verifications', () {
-    testWidgets('1. StartScreen is themed correctly', (
+    testWidgets('1. StartScreen is themed correctly in dark and light modes', (
       WidgetTester tester,
     ) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1400));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
+      // ダークモードでの検証
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -61,7 +65,13 @@ void main() {
             isarProvider.overrideWithValue(null),
             currentUserRoleProvider.overrideWithValue(UserRole.admin),
           ],
-          child: const MaterialApp(home: StartScreen()),
+          child: MaterialApp(
+            theme: ThemeData(
+              brightness: Brightness.dark,
+              extensions: [AppThemeColors.ofMode(isDark: true, mode: 'normal')],
+            ),
+            home: const StartScreen(),
+          ),
         ),
       );
 
@@ -72,6 +82,28 @@ void main() {
       // Verify presence of themed start buttons
       expect(find.textContaining('新しい大会'), findsOneWidget);
       expect(find.textContaining('今日の試合'), findsOneWidget);
+
+      // フッターのバージョン表記・アイコンの視認性検証 (ダークモード)
+      final versionTextFinder = find.text('Kendo Sync v1.0.0');
+      expect(versionTextFinder, findsOneWidget);
+      final versionText = tester.widget<Text>(versionTextFinder);
+      expect(versionText.style?.color, isNot(equals(const Color(0x8A000000))));
+      expect(versionText.style?.color, isNot(equals(Colors.black)));
+
+      final iconImageFinder = find.byWidgetPredicate(
+        (w) =>
+            w is Image &&
+            w.image is AssetImage &&
+            (w.image as AssetImage).assetName == 'assets/kendo_icon.png',
+      );
+      expect(iconImageFinder, findsOneWidget);
+      final iconImage = tester.widget<Image>(iconImageFinder);
+      // アイコンの色が黒（0x8A000000）でなく高コントラストであること
+      expect(
+        iconImage.color,
+        isNot(equals(const Color(0x8A000000).withValues(alpha: 0.2))),
+      );
+      expect(iconImage.color, isNot(equals(Colors.black)));
     });
 
     testWidgets(

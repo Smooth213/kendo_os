@@ -359,6 +359,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   textColor: textColor,
                   tournamentId: widget.tournamentId,
                   match: widget.matches.first,
+                  isDantai: _isDantai,
                   selectedPresetKey: _selectedPresetKey,
                   selectedPresetRule: _selectedPresetRule,
                   matchTime: _matchTime,

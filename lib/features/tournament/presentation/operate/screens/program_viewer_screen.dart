@@ -22,6 +22,8 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../providers/permission_provider.dart';
 import '../providers/role_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 
 final viewerProgramListProvider =
     StreamProvider.family<List<ProgramModel>, String>((ref, tournamentId) {
@@ -66,7 +68,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   String _currentSearchText = "";
 
   bool _isDrawingMode = false;
-  Color _selectedPenColor = AppKendoColors.pink;
+  Color _selectedPenColor = AppKendoColors.blue;
   bool get _isSharedPen =>
       _selectedPenColor == AppKendoColors.pink ||
       _selectedPenColor == _yellowPenColor;
@@ -112,17 +114,22 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   Widget build(BuildContext context) {
     final permissions = ref.watch(permissionProvider);
     final currentRole = ref.watch(activeRoleProvider);
+    final userRole = ref.watch(currentUserRoleProvider);
+
     final canUseSharedPen =
-        currentRole == Role.admin ||
-        currentRole == Role.scorer ||
-        currentRole == Role.editor;
+        !permissions.isReadOnly &&
+        userRole != UserRole.viewer &&
+        (currentRole == Role.admin ||
+            currentRole == Role.scorer ||
+            currentRole == Role.editor);
 
     final activePenColor = (!canUseSharedPen && _isSharedPen)
         ? AppKendoColors.blue
         : _selectedPenColor;
     final activeIsShared =
-        activePenColor == AppKendoColors.pink ||
-        activePenColor == _yellowPenColor;
+        canUseSharedPen &&
+        (activePenColor == AppKendoColors.pink ||
+            activePenColor == _yellowPenColor);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -263,40 +270,39 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 onPressed: () => setState(() => _isSearchMode = true),
               ),
             ],
-            if (!permissions.isReadOnly)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: MediaQuery.of(context).size.width < 600 || _isSearchMode
-                    ? IconButton(
-                        onPressed: () => setState(() {
-                          _isDrawingMode = !_isDrawingMode;
-                        }),
-                        icon: Icon(_isDrawingMode ? Icons.check : Icons.edit),
-                        color: _isDrawingMode
-                            ? activePenColor
-                            : (context.appColors.textColor),
-                        tooltip: _isDrawingMode ? '完了' : '書き込む',
-                      )
-                    : ElevatedButton.icon(
-                        onPressed: () => setState(() {
-                          _isDrawingMode = !_isDrawingMode;
-                        }),
-                        icon: Icon(
-                          _isDrawingMode ? Icons.check : Icons.edit,
-                          size: 18,
-                        ),
-                        label: Text(_isDrawingMode ? '完了' : '書き込む'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _isDrawingMode
-                              ? activePenColor
-                              : (context.appColors.separatorColor),
-                          foregroundColor: _isDrawingMode
-                              ? AppKendoColors.pureWhite
-                              : (context.appColors.textColor),
-                          elevation: 0,
-                        ),
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: MediaQuery.of(context).size.width < 600 || _isSearchMode
+                  ? IconButton(
+                      onPressed: () => setState(() {
+                        _isDrawingMode = !_isDrawingMode;
+                      }),
+                      icon: Icon(_isDrawingMode ? Icons.check : Icons.edit),
+                      color: _isDrawingMode
+                          ? activePenColor
+                          : (context.appColors.textColor),
+                      tooltip: _isDrawingMode ? '完了' : '書き込む',
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: () => setState(() {
+                        _isDrawingMode = !_isDrawingMode;
+                      }),
+                      icon: Icon(
+                        _isDrawingMode ? Icons.check : Icons.edit,
+                        size: 18,
                       ),
-              ),
+                      label: Text(_isDrawingMode ? '完了' : '書き込む'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isDrawingMode
+                            ? activePenColor
+                            : (context.appColors.separatorColor),
+                        foregroundColor: _isDrawingMode
+                            ? AppKendoColors.pureWhite
+                            : (context.appColors.textColor),
+                        elevation: 0,
+                      ),
+                    ),
+            ),
           ],
         ),
         body: Column(

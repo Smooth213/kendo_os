@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 観客席画面用 試合リスト検索・ソートバー
 class ViewerMatchListSearchBar extends StatelessWidget {
@@ -36,78 +35,74 @@ class ViewerMatchListSearchBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (!isSearchVisible)
-            Text(
-              '試合リスト',
-              style: TextStyle(
-                fontSize: AppFontSize.subhead,
-                fontWeight: AppFontWeight.bold,
-                color: context.appColors.subTextColor,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '試合リスト',
+                style: TextStyle(
+                  fontSize: AppFontSize.subhead,
+                  fontWeight: AppFontWeight.bold,
+                  color: context.appColors.subTextColor,
+                ),
               ),
-            ),
-          if (isSearchVisible)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: SizedBox(
-                  height: 32,
-                  child: AppTextField(
-                    autofocus: true,
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      color: context.appColors.textColor,
+              if (searchQuery.isNotEmpty) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.appColors.primaryAccent.withValues(
+                      alpha: 0.15,
                     ),
-                    decoration: InputDecoration(
-                      hintText: '選手名・チーム名で検索...',
-                      hintStyle: TextStyle(
-                        fontSize: AppFontSize.small,
-                        color: context.appColors.subTextColor,
+                    borderRadius: AppRadius.small,
+                    border: Border.all(
+                      color: context.appColors.primaryAccent.withValues(
+                        alpha: 0.5,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 0,
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : context.appColors.inputBackground,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.small,
-                        borderSide: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF38383A)
-                              : const Color(0x33000000),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '「$searchQuery」',
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          color: context.appColors.primaryAccent,
+                          fontWeight: AppFontWeight.bold,
                         ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.small,
-                        borderSide: BorderSide(
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: onCloseSearch,
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
                           color: context.appColors.primaryAccent,
                         ),
                       ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.close, size: 16),
-                        onPressed: onCloseSearch,
-                      ),
-                    ),
-                    onChanged: onSearchQueryChanged,
+                    ],
                   ),
                 ),
-              ),
+              ],
+            ],
+          ),
+          const Spacer(),
+          IconButton(
+            icon: Icon(
+              isSearchVisible ? Icons.search_off : Icons.search,
+              color: context.appColors.primaryAccent,
+              size: 22,
             ),
-          if (!isSearchVisible) const Spacer(),
-          if (!isSearchVisible)
-            IconButton(
-              icon: Icon(
-                Icons.search,
-                color: context.appColors.primaryAccent,
-                size: 22,
-              ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              onPressed: onOpenSearch,
-            ),
-          if (!isSearchVisible) const SizedBox(width: AppSpacing.md),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: isSearchVisible ? '検索を閉じる' : '試合を検索',
+            onPressed: isSearchVisible ? onCloseSearch : onOpenSearch,
+          ),
+          const SizedBox(width: AppSpacing.md),
           OutlinedButton.icon(
             onPressed: onToggleSort,
             icon: Icon(

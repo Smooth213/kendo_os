@@ -13,6 +13,7 @@ class ProgramManagementContentViews {
     required List<ProgramModel> programs,
     required String Function(String) getSafeUrl,
     required void Function(ProgramModel) onDelete,
+    bool isViewerMode = false,
   }) {
     return GridView.builder(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -31,7 +32,9 @@ class ProgramManagementContentViews {
           onTap: isUploading
               ? () => AppSnackBar.show(context, 'アップロード中です。完了するまでお待ちください。')
               : () => context.push(
-                  '/program-viewer',
+                  isViewerMode
+                      ? '/program-viewer?role=viewer'
+                      : '/program-viewer',
                   extra: {'programs': programs, 'index': index},
                 ),
           child: Card(
@@ -83,16 +86,17 @@ class ProgramManagementContentViews {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => onDelete(program),
-                          child: Icon(
-                            Icons.delete,
-                            color: AppKendoColors.pureWhite.withValues(
-                              alpha: 0.7,
+                        if (!isViewerMode)
+                          GestureDetector(
+                            onTap: () => onDelete(program),
+                            child: Icon(
+                              Icons.delete,
+                              color: AppKendoColors.pureWhite.withValues(
+                                alpha: 0.7,
+                              ),
+                              size: 18,
                             ),
-                            size: 18,
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -110,6 +114,7 @@ class ProgramManagementContentViews {
     required List<ProgramModel> programs,
     required String Function(String) getSafeUrl,
     required void Function(ProgramModel) onDelete,
+    bool isViewerMode = false,
   }) {
     return ListView.builder(
       itemCount: programs.length,
@@ -149,14 +154,18 @@ class ProgramManagementContentViews {
             style: const TextStyle(fontWeight: AppFontWeight.bold),
           ),
           subtitle: Text(program.fileType.toUpperCase()),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () => onDelete(program),
-          ),
+          trailing: isViewerMode
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () => onDelete(program),
+                ),
           onTap: isUploading
               ? () => AppSnackBar.show(context, 'アップロード中です。完了するまでお待ちください。')
               : () => context.push(
-                  '/program-viewer',
+                  isViewerMode
+                      ? '/program-viewer?role=viewer'
+                      : '/program-viewer',
                   extra: {'programs': programs, 'index': index},
                 ),
         );

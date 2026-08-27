@@ -201,32 +201,9 @@ final viewerTournamentProjectionProvider =
             categories: const [],
           );
 
-      final engine = KendoRuleEngine();
-      final projections = targetMatches.map((m) {
-        final analysis = engine.analyzeHistory(m.events, m, m.rule);
-        final proj = MatchProjectionMapper.toProjection(m, analysis);
-        return MatchListProjection(
-          id: proj.id,
-          tournamentId: proj.tournamentId,
-          matchOrder: proj.matchOrder,
-          matchType: proj.matchType,
-          status: proj.status,
-          redName: proj.redName,
-          whiteName: proj.whiteName,
-          redScore: proj.redScore,
-          whiteScore: proj.whiteScore,
-          groupName: proj.groupName,
-          isKachinuki: proj.isKachinuki,
-          note: proj.note,
-          firstPointSide: proj.firstPointSide,
-          redPointMarks: proj.redPointMarks,
-          whitePointMarks: proj.whitePointMarks,
-        );
-      }).toList();
-
-      final projection = TournamentProjectionMapper.fromProjections(
+      final projection = TournamentProjectionMapper.fromModels(
         tournament,
-        projections,
+        targetMatches,
       );
       return AsyncValue.data(projection);
     });

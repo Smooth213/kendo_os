@@ -350,15 +350,21 @@ class StartScreen extends ConsumerWidget {
                               'assets/kendo_icon.png',
                               width: 72,
                               height: 72,
-                              color: const Color(
-                                0x8A000000,
-                              ).withValues(alpha: 0.2),
+                              color: isDark
+                                  ? const Color(
+                                      0xFFFFFFFF,
+                                    ).withValues(alpha: 0.45)
+                                  : const Color(
+                                      0xFF0F172A,
+                                    ).withValues(alpha: 0.35),
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Text(
                               'Kendo Sync v1.0.0',
                               style: TextStyle(
-                                color: const Color(0x8A000000),
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
                                 fontSize: AppFontSize.small,
                                 fontWeight: AppFontWeight.bold,
                                 letterSpacing: 1.5,

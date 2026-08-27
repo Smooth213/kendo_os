@@ -57,9 +57,15 @@ class OperatorActionButtons extends ConsumerWidget {
           viewerThemeColor,
           () {
             final dojoId = ref.read(currentDojoIdProvider);
-            context.push(
-              '/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
-            );
+            if (isBunaiksen) {
+              context.push(
+                '/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
+              );
+            } else {
+              context.push(
+                '/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
+              );
+            }
           },
         ),
         const SizedBox(height: AppSpacing.sm),

@@ -584,13 +584,16 @@ void main() {
 
         debugDumpApp(); // ツリー内部構成の確認用（不要になれば削除してください）
 
-        await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+        await tapVisible(tester, const Key('viewer_tab_一般'));
 
         expect(find.byKey(const Key('viewer_export_pdf_button')), findsWidgets);
         expect(
           find.byKey(const Key('viewer_export_image_button')),
           findsWidgets,
         );
+        // ★ 観客専用ビュアーでは成績サマリーが表示されないことの保証
+        expect(find.text('成績サマリー'), findsNothing);
+        expect(find.text('遠征・大会 成績サマリー'), findsNothing);
       },
     );
 
@@ -615,7 +618,7 @@ void main() {
 
       debugDumpApp();
 
-      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+      await tapVisible(tester, const Key('viewer_tab_一般'));
 
       // UI改善によりgroupNameではなくチーム名・選手名が表示されるようになったため、チーム名の存在を確認
       expect(find.textContaining('青龍道場', skipOffstage: false), findsWidgets);
@@ -641,7 +644,7 @@ void main() {
 
       debugDumpApp();
 
-      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+      await tapVisible(tester, const Key('viewer_tab_一般'));
 
       expect(find.textContaining('玄武館', skipOffstage: false), findsWidgets);
     });
@@ -668,7 +671,7 @@ void main() {
 
         debugDumpApp();
 
-        await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+        await tapVisible(tester, const Key('viewer_tab_一般'));
 
         expect(find.textContaining('朱雀会', skipOffstage: false), findsWidgets);
       },
@@ -693,8 +696,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
-      // モックテスト環境の仕様に合わせて「全カテゴリ」タブをタップ
-      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+      // カテゴリ別タブ「個人」を選択
+      await tapVisible(tester, const Key('viewer_tab_個人'));
 
       // 個人戦リーグの星取表（クロス表）に、チーム名ではなく「山田」「佐藤」といった個人名が描画されていることを検証
       expect(find.text('山田', skipOffstage: false), findsWidgets);
@@ -921,7 +924,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // モックテスト環境の仕様に合わせてタブを選択し、ボタンを活性化
-      await tapVisible(tester, const Key('viewer_tab_全カテゴリ'));
+      await tapVisible(tester, const Key('viewer_tab_一般'));
 
       // 2. PDF出力ボタンの存在を確実に捕捉
       final pdfButtonFinder = find.byKey(const Key('viewer_export_pdf_button'));
