@@ -126,11 +126,11 @@ void main() {
       // ----------------------------------------------------
       // 監査③: ボタン・操作配置のネイティブ整合性検証
       // ----------------------------------------------------
-      if (!permission.canManageTournament || permission.isReadOnly) {
-        // 「試合記録者」「一般観客席」はネイティブ基準通り、編集・削除スライド（Slidable）がツリーに配置されないこと
+      if (permission.isReadOnly) {
+        // 「応援・保護者・選手（Viewer）」はネイティブ基準通り、編集・削除スライド（Slidable）がツリーに配置されないこと
         expect(find.byType(Slidable), findsNothing);
       } else {
-        // 「最高管理者」「大会運営者」はネイティブ基準通り、管理用スライド（Slidable）が正しく配置されていること
+        // 「代表・管理者」「監督・引率責任者」「スコア・記録係」はネイティブ基準通り、スライド（Slidable）が正しく配置されていること
         expect(find.byType(Slidable), findsWidgets);
       }
     });

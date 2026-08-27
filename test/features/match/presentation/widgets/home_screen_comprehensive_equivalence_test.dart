@@ -169,15 +169,15 @@ void main() {
       // -----------------------------------------------------------------------
       // 📌 監査項目⑤: スワイプ操作（編集・削除ボタン）の露出制御ガード検証
       // -----------------------------------------------------------------------
-      if (!mockedPermission.canManageTournament) {
-        // 「試合記録者」「一般観客席」は、ネイティブアプリのガバナンス通り Slidable（削除アクション）が有効化されない、または配置されないこと
+      if (mockedPermission.isReadOnly) {
+        // 「応援・保護者・選手（Viewer）」は、ネイティブアプリのガバナンス通り Slidable（編集・削除アクション）が無効化される、または配置されないこと
         final slidableFinder = find.byType(Slidable);
         if (slidableFinder.evaluate().isNotEmpty) {
           final slidableWidget = tester.widget<Slidable>(slidableFinder.first);
           expect(slidableWidget.enabled, isFalse);
         }
       } else {
-        // 「最高管理者」「大会運営者」はネイティブアプリ同様に大会全体の編集・削除権限（Slidable）が完全に露出していること
+        // 「代表・管理者」「監督・引率責任者」「スコア・記録係」はスワイプ操作（Slidable）が有効化されていること
         expect(find.byType(Slidable), findsWidgets);
       }
     });

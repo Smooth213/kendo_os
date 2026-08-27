@@ -272,7 +272,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           _buildRoleRow(
                             context,
                             ref,
-                            '最高管理者 (Admin)',
+                            '代表・管理者 (Admin)',
                             UserRole.admin,
                             AppKendoColors.purple,
                           ),
@@ -280,7 +280,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           _buildRoleRow(
                             context,
                             ref,
-                            '大会運営者 (Operator)',
+                            '監督・引率責任者 (Operator)',
                             UserRole.operator,
                             AppKendoColors.teal,
                           ),
@@ -288,7 +288,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           _buildRoleRow(
                             context,
                             ref,
-                            '試合記録者 (Recorder)',
+                            'スコア・記録係 (Recorder)',
                             UserRole.recorder,
                             AppKendoColors.indigo,
                           ),
@@ -296,7 +296,7 @@ class RoleSelectScreen extends ConsumerWidget {
                           _buildRoleRow(
                             context,
                             ref,
-                            '一般観客席 (Viewer) [PIN不要]',
+                            '応援・保護者・選手 (Viewer) [PIN不要]',
                             UserRole.viewer,
                             AppKendoColors.blueGrey,
                           ),

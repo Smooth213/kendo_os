@@ -18,6 +18,7 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/bulk_rule_edit_sheet.dart';
 import '../providers/match_list_provider.dart';
+import '../providers/permission_provider.dart';
 
 class BunaiksenHomeScreen extends ConsumerWidget {
   const BunaiksenHomeScreen({super.key});
@@ -29,6 +30,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final permissions = ref.watch(permissionProvider);
 
     // ★ 修正：今日ではなく「選択された日付」を基準にする
     final viewDate = ref.watch(bunaiksenViewDateProvider);
@@ -185,6 +187,10 @@ class BunaiksenHomeScreen extends ConsumerWidget {
                         index: index,
                         dateId: dateId,
                         isDark: isDark,
+                        canEdit: !permissions.isReadOnly,
+                        canDelete:
+                            permissions.canDeleteData ||
+                            permissions.canManageTournament,
                         onTap: () {
                           final dojoId = ref.read(currentDojoIdProvider);
                           context.push(

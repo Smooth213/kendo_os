@@ -95,21 +95,7 @@ class StartScreen extends ConsumerWidget {
     );
 
     // ユーザーにわかりやすい日本語の権限名に変換
-    String roleDisplayName;
-    switch (currentRole) {
-      case UserRole.admin:
-        roleDisplayName = '管理者 (Admin)';
-        break;
-      case UserRole.operator:
-        roleDisplayName = '大会運営者 (Operator)';
-        break;
-      case UserRole.recorder:
-        roleDisplayName = '試合記録者 (Recorder)';
-        break;
-      case UserRole.viewer:
-        roleDisplayName = '閲覧専用 (Viewer)';
-        break;
-    }
+    final String roleDisplayName = currentRole.displayName;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerStartColor = isDark

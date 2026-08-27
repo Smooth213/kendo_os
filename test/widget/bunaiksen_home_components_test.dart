@@ -60,7 +60,7 @@ void main() {
       expect(find.text('鈴木'), findsOneWidget);
       expect(find.text('稽古1'), findsOneWidget);
       expect(find.text('第1試合'), findsOneWidget);
-      expect(find.text('進行中'), findsOneWidget);
+      expect(find.text('試合中'), findsOneWidget);
     });
   });
 }

@@ -111,7 +111,7 @@ class _AnnounceHistoryBottomSheetState
       decoration: BoxDecoration(
         color: isDark
             ? const Color(0xFF1C1C1E)
-            : context.appColors.textColor, // 90%のクリーンな白ベース
+            : context.appColors.cardBackground, // クリーンな白ベース
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppRadius.roundValue),
         ),

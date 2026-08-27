@@ -19,7 +19,6 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/operator_action_buttons.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/official_record_screen.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show customTeamNamesProvider, tournamentProvider;
@@ -227,13 +226,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final standardBtnFinder = find.widgetWithText(
-          GlassButton,
-          '観客・保護者側の画面を確認 (Viewer)',
-        );
+        final standardBtnFinder = find.text('観客の画面を確認');
         expect(standardBtnFinder, findsOneWidget);
-        final standardBtn = tester.widget<GlassButton>(standardBtnFinder);
-        expect(standardBtn.color, Colors.blueGrey);
 
         // Test under Bunaiksen tournament
         await tester.pumpWidget(
@@ -260,13 +254,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final bunaiksenBtnFinder = find.widgetWithText(
-          GlassButton,
-          '観客・保護者側の画面を確認 (Viewer)',
-        );
+        final bunaiksenBtnFinder = find.text('観客の画面を確認');
         expect(bunaiksenBtnFinder, findsOneWidget);
-        final bunaiksenBtn = tester.widget<GlassButton>(bunaiksenBtnFinder);
-        expect(bunaiksenBtn.color, Colors.purple);
       },
     );
 

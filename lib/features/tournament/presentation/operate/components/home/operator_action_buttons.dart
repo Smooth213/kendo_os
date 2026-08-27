@@ -1,15 +1,14 @@
-import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
-import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
+/// 🥋 大会運営用 アクションボタン群（2列スマートグリッド構成）
 class OperatorActionButtons extends ConsumerWidget {
   final String tournamentId;
   const OperatorActionButtons({super.key, required this.tournamentId});
@@ -27,119 +26,256 @@ class OperatorActionButtons extends ConsumerWidget {
         : AppKendoColors.blueGrey;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (!isReadOnly) ...[
-          _buildHugeMenuButton(
+          // 1. 最重要プライマリアクション: 「試合（対戦）を作成」
+          _buildPrimaryMatchCreateButton(
             context,
             enableLiquidGlass,
-            Icons.edit_note,
-            '試合開始（新しく作成）',
-            AppKendoColors.indigo,
             () => context.push('/setup-match/$tournamentId'),
           ),
           const SizedBox(height: AppSpacing.sm),
-          _buildHugeMenuButton(
-            context,
-            enableLiquidGlass,
-            Icons.gavel,
-            '部門別ルール設定',
-            AppKendoColors.teal,
-            () => context.push('/tournament/$tournamentId/category-rules'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
         ],
-        // ★ 修正: 本部操作員が「保護者や観客のスマートフォンにどう見えているか」を手元でシミュレート確認するための完璧な表現へ進化
-        _buildHugeMenuButton(
-          context,
-          enableLiquidGlass,
-          Icons.cast_connected,
-          '観客・保護者側の画面を確認 (Viewer)',
-          viewerThemeColor,
-          () {
-            final dojoId = ref.read(currentDojoIdProvider);
-            if (isBunaiksen) {
-              context.push(
-                '/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
-              );
-            } else {
-              context.push(
-                '/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
-              );
-            }
-          },
+
+        // 2. 2列スマートグリッド（4つの管理機能）
+        Row(
+          children: [
+            if (!isReadOnly)
+              Expanded(
+                child: _buildCompactTile(
+                  context: context,
+                  enableLiquidGlass: enableLiquidGlass,
+                  icon: Icons.gavel,
+                  title: '試合ルール設定',
+                  color: AppKendoColors.teal,
+                  onTap: () =>
+                      context.push('/tournament/$tournamentId/category-rules'),
+                ),
+              ),
+            if (!isReadOnly) const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _buildCompactTile(
+                context: context,
+                enableLiquidGlass: enableLiquidGlass,
+                icon: Icons.cast_connected,
+                title: '観客の画面を確認',
+                color: viewerThemeColor,
+                onTap: () {
+                  final dojoId = ref.read(currentDojoIdProvider);
+                  if (isBunaiksen) {
+                    context.push(
+                      '/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
+                    );
+                  } else {
+                    context.push(
+                      '/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        _buildHugeMenuButton(
-          context,
-          enableLiquidGlass,
-          Icons.print,
-          '公式記録の確認・PDF印刷',
-          AppKendoColors.blueGrey,
-          () => context.push('/official-record/$tournamentId'),
-        ),
-        const SizedBox(height: AppSpacing.md),
-
-        // ★ 修正: ご要望に基づき、ExpansionTileを廃止して「大会プログラム」をメインの1等地に昇格
-        // 観客権限（isReadOnly）の時は「見るだけ（閲覧専用）」であることを画面上に明示し、保護者に絶対的な安心感を提供
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton.icon(
-            onPressed: () => context.push('/tournament/$tournamentId/programs'),
-            icon: Icon(
-              Icons.picture_as_pdf,
-              size: 20,
-              color: isDark
-                  ? context.appColors.errorColor
-                  : context.appColors.errorColor,
-            ),
-            label: Text(
-              '大会プログラムの管理・追加',
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                fontSize: AppFontSize.body,
-                color: isDark
-                    ? const Color(0xFFFFFFFF)
-                    : context.appColors.textColor,
+        Row(
+          children: [
+            Expanded(
+              child: _buildCompactTile(
+                context: context,
+                enableLiquidGlass: enableLiquidGlass,
+                icon: Icons.print,
+                title: '試合結果一覧',
+                color: AppKendoColors.blueGrey,
+                onTap: () => context.push('/official-record/$tournamentId'),
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _buildCompactTile(
+                context: context,
+                enableLiquidGlass: enableLiquidGlass,
+                icon: Icons.picture_as_pdf,
+                title: '大会プログラム管理',
                 color: isDark
-                    ? const Color(0xFF38383A)
-                    : const Color(0x33000000),
+                    ? context.appColors.rosePink
+                    : context.appColors.errorColor,
+                onTap: () => context.push('/tournament/$tournamentId/programs'),
               ),
-              backgroundColor: isDark
-                  ? const Color(0xFF1C1C1E)
-                  : context.appColors.cardBackground,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
             ),
-          ),
+          ],
         ),
-        // ★ 修正: ユーザーを迷わせる不要な「自チーム選手成績」メニューは完全削除（Stage 3以降に封印移動）
       ],
     );
   }
 
-  Widget _buildHugeMenuButton(
+  /// 🌟 最重要プライマリボタン: 「試合（対戦）を作成」
+  Widget _buildPrimaryMatchCreateButton(
     BuildContext context,
     bool enableLiquidGlass,
-    IconData icon,
-    String title,
-    Color color,
     VoidCallback onTap,
   ) {
-    return GlassButton(
-      onPressed: onTap,
-      color: color,
-      icon: icon,
-      label: title,
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 14,
-        color: enableLiquidGlass
-            ? color
-            : context.appColors.textColor.withValues(alpha: 0.7),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = AppKendoColors.indigo;
+
+    return Material(
+      color: AppKendoColors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.medium,
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [
+                      primaryColor.withValues(alpha: 0.45),
+                      primaryColor.withValues(alpha: 0.28),
+                    ]
+                  : [primaryColor, primaryColor.withValues(alpha: 0.85)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: AppRadius.medium,
+            border: Border.all(
+              color: primaryColor.withValues(alpha: 0.6),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: primaryColor.withValues(alpha: isDark ? 0.25 : 0.35),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: AppKendoColors.pureWhite.withValues(alpha: 0.2),
+                  borderRadius: AppRadius.small,
+                ),
+                child: const Icon(
+                  Icons.add_circle_outline,
+                  size: 20,
+                  color: AppKendoColors.pureWhite,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              const Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '試合（対戦）を作成',
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.body,
+                      color: AppKendoColors.pureWhite,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 13,
+                color: AppKendoColors.pureWhite,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 📱 2列グリッド用 コンパクトスマートカードタイル
+  Widget _buildCompactTile({
+    required BuildContext context,
+    required bool enableLiquidGlass,
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: AppKendoColors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.medium,
+        child: Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: enableLiquidGlass
+                ? (isDark
+                      ? color.withValues(alpha: 0.18)
+                      : color.withValues(alpha: 0.12))
+                : context.appColors.cardBackground,
+            borderRadius: AppRadius.medium,
+            border: Border.all(
+              color: color.withValues(alpha: enableLiquidGlass ? 0.35 : 0.25),
+              width: 1.2,
+            ),
+            boxShadow: enableLiquidGlass
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: AppRadius.small,
+                ),
+                child: Icon(icon, size: 18, color: color),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.body,
+                      color: isDark
+                          ? const Color(0xFFFFFFFF)
+                          : context.appColors.textColor,
+                    ),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 11,
+                color: isDark
+                    ? const Color(0x80FFFFFF)
+                    : context.appColors.textColor.withValues(alpha: 0.4),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

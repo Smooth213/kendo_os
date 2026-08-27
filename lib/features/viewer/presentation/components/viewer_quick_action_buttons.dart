@@ -3,9 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 
-/// 観客席画面用 クイックアクションボタン群（結果一覧PDF/CSV、プログラム閲覧）
+/// 🥋 観客席画面用 クイックアクションボタン群（2列横並びスマートグリッド構成）
 class ViewerQuickActionButtons extends StatelessWidget {
   final String tournamentId;
   final bool enableLiquidGlass;
@@ -16,30 +15,6 @@ class ViewerQuickActionButtons extends StatelessWidget {
     required this.enableLiquidGlass,
   });
 
-  Widget _buildHugeMenuButton(
-    BuildContext context,
-    bool enableLiquidGlass,
-    IconData icon,
-    String title,
-    MaterialColor color,
-    VoidCallback onTap,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GlassButton(
-      onPressed: onTap,
-      color: color,
-      icon: icon,
-      label: title,
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 14,
-        color: enableLiquidGlass
-            ? (isDark ? color.shade500 : color.shade300)
-            : context.appColors.textColor.withValues(alpha: 0.7),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -49,54 +24,117 @@ class ViewerQuickActionButtons extends StatelessWidget {
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.xs,
       ),
-      child: Column(
+      child: Row(
         children: [
-          const SizedBox(height: AppSpacing.xl),
-          _buildHugeMenuButton(
-            context,
-            enableLiquidGlass,
-            Icons.print,
-            '試合結果一覧 (PDF/CSV)',
-            AppKendoColors.blueGrey,
-            () => context.push('/viewer-record/$tournamentId'),
+          Expanded(
+            child: _buildCompactTile(
+              context: context,
+              enableLiquidGlass: enableLiquidGlass,
+              icon: Icons.print,
+              title: '試合結果一覧',
+              color: AppKendoColors.blueGrey,
+              onTap: () => context.push('/viewer-record/$tournamentId'),
+            ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: OutlinedButton.icon(
-              onPressed: () => context.push(
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _buildCompactTile(
+              context: context,
+              enableLiquidGlass: enableLiquidGlass,
+              icon: Icons.picture_as_pdf,
+              title: '大会プログラム',
+              color: isDark
+                  ? context.appColors.rosePink
+                  : context.appColors.errorColor,
+              onTap: () => context.push(
                 '/tournament/$tournamentId/programs?role=viewer',
-              ),
-              icon: Icon(
-                Icons.picture_as_pdf,
-                size: 20,
-                color: isDark
-                    ? context.appColors.errorColor
-                    : context.appColors.errorColor,
-              ),
-              label: Text(
-                '大会プログラムを見る（閲覧専用）',
-                style: TextStyle(
-                  fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.body,
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xDE000000),
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                  color: isDark
-                      ? const Color(0xFF38383A)
-                      : context.appColors.separatorColor,
-                ),
-                backgroundColor: context.appColors.cardBackground,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCompactTile({
+    required BuildContext context,
+    required bool enableLiquidGlass,
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: AppKendoColors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.medium,
+        child: Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: enableLiquidGlass
+                ? (isDark
+                      ? color.withValues(alpha: 0.18)
+                      : color.withValues(alpha: 0.12))
+                : context.appColors.cardBackground,
+            borderRadius: AppRadius.medium,
+            border: Border.all(
+              color: color.withValues(alpha: enableLiquidGlass ? 0.35 : 0.25),
+              width: 1.2,
+            ),
+            boxShadow: enableLiquidGlass
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: AppRadius.small,
+                ),
+                child: Icon(icon, size: 18, color: color),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.body,
+                      color: isDark
+                          ? const Color(0xFFFFFFFF)
+                          : context.appColors.textColor,
+                    ),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 11,
+                color: isDark
+                    ? const Color(0x80FFFFFF)
+                    : context.appColors.textColor.withValues(alpha: 0.4),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -83,80 +83,79 @@ class TimelineMatchGroupCard extends ConsumerWidget {
             ),
             child: Slidable(
               key: ValueKey('group_$groupId'),
-              enabled: canManageTournamentUI,
+              enabled: !isReadOnlyUI,
               endActionPane: ActionPane(
                 motion: const ScrollMotion(),
                 children: [
-                  SlidableAction(
-                    onPressed: (context) =>
-                        TimelineDialogHelper.showEditGroupNoteDialog(
-                          context,
-                          ref,
-                          groupList,
-                        ),
-                    backgroundColor: AppKendoColors.blueAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    icon: Icons.edit,
-                    label: '編集',
-                  ),
-                  SlidableAction(
-                    onPressed: (context) async {
-                      final confirm = await showAppDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AppDialog(
-                          backgroundColor: context.appColors.cardBackground,
-                          titleWidget: Text(
-                            '試合グループの削除',
-                            style: TextStyle(
-                              fontWeight: AppFontWeight.bold,
-                              color: context.appColors.textColor,
-                            ),
+                  if (!isReadOnlyUI)
+                    SlidableAction(
+                      onPressed: (context) =>
+                          TimelineDialogHelper.showEditGroupNoteDialog(
+                            context,
+                            ref,
+                            groupList,
                           ),
-                          content: Text(
-                            'このグループに含まれる全試合を\n削除しますか？\n(取り消せません)',
-                            style: TextStyle(
-                              color: context.appColors.textColor,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: Text(
-                                'キャンセル',
-                                style: TextStyle(
-                                  color: context.appColors.subTextColor,
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: Text(
-                                '削除する',
-                                style: TextStyle(
-                                  color: context.appColors.errorColor,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        for (var m in groupList) {
-                          await ref
-                              .read(matchCommandProvider)
-                              .deleteMatch(m.id);
-                        }
-                      }
-                    },
-                    backgroundColor: AppKendoColors.redAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    icon: Icons.delete,
-                    borderRadius: const BorderRadius.horizontal(
-                      right: Radius.circular(AppRadius.mediumValue),
+                      backgroundColor: AppKendoColors.blueAccent,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      icon: Icons.edit,
+                      label: '編集',
                     ),
-                    label: '削除',
-                  ),
+                  if (canManageTournamentUI)
+                    SlidableAction(
+                      onPressed: (context) async {
+                        final confirm = await showAppDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AppDialog(
+                            backgroundColor: context.appColors.cardBackground,
+                            titleWidget: Text(
+                              '試合グループの削除',
+                              style: TextStyle(
+                                fontWeight: AppFontWeight.bold,
+                                color: context.appColors.textColor,
+                              ),
+                            ),
+                            content: Text(
+                              'このグループに含まれる全試合を\n削除しますか？\n(取り消せません)',
+                              style: TextStyle(
+                                color: context.appColors.textColor,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: Text(
+                                  'キャンセル',
+                                  style: TextStyle(
+                                    color: context.appColors.subTextColor,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: Text(
+                                  '削除する',
+                                  style: TextStyle(
+                                    color: context.appColors.errorColor,
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          for (var m in groupList) {
+                            await ref
+                                .read(matchCommandProvider)
+                                .deleteMatch(m.id);
+                          }
+                        }
+                      },
+                      backgroundColor: context.appColors.errorColor,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      icon: Icons.delete,
+                      label: '削除',
+                    ),
                 ],
               ),
               child: Container(

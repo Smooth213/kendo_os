@@ -266,5 +266,47 @@ void main() {
         expect(badgeDotFinder, findsOneWidget);
       },
     );
+
+    testWidgets('6. 【背景黒化バグ防止】 ライトモード時にボトムシート背景が白（cardBackground）で描画されること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
+
+      await tester.pumpWidget(
+        createTestTarget(
+          container: container,
+          tournamentId: 'tourney_999',
+          isStaffRoom: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap button to open bottom sheet
+      await tester.tap(find.text('Open Bottom Sheet'));
+      await tester.pumpAndSettle();
+
+      // ボトムシートのルートContainerを取得
+      final sheetFinder = find.byType(AnnounceHistoryBottomSheet);
+      expect(sheetFinder, findsOneWidget);
+
+      final containerFinder = find.descendant(
+        of: sheetFinder,
+        matching: find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final boxDec = widget.decoration as BoxDecoration;
+            // ライトモード時に黒（0xFF111827 / 0xFF000000 / 0xFF1C1C1E）ではなく白（0xFFFFFFFF）であること
+            return boxDec.color == const Color(0xFFFFFFFF);
+          }
+          return false;
+        }),
+      );
+
+      expect(containerFinder, findsOneWidget);
+    });
   });
 }

@@ -284,7 +284,7 @@ void main() {
 
       // 観客用通常大会ホーム画面の基本UI要素アサーション
       expect(find.text('大会ホーム (観客席)'), findsOneWidget);
-      expect(find.text('試合結果一覧 (PDF/CSV)'), findsOneWidget);
+      expect(find.text('試合結果一覧'), findsOneWidget);
     });
 
     testWidgets(
@@ -570,8 +570,8 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 本部画面に「観客・保護者側の画面を確認 (Viewer)」ボタンが存在することを確認
-        final viewerButton = find.text('観客・保護者側の画面を確認 (Viewer)');
+        // 本部画面に「観客の画面を確認」ボタンが存在することを確認
+        final viewerButton = find.text('観客の画面を確認');
         expect(viewerButton, findsOneWidget);
 
         // ボタンをタップして観客席画面へ遷移
@@ -580,12 +580,12 @@ void main() {
 
         // 観客席画面に遷移し、観客用UI（閲覧専用）が完全に一致して描画されること
         expect(find.text('大会ホーム (観客席)'), findsOneWidget);
-        expect(find.text('試合結果一覧 (PDF/CSV)'), findsOneWidget);
-        expect(find.text('大会プログラムを見る（閲覧専用）'), findsOneWidget);
+        expect(find.text('試合結果一覧'), findsOneWidget);
+        expect(find.text('大会プログラム'), findsOneWidget);
 
-        // 本部用ボタン（試合開始・部門別ルール設定など）は一切表示されないこと
-        expect(find.text('試合開始（新しく作成）'), findsNothing);
-        expect(find.text('部門別ルール設定'), findsNothing);
+        // 本部用ボタン（試合開始・試合ルール設定など）は一切表示されないこと
+        expect(find.textContaining('試合（対戦）を作成'), findsNothing);
+        expect(find.text('試合ルール設定'), findsNothing);
       },
     );
   });

@@ -48,10 +48,10 @@ void main() {
         // セッション確立の非同期処理とUIの再描画を待つ
         await tester.pumpAndSettle();
 
-        // 管理者(Admin)専用の「試合開始（新しく作成）」ボタンが確実に画面に存在することを検証
+        // 管理者(Admin)専用の「＋ 試合（対戦）を作成」ボタンが確実に画面に存在することを検証
         // 過去の不具合（キャッシュ依存）が再発した場合、ここはViewerに降格してしまいボタンが見つからずFailする
         expect(
-          find.textContaining('試合開始'),
+          find.textContaining('試合（対戦）を作成'),
           findsOneWidget,
           reason:
               'ローカルキャッシュが存在しないWeb環境であっても、Adminセッションが確立されていれば管理者用ボタンが表示されなければならない',
@@ -90,9 +90,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // 未ログイン状態（Viewer降格状態）では管理者ボタンが存在しないことを厳密に検証
-        expect(find.textContaining('試合開始'), findsNothing);
+        expect(find.textContaining('試合（対戦）を作成'), findsNothing);
         expect(
-          find.textContaining('観客・保護者側の画面を確認'),
+          find.textContaining('観客の画面を確認'),
           findsOneWidget,
         ); // 共通で公開されているボタンは見える
       },

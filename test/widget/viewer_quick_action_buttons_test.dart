@@ -32,7 +32,7 @@ void main() {
       ),
     );
 
-    expect(find.text('試合結果一覧 (PDF/CSV)'), findsOneWidget);
-    expect(find.text('大会プログラムを見る（閲覧専用）'), findsOneWidget);
+    expect(find.text('試合結果一覧'), findsOneWidget);
+    expect(find.text('大会プログラム'), findsOneWidget);
   });
 }

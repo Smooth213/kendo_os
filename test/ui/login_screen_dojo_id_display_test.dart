@@ -103,5 +103,33 @@ void main() {
         expect(find.text('変更'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      '3. 【新権限名称検証】 RoleSelectScreen に「代表・管理者」「監督・引率責任者」「スコア・記録係」「応援・保護者・選手」が表示されること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test204'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.light(),
+              home: const RoleSelectScreen(),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        expect(find.text('代表・管理者 (Admin)'), findsOneWidget);
+        expect(find.text('監督・引率責任者 (Operator)'), findsOneWidget);
+        expect(find.text('スコア・記録係 (Recorder)'), findsOneWidget);
+        expect(find.text('応援・保護者・選手 (Viewer) [PIN不要]'), findsOneWidget);
+      },
+    );
   });
 }

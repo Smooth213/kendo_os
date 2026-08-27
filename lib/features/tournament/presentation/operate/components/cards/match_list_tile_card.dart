@@ -261,81 +261,88 @@ class MatchListTileCard extends ConsumerWidget {
       ),
     );
 
-    if (!permissions.canManageTournament || !isDeletable) return tile;
+    final canEdit = !permissions.isReadOnly;
+    final canDelete =
+        (permissions.canDeleteData || permissions.canManageTournament) &&
+        isDeletable;
+
+    if (!canEdit && !canDelete) return tile;
 
     return Slidable(
       key: ValueKey(match.id),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
         children: [
-          SlidableAction(
-            onPressed: (context) {
-              showAppBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (ctx) {
-                  return MatchEditSheet(
-                    matches: [match],
-                    tournamentId: match.tournamentId,
-                    themeColors: AppThemeColors.ofMode(
-                      isDark: Theme.of(context).brightness == Brightness.dark,
-                      mode: 'operate',
-                    ),
-                  );
-                },
-              );
-            },
-            backgroundColor: AppKendoColors.blueAccent,
-            foregroundColor: AppKendoColors.pureWhite,
-            icon: Icons.edit,
-            label: '編集',
-          ),
-          SlidableAction(
-            onPressed: (context) async {
-              final confirm = await showAppDialog<bool>(
-                context: context,
-                builder: (ctx) => AppDialog(
-                  backgroundColor: isDark
-                      ? const Color(0xFF1C1C1E)
-                      : context.appColors.inputBackground,
-                  titleWidget: Text(
-                    '試合の削除',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
-                    ),
-                  ),
-                  content: Text(
-                    '削除しますか？\n(取り消せません)',
-                    style: TextStyle(color: context.appColors.textColor),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('キャンセル'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text(
-                        '削除',
-                        style: TextStyle(
-                          color: AppKendoColors.red,
-                          fontWeight: AppFontWeight.bold,
-                        ),
+          if (canEdit)
+            SlidableAction(
+              onPressed: (context) {
+                showAppBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (ctx) {
+                    return MatchEditSheet(
+                      matches: [match],
+                      tournamentId: match.tournamentId,
+                      themeColors: AppThemeColors.ofMode(
+                        isDark: Theme.of(context).brightness == Brightness.dark,
+                        mode: 'operate',
+                      ),
+                    );
+                  },
+                );
+              },
+              backgroundColor: AppKendoColors.blueAccent,
+              foregroundColor: AppKendoColors.pureWhite,
+              icon: Icons.edit,
+              label: '編集',
+            ),
+          if (canDelete)
+            SlidableAction(
+              onPressed: (context) async {
+                final confirm = await showAppDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AppDialog(
+                    backgroundColor: isDark
+                        ? const Color(0xFF1C1C1E)
+                        : context.appColors.inputBackground,
+                    titleWidget: Text(
+                      '試合の削除',
+                      style: TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        color: context.appColors.textColor,
                       ),
                     ),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                await ref.read(matchCommandProvider).deleteMatch(match.id);
-              }
-            },
-            backgroundColor: AppKendoColors.redAccent,
-            foregroundColor: AppKendoColors.pureWhite,
-            icon: Icons.delete,
-            label: '削除',
-          ),
+                    content: Text(
+                      '削除しますか？\n(取り消せません)',
+                      style: TextStyle(color: context.appColors.textColor),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('キャンセル'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text(
+                          '削除',
+                          style: TextStyle(
+                            color: AppKendoColors.red,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await ref.read(matchCommandProvider).deleteMatch(match.id);
+                }
+              },
+              backgroundColor: AppKendoColors.redAccent,
+              foregroundColor: AppKendoColors.pureWhite,
+              icon: Icons.delete,
+              label: '削除',
+            ),
         ],
       ),
       child: tile,

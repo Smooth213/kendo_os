@@ -24,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
 
 class MockStrokeRepository extends Mock implements StrokeRepository {}
 
@@ -703,5 +704,105 @@ void main() {
       expect(find.byTooltip('1つ戻す'), findsOneWidget);
       expect(find.byTooltip('すべて消す'), findsOneWidget);
     });
+
+    testWidgets(
+      '✅ 13. 観客ビュアー(Viewer)権限では、表示されている共有ペンは消しゴムで削除できず、個人ペンのみ削除対象となること',
+      (tester) async {
+        HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+        final program = ProgramModel(
+          id: 'p_viewer_erase',
+          tournamentId: 't1',
+          title: '観客消しゴムテスト',
+          fileUrl: 'https://placehold.co/400x600.jpg',
+          fileType: 'image',
+          pageCount: 1,
+          createdAt: DateTime.now(),
+        );
+
+        when(
+          () => mockProgramRepo.watchPrograms(any()),
+        ).thenAnswer((_) => Stream.value([program]));
+        when(() => mockStrokeRepo.deleteStroke(any())).thenAnswer((_) async {});
+        when(
+          () => mockLocalStrokeRepo.deleteStroke(
+            any(),
+            firestoreId: any(named: 'firestoreId'),
+          ),
+        ).thenAnswer((_) async {});
+
+        // 共有ペン (100, 100)
+        final sharedStroke = StrokeModel(
+          id: 'shared_stroke_999',
+          programId: 'p_viewer_erase',
+          points: [const Offset(100, 100), const Offset(105, 105)],
+          color: Colors.pink,
+          strokeWidth: 10.0,
+          isShared: true,
+          pageIndex: 0,
+        );
+
+        // 個人ペン (200, 200)
+        final privateStroke = LocalStrokeModel()
+          ..id = 888
+          ..programId = 'p_viewer_erase'
+          ..pointsX = [200.0, 205.0]
+          ..pointsY = [200.0, 205.0]
+          ..colorValue = Colors.blue.toARGB32()
+          ..strokeWidth = 5.0
+          ..createdAt = DateTime.now();
+
+        when(
+          () => mockStrokeRepo.watchStrokes(any()),
+        ).thenAnswer((_) => Stream.value([sharedStroke]));
+        when(
+          () => mockLocalStrokeRepo.watchStrokes(any()),
+        ).thenAnswer((_) => Stream.value([privateStroke]));
+
+        // 観客権限(isReadOnly: true)で画面を起動
+        await tester.pumpWidget(
+          createViewerWidget([program], isReadOnly: true),
+        );
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // 書き込みモードをONにする
+        await tester.tap(find.byIcon(Icons.edit));
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // 消しゴムツールを選択
+        final eraserButton = find.byTooltip('消しゴム');
+        expect(eraserButton, findsOneWidget);
+        await tester.tap(eraserButton);
+        await tester.pump(const Duration(milliseconds: 200));
+
+        final listenerFinder = find.byWidgetPredicate(
+          (widget) => widget is Listener && widget.onPointerMove != null,
+        );
+        expect(listenerFinder, findsOneWidget);
+        final Listener listener = tester.widget(listenerFinder);
+
+        // 1. 共有ペンの位置 (102, 102) をタップして消そうとする
+        listener.onPointerDown!(
+          const PointerDownEvent(position: Offset(102, 102)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // ★ 共有ペンは決して削除されないこと（deleteStrokeが一切呼ばれていないこと）を検証！
+        verifyNever(() => mockStrokeRepo.deleteStroke(any()));
+
+        // 2. 個人ペンの位置 (202, 202) をタップして消す
+        listener.onPointerDown!(
+          const PointerDownEvent(position: Offset(202, 202)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // ★ 個人ペンは正しく削除処理がトリガーされたことを検証！
+        verify(
+          () => mockLocalStrokeRepo.deleteStroke(
+            888,
+            firestoreId: any(named: 'firestoreId'),
+          ),
+        ).called(1);
+      },
+    );
   });
 }
