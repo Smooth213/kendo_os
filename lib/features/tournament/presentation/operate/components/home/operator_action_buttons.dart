@@ -38,21 +38,9 @@ class OperatorActionButtons extends ConsumerWidget {
           const SizedBox(height: AppSpacing.sm),
         ],
 
-        // 2. 2列スマートグリッド（管理機能）
+        // 2. 2列スマートグリッド（4つの管理機能）
         Row(
           children: [
-            Expanded(
-              child: _buildCompactTile(
-                context: context,
-                enableLiquidGlass: enableLiquidGlass,
-                icon: Icons.stadium_outlined,
-                title: 'マルチコート進行',
-                color: AppKendoColors.indigo,
-                onTap: () =>
-                    context.push('/court-status?tournamentId=$tournamentId'),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
             if (!isReadOnly)
               Expanded(
                 child: _buildCompactTile(
@@ -64,23 +52,8 @@ class OperatorActionButtons extends ConsumerWidget {
                   onTap: () =>
                       context.push('/tournament/$tournamentId/category-rules'),
                 ),
-              )
-            else
-              Expanded(
-                child: _buildCompactTile(
-                  context: context,
-                  enableLiquidGlass: enableLiquidGlass,
-                  icon: Icons.print,
-                  title: '試合結果一覧',
-                  color: AppKendoColors.blueGrey,
-                  onTap: () => context.push('/official-record/$tournamentId'),
-                ),
               ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
+            if (!isReadOnly) const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _buildCompactTile(
                 context: context,
@@ -102,33 +75,44 @@ class OperatorActionButtons extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            if (!isReadOnly)
-              Expanded(
-                child: _buildCompactTile(
-                  context: context,
-                  enableLiquidGlass: enableLiquidGlass,
-                  icon: Icons.print,
-                  title: '試合結果一覧',
-                  color: AppKendoColors.blueGrey,
-                  onTap: () => context.push('/official-record/$tournamentId'),
-                ),
-              )
-            else
-              Expanded(
-                child: _buildCompactTile(
-                  context: context,
-                  enableLiquidGlass: enableLiquidGlass,
-                  icon: Icons.picture_as_pdf,
-                  title: '大会プログラム管理',
-                  color: isDark
-                      ? context.appColors.rosePink
-                      : context.appColors.errorColor,
-                  onTap: () =>
-                      context.push('/tournament/$tournamentId/programs'),
-                ),
-              ),
           ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Expanded(
+              child: _buildCompactTile(
+                context: context,
+                enableLiquidGlass: enableLiquidGlass,
+                icon: Icons.print,
+                title: '試合結果一覧',
+                color: AppKendoColors.blueGrey,
+                onTap: () => context.push('/official-record/$tournamentId'),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _buildCompactTile(
+                context: context,
+                enableLiquidGlass: enableLiquidGlass,
+                icon: Icons.picture_as_pdf,
+                title: '大会プログラム管理',
+                color: isDark
+                    ? context.appColors.rosePink
+                    : context.appColors.errorColor,
+                onTap: () => context.push('/tournament/$tournamentId/programs'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildCompactTile(
+          context: context,
+          enableLiquidGlass: enableLiquidGlass,
+          icon: Icons.stadium_outlined,
+          title: 'マルチコート進行',
+          color: AppKendoColors.indigo,
+          onTap: () => context.push('/court-status?tournamentId=$tournamentId'),
         ),
       ],
     );
