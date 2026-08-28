@@ -67,6 +67,7 @@ abstract class ScoreEvent with _$ScoreEvent {
     @Default(false) bool isIppon,
     @Default(false) bool isHansoku,
     @Default(false) bool isFusen,
+    @Default(false) bool isRetirement,
     @Default(false) bool isHantei,
     @Default(false) bool isUndo,
     @Default(false) bool isRestore,

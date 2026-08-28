@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_hantei_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_player_name_edit_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_representative_modal_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_retirement_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_snapshot_history_dialog.dart';
 import 'package:kendo_os/features/p2p/presentation/components/p2p_broadcast_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_next_match_sheet.dart';
@@ -219,6 +220,20 @@ class MatchDialogHelper {
         isDark: isDark,
         onSelected: (result) => Navigator.pop(ctx, result),
       ),
+    );
+  }
+
+  static void showRetirementDialog({
+    required BuildContext context,
+    required MatchModel match,
+    required String? currentUserId,
+    required bool isDark,
+  }) {
+    MatchRetirementDialog.show(
+      context,
+      match: match,
+      currentUserId: currentUserId,
+      isDark: isDark,
     );
   }
 }

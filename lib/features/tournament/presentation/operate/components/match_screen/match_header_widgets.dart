@@ -74,6 +74,23 @@ class MatchHeaderActions extends ConsumerWidget {
             }
           },
         ),
+        if (match.status != 'finished' && match.status != 'approved')
+          IconButton(
+            icon: const Icon(
+              Icons.personal_injury_outlined,
+              color: AppKendoColors.pureWhite,
+            ),
+            tooltip: '途中棄権の記録（負傷・事故等による不戦勝付与）',
+            onPressed: () {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              MatchDialogHelper.showRetirementDialog(
+                context: context,
+                match: match,
+                currentUserId: null,
+                isDark: isDark,
+              );
+            },
+          ),
         const ManualHelpButton(
           manualPath: 'docs/manuals/quickstart/operator_1pager.md',
           color: AppKendoColors.pureWhite,

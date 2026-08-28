@@ -38,6 +38,7 @@ class ScoreEventLegacyAdapter {
     bool isCanceled = false,
     String deviceId = 'local_device',
     int logicalClock = 0,
+    bool isRetirement = false,
   }) {
     final eventId = id ?? const Uuid().v4();
     final time = timestamp ?? DateTime.now();
@@ -126,6 +127,7 @@ class ScoreEventLegacyAdapter {
           id: eventId,
           side: side,
           isFusen: true,
+          isRetirement: isRetirement,
           timestamp: time,
           userId: userId,
           sequence: sequence,

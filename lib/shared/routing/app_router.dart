@@ -12,6 +12,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/role
 import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_setup_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/category_rules_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/court_status_board_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/create_tournament_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart';
@@ -224,6 +225,17 @@ final appRouter = GoRouter(
         tournamentId: state.uri.queryParameters['tournamentId'],
         child: TeamScoreboardScreen(
           groupName: state.pathParameters['groupName']!,
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/court-status',
+      builder: (context, state) => RoleInjector(
+        roleStr: state.uri.queryParameters['role'],
+        dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
+        child: CourtStatusBoardScreen(
+          tournamentId: state.uri.queryParameters['tournamentId'],
         ),
       ),
     ),

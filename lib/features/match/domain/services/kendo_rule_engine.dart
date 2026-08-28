@@ -174,15 +174,10 @@ class KendoRuleEngine {
     MatchRule? rule,
     List<ScoreEvent> events = const [],
   ]) {
-    // ★ Phase 8: 明示的な決着イベント(判定・引き分け)がある場合、延長戦には絶対に入らない
+    // 明示的な決着イベント(判定)がある場合、延長戦には絶対に入らない
     for (var e in events) {
       if (e.isCanceled) continue;
-      final eStr = e.toString().toLowerCase();
-      if (e.isHantei ||
-          eStr.contains('hantei') ||
-          eStr.contains('draw') ||
-          eStr.contains('hikiwake') ||
-          eStr.contains('tie')) {
+      if (e.isHantei || e.type == PointType.hantei) {
         return false;
       }
     }
@@ -331,10 +326,14 @@ class KendoRuleEngine {
       } else if (e.isFusen) {
         if (e.side == Side.red) {
           redDisplays.add(PointDisplay('◯', isFirstOfMatch));
-          redDisplays.add(PointDisplay('◯', false));
+          if (!e.isRetirement) {
+            redDisplays.add(PointDisplay('◯', false));
+          }
         } else if (e.side == Side.white) {
           whiteDisplays.add(PointDisplay('◯', isFirstOfMatch));
-          whiteDisplays.add(PointDisplay('◯', false));
+          if (!e.isRetirement) {
+            whiteDisplays.add(PointDisplay('◯', false));
+          }
         }
         isFirstOfMatch = false;
       } else {

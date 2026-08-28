@@ -32,8 +32,13 @@ abstract class BaseScoringRule implements ScoringRule {
         if (e.side == Side.white) white++;
       }
       if (e.type == PointType.fusen) {
-        if (e.side == Side.red) red += currentTarget;
-        if (e.side == Side.white) white += currentTarget;
+        if (e.isRetirement) {
+          if (e.side == Side.red) red++;
+          if (e.side == Side.white) white++;
+        } else {
+          if (e.side == Side.red) red += currentTarget;
+          if (e.side == Side.white) white += currentTarget;
+        }
       }
     }
 
@@ -146,13 +151,12 @@ abstract class BaseVictoryRule implements VictoryRule {
     MatchResultStatus status = MatchResultStatus.inProgress;
     final state = context.matchState;
 
-    // ★ Phase 8: イベント履歴に明示的な勝敗決定（判定・引き分け）があれば最優先で適用する
+    // イベント履歴に明示的な判定勝ちがあれば最優先で適用する
     for (var e in context.events) {
       if (e.isCanceled) continue;
-      final eStr = e.toString().toLowerCase();
 
       // 判定勝ちイベントの評価
-      if (e.isHantei || eStr.contains('hantei')) {
+      if (e.isHantei || e.type == PointType.hantei) {
         if (e.side == Side.red) {
           return RuleResult(
             allowed: true,
@@ -170,19 +174,6 @@ abstract class BaseVictoryRule implements VictoryRule {
             ),
           );
         }
-      }
-
-      // 引き分けイベントの評価
-      if (eStr.contains('draw') ||
-          eStr.contains('hikiwake') ||
-          eStr.contains('tie')) {
-        return RuleResult(
-          allowed: true,
-          transition: MatchTransition(
-            updatedState: state,
-            resultStatus: MatchResultStatus.draw,
-          ),
-        );
       }
     }
 

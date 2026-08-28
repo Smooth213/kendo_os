@@ -106,7 +106,12 @@ class MatchApplicationService {
       _persistenceHelper.getMatchSafely(matchId);
 
   // 1. 一本入力フロー
-  Future<void> addIppon(String matchId, Side side, PointType type) async {
+  Future<void> addIppon(
+    String matchId,
+    Side side,
+    PointType type, {
+    bool isRetirement = false,
+  }) async {
     final traceId = const Uuid().v4();
     await _safeExecute(
       () async {
@@ -118,17 +123,18 @@ class MatchApplicationService {
         final settings = _ref.read(settingsProvider);
         final currentUser = _getCurrentUser();
 
-        final typeLabel =
-            {
-              PointType.men: 'メン',
-              PointType.kote: 'コテ',
-              PointType.doIdo: 'ドウ',
-              PointType.tsuki: 'ツキ',
-              PointType.hansoku: '反則',
-              PointType.fusen: '不戦勝',
-              PointType.hantei: '判定',
-            }[type] ??
-            type.name;
+        final typeLabel = isRetirement
+            ? '途中棄権'
+            : ({
+                    PointType.men: 'メン',
+                    PointType.kote: 'コテ',
+                    PointType.doIdo: 'ドウ',
+                    PointType.tsuki: 'ツキ',
+                    PointType.hansoku: '反則',
+                    PointType.fusen: '不戦勝',
+                    PointType.hantei: '判定',
+                  }[type] ??
+                  type.name);
         var match = _addSnapshotToMatch(
           initialMatch,
           '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前',
@@ -148,6 +154,7 @@ class MatchApplicationService {
           userId: currentUser.id,
           sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
           logicalClock: maxClock + 1,
+          isRetirement: isRetirement,
         );
 
         final permissionService = _ref.read(permissionServiceProvider);
@@ -420,9 +427,7 @@ class MatchApplicationService {
   Future<void> approveMatch(String matchId) async {
     final traceId = const Uuid().v4();
     await _safeExecute(
-      () async {
-        await _hanteiFinishHelper.approveMatch(matchId, traceId);
-      },
+      () => _hanteiFinishHelper.approveMatch(matchId, traceId),
       '試合の確定ができませんでした。もう一度お試しください',
       traceId: traceId,
     );
@@ -432,12 +437,10 @@ class MatchApplicationService {
     final traceId = const Uuid().v4();
     await _safeExecute(
       () async {
-        final initialMatch = await _getMatchSafely(matchId);
-        if (initialMatch == null) return;
+        final initial = await _getMatchSafely(matchId);
+        if (initial == null) return;
         final updated = await _hanteiFinishHelper.finishMatch(matchId);
-        if (updated != null) {
-          await _finalizeIfNeeded(updated, initialMatch);
-        }
+        if (updated != null) await _finalizeIfNeeded(updated, initial);
       },
       '試合終了の保存に失敗しました',
       traceId: traceId,
@@ -448,34 +451,29 @@ class MatchApplicationService {
     final traceId = const Uuid().v4();
     await _safeExecute(
       () async {
-        final initialMatch = await _getMatchSafely(matchId);
-        if (initialMatch == null) return;
-        final currentUser = _getCurrentUser();
+        final initial = await _getMatchSafely(matchId);
+        if (initial == null) return;
         final updated = await _hanteiFinishHelper.finishMatchManually(
           matchId: matchId,
-          currentUser: currentUser,
+          currentUser: _getCurrentUser(),
           hanteiWinner: hanteiWinner,
         );
-        if (updated != null) {
-          await _finalizeIfNeeded(updated, initialMatch);
-        }
+        if (updated != null) await _finalizeIfNeeded(updated, initial);
       },
       '試合の終了保存に失敗しました',
       traceId: traceId,
     );
   }
 
-  Future<void> _finalizeIfNeeded(
-    MatchModel updatedMatch,
-    MatchModel oldMatch,
-  ) => _progressionService.finalizeIfNeeded(
-    updatedMatch: updatedMatch,
-    oldMatch: oldMatch,
-    onApprove: approveMatch,
-    onFinish: finishMatch,
-    onAddIppon: addIppon,
-    onSaveAndSync: _persistenceHelper.saveAndSync,
-  );
+  Future<void> _finalizeIfNeeded(MatchModel updated, MatchModel old) =>
+      _progressionService.finalizeIfNeeded(
+        updatedMatch: updated,
+        oldMatch: old,
+        onApprove: approveMatch,
+        onFinish: finishMatch,
+        onAddIppon: addIppon,
+        onSaveAndSync: _persistenceHelper.saveAndSync,
+      );
 }
 
 final matchApplicationServiceProvider = Provider<MatchApplicationService>((

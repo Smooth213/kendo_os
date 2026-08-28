@@ -325,7 +325,7 @@ mixin _$StrokeModel {
 
  String get id; String get programId; int get pageIndex;// 何ページ目に描かれた線か
  String get authorId;// 誰が描いたか
- int get colorValue;// ARGBのint値 (例: Colors.red.value)
+ int get colorValue;// ARGBのint値 (例: AppKendoColors.red.value)
  double get strokeWidth;// 線の太さ
  List<double> get points;// [x1, y1, x2, y2, ...] のフラットリスト（軽量化・高速化のため）
  bool get isShared;// true: 共有ハイライト(全員), false: 個人メモ(自分のみ)
@@ -541,7 +541,7 @@ class _StrokeModel implements StrokeModel {
 @override final  String authorId;
 // 誰が描いたか
 @override final  int colorValue;
-// ARGBのint値 (例: Colors.red.value)
+// ARGBのint値 (例: AppKendoColors.red.value)
 @override final  double strokeWidth;
 // 線の太さ
  final  List<double> _points;

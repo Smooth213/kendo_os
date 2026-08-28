@@ -5,6 +5,7 @@ import 'package:kendo_os/features/match/domain/match_aggregate.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_queue.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_snapshot_service.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
@@ -33,6 +34,46 @@ class MatchCommandService {
 
   bool _isUndoing = false;
   DateTime? _lastUndoTime;
+
+  /// 全日本剣道連盟ルールに準拠した途中棄権の記録
+  /// （相手に不戦勝2本を付与。すでに1本取っていた場合は1本追加して2本勝ち）
+  Future<void> recordRetirement({
+    required MatchModel match,
+    required Side retiredSide,
+    required String? userId,
+  }) async {
+    try {
+      final winnerSide = retiredSide == Side.red ? Side.white : Side.red;
+      final service = ref.read(matchApplicationServiceProvider);
+
+      final ruleEngine = KendoRuleEngine();
+      final analysis = ruleEngine.analyzeHistory(
+        match.events,
+        match,
+        match.rule,
+      );
+      final currentWinnerIppon = winnerSide == Side.red
+          ? analysis.context.redIppon
+          : analysis.context.whiteIppon;
+      final targetIppon = analysis.context.targetIppon;
+      final neededPoints = (targetIppon - currentWinnerIppon).clamp(
+        1,
+        targetIppon,
+      );
+
+      for (int i = 0; i < neededPoints; i++) {
+        await service.addIppon(
+          match.id,
+          winnerSide,
+          PointType.fusen,
+          isRetirement: true,
+        );
+      }
+    } catch (e) {
+      debugPrint('🔥 [Command Error] recordRetirement: $e');
+      rethrow;
+    }
+  }
 
   Future<void> completeMatchWithHantei(
     MatchModel currentMatch,
