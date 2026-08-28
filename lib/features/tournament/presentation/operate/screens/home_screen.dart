@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
@@ -208,47 +207,6 @@ class HomeScreen extends ConsumerWidget {
                             tournamentId: tournamentId,
                             isStaffRoom: true,
                           ),
-                          if (!isReadOnly)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.sm,
-                                horizontal: AppSpacing.sm,
-                              ),
-                              child: ElevatedButton.icon(
-                                onPressed: () => context.go('/'),
-                                icon: Icon(
-                                  Icons.home,
-                                  color: isDark
-                                      ? const Color(0xFFFFFFFF)
-                                      : themeColors.primaryAccent,
-                                  size: 18,
-                                ),
-                                label: Text(
-                                  'トップへ',
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(
-                                        color: isDark
-                                            ? const Color(0xFFFFFFFF)
-                                            : themeColors.primaryAccent,
-                                        fontWeight: AppFontWeight.bold,
-                                      ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isDark
-                                      ? context.appColors.textColor.withValues(
-                                          alpha: 0.1,
-                                        )
-                                      : themeColors.softAccent,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.md,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: AppRadius.medium,
-                                  ),
-                                ),
-                              ),
-                            ),
                           IconButton(
                             icon: Icon(
                               Icons.qr_code_2,

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('🔒 現場安全弁 - 道場ルームID重複チェック＆警告ダイアログ検証テスト', () {
@@ -278,6 +280,54 @@ void main() {
       final warningText = tester.widget<Text>(warningMsgFinder);
       expect(warningText.style?.color, isNot(equals(const Color(0x8A000000))));
       expect(warningText.style?.color, isNot(equals(Colors.black)));
+
+      container.dispose();
+    });
+
+    testWidgets('【履歴サジェスト視認性保証テスト】ライトモード時、過去の履歴サジェストが黒潰れせず高コントラストで視認できること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'kendo_os_dojo_room_history': ['tokyo_dojo_2026'],
+      });
+
+      final notifier = DojoRoomHistoryNotifier();
+      await notifier.addHistory('tokyo_dojo_2026');
+
+      final container = ProviderContainer(
+        overrides: [
+          roomFirestoreProvider.overrideWithValue(fakeFirestore),
+          dojoRoomHistoryProvider.overrideWith((ref) => notifier),
+        ],
+      );
+
+      await tester.pumpWidget(createTestTarget(container, isDark: false));
+
+      // ダイアログを開く
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // 入力欄にフォーカスを当ててサジェストを表示
+      await tester.tap(find.byType(TextField));
+      await tester.pumpAndSettle();
+
+      // 履歴「tokyo_dojo_2026」が表示されていること
+      final historyFinder = find.text('tokyo_dojo_2026');
+      expect(historyFinder, findsOneWidget);
+
+      // 履歴テキストのスタイル検証
+      final textWidget = tester.widget<Text>(historyFinder);
+      expect(textWidget.style?.color, isNot(equals(Colors.transparent)));
+
+      // サジェストのMaterial背景色が黒（0xFF000000）ではなく、カード背景（白系）であること
+      final materialWidgets = tester.widgetList<Material>(
+        find.byType(Material),
+      );
+      final dropdownMaterial = materialWidgets.firstWhere(
+        (m) => m.elevation == 8.0,
+      );
+      expect(dropdownMaterial.color, isNot(equals(const Color(0xFF000000))));
+      expect(dropdownMaterial.color, isNot(equals(Colors.black)));
 
       container.dispose();
     });

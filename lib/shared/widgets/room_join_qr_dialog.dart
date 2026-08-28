@@ -176,8 +176,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                       runSpacing: AppSpacing.sm,
                       children: [
                         TextButton(
-                          onPressed: () =>
-                              Navigator.of(context).pop(), // 閉じて別の名前の入力を促す
+                          onPressed: () => Navigator.of(context).pop(),
                           child: const Text(
                             'キャンセル（変更する）',
                             style: TextStyle(
@@ -192,8 +191,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                             elevation: 0,
                           ),
                           onPressed: () {
-                            Navigator.of(context).pop(); // 警告を閉じる
-                            _executeFinalConnection(code); // 既存の部屋として接続を承認
+                            Navigator.of(context).pop();
+                            _executeFinalConnection(code);
                           },
                           child: const Text(
                             'このまま接続',
@@ -359,10 +358,17 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                             alignment: Alignment.topLeft,
                             child: Material(
                               elevation: 8.0,
-                              borderRadius: AppRadius.medium,
                               color: isDark
                                   ? const Color(0xFF2C2C2E)
-                                  : context.appColors.textColor,
+                                  : context.appColors.cardBackground,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: AppRadius.medium,
+                                side: BorderSide(
+                                  color: context.appColors.separatorColor
+                                      .withValues(alpha: 0.5),
+                                  width: 1,
+                                ),
+                              ),
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   maxHeight: 200,
@@ -400,7 +406,6 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                                                     .notifier,
                                               )
                                               .removeHistory(option);
-                                          // リストを再描画するためテキストを同値で再セットするハック
                                           final selection =
                                               _codeController.selection;
                                           _codeController.text =

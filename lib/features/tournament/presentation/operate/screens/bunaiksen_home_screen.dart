@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../components/bulk_rule_edit_sheet.dart';
@@ -89,6 +90,7 @@ class BunaiksenHomeScreen extends ConsumerWidget {
               icon: const Icon(Icons.visibility),
               tooltip: '観客席プレビュー',
               onPressed: () {
+                AppHaptics.selection();
                 ref.read(bunaiksenViewDateProvider.notifier).state = viewDate;
                 final dojoId = ref.read(currentDojoIdProvider);
                 context.push(
@@ -99,17 +101,15 @@ class BunaiksenHomeScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.qr_code_2),
               tooltip: '観戦リンクを共有する',
-              onPressed: () => BunaiksenHomeActionHelper.showShareDialog(
-                context: context,
-                ref: ref,
-                tournamentId: dateId,
-                dateDisplay: dateDisplay,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.leaderboard_outlined),
-              onPressed: () => context.push('/bunaiksen-record'),
-              tooltip: '成績一覧',
+              onPressed: () {
+                AppHaptics.selection();
+                BunaiksenHomeActionHelper.showShareDialog(
+                  context: context,
+                  ref: ref,
+                  tournamentId: dateId,
+                  dateDisplay: dateDisplay,
+                );
+              },
             ),
           ],
           leading: IconButton(

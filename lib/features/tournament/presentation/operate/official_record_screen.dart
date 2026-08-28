@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_expedition_summary_card.dart';
@@ -120,44 +119,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               ManualHelpButton(
                 manualPath: 'docs/manuals/operator/official_record.md',
                 color: headerTextColor,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.sm,
-                  horizontal: AppSpacing.sm,
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: () => context.go('/'),
-                  icon: Icon(
-                    Icons.home,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : context.appColors.primaryAccent,
-                    size: 16,
-                  ),
-                  label: Text(
-                    'トップへ',
-                    style: TextStyle(
-                      color: isDark
-                          ? const Color(0xFFFFFFFF)
-                          : context.appColors.primaryAccent,
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.small,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? context.appColors.textColor.withValues(alpha: 0.15)
-                        : themeColors.softAccent,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.round,
-                    ),
-                  ),
-                ),
               ),
             ],
             bottom: TabBar(

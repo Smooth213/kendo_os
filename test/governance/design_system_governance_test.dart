@@ -1088,5 +1088,33 @@ void main() {
         );
       },
     );
+
+    test(
+      '34. [AppBar文字切れ防止] AppHeader の actions にタイトルの幅を圧迫する巨大ボタン (ElevatedButton.icon) が直書きされていないこと',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          final content = file.readAsStringSync();
+          if (content.contains('AppHeader(') &&
+              content.contains('ElevatedButton.icon(')) {
+            // AppHeader の actions 直下で ElevatedButton.icon が使われているか検出
+            if (RegExp(
+              r'actions:\s*\[[^\]]*ElevatedButton\.icon',
+            ).hasMatch(content)) {
+              violations.add(file.path);
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'AppHeader の actions にタイトルの幅を圧迫する巨大なボタンが検出されました。アイコンボタンまたは三点リーダー More メニューを使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }
