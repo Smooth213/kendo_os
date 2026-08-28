@@ -41,42 +41,24 @@ class TimelineRenameTeamSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = TextEditingController(text: oldName);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = context.appColors.primaryAccent;
+    final themeColors = context.appColors;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
-        ),
-      ),
+    return AppBottomSheetContent(
+      showDragHandle: true,
       padding: EdgeInsets.only(
-        top: AppSpacing.lg,
         left: AppSpacing.xl,
         right: AppSpacing.xl,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0x33000000),
-                borderRadius: AppRadius.medium,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
           Text(
             'チーム名の修正・統合',
             style: TextStyle(
               fontWeight: AppFontWeight.bold,
-              color: primaryColor,
+              color: themeColors.primaryAccent,
               fontSize: AppFontSize.headline,
             ),
           ),
@@ -95,10 +77,8 @@ class TimelineRenameTeamSheet extends StatelessWidget {
             decoration: InputDecoration(
               labelText: '新しいチーム名',
               filled: true,
-              fillColor: isDark
-                  ? const Color(0xFF2C2C2E)
-                  : const Color(0xFFF2F2F7),
-              border: OutlineInputBorder(
+              fillColor: themeColors.inputBackground,
+              border: const OutlineInputBorder(
                 borderRadius: AppRadius.medium,
                 borderSide: BorderSide.none,
               ),
@@ -127,10 +107,12 @@ class TimelineRenameTeamSheet extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: themeColors.primaryAccent,
                 foregroundColor: AppKendoColors.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.medium,
+                ),
               ),
               child: const Text(
                 '一括修正して統合する',

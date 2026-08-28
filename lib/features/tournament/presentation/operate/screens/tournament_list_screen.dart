@@ -15,6 +15,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'dart:ui';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 
 // ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
@@ -73,7 +74,7 @@ class TournamentListScreen extends ConsumerWidget {
               : ref.watch(tournamentRepositoryProvider).watchTournaments(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: AppLoadingIndicator());
             }
             if (snapshot.hasError) {
               return Center(child: Text('エラーが発生しました: ${snapshot.error}'));

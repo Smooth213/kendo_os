@@ -5,6 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_pdf_download_card.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 /// 📖 総合マニュアルタブ表示ビュー（純粋UIレイアウトコンポーネント）
@@ -64,7 +65,7 @@ class ManualFullManualTabView extends StatelessWidget {
               primaryIcon: Icons.open_in_new,
               onPrimaryPressed: onOpenPdfInBrowser,
               secondaryLabel: '共有する',
-              secondaryIcon: Icons.share,
+              secondaryIcon: Icons.ios_share,
               onSecondaryPressed: onShareWebUrl,
               isDark: isDark,
             ),
@@ -90,7 +91,7 @@ class ManualFullManualTabView extends StatelessWidget {
                   style: TextStyle(fontWeight: AppFontWeight.bold),
                 ),
                 TextButton.icon(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 16),
                   label: const Text('PDF版に戻る'),
                   onPressed: onDisableMarkdownFallback,
                 ),
@@ -122,23 +123,30 @@ class ManualFullManualTabView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(),
+              const AppLoadingIndicator(),
               const SizedBox(height: AppSpacing.xl),
               const Text(
                 'マニュアルをロード中...',
                 style: TextStyle(
                   fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.subhead,
+                  fontSize: AppFontSize.body,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              LinearProgressIndicator(value: downloadProgress),
+              LinearProgressIndicator(
+                value: downloadProgress > 0 ? downloadProgress : null,
+                backgroundColor: AppKendoColors.grey.withValues(alpha: 0.2),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppKendoColors.ipponGold,
+                ),
+                borderRadius: AppRadius.micro,
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                '${(downloadProgress * 100).toStringAsFixed(0)}%',
+                '${(downloadProgress * 100).toInt()}% 完了',
                 style: const TextStyle(
-                  fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.body,
+                  fontSize: AppFontSize.small,
+                  color: AppKendoColors.grey,
                 ),
               ),
             ],
@@ -167,7 +175,7 @@ class ManualFullManualTabView extends StatelessWidget {
             primaryIcon: Icons.print,
             onPrimaryPressed: onPrintPdf,
             secondaryLabel: '共有/保存',
-            secondaryIcon: Icons.share,
+            secondaryIcon: Icons.ios_share,
             onSecondaryPressed: onSharePdf,
             isDark: isDark,
           ),

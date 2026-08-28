@@ -10,8 +10,11 @@ import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 /// 団体戦のオーダー並び替え＆補欠交代を行うボトムシート
 class OrderReorderBottomSheet extends ConsumerStatefulWidget {
@@ -247,19 +250,10 @@ class _OrderReorderBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
     if (_isSaving) {
-      return Container(
+      return const SizedBox(
         height: 300,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
-          ),
-        ),
-        child: const Center(child: CircularProgressIndicator()),
+        child: Center(child: AppLoadingIndicator()),
       );
     }
 
@@ -268,46 +262,22 @@ class _OrderReorderBottomSheetState
     final teamsAsync = ref.watch(registeredTeamsProvider(tournamentId));
 
     return playersAsync.when(
-      loading: () => Container(
+      loading: () => const SizedBox(
         height: 300,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
-          ),
-        ),
-        child: const Center(child: CircularProgressIndicator()),
+        child: Center(child: AppLoadingIndicator()),
       ),
-      error: (err, stack) => Container(
+      error: (err, stack) => SizedBox(
         height: 300,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
-          ),
-        ),
         child: Center(child: Text('選手リストの読み込みに失敗しました: $err')),
       ),
       data: (allPlayers) {
         return teamsAsync.when(
-          loading: () => Container(
+          loading: () => const SizedBox(
             height: 300,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.xlargeValue),
-              ),
-            ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: Center(child: AppLoadingIndicator()),
           ),
-          error: (err, stack) => Container(
+          error: (err, stack) => SizedBox(
             height: 300,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.xlargeValue),
-              ),
-            ),
             child: Center(child: Text('チームリストの読み込みに失敗しました: $err')),
           ),
           data: (allTeams) {
@@ -351,120 +321,83 @@ class _OrderReorderBottomSheetState
               _isInitialized = true;
             }
 
-            return Container(
-              margin: EdgeInsets.only(bottom: keyboardHeight),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1C1C1E)
-                    : const Color(0xFFFFFFFF),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.xlargeValue),
-                ),
+            return AppBottomSheetContent(
+              showDragHandle: true,
+              title: 'オーダー編集 : $_ownTeamName',
+              titleTrailing: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
               ),
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppSpacing.lg,
-                    left: AppSpacing.xl,
-                    right: AppSpacing.xl,
-                    bottom: AppSpacing.xl,
+              padding: EdgeInsets.only(
+                left: AppSpacing.xl,
+                right: AppSpacing.xl,
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                    child: Text(
+                      '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
+                      style: TextStyle(
+                        fontSize: AppFontSize.caption,
+                        color: AppKendoColors.grey,
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 48,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFFFFFFF)
-                                : const Color(0x33000000),
-                            borderRadius: AppRadius.medium,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'オーダー編集 : $_ownTeamName',
-                            style: const TextStyle(
-                              fontSize: AppFontSize.headline,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
-                      ),
-                      const Divider(),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                        child: Text(
-                          '右側の三本線を長押し・ドラッグして並び替えます。上の5枠が出場選手になります。',
-                          style: TextStyle(
-                            fontSize: AppFontSize.caption,
-                            color: AppKendoColors.grey,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.5,
-                        ),
-                        child: ReorderableListView.builder(
-                          shrinkWrap: true,
-                          itemCount: _unifiedList.length,
-                          itemBuilder: (context, index) {
-                            final item = _unifiedList[index];
-                            final id = item['id']!;
-                            final name = item['name']!;
-                            final label = item['label']!;
-                            final isPosition = item['type'] == 'position';
+                  const SizedBox(height: AppSpacing.sm),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.5,
+                    ),
+                    child: ReorderableListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _unifiedList.length,
+                      itemBuilder: (context, index) {
+                        final item = _unifiedList[index];
+                        final id = item['id']!;
+                        final name = item['name']!;
+                        final label = item['label']!;
+                        final isPosition = item['type'] == 'position';
 
-                            return OrderReorderPlayerTile(
-                              key: ValueKey('unified_item_$id'),
-                              label: label,
-                              playerName: name,
-                              isPosition: isPosition,
-                              isDark: isDark,
-                            );
-                          },
-                          onReorderItem: _onReorder,
+                        return OrderReorderPlayerTile(
+                          key: ValueKey('unified_item_$id'),
+                          label: label,
+                          playerName: name,
+                          isPosition: isPosition,
+                          isDark:
+                              Theme.of(context).brightness == Brightness.dark,
+                        );
+                      },
+                      onReorderItem: _onReorder,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            _addNewPlayerToReserve(allPlayers, allTeams),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text(
+                          '控えを追加',
+                          style: TextStyle(fontSize: AppFontSize.small),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () =>
-                                _addNewPlayerToReserve(allPlayers, allTeams),
-                            icon: const Icon(Icons.add, size: 16),
-                            label: const Text(
-                              '控えを追加',
-                              style: TextStyle(fontSize: AppFontSize.small),
-                            ),
-                          ),
-                          const Spacer(),
-                          ElevatedButton(
-                            onPressed: _saveOrder,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2196F3),
-                              foregroundColor: AppKendoColors.pureWhite,
-                            ),
-                            child: const Text('オーダーを確定'),
-                          ),
-                        ],
+                      const Spacer(),
+                      ElevatedButton(
+                        onPressed: _saveOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.appColors.primaryAccent,
+                          foregroundColor: AppKendoColors.pureWhite,
+                        ),
+                        child: const Text('オーダーを確定'),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             );
           },

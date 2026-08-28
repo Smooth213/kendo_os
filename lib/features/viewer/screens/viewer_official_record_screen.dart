@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_table_sections.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_export_bar.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_card_item_builder.dart';
@@ -51,7 +52,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
           title: screenTitle,
           elevation: 0,
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: AppLoadingIndicator()),
       ),
       error: (err, stack) => Scaffold(
         backgroundColor: bgColor,

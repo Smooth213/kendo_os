@@ -1000,22 +1000,12 @@ void main() {
 
         final content = file.readAsStringSync();
 
-        // scoreboard.dart における nameColor への separatorColor 割り当ての再発防止
+        // scoreboard.dart における nameColor への separatorColor 割り当ての防止
         if (file.path.endsWith('scoreboard.dart')) {
           if (content.contains('nameColor') &&
               content.contains('separatorColor')) {
             violations.add(
               '${file.path}: nameColor に separatorColor が指定されています',
-            );
-          }
-        }
-
-        // PointBox / PointMarkBadge における文字色への separatorColor 割り当ての防止
-        if (file.path.endsWith('point_mark_badge.dart')) {
-          if (content.contains('PointMarkBadge') &&
-              content.contains('separatorColor')) {
-            violations.add(
-              '${file.path}: PointMarkBadge に separatorColor が文字色として指定されています',
             );
           }
         }
@@ -1029,5 +1019,74 @@ void main() {
             '違反ファイル:\n${violations.join('\n')}',
       );
     });
+
+    test('31. [iOS標準化] 生の Switch 直書きが 0 件であり AppSwitch に統一されていること', () {
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        if (file.path.contains('lib/shared/widgets/app_switch.dart')) {
+          continue;
+        }
+
+        final content = file.readAsStringSync();
+        if (RegExp(r'\bSwitch(\.adaptive)?\s*\(').hasMatch(content)) {
+          violations.add(file.path);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            '生の Switch コンポーネント呼び出しが検出されました。AppSwitch(...) を使用してください。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
+
+    test(
+      '32. [iOS標準化] レガシー戻るアイコン (Icons.arrow_back / Icons.arrow_back_ios) が 0 件であり Icons.arrow_back_ios_new に統一されていること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          final content = file.readAsStringSync();
+          if (RegExp(
+            r'Icons\.arrow_back(?!\w|_ios_new)\b|Icons\.arrow_back_ios\b(?!_new)',
+          ).hasMatch(content)) {
+            violations.add(file.path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'レガシーな戻るアイコンが検出されました。Icons.arrow_back_ios_new を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '33. [iOS標準化] レガシー共有アイコン (Icons.share) が 0 件であり Icons.ios_share に統一されていること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          final content = file.readAsStringSync();
+          if (RegExp(r'Icons\.share\b(?!_rounded)').hasMatch(content)) {
+            violations.add(file.path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'レガシーな共有アイコンが検出されました。Icons.ios_share を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }

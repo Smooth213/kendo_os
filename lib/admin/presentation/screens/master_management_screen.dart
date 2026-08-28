@@ -22,6 +22,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 
@@ -267,7 +268,7 @@ class _MasterManagementScreenState
               ],
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: AppLoadingIndicator()),
           error: (err, stack) => Center(child: Text('エラーが発生しました: $err')),
         ),
         floatingActionButton: isReadOnly || _isSelectionMode || !canManageMaster

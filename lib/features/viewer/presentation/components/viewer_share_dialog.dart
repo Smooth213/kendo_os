@@ -66,10 +66,10 @@ class ViewerShareDialog extends StatelessWidget {
                       'リンク: $shareUrl',
                 ),
               ),
-              icon: const Icon(Icons.share),
+              icon: const Icon(Icons.ios_share),
               label: const Text('LINEやSNSでURLを送る'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF607D8B),
+                backgroundColor: AppKendoColors.blueGrey,
                 foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
               ),

@@ -10,6 +10,7 @@ import 'package:kendo_os/admin/providers/audit_provider.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 // ★ Phase 5: Firestoreから監査ログをリアルタイム取得するProvider
@@ -188,7 +189,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: AppLoadingIndicator()),
                 error: (e, st) => Center(
                   child: Text(
                     'エラー: $e',

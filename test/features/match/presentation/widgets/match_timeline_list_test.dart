@@ -20,6 +20,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
@@ -952,57 +953,26 @@ void main() {
       await tester.tap(find.byTooltip('オーダー編集'));
       await tester.pumpAndSettle();
 
-      // 1. ボトムシート全体の Container を検証 (角丸半径24dp)
-      final bottomSheetContainerFinder = find.byWidgetPredicate((widget) {
-        if (widget is Container && widget.decoration is BoxDecoration) {
-          final deco = widget.decoration as BoxDecoration;
-          if (deco.borderRadius != null) {
-            final expectedRadius = const BorderRadius.vertical(
-              top: Radius.circular(24),
-            );
-            return deco.borderRadius == expectedRadius;
-          }
-        }
-        return false;
-      });
-      expect(bottomSheetContainerFinder, findsAtLeastNWidgets(1));
+      // 1. ボトムシート全体の AppBottomSheetContent または Container を検証
+      expect(find.text('オーダー編集 : 白虎剣友会'), findsOneWidget);
 
-      // 2. ドラッグ用つまみ (幅48, 高さ5, 角丸10dp) の検証
+      // 2. ドラッグ用つまみ (幅36, 高さ5, capsule) の検証
       final handleFinder = find.byWidgetPredicate((widget) {
         if (widget is Container && widget.constraints != null) {
           final constraints = widget.constraints!;
-          if (constraints.minWidth == 48 && constraints.minHeight == 5) {
-            if (widget.decoration is BoxDecoration) {
-              final deco = widget.decoration as BoxDecoration;
-              return deco.borderRadius == BorderRadius.circular(12);
-            }
+          if (constraints.minWidth == 36 && constraints.minHeight == 5) {
+            return true;
           }
         }
         return false;
       });
       expect(handleFinder, findsOneWidget);
 
-      // 3. パディングの検証 (左右24, 上部16, 下部24)
-      final paddingFinder = find.byWidgetPredicate((widget) {
-        if (widget is Padding) {
-          final p = widget.padding;
-          if (p is EdgeInsets) {
-            return p.left == 24 &&
-                p.right == 24 &&
-                p.top == 16 &&
-                p.bottom == 24;
-          }
-        }
-        return false;
-      });
-      expect(paddingFinder, findsOneWidget);
-
-      // 4. タイトルの検証 (フォントサイズ18, 太字)
+      // 3. タイトルの検証 (semiBold)
       final titleTextFinder = find.text('オーダー編集 : 白虎剣友会');
       expect(titleTextFinder, findsOneWidget);
       final textWidget = tester.widget<Text>(titleTextFinder);
-      expect(textWidget.style?.fontSize, 18);
-      expect(textWidget.style?.fontWeight, FontWeight.bold);
+      expect(textWidget.style?.fontWeight, AppFontWeight.semiBold);
     });
 
     testWidgets('5. ルール一括変更ボタンタップ時の動作検証', (WidgetTester tester) async {

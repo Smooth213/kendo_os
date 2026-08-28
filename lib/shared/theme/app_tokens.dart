@@ -53,6 +53,7 @@ class AppRadius {
     Radius.circular(giantValue),
   );
   static const BorderRadius full = BorderRadius.all(Radius.circular(fullValue));
+  static const BorderRadius capsule = full;
 }
 
 /// kendo OS デザインシステムにおける統一余白 (Spacing) トークン

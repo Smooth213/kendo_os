@@ -77,7 +77,7 @@ class OfficialRecordExportBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           // 2. 画像出力
           _buildActionButton(
-            icon: Icons.share,
+            icon: Icons.ios_share,
             label: '画像',
             color: const Color(0xFF06C755),
             onPressed: isExporting ? null : onImagePressed,

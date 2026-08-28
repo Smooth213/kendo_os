@@ -8,111 +8,81 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 
 /// 選手マスタ画面の管理メニューボトムシート（データクリーンアップ・一括進級）
 class MasterMenuBottomSheet {
   static void show(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors = context.appColors;
 
     showAppBottomSheet(
       context: context,
-      builder: (ctx) => Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: context.appColors.cardBackground,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
-          ),
-        ),
-        child: Material(
-          color: AppKendoColors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 56),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Container(
-                    width: 48,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: const Color(0x8A000000),
-                      borderRadius: AppRadius.medium,
-                    ),
+      builder: (ctx) => AppBottomSheetContent(
+        showDragHandle: true,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: AppKendoColors.purple.withValues(alpha: 0.1),
+                  child: const Icon(
+                    Icons.cleaning_services,
+                    color: AppKendoColors.purple,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: AppKendoColors.purple.withValues(
-                      alpha: 0.1,
-                    ),
-                    child: Icon(
-                      Icons.cleaning_services,
-                      color: const Color(0xFF9C27B0),
-                    ),
-                  ),
-                  title: Text(
-                    'データとストレージ管理',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'キャッシュクリアやデータのエクスポート・整理を行います',
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      color: AppKendoColors.grey,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    showAppDialog(
-                      context: context,
-                      builder: (dialogCtx) => const MasterDataCleanupDialog(),
-                    );
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                  ),
-                  child: Divider(
-                    height: 1,
-                    color: isDark
-                        ? const Color(0xFF38383A)
-                        : context.appColors.separatorColor,
+                title: Text(
+                  'データとストレージ管理',
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    color: themeColors.textColor,
                   ),
                 ),
-                ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: AppKendoColors.indigo.withValues(
-                      alpha: 0.1,
-                    ),
-                    child: Icon(Icons.school, color: const Color(0xFF3F51B5)),
+                subtitle: const Text(
+                  'キャッシュクリアやデータのエクスポート・整理を行います',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: AppKendoColors.grey,
                   ),
-                  title: Text(
-                    '新年度の一括進級',
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'すべての選手の学年を1つ繰り上げます',
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      color: AppKendoColors.grey,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _showPromoteConfirmDialog(context, ref);
-                  },
                 ),
-              ],
-            ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showAppDialog(
+                    context: context,
+                    builder: (dialogCtx) => const MasterDataCleanupDialog(),
+                  );
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Divider(height: 1, color: themeColors.separatorColor),
+              ),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: AppKendoColors.indigo.withValues(alpha: 0.1),
+                  child: const Icon(Icons.school, color: AppKendoColors.indigo),
+                ),
+                title: Text(
+                  '新年度の一括進級',
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    color: themeColors.textColor,
+                  ),
+                ),
+                subtitle: const Text(
+                  'すべての選手の学年を1つ繰り上げます',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: AppKendoColors.grey,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showPromoteConfirmDialog(context, ref);
+                },
+              ),
+            ],
           ),
         ),
       ),
@@ -123,11 +93,13 @@ class MasterMenuBottomSheet {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final themeColors = context.appColors;
+
     final confirm = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AppDialog(
         titleIcon: Icons.school,
-        iconColor: context.appColors.primaryAccent,
+        iconColor: themeColors.primaryAccent,
         title: '新年度の一括進級',
         content: const Text(
           'すべての選手の学年を1つ繰り上げます。\n（例：小学6年 ➔ 中学1年）\n\n※この操作は取り消せません。本当によろしいですか？',
@@ -144,9 +116,11 @@ class MasterMenuBottomSheet {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF9C27B0),
+              backgroundColor: AppKendoColors.purple,
               foregroundColor: AppKendoColors.pureWhite,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.medium,
+              ),
               elevation: 0,
             ),
             child: const Text(
@@ -163,7 +137,7 @@ class MasterMenuBottomSheet {
       showAppDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
+        builder: (_) => const Center(child: AppLoadingIndicator()),
       );
       try {
         await ref.read(playerRepositoryProvider).promoteAllPlayers();

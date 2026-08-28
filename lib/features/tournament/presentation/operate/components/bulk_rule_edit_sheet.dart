@@ -260,232 +260,222 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
       return unit.matchIds.every((id) => _selectedMatchIds.contains(id));
     }).length;
 
-    return Container(
+    return AppBottomSheetContent(
+      showDragHandle: true,
+      title: '⚙️ 試合ルールの一括変更',
+      titleTrailing: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () => Navigator.pop(context),
+      ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      height: MediaQuery.of(context).size.height * 0.85,
-      child: Column(
-        children: [
-          // ヘッダー部
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '⚙️ 試合ルールの一括変更',
-                  style: TextStyle(
-                    fontSize: AppFontSize.headline,
-                    fontWeight: AppFontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.roundValue),
-              children: [
-                // STEP 1. 対象選択
-                BulkRuleTargetSelectSection(
-                  categories: _categories,
-                  matchTypes: _matchTypes,
-                  selectedCategoryFilter: _selectedCategoryFilter,
-                  selectedTypeFilter: _selectedTypeFilter,
-                  filteredUnits: currentFilteredUnits,
-                  selectedMatchIds: _selectedMatchIds,
-                  primaryAccent: widget.themeColors.primaryAccent,
-                  isDark: isDark,
-                  textColor: textColor,
-                  onCategoryChanged: (val) {
-                    if (val != null) {
-                      setState(() => _selectedCategoryFilter = val);
-                      _applyFiltersAndSelectAll();
-                    }
-                  },
-                  onTypeChanged: (val) {
-                    if (val != null) {
-                      setState(() => _selectedTypeFilter = val);
-                      _applyFiltersAndSelectAll();
-                    }
-                  },
-                  onToggleUnit: (unit, val) {
-                    setState(() {
-                      if (val == true) {
-                        for (final id in unit.matchIds) {
-                          if (!_selectedMatchIds.contains(id)) {
-                            _selectedMatchIds.add(id);
-                          }
-                        }
-                      } else {
-                        for (final id in unit.matchIds) {
-                          _selectedMatchIds.remove(id);
-                        }
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.roundValue),
+                children: [
+                  // STEP 1. 対象選択
+                  BulkRuleTargetSelectSection(
+                    categories: _categories,
+                    matchTypes: _matchTypes,
+                    selectedCategoryFilter: _selectedCategoryFilter,
+                    selectedTypeFilter: _selectedTypeFilter,
+                    filteredUnits: currentFilteredUnits,
+                    selectedMatchIds: _selectedMatchIds,
+                    primaryAccent: widget.themeColors.primaryAccent,
+                    isDark: isDark,
+                    textColor: textColor,
+                    onCategoryChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedCategoryFilter = val);
+                        _applyFiltersAndSelectAll();
                       }
-                      _updateLoadedTemplateIfNecessary();
-                    });
-                  },
-                  onToggleAll: () {
-                    setState(() {
-                      final allSelected = currentFilteredUnits.every(
-                        (unit) => unit.matchIds.every(
-                          (id) => _selectedMatchIds.contains(id),
-                        ),
-                      );
-                      if (allSelected) {
-                        for (final unit in currentFilteredUnits) {
-                          for (final id in unit.matchIds) {
-                            _selectedMatchIds.remove(id);
-                          }
-                        }
-                      } else {
-                        for (final unit in currentFilteredUnits) {
+                    },
+                    onTypeChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedTypeFilter = val);
+                        _applyFiltersAndSelectAll();
+                      }
+                    },
+                    onToggleUnit: (unit, val) {
+                      setState(() {
+                        if (val == true) {
                           for (final id in unit.matchIds) {
                             if (!_selectedMatchIds.contains(id)) {
                               _selectedMatchIds.add(id);
                             }
                           }
+                        } else {
+                          for (final id in unit.matchIds) {
+                            _selectedMatchIds.remove(id);
+                          }
                         }
-                      }
-                      _updateLoadedTemplateIfNecessary();
-                    });
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xl),
-
-                // STEP 2. 新ルールの設定
-                Text(
-                  'STEP 2: 新しいルールを設定',
-                  style: TextStyle(
-                    fontSize: AppFontSize.body,
-                    fontWeight: AppFontWeight.bold,
-                    color: widget.themeColors.primaryAccent,
+                        _updateLoadedTemplateIfNecessary();
+                      });
+                    },
+                    onToggleAll: () {
+                      setState(() {
+                        final allSelected = currentFilteredUnits.every(
+                          (unit) => unit.matchIds.every(
+                            (id) => _selectedMatchIds.contains(id),
+                          ),
+                        );
+                        if (allSelected) {
+                          for (final unit in currentFilteredUnits) {
+                            for (final id in unit.matchIds) {
+                              _selectedMatchIds.remove(id);
+                            }
+                          }
+                        } else {
+                          for (final unit in currentFilteredUnits) {
+                            for (final id in unit.matchIds) {
+                              if (!_selectedMatchIds.contains(id)) {
+                                _selectedMatchIds.add(id);
+                              }
+                            }
+                          }
+                        }
+                        _updateLoadedTemplateIfNecessary();
+                      });
+                    },
                   ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xl),
 
-                // 部門別ルールプリセットからの選択UI
-                ...(() {
-                  final asyncTournament = ref.watch(
-                    tournamentProvider(widget.tournamentId),
-                  );
-                  final categoryRules =
-                      asyncTournament.valueOrNull?.categoryRules ?? {};
-                  if (categoryRules.isEmpty) return <Widget>[];
-
-                  return [
-                    BulkRulePresetCard(
-                      categoryRules: categoryRules,
-                      selectedCategoryRuleName: _selectedCategoryRuleName,
-                      selectedSceneType: _selectedSceneType,
-                      primaryAccent: widget.themeColors.primaryAccent,
-                      isDark: isDark,
-                      textColor: textColor,
-                      onSelectCategory: (catName, ruleSet) {
-                        setState(() {
-                          _selectedCategoryRuleName = catName;
-                          _selectedSceneType = 'normal';
-                          _applyCategoryRuleSet(ruleSet.normalRule);
-                        });
-                      },
-                      onSelectScene: (sceneKey, targetRule) {
-                        setState(() {
-                          _selectedSceneType = sceneKey;
-                          _applyCategoryRuleSet(targetRule, sceneKey: sceneKey);
-                        });
-                      },
+                  // STEP 2. 新ルールの設定
+                  Text(
+                    'STEP 2: 新しいルールを設定',
+                    style: TextStyle(
+                      fontSize: AppFontSize.body,
+                      fontWeight: AppFontWeight.bold,
+                      color: widget.themeColors.primaryAccent,
                     ),
-                  ];
-                })(),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
 
-                if (_hasDifferingRules()) ...[
-                  BulkRuleDifferingBanner(isDark: isDark),
-                  const SizedBox(height: AppSpacing.md),
+                  // 部門別ルールプリセットからの選択UI
+                  ...(() {
+                    final asyncTournament = ref.watch(
+                      tournamentProvider(widget.tournamentId),
+                    );
+                    final categoryRules =
+                        asyncTournament.valueOrNull?.categoryRules ?? {};
+                    if (categoryRules.isEmpty) return <Widget>[];
+
+                    return [
+                      BulkRulePresetCard(
+                        categoryRules: categoryRules,
+                        selectedCategoryRuleName: _selectedCategoryRuleName,
+                        selectedSceneType: _selectedSceneType,
+                        primaryAccent: widget.themeColors.primaryAccent,
+                        isDark: isDark,
+                        textColor: textColor,
+                        onSelectCategory: (catName, ruleSet) {
+                          setState(() {
+                            _selectedCategoryRuleName = catName;
+                            _selectedSceneType = 'normal';
+                            _applyCategoryRuleSet(ruleSet.normalRule);
+                          });
+                        },
+                        onSelectScene: (sceneKey, targetRule) {
+                          setState(() {
+                            _selectedSceneType = sceneKey;
+                            _applyCategoryRuleSet(
+                              targetRule,
+                              sceneKey: sceneKey,
+                            );
+                          });
+                        },
+                      ),
+                    ];
+                  })(),
+
+                  if (_hasDifferingRules()) ...[
+                    BulkRuleDifferingBanner(isDark: isDark),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+
+                  BulkRuleDetailSettingCards(
+                    matchTime: _matchTime,
+                    isIpponShobu: _isIpponShobu,
+                    hasExtension: _hasExtension,
+                    enchoTime: _enchoTime,
+                    enchoCount: _enchoCount,
+                    isEnchoUnlimited: _isEnchoUnlimited,
+                    hasHantei: _hasHantei,
+                    hasRepresentativeMatch: _hasRepresentativeMatch,
+                    isDaihyoIpponShobu: _isDaihyoIpponShobu,
+                    isRenseikai: _isRenseikai,
+                    renseikaiType: _renseikaiType,
+                    overallTimeController: _overallTimeController,
+                    primaryAccent: widget.themeColors.primaryAccent,
+                    isDark: isDark,
+                    onMatchTimeChanged: (v) => setState(() => _matchTime = v),
+                    onIpponShobuChanged: (v) =>
+                        setState(() => _isIpponShobu = v),
+                    onExtensionChanged: (v) =>
+                        setState(() => _hasExtension = v),
+                    onEnchoTimeChanged: (v) => setState(() => _enchoTime = v),
+                    onEnchoCountChanged: (v) => setState(() => _enchoCount = v),
+                    onEnchoUnlimitedChanged: (v) =>
+                        setState(() => _isEnchoUnlimited = v),
+                    onHanteiChanged: (v) => setState(() => _hasHantei = v),
+                    onRepresentativeMatchChanged: (v) =>
+                        setState(() => _hasRepresentativeMatch = v),
+                    onDaihyoIpponShobuChanged: (v) =>
+                        setState(() => _isDaihyoIpponShobu = v),
+                    onRenseikaiChanged: (v) => setState(() => _isRenseikai = v),
+                    onRenseikaiTypeChanged: (v) =>
+                        setState(() => _renseikaiType = v),
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
                 ],
+              ),
+            ),
 
-                BulkRuleDetailSettingCards(
-                  matchTime: _matchTime,
+            // 下部固定実行ボタン
+            BulkRuleBottomBar(
+              totalSelectedUnitsCount: totalSelectedUnitsCount,
+              hasSelection: _selectedMatchIds.isNotEmpty,
+              primaryAccent: widget.themeColors.primaryAccent,
+              isDark: isDark,
+              onApply: () async {
+                final newRule = MatchRule(
+                  matchTimeMinutes: _matchTime,
                   isIpponShobu: _isIpponShobu,
-                  hasExtension: _hasExtension,
-                  enchoTime: _enchoTime,
-                  enchoCount: _enchoCount,
-                  isEnchoUnlimited: _isEnchoUnlimited,
                   hasHantei: _hasHantei,
+                  isEnchoUnlimited: _isEnchoUnlimited,
+                  enchoTimeMinutes: _hasExtension ? _enchoTime : 0.0,
+                  enchoCount: _isEnchoUnlimited ? 0 : _enchoCount,
                   hasRepresentativeMatch: _hasRepresentativeMatch,
                   isDaihyoIpponShobu: _isDaihyoIpponShobu,
                   isRenseikai: _isRenseikai,
                   renseikaiType: _renseikaiType,
-                  overallTimeController: _overallTimeController,
-                  primaryAccent: widget.themeColors.primaryAccent,
-                  isDark: isDark,
-                  onMatchTimeChanged: (v) => setState(() => _matchTime = v),
-                  onIpponShobuChanged: (v) => setState(() => _isIpponShobu = v),
-                  onExtensionChanged: (v) => setState(() => _hasExtension = v),
-                  onEnchoTimeChanged: (v) => setState(() => _enchoTime = v),
-                  onEnchoCountChanged: (v) => setState(() => _enchoCount = v),
-                  onEnchoUnlimitedChanged: (v) =>
-                      setState(() => _isEnchoUnlimited = v),
-                  onHanteiChanged: (v) => setState(() => _hasHantei = v),
-                  onRepresentativeMatchChanged: (v) =>
-                      setState(() => _hasRepresentativeMatch = v),
-                  onDaihyoIpponShobuChanged: (v) =>
-                      setState(() => _isDaihyoIpponShobu = v),
-                  onRenseikaiChanged: (v) => setState(() => _isRenseikai = v),
-                  onRenseikaiTypeChanged: (v) =>
-                      setState(() => _renseikaiType = v),
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-              ],
-            ),
-          ),
-
-          // 下部固定実行ボタン
-          BulkRuleBottomBar(
-            totalSelectedUnitsCount: totalSelectedUnitsCount,
-            hasSelection: _selectedMatchIds.isNotEmpty,
-            primaryAccent: widget.themeColors.primaryAccent,
-            isDark: isDark,
-            onApply: () async {
-              final newRule = MatchRule(
-                matchTimeMinutes: _matchTime,
-                isIpponShobu: _isIpponShobu,
-                hasHantei: _hasHantei,
-                isEnchoUnlimited: _isEnchoUnlimited,
-                enchoTimeMinutes: _hasExtension ? _enchoTime : 0.0,
-                enchoCount: _isEnchoUnlimited ? 0 : _enchoCount,
-                hasRepresentativeMatch: _hasRepresentativeMatch,
-                isDaihyoIpponShobu: _isDaihyoIpponShobu,
-                isRenseikai: _isRenseikai,
-                renseikaiType: _renseikaiType,
-                overallTimeMinutes:
-                    int.tryParse(_overallTimeController.text) ?? 30,
-              );
-
-              await ref
-                  .read(matchCommandProvider)
-                  .bulkUpdateMatchRules(
-                    targetMatchIds: _selectedMatchIds,
-                    newRule: newRule,
-                  );
-
-              if (context.mounted) {
-                AppSnackBar.showSuccess(
-                  context,
-                  '$totalSelectedUnitsCount件の対戦ルールを一括変更しました。',
+                  overallTimeMinutes:
+                      int.tryParse(_overallTimeController.text) ?? 30,
                 );
-                Navigator.pop(context);
-              }
-            },
-          ),
-        ],
+
+                await ref
+                    .read(matchCommandProvider)
+                    .bulkUpdateMatchRules(
+                      targetMatchIds: _selectedMatchIds,
+                      newRule: newRule,
+                    );
+
+                if (context.mounted) {
+                  AppSnackBar.showSuccess(
+                    context,
+                    '$totalSelectedUnitsCount件の対戦ルールを一括変更しました。',
+                  );
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

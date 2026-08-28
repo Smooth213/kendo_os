@@ -68,7 +68,7 @@ void main() {
       );
 
       expect(find.text('マニュアルをロード中...'), findsOneWidget);
-      expect(find.text('50%'), findsOneWidget);
+      expect(find.text('50% 完了'), findsOneWidget);
     });
 
     testWidgets(

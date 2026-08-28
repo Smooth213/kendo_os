@@ -108,7 +108,7 @@ class ViewerBunaiksenCategoryContent extends ConsumerWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: OfficialRecordActionButton(
-                  icon: Icons.share,
+                  icon: Icons.ios_share,
                   label: '画像シェア',
                   color: themeColors.primaryAccent,
                   onTap: isExporting

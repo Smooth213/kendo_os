@@ -430,7 +430,7 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback)) &&
                 _isSearchingPdf)
             ? IconButton(
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
                 onPressed: () {
                   setState(() {
                     _isSearchingPdf = false;

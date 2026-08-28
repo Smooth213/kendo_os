@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 /// アプリ全体で統一されたスタイルを提供する ChoiceChip コンポーネント
 class AppChoiceChip extends StatelessWidget {
@@ -62,7 +63,12 @@ class AppChoiceChip extends StatelessWidget {
         child: label,
       ),
       selected: selected,
-      onSelected: onSelected,
+      onSelected: onSelected == null
+          ? null
+          : (val) {
+              AppHaptics.selection();
+              onSelected!(val);
+            },
       selectedColor: effectiveSelectedColor,
       backgroundColor: backgroundColor ?? themeColors.inputBackground,
       side:
@@ -73,7 +79,7 @@ class AppChoiceChip extends StatelessWidget {
                 : themeColors.separatorColor,
             width: 1,
           ),
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.capsule),
       padding:
           padding ??
           const EdgeInsets.symmetric(
@@ -129,10 +135,15 @@ class AppActionChip extends StatelessWidget {
         ),
         child: label,
       ),
-      onPressed: onPressed,
+      onPressed: onPressed == null
+          ? null
+          : () {
+              AppHaptics.selection();
+              onPressed!();
+            },
       backgroundColor: backgroundColor ?? themeColors.inputBackground,
       side: side ?? BorderSide(color: themeColors.separatorColor, width: 1),
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.capsule),
       padding:
           padding ??
           const EdgeInsets.symmetric(
@@ -194,7 +205,12 @@ class AppFilterChip extends StatelessWidget {
         child: label,
       ),
       selected: selected,
-      onSelected: onSelected,
+      onSelected: onSelected == null
+          ? null
+          : (val) {
+              AppHaptics.selection();
+              onSelected!(val);
+            },
       selectedColor: effectiveSelectedColor,
       backgroundColor: themeColors.inputBackground,
       side: BorderSide(
@@ -203,7 +219,7 @@ class AppFilterChip extends StatelessWidget {
             : themeColors.separatorColor,
         width: 1,
       ),
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.capsule),
       padding:
           padding ??
           const EdgeInsets.symmetric(

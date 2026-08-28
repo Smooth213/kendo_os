@@ -17,58 +17,32 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
   static Future<void> show(BuildContext context, {required MatchModel match}) {
     return showAppBottomSheet(
       context: context,
-      backgroundColor: AppKendoColors.transparent,
       builder: (_) => MatchShareOptionsBottomSheet(match: match),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = context.appColors.cardBackground;
-    final textColor = context.appColors.textColor;
-    final subTextColor = context.appColors.subTextColor;
+    final themeColors = context.appColors;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: AppSpacing.lg,
+    return AppBottomSheetContent(
+      showDragHandle: true,
+      title: '観戦の共有方法を選択',
+      padding: const EdgeInsets.only(
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        bottom: AppSpacing.xl,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 48,
-              height: 5,
-              decoration: BoxDecoration(
-                color: subTextColor.withValues(alpha: 0.3),
-                borderRadius: AppRadius.compact,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            '観戦の共有方法を選択',
-            style: TextStyle(
-              fontSize: AppFontSize.header,
-              fontWeight: AppFontWeight.bold,
-              color: textColor,
-            ),
-          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             '用途に合わせて最適な共有方法を選択してください。',
             style: TextStyle(
               fontSize: AppFontSize.bodySmall,
-              color: subTextColor,
+              color: themeColors.subTextColor,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -83,15 +57,9 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF2C2C2E)
-                    : const Color(0xFFF2F2F7),
+                color: themeColors.inputBackground,
                 borderRadius: AppRadius.medium,
-                border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF38383A)
-                      : context.appColors.separatorColor,
-                ),
+                border: Border.all(color: themeColors.separatorColor),
               ),
               child: Row(
                 children: [
@@ -117,7 +85,7 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: AppFontSize.bodyMedium,
                             fontWeight: AppFontWeight.bold,
-                            color: textColor,
+                            color: themeColors.textColor,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -125,13 +93,13 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
                           '自宅の保護者や遠隔地へURLを送信（ネット必須）',
                           style: TextStyle(
                             fontSize: AppFontSize.caption,
-                            color: subTextColor,
+                            color: themeColors.subTextColor,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: subTextColor),
+                  Icon(Icons.chevron_right, color: themeColors.subTextColor),
                 ],
               ),
             ),
@@ -148,12 +116,10 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: isDark
-                    ? context.appColors.primaryAccent.withValues(alpha: 0.15)
-                    : context.appColors.primaryAccent.withValues(alpha: 0.08),
+                color: themeColors.primaryAccent.withValues(alpha: 0.1),
                 borderRadius: AppRadius.medium,
                 border: Border.all(
-                  color: context.appColors.primaryAccent.withValues(alpha: 0.4),
+                  color: themeColors.primaryAccent.withValues(alpha: 0.4),
                   width: 1.5,
                 ),
               ),
@@ -162,14 +128,12 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
-                      color: context.appColors.primaryAccent.withValues(
-                        alpha: 0.2,
-                      ),
+                      color: themeColors.primaryAccent.withValues(alpha: 0.2),
                       borderRadius: AppRadius.small,
                     ),
                     child: Icon(
                       Icons.wifi_tethering,
-                      color: context.appColors.primaryAccent,
+                      color: themeColors.primaryAccent,
                       size: 24,
                     ),
                   ),
@@ -185,7 +149,7 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: AppFontSize.bodyMedium,
                                 fontWeight: AppFontWeight.bold,
-                                color: textColor,
+                                color: themeColors.textColor,
                               ),
                             ),
                             const SizedBox(width: AppSpacing.xs),
@@ -194,7 +158,7 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
                                 horizontal: AppSpacing.subValue,
                                 vertical: AppSpacing.xxs,
                               ),
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: AppKendoColors.ipponGold,
                                 borderRadius: AppRadius.compact,
                               ),
@@ -214,16 +178,13 @@ class MatchShareOptionsBottomSheet extends ConsumerWidget {
                           '2階席の保護者へQRコードで即時配信（アプリ不要・0遅延）',
                           style: TextStyle(
                             fontSize: AppFontSize.caption,
-                            color: subTextColor,
+                            color: themeColors.subTextColor,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: context.appColors.primaryAccent,
-                  ),
+                  Icon(Icons.chevron_right, color: themeColors.primaryAccent),
                 ],
               ),
             ),

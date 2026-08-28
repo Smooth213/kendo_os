@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 /// アプリ全体で統一されたデザインと配色を提供する標準 AppBar ヘッダー
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
@@ -40,6 +41,22 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final effectiveBgColor = backgroundColor ?? themeColors.scaffoldBackground;
     final effectiveFgColor = foregroundColor ?? themeColors.textColor;
 
+    final ModalRoute<dynamic>? parentRoute = ModalRoute.of(context);
+    final bool canPop = parentRoute?.canPop ?? false;
+
+    final Widget? effectiveLeading =
+        leading ??
+        (canPop
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                color: effectiveFgColor,
+                onPressed: () {
+                  AppHaptics.light();
+                  Navigator.maybePop(context);
+                },
+              )
+            : null);
+
     return AppBar(
       title:
           titleWidget ??
@@ -58,7 +75,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       foregroundColor: effectiveFgColor,
       elevation: elevation,
       scrolledUnderElevation: 0.0,
-      leading: leading,
+      leading: effectiveLeading,
       iconTheme: IconThemeData(color: effectiveFgColor),
       actions: actions,
       bottom: bottom,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 /// アプリ全体で統一されたデザインと動作を提供する Modal Bottom Sheet 呼び出し関数
 Future<T?> showAppBottomSheet<T>({
@@ -9,10 +10,11 @@ Future<T?> showAppBottomSheet<T>({
   bool isScrollControlled = true,
   bool enableDrag = true,
   bool isDismissible = true,
-  double topRadius = 20.0,
+  double topRadius = AppRadius.roundValue,
   BoxConstraints? constraints,
   Color? backgroundColor,
 }) {
+  AppHaptics.selection();
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final themeColors =
       Theme.of(context).extension<AppThemeColors>() ??
@@ -71,11 +73,14 @@ class AppBottomSheetContent extends StatelessWidget {
               Center(
                 child: Container(
                   width: 36,
-                  height: 4,
-                  margin: const EdgeInsets.only(top: 10, bottom: AppSpacing.sm),
+                  height: 5,
+                  margin: const EdgeInsets.only(
+                    top: AppSpacing.compact,
+                    bottom: AppSpacing.sm,
+                  ),
                   decoration: BoxDecoration(
                     color: themeColors.separatorColor,
-                    borderRadius: AppRadius.small,
+                    borderRadius: AppRadius.capsule,
                   ),
                 ),
               ),
@@ -83,7 +88,7 @@ class AppBottomSheetContent extends StatelessWidget {
             if (title != null) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: AppSpacing.roundValue,
                   vertical: AppSpacing.sm,
                 ),
                 child: Row(

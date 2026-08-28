@@ -115,7 +115,7 @@ void main() {
 
         // 検索入力欄（TextField）と戻るボタンが露出することを確認
         expect(find.byType(TextField), findsOneWidget);
-        expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+        expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
         expect(find.text('ヘルプ・マニュアル'), findsNothing); // タイトルは検索バーに置き換わる
 
         // 2. 文字を入力
@@ -130,7 +130,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 200));
 
         // 検索を終了
-        await tester.tap(find.byIcon(Icons.arrow_back));
+        await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
         await tester.pump(const Duration(milliseconds: 200));
 
         // 検索終了後、通常タイトルに戻ること

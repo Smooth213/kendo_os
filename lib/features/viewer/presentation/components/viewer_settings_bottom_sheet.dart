@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 /// 🥋 観客用 表示設定ボトムシート (Liquid Glass & テーマ切り替え)
 class ViewerSettingsBottomSheet extends ConsumerWidget {
@@ -13,18 +15,13 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
-    return Container(
+    return AppBottomSheetContent(
+      showDragHandle: true,
+      title: '表示設定',
       padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
         left: AppSpacing.xl,
         right: AppSpacing.xl,
         bottom: AppSpacing.xxl,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.roundValue),
-        ),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -32,26 +29,7 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.xl),
-                  decoration: BoxDecoration(
-                    color: AppKendoColors.grey.withValues(alpha: 0.5),
-                    borderRadius: AppRadius.micro,
-                  ),
-                ),
-              ),
-              Center(
-                child: Text(
-                  '表示設定',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: AppFontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
                   const Icon(Icons.palette_outlined),
@@ -128,7 +106,7 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  Switch(
+                  AppSwitch(
                     value: settings.enableLiquidGlass,
                     onChanged: (value) {
                       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member

@@ -80,9 +80,9 @@ class _MatchRepresentativeModalBottomSheetState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = context.appColors.cardBackground;
-    final textColor = context.appColors.textColor;
-    final inputBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF);
+    final themeColors = context.appColors;
+    final textColor = themeColors.textColor;
+    final inputBg = themeColors.inputBackground;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -93,9 +93,9 @@ class _MatchRepresentativeModalBottomSheetState
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: BoxDecoration(
-          color: bgColor,
+          color: themeColors.cardBackground,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
+            top: Radius.circular(AppRadius.roundValue),
           ),
         ),
         padding: const EdgeInsets.only(
@@ -106,11 +106,11 @@ class _MatchRepresentativeModalBottomSheetState
         child: Column(
           children: [
             Container(
-              width: 48,
+              width: 36,
               height: 5,
               decoration: BoxDecoration(
-                color: context.appColors.subTextColor.withValues(alpha: 0.3),
-                borderRadius: AppRadius.compact,
+                color: themeColors.separatorColor,
+                borderRadius: AppRadius.capsule,
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -119,7 +119,7 @@ class _MatchRepresentativeModalBottomSheetState
               style: TextStyle(
                 fontSize: AppFontSize.header,
                 fontWeight: AppFontWeight.bold,
-                color: textColor,
+                color: themeColors.textColor,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -128,7 +128,7 @@ class _MatchRepresentativeModalBottomSheetState
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppFontSize.bodySmall,
-                color: context.appColors.subTextColor,
+                color: themeColors.subTextColor,
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -138,11 +138,11 @@ class _MatchRepresentativeModalBottomSheetState
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFFE53935).withValues(alpha: 0.15)
-                          : const Color(0xFFFFEBEE),
+                      color: AppKendoColors.red.withValues(
+                        alpha: isDark ? 0.15 : 0.08,
+                      ),
                       borderRadius: AppRadius.large,
-                      border: Border.all(color: const Color(0xFFE53935)),
+                      border: Border.all(color: AppKendoColors.red),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +151,7 @@ class _MatchRepresentativeModalBottomSheetState
                           children: [
                             const Icon(
                               Icons.shield,
-                              color: Color(0xFFE53935),
+                              color: AppKendoColors.red,
                               size: 18,
                             ),
                             const SizedBox(width: AppSpacing.sm),
@@ -159,7 +159,7 @@ class _MatchRepresentativeModalBottomSheetState
                               '${widget.rTeam} の代表者',
                               style: const TextStyle(
                                 fontWeight: AppFontWeight.bold,
-                                color: Color(0xFFE53935),
+                                color: AppKendoColors.red,
                                 fontSize: AppFontSize.subhead,
                               ),
                             ),
@@ -175,19 +175,25 @@ class _MatchRepresentativeModalBottomSheetState
                                   (p) => AppChoiceChip(
                                     label: Text(p),
                                     selected: _redCtrl.text == p,
-                                    selectedColor: const Color(0xFFE53935),
+                                    selectedColor: AppKendoColors.red,
                                     backgroundColor: isDark
                                         ? const Color(0xFF2C2C2E)
-                                        : const Color(0xFFFFFFFF),
+                                        : context.appColors.inputBackground,
                                     labelStyle: TextStyle(
                                       color: _redCtrl.text == p
                                           ? AppKendoColors.pureWhite
                                           : textColor,
-                                      fontWeight: AppFontWeight.bold,
+                                      fontWeight: _redCtrl.text == p
+                                          ? AppFontWeight.bold
+                                          : AppFontWeight.regular,
                                     ),
-                                    onSelected: (s) => setState(() {
-                                      _redCtrl.text = p;
-                                    }),
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        setState(() {
+                                          _redCtrl.text = p;
+                                        });
+                                      }
+                                    },
                                   ),
                                 )
                                 .toList(),
@@ -196,21 +202,21 @@ class _MatchRepresentativeModalBottomSheetState
                         ],
                         AppTextField(
                           controller: _redCtrl,
-                          style: TextStyle(color: textColor),
-                          onChanged: (val) => setState(() {}),
                           decoration: InputDecoration(
-                            labelText: '名前を直接入力',
-                            labelStyle: const TextStyle(
-                              color: AppKendoColors.grey,
-                            ),
-                            isDense: true,
-                            prefixIcon: const Icon(Icons.edit, size: 16),
-                            border: OutlineInputBorder(
-                              borderRadius: AppRadius.small,
+                            labelText: '選手名（直接入力も可）',
+                            hintText: '例: 山田',
+                            prefixIcon: const Icon(
+                              Icons.person,
+                              color: AppKendoColors.red,
                             ),
                             filled: true,
                             fillColor: inputBg,
+                            border: OutlineInputBorder(
+                              borderRadius: AppRadius.medium,
+                              borderSide: BorderSide.none,
+                            ),
                           ),
+                          onChanged: (_) => setState(() {}),
                         ),
                       ],
                     ),
@@ -219,15 +225,11 @@ class _MatchRepresentativeModalBottomSheetState
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF607D8B).withValues(alpha: 0.2)
-                          : const Color(0xFFF2F2F7),
-                      borderRadius: AppRadius.large,
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF38383A)
-                            : const Color(0x33000000),
+                      color: themeColors.separatorColor.withValues(
+                        alpha: isDark ? 0.3 : 0.15,
                       ),
+                      borderRadius: AppRadius.large,
+                      border: Border.all(color: themeColors.separatorColor),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,7 +238,7 @@ class _MatchRepresentativeModalBottomSheetState
                           children: [
                             Icon(
                               Icons.shield,
-                              color: context.appColors.subTextColor,
+                              color: themeColors.subTextColor,
                               size: 18,
                             ),
                             const SizedBox(width: AppSpacing.sm),
@@ -244,9 +246,7 @@ class _MatchRepresentativeModalBottomSheetState
                               '${widget.wTeam} の代表者',
                               style: TextStyle(
                                 fontWeight: AppFontWeight.bold,
-                                color: isDark
-                                    ? AppKendoColors.pureWhite
-                                    : context.appColors.textColor,
+                                color: themeColors.textColor,
                                 fontSize: AppFontSize.subhead,
                               ),
                             ),
@@ -262,21 +262,23 @@ class _MatchRepresentativeModalBottomSheetState
                                   (p) => AppChoiceChip(
                                     label: Text(p),
                                     selected: _whiteCtrl.text == p,
-                                    selectedColor: isDark
-                                        ? const Color(0xFF607D8B)
-                                        : const Color(0x33000000),
-                                    backgroundColor: isDark
-                                        ? const Color(0xFF2C2C2E)
-                                        : context.appColors.inputBackground,
+                                    selectedColor: themeColors.primaryAccent,
+                                    backgroundColor: inputBg,
                                     labelStyle: TextStyle(
                                       color: _whiteCtrl.text == p
-                                          ? (context.appColors.textColor)
+                                          ? AppKendoColors.pureWhite
                                           : textColor,
-                                      fontWeight: AppFontWeight.bold,
+                                      fontWeight: _whiteCtrl.text == p
+                                          ? AppFontWeight.bold
+                                          : AppFontWeight.regular,
                                     ),
-                                    onSelected: (s) => setState(() {
-                                      _whiteCtrl.text = p;
-                                    }),
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        setState(() {
+                                          _whiteCtrl.text = p;
+                                        });
+                                      }
+                                    },
                                   ),
                                 )
                                 .toList(),
@@ -285,21 +287,21 @@ class _MatchRepresentativeModalBottomSheetState
                         ],
                         AppTextField(
                           controller: _whiteCtrl,
-                          style: TextStyle(color: textColor),
-                          onChanged: (val) => setState(() {}),
                           decoration: InputDecoration(
-                            labelText: '名前を直接入力',
-                            labelStyle: const TextStyle(
-                              color: AppKendoColors.grey,
-                            ),
-                            isDense: true,
-                            prefixIcon: const Icon(Icons.edit, size: 16),
-                            border: OutlineInputBorder(
-                              borderRadius: AppRadius.small,
+                            labelText: '選手名（直接入力も可）',
+                            hintText: '例: 鈴木',
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: themeColors.subTextColor,
                             ),
                             filled: true,
                             fillColor: inputBg,
+                            border: OutlineInputBorder(
+                              borderRadius: AppRadius.medium,
+                              borderSide: BorderSide.none,
+                            ),
                           ),
+                          onChanged: (_) => setState(() {}),
                         ),
                       ],
                     ),

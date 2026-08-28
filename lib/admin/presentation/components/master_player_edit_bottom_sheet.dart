@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_switch.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 選手情報の新規登録・編集ボトムシート
@@ -220,9 +221,9 @@ class _MasterPlayerEditBottomSheetState
                         : AppKendoColors.grey,
                   ),
                 ),
-                Switch(
+                AppSwitch(
                   value: _isBeginner,
-                  activeThumbColor: AppKendoColors.green,
+                  activeColor: AppKendoColors.green,
                   onChanged: (val) => setState(() => _isBeginner = val),
                 ),
               ],

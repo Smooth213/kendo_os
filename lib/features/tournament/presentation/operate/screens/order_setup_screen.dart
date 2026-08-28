@@ -17,6 +17,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import '../providers/last_used_settings_provider.dart';
@@ -286,7 +287,7 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
                     ),
                   ],
                 ),
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: AppLoadingIndicator()),
                 error: (err, stack) => Center(child: Text('エラー: $err')),
               ),
             ),

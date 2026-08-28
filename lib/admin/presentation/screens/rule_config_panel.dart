@@ -8,6 +8,7 @@ import 'package:kendo_os/features/match/domain/rules/rule_preset.dart'; // ★ �
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 // ==========================================
 // ★ Phase 7: UI Rule Builder (Basic/Advanced分離)
@@ -158,12 +159,12 @@ class RuleConfigPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
-                      color: const Color(0xDE000000),
+                      color: context.appColors.textColor,
                     ),
                   ),
-                  Switch(
+                  AppSwitch(
                     value: rule.isEnchoUnlimited || rule.enchoCount > 0,
-                    activeThumbColor: primaryColor,
+                    activeColor: primaryColor,
                     onChanged: (val) {
                       if (val) {
                         notifier.updateField(
@@ -190,12 +191,12 @@ class RuleConfigPanel extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.body,
                       fontWeight: AppFontWeight.bold,
-                      color: const Color(0xDE000000),
+                      color: context.appColors.textColor,
                     ),
                   ),
-                  Switch(
+                  AppSwitch(
                     value: rule.hasHantei,
-                    activeThumbColor: primaryColor,
+                    activeColor: primaryColor,
                     onChanged: (val) => notifier.updateField(hasHantei: val),
                   ),
                 ],

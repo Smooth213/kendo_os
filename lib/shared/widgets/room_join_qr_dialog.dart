@@ -1,12 +1,11 @@
 import 'dart:ui';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
@@ -460,7 +459,7 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                         ),
                       ),
                       _isLoading
-                          ? const CircularProgressIndicator(
+                          ? const AppLoadingIndicator(
                               color: AppKendoColors.teal,
                             )
                           : ElevatedButton(

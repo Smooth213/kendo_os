@@ -117,7 +117,7 @@ class ViewerMatchScreen extends ConsumerWidget {
           leading:
               (GoRouter.of(context).canPop() || Navigator.of(context).canPop())
               ? IconButton(
-                  icon: const Icon(Icons.arrow_back_ios),
+                  icon: const Icon(Icons.arrow_back_ios_new),
                   onPressed: () => context.pop(),
                 )
               : null,
@@ -298,10 +298,10 @@ class ViewerMatchScreen extends ConsumerWidget {
                         '試合速報リンク: $shareUrl',
                   ),
                 ),
-                icon: const Icon(Icons.share),
+                icon: const Icon(Icons.ios_share),
                 label: const Text('LINEやSNSでURLを送る'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF607D8B),
+                  backgroundColor: AppKendoColors.blueGrey,
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                 ),

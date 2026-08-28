@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_pr
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 /// 部内戦ルール設定カード
 class BunaiksenRuleSettingsCard extends ConsumerWidget {
@@ -271,12 +272,9 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
                         '判定',
                         style: TextStyle(fontWeight: AppFontWeight.bold),
                       ),
-                      Switch(
+                      AppSwitch(
                         value: rule.hasHantei,
-                        activeTrackColor: themeColors.primaryAccent.withValues(
-                          alpha: 0.5,
-                        ),
-                        activeThumbColor: themeColors.primaryAccent,
+                        activeColor: themeColors.primaryAccent,
                         onChanged: (v) => ref
                             .read(bunaiksenRuleProvider.notifier)
                             .update((state) => state.copyWith(hasHantei: v)),

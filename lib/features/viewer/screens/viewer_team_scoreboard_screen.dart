@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import '../providers/viewer_view_state_provider.dart';
@@ -140,7 +141,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
           ref,
           isDark,
           headerColor,
-          const Center(child: CircularProgressIndicator()),
+          const Center(child: AppLoadingIndicator()),
           null,
         ),
         error: (e, s) => _buildFallbackScaffold(
@@ -219,7 +220,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         ref,
         isDark,
         headerColor,
-        const Center(child: CircularProgressIndicator()),
+        const Center(child: AppLoadingIndicator()),
         tournamentId,
       ),
       error: (e, s) => _buildFallbackScaffold(

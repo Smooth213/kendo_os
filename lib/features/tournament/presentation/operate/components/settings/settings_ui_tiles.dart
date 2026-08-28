@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 /// 設定画面のセクションヘッダー
 class SettingsSectionHeader extends StatelessWidget {
@@ -203,28 +203,15 @@ class SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return SettingsListTile(
       title: title,
       icon: icon,
       iconBgColor: iconBgColor,
-      onTap: () {
-        final newVal = !value;
-        onChanged(newVal);
-        HapticFeedback.lightImpact();
-      },
-      trailing: Switch(
+      onTap: () => onChanged(!value),
+      trailing: AppSwitch(
         value: value,
-        activeThumbColor: AppKendoColors.pureWhite,
-        activeTrackColor: AppKendoColors.green,
-        inactiveThumbColor: AppKendoColors.pureWhite,
-        inactiveTrackColor: isDark
-            ? const Color(0xFF38383A)
-            : const Color(0xFFE9E9EA),
-        onChanged: (val) {
-          onChanged(val);
-          if (value != val) HapticFeedback.lightImpact();
-        },
+        activeColor: AppKendoColors.green,
+        onChanged: onChanged,
       ),
     );
   }

@@ -70,7 +70,7 @@ class BunaiksenShareDialog extends StatelessWidget {
                   subject: '部内戦リアルタイム速報リンク',
                 ),
               ),
-              icon: const Icon(Icons.share, size: 18),
+              icon: const Icon(Icons.ios_share, size: 18),
               label: const Text('リンクをコピー・共有'),
             ),
           ],

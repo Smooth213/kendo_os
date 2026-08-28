@@ -323,7 +323,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                 context,
                 '🏆 本戦ルール',
                 ruleSet.normalRule,
-                const Color(0xFF3F51B5),
+                AppKendoColors.indigo,
                 ruleSet.matchType,
               ),
             );
@@ -337,7 +337,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                 context,
                 '🤝 申し合わせルール',
                 ruleSet.moushiawaseRule,
-                const Color(0xFF009688),
+                AppKendoColors.teal,
                 '錬成会',
               ),
             );
@@ -390,12 +390,15 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  width: 48,
+                  width: 36,
                   height: 5,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.roundValue),
+                  margin: const EdgeInsets.only(
+                    top: AppSpacing.compact,
+                    bottom: AppSpacing.roundValue,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0x8A000000),
-                    borderRadius: AppRadius.medium,
+                    color: themeColors.separatorColor,
+                    borderRadius: AppRadius.capsule,
                   ),
                 ),
               ),
@@ -413,7 +416,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppFontSize.headline,
                         fontWeight: AppFontWeight.bold,
-                        color: context.appColors.textColor,
+                        color: themeColors.textColor,
                       ),
                     ),
                   ),
@@ -429,13 +432,13 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: context.appColors.separatorColor,
-                    foregroundColor: context.appColors.textColor,
+                    backgroundColor: themeColors.separatorColor,
+                    foregroundColor: themeColors.textColor,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.lg,
                     ),
-                    shape: RoundedRectangleBorder(
+                    shape: const RoundedRectangleBorder(
                       borderRadius: AppRadius.medium,
                     ),
                   ),

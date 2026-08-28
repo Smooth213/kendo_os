@@ -19,6 +19,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_form_state.dart';
@@ -179,7 +180,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           title: _formState.editingCategory == null ? '部門別ルール設定' : 'ルールの編集',
           backgroundColor: AppKendoColors.transparent,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new),
             onPressed: () {
               if (_formState.editingCategory != null) {
                 setState(() {
@@ -235,7 +236,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               onCompleteSetup: () => context.go('/home/${widget.tournamentId}'),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: AppLoadingIndicator()),
           error: (e, s) => Center(child: Text('エラーが発生しました: $e')),
         ),
       ),

@@ -176,7 +176,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 🛡️ アサート: canPopがfalseの時は、AppBarのleading（戻るボタンのアイコン）が存在しないこと
-      expect(find.byIcon(Icons.arrow_back_ios), findsNothing);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
     });
 
     testWidgets('①-b 【詳細画面：アプリ内遷移時】スタックが存在する状態では、戻るボタンが正常に表示されること', (
@@ -226,7 +226,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 🛡️ アサート: canPopがtrueの時は、戻るボタンのアイコンが物理的に存在すること
-      expect(find.byIcon(Icons.arrow_back_ios), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
     });
 
     testWidgets('②-a 【ホーム画面：QRコードURL検証】ホーム画面の共有ボタンから正しいベータ環境URLが生成されること', (

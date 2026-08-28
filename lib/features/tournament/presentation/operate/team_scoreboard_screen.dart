@@ -13,6 +13,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 export 'components/team_scoreboard/team_scoreboard_table_builder.dart'
@@ -60,7 +61,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
           return Scaffold(
             backgroundColor: context.appColors.scaffoldBackground,
             appBar: const AppHeader(title: 'スコアボード'),
-            body: const Center(child: CircularProgressIndicator()),
+            body: const Center(child: AppLoadingIndicator()),
           );
         }
         teamMatches = (asyncMatches.value ?? [])

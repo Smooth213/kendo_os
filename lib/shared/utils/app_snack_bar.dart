@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 /// アプリ全体で統一された SnackBar を表示するユーティリティ。
 ///
 /// 全SnackBarは以下のスタイルで統一:
 ///   - behavior: SnackBarBehavior.floating (画面下から浮いて表示)
 ///   - borderRadius: 12 (AppRadius.medium)
+///   - border: subtleBorderColor (ダークモード視認性担保)
 ///   - margin: bottom:20 / left:16 / right:16
 ///   - duration: 3秒（エラーは4秒）
+///   - Haptic Feedback 連携
 ///
 /// 使い方:
 ///   AppSnackBar.show(context, 'メッセージ');
@@ -26,12 +28,21 @@ class AppSnackBar {
     left: AppSpacing.lg,
     right: AppSpacing.lg,
   );
-  static const _shape = RoundedRectangleBorder(borderRadius: AppRadius.medium);
 
   static AppThemeColors _colors(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+  }
+
+  static ShapeBorder _getShape(AppThemeColors themeColors) {
+    return RoundedRectangleBorder(
+      borderRadius: AppRadius.medium,
+      side: BorderSide(
+        color: themeColors.separatorColor.withValues(alpha: 0.35),
+        width: 1,
+      ),
+    );
   }
 
   /// 通常のインフォメーションSnackBar
@@ -41,6 +52,7 @@ class AppSnackBar {
     Duration duration = _defaultDuration,
   }) {
     if (!context.mounted) return;
+    AppHaptics.light();
     final themeColors = _colors(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -53,7 +65,7 @@ class AppSnackBar {
         ),
         backgroundColor: themeColors.cardBackground,
         behavior: SnackBarBehavior.floating,
-        shape: _shape,
+        shape: _getShape(themeColors),
         margin: _margin,
         duration: duration,
       ),
@@ -67,6 +79,7 @@ class AppSnackBar {
     Duration duration = _errorDuration,
   }) {
     if (!context.mounted) return;
+    AppHaptics.error();
     final themeColors = _colors(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -79,7 +92,7 @@ class AppSnackBar {
         ),
         backgroundColor: themeColors.errorColor,
         behavior: SnackBarBehavior.floating,
-        shape: _shape,
+        shape: _getShape(themeColors),
         margin: _margin,
         duration: duration,
       ),
@@ -93,6 +106,7 @@ class AppSnackBar {
     Duration duration = _defaultDuration,
   }) {
     if (!context.mounted) return;
+    AppHaptics.success();
     final themeColors = _colors(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -105,7 +119,7 @@ class AppSnackBar {
         ),
         backgroundColor: themeColors.successColor,
         behavior: SnackBarBehavior.floating,
-        shape: _shape,
+        shape: _getShape(themeColors),
         margin: _margin,
         duration: duration,
       ),

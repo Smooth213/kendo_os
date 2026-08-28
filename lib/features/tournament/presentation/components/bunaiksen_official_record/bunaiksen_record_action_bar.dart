@@ -48,7 +48,7 @@ class BunaiksenRecordActionBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: _buildButton(
-              icon: Icons.share,
+              icon: Icons.ios_share,
               label: '画像シェア',
               color: const Color(0xFF06C755),
               onTap: isExporting ? null : onShareImage,

@@ -175,7 +175,7 @@ class ViewerOfficialRecordExportBar extends ConsumerWidget {
                   }
                 }
               },
-              icon: const Icon(Icons.share),
+              icon: const Icon(Icons.ios_share),
               label: const Text(
                 '画像シェア',
                 style: TextStyle(fontWeight: AppFontWeight.bold),

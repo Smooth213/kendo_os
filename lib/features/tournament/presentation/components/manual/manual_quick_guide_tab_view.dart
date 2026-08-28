@@ -39,7 +39,7 @@ class ManualQuickGuideTabView extends StatelessWidget {
             primaryIcon: Icons.print,
             onPrimaryPressed: onPrintPressed,
             secondaryLabel: '共有/保存',
-            secondaryIcon: Icons.share,
+            secondaryIcon: Icons.ios_share,
             onSecondaryPressed: onSharePressed,
             isDark: isDark,
           ),

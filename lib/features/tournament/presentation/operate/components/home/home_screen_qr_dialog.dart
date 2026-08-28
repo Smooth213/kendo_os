@@ -47,7 +47,7 @@ class HomeScreenQrDialog extends StatelessWidget {
                       'リンク: $shareUrl',
                 ),
               ),
-              icon: const Icon(Icons.share),
+              icon: const Icon(Icons.ios_share),
               label: const Text('LINEやSNSでURLを送る'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppKendoColors.indigo,

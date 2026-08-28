@@ -10,6 +10,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
   return ref.watch(playerRepositoryProvider).getPlayers();
@@ -368,15 +369,11 @@ class StandingsScreen extends ConsumerWidget {
               ],
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: AppLoadingIndicator()),
           error: (e, s) => Center(
             child: Text(
               'エラーが発生しました: $e',
-              style: TextStyle(
-                color: isDark
-                    ? const Color(0xFFFFFFFF)
-                    : const Color(0xFF000000),
-              ),
+              style: TextStyle(color: context.appColors.textColor),
             ),
           ),
         ),
