@@ -54,9 +54,41 @@ class CourtStatusCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ヘッダー行: コート名 + LIVEバッジ + 進行度
+              // 1段目: カテゴリ + LIVEバッジ + 自チームバッジ + 進行度
               _buildHeaderRow(context, isLive, isMyDojo),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
+
+              // 2段目: 【錬成】団体戦：道上剣友会 vs ◯◯道場（対戦カード名）
+              if (status.matchupTitle.isNotEmpty) ...[
+                Text(
+                  status.matchupTitle,
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    fontWeight: AppFontWeight.bold,
+                    color: context.appColors.textColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+              ],
+
+              // 3段目: 試合詳細メモ（未入力の場合は2段のみ）
+              if (status.detailNote.isNotEmpty) ...[
+                Text(
+                  status.detailNote,
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    fontWeight: AppFontWeight.medium,
+                    color: context.appColors.subTextColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+              ] else ...[
+                const SizedBox(height: AppSpacing.xxs),
+              ],
 
               // メイン進行中試合エリア
               if (liveMatch != null)
@@ -78,6 +110,10 @@ class CourtStatusCard extends StatelessWidget {
   }
 
   Widget _buildHeaderRow(BuildContext context, bool isLive, bool isMyDojo) {
+    final displayCategory = status.categoryName.isNotEmpty
+        ? status.categoryName
+        : status.courtName;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -95,7 +131,7 @@ class CourtStatusCard extends StatelessWidget {
                 borderRadius: AppRadius.small,
               ),
               child: Text(
-                status.courtName,
+                displayCategory,
                 style: TextStyle(
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,

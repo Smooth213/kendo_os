@@ -3,6 +3,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 /// 🥋 コート別進行ステータスモデル
 class CourtProgressStatus {
   final String courtName;
+  final String categoryName;
+  final String matchupTitle;
+  final String detailNote;
   final List<MatchModel> matches;
   final MatchModel? inProgressMatch;
   final MatchModel? lastFinishedMatch;
@@ -14,6 +17,9 @@ class CourtProgressStatus {
 
   const CourtProgressStatus({
     required this.courtName,
+    this.categoryName = '',
+    this.matchupTitle = '',
+    this.detailNote = '',
     required this.matches,
     this.inProgressMatch,
     this.lastFinishedMatch,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/domain/court_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/court_status_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/court_progress_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -24,6 +25,7 @@ class CourtStatusBoardScreen extends ConsumerStatefulWidget {
 class _CourtStatusBoardScreenState
     extends ConsumerState<CourtStatusBoardScreen> {
   CourtFilterType _filter = CourtFilterType.all;
+  String _selectedCategory = 'すべて';
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +37,16 @@ class _CourtStatusBoardScreenState
         .where((c) => c.hasMyDojoMatch)
         .length;
 
-    // フィルタリング
-    final filteredList = courtList.where((c) {
+    // カテゴリリストの抽出
+    final rawCategories = courtList
+        .map((c) => c.categoryName.isNotEmpty ? c.categoryName : c.courtName)
+        .where((cat) => cat.isNotEmpty)
+        .toSet()
+        .toList();
+    final categories = ['すべて', ...rawCategories];
+
+    // フィルタリング（ステータス ＆ カテゴリ連動）
+    final statusFilteredCourts = courtList.where((c) {
       switch (_filter) {
         case CourtFilterType.all:
           return true;
@@ -47,17 +57,27 @@ class _CourtStatusBoardScreenState
       }
     }).toList();
 
+    final filteredList = statusFilteredCourts.where((c) {
+      if (_selectedCategory != 'すべて') {
+        final cat = c.categoryName.isNotEmpty ? c.categoryName : c.courtName;
+        if (cat != _selectedCategory) return false;
+      }
+      return true;
+    }).toList();
+
     return Scaffold(
       appBar: const AppHeader(title: 'マルチコート進行状況'),
       body: Column(
         children: [
-          // サマリーヘッダー & フィルターバー
+          // サマリーヘッダー & フィルターバー & カテゴリタブ
           _buildSummaryAndFilterBar(
             context,
             isDark,
             totalLiveCount,
             totalMyDojoLiveCount,
-            courtList.length,
+            courtList,
+            statusFilteredCourts,
+            categories,
           ),
           const Divider(height: 1),
 
@@ -90,7 +110,9 @@ class _CourtStatusBoardScreenState
     bool isDark,
     int liveCount,
     int myDojoCount,
-    int totalCourts,
+    List<CourtProgressStatus> allCourts,
+    List<CourtProgressStatus> statusFilteredCourts,
+    List<String> categories,
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -99,13 +121,14 @@ class _CourtStatusBoardScreenState
       ),
       color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF9FAFB),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // カウンターバッジ行
           Row(
             children: [
               _buildMetricBadge(
                 label: '全コート',
-                count: totalCourts,
+                count: allCourts.length,
                 color: context.appColors.primaryAccent,
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -127,7 +150,8 @@ class _CourtStatusBoardScreenState
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          // フィルターチップ行
+
+          // フィルターチップ行（ステータス）
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -164,6 +188,70 @@ class _CourtStatusBoardScreenState
               ],
             ),
           ),
+
+          // 🏷️ 【公式記録画面準拠】カテゴリ別アンダーラインタブバー
+          if (categories.length > 1) ...[
+            const SizedBox(height: AppSpacing.xs),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: categories.map((cat) {
+                  final isSelected = _selectedCategory == cat;
+                  // 🔽 上の絞り込み（statusFilteredCourts）に連動してカウントを算出！
+                  final count = cat == 'すべて'
+                      ? statusFilteredCourts.length
+                      : statusFilteredCourts.where((c) {
+                          final cCat = c.categoryName.isNotEmpty
+                              ? c.categoryName
+                              : c.courtName;
+                          return cCat == cat;
+                        }).length;
+
+                  final labelText = cat == 'すべて'
+                      ? '全カテゴリ ($count)'
+                      : '$cat ($count)';
+
+                  final activeColor = isDark
+                      ? context.appColors.primaryAccent
+                      : const Color(0xFF3F51B5);
+                  final unselectedColor = context.appColors.subTextColor;
+
+                  return InkWell(
+                    onTap: () {
+                      setState(() => _selectedCategory = cat);
+                    },
+                    borderRadius: AppRadius.small,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isSelected
+                                ? activeColor
+                                : Colors.transparent,
+                            width: 3.0,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        labelText,
+                        style: TextStyle(
+                          fontSize: AppFontSize.bodySmall,
+                          fontWeight: isSelected
+                              ? AppFontWeight.bold
+                              : AppFontWeight.medium,
+                          color: isSelected ? activeColor : unselectedColor,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
         ],
       ),
     );
