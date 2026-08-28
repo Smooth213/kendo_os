@@ -100,7 +100,8 @@ class TimelineTeamCard extends ConsumerWidget {
     for (var c in teamComments) {
       timelineItems.add(CommentTimelineItem(c));
     }
-    timelineItems.sort((a, b) => a.order.compareTo(b.order));
+    // ★ あとから追加した対戦カード（試合グループ）が最上位に来るよう降順ソート
+    timelineItems.sort((a, b) => b.order.compareTo(a.order));
 
     return Container(
       margin: const EdgeInsets.only(

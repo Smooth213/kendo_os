@@ -45,13 +45,13 @@ void main() {
       );
 
       expect(find.text('対戦終了'), findsOneWidget);
-      expect(find.textContaining('次の申し合わせ・錬成試合を追加設定'), findsOneWidget);
+      expect(find.textContaining('試合を追加（現在のチームと続行）'), findsOneWidget);
       expect(find.textContaining('次の試合へ進む (先鋒)'), findsOneWidget);
       expect(find.text('大会ホームへ戻る'), findsOneWidget);
       expect(find.text('スコアボードを確認する'), findsOneWidget);
 
       // タップ検証
-      await tester.tap(find.textContaining('次の申し合わせ・錬成試合を追加設定'));
+      await tester.tap(find.textContaining('試合を追加（現在のチームと続行）'));
       await tester.pump();
       expect(addRenseikaiClicked, isTrue);
 

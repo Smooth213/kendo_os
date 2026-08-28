@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_player_roster_list_section.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_player_roster_resolver.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_roster_swap_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart'
     show playerListProvider;
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/shared/domain/entities/player_model.dart';
-import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -107,16 +107,6 @@ class _MatchPlayerNameEditBottomSheetState
     }
   }
 
-  String _getPlayerCategory(int grade) {
-    if (grade == -1) return '初心者の部';
-    if (grade == 0) return '幼年の部';
-    if (grade >= 1 && grade <= 4) return '小学生低学年の部';
-    if (grade >= 5 && grade <= 6) return '小学生高学年の部';
-    if (grade >= 7 && grade <= 9) return '中学生の部';
-    if (grade >= 10 && grade <= 12) return '高校生の部';
-    return '一般の部';
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -137,120 +127,20 @@ class _MatchPlayerNameEditBottomSheetState
         .where((m) => m.groupName == widget.match.groupName)
         .toList();
 
-    final activePlayerNames = <String>{};
-    final playerPositions = <String, String>{};
-    for (final m in currentGroupMatches) {
-      if (m.redName.contains(':')) {
-        final parts = m.redName.split(':');
-        if (parts.first.trim() == _teamName) {
-          final name = parts.last.trim();
-          activePlayerNames.add(name);
-          playerPositions[name] = m.matchType;
-        }
-      }
-      if (m.whiteName.contains(':')) {
-        final parts = m.whiteName.split(':');
-        if (parts.first.trim() == _teamName) {
-          final name = parts.last.trim();
-          activePlayerNames.add(name);
-          playerPositions[name] = m.matchType;
-        }
-      }
-    }
-
-    final ownTeamPlayers = players.where((p) {
-      final org = p.organization.trim();
-      if (org.isEmpty) return false;
-      return _teamName.contains(org) || org.contains(_teamName);
-    }).toList();
-
-    final matchedTeam = registeredTeams.firstWhere(
-      (t) => t.teamName == _teamName || _teamName == t.teamName,
-      orElse: () {
-        return registeredTeams.firstWhere(
-          (t) =>
-              _teamName.contains(t.teamName) || t.teamName.contains(_teamName),
-          orElse: () => TeamModel(
-            id: '',
-            tournamentId: '',
-            category: '',
-            teamName: '',
-            matchType: '',
-            playerNames: [],
-          ),
-        );
-      },
-    );
-    final teamRegisteredPlayerNames = matchedTeam.playerNames
-        .where((name) => name.isNotEmpty)
-        .toSet();
-
-    final Set<String> ownPlayerNames = ownTeamPlayers
-        .map((p) => p.name)
-        .toSet();
-    final List<PlayerModel> finalOwnTeamPlayers = List<PlayerModel>.from(
-      ownTeamPlayers,
+    final roster = MatchPlayerRosterResolver.resolve(
+      teamName: _teamName,
+      match: widget.match,
+      currentGroupMatches: currentGroupMatches,
+      players: players,
+      registeredTeams: registeredTeams,
     );
 
-    for (final name in teamRegisteredPlayerNames) {
-      if (!ownPlayerNames.contains(name)) {
-        final found = players.firstWhere(
-          (p) => p.name == name,
-          orElse: () => PlayerModel(
-            id: 'virtual_$name',
-            lastName: name,
-            firstName: '',
-            lastNameKana: '',
-            firstNameKana: '',
-            grade: 0,
-            organization: _teamName,
-          ),
-        );
-        finalOwnTeamPlayers.add(found);
-        ownPlayerNames.add(name);
-      }
-    }
-
-    final matchCategory = widget.match.category ?? '';
-
-    final teamSubstitutes = matchedTeam.playerNames
-        .where((name) => name.isNotEmpty && !activePlayerNames.contains(name))
-        .toList();
-
-    final teamSubstitutesPlayers = finalOwnTeamPlayers
-        .where((p) => teamSubstitutes.contains(p.name))
-        .toList();
-    final substitutes = teamSubstitutesPlayers;
-
-    final sameCatActive = finalOwnTeamPlayers
-        .where((p) => activePlayerNames.contains(p.name))
-        .toList();
-
-    final sameCategorySubstitutes = finalOwnTeamPlayers
-        .where((p) => !activePlayerNames.contains(p.name))
-        .where((p) {
-          if (matchCategory.isEmpty) return true;
-          return _getPlayerCategory(p.grade) == matchCategory;
-        })
-        .toList();
-
-    final List<PlayerModel> quickAccessPlayers;
-    if (teamSubstitutesPlayers.isNotEmpty) {
-      quickAccessPlayers = teamSubstitutesPlayers;
-    } else {
-      quickAccessPlayers = sameCategorySubstitutes;
-    }
-
-    final dojoListSubstitutes = sameCategorySubstitutes
-        .where((p) => !quickAccessPlayers.any((q) => q.name == p.name))
-        .toList();
-
-    final otherCategoryPlayers = players.where((p) {
-      if (sameCatActive.any((a) => a.name == p.name)) return false;
-      if (quickAccessPlayers.any((q) => q.name == p.name)) return false;
-      if (dojoListSubstitutes.any((d) => d.name == p.name)) return false;
-      return true;
-    }).toList();
+    final activePlayerNames = roster.activePlayerNames;
+    final playerPositions = roster.playerPositions;
+    final substitutes = roster.substitutes;
+    final sameCatActive = roster.sameCatActive;
+    final dojoListSubstitutes = roster.dojoListSubstitutes;
+    final otherCategoryPlayers = roster.otherCategoryPlayers;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -479,9 +369,44 @@ class _MatchPlayerNameEditBottomSheetState
                       }
                       if (context.mounted) Navigator.pop(context);
                     },
+                    onOpenFullReorder: currentGroupMatches.length > 1
+                        ? () {
+                            Navigator.pop(context);
+                            QuickRosterSwapDialog.show(
+                              context,
+                              currentMatch: widget.match,
+                              teamMatches: currentGroupMatches,
+                              isRedSide: widget.side == 'red',
+                            );
+                          }
+                        : null,
                   ),
                 ),
               ] else ...[
+                if (currentGroupMatches.length > 1) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      QuickRosterSwapDialog.show(
+                        context,
+                        currentMatch: widget.match,
+                        teamMatches: currentGroupMatches,
+                        isRedSide: widget.side == 'red',
+                      );
+                    },
+                    icon: const Icon(Icons.drag_handle_rounded),
+                    label: const Text('全体オーダーを並び替える (ドラッグ＆ドロップ)'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.medium,
+                      ),
+                    ),
+                  ),
+                ],
                 const Spacer(),
               ],
             ],

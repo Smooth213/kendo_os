@@ -42,8 +42,6 @@ import 'package:kendo_os/features/match/domain/match_state.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
-
-import 'package:kendo_os/features/tournament/presentation/operate/providers/share_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
@@ -297,9 +295,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   final groupButtonPart = MatchOperateActionButtonsGrid(
                                     isViewOnly: isViewOnly,
                                     isKachinuki: match.isKachinuki,
-                                    onShareUrl: () => ref
-                                        .read(shareProvider)
-                                        .shareMatch(match),
+                                    onShareUrl: () =>
+                                        MatchDialogHelper.showMatchShareOptionsSheet(
+                                          context,
+                                          match,
+                                        ),
                                     onRestoreHistory: () =>
                                         MatchDialogHelper.showSnapshotDialog(
                                           context,

@@ -74,7 +74,7 @@ class ExpeditionDetailBottomSheet {
                 child: ListView(
                   children: [
                     Text(
-                      '🎯 有効打突・取得技内訳',
+                      '有効打突・取得技内訳',
                       style: TextStyle(
                         fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
@@ -145,7 +145,7 @@ class ExpeditionDetailBottomSheet {
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Text(
-                      '⚖️ 団体戦 対戦カード履歴 (全剣連基準)',
+                      '対戦カード履歴',
                       style: TextStyle(
                         fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
@@ -226,21 +226,66 @@ class ExpeditionDetailBottomSheet {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatPill(
-                    '総試合数',
+                    '通算試合数',
                     '$totalMatches 試合',
                     AppKendoColors.grey,
                   ),
                   _buildStatPill(
-                    '勝敗',
+                    '通算勝敗',
                     '${stats.win}勝 ${stats.loss}敗 ${stats.draw > 0 ? "${stats.draw}分" : ""}',
                     AppKendoColors.indigo,
                   ),
                   _buildStatPill('勝率', '$winRate %', AppKendoColors.teal),
                 ],
               ),
+              if ((stats.teamWin + stats.teamLoss + stats.teamDraw > 0) ||
+                  (stats.individualWin +
+                          stats.individualLoss +
+                          stats.individualDraw >
+                      0)) ...[
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1C1C1E)
+                        : const Color(0xFFF2F2F7),
+                    borderRadius: AppRadius.medium,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Text(
+                        '団体戦: ${stats.teamWin}勝${stats.teamLoss}敗${stats.teamDraw > 0 ? "${stats.teamDraw}分" : ""}',
+                        style: TextStyle(
+                          fontSize: AppFontSize.small,
+                          fontWeight: AppFontWeight.bold,
+                          color: context.appColors.textColor,
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: AppKendoColors.grey.withValues(alpha: 0.4),
+                      ),
+                      Text(
+                        '個人戦: ${stats.individualWin}勝${stats.individualLoss}敗${stats.individualDraw > 0 ? "${stats.individualDraw}分" : ""}',
+                        style: TextStyle(
+                          fontSize: AppFontSize.small,
+                          fontWeight: AppFontWeight.bold,
+                          color: context.appColors.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.lg),
               Text(
-                '🎯 取得技の内訳',
+                '取得技の内訳',
                 style: TextStyle(
                   fontSize: AppFontSize.subhead,
                   fontWeight: AppFontWeight.bold,

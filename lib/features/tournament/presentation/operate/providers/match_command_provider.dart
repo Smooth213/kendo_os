@@ -242,6 +242,14 @@ class MatchCommandService {
     await ref.read(matchApplicationServiceProvider).saveMatch(newMatch);
   }
 
+  /// 【Phase 2: 現場救済】試合の赤白（選手・スコア・反則・履歴）を即座に反転
+  Future<void> swapRedAndWhite(String matchId) async {
+    final match = _getMatch(matchId);
+    if (match == null) return;
+    final swapped = match.swapRedAndWhite();
+    await ref.read(matchApplicationServiceProvider).saveMatch(swapped);
+  }
+
   Future<void> bulkUpdateMatchRules({
     required List<String> targetMatchIds,
     required MatchRule newRule,

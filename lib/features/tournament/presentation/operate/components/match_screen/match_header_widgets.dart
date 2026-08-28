@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_dialog_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
@@ -44,16 +47,33 @@ class MatchHeaderTitle extends StatelessWidget {
 }
 
 /// 試合画面のヘッダーアクションWidgetリスト
-class MatchHeaderActions extends StatelessWidget {
+class MatchHeaderActions extends ConsumerWidget {
   final MatchModel match;
 
   const MatchHeaderActions({super.key, required this.match});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        IconButton(
+          icon: const Icon(
+            Icons.swap_horiz_rounded,
+            color: AppKendoColors.pureWhite,
+          ),
+          tooltip: '赤白スコア・取得技の左右入れ替え（誤入力救済）',
+          onPressed: () async {
+            final confirmed = await MatchDialogHelper.showConfirmDialog(
+              context,
+              '取得スコアの左右入れ替え',
+              '赤と白の取得本数・打突技・反則履歴を左右入れ替えますか？\n（選手名はそのまま維持され、スコアの押し間違いを修正します）',
+            );
+            if (confirmed) {
+              await ref.read(matchCommandProvider).swapRedAndWhite(match.id);
+            }
+          },
+        ),
         const ManualHelpButton(
           manualPath: 'docs/manuals/quickstart/operator_1pager.md',
           color: AppKendoColors.pureWhite,

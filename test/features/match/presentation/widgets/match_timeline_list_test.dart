@@ -315,9 +315,9 @@ void main() {
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
-      expect(fakeMatchAppService.savedMatches!.first.id, 'm1_1');
-      // newOrder = 30.0 + 100 = 130.0
-      expect(fakeMatchAppService.savedMatches!.first.order, 130.0);
+      expect(fakeMatchAppService.savedMatches!.first.id, 'm3_1');
+      // newOrder = 10.0 + 100 = 110.0
+      expect(fakeMatchAppService.savedMatches!.first.order, 110.0);
     });
 
     testWidgets('3. リーグ個人戦の並び替え (_onReorderInnerTimeline)', (

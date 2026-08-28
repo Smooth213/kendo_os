@@ -6,12 +6,16 @@ class MatchTeamHeaderRow extends StatelessWidget {
   final String redTeam;
   final String whiteTeam;
   final Color textColor;
+  final bool isRedOwn;
+  final bool isWhiteOwn;
 
   const MatchTeamHeaderRow({
     super.key,
     required this.redTeam,
     required this.whiteTeam,
     required this.textColor,
+    this.isRedOwn = false,
+    this.isWhiteOwn = false,
   });
 
   @override
@@ -27,8 +31,8 @@ class MatchTeamHeaderRow extends StatelessWidget {
             rDisplay,
             style: TextStyle(
               fontSize: AppFontSize.badge,
-              color: textColor,
-              fontWeight: AppFontWeight.medium,
+              color: isRedOwn ? const Color(0xFFD97706) : textColor,
+              fontWeight: isRedOwn ? AppFontWeight.bold : AppFontWeight.medium,
             ),
             textAlign: TextAlign.start,
             overflow: TextOverflow.ellipsis,
@@ -41,8 +45,10 @@ class MatchTeamHeaderRow extends StatelessWidget {
             wDisplay,
             style: TextStyle(
               fontSize: AppFontSize.badge,
-              color: textColor,
-              fontWeight: AppFontWeight.medium,
+              color: isWhiteOwn ? const Color(0xFFD97706) : textColor,
+              fontWeight: isWhiteOwn
+                  ? AppFontWeight.bold
+                  : AppFontWeight.medium,
             ),
             textAlign: TextAlign.end,
             overflow: TextOverflow.ellipsis,

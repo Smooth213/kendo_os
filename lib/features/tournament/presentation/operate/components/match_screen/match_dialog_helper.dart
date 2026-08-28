@@ -8,13 +8,54 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_player_name_edit_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_representative_modal_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_snapshot_history_dialog.dart';
+import 'package:kendo_os/features/p2p/presentation/components/p2p_broadcast_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_next_match_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_roster_swap_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_add_next_match_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_share_options_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 /// 試合画面の各種モーダル・ダイアログ表示ヘルパー
 class MatchDialogHelper {
+  static void showMatchShareOptionsSheet(
+    BuildContext context,
+    MatchModel match,
+  ) {
+    MatchShareOptionsBottomSheet.show(context, match: match);
+  }
+
+  static void showP2pBroadcastDialog(BuildContext context, MatchModel match) {
+    P2pBroadcastDialog.show(context, match: match);
+  }
+
+  static void showQuickRosterSwapDialog({
+    required BuildContext context,
+    required MatchModel match,
+    required List<MatchModel> teamMatches,
+    bool isRedSide = true,
+  }) {
+    QuickRosterSwapDialog.show(
+      context,
+      currentMatch: match,
+      teamMatches: teamMatches,
+      isRedSide: isRedSide,
+    );
+  }
+
+  static void showQuickNextMatchDialog({
+    required BuildContext context,
+    required MatchModel match,
+    required List<MatchModel> teamMatches,
+  }) {
+    QuickNextMatchSheet.show(
+      context,
+      currentMatch: match,
+      teamMatches: teamMatches,
+    );
+  }
+
   static void showSnapshotDialog(
     BuildContext context,
     WidgetRef ref,
@@ -122,6 +163,16 @@ class MatchDialogHelper {
         hasGroupName: hasGroupName,
         isKachinuki: isKachinuki,
         isDark: isDark,
+        onQuickNextMatch: isRenseikai
+            ? () {
+                Navigator.pop(ctx);
+                QuickNextMatchSheet.show(
+                  context,
+                  currentMatch: match,
+                  teamMatches: teamMatches,
+                );
+              }
+            : null,
         onAddNextRenseikaiMatch: () {
           Navigator.pop(ctx);
           RenseikaiAddNextMatchBottomSheet.show(context, currentMatch: match);

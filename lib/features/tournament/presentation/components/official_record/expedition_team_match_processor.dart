@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_models.dart';
 
-/// 遠征成績の団体戦・勝ち抜き戦集計プロセッサ
+/// 遠征成績の団体戦・勝ち抜き戦・個人戦集計プロセッサ
 class ExpeditionTeamMatchProcessor {
   static void processTeamMatches({
     required Map<String, List<MatchModel>> groupMap,
@@ -14,6 +14,7 @@ class ExpeditionTeamMatchProcessor {
     required List<ExpeditionCardResult> cardResults,
     required void Function(String scene, bool isWin, bool isDraw)
     onRecordSceneResult,
+    void Function(bool isWin, bool isDraw)? onRecordIndividualResult,
   }) {
     for (final entry in groupMap.entries) {
       final bouts = entry.value;
@@ -106,36 +107,44 @@ class ExpeditionTeamMatchProcessor {
           }
         } else {
           for (final b in playedBouts) {
-            final int rScore = (b.redScore as num).toInt();
-            final int wScore = (b.whiteScore as num).toInt();
-
-            if (b.matchType == '代表戦') {
+            final isDaihyo = b.matchType == '代表戦';
+            if (isDaihyo) {
               hasDaihyo = true;
-              if (rScore > wScore) {
-                daihyoIsMyWin = isTargetRed;
-              } else if (wScore > rScore) {
-                daihyoIsMyWin = isTargetWhite;
-              }
-            } else {
               if (isTargetRed) {
-                myPoints += rScore;
-                oppPoints += wScore;
-                if (rScore > wScore) {
-                  myWins++;
-                } else if (wScore > rScore) {
-                  oppWins++;
+                if (b.redScore > b.whiteScore) {
+                  daihyoIsMyWin = true;
+                } else if (b.whiteScore > b.redScore) {
+                  daihyoIsMyWin = false;
                 }
               } else {
-                myPoints += wScore;
-                oppPoints += rScore;
-                if (wScore > rScore) {
-                  myWins++;
-                } else if (rScore > wScore) {
-                  oppWins++;
+                if (b.whiteScore > b.redScore) {
+                  daihyoIsMyWin = true;
+                } else if (b.redScore > b.whiteScore) {
+                  daihyoIsMyWin = false;
                 }
+              }
+              continue;
+            }
+
+            if (isTargetRed) {
+              myPoints += b.redScore;
+              oppPoints += b.whiteScore;
+              if (b.redScore > b.whiteScore) {
+                myWins++;
+              } else if (b.whiteScore > b.redScore) {
+                oppWins++;
+              }
+            } else {
+              myPoints += b.whiteScore;
+              oppPoints += b.redScore;
+              if (b.whiteScore > b.redScore) {
+                myWins++;
+              } else if (b.redScore > b.whiteScore) {
+                oppWins++;
               }
             }
 
+            // 🥋 団体戦内訳の選手個人成績集計
             final rPlayer = b.redName.contains(':')
                 ? b.redName.split(':').last.trim()
                 : b.redName.trim();
@@ -150,12 +159,15 @@ class ExpeditionTeamMatchProcessor {
                 rPlayer,
                 () => DetailedPlayerStats(),
               );
-              if (rScore == wScore) {
-                stats.draw++;
-              } else if (rScore > wScore) {
+              if (b.redScore > b.whiteScore) {
                 stats.win++;
-              } else {
+                stats.teamWin++;
+              } else if (b.redScore < b.whiteScore) {
                 stats.loss++;
+                stats.teamLoss++;
+              } else {
+                stats.draw++;
+                stats.teamDraw++;
               }
             }
             if (isTargetWhite &&
@@ -165,12 +177,15 @@ class ExpeditionTeamMatchProcessor {
                 wPlayer,
                 () => DetailedPlayerStats(),
               );
-              if (wScore == rScore) {
-                stats.draw++;
-              } else if (wScore > rScore) {
+              if (b.whiteScore > b.redScore) {
                 stats.win++;
-              } else {
+                stats.teamWin++;
+              } else if (b.whiteScore < b.redScore) {
                 stats.loss++;
+                stats.teamLoss++;
+              } else {
+                stats.draw++;
+                stats.teamDraw++;
               }
             }
           }
@@ -260,11 +275,13 @@ class ExpeditionTeamMatchProcessor {
             isWin: isWin,
             isDraw: isDraw,
             scene: scene,
+            isIndividual: false,
           ),
         );
 
         onRecordSceneResult(scene, isWin, isDraw);
       } else {
+        // ⚔️ 個人戦ブロックの処理
         for (final m in bouts) {
           if (!isMatchPlayed(m)) continue;
 
@@ -294,6 +311,8 @@ class ExpeditionTeamMatchProcessor {
           if (!isTargetRed && !isTargetWhite) continue;
 
           final isDraw = m.redScore == m.whiteScore;
+          final isRedWin = m.redScore > m.whiteScore;
+          final isWhiteWin = m.whiteScore > m.redScore;
 
           if (isTargetRed && rPlayer.isNotEmpty && isMyPlayer(rPlayer, rTeam)) {
             final stats = playerStatsMap.putIfAbsent(
@@ -302,10 +321,16 @@ class ExpeditionTeamMatchProcessor {
             );
             if (isDraw) {
               stats.draw++;
-            } else if (m.redScore > m.whiteScore) {
+              stats.individualDraw++;
+              onRecordIndividualResult?.call(false, true);
+            } else if (isRedWin) {
               stats.win++;
+              stats.individualWin++;
+              onRecordIndividualResult?.call(true, false);
             } else {
               stats.loss++;
+              stats.individualLoss++;
+              onRecordIndividualResult?.call(false, false);
             }
           }
           if (isTargetWhite &&
@@ -317,12 +342,42 @@ class ExpeditionTeamMatchProcessor {
             );
             if (isDraw) {
               stats.draw++;
-            } else if (m.whiteScore > m.redScore) {
+              stats.individualDraw++;
+              onRecordIndividualResult?.call(false, true);
+            } else if (isWhiteWin) {
               stats.win++;
+              stats.individualWin++;
+              onRecordIndividualResult?.call(true, false);
             } else {
               stats.loss++;
+              stats.individualLoss++;
+              onRecordIndividualResult?.call(false, false);
             }
           }
+
+          // 個人戦の対戦カード結果も追加
+          final oppName = isTargetRed
+              ? (wPlayer.isNotEmpty ? wPlayer : wTeam)
+              : (rPlayer.isNotEmpty ? rPlayer : rTeam);
+          final myScore = isTargetRed ? m.redScore : m.whiteScore;
+          final oppScore = isTargetRed ? m.whiteScore : m.redScore;
+          final bool isIndWin = isTargetRed ? isRedWin : isWhiteWin;
+
+          cardResults.add(
+            ExpeditionCardResult(
+              cardTitle: '個人戦 (${m.matchType})',
+              opponentTeamName: oppName,
+              myWins: isIndWin ? 1 : 0,
+              oppWins: (!isIndWin && !isDraw) ? 1 : 0,
+              myPoints: myScore,
+              oppPoints: oppScore,
+              resultType: isIndWin ? '勝利' : (isDraw ? '引き分け' : '敗戦'),
+              isWin: isIndWin,
+              isDraw: isDraw,
+              scene: m.matchScene,
+              isIndividual: true,
+            ),
+          );
         }
       }
     }

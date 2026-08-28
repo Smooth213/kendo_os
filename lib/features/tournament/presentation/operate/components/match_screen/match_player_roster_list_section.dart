@@ -3,7 +3,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 /// 道場名簿一覧セクション（出場中・同カテゴリ控え・他カテゴリ選手）
 class MatchPlayerRosterListSection extends StatelessWidget {
@@ -14,6 +13,7 @@ class MatchPlayerRosterListSection extends StatelessWidget {
   final Map<String, String> playerPositions;
   final String currentPlayerName;
   final void Function(PlayerModel player, bool isSub) onPlayerSelected;
+  final VoidCallback? onOpenFullReorder;
 
   const MatchPlayerRosterListSection({
     super.key,
@@ -24,6 +24,7 @@ class MatchPlayerRosterListSection extends StatelessWidget {
     required this.playerPositions,
     required this.currentPlayerName,
     required this.onPlayerSelected,
+    this.onOpenFullReorder,
   });
 
   @override
@@ -43,15 +44,57 @@ class MatchPlayerRosterListSection extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
         if (sameCatActive.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.only(bottom: AppSpacing.sm),
-            child: Text(
-              '出場中の選手 (交代・スワップ)',
-              style: TextStyle(
-                fontSize: AppFontSize.small,
-                fontWeight: AppFontWeight.bold,
-                color: Color(0xFFFF9800),
-              ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '出場中の選手 (交代・スワップ)',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    fontWeight: AppFontWeight.bold,
+                    color: Color(0xFFFF9800),
+                  ),
+                ),
+                if (onOpenFullReorder != null)
+                  InkWell(
+                    onTap: onOpenFullReorder,
+                    borderRadius: AppRadius.small,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF9800).withValues(alpha: 0.15),
+                        borderRadius: AppRadius.small,
+                        border: Border.all(
+                          color: const Color(0xFFFF9800).withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.drag_handle_rounded,
+                            size: 14,
+                            color: Color(0xFFFF9800),
+                          ),
+                          SizedBox(width: 2),
+                          Text(
+                            '全体を並び替え',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: Color(0xFFFF9800),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           ...sameCatActive.map(
@@ -81,55 +124,33 @@ class MatchPlayerRosterListSection extends StatelessWidget {
             (p) => MatchPlayerSelectionCard(
               player: p,
               isSub: true,
-              isCurrentPosition: p.name == currentPlayerName,
-              currentPosition: playerPositions[p.name],
+              isCurrentPosition: false,
               onTap: () => onPlayerSelected(p, true),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
         ],
-        const Divider(),
-        const SizedBox(height: AppSpacing.sm),
-        Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(dividerColor: AppKendoColors.transparent),
-          child: ExpansionTile(
-            title: Text(
-              '他のカテゴリの選手を表示',
+        if (otherCategoryPlayers.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Text(
+              '他カテゴリの所属選手 (助っ人)',
               style: TextStyle(
-                fontSize: AppFontSize.bodySmall,
+                fontSize: AppFontSize.small,
                 fontWeight: AppFontWeight.bold,
-                color: context.appColors.primaryAccent,
+                color: AppKendoColors.blueGrey,
               ),
             ),
-            tilePadding: EdgeInsets.zero,
-            childrenPadding: EdgeInsets.zero,
-            children: [
-              if (otherCategoryPlayers.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                  child: Center(
-                    child: Text(
-                      '他のカテゴリに選手はいません',
-                      style: TextStyle(color: AppKendoColors.grey),
-                    ),
-                  ),
-                )
-              else
-                ...otherCategoryPlayers.map((p) {
-                  final isSub = !activePlayerNames.contains(p.name);
-                  return MatchPlayerSelectionCard(
-                    player: p,
-                    isSub: isSub,
-                    isCurrentPosition: p.name == currentPlayerName,
-                    currentPosition: playerPositions[p.name],
-                    onTap: () => onPlayerSelected(p, isSub),
-                  );
-                }),
-            ],
           ),
-        ),
+          ...otherCategoryPlayers.map(
+            (p) => MatchPlayerSelectionCard(
+              player: p,
+              isSub: true,
+              isCurrentPosition: false,
+              onTap: () => onPlayerSelected(p, true),
+            ),
+          ),
+        ],
       ],
     );
   }

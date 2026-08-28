@@ -28,10 +28,13 @@ class MatchFinishedNavigationDialog extends StatelessWidget {
     required this.isKachinuki,
     required this.isDark,
     this.onAddNextRenseikaiMatch,
+    this.onQuickNextMatch,
     this.onGoToNextMatch,
     required this.onGoHome,
     this.onShowScoreboard,
   });
+
+  final VoidCallback? onQuickNextMatch;
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +42,38 @@ class MatchFinishedNavigationDialog extends StatelessWidget {
       title: '対戦終了',
       content: const Text('対戦がすべて終了しました。\n次のアクションを選択してください。'),
       actions: [
-        // ★ 錬成会・申し合わせ時の「次の対戦を設定」ボタン
+        // ★ 錬成会・申し合わせ時の「次の対戦を設定」ボタン（同じ相手との試合追加）
         if (isRenseikai && onAddNextRenseikaiMatch != null) ...[
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
+            child: OutlinedButton.icon(
               onPressed: onAddNextRenseikaiMatch,
               icon: const Icon(Icons.add_circle_outline),
               label: const Text(
-                '⚔️ 次の申し合わせ・錬成試合を追加設定',
+                '試合を追加（現在のチームと続行）',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontWeight: AppFontWeight.bold),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+        // ★ ノンストップ連戦：同じオーダーで対戦相手を変えて即次戦（別チームとの団体戦）
+        if (onQuickNextMatch != null) ...[
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onQuickNextMatch,
+              icon: const Icon(Icons.bolt),
+              label: const Text(
+                '別のチームと対戦（次の団体戦）',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontWeight: AppFontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(

@@ -59,6 +59,17 @@ class ExpeditionEventProcessor {
           (selectedSummaryTeam == wTeam);
       if (!isTargetRed && !isTargetWhite) continue;
 
+      final bool isTeamMatch =
+          (m.groupName != null && m.groupName!.isNotEmpty) ||
+          m.isKachinuki ||
+          m.matchType.contains('団体') ||
+          m.matchType == '先鋒' ||
+          m.matchType == '次鋒' ||
+          m.matchType == '中堅' ||
+          m.matchType == '副将' ||
+          m.matchType == '大将' ||
+          m.matchType == '代表戦';
+
       for (final ev in m.events) {
         if (ev.isCanceled) continue;
         if (!ev.isIppon) continue;
@@ -78,6 +89,12 @@ class ExpeditionEventProcessor {
             () => DetailedPlayerStats(),
           );
           pStats.totalPoints++;
+
+          if (isTeamMatch) {
+            pStats.teamPoints++;
+          } else {
+            pStats.individualPoints++;
+          }
 
           if (ev.isHansoku) {
             teamHansoku++;
@@ -100,21 +117,26 @@ class ExpeditionEventProcessor {
                 teamTsuki++;
                 pStats.tsuki++;
                 break;
-              default:
+              case StrikeType.none:
                 teamOther++;
                 pStats.other++;
                 break;
             }
           }
-        } else if (evIsOpp) {
+        }
+
+        if (evIsOpp) {
           teamTotalConceded++;
           final String myPlayer = ev.side == Side.red ? wPlayer : rPlayer;
-          if (myPlayer.isNotEmpty) {
-            final pStats = playerStatsMap.putIfAbsent(
-              myPlayer,
-              () => DetailedPlayerStats(),
-            );
-            pStats.concededPoints++;
+          final pStats = playerStatsMap.putIfAbsent(
+            myPlayer,
+            () => DetailedPlayerStats(),
+          );
+          pStats.concededPoints++;
+          if (isTeamMatch) {
+            pStats.teamConceded++;
+          } else {
+            pStats.individualConceded++;
           }
         }
       }

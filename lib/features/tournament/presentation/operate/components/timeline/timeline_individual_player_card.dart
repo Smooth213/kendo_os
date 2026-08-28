@@ -114,13 +114,13 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
                   ? (context.appColors.separatorColor)
                   : context.appColors.warningColor,
               child: Text(
-                playerName[0],
+                playerName.isNotEmpty ? playerName[0] : '?',
                 style: TextStyle(
                   color: pAllFinished
                       ? (isDark
                             ? const Color(0xFF9E9E9E)
                             : const Color(0xFF757575))
-                      : context.appColors.warningColor,
+                      : AppKendoColors.pureWhite,
                   fontSize: AppFontSize.small,
                   fontWeight: AppFontWeight.bold,
                 ),

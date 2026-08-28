@@ -1,19 +1,36 @@
 /// 選手ごとの詳細スタッツモデル
 class DetailedPlayerStats {
+  // --- 通算（総合） ---
   int win = 0;
   int loss = 0;
   int draw = 0;
+  int totalPoints = 0;
+  int concededPoints = 0;
+
+  // --- 🥋 団体戦 内訳 ---
+  int teamWin = 0;
+  int teamLoss = 0;
+  int teamDraw = 0;
+  int teamPoints = 0;
+  int teamConceded = 0;
+
+  // --- ⚔️ 個人戦 内訳 ---
+  int individualWin = 0;
+  int individualLoss = 0;
+  int individualDraw = 0;
+  int individualPoints = 0;
+  int individualConceded = 0;
+
+  // --- 技内訳（有効打突） ---
   int men = 0;
   int kote = 0;
   int dou = 0;
   int tsuki = 0;
   int hansoku = 0;
   int other = 0;
-  int totalPoints = 0;
-  int concededPoints = 0;
 }
 
-/// 団体戦カード対戦結果モデル
+/// 対戦カード結果モデル（団体戦または個人戦）
 class ExpeditionCardResult {
   final String cardTitle;
   final String opponentTeamName;
@@ -25,6 +42,7 @@ class ExpeditionCardResult {
   final bool isWin;
   final bool isDraw;
   final String scene;
+  final bool isIndividual; // ★ 個人戦フラグ
 
   ExpeditionCardResult({
     required this.cardTitle,
@@ -37,6 +55,7 @@ class ExpeditionCardResult {
     required this.isWin,
     required this.isDraw,
     required this.scene,
+    this.isIndividual = false,
   });
 }
 
@@ -52,6 +71,12 @@ class ExpeditionSummaryData {
   final int moushiawaseWin;
   final int moushiawaseLoss;
   final int moushiawaseDraw;
+
+  // 個人戦サマリー勝敗
+  final int individualTotalWins;
+  final int individualTotalLosses;
+  final int individualTotalDraws;
+
   final int teamMen;
   final int teamKote;
   final int teamDou;
@@ -74,6 +99,9 @@ class ExpeditionSummaryData {
     required this.moushiawaseWin,
     required this.moushiawaseLoss,
     required this.moushiawaseDraw,
+    this.individualTotalWins = 0,
+    this.individualTotalLosses = 0,
+    this.individualTotalDraws = 0,
     required this.teamMen,
     required this.teamKote,
     required this.teamDou,

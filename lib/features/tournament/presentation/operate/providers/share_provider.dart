@@ -18,7 +18,7 @@ class ShareService {
   /// 2. メッセージ内へのQRコード自動生成用URL（Google Chart API連携）の埋め込み
   /// をすべて全自動で同時に執行し、現地共有の手間を完全ゼロ化します。
   Future<void> shareMatch(MatchModel match) async {
-    const String baseUrl = 'https://kendo-os.web.app';
+    const String baseUrl = 'https://kendo-os-beta.web.app';
     final dojoId = ref.read(currentDojoIdProvider);
     final String matchUrl = '$baseUrl/viewer/${match.id}?dojoId=$dojoId';
 

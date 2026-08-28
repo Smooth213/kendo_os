@@ -205,8 +205,8 @@ void main() {
         // サマリーカードが表示されていることを検証
         expect(find.text('成績サマリー'), findsOneWidget);
 
-        // 団体戦1試合（本数差勝ち）のみが「本戦 1勝 0敗」として集計されていることを検証（個人戦は団体成績に混入しない）
-        expect(find.text('1勝 0敗 '), findsOneWidget);
+        // 団体戦1試合（本数差勝ち）と個人戦1試合がそれぞれ「1勝 0敗」として独立集計されていることを検証
+        expect(find.text('1勝 0敗'), findsNWidgets(2));
 
         // 詳細分析ボタンが存在することを確認
         final detailBtn = find.text('詳細分析 ›');
@@ -218,12 +218,12 @@ void main() {
 
         // チーム詳細ボトムシートの内容（技別内訳・全剣連対戦カード履歴）を検証
         expect(find.text('成績 詳細分析 (全体)'), findsOneWidget);
-        expect(find.text('🎯 有効打突・取得技内訳'), findsOneWidget);
+        expect(find.text('有効打突・取得技内訳'), findsOneWidget);
         expect(find.text('面 (メ)'), findsOneWidget);
         expect(find.text('小手 (コ)'), findsOneWidget);
         expect(find.text('胴 (ド)'), findsOneWidget);
         expect(find.text('突き (ツ)'), findsOneWidget);
-        expect(find.text('⚖️ 団体戦 対戦カード履歴 (全剣連基準)'), findsOneWidget);
+        expect(find.text('対戦カード履歴'), findsOneWidget);
         expect(find.text('本数差勝ち'), findsOneWidget);
 
         // ★ 案C: 試合名が時間＋シーン名（例: "本戦"）を含んでいることを検証
@@ -247,7 +247,7 @@ void main() {
         // 選手個人カルテの内容を検証
         expect(find.text('山田 選手の個人カルテ'), findsOneWidget);
         expect(find.text('勝率'), findsOneWidget);
-        expect(find.text('🎯 取得技の内訳'), findsOneWidget);
+        expect(find.text('取得技の内訳'), findsOneWidget);
       },
     );
 

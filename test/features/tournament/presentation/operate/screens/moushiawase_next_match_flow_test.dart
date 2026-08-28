@@ -180,10 +180,10 @@ void main() {
 
         // 対戦終了ダイアログが表示され、申し合わせ用の追加設定ボタンが存在することを確認
         expect(find.text('対戦終了'), findsOneWidget);
-        final nextMoushiawaseBtn = find.text('⚔️ 次の申し合わせ・錬成試合を追加設定');
+        final nextMoushiawaseBtn = find.text('試合を追加（現在のチームと続行）');
         expect(nextMoushiawaseBtn, findsOneWidget);
 
-        // 「⚔️ 次の申し合わせ・錬成試合を追加設定」ボタンをタップ
+        // 「試合を追加（現在のチームと続行）」ボタンをタップ
         await tester.tap(nextMoushiawaseBtn);
         await tester.pumpAndSettle();
 

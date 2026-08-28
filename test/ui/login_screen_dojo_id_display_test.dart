@@ -128,7 +128,9 @@ void main() {
         expect(find.text('代表・管理者 (Admin)'), findsOneWidget);
         expect(find.text('監督・引率責任者 (Operator)'), findsOneWidget);
         expect(find.text('スコア・記録係 (Recorder)'), findsOneWidget);
-        expect(find.text('応援・保護者・選手 (Viewer) [PIN不要]'), findsOneWidget);
+        expect(find.text('応援・保護者・選手 (Viewer)'), findsOneWidget);
+        expect(find.text('PIN'), findsOneWidget);
+        expect(find.text('不要'), findsOneWidget);
       },
     );
   });

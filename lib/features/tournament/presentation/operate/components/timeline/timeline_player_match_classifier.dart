@@ -101,8 +101,9 @@ class TimelinePlayerMatchClassifier {
       matchesByPlayer.putIfAbsent(playerName, () => []).add(m);
     }
 
+    // ★ あとから追加した試合（対戦枠）が最上位に来るよう降順ソート
     final sortedGroups = actualGroupedMatches.entries.toList()
-      ..sort((a, b) => a.value.first.order.compareTo(b.value.first.order));
+      ..sort((a, b) => b.value.first.order.compareTo(a.value.first.order));
     final sortedPlayers = matchesByPlayer.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 

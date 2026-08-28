@@ -314,4 +314,25 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
       timerStartedAt: timerIsRunning ? now : null,
     );
   }
+
+  /// 【Phase 2: 現場救済】選手名は維持したまま、取得部位・スコア・打突/反則イベントの陣営のみを左右入れ替え
+  MatchModel swapRedAndWhite() {
+    List<ScoreEvent> swapEventList(List<ScoreEvent> src) {
+      return src.map((e) {
+        if (e.side == Side.red) {
+          return e.copyWith(side: Side.white);
+        } else if (e.side == Side.white) {
+          return e.copyWith(side: Side.red);
+        }
+        return e;
+      }).toList();
+    }
+
+    return copyWith(
+      redScore: whiteScore,
+      whiteScore: redScore,
+      events: swapEventList(events),
+      pendingEvents: swapEventList(pendingEvents),
+    );
+  }
 }

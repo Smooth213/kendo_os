@@ -39,7 +39,7 @@ void main() {
         );
 
         expect(find.text('成績サマリー'), findsOneWidget);
-        expect(find.text('🏆 本戦'), findsOneWidget);
+        expect(find.text('本戦 (団体)'), findsOneWidget);
         expect(find.text('詳細分析 ›'), findsOneWidget);
         expect(find.text('選手別成績 (1名)'), findsOneWidget);
         expect(find.text('表示する'), findsOneWidget);

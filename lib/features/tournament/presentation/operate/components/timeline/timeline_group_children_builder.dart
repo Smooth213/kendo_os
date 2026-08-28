@@ -28,11 +28,32 @@ class TimelineGroupChildrenBuilder {
     required MatchRule rule,
     required MatchModel firstMatch,
   }) {
-    final normalMatches = groupList.where((m) => m.matchType != '代表戦').toList();
-    final normalItems = <dynamic>[...normalMatches, ...groupComments];
-    normalItems.sort(
-      (a, b) => (a.order as double).compareTo(b.order as double),
-    );
+    // 🌟 団体戦アコーディオン内の順序：
+    // 基本ポジション（先鋒〜大将） ➔ 代表戦 ➔ 後から追加した試合（お代わり試合など）
+    final baseMatches = <MatchModel>[];
+    final appendedMatches = <MatchModel>[];
+
+    for (final m in groupList) {
+      final bool isAppended =
+          m.matchType == '代表戦' ||
+          m.matchType == '順位決定戦' ||
+          m.matchType.contains('追加') ||
+          m.note.contains('追加');
+
+      if (isAppended) {
+        appendedMatches.add(m);
+      } else {
+        baseMatches.add(m);
+      }
+    }
+
+    baseMatches.sort((a, b) => a.order.compareTo(b.order));
+    appendedMatches.sort((a, b) => a.order.compareTo(b.order));
+
+    // ★ 表示順：先鋒〜大将 ➔ 代表戦 ➔ 追加試合（大将の後に自然に追加）
+    final orderedMatches = [...baseMatches, ...appendedMatches];
+
+    final normalItems = <dynamic>[...orderedMatches, ...groupComments];
 
     final childrenWidgets = <Widget>[const Divider(height: 1)];
 
@@ -42,7 +63,7 @@ class TimelineGroupChildrenBuilder {
       );
       if (allFinished) {
         final tieGroups = TimelineTieBreakDetector.detectTieGroups(
-          normalMatches: normalMatches,
+          normalMatches: baseMatches,
           rule: rule,
         );
 
@@ -125,7 +146,7 @@ class TimelineGroupChildrenBuilder {
       );
     } else {
       childrenWidgets.addAll(
-        normalMatches.map(
+        orderedMatches.map(
           (m) => MatchListTileCard(key: ValueKey(m.id), initialMatch: m),
         ),
       );

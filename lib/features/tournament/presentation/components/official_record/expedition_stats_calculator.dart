@@ -56,10 +56,14 @@ class ExpeditionStatsCalculator {
     int honsenWin = 0, honsenLoss = 0, honsenDraw = 0;
     int moushiawaseWin = 0, moushiawaseLoss = 0, moushiawaseDraw = 0;
 
+    int individualTotalWins = 0;
+    int individualTotalLosses = 0;
+    int individualTotalDraws = 0;
+
     final Map<String, DetailedPlayerStats> playerStatsMap = {};
     final List<ExpeditionCardResult> cardResults = [];
 
-    // 団体戦・勝ち抜き戦（groupNameごと）
+    // 団体戦・勝ち抜き戦・個人戦（groupNameごと）
     final Map<String, List<MatchModel>> groupMap = {};
     for (final m in matches) {
       final key = (m.groupName != null && m.groupName!.isNotEmpty)
@@ -103,6 +107,15 @@ class ExpeditionStatsCalculator {
           }
         }
       },
+      onRecordIndividualResult: (isWin, isDraw) {
+        if (isDraw) {
+          individualTotalDraws++;
+        } else if (isWin) {
+          individualTotalWins++;
+        } else {
+          individualTotalLosses++;
+        }
+      },
     );
 
     final eventStats = ExpeditionEventProcessor.processEvents(
@@ -125,6 +138,9 @@ class ExpeditionStatsCalculator {
       moushiawaseWin: moushiawaseWin,
       moushiawaseLoss: moushiawaseLoss,
       moushiawaseDraw: moushiawaseDraw,
+      individualTotalWins: individualTotalWins,
+      individualTotalLosses: individualTotalLosses,
+      individualTotalDraws: individualTotalDraws,
       teamMen: eventStats.teamMen,
       teamKote: eventStats.teamKote,
       teamDou: eventStats.teamDou,

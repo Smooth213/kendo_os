@@ -212,12 +212,19 @@ class MatchListTileCard extends ConsumerWidget {
                   final bool isDraw =
                       isFinished && match.redScore == match.whiteScore;
 
+                  final ruleTeam = match.rule?.teamName.trim();
                   final isRedOwn =
-                      ownTeams.contains(rTeam) ||
-                      match.redName.contains('自チーム');
+                      (rTeam.isNotEmpty && ownTeams.contains(rTeam)) ||
+                      match.redName.contains('自チーム') ||
+                      (ruleTeam != null &&
+                          ruleTeam.isNotEmpty &&
+                          rTeam == ruleTeam);
                   final isWhiteOwn =
-                      ownTeams.contains(wTeam) ||
-                      match.whiteName.contains('自チーム');
+                      (wTeam.isNotEmpty && ownTeams.contains(wTeam)) ||
+                      match.whiteName.contains('自チーム') ||
+                      (ruleTeam != null &&
+                          ruleTeam.isNotEmpty &&
+                          wTeam == ruleTeam);
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,6 +233,8 @@ class MatchListTileCard extends ConsumerWidget {
                       MatchTeamHeaderRow(
                         redTeam: rTeam,
                         whiteTeam: wTeam,
+                        isRedOwn: isRedOwn,
+                        isWhiteOwn: isWhiteOwn,
                         textColor: isDark
                             ? const Color(0xFFFFFFFF)
                             : const Color(0x8A000000),
