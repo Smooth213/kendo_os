@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_heading_and_note_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_summary_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
@@ -48,8 +49,9 @@ class MatchFormatRuleStep extends ConsumerWidget {
   final VoidCallback onClearCourt;
   final InputDecoration Function({
     required String labelText,
-    required String hintText,
+    String? hintText,
     Widget? prefixIcon,
+    String? suffixText,
   })
   buildTextFieldDecoration;
   final Widget Function(String title, Color accentColor) buildSectionHeader;
@@ -105,7 +107,11 @@ class MatchFormatRuleStep extends ConsumerWidget {
     final categoryName = category;
     final asyncTourney = ref.watch(tournamentProvider(tournamentId));
     final tournament = asyncTourney.valueOrNull;
-    final ruleSet = tournament?.categoryRules[categoryName];
+    final ruleSet = CategoryRuleMatchHelper.findRuleSetForCategoryAndType(
+      tournament?.categoryRules ?? {},
+      categoryName,
+      matchType: matchType,
+    );
 
     final displayRuleName = selectedRuleScene == 'renseikai'
         ? '⚔️ 錬成会ルール'

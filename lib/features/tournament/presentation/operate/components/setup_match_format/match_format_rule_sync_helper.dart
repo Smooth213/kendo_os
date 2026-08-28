@@ -13,7 +13,10 @@ class MatchFormatRuleSyncHelper {
   }) {
     List<String>? customKeywords;
     if (tournament != null) {
-      final ruleSet = tournament.categoryRules[categoryName];
+      final ruleSet = CategoryRuleMatchHelper.findRuleSetForCategoryAndType(
+        tournament.categoryRules,
+        categoryName,
+      );
       if (ruleSet != null && ruleSet.advancedKeywords.isNotEmpty) {
         customKeywords = ruleSet.advancedKeywords;
       }

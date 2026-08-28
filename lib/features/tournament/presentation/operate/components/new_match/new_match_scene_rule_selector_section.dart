@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -24,7 +25,10 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cleanCategory = category.trim();
-    final ruleSet = categoryRules[cleanCategory];
+    final ruleSet = CategoryRuleMatchHelper.findRuleSetForCategoryAndType(
+      categoryRules,
+      cleanCategory,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

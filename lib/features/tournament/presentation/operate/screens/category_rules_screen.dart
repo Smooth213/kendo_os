@@ -70,18 +70,25 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
           ruleSet: newRuleSet,
         );
 
-    // 既存の試合を探して一括適用の判定
+    // 既存の試合を探して一括適用の判定（基底部門名 ＋ 団体/個人種別の一致する試合を対象）
+    final baseCat = CategoryRuleMatchHelper.cleanCategoryBaseName(category);
+    final isIndivRule = newRuleSet.matchType.contains('個人');
+
     final allMatches =
         ref.read(matchListByTournamentProvider(widget.tournamentId)).value ??
         [];
-    final targetMatches = allMatches
-        .where(
-          (m) =>
-              m.category == category &&
-              m.status != 'finished' &&
-              m.status != 'approved',
-        )
-        .toList();
+    final targetMatches = allMatches.where((m) {
+      if (m.status == 'finished' || m.status == 'approved') return false;
+      final mCat = m.category?.trim() ?? '';
+      if (mCat != category && mCat != baseCat) return false;
+
+      final isIndivMatch =
+          m.matchType == '個人戦' ||
+          m.matchType == '選手' ||
+          m.matchType.contains('個人') ||
+          mCat.contains('個人');
+      return isIndivMatch == isIndivRule;
+    }).toList();
 
     if (targetMatches.isNotEmpty) {
       final result = await CategoryRuleDialogs.showBulkApplyConfirmDialog(
@@ -144,17 +151,15 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     final cleanName = name.trim();
     if (cleanName.isEmpty) return;
 
-    final (updated, ruleSet) = CategoryRuleMatchHelper.addCategoryToTournament(
-      tournament,
-      cleanName,
-    );
+    final (updated, ruleKey, ruleSet) =
+        CategoryRuleMatchHelper.addCategoryToTournament(tournament, cleanName);
 
     await ref.read(tournamentRepositoryProvider).updateTournament(updated);
     _newCategoryController.clear();
 
     if (mounted) {
-      AppSnackBar.showSuccess(context, '「$cleanName」を追加しました');
-      _startEditing(cleanName, ruleSet);
+      AppSnackBar.showSuccess(context, '「$ruleKey」を追加しました');
+      _startEditing(ruleKey, ruleSet);
     }
   }
 

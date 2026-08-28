@@ -58,7 +58,7 @@ class CourtStatusCard extends StatelessWidget {
               _buildHeaderRow(context, isLive, isMyDojo),
               const SizedBox(height: AppSpacing.xs),
 
-              // 2段目: 【錬成】団体戦：道上剣友会 vs ◯◯道場（対戦カード名）
+              // 2段目: 【錬成】団体戦：〇〇剣友会 vs ◯◯道場（対戦カード名）
               if (status.matchupTitle.isNotEmpty) ...[
                 Text(
                   status.matchupTitle,

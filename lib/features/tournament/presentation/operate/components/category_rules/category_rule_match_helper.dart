@@ -208,6 +208,43 @@ class CategoryRuleMatchHelper {
     );
   }
 
+  /// ルールキーから部門の基底名（「（個人戦）」などのサフィックスを除いた名称）を取得
+  static String cleanCategoryBaseName(String ruleKey) {
+    var base = ruleKey.trim();
+    // （個人戦）、（団体戦）、(個人戦)、(団体戦)、(2) などのサフィックスを除去
+    base = base
+        .replaceAll(RegExp(r'[\(（](個人戦|団体戦|錬成会|申合せ|申し合わせ|\d+)[\)）]$'), '')
+        .trim();
+    return base.isEmpty ? ruleKey.trim() : base;
+  }
+
+  /// 一意なルールキーを生成
+  static String generateUniqueRuleKey(
+    Map<String, CategoryRuleSet> existingRules,
+    String baseName, {
+    String? matchType,
+  }) {
+    final cleanBase = baseName.trim();
+    if (!existingRules.containsKey(cleanBase)) {
+      return cleanBase;
+    }
+
+    // 種別サフィックス付きキーの検証
+    if (matchType != null && matchType.isNotEmpty) {
+      final typeKey = '$cleanBase（$matchType）';
+      if (!existingRules.containsKey(typeKey)) {
+        return typeKey;
+      }
+    }
+
+    // 番号サフィックスによる一意キー生成
+    int count = 2;
+    while (existingRules.containsKey('$cleanBase ($count)')) {
+      count++;
+    }
+    return '$cleanBase ($count)';
+  }
+
   /// 部門削除ヘルパー
   static TournamentModel deleteCategoryFromTournament(
     TournamentModel tournament,
@@ -226,29 +263,33 @@ class CategoryRuleMatchHelper {
     );
   }
 
-  /// 部門追加ヘルパー
-  static (TournamentModel, CategoryRuleSet) addCategoryToTournament(
+  /// 部門追加ヘルパー（同一カテゴリ名でも重複せず新規ルールとして追加可能）
+  static (TournamentModel, String, CategoryRuleSet) addCategoryToTournament(
     TournamentModel tournament,
-    String name,
-  ) {
+    String name, {
+    String? matchType,
+  }) {
     final cleanName = name.trim();
-    if (tournament.categoryRules.containsKey(cleanName)) {
-      return (tournament, tournament.categoryRules[cleanName]!);
-    }
+    final ruleKey = generateUniqueRuleKey(
+      tournament.categoryRules,
+      cleanName,
+      matchType: matchType,
+    );
 
     final newRuleSet = CategoryRuleSet(
       normalRule: const MatchRule(matchTimeMinutes: 3.0),
       advancedRule: const MatchRule(matchTimeMinutes: 3.0),
       useAdvancedRule: false,
+      matchType: matchType ?? '団体戦',
     );
 
     final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
       tournament.categoryRules,
-    )..[cleanName] = newRuleSet;
+    )..[ruleKey] = newRuleSet;
 
     final updatedCategories = List<String>.from(tournament.categories);
-    if (!updatedCategories.contains(cleanName)) {
-      updatedCategories.add(cleanName);
+    if (!updatedCategories.contains(ruleKey)) {
+      updatedCategories.add(ruleKey);
     }
 
     final updatedTournament = tournament.copyWith(
@@ -256,7 +297,70 @@ class CategoryRuleMatchHelper {
       categoryRules: updatedCategoryRules,
     );
 
-    return (updatedTournament, newRuleSet);
+    return (updatedTournament, ruleKey, newRuleSet);
+  }
+
+  /// 試合に最も合致するルールセットをスマートに探索（部門名 ＋ 団体/個人種別照合）
+  static CategoryRuleSet? findRuleSetForMatch(
+    Map<String, CategoryRuleSet> categoryRules, {
+    required String category,
+    required String matchType,
+    String note = '',
+  }) {
+    if (categoryRules.isEmpty) return null;
+
+    final isIndividual =
+        matchType == '個人戦' ||
+        matchType == '選手' ||
+        matchType.contains('個人') ||
+        category.contains('個人');
+
+    final cleanCat = category.trim();
+
+    // 1. 完全一致するキーが存在する場合
+    if (categoryRules.containsKey(cleanCat)) {
+      final directRule = categoryRules[cleanCat]!;
+      final bool ruleIsIndiv = directRule.matchType.contains('個人');
+      if (isIndividual == ruleIsIndiv) {
+        return directRule;
+      }
+    }
+
+    // 2. 基底部門名が一致し、かつ種別（団体戦/個人戦）が一致するルールを優先検索
+    final baseCat = cleanCategoryBaseName(cleanCat);
+    CategoryRuleSet? matchedTypeRule;
+    CategoryRuleSet? fallbackRule;
+
+    for (final entry in categoryRules.entries) {
+      final keyBase = cleanCategoryBaseName(entry.key);
+      if (keyBase == baseCat ||
+          entry.key.contains(baseCat) ||
+          baseCat.contains(keyBase)) {
+        fallbackRule ??= entry.value;
+        final bool ruleIsIndiv =
+            entry.value.matchType.contains('個人') || entry.key.contains('個人');
+        if (isIndividual == ruleIsIndiv) {
+          matchedTypeRule = entry.value;
+          break;
+        }
+      }
+    }
+
+    return matchedTypeRule ?? fallbackRule ?? categoryRules[cleanCat];
+  }
+
+  /// カテゴリ名と種別からルールセットを検索
+  static CategoryRuleSet? findRuleSetForCategoryAndType(
+    Map<String, CategoryRuleSet> categoryRules,
+    String category, {
+    String? matchType,
+  }) {
+    if (categoryRules.isEmpty) return null;
+    return findRuleSetForMatch(
+      categoryRules,
+      category: category,
+      matchType: matchType ?? '団体戦',
+    );
   }
 
   /// 大会モデルのルールセット更新ヘルパー

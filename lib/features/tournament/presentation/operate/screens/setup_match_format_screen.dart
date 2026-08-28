@@ -180,7 +180,12 @@ class _SetupMatchFormatScreenState
         .read(tournamentProvider(widget.tournamentId))
         .valueOrNull;
     if (tourney != null) {
-      final ruleSet = tourney.categoryRules[_category];
+      final ruleSet = CategoryRuleMatchHelper.findRuleSetForMatch(
+        tourney.categoryRules,
+        category: _category,
+        matchType: _state.matchType,
+        note: cur,
+      );
       if (ruleSet != null && ruleSet.useAdvancedRule) {
         final isAdv = MatchFormatRuleSyncHelper.isAdvancedMatchName(
           note: cur,
@@ -197,7 +202,12 @@ class _SetupMatchFormatScreenState
         .read(tournamentProvider(widget.tournamentId))
         .valueOrNull;
     if (tourney != null) {
-      final ruleSet = tourney.categoryRules[_category];
+      final ruleSet = CategoryRuleMatchHelper.findRuleSetForMatch(
+        tourney.categoryRules,
+        category: _category,
+        matchType: _state.matchType,
+        note: _noteController.text,
+      );
       if (ruleSet != null) {
         final targetScene = MatchFormatRuleSyncHelper.determineInitialScene(
           ruleSet: ruleSet,

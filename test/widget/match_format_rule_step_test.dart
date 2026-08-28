@@ -68,13 +68,15 @@ void main() {
               onClearCourt: () {},
               buildTextFieldDecoration:
                   ({
-                    required String hintText,
                     required String labelText,
+                    String? hintText,
                     Widget? prefixIcon,
+                    String? suffixText,
                   }) => InputDecoration(
                     labelText: labelText,
                     hintText: hintText,
                     prefixIcon: prefixIcon,
+                    suffixText: suffixText,
                   ),
               buildSectionHeader: (title, accentColor) => Text(title),
               formatMinutesText: (m) => '${m.toInt()}分',

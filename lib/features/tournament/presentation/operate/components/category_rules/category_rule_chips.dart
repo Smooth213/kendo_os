@@ -158,6 +158,18 @@ class CategoryRuleChips extends StatelessWidget {
       );
     }
 
+    final String typeLabel = ruleSet.matchType.contains('個人')
+        ? '🥋 個人戦'
+        : (ruleSet.matchType.contains('錬成') ? '⚔️ 錬成会' : '👥 団体戦');
+    final Color typeColor = ruleSet.matchType.contains('個人')
+        ? const Color(0xFF009688)
+        : (ruleSet.matchType.contains('錬成')
+              ? AppKendoColors.ipponGold
+              : const Color(0xFF3F51B5));
+    final Color typeTextColor = ruleSet.matchType.contains('錬成')
+        ? AppKendoColors.pureBlack
+        : AppKendoColors.pureWhite;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -165,6 +177,7 @@ class CategoryRuleChips extends StatelessWidget {
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
+            _buildChip(typeLabel, typeColor, typeTextColor),
             _buildChip(
               '標準ルール',
               const Color(0xFF2196F3),

@@ -29,7 +29,7 @@ String formatPlayerOrTeamDisplay(String name, {required bool isIndividual}) {
   }
 }
 
-/// 試合データから対戦カード名（例: 【錬成】団体戦：道上剣友会 vs ◯◯道場）を抽出
+/// 試合データから対戦カード名（例: 【錬成】団体戦：〇〇剣友会 vs ◯◯道場）を抽出
 String extractMatchupTitle(MatchModel match) {
   final isIndividual =
       match.matchType == '個人戦' ||
@@ -289,7 +289,7 @@ bool isMatchOfMyDojo(
       }
     }
 
-    // 3. 部分一致（例: 「道上剣友会A」が「道上剣友会」を含む）
+    // 3. 部分一致（例: 「〇〇剣友会A」が「〇〇剣友会」を含む）
     for (final own in myTeamNames) {
       if (own.length >= 2 &&
           (teamPart.contains(own) || own.contains(teamPart))) {
