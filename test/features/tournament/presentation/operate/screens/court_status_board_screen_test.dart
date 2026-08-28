@@ -139,5 +139,52 @@ void main() {
         expect(find.text('第2試合場'), findsOneWidget);
       },
     );
+
+    test(
+      '3. UUID形式のgroupNameの場合、英数羅列を排除し対戦カード名（団体戦: チーム vs チーム、個人戦: 選手（道場） vs 選手（道場））が生成されること',
+      () {
+        final matchesWithUuid = [
+          // 団体戦 (UUID groupName)
+          const MatchModel(
+            id: 'm_team_1',
+            groupName: '14d50309-ce23-494e-9df2-d1b05f3caff0',
+            matchType: '先鋒',
+            redName: '道上剣友会: 久安 智也',
+            whiteName: '相手チーム01: 選手01',
+            status: 'finished',
+            redScore: 1,
+            whiteScore: 0,
+          ),
+          // 個人戦 (UUID groupName)
+          const MatchModel(
+            id: 'm_indiv_1',
+            groupName: '26d77b42-b7b3-43f3-bbb6-c672883a2f52',
+            matchType: '個人戦',
+            redName: '道上剣友会: 皿田 脩人',
+            whiteName: '◯◯道場: 田中 はじめ',
+            status: 'in_progress',
+            redScore: 0,
+            whiteScore: 0,
+          ),
+        ];
+
+        final progressList = calculateCourtProgress(matchesWithUuid);
+        expect(progressList.length, 2);
+
+        // 団体戦: 道上剣友会 vs 相手チーム01
+        final teamMatchProgress = progressList.firstWhere(
+          (c) => c.courtName.contains('道上剣友会 vs 相手チーム01'),
+        );
+        expect(teamMatchProgress.courtName, '道上剣友会 vs 相手チーム01');
+        expect(teamMatchProgress.courtName.contains('14d50309'), isFalse);
+
+        // 個人戦: 皿田 脩人（道上剣友会） vs 田中 はじめ（◯◯道場）
+        final indivMatchProgress = progressList.firstWhere(
+          (c) => c.courtName.contains('皿田 脩人（道上剣友会）'),
+        );
+        expect(indivMatchProgress.courtName, '皿田 脩人（道上剣友会） vs 田中 はじめ（◯◯道場）');
+        expect(indivMatchProgress.courtName.contains('26d77b42'), isFalse);
+      },
+    );
   });
 }
