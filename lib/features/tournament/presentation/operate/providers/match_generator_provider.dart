@@ -23,7 +23,8 @@ class MatchGenerator {
     String? note,
     String? tournamentId,
   ]) async {
-    int order = 1;
+    final double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
+    int orderOffset = 0;
     List<MatchModel> matchesToSave = [];
     for (int i = 0; i < participants.length; i++) {
       for (int j = i + 1; j < participants.length; j++) {
@@ -37,7 +38,7 @@ class MatchGenerator {
           countForStandings: countForStandings,
           source: 'auto_league',
           tournamentId: tournamentId,
-          order: (order++).toDouble(),
+          order: baseOrder + (orderOffset++),
           note: note ?? '',
         );
         matchesToSave.add(newMatch);
@@ -65,6 +66,7 @@ class MatchGenerator {
         ? redMembers.length
         : whiteMembers.length;
     final positions = ['先鋒', '次鋒', '中堅', '副将', '大将'];
+    final double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
     List<MatchModel> matchesToSave = [];
     for (int i = 0; i < maxLength; i++) {
       final docRef = _firestore.collection('matches').doc();
@@ -80,7 +82,7 @@ class MatchGenerator {
         countForStandings: countForStandings,
         source: 'auto_team',
         matchOrder: i + 1,
-        order: (i + 1).toDouble(),
+        order: baseOrder + i,
         note: note ?? '',
       );
       matchesToSave.add(newMatch);

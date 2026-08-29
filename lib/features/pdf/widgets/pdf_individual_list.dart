@@ -1,3 +1,4 @@
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -27,8 +28,10 @@ class PdfIndividualList {
       displayGroupName = '';
     }
 
-    String headerTitle = '【個人戦】';
-    if (isLeague) headerTitle = '【リーグ個人戦】';
+    final scenePrefix = TeamProgressHelper.getScenePrefixFromDynamic(
+      matches.first,
+    );
+    String headerTitle = '$scenePrefix${isLeague ? '【リーグ個人戦】' : '【個人戦】'}';
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     }

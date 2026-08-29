@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
 
@@ -88,10 +89,12 @@ class OfficialRecordScoreTableBuilder {
     }
 
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
+    final scenePrefix = TeamProgressHelper.getScenePrefix(matches.first);
 
     final info = ScoreTableGroupInfo(
       groupName: groupName,
       headerTitle: headerTitle,
+      scenePrefix: scenePrefix,
       sideLabelRed: sideLabelRed,
       sideLabelWhite: sideLabelWhite,
       isSummary: isSummary,

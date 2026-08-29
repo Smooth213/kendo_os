@@ -15,6 +15,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/rul
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart'
     show customTeamNamesProvider;
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
@@ -128,6 +129,42 @@ class MatchListTileCard extends ConsumerWidget {
             children: [
               // 🔼 【1行目】: 運営ステータス＆ボタン一元集約（コントロール右寄せ）
               MatchCardHeaderRow(
+                leading: Builder(
+                  builder: (context) {
+                    final scenePrefix = TeamProgressHelper.getScenePrefix(
+                      match,
+                    );
+                    if (scenePrefix.isEmpty) return const SizedBox.shrink();
+                    final isMoushiawase = scenePrefix.contains('申合せ');
+                    final badgeColor = isMoushiawase
+                        ? context.appColors.warningColor
+                        : context.appColors.primaryAccent;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: AppSpacing.xs),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.subValue,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.sub,
+                          border: Border.all(
+                            color: badgeColor.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Text(
+                          scenePrefix,
+                          style: TextStyle(
+                            fontSize: AppFontSize.nano,
+                            fontWeight: AppFontWeight.bold,
+                            color: badgeColor,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 actionButtons: MatchCardActionButtons(
                   showSummaryButton:
                       !permissions.isReadOnly &&

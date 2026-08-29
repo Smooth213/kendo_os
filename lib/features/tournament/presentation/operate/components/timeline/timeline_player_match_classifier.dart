@@ -101,11 +101,22 @@ class TimelinePlayerMatchClassifier {
       matchesByPlayer.putIfAbsent(playerName, () => []).add(m);
     }
 
-    // ★ あとから追加した試合（対戦枠）が最上位に来るよう降順ソート
+    // ★ あとから追加した試合（対戦枠・おかわりの対戦）が最上位に来るよう降順ソート
     final sortedGroups = actualGroupedMatches.entries.toList()
       ..sort((a, b) => b.value.first.order.compareTo(a.value.first.order));
     final sortedPlayers = matchesByPlayer.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+      ..sort((a, b) {
+        final bMax = b.value.fold<double>(
+          0.0,
+          (prev, m) => m.order > prev ? m.order : prev,
+        );
+        final aMax = a.value.fold<double>(
+          0.0,
+          (prev, m) => m.order > prev ? m.order : prev,
+        );
+        final cmp = bMax.compareTo(aMax);
+        return cmp != 0 ? cmp : a.key.compareTo(b.key);
+      });
 
     return (sortedGroups: sortedGroups, sortedPlayers: sortedPlayers);
   }

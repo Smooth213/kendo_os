@@ -47,6 +47,7 @@ class IndividualMatchItem {
 
 class IndividualListCard extends StatelessWidget {
   final String headerTitle;
+  final String scenePrefix;
   final List<IndividualMatchItem> matches;
   final Color? cardColor;
   final bool isDark;
@@ -54,6 +55,7 @@ class IndividualListCard extends StatelessWidget {
   const IndividualListCard({
     super.key,
     required this.headerTitle,
+    this.scenePrefix = '',
     required this.matches,
     this.cardColor,
     required this.isDark,
@@ -87,12 +89,52 @@ class IndividualListCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             color: headerBgColor,
             width: double.infinity,
-            child: Text(
-              headerTitle,
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                color: textColor,
-              ),
+            child: Row(
+              children: [
+                if (scenePrefix.isNotEmpty) ...[
+                  Builder(
+                    builder: (context) {
+                      final isMoushiawase = scenePrefix.contains('申合せ');
+                      final badgeColor = isMoushiawase
+                          ? themeColors.warningColor
+                          : themeColors.primaryAccent;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.subValue,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.12),
+                            borderRadius: AppRadius.sub,
+                            border: Border.all(
+                              color: badgeColor.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Text(
+                            scenePrefix,
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: badgeColor,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                Expanded(
+                  child: Text(
+                    headerTitle,
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           ListView.separated(

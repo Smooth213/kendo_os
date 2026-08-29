@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
@@ -167,8 +168,13 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
       );
     }).toList();
 
+    final scenePrefix = matches.isNotEmpty
+        ? TeamProgressHelper.getScenePrefix(matches.first)
+        : '';
+
     return IndividualListCard(
       headerTitle: headerTitle,
+      scenePrefix: scenePrefix,
       matches: matchItems,
       cardColor: cardColor,
       isDark: isDark,

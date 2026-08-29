@@ -2,68 +2,12 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'package:kendo_os/shared/widgets/vertical_name_text.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/match_tables/components/score_table_cell.dart';
 
-class ScoreTableMatchItem {
-  final String id;
-  final String matchType;
-  final String redName;
-  final String whiteName;
-  final int redScore;
-  final int whiteScore;
-  final bool isFinished;
-  final bool isSummary;
-  final bool isEncho;
-  final List<PointMark> redPoints;
-  final List<PointMark> whitePoints;
-  final VoidCallback? onTap;
-
-  const ScoreTableMatchItem({
-    required this.id,
-    required this.matchType,
-    required this.redName,
-    required this.whiteName,
-    required this.redScore,
-    required this.whiteScore,
-    required this.isFinished,
-    this.isSummary = false,
-    this.isEncho = false,
-    required this.redPoints,
-    required this.whitePoints,
-    this.onTap,
-  });
-}
-
-class ScoreTableGroupInfo {
-  final String groupName;
-  final String headerTitle;
-  final String sideLabelRed;
-  final String sideLabelWhite;
-  final bool isSummary;
-  final String teamWinner;
-  final int redWins;
-  final int whiteWins;
-  final int redTotalPoints;
-  final int whiteTotalPoints;
-  final bool allFinished;
-
-  const ScoreTableGroupInfo({
-    required this.groupName,
-    required this.headerTitle,
-    required this.sideLabelRed,
-    required this.sideLabelWhite,
-    required this.isSummary,
-    required this.teamWinner,
-    required this.redWins,
-    required this.whiteWins,
-    required this.redTotalPoints,
-    required this.whiteTotalPoints,
-    required this.allFinished,
-  });
-}
+import 'package:kendo_os/shared/widgets/match_tables/models/score_table_models.dart';
+export 'package:kendo_os/shared/widgets/match_tables/models/score_table_models.dart';
 
 class ScoreTableCard extends StatelessWidget {
   final ScoreTableGroupInfo info;
@@ -112,12 +56,56 @@ class ScoreTableCard extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 color: themeColors.inputBackground,
                 width: double.infinity,
-                child: Text(
-                  info.headerTitle,
-                  style: TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    color: themeColors.textColor,
-                  ),
+                child: Row(
+                  children: [
+                    if (info.scenePrefix.isNotEmpty) ...[
+                      Builder(
+                        builder: (context) {
+                          final isMoushiawase = info.scenePrefix.contains(
+                            '申合せ',
+                          );
+                          final badgeColor = isMoushiawase
+                              ? themeColors.warningColor
+                              : themeColors.primaryAccent;
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              right: AppSpacing.xs,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.subValue,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: badgeColor.withValues(alpha: 0.12),
+                                borderRadius: AppRadius.sub,
+                                border: Border.all(
+                                  color: badgeColor.withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Text(
+                                info.scenePrefix,
+                                style: TextStyle(
+                                  fontSize: AppFontSize.caption,
+                                  fontWeight: AppFontWeight.bold,
+                                  color: badgeColor,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                    Expanded(
+                      child: Text(
+                        info.headerTitle,
+                        style: TextStyle(
+                          fontWeight: AppFontWeight.bold,
+                          color: themeColors.textColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Table(

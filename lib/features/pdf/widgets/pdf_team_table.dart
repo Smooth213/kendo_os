@@ -1,3 +1,4 @@
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -28,8 +29,10 @@ class PdfTeamTable {
     final redTeam = matches.first.redName.split(':').first;
     final whiteTeam = matches.first.whiteName.split(':').first;
 
-    // ★ 修正: 【リーグ団体戦】への切り替えと、パターンA（コメントがない時は括弧ごと消去）の適用
-    final prefix = isLeague ? '【リーグ団体戦】' : '【団体戦】';
+    final scenePrefix = TeamProgressHelper.getScenePrefixFromDynamic(
+      matches.first,
+    );
+    final prefix = '$scenePrefix${isLeague ? '【リーグ団体戦】' : '【団体戦】'}';
     final String titleText = cleanNote.isNotEmpty
         ? '$prefix対戦スコア詳細（$cleanNote）'
         : '$prefix対戦スコア詳細';

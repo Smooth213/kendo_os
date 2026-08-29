@@ -80,32 +80,83 @@ class TeamProgressHelper {
     return type.contains('勝ち抜き') || type.contains('勝抜き');
   }
 
+  /// 試合またはルールから錬成会・申合せのバッジ文字列（例: '【錬成】', '【申合せ】', または ''）を取得
+  static String getScenePrefix(MatchModel match) {
+    return getScenePrefixFromDynamic(match);
+  }
+
+  /// MatchModel / MatchListProjection / Map などの汎用試合オブジェクトから
+  /// 錬成会・申合せのバッジ文字列を取得
+  static String getScenePrefixFromDynamic(dynamic match) {
+    if (match == null) return '';
+
+    String scene = '';
+    String ruleScene = '';
+    bool ruleIsRenseikai = false;
+    String matchType = '';
+    String note = '';
+    String? category;
+
+    if (match is MatchModel) {
+      scene = match.matchScene;
+      ruleScene = match.rule?.matchScene ?? '';
+      ruleIsRenseikai = match.rule?.isRenseikai ?? false;
+      matchType = match.matchType;
+      note = match.note;
+      category = match.category;
+    } else {
+      try {
+        scene = (match.matchScene ?? '').toString();
+      } catch (_) {}
+      try {
+        ruleScene = (match.rule?.matchScene ?? '').toString();
+      } catch (_) {}
+      try {
+        ruleIsRenseikai = match.rule?.isRenseikai ?? false;
+      } catch (_) {}
+      try {
+        matchType = (match.matchType ?? '').toString();
+      } catch (_) {}
+      try {
+        note = (match.note ?? '').toString();
+      } catch (_) {}
+      try {
+        category = match.category?.toString();
+      } catch (_) {}
+    }
+
+    final isMoushiawase =
+        scene == 'moushiawase' ||
+        ruleScene == 'moushiawase' ||
+        matchType.contains('申し合わせ') ||
+        matchType.contains('申合せ') ||
+        note.contains('申し合わせ') ||
+        note.contains('申合せ') ||
+        (category != null &&
+            (category.contains('申し合わせ') || category.contains('申合せ')));
+
+    if (isMoushiawase) return '【申合せ】';
+
+    final isRensei =
+        scene == 'renseikai' ||
+        ruleScene == 'renseikai' ||
+        ruleIsRenseikai ||
+        matchType.contains('錬成') ||
+        note.contains('錬成') ||
+        (category != null && category.contains('錬成'));
+
+    if (isRensei) return '【錬成】';
+
+    return '';
+  }
+
   /// 試合データから対戦カード名（例: 団体戦：〇〇 vs ◯◯）を抽出
   static String extractTeamMatchupTitle(MatchModel match) {
     final isIndiv = isIndividualMatch(match);
     final isLeague = isLeagueMatch(match);
     final isKachinuki = isKachinukiMatch(match);
 
-    final isRensei =
-        match.matchType.contains('錬成') ||
-        match.note.contains('錬成') ||
-        (match.category != null && match.category!.contains('錬成'));
-
-    final isMoushiawase =
-        match.matchType.contains('申し合わせ') ||
-        match.matchType.contains('申合せ') ||
-        match.note.contains('申し合わせ') ||
-        match.note.contains('申合せ') ||
-        (match.category != null &&
-            (match.category!.contains('申し合わせ') ||
-                match.category!.contains('申合せ')));
-
-    String prefix = '';
-    if (isRensei) {
-      prefix = '【錬成】';
-    } else if (isMoushiawase) {
-      prefix = '【申合せ】';
-    }
+    final prefix = getScenePrefix(match);
 
     String formatLabel;
     if (isKachinuki) {

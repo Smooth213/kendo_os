@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -52,6 +54,8 @@ class OfficialRecordKachinukiCard extends StatelessWidget {
       return MatchProjectionMapper.toProjection(m, analysis);
     }).toList();
 
+    final scenePrefix = TeamProgressHelper.getScenePrefix(firstMatch);
+
     return Card(
       margin: const EdgeInsets.symmetric(
         vertical: AppSpacing.sm,
@@ -74,14 +78,52 @@ class OfficialRecordKachinukiCard extends StatelessWidget {
                 ? const Color(0xFF3F51B5).withValues(alpha: 0.4)
                 : const Color(0xFF3F51B5),
             width: double.infinity,
-            child: Text(
-              titleText,
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                color: isDark
-                    ? const Color(0xFF3F51B5)
-                    : const Color(0xFF3F51B5),
-              ),
+            child: Row(
+              children: [
+                if (scenePrefix.isNotEmpty) ...[
+                  Builder(
+                    builder: (context) {
+                      final isMoushiawase = scenePrefix.contains('申合せ');
+                      final badgeColor = isMoushiawase
+                          ? context.appColors.warningColor
+                          : AppKendoColors.pureWhite;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.subValue,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.2),
+                            borderRadius: AppRadius.sub,
+                            border: Border.all(
+                              color: badgeColor.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Text(
+                            scenePrefix,
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: badgeColor,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                Expanded(
+                  child: Text(
+                    titleText,
+                    style: const TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      color: AppKendoColors.pureWhite,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           SingleChildScrollView(

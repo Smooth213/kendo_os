@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_painter.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_individual_list.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_league_table.dart';
@@ -200,10 +201,13 @@ class PdfPageLayoutHelper {
             m.status.toString().contains('approved'),
       );
       final statusText = allFinished ? '（最終結果）' : '（進行中）';
+      final scenePrefix = TeamProgressHelper.getScenePrefixFromDynamic(
+        normalMatches.first,
+      );
 
       contentWidgets.add(
         pw.Text(
-          '【リーグ表】 $statusText',
+          '$scenePrefix【リーグ表】 $statusText',
           style: pw.TextStyle(font: ttfBold, fontSize: AppFontSize.body),
         ),
       );

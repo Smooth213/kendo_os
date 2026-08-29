@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
@@ -108,10 +109,14 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
     }
 
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
+    final scenePrefix = matches.isNotEmpty
+        ? TeamProgressHelper.getScenePrefixFromDynamic(matches.first)
+        : '';
 
     final info = ScoreTableGroupInfo(
       groupName: groupName,
       headerTitle: headerTitle,
+      scenePrefix: scenePrefix,
       sideLabelRed: redTeam,
       sideLabelWhite: whiteTeam,
       isSummary: isSummary,
@@ -244,11 +249,16 @@ class ViewerOfficialIndividualListCard extends StatelessWidget {
       );
     }).toList();
 
+    final scenePrefix = matches.isNotEmpty
+        ? TeamProgressHelper.getScenePrefixFromDynamic(matches.first)
+        : '';
+
     return InkWell(
       key: Key('viewer_match_card_$groupName'),
       onTap: () {},
       child: IndividualListCard(
         headerTitle: headerTitle,
+        scenePrefix: scenePrefix,
         matches: matchItems,
         cardColor: cardColor,
         isDark: isDark,

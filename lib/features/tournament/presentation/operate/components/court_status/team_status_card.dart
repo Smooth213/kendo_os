@@ -372,28 +372,16 @@ class TeamStatusCard extends StatelessWidget {
   }
 
   Widget _buildMatchupTitleSection(BuildContext context) {
-    return Row(
-      children: [
-        const Icon(
-          Icons.sports_martial_arts_outlined,
-          size: 14,
-          color: AppKendoColors.indigo,
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: Text(
-            status.matchupTitle,
-            style: TextStyle(
-              fontSize: AppFontSize.bodySmall,
-              fontWeight: AppFontWeight.bold,
-              color: context.appColors.textColor,
-              letterSpacing: -0.2,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
+    return Text(
+      status.matchupTitle,
+      style: TextStyle(
+        fontSize: AppFontSize.bodySmall,
+        fontWeight: AppFontWeight.bold,
+        color: context.appColors.textColor,
+        letterSpacing: -0.2,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 

@@ -44,6 +44,7 @@ class NewMatchSubmissionService {
         countForStandings: countForStandings,
         tournamentId: tournamentId,
         category: category,
+        order: DateTime.now().millisecondsSinceEpoch.toDouble(),
         note: noteCombined,
         matchScene: selectedScene,
       );

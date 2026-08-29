@@ -1,3 +1,4 @@
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -21,9 +22,13 @@ class PdfKachinukiPainter {
     final String wTeam = firstMatch.whiteName.contains(':')
         ? firstMatch.whiteName.split(':').first.trim()
         : firstMatch.whiteName;
+
+    final scenePrefix = TeamProgressHelper.getScenePrefixFromDynamic(
+      firstMatch,
+    );
     final String titleText = note.isNotEmpty
-        ? '勝ち抜き戦：【$note】 $rTeam vs $wTeam'
-        : '勝ち抜き戦：$rTeam vs $wTeam';
+        ? '$scenePrefix勝ち抜き戦：【$note】 $rTeam vs $wTeam'
+        : '$scenePrefix勝ち抜き戦：$rTeam vs $wTeam';
 
     const double dx = 45.0;
     const double startX = 45.0;

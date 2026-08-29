@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_reorder_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -41,17 +42,27 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
       ...playerMatches,
       ...playerComments,
     ];
-    playerMixedItems.sort((a, b) => a.timelineOrder.compareTo(b.timelineOrder));
+    // ★ あとから追加した試合（おかわりの試合）が上に来るよう降順ソート
+    playerMixedItems.sort((a, b) => b.timelineOrder.compareTo(a.timelineOrder));
 
     final firstMatch = playerMatches.first;
-    final label =
+    final scenePrefix = TeamProgressHelper.getScenePrefix(firstMatch);
+    final rawLabel =
         (!firstMatch.isKachinuki &&
-            (firstMatch.matchType == 'individual' ||
+            (firstMatch.matchType.contains('個人') ||
+                firstMatch.matchType == 'individual' ||
                 firstMatch.matchType == '選手'))
-        ? (firstMatch.note.contains('[リーグ戦]') ? '個人戦/リーグ戦' : '個人戦')
+        ? (firstMatch.note.contains('[リーグ戦]') ||
+                  firstMatch.matchType.contains('リーグ')
+              ? '個人戦/リーグ戦'
+              : '個人戦')
         : (firstMatch.isKachinuki
               ? '団体戦/勝ち抜き戦'
-              : (firstMatch.note.contains('[リーグ戦]') ? '団体戦/リーグ戦' : '団体戦'));
+              : (firstMatch.note.contains('[リーグ戦]') ||
+                        firstMatch.matchType.contains('リーグ')
+                    ? '団体戦/リーグ戦'
+                    : '団体戦'));
+    final label = scenePrefix.isNotEmpty ? '$scenePrefix$rawLabel' : rawLabel;
     final bool pInProgress = playerMatches.any(
       (m) => m.status == 'in_progress',
     );
