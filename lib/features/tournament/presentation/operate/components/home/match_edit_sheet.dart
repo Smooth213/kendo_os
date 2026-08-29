@@ -17,12 +17,14 @@ class MatchEditSheet extends ConsumerStatefulWidget {
   final List<MatchModel> matches;
   final String? tournamentId;
   final AppThemeColors themeColors;
+  final int initialTabIndex;
 
   const MatchEditSheet({
     super.key,
     required this.matches,
     this.tournamentId,
     required this.themeColors,
+    this.initialTabIndex = 0,
   }) : assert(matches.length > 0, 'Matches list cannot be empty');
 
   @override
@@ -59,7 +61,11 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTabIndex.clamp(0, 2),
+    );
 
     final first = widget.matches.first;
     _isDantai = widget.matches.length > 1 || first.matchType == '団体戦';

@@ -109,8 +109,8 @@ class OperatorActionButtons extends ConsumerWidget {
         _buildCompactTile(
           context: context,
           enableLiquidGlass: enableLiquidGlass,
-          icon: Icons.stadium_outlined,
-          title: 'マルチコート進行',
+          icon: Icons.groups_outlined,
+          title: 'チーム試合状況',
           color: AppKendoColors.indigo,
           onTap: () => context.push('/court-status?tournamentId=$tournamentId'),
         ),
