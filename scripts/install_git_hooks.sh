@@ -45,6 +45,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+echo "🥋 kendo OS 剣道スコア表示・PDFガバナンス自動監査を実行中..."
+flutter test test/governance/kendo_score_display_governance_test.dart
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "🚨 【コミット拒否】剣道スコア表示（打突部位・先取丸・勝者丸・斜め配置・PDFはみ出し）のガバナンス違反が検出されました。"
+    echo "   KendoScoreBox規約およびPDFセル寸法(25px)に適合するように修正してください。"
+    exit 1
+fi
+
 echo "✅ pre-commit ガバナンス監査・フォーマット自動修復完了"
 exit 0
 EOF
@@ -52,4 +61,4 @@ EOF
 chmod +x "$PRE_COMMIT_FILE"
 
 echo "✅ [PASS] Git pre-commit フックのインストールが完了しました！"
-echo "💡 以降、git commit 実行時にファイル行数監査（500行制限）とデザイン監査が自動実行されます。"
+echo "💡 以降、git commit 実行時に「行数制限」「デザインシステム」「剣道スコア表示・PDFガバナンス」が自動監査・完全ブロックされます。"
