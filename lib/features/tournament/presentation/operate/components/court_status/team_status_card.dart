@@ -55,8 +55,22 @@ class TeamStatusCard extends StatelessWidget {
         borderRadius: AppRadius.large,
         child: InkWell(
           onTap: () {
-            // ④ 終了した試合・団体戦は団体戦スコアボードへ遷移
+            final targetMatch =
+                liveMatch ??
+                status.nextWaitingMatch ??
+                status.lastFinishedMatch;
+
+            final isDantai =
+                targetMatch != null &&
+                !targetMatch.isKachinuki &&
+                (targetMatch.matchType.contains('団体') ||
+                    (targetMatch.groupName != null &&
+                        targetMatch.groupName!.isNotEmpty &&
+                        !targetMatch.matchType.contains('個人')));
+
+            // ④ 終了した団体戦の場合は団体戦スコアボードへ遷移
             if (isFinished &&
+                isDantai &&
                 status.targetGroupId != null &&
                 status.targetGroupId!.isNotEmpty) {
               final tourneyQuery =
@@ -69,25 +83,9 @@ class TeamStatusCard extends StatelessWidget {
               return;
             }
 
-            final targetMatch =
-                liveMatch ??
-                status.nextWaitingMatch ??
-                status.lastFinishedMatch;
+            // 個人戦・リーグ個人戦・勝ち抜き戦および進行中/待機中の試合画面へ遷移
             if (targetMatch != null) {
-              if (isFinished &&
-                  targetMatch.groupName != null &&
-                  targetMatch.groupName!.isNotEmpty) {
-                final tourneyQuery =
-                    (targetMatch.tournamentId != null &&
-                        targetMatch.tournamentId!.isNotEmpty)
-                    ? '?tournamentId=${targetMatch.tournamentId}'
-                    : '';
-                context.push(
-                  '/team-scoreboard/${Uri.encodeComponent(targetMatch.groupName!)}$tourneyQuery',
-                );
-              } else {
-                context.push('/match/${targetMatch.id}');
-              }
+              context.push('/match/${targetMatch.id}');
             }
           },
           borderRadius: AppRadius.large,

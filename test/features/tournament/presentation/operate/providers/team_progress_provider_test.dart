@@ -277,6 +277,84 @@ void main() {
         // コート表示
         expect(teamProgress.currentCourtName, '第1試合場 (2回戦・第4試合)');
       });
+
+      test('4. 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦が漏れなくカード化され正しく集計されること', () {
+        final multiMatches = [
+          // 個人戦（皿田 脩人: 終了済勝）
+          const MatchModel(
+            id: 'indiv_1',
+            matchType: '個人戦',
+            redName: '道上剣友会: 皿田 脩人',
+            whiteName: 'ライバル館: 相手 太郎',
+            status: 'finished',
+            redScore: 2,
+            whiteScore: 0,
+            note: '第1コート, 1回戦, 1試合目',
+            category: '個人小学生の部',
+            order: 1.0,
+          ),
+          // リーグ個人戦（久安 智也: 進行中LIVE）
+          MatchModel(
+            id: 'league_indiv_1',
+            matchType: 'リーグ個人戦',
+            redName: '相手 次郎',
+            whiteName: '久安 智也',
+            status: 'in_progress',
+            redScore: 0,
+            whiteScore: 1,
+            note: '第2コート, Aリーグ, 3試合目',
+            category: '個人中学生の部',
+            order: 2.0,
+            timerStartedAt: DateTime.now(),
+          ),
+          // 勝ち抜き戦（道上剣友会: 待機中）
+          const MatchModel(
+            id: 'kachinuki_1',
+            matchType: '勝ち抜き戦',
+            isKachinuki: true,
+            redName: '道上剣友会',
+            whiteName: '炎陽塾',
+            status: 'waiting',
+            note: '第3試合場, 1回戦',
+            category: '勝ち抜きオープンの部',
+            order: 3.0,
+          ),
+        ];
+
+        final result = calculateTeamProgress(
+          multiMatches,
+          myDojoName: '道上剣友会',
+          registeredTeamNames: ['道上剣友会'],
+          registeredPlayerNames: ['皿田 脩人', '久安 智也'],
+        );
+
+        // 自道場として全て認識されること
+        expect(result.isNotEmpty, isTrue);
+
+        // 個人戦カードの検証
+        final indivStatus = result.firstWhere(
+          (t) => t.matches.any((m) => m.id == 'indiv_1'),
+        );
+        expect(indivStatus.totalWins, greaterThanOrEqualTo(1));
+        expect(
+          extractTeamMatchupTitle(
+            indivStatus.matches.firstWhere((m) => m.id == 'indiv_1'),
+          ),
+          contains('個人戦：'),
+        );
+
+        // リーグ個人戦の検証
+        final leagueIndivMatch = multiMatches.firstWhere(
+          (m) => m.id == 'league_indiv_1',
+        );
+        expect(extractTeamMatchupTitle(leagueIndivMatch), contains('リーグ個人戦：'));
+
+        // 勝ち抜き戦の検証
+        final kachinukiMatch = multiMatches.firstWhere(
+          (m) => m.id == 'kachinuki_1',
+        );
+        expect(extractTeamMatchupTitle(kachinukiMatch), contains('勝ち抜き戦：'));
+      });
     });
   });
 }

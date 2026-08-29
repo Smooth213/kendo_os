@@ -1,0 +1,258 @@
+import 'package:kendo_os/features/match/domain/match_model.dart';
+
+/// 🥋 チーム試合状況の文字列抽出・形式判定・自チーム解決ヘルパー
+class TeamProgressHelper {
+  TeamProgressHelper._();
+
+  /// 選手名またはチーム名から純粋なチーム名を抽出
+  static String extractTeamName(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '自チーム';
+    if (trimmed.contains(':')) {
+      return trimmed.split(':').first.trim();
+    }
+    return trimmed;
+  }
+
+  /// 選手名またはチーム名から純粋な選手名を抽出
+  static String extractPlayerName(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '';
+    if (trimmed.contains(':')) {
+      return trimmed.split(':').last.trim();
+    }
+    return trimmed;
+  }
+
+  /// 選手名またはチーム名を分かりやすくフォーマットするヘルパー
+  static String formatPlayerOrTeamDisplay(
+    String name, {
+    required bool isIndividual,
+  }) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '選手未定';
+
+    if (!trimmed.contains(':')) {
+      return trimmed;
+    }
+
+    final parts = trimmed.split(':');
+    final team = parts[0].trim();
+    final player = parts.length > 1 ? parts[1].trim() : '';
+
+    if (isIndividual) {
+      if (player.isNotEmpty) {
+        return '$player（$team）';
+      }
+      return team;
+    } else {
+      return team.isNotEmpty ? team : player;
+    }
+  }
+
+  /// 試合形式の判定ヘルパー
+  static bool isIndividualMatch(MatchModel match) {
+    final type = match.matchType;
+    return !match.isKachinuki &&
+        (type == '個人戦' ||
+            type == '選手' ||
+            type == 'リーグ個人戦' ||
+            type.contains('個人') ||
+            (match.category != null && match.category!.contains('個人')));
+  }
+
+  static bool isLeagueMatch(MatchModel match) {
+    final type = match.matchType;
+    return type.contains('リーグ') ||
+        (match.groupName != null && match.groupName!.contains('リーグ')) ||
+        (match.category != null && match.category!.contains('リーグ'));
+  }
+
+  static bool isKachinukiMatch(MatchModel match) {
+    return match.isKachinuki ||
+        match.matchType.contains('勝ち抜き') ||
+        match.matchType.contains('勝抜き');
+  }
+
+  /// 試合データから対戦カード名（例: 【リーグ個人戦】〇〇 vs ◯◯）を抽出
+  static String extractTeamMatchupTitle(MatchModel match) {
+    final isIndiv = isIndividualMatch(match);
+    final isLeague = isLeagueMatch(match);
+    final isKachinuki = isKachinukiMatch(match);
+
+    final isRensei =
+        match.matchType.contains('錬成') ||
+        match.note.contains('錬成') ||
+        (match.category != null && match.category!.contains('錬成'));
+
+    final isMoushiawase =
+        match.matchType.contains('申し合わせ') ||
+        match.matchType.contains('申合せ') ||
+        match.note.contains('申し合わせ') ||
+        match.note.contains('申合せ') ||
+        (match.category != null &&
+            (match.category!.contains('申し合わせ') ||
+                match.category!.contains('申合せ')));
+
+    String prefix = '';
+    if (isRensei) {
+      prefix = '【錬成】';
+    } else if (isMoushiawase) {
+      prefix = '【申合せ】';
+    }
+
+    String formatLabel;
+    if (isKachinuki) {
+      formatLabel = '勝ち抜き戦：';
+    } else if (isLeague && isIndiv) {
+      formatLabel = 'リーグ個人戦：';
+    } else if (isLeague && !isIndiv) {
+      formatLabel = 'リーグ団体戦：';
+    } else if (isIndiv) {
+      formatLabel = '個人戦：';
+    } else {
+      formatLabel = '団体戦：';
+    }
+
+    final rDisplay = formatPlayerOrTeamDisplay(
+      match.redName,
+      isIndividual: isIndiv,
+    );
+    final wDisplay = formatPlayerOrTeamDisplay(
+      match.whiteName,
+      isIndividual: isIndiv,
+    );
+
+    final matchup = '$rDisplay vs $wDisplay';
+
+    if (prefix.isNotEmpty) {
+      return '$prefix$formatLabel$matchup';
+    }
+    return '$formatLabel$matchup';
+  }
+
+  /// 試合データから「第2コート (1回戦・第4試合)」のようなコート・ラウンド・試合順の表示文字列を抽出
+  static String extractCourtAndRoundDisplay(MatchModel match) {
+    final note = match.note.trim();
+    final category = match.category ?? '';
+    final group = match.groupName ?? '';
+    final combinedText = '$note, $category, $group';
+
+    // 1. コート・試合場
+    String? court;
+    final courtMatch = RegExp(
+      r'(第?\s*\d+\s*(?:コート|試合場|場)|[A-Za-z]\s*(?:コート|試合場)|部内戦コート|メインコート|サブコート)',
+    ).firstMatch(combinedText);
+    if (courtMatch != null) {
+      court = courtMatch.group(1)!.replaceAll(' ', '');
+    }
+
+    // 2. 回戦・ラウンド
+    String? round;
+    final roundMatch = RegExp(
+      r'(\d+回戦|準々決勝|準決勝|決勝戦|決勝|予選リーグ|[A-Za-z]リーグ|[A-Za-z]ブロック|\d+ブロック)',
+    ).firstMatch(combinedText);
+    if (roundMatch != null) {
+      round = roundMatch.group(1)!.replaceAll(' ', '');
+    }
+
+    // 3. 試合順（何試合目）
+    String? matchOrder;
+    final orderMatch = RegExp(
+      r'(?:第\s*(\d+)\s*試合(?!場)|(\d+)\s*試合目)',
+    ).firstMatch(combinedText);
+    if (orderMatch != null) {
+      final num = orderMatch.group(1) ?? orderMatch.group(2);
+      if (num != null) {
+        matchOrder = '第$num試合';
+      }
+    }
+
+    // サブ情報の結合（例: 1回戦・第4試合）
+    final subInfoParts = <String>[?round, ?matchOrder];
+
+    final subInfo = subInfoParts.isNotEmpty
+        ? ' (${subInfoParts.join('・')})'
+        : '';
+
+    if (court != null) {
+      return '$court$subInfo';
+    } else if (subInfoParts.isNotEmpty) {
+      return 'コート未指定$subInfo';
+    }
+
+    return 'コート未指定';
+  }
+
+  /// 赤または白が「自チーム側」かどうかを判定する高精度リゾルバー
+  static bool isSideOwn({
+    required String sideFullName,
+    required Set<String> knownTeams,
+    required Set<String> knownPlayers,
+    required String myDojoName,
+    String? ruleTeamName,
+  }) {
+    final sideTeam = extractTeamName(sideFullName);
+    final sidePlayer = extractPlayerName(sideFullName);
+
+    // 1. 登録チーム名と完全一致
+    if (knownTeams.contains(sideTeam) || knownTeams.contains(sideFullName)) {
+      return true;
+    }
+
+    // 2. ルールで設定された自チーム名と一致
+    if (ruleTeamName != null && ruleTeamName.trim().isNotEmpty) {
+      final cleanRule = ruleTeamName.trim();
+      if (sideTeam == cleanRule || sideFullName.contains(cleanRule)) {
+        return true;
+      }
+    }
+
+    // 3. 道場名を含む
+    if (myDojoName.isNotEmpty) {
+      if (sideTeam.contains(myDojoName) || sideFullName.contains(myDojoName)) {
+        return true;
+      }
+    }
+
+    // 4. 登録選手名（久安 智也など）が一致
+    if (sidePlayer.isNotEmpty && knownPlayers.contains(sidePlayer)) return true;
+    if (knownPlayers.isNotEmpty &&
+        knownPlayers.any((p) => sideFullName.contains(p))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// 選手名・チーム名から自チームとしての表示用チーム名を解決
+  static String resolveSideTeamTitle({
+    required String sideFullName,
+    required Set<String> knownTeams,
+    required Set<String> knownPlayers,
+    required String myDojoName,
+    required bool isIndividual,
+  }) {
+    final team = extractTeamName(sideFullName);
+    final player = extractPlayerName(sideFullName);
+
+    // コロン区切りでチーム名がある場合はそのチーム名
+    if (sideFullName.contains(':') && team.isNotEmpty) {
+      return team;
+    }
+
+    // チーム名が既知のチーム名に該当する場合
+    if (knownTeams.contains(team)) return team;
+    if (myDojoName.isNotEmpty && team.contains(myDojoName)) return team;
+
+    // 個人戦で選手名のみの場合、道場名があれば「道場名」または「選手名」
+    if (isIndividual && player.isNotEmpty && knownPlayers.contains(player)) {
+      if (myDojoName.isNotEmpty) {
+        return myDojoName;
+      }
+      return player;
+    }
+
+    return team.isNotEmpty ? team : '自チーム';
+  }
+}

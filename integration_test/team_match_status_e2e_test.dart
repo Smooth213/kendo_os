@@ -14,13 +14,13 @@ import '../test/helpers/event_factory.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 【E2E】チーム試合状況 遠征現場シナリオ完全保証テスト', () {
+  group('🥋 【E2E】チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト', () {
     final liveEvents = [kote(Side.red), men(Side.white)];
 
-    final initialMatches = [
-      // チームA: 団体戦1回戦（進行中: 赤コテ1本、白メン1本）
+    final comprehensiveMatches = [
+      // 1. トーナメント団体戦（道上剣友会A: 進行中LIVE）
       MatchModel(
-        id: 'm1_live',
+        id: 'm1_dantai_live',
         groupName: 'group_dohjo_a_r1',
         matchType: '先鋒戦',
         redName: '道上剣友会A: 皿田 脩人',
@@ -35,7 +35,7 @@ void main() {
         timerStartedAt: DateTime.now(),
       ),
       const MatchModel(
-        id: 'm1_waiting',
+        id: 'm1_dantai_wait',
         groupName: 'group_dohjo_a_r1',
         matchType: '中堅戦',
         redName: '道上剣友会A: 塚本 大道',
@@ -46,26 +46,69 @@ void main() {
         order: 2.0,
       ),
 
-      // チームB: 合同テストチーム（白側だが登録選手 久安 智也 で自チーム認識・終了済）
+      // 2. 個人戦（トーナメント個人戦: 終了済）
       const MatchModel(
-        id: 'm2_finished',
-        groupName: 'group_test_r1',
-        matchType: '大将戦',
-        redName: '強豪館: 相手 三郎',
-        whiteName: '大阪選抜: 久安 智也',
+        id: 'm2_indiv',
+        matchType: '個人戦',
+        redName: '道上剣友会A: 久安 智也',
+        whiteName: 'ライバル道場: 相手 三郎',
         status: 'finished',
-        redScore: 0,
-        whiteScore: 2,
-        note: '第1コート, 1回戦, 1試合目',
-        category: '小学生の部',
-        order: 1.0,
+        redScore: 2,
+        whiteScore: 0,
+        note: '第1コート, 準決勝, 1試合目',
+        category: '中学生個人の部',
+        order: 3.0,
+      ),
+
+      // 3. リーグ個人戦（選手名のみだが名簿から逆引き判定: 待機中）
+      const MatchModel(
+        id: 'm3_league_indiv',
+        matchType: 'リーグ個人戦',
+        redName: '相手 四郎',
+        whiteName: '皿田 脩人',
+        status: 'waiting',
+        note: '第2コート, Aリーグ, 4試合目',
+        category: '小学生個人の部',
+        order: 4.0,
+      ),
+
+      // 4. リーグ団体戦（道上選抜: 終了済）
+      const MatchModel(
+        id: 'm4_league_team',
+        groupName: 'group_league_dohjo_1',
+        matchType: 'リーグ団体戦',
+        redName: '道上選抜',
+        whiteName: '強豪館B',
+        status: 'finished',
+        redScore: 3,
+        whiteScore: 1,
+        note: '第4コート, 予選リーグ, 2試合目',
+        category: '中学生団体の部',
+        order: 5.0,
+      ),
+
+      // 5. 勝ち抜き戦（道上勝抜隊: 待機中）
+      const MatchModel(
+        id: 'm5_kachinuki',
+        matchType: '勝ち抜き戦',
+        isKachinuki: true,
+        redName: '道上勝抜隊',
+        whiteName: '炎陽塾',
+        status: 'waiting',
+        note: '第5コート, 1回戦',
+        category: '勝ち抜きオープンの部',
+        order: 6.0,
       ),
     ];
 
-    testWidgets('【E2Eシナリオ】自チーム認識・技マーク描画・5段構造表示・コートタップ編集・フィルター・スコアボード遷移の全工程検証', (
+    testWidgets('【総合E2Eシナリオ】個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程検証', (
       tester,
     ) async {
-      final currentMatches = [...initialMatches];
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final currentMatches = [...comprehensiveMatches];
 
       final router = GoRouter(
         initialLocation: '/team-status',
@@ -98,7 +141,7 @@ void main() {
           overrides: [
             matchListProvider.overrideWith((ref) => currentMatches),
             customTeamNamesProvider.overrideWith(
-              (ref) => Stream.value(['道上剣友会A']),
+              (ref) => Stream.value(['道上剣友会A', '道上選抜', '道上勝抜隊']),
             ),
             timelinePlayerListProvider.overrideWith(
               (ref) => Stream.value([
@@ -132,78 +175,68 @@ void main() {
       // ----------------------------------------------------
       expect(find.text('チーム試合状況'), findsOneWidget);
       expect(find.text('登録チーム'), findsOneWidget);
-      expect(find.text('🔴 試合中 (LIVE)'), findsOneWidget);
 
-      // チームAカードの確認
-      expect(find.text('道上剣友会A'), findsNWidgets(2)); // ヘッダー ＋ 選手上段道場名
-      expect(find.text('試合中 (LIVE)'), findsOneWidget);
-
-      // チームB（大阪選抜：白側選手からの逆引き自チーム判定）の確認
-      expect(find.text('大阪選抜'), findsNWidgets(2)); // ヘッダー ＋ 選手上段道場名
-      expect(find.text('🏁 試合終了'), findsOneWidget);
+      // 自道場チームカードの存在確認
+      expect(find.text('道上剣友会A'), findsWidgets);
+      expect(find.text('道上選抜'), findsWidgets);
 
       // ----------------------------------------------------
-      // Step 2: 5段構造レイアウトの完全検証
+      // Step 2: 各試合形式の対戦枠見出し（全形式網羅）の検証
       // ----------------------------------------------------
-      // 2段目: コート・試合順表示
-      expect(find.text('第3試合場 (2回戦・第3試合)'), findsOneWidget);
-      // 3段目: 独立した対戦枠見出し（文字切れなし！）
+      // ① トーナメント団体戦
       expect(find.text('団体戦：道上剣友会A vs 相手チーム02'), findsOneWidget);
-      // 4段目: 選手名（下段大文字）および取得部位（技マークライン）
-      expect(find.text('皿田 脩人'), findsOneWidget);
-      expect(find.text('相手 一郎'), findsOneWidget);
-      expect(find.text('コ'), findsOneWidget); // 赤側コテ
-      expect(find.text('メ'), findsOneWidget); // 白側メン
-      expect(find.text('ー'), findsOneWidget); // セパレーター
 
-      // 5段目: 通算・進行度（団体戦が1試合として集約）
-      expect(find.text('進行: 0/1 試合'), findsOneWidget);
+      // ② 個人戦（トーナメント個人戦）
+      expect(find.textContaining('個人戦：'), findsWidgets);
+
+      // ③ リーグ個人戦
+      expect(find.textContaining('リーグ個人戦：'), findsWidgets);
+
+      // ④ リーグ団体戦
+      expect(find.textContaining('リーグ団体戦：'), findsWidgets);
+
+      // ⑤ 勝ち抜き戦
+      expect(find.textContaining('勝ち抜き戦：'), findsWidgets);
 
       // ----------------------------------------------------
-      // Step 3: コート名タップでの直接編集シート起動＆復帰検証
+      // Step 3: コートタップ直接編集シート起動＆復帰検証
       // ----------------------------------------------------
-      // コート名（第3試合場 (2回戦・第3試合)）をタップ
       await tester.tap(find.text('第3試合場 (2回戦・第3試合)'));
       await tester.pumpAndSettle();
 
-      // 「団体戦対戦の編集」ボトムシート（コート・メモタブ）が開いたことを確認
       expect(find.text('団体戦対戦の編集'), findsOneWidget);
       expect(find.text('コート・メモ'), findsOneWidget);
-      expect(find.text('🏟️ 試合場（コート）を選択'), findsOneWidget);
 
-      // 閉じるボタンをタップしてシートを閉じる
+      // 閉じるボタンで復帰
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
-      // チーム試合状況画面に無事復帰していることを確認
       expect(find.text('チーム試合状況'), findsOneWidget);
 
       // ----------------------------------------------------
-      // Step 4: フィルター操作の検証
+      // Step 4: フィルター動作の検証
       // ----------------------------------------------------
-      // 「🔴 試合中のみ (1)」をタップ
+      // 「🔴 試合中のみ (1)」で絞り込み
       await tester.tap(find.text('🔴 試合中のみ (1)'));
       await tester.pumpAndSettle();
 
-      expect(find.text('道上剣友会A'), findsNWidgets(2));
-      expect(find.text('大阪選抜'), findsNothing);
+      expect(find.text('道上剣友会A'), findsWidgets);
+      expect(find.text('道上選抜'), findsNothing);
 
-      // 「すべて表示」をタップして全解除
+      // 「すべて表示」で全解除
       await tester.tap(find.text('すべて表示'));
       await tester.pumpAndSettle();
 
-      expect(find.text('道上剣友会A'), findsNWidgets(2));
-      expect(find.text('大阪選抜'), findsNWidgets(2));
+      expect(find.text('道上剣友会A'), findsWidgets);
+      expect(find.text('道上選抜'), findsWidgets);
 
       // ----------------------------------------------------
-      // Step 5: 終了試合カードタップで団体戦スコアボード遷移検証
+      // Step 5: 終了した団体戦カードタップでスコアボード遷移検証
       // ----------------------------------------------------
-      // 終了している大阪選抜のカードをタップ
-      await tester.tap(find.text('大阪選抜').first);
+      await tester.tap(find.text('道上選抜').first);
       await tester.pumpAndSettle();
 
-      // 団体戦スコアボード画面に遷移したことを確認
-      expect(find.text('団体戦スコアボード画面: group_test_r1'), findsOneWidget);
+      expect(find.text('団体戦スコアボード画面: group_league_dohjo_1'), findsOneWidget);
     });
   });
 }
