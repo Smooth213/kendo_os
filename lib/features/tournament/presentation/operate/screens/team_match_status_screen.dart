@@ -136,7 +136,7 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
           Row(
             children: [
               _buildMetricBadge(
-                label: '登録チーム',
+                label: '全試合',
                 count: allTeams.length,
                 color: context.appColors.primaryAccent,
               ),

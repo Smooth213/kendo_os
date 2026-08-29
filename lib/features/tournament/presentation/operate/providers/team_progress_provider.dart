@@ -37,7 +37,7 @@ bool isSideOwn({
   ruleTeamName: ruleTeamName,
 );
 
-/// チームごとの進行状況を計算するエンジン（個人戦・リーグ戦・勝ち抜き戦・団体戦完全対応）
+/// チームごとの進行状況を計算するエンジン（全試合・全対戦カード完全展開対応）
 List<TeamProgressStatus> calculateTeamProgress(
   List<MatchModel> matches, {
   String myDojoName = '',
@@ -55,81 +55,87 @@ List<TeamProgressStatus> calculateTeamProgress(
     ...registeredPlayerNames.where((p) => p.trim().isNotEmpty),
   };
 
-  // 1. 試合を「自チーム名」ごとにグルーピング
-  final Map<String, List<MatchModel>> teamMatchesMap = {};
-
-  for (final match in matches) {
-    final isIndiv = TeamProgressHelper.isIndividualMatch(match);
-
-    final isRedOwn = TeamProgressHelper.isSideOwn(
-      sideFullName: match.redName,
-      knownTeams: knownTeams,
-      knownPlayers: knownPlayers,
-      myDojoName: myDojoName,
-      ruleTeamName: match.rule?.teamName,
-    );
-    final isWhiteOwn = TeamProgressHelper.isSideOwn(
-      sideFullName: match.whiteName,
-      knownTeams: knownTeams,
-      knownPlayers: knownPlayers,
-      myDojoName: myDojoName,
-      ruleTeamName: match.rule?.teamName,
-    );
-
-    final redTeamTitle = TeamProgressHelper.resolveSideTeamTitle(
-      sideFullName: match.redName,
-      knownTeams: knownTeams,
-      knownPlayers: knownPlayers,
-      myDojoName: myDojoName,
-      isIndividual: isIndiv,
-    );
-    final whiteTeamTitle = TeamProgressHelper.resolveSideTeamTitle(
-      sideFullName: match.whiteName,
-      knownTeams: knownTeams,
-      knownPlayers: knownPlayers,
-      myDojoName: myDojoName,
-      isIndividual: isIndiv,
-    );
-
-    if (isRedOwn && !isWhiteOwn) {
-      teamMatchesMap.putIfAbsent(redTeamTitle, () => []).add(match);
-    } else if (isWhiteOwn && !isRedOwn) {
-      teamMatchesMap.putIfAbsent(whiteTeamTitle, () => []).add(match);
-    } else if (isRedOwn && isWhiteOwn) {
-      // 部内戦などの場合は両方に登録
-      teamMatchesMap.putIfAbsent(redTeamTitle, () => []).add(match);
-      if (whiteTeamTitle != redTeamTitle) {
-        teamMatchesMap.putIfAbsent(whiteTeamTitle, () => []).add(match);
-      }
-    } else {
-      // どちらもマッチしない場合、ルールチーム名または赤側チーム
-      final fallbackTeam = (match.rule?.teamName.isNotEmpty == true)
-          ? match.rule!.teamName
-          : (redTeamTitle.isNotEmpty
-                ? redTeamTitle
-                : (match.groupName ?? '自チーム'));
-      teamMatchesMap.putIfAbsent(fallbackTeam, () => []).add(match);
-    }
+  // 1. 全試合を「対戦カード（団体戦グループまたは個人戦試合）」ごとにグルーピング
+  final Map<String, List<MatchModel>> cardGroups = {};
+  for (final m in matches) {
+    final key = (m.groupName != null && m.groupName!.isNotEmpty)
+        ? m.groupName!
+        : m.id;
+    cardGroups.putIfAbsent(key, () => []).add(m);
   }
 
   final List<TeamProgressStatus> results = [];
 
-  for (final entry in teamMatchesMap.entries) {
-    final teamName = entry.key;
-    final teamMatches = List<MatchModel>.from(entry.value)
+  for (final entry in cardGroups.entries) {
+    final cardMatches = List<MatchModel>.from(entry.value)
       ..sort((a, b) => a.order.compareTo(b.order));
+    if (cardMatches.isEmpty) continue;
 
-    // 2. チーム内の試合を「対戦カード（団体戦グループまたは個人戦）」単位でグルーピング
-    final Map<String, List<MatchModel>> cardGroups = {};
-    for (final m in teamMatches) {
-      final key = (m.groupName != null && m.groupName!.isNotEmpty)
-          ? m.groupName!
-          : m.id;
-      cardGroups.putIfAbsent(key, () => []).add(m);
+    final firstMatch = cardMatches.first;
+    final isIndiv = TeamProgressHelper.isIndividualMatch(firstMatch);
+
+    // 自チーム・自選手が関わっているか判定
+    bool hasRedOwn = false;
+    bool hasWhiteOwn = false;
+
+    for (final m in cardMatches) {
+      if (TeamProgressHelper.isSideOwn(
+        sideFullName: m.redName,
+        knownTeams: knownTeams,
+        knownPlayers: knownPlayers,
+        myDojoName: myDojoName,
+        ruleTeamName: m.rule?.teamName,
+      )) {
+        hasRedOwn = true;
+      }
+      if (TeamProgressHelper.isSideOwn(
+        sideFullName: m.whiteName,
+        knownTeams: knownTeams,
+        knownPlayers: knownPlayers,
+        myDojoName: myDojoName,
+        ruleTeamName: m.rule?.teamName,
+      )) {
+        hasWhiteOwn = true;
+      }
     }
 
-    int completedCards = 0;
-    int totalCards = cardGroups.length;
+    // どちらの側を自チームとして表示するか決定
+    final bool isRedPrimary;
+    if (hasRedOwn && !hasWhiteOwn) {
+      isRedPrimary = true;
+    } else if (hasWhiteOwn && !hasRedOwn) {
+      isRedPrimary = false;
+    } else if (hasRedOwn && hasWhiteOwn) {
+      isRedPrimary = true;
+    } else {
+      // どちらもマッチしない場合、登録チーム名またはルールチーム名に近ければ自チームとして扱う
+      final redTeam = TeamProgressHelper.extractTeamName(firstMatch.redName);
+      final whiteTeam = TeamProgressHelper.extractTeamName(
+        firstMatch.whiteName,
+      );
+      if (knownTeams.contains(whiteTeam)) {
+        isRedPrimary = false;
+      } else if (knownTeams.contains(redTeam)) {
+        isRedPrimary = true;
+      } else {
+        isRedPrimary = true;
+      }
+    }
+
+    final targetFullName = isRedPrimary
+        ? firstMatch.redName
+        : firstMatch.whiteName;
+    final teamTitle = TeamProgressHelper.resolveSideTeamTitle(
+      sideFullName: targetFullName,
+      knownTeams: knownTeams,
+      knownPlayers: knownPlayers,
+      myDojoName: myDojoName,
+      isIndividual: isIndiv,
+    );
+
+    // 対戦カード内のポジション別進行状況集計
+    int completedCount = 0;
+    int totalCount = cardMatches.length;
     int wins = 0;
     int losses = 0;
     int draws = 0;
@@ -138,85 +144,36 @@ List<TeamProgressStatus> calculateTeamProgress(
     MatchModel? inProgress;
     MatchModel? lastFinished;
     MatchModel? nextWaiting;
-    String? targetGroupId;
 
-    for (final cardEntry in cardGroups.entries) {
-      final cardMatches = cardEntry.value;
-      final isCardAllFinished = cardMatches.every(
-        (m) => m.status == 'finished' || m.status == 'approved',
-      );
-      final hasCardLive = cardMatches.any((m) => m.status == 'in_progress');
-      final isCardWaiting = cardMatches.every(
-        (m) => m.status == 'waiting' || m.status == 'ready',
-      );
+    for (final m in cardMatches) {
+      final isFinished = m.status == 'finished' || m.status == 'approved';
+      final isLive = m.status == 'in_progress';
+      final isWaiting = m.status == 'waiting' || m.status == 'ready';
 
-      // 対戦カード内の勝敗集計
-      int cardMyWins = 0;
-      int cardOppWins = 0;
-      int cardMyPoints = 0;
-      int cardOppPoints = 0;
+      final myScore = isRedPrimary ? m.redScore : m.whiteScore;
+      final oppScore = isRedPrimary ? m.whiteScore : m.redScore;
 
-      for (final m in cardMatches) {
-        final redTeam = TeamProgressHelper.extractTeamName(m.redName);
-        final isRedMyTeam =
-            redTeam == teamName ||
-            TeamProgressHelper.isSideOwn(
-              sideFullName: m.redName,
-              knownTeams: knownTeams,
-              knownPlayers: knownPlayers,
-              myDojoName: myDojoName,
-              ruleTeamName: m.rule?.teamName,
-            );
+      points += myScore;
 
-        final myScore = isRedMyTeam ? m.redScore : m.whiteScore;
-        final oppScore = isRedMyTeam ? m.whiteScore : m.redScore;
-
-        cardMyPoints += myScore;
-        cardOppPoints += oppScore;
-        if (myScore > oppScore) cardMyWins++;
-        if (oppScore > myScore) cardOppWins++;
-
-        if (m.status == 'in_progress' && inProgress == null) {
-          inProgress = m;
-        }
-      }
-
-      points += cardMyPoints;
-
-      if (isCardAllFinished) {
-        completedCards++;
-        lastFinished = cardMatches.last;
-        if (cardMatches.first.groupName != null &&
-            cardMatches.first.groupName!.isNotEmpty) {
-          targetGroupId = cardMatches.first.groupName;
-        }
-
-        if (cardMyWins > cardOppWins) {
+      if (isFinished) {
+        completedCount++;
+        lastFinished = m;
+        if (myScore > oppScore) {
           wins++;
-        } else if (cardOppWins > cardMyWins) {
+        } else if (oppScore > myScore) {
           losses++;
         } else {
-          if (cardMyPoints > cardOppPoints) {
-            wins++;
-          } else if (cardOppPoints > cardMyPoints) {
-            losses++;
-          } else {
-            draws++;
-          }
+          draws++;
         }
-      } else if (hasCardLive) {
-        if (targetGroupId == null &&
-            cardMatches.first.groupName != null &&
-            cardMatches.first.groupName!.isNotEmpty) {
-          targetGroupId = cardMatches.first.groupName;
-        }
-      } else if (isCardWaiting && nextWaiting == null && inProgress == null) {
-        nextWaiting = cardMatches.first;
+      } else if (isLive && inProgress == null) {
+        inProgress = m;
+      } else if (isWaiting && nextWaiting == null && inProgress == null) {
+        nextWaiting = m;
       }
     }
 
     if (inProgress != null && nextWaiting == null) {
-      nextWaiting = teamMatches.firstWhere(
+      nextWaiting = cardMatches.firstWhere(
         (m) =>
             (m.status == 'waiting' || m.status == 'ready') &&
             m.order > inProgress!.order,
@@ -228,7 +185,7 @@ List<TeamProgressStatus> calculateTeamProgress(
     }
 
     final representativeMatch =
-        inProgress ?? nextWaiting ?? lastFinished ?? teamMatches.first;
+        inProgress ?? nextWaiting ?? lastFinished ?? firstMatch;
     final categoryName =
         representativeMatch.category ?? representativeMatch.matchType;
     final currentCourtName = TeamProgressHelper.extractCourtAndRoundDisplay(
@@ -238,7 +195,7 @@ List<TeamProgressStatus> calculateTeamProgress(
       representativeMatch,
     );
 
-    targetGroupId ??=
+    final targetGroupId =
         (representativeMatch.groupName != null &&
             representativeMatch.groupName!.isNotEmpty)
         ? representativeMatch.groupName
@@ -251,18 +208,18 @@ List<TeamProgressStatus> calculateTeamProgress(
 
     results.add(
       TeamProgressStatus(
-        teamName: teamName,
+        teamName: teamTitle,
         categoryName: categoryName,
         currentCourtName: currentCourtName,
         matchupTitle: matchupTitle,
         targetGroupId: targetGroupId,
         tournamentId: representativeMatch.tournamentId,
-        matches: teamMatches,
+        matches: cardMatches,
         inProgressMatch: inProgress,
         lastFinishedMatch: lastFinished,
         nextWaitingMatch: nextWaiting,
-        completedCount: completedCards,
-        totalCount: totalCards,
+        completedCount: completedCount,
+        totalCount: totalCount,
         waitingMatchCount: waitingCount,
         totalWins: wins,
         totalLosses: losses,
@@ -273,9 +230,13 @@ List<TeamProgressStatus> calculateTeamProgress(
     );
   }
 
+  // ソート: 試合中（LIVE）が最上位 → 待機中 → 終了
   results.sort((a, b) {
     if (a.hasLiveMatch != b.hasLiveMatch) {
       return a.hasLiveMatch ? -1 : 1;
+    }
+    if (a.isAllFinished != b.isAllFinished) {
+      return a.isAllFinished ? 1 : -1;
     }
     return a.teamName.compareTo(b.teamName);
   });

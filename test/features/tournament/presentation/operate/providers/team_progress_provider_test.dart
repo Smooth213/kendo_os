@@ -256,26 +256,24 @@ void main() {
           registeredTeamNames: ['道上A'],
         );
 
-        expect(result.length, 1);
-        final teamProgress = result.first;
+        // 1回戦カードと2回戦カードの2対戦カードが展開されること
+        expect(result.length, 2);
 
-        // 全体対戦カード数は2対戦（1回戦と2回戦）
-        expect(teamProgress.totalCount, 2);
-        // 完了対戦カード数は1（1回戦のみ完了）
-        expect(teamProgress.completedCount, 1);
-        // 進行中の試合があること
-        expect(teamProgress.hasLiveMatch, isTrue);
-        expect(teamProgress.inProgressMatch?.id, 'm2_jiho');
-        expect(teamProgress.nextWaitingMatch?.id, 'm2_chuken');
+        // 2回戦カード（進行中LIVE）が上位
+        final round2Progress = result.first;
+        expect(round2Progress.hasLiveMatch, isTrue);
+        expect(round2Progress.inProgressMatch?.id, 'm2_jiho');
+        expect(round2Progress.nextWaitingMatch?.id, 'm2_chuken');
+        expect(round2Progress.totalCount, 3); // 3人制
+        expect(round2Progress.completedCount, 1); // 先鋒終了
 
-        // 通算成績: 1回戦（道上勝利）= 1勝0敗
-        expect(teamProgress.totalWins, 1);
-        expect(teamProgress.totalLosses, 0);
-        // 総取得本数: 1回戦(2+1+0+0+2=5本) + 2回戦(2+0+0=2本) = 7本
-        expect(teamProgress.totalPoints, 7);
-
-        // コート表示
-        expect(teamProgress.currentCourtName, '第1試合場 (2回戦・第4試合)');
+        // 1回戦カード（終了済）
+        final round1Progress = result[1];
+        expect(round1Progress.isAllFinished, isTrue);
+        expect(round1Progress.totalCount, 5); // 5人制
+        expect(round1Progress.completedCount, 5);
+        expect(round1Progress.totalWins, 3); // 先鋒・次鋒・大将勝ち
+        expect(round1Progress.totalPoints, 5); // 2+1+0+0+2=5本
       });
 
       test('4. 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦が漏れなくカード化され正しく集計されること', () {

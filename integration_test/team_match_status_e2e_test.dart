@@ -174,7 +174,7 @@ void main() {
       // Step 1: 初期表示 & 自チーム認識（ヘッダー）の検証
       // ----------------------------------------------------
       expect(find.text('チーム試合状況'), findsOneWidget);
-      expect(find.text('登録チーム'), findsOneWidget);
+      expect(find.text('全試合'), findsOneWidget);
 
       // 自道場チームカードの存在確認
       expect(find.text('道上剣友会A'), findsWidgets);

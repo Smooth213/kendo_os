@@ -42,7 +42,7 @@ class TeamProgressHelper {
 
     if (isIndividual) {
       if (player.isNotEmpty) {
-        return '$player（$team）';
+        return team.isNotEmpty ? '$player（$team）' : player;
       }
       return team;
     } else {
@@ -50,31 +50,37 @@ class TeamProgressHelper {
     }
   }
 
-  /// 試合形式の判定ヘルパー
+  /// 試合形式の厳密な判定ヘルパー
   static bool isIndividualMatch(MatchModel match) {
-    final type = match.matchType;
-    return !match.isKachinuki &&
-        (type == '個人戦' ||
-            type == '選手' ||
-            type == 'リーグ個人戦' ||
-            type.contains('個人') ||
-            (match.category != null && match.category!.contains('個人')));
+    if (isKachinukiMatch(match)) return false;
+    final type = match.matchType.trim();
+    if (type == '個人戦' ||
+        type == 'リーグ個人戦' ||
+        type == '選手' ||
+        type.contains('個人')) {
+      return true;
+    }
+    return false;
   }
 
   static bool isLeagueMatch(MatchModel match) {
-    final type = match.matchType;
-    return type.contains('リーグ') ||
-        (match.groupName != null && match.groupName!.contains('リーグ')) ||
-        (match.category != null && match.category!.contains('リーグ'));
+    final type = match.matchType.trim();
+    // matchTypeが明確にリーグ戦（リーグ団体戦、リーグ個人戦、〇〇リーグ等）
+    if (type == 'リーグ団体戦' || type == 'リーグ個人戦') return true;
+    if (type.contains('リーグ') && !type.contains('回戦') && !type.contains('決勝')) {
+      return true;
+    }
+    return false;
   }
 
   static bool isKachinukiMatch(MatchModel match) {
-    return match.isKachinuki ||
-        match.matchType.contains('勝ち抜き') ||
-        match.matchType.contains('勝抜き');
+    if (match.isKachinuki) return true;
+    if (match.rule?.isKachinuki == true) return true;
+    final type = match.matchType.trim();
+    return type.contains('勝ち抜き') || type.contains('勝抜き');
   }
 
-  /// 試合データから対戦カード名（例: 【リーグ個人戦】〇〇 vs ◯◯）を抽出
+  /// 試合データから対戦カード名（例: 団体戦：〇〇 vs ◯◯）を抽出
   static String extractTeamMatchupTitle(MatchModel match) {
     final isIndiv = isIndividualMatch(match);
     final isLeague = isLeagueMatch(match);
@@ -225,7 +231,7 @@ class TeamProgressHelper {
     return false;
   }
 
-  /// 選手名・チーム名から自チームとしての表示用チーム名を解決
+  /// 選手名・チーム名から自チームとしての表示用ヘッダータイトルを解決
   static String resolveSideTeamTitle({
     required String sideFullName,
     required Set<String> knownTeams,
@@ -245,8 +251,8 @@ class TeamProgressHelper {
     if (knownTeams.contains(team)) return team;
     if (myDojoName.isNotEmpty && team.contains(myDojoName)) return team;
 
-    // 個人戦で選手名のみの場合、道場名があれば「道場名」または「選手名」
-    if (isIndividual && player.isNotEmpty && knownPlayers.contains(player)) {
+    // 選手名のみの場合、道場名があれば道場名、なければ選手名
+    if (player.isNotEmpty && knownPlayers.contains(player)) {
       if (myDojoName.isNotEmpty) {
         return myDojoName;
       }

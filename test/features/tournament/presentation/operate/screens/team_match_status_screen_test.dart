@@ -80,8 +80,8 @@ void main() {
 
         // 道上剣友会の検証（「第2コート (1回戦・第4試合)」として抽出されること！）
         final teamA = progressList.firstWhere((t) => t.teamName == '道上剣友会');
-        expect(teamA.totalCount, 1);
-        expect(teamA.completedCount, 0);
+        expect(teamA.totalCount, 3);
+        expect(teamA.completedCount, 1);
         expect(teamA.hasLiveMatch, isTrue);
         expect(teamA.inProgressMatch?.id, 'team_a_m2');
         expect(teamA.currentCourtName, '第2コート (1回戦・第4試合)');
@@ -144,7 +144,7 @@ void main() {
 
         // ヘッダー確認
         expect(find.text('チーム試合状況'), findsOneWidget);
-        expect(find.text('登録チーム'), findsOneWidget);
+        expect(find.text('全試合'), findsOneWidget);
         expect(find.text('🔴 試合中 (LIVE)'), findsOneWidget);
 
         // チームカード確認（ヘッダーおよび選手上段の道場名として道上剣友会が表示されること）
@@ -155,8 +155,8 @@ void main() {
         // ③ 「全試合終了」でなく「試合終了」バッジが表示されること
         expect(find.text('🏁 試合終了'), findsOneWidget);
 
-        // ② 進行度: 団体戦が1試合としてカウントされていること（0/1 試合）
-        expect(find.text('進行: 0/1 試合'), findsOneWidget);
+        // ② 進行度: 3人制で先鋒終了時（進行: 1/3 試合）
+        expect(find.text('進行: 1/3 試合'), findsOneWidget);
 
         // コート・回戦・試合順の表示確認
         expect(find.text('第2コート (1回戦・第4試合)'), findsOneWidget);
