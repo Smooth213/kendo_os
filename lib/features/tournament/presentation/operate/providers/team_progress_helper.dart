@@ -1,4 +1,5 @@
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 
 /// 🥋 チーム試合状況の文字列抽出・形式判定・自チーム解決ヘルパー
 class TeamProgressHelper {
@@ -88,65 +89,10 @@ class TeamProgressHelper {
   /// MatchModel / MatchListProjection / Map などの汎用試合オブジェクトから
   /// 錬成会・申合せのバッジ文字列を取得
   static String getScenePrefixFromDynamic(dynamic match) {
-    if (match == null) return '';
-
-    String scene = '';
-    String ruleScene = '';
-    bool ruleIsRenseikai = false;
-    String matchType = '';
-    String note = '';
-    String? category;
-
-    if (match is MatchModel) {
-      scene = match.matchScene;
-      ruleScene = match.rule?.matchScene ?? '';
-      ruleIsRenseikai = match.rule?.isRenseikai ?? false;
-      matchType = match.matchType;
-      note = match.note;
-      category = match.category;
-    } else {
-      try {
-        scene = (match.matchScene ?? '').toString();
-      } catch (_) {}
-      try {
-        ruleScene = (match.rule?.matchScene ?? '').toString();
-      } catch (_) {}
-      try {
-        ruleIsRenseikai = match.rule?.isRenseikai ?? false;
-      } catch (_) {}
-      try {
-        matchType = (match.matchType ?? '').toString();
-      } catch (_) {}
-      try {
-        note = (match.note ?? '').toString();
-      } catch (_) {}
-      try {
-        category = match.category?.toString();
-      } catch (_) {}
-    }
-
-    final isMoushiawase =
-        scene == 'moushiawase' ||
-        ruleScene == 'moushiawase' ||
-        matchType.contains('申し合わせ') ||
-        matchType.contains('申合せ') ||
-        note.contains('申し合わせ') ||
-        note.contains('申合せ') ||
-        (category != null &&
-            (category.contains('申し合わせ') || category.contains('申合せ')));
-
-    if (isMoushiawase) return '【申合せ】';
-
-    final isRensei =
-        scene == 'renseikai' ||
-        ruleScene == 'renseikai' ||
-        ruleIsRenseikai ||
-        matchType.contains('錬成') ||
-        note.contains('錬成') ||
-        (category != null && category.contains('錬成'));
-
-    if (isRensei) return '【錬成】';
-
+    final scene = KendoSceneHelper.detectScene(match);
+    if (scene == KendoMatchScene.renseikai) return '【錬成】';
+    if (scene == KendoMatchScene.moushiawase) return '【申合せ】';
+    if (scene == KendoMatchScene.bunaiksen) return '【部内戦】';
     return '';
   }
 

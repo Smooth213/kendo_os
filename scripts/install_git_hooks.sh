@@ -36,7 +36,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "🛡️ kendo OS デザインシステム ガバナンス自動監査を実行中..."
 python3 scripts/check_design_tokens.py --strict
 if [ $? -ne 0 ]; then
     echo ""
@@ -48,16 +47,24 @@ fi
 python3 scripts/check_kendo_score_governance.py
 if [ $? -ne 0 ]; then
     echo ""
-    echo "🚨 【コミット拒否】剣道スコア表示（打突部位・先取丸・勝者丸・斜め配置・PDFはみ出し）のガバナンス違反が検出されました。"
+    echo "🚨 【コミット拒否】剣道公式スコア表示・PDF描画のガバナンス違反が検出されました。"
     echo "   KendoScoreBox規約およびPDFセル寸法(25px)に適合するように修正してください。"
     exit 1
 fi
 
-echo "✅ pre-commit ガバナンス監査・フォーマット自動修復完了"
+python3 scripts/check_kendo_metadata_governance.py
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "🚨 【コミット拒否】剣道メタデータ（シーンバッジ・名前パース・結果タグ）のガバナンス違反が検出されました。"
+    echo "   KendoEntityNameParser / KendoSceneBadge 規約に適合するように修正してください。"
+    exit 1
+fi
+
+echo "✅ pre-commit 全4大ガバナンス監査・フォーマット自動修復完了"
 exit 0
 EOF
 
 chmod +x "$PRE_COMMIT_FILE"
 
 echo "✅ [PASS] Git pre-commit フックのインストールが完了しました！"
-echo "💡 以降、git commit 実行時に「行数制限」「デザインシステム」「剣道スコア表示・PDFガバナンス」が自動監査・完全ブロックされます。"
+echo "💡 以降、git commit 実行時に全4大ガバナンス（行数、デザイン、スコア表示・PDF、メタデータ）が自動監査・完全ブロックされます。"

@@ -122,9 +122,9 @@ def check_tokens():
             # 21. Legacy share icons (bypassing Icons.ios_share)
             raw_share_icons += len(re.findall(r'Icons\.share\b(?!_rounded)', content))
 
-    print("==================================================")
-    print(" 📊 kendo OS デザインシステム 監査レポート")
-    print("==================================================")
+    print("=" * 50)
+    print(" 📊 【ガバナンス監査 2/4】🎨 デザインシステム トークン 監査レポート")
+    print("=" * 50)
     print(f" 1. AppBar 未移行件数: {raw_appbars} 件")
     print(f" 2. SnackBar 硬直色件数: {raw_snackbars_colors} 件")
     print(f" 3. ボーダー半径 生数値件数 (BorderRadius): {raw_border_radius} 件")

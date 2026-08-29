@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # ==============================================================================
-# 🥋 kendo OS - 剣道スコア表示・PDFガバナンス監査スクリプト
+# 🥋 kendo OS - 【ガバナンス監査 3/4】剣道公式スコア表示＆PDF描画 監査スクリプト
 # ==============================================================================
 import os
 import subprocess
 import sys
 
 def run_score_governance_check():
-    print("🥋 kendo OS 剣道スコア表示・PDFガバナンス自動監査を実行中...")
-    
     cmd = ["flutter", "test", "test/governance/kendo_score_display_governance_test.dart", "--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
@@ -26,9 +24,9 @@ def run_score_governance_check():
     
     passed_all = (result.returncode == 0)
     
-    print("==================================================")
-    print(" 📊 kendo OS 剣道スコア表示・PDF 監査レポート")
-    print("==================================================")
+    print("=" * 50)
+    print(" 📊 【ガバナンス監査 3/4】🥋 剣道公式スコア表示＆PDF描画 監査レポート")
+    print("=" * 50)
     
     for label, pattern in rules:
         if passed_all:
@@ -40,14 +38,14 @@ def run_score_governance_check():
                 status = "🟢 適合 (Passed)"
         print(f" {label}: {status}")
         
-    print("--------------------------------------------------")
+    print("-" * 50)
     if passed_all:
-        print(" 🟢 監査結果: すべての剣道スコア規約に完全合格！")
-        print("==================================================")
+        print(" 🟢 監査結果: すべての剣道公式スコア表示＆PDF規約に完全合格！")
+        print("=" * 50)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 剣道スコア表示・PDF規約に違反が検出されました！")
-        print("==================================================")
+        print(" 🔴 監査結果: 剣道公式スコア表示・PDF描画に違反が検出されました！")
+        print("=" * 50)
         print(output)
         sys.exit(1)
 

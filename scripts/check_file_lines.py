@@ -71,7 +71,7 @@ def main():
     avg_lines = total_lines / total_files if total_files > 0 else 0
 
     print("=" * 60)
-    print(" 📊 Kendo OS ファイル行数ガバナンス 監査レポート")
+    print(" 📊 【ガバナンス監査 1/4】📏 コード行数・アーキテクチャ 監査レポート")
     print("=" * 60)
     print(f" 📂 監査対象: {args.dir}/")
     print(f" 📄 総実コードファイル数: {total_files} ファイル")
