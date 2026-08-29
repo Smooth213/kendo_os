@@ -229,16 +229,17 @@ void main() {
         innerListViewFinder,
       );
 
-      // Move index 2 (m3) to index 0
+      // 降順ソートにより index 0: m3(30.0), index 1: m2(20.0), index 2: m1(10.0) となる
+      // Move index 2 (m1) to index 0
       reorderableListView.onReorderItem!(2, 0);
       await tester.pump();
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
-      expect(fakeMatchAppService.savedMatches!.first.id, 'm3');
+      expect(fakeMatchAppService.savedMatches!.first.id, 'm1');
       expect(
         fakeMatchAppService.savedMatches!.first.order,
-        10.0 - 100.0,
-      ); // newOrderBase
+        30.0 - 100.0,
+      ); // newOrderBase: list.first(m3: 30.0) - 100.0
     });
 
     testWidgets('2. 団体戦の並び替え (_onReorderTimeline)', (
