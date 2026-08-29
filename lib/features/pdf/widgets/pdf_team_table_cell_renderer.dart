@@ -248,16 +248,17 @@ class PdfTeamTableCellRenderer {
       return pw.Container(
         width: 26,
         height: 26,
+        alignment: pw.Alignment.center,
         child: pw.Stack(
           alignment: pw.Alignment.center,
           children: [
             if (isWinner)
               pw.Container(
-                width: 26,
-                height: 26,
+                width: 25,
+                height: 25,
                 decoration: pw.BoxDecoration(
                   shape: pw.BoxShape.circle,
-                  border: pw.Border.all(color: color, width: 0.8),
+                  border: pw.Border.all(color: color, width: 0.7),
                 ),
               ),
             pw.Text(
@@ -275,30 +276,31 @@ class PdfTeamTableCellRenderer {
     return pw.Container(
       width: 26,
       height: 26,
+      alignment: pw.Alignment.center,
       child: pw.Stack(
         alignment: pw.Alignment.center,
         children: [
           if (isWinner)
             pw.Container(
-              width: 26,
-              height: 26,
+              width: 25,
+              height: 25,
               decoration: pw.BoxDecoration(
                 shape: pw.BoxShape.circle,
-                border: pw.Border.all(color: color, width: 0.8),
+                border: pw.Border.all(color: color, width: 0.7),
               ),
             ),
           pw.Stack(
             children: [
               if (pts.isNotEmpty)
                 pw.Positioned(
-                  top: AppSpacing.xs,
-                  left: 5,
+                  top: 3.5,
+                  left: 4.5,
                   child: _pdfSingleMark(pts[0], color, fontBold),
                 ),
               if (pts.length > 1)
                 pw.Positioned(
-                  bottom: AppSpacing.xs,
-                  right: 5,
+                  bottom: 3.5,
+                  right: 4.5,
                   child: _pdfSingleMark(pts[1], color, fontBold),
                 ),
             ],
@@ -313,18 +315,21 @@ class PdfTeamTableCellRenderer {
     PdfColor color,
     pw.Font fontBold,
   ) {
-    return p.isFirstOverall && p.mark != '◯'
+    final bool isSpecialFusenOrDraw =
+        p.mark == '◯' || p.mark == '✕' || p.mark == '×' || p.mark == '反';
+    return p.isFirstOverall && !isSpecialFusenOrDraw
         ? pw.Container(
             width: 10,
             height: 10,
             alignment: pw.Alignment.center,
             decoration: pw.BoxDecoration(
               shape: pw.BoxShape.circle,
-              border: pw.Border.all(color: color, width: 0.8),
+              border: pw.Border.all(color: color, width: 0.6),
             ),
             child: pw.Text(
               p.mark,
-              style: pw.TextStyle(font: fontBold, fontSize: 6, color: color),
+              style: pw.TextStyle(font: fontBold, fontSize: 5.5, color: color),
+              textAlign: pw.TextAlign.center,
             ),
           )
         : pw.Text(
@@ -334,6 +339,7 @@ class PdfTeamTableCellRenderer {
               fontSize: AppFontSize.micro,
               color: color,
             ),
+            textAlign: pw.TextAlign.center,
           );
   }
 

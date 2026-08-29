@@ -5,9 +5,8 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
-import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import '../providers/sync_provider.dart';
+import '../providers/tournament_list_provider.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -17,7 +16,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 
-// ★ 直感UXホットフィックス：アーカイブ画面の即時反映用トリガー
+// ★ アーカイブ画面の即時反映用トリガー（下位互換性維持）
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
 
 class TournamentListScreen extends ConsumerWidget {
@@ -47,6 +46,10 @@ class TournamentListScreen extends ConsumerWidget {
     final Color subTextColor = themeColors.subTextColor;
     final Color separatorColor = themeColors.separatorColor;
 
+    final tournamentAsync = isArchive
+        ? ref.watch(archivedTournamentListProvider)
+        : ref.watch(tournamentListProvider);
+
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
@@ -64,23 +67,11 @@ class TournamentListScreen extends ConsumerWidget {
             SizedBox(width: AppSpacing.sm),
           ],
         ),
-        body: StreamBuilder<List<TournamentModel>>(
-          stream: isArchive
-              ? Stream.fromFuture(
-                  ref
-                      .read(tournamentRepositoryProvider)
-                      .getArchivedTournaments(),
-                )
-              : ref.watch(tournamentRepositoryProvider).watchTournaments(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: AppLoadingIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
-            }
-
-            final filteredTournaments = snapshot.data ?? [];
+        body: tournamentAsync.when(
+          loading: () => const Center(child: AppLoadingIndicator()),
+          error: (error, stack) => Center(child: Text('エラーが発生しました: $error')),
+          data: (tournaments) {
+            final filteredTournaments = [...tournaments];
             filteredTournaments.sort((a, b) => b.date.compareTo(a.date));
 
             // ★ 直感UX改修：透かしアイコン（kendo_icon.png）を用いた極上のEmpty State
@@ -126,7 +117,12 @@ class TournamentListScreen extends ConsumerWidget {
             // ★ Phase 6: 手動同期トリガー（引っ張って更新）の追加
             return RefreshIndicator(
               onRefresh: () async {
-                await ref.read(syncEngineProvider).forceSync();
+                if (isArchive) {
+                  ref.invalidate(archivedTournamentListProvider);
+                  await ref.read(archivedTournamentListProvider.future);
+                } else {
+                  await ref.read(syncEngineProvider).forceSync();
+                }
               },
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(

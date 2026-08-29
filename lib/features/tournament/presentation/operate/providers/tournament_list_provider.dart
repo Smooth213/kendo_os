@@ -8,3 +8,12 @@ final tournamentListProvider = StreamProvider<List<TournamentModel>>((ref) {
   final repository = ref.watch(tournamentRepositoryProvider);
   return repository.watchTournaments();
 });
+
+// ★ 過去の大会一覧（アーカイブ）プロバイダー
+// メモリ上にキャッシュし、画面遷移・再描画時に一瞬（0ms）で復元する
+final archivedTournamentListProvider = FutureProvider<List<TournamentModel>>((
+  ref,
+) async {
+  final repository = ref.watch(tournamentRepositoryProvider);
+  return repository.getArchivedTournaments();
+});

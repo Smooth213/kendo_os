@@ -180,5 +180,78 @@ void main() {
       expect(find.text('AdminHome: test_tournament_2'), findsOneWidget);
       expect(find.text('ViewerHome: test_tournament_2'), findsNothing);
     });
+
+    testWidgets(
+      '✅ isArchiveがtrueの場合、archivedTournamentsProviderから高速取得・描画されること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        final mockArchivedTournaments = [
+          TournamentModel(
+            id: 'test_archived_1',
+            name: '過去の第10回大会',
+            date: DateTime(2025, 5, 10),
+            venue: '武道館',
+            categories: const [],
+            organizationId: 'default_org',
+          ),
+        ];
+
+        when(
+          () => mockTournamentRepo.getArchivedTournaments(),
+        ).thenAnswer((_) async => mockArchivedTournaments);
+
+        final router = GoRouter(
+          initialLocation: '/tournament-list-archive',
+          routes: [
+            GoRoute(
+              path: '/tournament-list-archive',
+              builder: (context, state) =>
+                  const TournamentListScreen(isArchive: true),
+            ),
+            GoRoute(
+              path: '/home/:id',
+              builder: (context, state) =>
+                  Text('AdminHome: ${state.pathParameters['id']}'),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              tournamentRepositoryProvider.overrideWithValue(
+                mockTournamentRepo,
+              ),
+              syncEngineProvider.overrideWithValue(mockSyncEngine),
+              permissionProvider.overrideWith(
+                (ref) => const AppPermissions(
+                  isReadOnly: false,
+                  canManageTournament: true,
+                  canCreateMatch: true,
+                  canChangeSettings: true,
+                  canDeleteData: true,
+                ),
+              ),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 過去の大会名が表示されていることを確認
+        expect(find.text('過去の第10回大会'), findsOneWidget);
+
+        // 大会カードをタップ
+        await tester.tap(find.text('過去の第10回大会'));
+        await tester.pumpAndSettle();
+
+        // 遷移先が AdminHome であることを確認
+        expect(find.text('AdminHome: test_archived_1'), findsOneWidget);
+      },
+    );
   });
 }
