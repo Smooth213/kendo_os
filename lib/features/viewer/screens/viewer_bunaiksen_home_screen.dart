@@ -6,19 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_match_card.dart';
 
-import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_share_dialog.dart';
-import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
+import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_header_actions.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
-import 'package:intl/intl.dart';
-import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
 class ViewerBunaiksenHomeScreen extends ConsumerWidget {
   final String tournamentId;
@@ -92,102 +88,13 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                     onPressed: () => context.pop(),
                   ),
             actions: [
-              // 🛡️ UI防衛：QRから直接開かれた一般観客の場合はカレンダーボタンを非表示にし、その日の試合のみにスコープを固定
-              if (!isQrAccess)
-                IconButton(
-                  icon: const Icon(Icons.calendar_month),
-                  tooltip: '日付を選択して過去の記録を見る',
-                  onPressed: () async {
-                    DateTime initialDate = DateTime.now();
-                    if (tournamentId.startsWith('bunaiksen_') &&
-                        tournamentId.length == 18) {
-                      final dateStr = tournamentId.substring(10);
-                      if (dateStr.length == 8) {
-                        final parsed = DateTime.tryParse(dateStr);
-                        if (parsed != null) {
-                          initialDate = parsed;
-                        }
-                      }
-                    }
-
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: initialDate,
-                      firstDate: DateTime(2024),
-                      lastDate: DateTime.now(),
-                      selectableDayPredicate: (DateTime date) {
-                        // 🍏 厳密なるカレンダー制限仕様 of 完成：観客席側も試合の実在する過去日だけを正確に自動点灯
-                        final dStr = DateFormat('yyyyMMdd').format(date);
-                        final todayStr = DateFormat(
-                          'yyyyMMdd',
-                        ).format(DateTime.now());
-
-                        return dStr == todayStr ||
-                            availableDates.contains(dStr);
-                      },
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: isDark
-                                ? ColorScheme.dark(
-                                    primary: themeColors.primaryAccent,
-                                    onPrimary: context.appColors.textColor,
-                                    surface: themeColors.cardBackground,
-                                    onSurface: AppKendoColors.pureWhite,
-                                  )
-                                : ColorScheme.light(
-                                    primary: themeColors.primaryAccent,
-                                    onPrimary: AppKendoColors.pureWhite,
-                                    surface: themeColors.cardBackground,
-                                    onSurface: AppKendoColors.pureBlack,
-                                  ),
-                            dialogTheme: DialogThemeData(
-                              backgroundColor: themeColors.cardBackground,
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-
-                    if (picked != null) {
-                      ref.read(bunaiksenViewDateProvider.notifier).state =
-                          picked;
-                      final nextTournamentId =
-                          'bunaiksen_${DateFormat('yyyyMMdd').format(picked)}';
-                      if (!context.mounted) return;
-                      context.pushReplacement(
-                        '/bunaiksen-viewer-home/$nextTournamentId?role=viewer&dojoId=$dojoId',
-                      );
-                    }
-                  },
-                ),
-              IconButton(
-                icon: const Icon(Icons.settings),
-                tooltip: '表示設定',
-                onPressed: () {
-                  showAppBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (context) => const ViewerSettingsBottomSheet(),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.qr_code_2),
-                tooltip: '観戦リンクを共有する',
-                onPressed: () => ViewerBunaiksenShareDialog.show(
-                  context,
-                  ref,
-                  tournamentId: tournamentId,
-                  dateDisplay: dateDisplay,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.leaderboard_outlined),
-                onPressed: () =>
-                    context.push('/bunaiksen-viewer-record/$tournamentId'),
-                tooltip: '成績一覧',
+              ViewerBunaiksenHeaderActions(
+                tournamentId: tournamentId,
+                dateDisplay: dateDisplay,
+                dojoId: dojoId,
+                isDark: isDark,
+                isQrAccess: isQrAccess,
+                availableDates: availableDates,
               ),
             ],
           ),

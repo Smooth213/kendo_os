@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_header_widgets.dart';
+import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_header_actions.dart';
+import 'package:kendo_os/features/viewer/components/viewer_home_header_actions.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
@@ -202,6 +204,105 @@ void main() {
             .getTopLeft(find.byIcon(Icons.more_horiz_rounded))
             .dy;
         expect(moreButtonTop, greaterThanOrEqualTo(47.0));
+      },
+    );
+
+    testWidgets(
+      '5. 観戦席ホーム画面(ViewerHomeScreen)が375pt幅端末で「大会ホーム (観客席)」タイトルを広々と描画し、Moreメニューに共有・設定・FAQが集約されていること',
+      (tester) async {
+        tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              theme: ThemeData(
+                extensions: [
+                  AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+                ],
+              ),
+              home: Scaffold(
+                appBar: AppHeader(
+                  title: '大会ホーム (観客席)',
+                  actions: [
+                    ViewerHomeHeaderActions(
+                      tournamentId: 'test_t1',
+                      isDark: false,
+                      iconColor: const Color(0xFF000000),
+                    ),
+                  ],
+                ),
+                body: const SizedBox.expand(),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // タイトルが文字切れせず描画されていること
+        expect(find.text('大会ホーム (観客席)'), findsOneWidget);
+
+        // Moreメニューボタンが存在すること
+        expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
+
+        // Moreメニューをタップして展開
+        await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+        await tester.pumpAndSettle();
+
+        expect(find.text('大会を共有する'), findsOneWidget);
+        expect(find.text('表示設定'), findsOneWidget);
+        expect(find.text('観戦ヘルプ・FAQ'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '6. 部内戦観客席ホーム(ViewerBunaiksenHomeScreen)が375pt幅端末でタイトルを広々と描画し、Moreメニューに成績一覧・共有・設定が集約されていること',
+      (tester) async {
+        tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              theme: ThemeData(
+                extensions: [
+                  AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+                ],
+              ),
+              home: Scaffold(
+                appBar: AppHeader(
+                  title: '2026/08/29 の記録 (観戦)',
+                  actions: const [
+                    ViewerBunaiksenHeaderActions(
+                      tournamentId: 'bunaiksen_20260829',
+                      dateDisplay: '2026/08/29',
+                      dojoId: 'd1',
+                      isDark: false,
+                      isQrAccess: false,
+                      availableDates: {},
+                    ),
+                  ],
+                ),
+                body: const SizedBox.expand(),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        expect(find.text('2026/08/29 の記録 (観戦)'), findsOneWidget);
+        expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+        await tester.pumpAndSettle();
+
+        expect(find.text('部内戦 成績一覧'), findsOneWidget);
+        expect(find.text('観戦リンクを共有する'), findsOneWidget);
+        expect(find.text('表示設定'), findsOneWidget);
       },
     );
   });

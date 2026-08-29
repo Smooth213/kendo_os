@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -8,7 +7,6 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/features/match/domain/match_aggregate.dart';
 import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
 import 'package:kendo_os/features/match/application/usecases/scorer_lock_usecase.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
@@ -24,6 +22,9 @@ import 'package:kendo_os/features/match/application/services/match_persistence_h
 import 'package:kendo_os/features/match/application/services/match_rewind_service.dart';
 import 'package:kendo_os/features/match/application/services/match_hantei_finish_helper.dart';
 import 'package:kendo_os/features/match/application/services/match_sound_helper.dart';
+import 'package:kendo_os/features/match/application/services/match_retirement_helper.dart';
+import 'package:kendo_os/features/match/application/services/match_snapshot_helper.dart';
+import 'package:kendo_os/features/match/application/services/match_undo_helper.dart';
 
 /// アプリケーション層オーケストレーションサービス
 class MatchApplicationService {
@@ -34,6 +35,8 @@ class MatchApplicationService {
   final MatchPersistenceHelper _persistenceHelper;
   final MatchAutoProgressionService _progressionService;
   final MatchHanteiFinishHelper _hanteiFinishHelper;
+  final MatchSnapshotHelper _snapshotHelper;
+  final MatchUndoHelper _undoHelper;
 
   MatchApplicationService(
     this._ref,
@@ -44,6 +47,8 @@ class MatchApplicationService {
     MatchPersistenceHelper? persistenceHelper,
     MatchAutoProgressionService? progressionService,
     MatchHanteiFinishHelper? hanteiFinishHelper,
+    MatchSnapshotHelper? snapshotHelper,
+    MatchUndoHelper? undoHelper,
   }) : _scorerLock = scorerLock,
        _persistenceHelper = persistenceHelper ?? MatchPersistenceHelper(_ref),
        _progressionService =
@@ -55,6 +60,15 @@ class MatchApplicationService {
              _ref,
              persistenceHelper ?? MatchPersistenceHelper(_ref),
              _addScore,
+           ),
+       _snapshotHelper = snapshotHelper ?? const MatchSnapshotHelper(),
+       _undoHelper =
+           undoHelper ??
+           MatchUndoHelper(
+             _ref,
+             _addScore,
+             persistenceHelper ?? MatchPersistenceHelper(_ref),
+             snapshotHelper ?? const MatchSnapshotHelper(),
            );
 
   User _getCurrentUser() {
@@ -64,7 +78,6 @@ class MatchApplicationService {
     } catch (_) {
       uid = 'test_user';
     }
-
     return User(id: uid, role: Role.admin, organizationId: 'default_org');
   }
 
@@ -96,7 +109,6 @@ class MatchApplicationService {
       } else {
         _ref.read(metricsProvider).recordError(traceId: traceId);
       }
-
       _ref.read(uiMessageProvider.notifier).showError('$errorPrefix: $e');
       rethrow;
     }
@@ -135,7 +147,7 @@ class MatchApplicationService {
                     PointType.hantei: '判定',
                   }[type] ??
                   type.name);
-        var match = _addSnapshotToMatch(
+        var match = _snapshotHelper.addSnapshotToMatch(
           initialMatch,
           '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前',
         );
@@ -192,75 +204,69 @@ class MatchApplicationService {
     );
   }
 
-  // 2. Undoフロー
-  Future<void> undo(String matchId) async {
+  /// 途中棄権の記録（全日本剣道連盟ルール準拠：相手に不戦勝2本を付与し試合終了）
+  Future<void> recordRetirement(String matchId, Side retiredSide) async {
     final traceId = const Uuid().v4();
     await _safeExecute(
       () async {
         final initialMatch = await _getMatchSafely(matchId);
         if (initialMatch == null) return;
-        if (initialMatch.events.isEmpty) return;
 
-        var match = _addSnapshotToMatch(initialMatch, '取り消し 実行前');
-        final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
+        final MatchRule rule =
+            initialMatch.rule ?? _ref.read(matchRuleProvider);
+        final settings = _ref.read(settingsProvider);
         final currentUser = _getCurrentUser();
+        final winnerSide = retiredSide == Side.red ? Side.white : Side.red;
 
-        final permissionService = _ref.read(permissionServiceProvider);
-        if (!permissionService.canUndo(currentUser)) {
-          throw Exception('操作を取り消す権限がありません。');
-        }
-
-        int maxClock = match.events.isEmpty
-            ? 0
-            : match.events
-                  .map((e) => e.logicalClock)
-                  .reduce((a, b) => a > b ? a : b);
-
-        final undoEvent = ScoreEventLegacyAdapter.fromLegacy(
-          id: 'undo-${DateTime.now().microsecondsSinceEpoch}',
-          side: Side.none,
-          type: PointType.undo,
-          timestamp: DateTime.now(),
-          userId: currentUser.id,
-          sequence: match.events.last.sequence + 1,
-          logicalClock: maxClock + 1,
+        final matchWithSnapshot = _snapshotHelper.addSnapshotToMatch(
+          initialMatch,
+          '【${retiredSide == Side.red ? "赤" : "白"}】途中棄権 記録前',
         );
 
-        MatchModel updatedMatch = _addScore.execute(
-          currentUser,
-          match,
-          undoEvent,
-          rule,
+        final helper = MatchRetirementHelper(_addScore);
+        final updatedMatch = helper.processRetirement(
+          user: currentUser,
+          match: matchWithSnapshot,
+          retiredSide: retiredSide,
+          rule: rule,
         );
 
-        final engine = KendoRuleEngine();
-        final analysis = engine.analyzeHistory(
-          updatedMatch.events,
-          updatedMatch,
-          rule,
-        );
-
-        updatedMatch = updatedMatch.copyWith(
-          status: 'in_progress',
-          redScore: analysis.context.redIppon,
-          whiteScore: analysis.context.whiteIppon,
-        );
-
-        MatchSoundHelper.playUndoSound(
+        MatchSoundHelper.playAddIpponSound(
           soundService: _ref.read(soundServiceProvider),
-          audioFeedbackMode: _ref.read(settingsProvider).audioFeedbackMode,
+          audioFeedbackMode: settings.audioFeedbackMode,
+          side: winnerSide,
+          type: PointType.fusen,
+          typeLabel: '途中棄権',
+          isMatchFinishedNow: true,
         );
 
         await _persistenceHelper.saveAndSync(updatedMatch);
         await _ref
             .read(auditProvider)
             .logAction(
-              matchId: match.id,
-              action: AuditAction.undo,
-              details: '取消',
+              matchId: matchWithSnapshot.id,
+              action: AuditAction.addScore,
+              details: '${winnerSide.name} 途中棄権不戦勝',
               traceId: traceId,
             );
+
+        await _finalizeIfNeeded(updatedMatch, matchWithSnapshot);
       },
+      '端末にスコアが保存されませんでした。もう一度お試しください',
+      metricName: 'event_append',
+      traceId: traceId,
+    );
+  }
+
+  // 2. Undoフロー
+  Future<void> undo(String matchId) async {
+    final traceId = const Uuid().v4();
+    await _safeExecute(
+      () => _undoHelper.executeUndo(
+        matchId: matchId,
+        currentUser: _getCurrentUser(),
+        traceId: traceId,
+      ),
       '操作を取り消せませんでした。もう一度お試しください',
       metricName: 'event_undo',
       traceId: traceId,
@@ -279,7 +285,7 @@ class MatchApplicationService {
         final validEvents = engine.filterActiveEvents(initialMatch.events);
         if (validEvents.length <= targetVersion) return;
 
-        var match = _addSnapshotToMatch(
+        var match = _snapshotHelper.addSnapshotToMatch(
           initialMatch,
           '巻き戻し実行 (Version: $targetVersion へ)',
         );
@@ -313,23 +319,6 @@ class MatchApplicationService {
       'データの巻き戻しに失敗しました',
       traceId: traceId,
     );
-  }
-
-  MatchModel _addSnapshotToMatch(MatchModel match, String reason) {
-    final snapshot = MatchSnapshot(
-      id: const Uuid().v4(),
-      matchId: match.id,
-      version: match.events.length,
-      state: match.copyWith(snapshots: const []),
-      createdAt: DateTime.now(),
-      reason: reason,
-      events: List.from(match.events),
-    );
-    final newSnapshots = [...match.snapshots, snapshot];
-    if (newSnapshots.length > 20) {
-      newSnapshots.removeRange(0, newSnapshots.length - 20);
-    }
-    return match.copyWith(snapshots: newSnapshots);
   }
 
   // 4. 時間切れ（TimeUp）
@@ -380,23 +369,19 @@ class MatchApplicationService {
   }
 
   // 5. 保存・同期オーケストレーション
-  Future<void> saveMatch(MatchModel match) async {
-    await _safeExecute(() async {
-      await _persistenceHelper.saveMatch(match);
-    }, '保存に失敗しました');
-  }
+  Future<void> saveMatch(MatchModel match) async =>
+      _safeExecute(() => _persistenceHelper.saveMatch(match), '保存に失敗しました');
 
-  Future<void> saveMatchesBulk(List<MatchModel> newMatches) async {
-    await _safeExecute(() async {
-      await _persistenceHelper.saveMatchesBulk(newMatches);
-    }, '一括保存に失敗しました');
-  }
+  Future<void> saveMatchesBulk(List<MatchModel> newMatches) async =>
+      _safeExecute(
+        () => _persistenceHelper.saveMatchesBulk(newMatches),
+        '一括保存に失敗しました',
+      );
 
   // 6. スコアラーロック
   Future<bool> claimScorer(String matchId, String userId) async {
     final match = await _getMatchSafely(matchId);
     if (match == null) return false;
-
     final updated = _scorerLock.tryClaimScorer(match, userId);
     if (updated != null) {
       await saveMatch(updated);
@@ -408,17 +393,13 @@ class MatchApplicationService {
   Future<void> releaseScorer(String matchId, String userId) async {
     final match = await _getMatchSafely(matchId);
     if (match == null) return;
-
     final updated = _scorerLock.releaseScorer(match, userId);
-    if (updated != null) {
-      await saveMatch(updated);
-    }
+    if (updated != null) await saveMatch(updated);
   }
 
   Future<void> forceClaimScorer(String matchId, String userId) async {
     final match = await _getMatchSafely(matchId);
     if (match == null) return;
-
     final updated = _scorerLock.forceClaimScorer(match, userId);
     await saveMatch(updated);
   }

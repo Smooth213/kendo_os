@@ -242,13 +242,19 @@ void main() {
       await tester.pumpWidget(createTestApp(router: router, isOperator: false));
       await tester.pumpAndSettle();
 
-      // 観客画面必須アクションボタンの存在確認
-      expect(find.byIcon(Icons.settings), findsOneWidget);
-      expect(find.byIcon(Icons.qr_code_2), findsOneWidget);
-      expect(find.byIcon(Icons.leaderboard_outlined), findsOneWidget);
+      // Moreメニューの存在確認と展開
+      final moreBtn = find.byIcon(Icons.more_horiz_rounded);
+      expect(moreBtn, findsOneWidget);
+      await tester.tap(moreBtn);
+      await tester.pumpAndSettle();
 
-      // 成績一覧アイコンをタップして遷移
-      await tester.tap(find.byIcon(Icons.leaderboard_outlined));
+      // 観客画面必須アクション（表示設定・共有・成績一覧）の存在確認
+      expect(find.text('表示設定'), findsOneWidget);
+      expect(find.text('観戦リンクを共有する'), findsOneWidget);
+      expect(find.text('部内戦 成績一覧'), findsOneWidget);
+
+      // 成績一覧をタップして遷移
+      await tester.tap(find.text('部内戦 成績一覧'));
       await tester.pumpAndSettle();
 
       // ViewerBunaiksenOfficialRecordScreen が表示されること

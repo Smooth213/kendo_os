@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_call_banner.dart';
@@ -10,21 +9,18 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_category
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_list_search_bar.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_quick_action_buttons.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_filter_helper.dart';
-import 'package:kendo_os/features/viewer/presentation/components/viewer_settings_bottom_sheet.dart';
-import 'package:kendo_os/features/viewer/presentation/components/viewer_share_dialog.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_tournament_info_card.dart';
 import 'package:kendo_os/features/viewer/presentation/providers/viewer_timeline_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/providers/viewer_tournament_provider.dart';
+import 'package:kendo_os/features/viewer/components/viewer_home_header_actions.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_search_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 
 export 'components/viewer_call_banner.dart';
 export 'components/viewer_group_match_card.dart';
@@ -121,51 +117,13 @@ class ViewerHomeScreen extends ConsumerWidget {
                         ? AppKendoColors.transparent
                         : (context.appColors.cardBackground),
                     actions: [
-                      NotificationBellButton(
+                      ViewerHomeHeaderActions(
                         tournamentId: tournamentId,
-                        isStaffRoom: false,
-                        color: isDark
+                        isDark: isDark,
+                        iconColor: isDark
                             ? const Color(0xFFFFFFFF)
                             : themeColors.primaryAccent,
                       ),
-                      ManualHelpButton(
-                        manualPath: 'docs/manuals/faq/viewer_faq.md',
-                        color: isDark
-                            ? const Color(0xFFFFFFFF)
-                            : themeColors.primaryAccent,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.settings,
-                          color: isDark
-                              ? const Color(0xFFFFFFFF)
-                              : themeColors.primaryAccent,
-                        ),
-                        tooltip: '表示設定',
-                        onPressed: () {
-                          showAppBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (context) =>
-                                const ViewerSettingsBottomSheet(),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.qr_code_2,
-                          color: isDark
-                              ? const Color(0xFFFFFFFF)
-                              : themeColors.primaryAccent,
-                        ),
-                        tooltip: '大会を共有する',
-                        onPressed: () => ViewerShareDialog.show(
-                          context,
-                          tournamentId: tournamentId,
-                          dojoId: ref.read(currentDojoIdProvider),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
                     ],
                   ),
             body: ListView(

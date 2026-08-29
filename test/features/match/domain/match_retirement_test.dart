@@ -189,5 +189,42 @@ void main() {
       final result = ruleEngine.decideResult(analysis.context, rule, events);
       expect(result, MatchResultStatus.inProgress);
     });
+
+    test('5. 試合終了状態または規定本数到達後でも、途中棄権イベントがvalidateEventで拒絶されず許可されること', () {
+      final match = MatchModel(
+        id: 'm5',
+        matchType: '中堅',
+        redName: '道上剣友会：塚本 大道',
+        whiteName: '連続対戦ちーむ：中堅',
+        status: 'finished',
+        rule: rule,
+      );
+
+      final retirementEvent = ScoreEvent(
+        id: 'fusen_test',
+        side: Side.white,
+        isFusen: true,
+        isRetirement: true,
+        timestamp: DateTime.now(),
+      );
+
+      final ctxWithMaxPoints = MatchContext(
+        redIppon: 2,
+        whiteIppon: 0,
+        redHansoku: 0,
+        whiteHansoku: 0,
+        isTimeUp: false,
+        targetIppon: 2,
+        hasHantei: false,
+      );
+
+      final validation = ruleEngine.validateEvent(
+        match,
+        retirementEvent,
+        ctxWithMaxPoints,
+      );
+
+      expect(validation.isValid, isTrue);
+    });
   });
 }

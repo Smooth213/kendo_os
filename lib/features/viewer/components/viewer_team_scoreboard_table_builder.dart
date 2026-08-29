@@ -287,35 +287,42 @@ class ViewerTeamScoreboardTableBuilder {
           SizedBox(
             width: 48,
             height: 48,
-            child: Stack(
-              children: [
-                if (isFusen) ...[
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: _ptMark('◯', false, color, isDark),
+            child: isFusen
+                ? Stack(
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        child: _ptMark('◯', false, color, isDark),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: _ptMark('◯', false, color, isDark),
+                      ),
+                    ],
+                  )
+                : Stack(
+                    children: [
+                      if (pts.isNotEmpty)
+                        Positioned(
+                          top: 2,
+                          left: 2,
+                          child: _ptMark(
+                            pts[0],
+                            isThisSideFirst,
+                            color,
+                            isDark,
+                          ),
+                        ),
+                      if (pts.length > 1)
+                        Positioned(
+                          bottom: 2,
+                          right: 2,
+                          child: _ptMark(pts[1], false, color, isDark),
+                        ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: _ptMark('◯', false, color, isDark),
-                  ),
-                ] else ...[
-                  if (pts.isNotEmpty)
-                    Positioned(
-                      top: 2,
-                      left: 2,
-                      child: _ptMark(pts[0], isThisSideFirst, color, isDark),
-                    ),
-                  if (pts.length > 1)
-                    Positioned(
-                      bottom: 2,
-                      right: 2,
-                      child: _ptMark(pts[1], false, color, isDark),
-                    ),
-                ],
-              ],
-            ),
           ),
           if (isRed && isDraw)
             Positioned(

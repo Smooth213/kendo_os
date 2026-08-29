@@ -181,8 +181,6 @@ class TeamScoreboardTableBuilder {
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
-    final isFusen = pts.any((p) => p.mark == '◯');
-
     return SizedBox(
       height: 84,
       child: Stack(
@@ -204,21 +202,22 @@ class TeamScoreboardTableBuilder {
           SizedBox(
             width: 48,
             height: 48,
-            child: isFusen
-                ? Center(
-                    child: Text(
-                      '◯',
-                      style: TextStyle(
-                        fontSize: AppFontSize.hero,
-                        color: color,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: pts.map((p) => ptMark(p, color, isDark)).toList(),
+            child: Stack(
+              children: [
+                if (pts.isNotEmpty)
+                  Positioned(
+                    top: 2,
+                    left: 2,
+                    child: ptMark(pts[0], color, isDark),
                   ),
+                if (pts.length > 1)
+                  Positioned(
+                    bottom: 2,
+                    right: 2,
+                    child: ptMark(pts[1], color, isDark),
+                  ),
+              ],
+            ),
           ),
           if (isRed && isDraw)
             Positioned(

@@ -173,7 +173,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final shareButton = find.byIcon(Icons.qr_code_2);
+        // Moreメニューを開いて「観戦リンクを共有する」をタップ
+        final moreButton = find.byIcon(Icons.more_horiz_rounded);
+        expect(moreButton, findsOneWidget);
+        await tester.tap(moreButton);
+        await tester.pumpAndSettle();
+
+        final shareButton = find.text('観戦リンクを共有する');
         expect(shareButton, findsOneWidget);
         await tester.tap(shareButton);
         await tester.pumpAndSettle();

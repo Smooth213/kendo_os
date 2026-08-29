@@ -5,7 +5,6 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class LargeViewerScoreboard extends StatelessWidget {
   final MatchProjection projection;
@@ -23,12 +22,6 @@ class LargeViewerScoreboard extends StatelessWidget {
     if (name.contains('欠員')) return '(欠員)';
     if (!name.contains(':')) return name.trim();
     return name.split(':').last.replaceAll(')', '').trim();
-  }
-
-  String _formatDuration(int totalSeconds) {
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   int _getFoulCount(Side side) {
@@ -123,10 +116,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isRedWinner,
               cardColor: isDark
                   ? const Color(0xFF2C1616)
-                  : context.appColors.errorColor,
+                  : const Color(0xFFFFF0F0),
               textColor: isDark
-                  ? context.appColors.errorColor
-                  : context.appColors.errorColor,
+                  ? const Color(0xFFFF6B6B)
+                  : AppKendoColors.hansokuRed,
             ),
           ),
           _buildCenterDivider(isPortrait: true),
@@ -139,11 +132,11 @@ class LargeViewerScoreboard extends StatelessWidget {
               foulCount: whiteFouls,
               isWinner: isWhiteWinner,
               cardColor: isDark
-                  ? const Color(0xFF1C2430)
-                  : const Color(0xFF64748B),
+                  ? const Color(0xFF182230)
+                  : const Color(0xFFF8FAFC),
               textColor: isDark
-                  ? context.appColors.separatorColor
-                  : const Color(0xFF64748B),
+                  ? AppKendoColors.pureWhite
+                  : const Color(0xFF1E293B),
             ),
           ),
         ],
@@ -177,10 +170,10 @@ class LargeViewerScoreboard extends StatelessWidget {
               isWinner: isRedWinner,
               cardColor: isDark
                   ? const Color(0xFF2C1616)
-                  : context.appColors.errorColor,
+                  : const Color(0xFFFFF0F0),
               textColor: isDark
-                  ? context.appColors.errorColor
-                  : context.appColors.errorColor,
+                  ? const Color(0xFFFF6B6B)
+                  : AppKendoColors.hansokuRed,
             ),
           ),
           _buildCenterDivider(isPortrait: false),
@@ -193,11 +186,11 @@ class LargeViewerScoreboard extends StatelessWidget {
               foulCount: whiteFouls,
               isWinner: isWhiteWinner,
               cardColor: isDark
-                  ? const Color(0xFF1C2430)
-                  : const Color(0xFF64748B),
+                  ? const Color(0xFF182230)
+                  : const Color(0xFFF8FAFC),
               textColor: isDark
-                  ? context.appColors.separatorColor
-                  : const Color(0xFF64748B),
+                  ? AppKendoColors.pureWhite
+                  : const Color(0xFF1E293B),
             ),
           ),
         ],
@@ -303,8 +296,8 @@ class LargeViewerScoreboard extends StatelessWidget {
     Side side,
   ) {
     final color = side == Side.red
-        ? const Color(0xFFE53935)
-        : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
+        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
+        : (isDark ? AppKendoColors.pureWhite : const Color(0xFF334155));
 
     return SizedBox(
       width: 120,
@@ -386,66 +379,37 @@ class LargeViewerScoreboard extends StatelessWidget {
   }
 
   Widget _buildCenterDivider({required bool isPortrait}) {
-    final timerText = _formatDuration(projection.remainingSeconds);
-    final isTimerRunning = projection.timerIsRunning;
-
-    final timerColor = isTimerRunning
-        ? AppKendoColors.orangeAccent
-        : (isDark
-              ? const Color(0xFFFFFFFF).withValues(alpha: 0.7)
-              : const Color(0xFF000000));
-
     final content = Container(
       padding: const EdgeInsets.symmetric(
-        vertical: AppSpacing.md,
-        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.lg,
       ),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E24) : const Color(0x33000000),
-        borderRadius: AppRadius.large,
+        color: isDark ? const Color(0xFF1E1E24) : const Color(0xFFE2E8F0),
+        borderRadius: AppRadius.full,
         border: Border.all(
-          color: isTimerRunning
-              ? AppKendoColors.orangeAccent
-              : AppKendoColors.transparent,
-          width: 1.5,
+          color: isDark
+              ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
+              : const Color(0x33000000),
+          width: 1.0,
         ),
       ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.timer, color: timerColor, size: 28),
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              timerText,
-              style: TextStyle(
-                fontSize: AppFontSize.jumbo,
-                fontWeight: AppFontWeight.bold,
-                fontFamily: 'monospace',
-                color: timerColor,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.lg),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: const BoxDecoration(
-                color: Color(0xFF3F51B5),
-                borderRadius: AppRadius.small,
-              ),
-              child: Text(
-                '${projection.redScore} - ${projection.whiteScore}',
-                style: const TextStyle(
-                  fontSize: AppFontSize.display,
-                  fontWeight: AppFontWeight.bold,
-                  color: AppKendoColors.pureWhite,
-                ),
-              ),
-            ),
-          ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: const BoxDecoration(
+          color: Color(0xFF3F51B5),
+          borderRadius: AppRadius.medium,
+        ),
+        child: Text(
+          '${projection.redScore} - ${projection.whiteScore}',
+          style: const TextStyle(
+            fontSize: AppFontSize.display,
+            fontWeight: AppFontWeight.bold,
+            color: AppKendoColors.pureWhite,
+          ),
         ),
       ),
     );

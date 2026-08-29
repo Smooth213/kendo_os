@@ -257,10 +257,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 共有ボタン（Icons.qr_code_2）をタップ
-      final shareButton = find.byIcon(Icons.qr_code_2);
-      expect(shareButton, findsOneWidget);
-      await tester.tap(shareButton);
+      // Moreメニューを開いて「大会を共有する」をタップ
+      final moreButton = find.byIcon(Icons.more_horiz_rounded);
+      expect(moreButton, findsOneWidget);
+      await tester.tap(moreButton);
+      await tester.pumpAndSettle();
+
+      final shareMenuItem = find.text('大会を共有する');
+      expect(shareMenuItem, findsOneWidget);
+      await tester.tap(shareMenuItem);
       await tester.pumpAndSettle();
 
       // QrImageViewがダイアログ内に存在すること

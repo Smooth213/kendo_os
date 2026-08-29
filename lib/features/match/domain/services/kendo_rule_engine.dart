@@ -220,13 +220,17 @@ class KendoRuleEngine {
     }
 
     final bool isHanteiEvent = event.isHantei || event.type == PointType.hantei;
+    final bool isRetirementEvent = event.isRetirement || event.isFusen;
 
     if (match.status == 'finished' || match.status == 'approved') {
-      if (!event.isUndo && !isHanteiEvent) {
+      if (!event.isUndo && !isHanteiEvent && !isRetirementEvent) {
         return ValidationResult(false, '試合は既に終了しています。');
       }
     }
-    if (!event.isUndo && !event.isHansoku && !isHanteiEvent) {
+    if (!event.isUndo &&
+        !event.isHansoku &&
+        !isHanteiEvent &&
+        !isRetirementEvent) {
       if (ctx.redIppon >= ctx.targetIppon ||
           ctx.whiteIppon >= ctx.targetIppon) {
         return ValidationResult(false, '既に規定本数に達しています。');

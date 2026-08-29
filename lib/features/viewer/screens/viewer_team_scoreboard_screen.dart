@@ -327,23 +327,21 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF3F51B5).withValues(alpha: 0.2)
+                            ? const Color(0xFF3F51B5).withValues(alpha: 0.25)
                             : const Color(0xFF3F51B5),
                         borderRadius: AppRadius.medium,
                         border: Border.all(
                           color: isDark
-                              ? const Color(0xFF3F51B5)
-                              : const Color(0xFF3F51B5),
+                              ? const Color(0xFF5C6BC0)
+                              : const Color(0xFF3949AB),
                         ),
                       ),
                       child: Text(
                         teamProj.note,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: AppFontSize.bodyMedium,
                           fontWeight: AppFontWeight.bold,
-                          color: isDark
-                              ? const Color(0xFF3F51B5)
-                              : const Color(0xFF3F51B5),
+                          color: AppKendoColors.pureWhite,
                         ),
                       ),
                     ),
