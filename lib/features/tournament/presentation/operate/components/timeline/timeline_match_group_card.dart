@@ -212,8 +212,9 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                                       TeamProgressHelper.getScenePrefix(
                                         firstMatch,
                                       );
-                                  if (scenePrefix.isEmpty)
+                                  if (scenePrefix.isEmpty) {
                                     return const SizedBox.shrink();
+                                  }
                                   final isMoushiawase = scenePrefix.contains(
                                     '申合せ',
                                   );
