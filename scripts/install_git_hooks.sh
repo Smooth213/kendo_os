@@ -45,8 +45,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "🥋 kendo OS 剣道スコア表示・PDFガバナンス自動監査を実行中..."
-flutter test test/governance/kendo_score_display_governance_test.dart
+python3 scripts/check_kendo_score_governance.py
 if [ $? -ne 0 ]; then
     echo ""
     echo "🚨 【コミット拒否】剣道スコア表示（打突部位・先取丸・勝者丸・斜め配置・PDFはみ出し）のガバナンス違反が検出されました。"
