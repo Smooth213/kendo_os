@@ -12,9 +12,9 @@ class KendoEntityNameParser {
   }
 
   /// チーム名（道場名）を抽出
-  /// - 例: "道上剣友会A: 皿田" ➔ "道上剣友会A"
-  /// - 例: "皿田 (道上剣友会)" ➔ "道上剣友会"
-  /// - 例: "道上剣友会" ➔ "道上剣友会"
+  /// - 例: "東京剣友会A: 山田" ➔ "東京剣友会A"
+  /// - 例: "山田 (東京剣友会)" ➔ "東京剣友会"
+  /// - 例: "東京剣友会" ➔ "東京剣友会"
   static String extractTeamName(String raw) {
     final clean = normalize(raw);
     if (clean.contains(':')) {
@@ -31,9 +31,9 @@ class KendoEntityNameParser {
   }
 
   /// 選手名を抽出
-  /// - 例: "道上剣友会A: 皿田" ➔ "皿田"
-  /// - 例: "皿田 (道上剣友会)" ➔ "皿田"
-  /// - 例: "皿田" ➔ "皿田"
+  /// - 例: "東京剣友会A: 山田" ➔ "山田"
+  /// - 例: "山田 (東京剣友会)" ➔ "山田"
+  /// - 例: "山田" ➔ "山田"
   static String extractPlayerName(String raw) {
     final clean = normalize(raw);
     if (clean.contains(':')) {
@@ -48,9 +48,9 @@ class KendoEntityNameParser {
   }
 
   /// 試合形式に応じた公式表示名称を生成
-  /// - 団体戦: チーム名のみ（例: "道上剣友会A"）
-  /// - 個人戦（所属あり）: "選手名 (所属)"（例: "皿田 (道上剣友会A)"）
-  /// - 個人戦（所属なし）: "選手名"（例: "皿田"）
+  /// - 団体戦: チーム名のみ（例: "東京剣友会A"）
+  /// - 個人戦（所属あり）: "選手名 (所属)"（例: "山田 (東京剣友会A)"）
+  /// - 個人戦（所属なし）: "選手名"（例: "山田"）
   static String formatDisplayName({
     required String raw,
     required bool isIndividual,
