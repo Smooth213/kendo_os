@@ -9,6 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/time/time_source.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 
 class TimerWidget extends ConsumerWidget {
   final String matchId;
@@ -201,7 +202,10 @@ class TimerWidget extends ConsumerWidget {
       // ★ 修正: matchTimerProvider を使用
       onTap: isInputLocked
           ? null
-          : () => ref.read(matchTimerProvider).toggleTimer(matchId),
+          : () async {
+              await KendoHaptics.timerToggle(isStarting: !isRunning);
+              ref.read(matchTimerProvider).toggleTimer(matchId);
+            },
       onLongPress: isInputLocked
           ? null
           : () {

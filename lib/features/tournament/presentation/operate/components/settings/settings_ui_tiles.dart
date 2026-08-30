@@ -187,6 +187,7 @@ class SettingsListTile extends StatelessWidget {
 /// 設定画面のスイッチタイル
 class SettingsSwitchTile extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
   final IconData icon;
@@ -195,6 +196,7 @@ class SettingsSwitchTile extends StatelessWidget {
   const SettingsSwitchTile({
     super.key,
     required this.title,
+    this.subtitle,
     required this.value,
     required this.onChanged,
     required this.icon,
@@ -205,6 +207,7 @@ class SettingsSwitchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return SettingsListTile(
       title: title,
+      subtitle: subtitle,
       icon: icon,
       iconBgColor: iconBgColor,
       onTap: () => onChanged(!value),

@@ -8,6 +8,8 @@ import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★ 追加：設定変更時に音響エンジンを更新するため
 
+import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
+
 // SharedPreferencesのインスタンスを非同期で提供するProvider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('main.dartで上書き(override)する必要があります');
@@ -34,6 +36,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
 
     // 初期化時にスリープ防止設定を適用
     _applyWakelock(initialSettings.sleepPrevent);
+    KendoHaptics.isEnabled = initialSettings.haptic;
 
     return initialSettings;
   }
@@ -41,6 +44,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
   // 設定を更新して保存する
   Future<void> updateSettings(SettingsModel newSettings) async {
     state = newSettings;
+    KendoHaptics.isEnabled = newSettings.haptic;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_key, jsonEncode(newSettings.toJson()));
 

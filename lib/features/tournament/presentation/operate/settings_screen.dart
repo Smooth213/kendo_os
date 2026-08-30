@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
+import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -174,24 +175,22 @@ class SettingsScreen extends ConsumerWidget {
                           iconBgColor: AppKendoColors.pink,
                         ),
                       SettingsSwitchTile(
-                        title: 'システム操作の振動 (バイブ)',
+                        title: '触覚フィードバック (階層化ハプティクス)',
+                        subtitle: 'タイマー(軽)、一本(強)、反則(2連)、取消(長)など、操作に応じた振動で通知します',
                         value: settings.haptic,
-                        onChanged: (val) => notifier.updateField(haptic: val),
+                        onChanged: (val) {
+                          notifier.updateField(haptic: val, strikeVib: val);
+                          if (val) {
+                            KendoHaptics.viewFlip();
+                          }
+                        },
                         icon: Icons.vibration,
                         iconBgColor: AppKendoColors.purpleAccent,
-                      ),
-                      SettingsSwitchTile(
-                        title: '打突入力時の振動 (バイブ)',
-                        value: settings.strikeVib,
-                        onChanged: (val) =>
-                            notifier.updateField(strikeVib: val),
-                        icon: Icons.sports_martial_arts,
-                        iconBgColor: AppKendoColors.deepPurple,
                       ),
                     ],
                   ),
                   const SettingsSectionFooter(
-                    text: 'ポイント入力時や試合終了時に音や振動で知らせます。',
+                    text: '体育館の寒さや騒音の中でも、指先の触覚と音で操作結果を確実に把握できます。',
                   ),
                   const SizedBox(height: AppSpacing.xl),
 

@@ -8,6 +8,9 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_ui_assist_provider.dart';
+import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
+
 class ScoreActionPanel extends ConsumerWidget {
   final String matchId;
   final Side side;
@@ -111,10 +114,8 @@ class ScoreActionPanel extends ConsumerWidget {
     String mark,
     PointType type,
   ) {
-    // 共通のHoldConfirmButtonのロジックをボタンに適用
     return Expanded(
       child: Padding(
-        // ★ 左右の隙間を1.0に詰め、ボタン自体の横幅を最大化
         padding: const EdgeInsets.symmetric(
           horizontal: 1.0,
           vertical: AppSpacing.xxs,
@@ -124,8 +125,29 @@ class ScoreActionPanel extends ConsumerWidget {
           color: color,
           textColor: textColor ?? AppKendoColors.pureWhite,
           disabled: effectiveLocked,
-          onConfirm: () =>
-              ref.read(matchCommandProvider).addScoreEvent(matchId, side, type),
+          onConfirm: () async {
+            await KendoHaptics.scorePoint();
+            final strike = type == PointType.men
+                ? StrikeType.men
+                : (type == PointType.kote
+                      ? StrikeType.kote
+                      : (type == PointType.doIdo
+                            ? StrikeType.dou
+                            : StrikeType.tsuki));
+            final event = ScoreEvent(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              side: side,
+              strikeType: strike,
+              isIppon: true,
+              timestamp: DateTime.now(),
+            );
+            ref
+                .read(pendingSmartUndoProvider(matchId).notifier)
+                .registerEvent(event);
+            await ref
+                .read(matchCommandProvider)
+                .addScoreEvent(matchId, side, type);
+          },
         ),
       ),
     );
@@ -140,7 +162,6 @@ class ScoreActionPanel extends ConsumerWidget {
   ) {
     return Expanded(
       child: Padding(
-        // ★ 反則ボタンの横隙間も完全にフィットさせる
         padding: const EdgeInsets.symmetric(
           horizontal: 1.0,
           vertical: AppSpacing.xxs,
@@ -151,8 +172,20 @@ class ScoreActionPanel extends ConsumerWidget {
           textColor: AppKendoColors.pureBlack,
           disabled: effectiveLocked,
           isFoul: true,
-          onConfirm: () {
-            ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
+          onConfirm: () async {
+            await KendoHaptics.foulHansoku();
+            final event = ScoreEvent(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              side: side,
+              isHansoku: true,
+              timestamp: DateTime.now(),
+            );
+            ref
+                .read(pendingSmartUndoProvider(matchId).notifier)
+                .registerEvent(event);
+            await ref
+                .read(matchCommandProvider)
+                .addScoreEvent(matchId, side, type);
           },
         ),
       ),
@@ -198,8 +231,6 @@ class _HoldConfirmButtonState extends State<HoldConfirmButton>
     );
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // ★ 触覚フィードバック：スマホ全体が「決定」を伝える強い振動
-        HapticFeedback.heavyImpact();
         widget.onConfirm();
         _controller.reset();
         setState(() => _isHolding = false);

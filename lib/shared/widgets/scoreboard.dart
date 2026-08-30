@@ -9,8 +9,11 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_ui_assist_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
+import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 // ★ 追加: Scoreboard を const として扱うための Provider
@@ -101,30 +104,45 @@ class MatchScoreboard extends ConsumerWidget {
     );
     final ptsMap = calculatePointDisplays.execute(match);
     final viewState = ref.watch(matchViewStateProvider(matchId));
+    final isFlipped = ref.watch(isMatchViewFlippedProvider(matchId));
 
-    final scoreboardRow = SizedBox(
-      width: 800,
-      height: 320, // ★ 高さの無駄な余白を詰めるため 380 から 320 に圧縮
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildScoreColumn(
-            context,
-            Side.red,
-            match,
-            ptsMap,
-            viewState,
-            onNameTap,
-          ),
-          _buildScoreColumn(
-            context,
-            Side.white,
-            match,
-            ptsMap,
-            viewState,
-            onNameTap,
-          ),
-        ],
+    final redColumn = _buildScoreColumn(
+      context,
+      Side.red,
+      match,
+      ptsMap,
+      viewState,
+      onNameTap,
+    );
+    final whiteColumn = _buildScoreColumn(
+      context,
+      Side.white,
+      match,
+      ptsMap,
+      viewState,
+      onNameTap,
+    );
+
+    final scoreboardRow = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () async {
+        final isDone =
+            match?.status == 'finished' || match?.status == 'approved';
+        if (!isDone) {
+          final isRunning = match?.timerIsRunning ?? false;
+          await KendoHaptics.timerToggle(isStarting: !isRunning);
+          ref.read(matchTimerProvider).toggleTimer(matchId);
+        }
+      },
+      child: SizedBox(
+        width: 800,
+        height: 320, // ★ 高さの無駄な余白を詰めるため 380 から 320 に圧縮
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: isFlipped
+              ? [whiteColumn, redColumn]
+              : [redColumn, whiteColumn],
+        ),
       ),
     );
 
