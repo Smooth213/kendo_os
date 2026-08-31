@@ -190,7 +190,8 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   const SettingsSectionFooter(
-                    text: '体育館の寒さや騒音の中でも、指先の触覚と音で操作結果を確実に把握できます。',
+                    text:
+                        '※ 体育館の寒さや騒音の中でも、指先の触覚と音で操作結果を確実に把握できます。\n※ 触覚バイブレーションはiOS/Androidアプリ版で動作します。Webブラウザ（Safari等）やPC環境では端末・ブラウザの仕様により振動が制限されます。',
                   ),
                   const SizedBox(height: AppSpacing.xl),
 

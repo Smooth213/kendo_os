@@ -187,15 +187,18 @@ class TimerWidget extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final timerBgColor = isRunning
         ? (isDark
-              ? context.appColors.errorColor.withValues(alpha: 0.4)
+              ? context.appColors.errorColor.withValues(alpha: 0.75)
               : context.appColors.errorColor)
         : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
     final timerBorderColor = isRunning
         ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
         : (isDark ? const Color(0xFF38383A) : const Color(0xFF3F51B5));
     final timerTextColor = isRunning
-        ? (isDark ? context.appColors.errorColor : context.appColors.errorColor)
-        : (context.appColors.textColor);
+        ? AppKendoColors.pureWhite
+        : context.appColors.textColor;
+    final timerIconColor = isRunning
+        ? AppKendoColors.pureWhite
+        : (isDark ? const Color(0xFF5C6BC0) : const Color(0xFF3F51B5));
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque, // ★ 修正：透明な余白部分のタップ漏れを完全に防ぐ魔法のコード
@@ -239,14 +242,8 @@ class TimerWidget extends ConsumerWidget {
                   ? Icons.lock_outline
                   : (isRunning ? Icons.pause_circle : Icons.play_circle),
               color: isInputLocked
-                  ? const Color(0x8A000000)
-                  : (isRunning
-                        ? (isDark
-                              ? const Color(0xFFE53935)
-                              : const Color(0xFFE53935))
-                        : (isDark
-                              ? const Color(0xFF3F51B5)
-                              : const Color(0xFF3F51B5))),
+                  ? (isDark ? const Color(0x8AFFFFFF) : const Color(0x8A000000))
+                  : timerIconColor,
               size: 28,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -264,7 +261,9 @@ class TimerWidget extends ConsumerWidget {
                     height: 1.1,
                     // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調
                     color: isInputLocked
-                        ? const Color(0x8A000000)
+                        ? (isDark
+                              ? const Color(0x8AFFFFFF)
+                              : const Color(0x8A000000))
                         : timerTextColor,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
