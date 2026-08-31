@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_children_builder.dart';
@@ -12,6 +13,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -68,6 +70,10 @@ class TimelineMatchGroupCard extends ConsumerWidget {
         ? context.appColors.subTextColor
         : context.appColors.textColor;
 
+    final expansionVersion = ref.watch(timelineExpansionVersionProvider);
+    final isGroupExpanded =
+        ref.watch(timelineGroupExpansionMapProvider)[groupId] ?? false;
+
     final globalRule = ref.watch(matchRuleProvider);
     final rule = firstMatch.rule ?? globalRule;
 
@@ -98,10 +104,10 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           ),
                       backgroundColor: AppKendoColors.blueAccent,
                       foregroundColor: AppKendoColors.pureWhite,
-                      icon: Icons.edit,
-                      label: '編集',
+                      icon: Icons.edit_note,
+                      label: '備考編集',
                     ),
-                  if (canManageTournamentUI)
+                  if (canManageTournamentUI && !isReadOnlyUI)
                     SlidableAction(
                       onPressed: (context) async {
                         final confirm = await showAppDialog<bool>(
@@ -109,7 +115,7 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           builder: (ctx) => AppDialog(
                             backgroundColor: context.appColors.cardBackground,
                             titleWidget: Text(
-                              '試合グループの削除',
+                              'グループ一括削除',
                               style: TextStyle(
                                 fontWeight: AppFontWeight.bold,
                                 color: context.appColors.textColor,
@@ -163,17 +169,19 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   borderRadius: AppRadius.medium,
                   border: Border.all(
-                    color: context.appColors.separatorColor,
-                    width: 1,
+                    color: hasInProgress
+                        ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+                        : context.appColors.separatorColor,
+                    width: hasInProgress ? 1.5 : 1.0,
                   ),
                   boxShadow: hasInProgress
                       ? [
                           BoxShadow(
-                            color: context.appColors.primaryAccent.withValues(
-                              alpha: 0.1,
+                            color: AppKendoColors.hansokuRed.withValues(
+                              alpha: 0.15,
                             ),
                             blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            offset: const Offset(0, 3),
                           ),
                         ]
                       : [],
@@ -194,7 +202,15 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           : AppKendoColors.pureBlack.withValues(alpha: 0.54),
                     ),
                     child: ExpansionTile(
-                      key: ValueKey('group_$groupId'),
+                      key: expansionVersion == 0
+                          ? ValueKey('group_$groupId')
+                          : ValueKey('group_${groupId}_$expansionVersion'),
+                      initiallyExpanded: isGroupExpanded,
+                      onExpansionChanged: (expanded) {
+                        ref
+                            .read(timelineGroupExpansionMapProvider.notifier)
+                            .setGroup(groupId, expanded);
+                      },
                       shape: const Border(),
                       collapsedShape: const Border(),
                       childrenPadding: EdgeInsets.zero,
@@ -392,6 +408,12 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                                   ),
                                 ),
                               ],
+                              const SizedBox(width: AppSpacing.xs),
+                              MatchStatusBadge(
+                                isPlaying: hasInProgress,
+                                isFinished: allFinished,
+                                isDark: isDark,
+                              ),
                             ],
                           ),
                           Padding(

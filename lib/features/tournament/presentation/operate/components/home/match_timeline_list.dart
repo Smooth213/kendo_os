@@ -15,6 +15,9 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import '../bulk_rule_edit_sheet.dart';
 
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/timeline_category_filter_chips_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
+
 export '../cards/match_list_tile_card.dart';
 export 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 
@@ -45,6 +48,8 @@ class MatchTimelineList extends ConsumerWidget {
     final matchedGroupNames = timelineResult.matchedGroupNames;
     final matchedMatchIds = timelineResult.matchedMatchIds;
     final allMatches = timelineResult.entries.expand((e) => e.value).toList();
+    final isAllExpanded = ref.watch(timelineAllExpandedProvider);
+    final selectedCategory = ref.watch(selectedCategoryFilterProvider);
 
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
@@ -72,6 +77,7 @@ class MatchTimelineList extends ConsumerWidget {
           isSearchVisible: ref.watch(isSearchVisibleProvider),
           searchQuery: ref.watch(searchQueryProvider),
           isSortAscending: ref.watch(categorySortProvider),
+          isAllExpanded: isAllExpanded,
           isReadOnlyUI: isReadOnlyUI,
           allMatches: allMatches,
           isDark: isDark,
@@ -81,12 +87,30 @@ class MatchTimelineList extends ConsumerWidget {
               ref.read(searchQueryProvider.notifier).state = val,
           onToggleSort: () => ref.read(categorySortProvider.notifier).state =
               !ref.read(categorySortProvider),
+          onToggleExpandAll: () {
+            final nextExpanded = !isAllExpanded;
+            ref.read(timelineAllExpandedProvider.notifier).state = nextExpanded;
+            ref.read(timelineExpansionVersionProvider.notifier).state++;
+            final allGroupIds = allMatches
+                .map((m) => m.groupName)
+                .whereType<String>()
+                .toSet()
+                .toList();
+            ref
+                .read(timelineGroupExpansionMapProvider.notifier)
+                .setAll(allGroupIds, nextExpanded);
+          },
           onBulkRuleEdit: () => showBulkRuleEditSheet(
             context,
             tournamentId,
             allMatches,
             isBunaiksen: false,
           ),
+        ),
+
+        TimelineCategoryFilterChipsBar(
+          categoryEntries: timelineResult.entries,
+          isDark: isDark,
         ),
 
         TimelineStatusMessageSection(
@@ -98,7 +122,11 @@ class MatchTimelineList extends ConsumerWidget {
         ...(() {
           if (timelineResult.entries.isEmpty) return <Widget>[];
           final sortedEntries = timelineResult.entries;
-          return sortedEntries.map<Widget>((catEntry) {
+          final displayEntries = selectedCategory == null
+              ? sortedEntries
+              : sortedEntries.where((e) => e.key == selectedCategory).toList();
+
+          return displayEntries.map<Widget>((catEntry) {
             final categoryName = catEntry.key;
             final catMatches = catEntry.value;
             final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];

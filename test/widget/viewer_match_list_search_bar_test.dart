@@ -10,6 +10,7 @@ void main() {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
       bool toggledSort = false;
       bool openedSearch = false;
+      bool toggledExpandAll = false;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -19,10 +20,12 @@ void main() {
               isSearchVisible: false,
               searchQuery: '',
               isSortAscending: true,
+              isAllExpanded: false,
               onSearchQueryChanged: (_) {},
               onOpenSearch: () => openedSearch = true,
               onCloseSearch: () {},
               onToggleSort: () => toggledSort = true,
+              onToggleExpandAll: () => toggledExpandAll = true,
             ),
           ),
         ),
@@ -30,11 +33,16 @@ void main() {
 
       expect(find.text('試合リスト'), findsOneWidget);
       expect(find.text('カテゴリ昇順'), findsOneWidget);
+      expect(find.text('全て開く'), findsOneWidget);
       expect(find.byIcon(Icons.search), findsOneWidget);
 
       await tester.tap(find.text('カテゴリ昇順'));
       await tester.pump();
       expect(toggledSort, isTrue);
+
+      await tester.tap(find.text('全て開く'));
+      await tester.pump();
+      expect(toggledExpandAll, isTrue);
 
       await tester.tap(find.byIcon(Icons.search));
       await tester.pump();

@@ -72,6 +72,10 @@ class ViewerMatchListTileCard extends ConsumerWidget {
         ? (isDark ? const Color(0xFFFFFFFF) : context.appColors.subTextColor)
         : context.appColors.subTextColor;
 
+    final borderColor = isPlaying
+        ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+        : (isDark ? const Color(0xFF2C2C2E) : const Color(0x33000000));
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.modernValue,
@@ -79,16 +83,13 @@ class ViewerMatchListTileCard extends ConsumerWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: AppRadius.medium,
-        border: Border.all(
-          color: isDark ? const Color(0xFF2C2C2E) : const Color(0x33000000),
-          width: 1.2,
-        ),
+        border: Border.all(color: borderColor, width: isPlaying ? 1.5 : 1.2),
         boxShadow: isPlaying
             ? [
                 BoxShadow(
-                  color: AppKendoColors.blue.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+                  color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ]
             : [],

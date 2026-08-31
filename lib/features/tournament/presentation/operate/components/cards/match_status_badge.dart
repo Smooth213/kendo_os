@@ -3,7 +3,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// 試合カード右上に「進行中 / 終了 / 待機中」を表示する純粋UIバッジコンポーネント
+/// 試合カード右上に「試合中(LIVE) / 待機中 / 終了」を鮮明に表示するステータスバッジ
 class MatchStatusBadge extends StatelessWidget {
   final bool isPlaying;
   final bool isFinished;
@@ -18,33 +18,84 @@ class MatchStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isPlaying) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: AppKendoColors.hansokuRed.withValues(alpha: 0.12),
+          borderRadius: AppRadius.capsule,
+          border: Border.all(
+            color: AppKendoColors.hansokuRed.withValues(alpha: 0.35),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(
+              Icons.fiber_manual_record,
+              size: 7,
+              color: AppKendoColors.hansokuRed,
+            ),
+            SizedBox(width: AppSpacing.xxs),
+            Text(
+              '試合中',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                fontWeight: AppFontWeight.bold,
+                color: AppKendoColors.hansokuRed,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isFinished) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+          borderRadius: AppRadius.capsule,
+        ),
+        child: Text(
+          '終了',
+          style: TextStyle(
+            fontSize: AppFontSize.caption,
+            fontWeight: AppFontWeight.bold,
+            color: context.appColors.subTextColor,
+          ),
+        ),
+      );
+    }
+
+    // ⏳ 待機中
+    final waitingAccent = context.appColors.primaryAccent;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.subValue,
+        horizontal: AppSpacing.sm,
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: isPlaying
-            ? context.appColors.infoColor
-            : (isFinished
-                  ? (context.appColors.separatorColor)
-                  : (isDark
-                        ? const Color(0xFF2C2C2E)
-                        : context.appColors.separatorColor)),
-        borderRadius: AppRadius.tiny,
+        color: waitingAccent.withValues(alpha: 0.1),
+        borderRadius: AppRadius.capsule,
+        border: Border.all(
+          color: waitingAccent.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Text(
-        isPlaying ? '進行中' : (isFinished ? '終了' : '待機中'),
+        '⏳ 待機中',
         style: TextStyle(
-          fontSize: AppFontSize.badge,
+          fontSize: AppFontSize.caption,
           fontWeight: AppFontWeight.bold,
-          color: isPlaying
-              ? AppKendoColors.pureWhite
-              : (isFinished
-                    ? (context.appColors.subTextColor)
-                    : (isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0xDE000000))),
+          color: waitingAccent,
         ),
       ),
     );

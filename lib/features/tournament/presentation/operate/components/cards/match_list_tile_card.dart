@@ -94,6 +94,10 @@ class MatchListTileCard extends ConsumerWidget {
         : (context.appColors.textColor);
     final Color noteC = context.appColors.subTextColor;
 
+    final borderColor = isPlaying
+        ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+        : (isDark ? const Color(0xFF2C2C2E) : const Color(0x33000000));
+
     final tile = Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.modernValue,
@@ -102,16 +106,13 @@ class MatchListTileCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: AppRadius.medium,
-        border: Border.all(
-          color: isDark ? const Color(0xFF2C2C2E) : const Color(0x33000000),
-          width: 1.2,
-        ),
+        border: Border.all(color: borderColor, width: isPlaying ? 1.5 : 1.2),
         boxShadow: isPlaying
             ? [
                 BoxShadow(
-                  color: AppKendoColors.blue.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+                  color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ]
             : [],

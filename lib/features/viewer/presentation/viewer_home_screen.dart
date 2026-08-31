@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/timeline_category_filter_chips_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_call_banner.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_category_section_list.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_list_search_bar.dart';
@@ -231,6 +233,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                   isSearchVisible: ref.watch(isSearchVisibleProvider),
                   searchQuery: ref.watch(searchQueryProvider),
                   isSortAscending: ref.watch(categorySortProvider),
+                  isAllExpanded: ref.watch(timelineAllExpandedProvider),
                   onSearchQueryChanged: (val) {
                     ref.read(searchQueryProvider.notifier).state = val;
                   },
@@ -246,6 +249,24 @@ class ViewerHomeScreen extends ConsumerWidget {
                       categorySortProvider,
                     );
                   },
+                  onToggleExpandAll: () {
+                    final nextExpanded = !ref.read(timelineAllExpandedProvider);
+                    ref.read(timelineAllExpandedProvider.notifier).state =
+                        nextExpanded;
+                    ref.read(timelineExpansionVersionProvider.notifier).state++;
+                    final allGroupIds = allMatchesList
+                        .map((m) => m.groupName)
+                        .whereType<String>()
+                        .toSet()
+                        .toList();
+                    ref
+                        .read(timelineGroupExpansionMapProvider.notifier)
+                        .setAll(allGroupIds, nextExpanded);
+                  },
+                ),
+                TimelineCategoryFilterChipsBar(
+                  categoryEntries: timelineResult.entries,
+                  isDark: isDark,
                 ),
                 if (timelineResult.hasError)
                   Padding(
@@ -311,14 +332,27 @@ class ViewerHomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                ViewerCategorySectionList(
-                  entries: timelineResult.entries,
-                  ownTeams: ownTeams,
-                  sanitizedQuery: sanitizedQuery,
-                  matchedMatchIds: matchedMatchIds,
-                  matchedGroupNames: matchedGroupNames,
-                  isDark: isDark,
-                ),
+                ...(() {
+                  final selectedCategory = ref.watch(
+                    selectedCategoryFilterProvider,
+                  );
+                  final displayEntries = selectedCategory == null
+                      ? timelineResult.entries
+                      : timelineResult.entries
+                            .where((e) => e.key == selectedCategory)
+                            .toList();
+
+                  return [
+                    ViewerCategorySectionList(
+                      entries: displayEntries,
+                      ownTeams: ownTeams,
+                      sanitizedQuery: sanitizedQuery,
+                      matchedMatchIds: matchedMatchIds,
+                      matchedGroupNames: matchedGroupNames,
+                      isDark: isDark,
+                    ),
+                  ];
+                })(),
               ],
             ),
           ),

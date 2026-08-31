@@ -1,29 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_group_match_score_summary.dart';
-import 'package:kendo_os/features/viewer/presentation/components/viewer_league_title_helper.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_league_matchup_tile.dart';
+import 'package:kendo_os/features/viewer/presentation/components/viewer_league_title_helper.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_list_tile_card.dart';
+import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// 観客席画面用 団体戦/リーグ戦 グループ単位カード（ExpansionTile）
-class ViewerGroupMatchCard extends StatelessWidget {
+/// 観客席画面用 団体戦・リーグ戦 グループアコーディオンカード
+class ViewerGroupMatchCard extends ConsumerWidget {
   final String groupKey;
   final List<MatchModel> groupList;
   final String matchLabel;
+  final List<MatchCommentModel> groupComments;
   final Widget? headerWidget;
   final List<String> ownTeams;
+  final String sanitizedQuery;
+  final Set<String> matchedMatchIds;
+  final Set<String> matchedGroupNames;
+  final bool? isDark;
 
   const ViewerGroupMatchCard({
     super.key,
     required this.groupKey,
     required this.groupList,
     required this.matchLabel,
+    this.groupComments = const [],
     this.headerWidget,
     required this.ownTeams,
+    this.sanitizedQuery = '',
+    this.matchedMatchIds = const {},
+    this.matchedGroupNames = const {},
+    this.isDark,
   });
 
   static String generateDescriptiveLeagueTitle(
@@ -37,7 +51,11 @@ class ViewerGroupMatchCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final expansionVersion = ref.watch(timelineExpansionVersionProvider);
+    final isGroupExpanded =
+        ref.watch(timelineGroupExpansionMapProvider)[groupKey] ?? false;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final firstMatch = groupList.first;
 
@@ -86,17 +104,21 @@ class ViewerGroupMatchCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: AppRadius.medium,
               border: Border.all(
-                color: isDark
-                    ? const Color(0xFF38383A)
-                    : context.appColors.separatorColor,
-                width: 1,
+                color: hasInProgress
+                    ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+                    : (isDark
+                          ? const Color(0xFF38383A)
+                          : context.appColors.separatorColor),
+                width: hasInProgress ? 1.5 : 1.0,
               ),
               boxShadow: hasInProgress
                   ? [
                       BoxShadow(
-                        color: AppKendoColors.blue.withValues(alpha: 0.1),
+                        color: AppKendoColors.hansokuRed.withValues(
+                          alpha: 0.15,
+                        ),
                         blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        offset: const Offset(0, 3),
                       ),
                     ]
                   : [],
@@ -104,7 +126,17 @@ class ViewerGroupMatchCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: AppRadius.smooth,
               child: ExpansionTile(
-                key: PageStorageKey<String>('group_$groupKey'),
+                key: expansionVersion == 0
+                    ? PageStorageKey<String>('group_$groupKey')
+                    : PageStorageKey<String>(
+                        'group_${groupKey}_$expansionVersion',
+                      ),
+                initiallyExpanded: isGroupExpanded,
+                onExpansionChanged: (expanded) {
+                  ref
+                      .read(timelineGroupExpansionMapProvider.notifier)
+                      .setGroup(groupKey, expanded);
+                },
                 collapsedBackgroundColor: cardBg,
                 backgroundColor: cardBg,
                 title: Column(
@@ -153,35 +185,10 @@ class ViewerGroupMatchCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                         ],
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.subValue,
-                            vertical: AppSpacing.xxs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: hasInProgress
-                                ? const Color(0xFF546E7A)
-                                : (allFinished
-                                      ? context.appColors.separatorColor
-                                      : (isDark
-                                            ? const Color(0xFF2C2C2E)
-                                            : context
-                                                  .appColors
-                                                  .separatorColor)),
-                            borderRadius: AppRadius.tiny,
-                          ),
-                          child: Text(
-                            hasInProgress
-                                ? '進行中'
-                                : (allFinished ? '終了' : '待機中'),
-                            style: TextStyle(
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                              color: hasInProgress
-                                  ? AppKendoColors.pureWhite
-                                  : context.appColors.subTextColor,
-                            ),
-                          ),
+                        MatchStatusBadge(
+                          isPlaying: hasInProgress,
+                          isFinished: allFinished,
+                          isDark: isDark,
                         ),
                       ],
                     ),

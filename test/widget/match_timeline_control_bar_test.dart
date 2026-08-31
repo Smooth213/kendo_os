@@ -37,6 +37,7 @@ void main() {
                       setState(() => searchQuery = val),
                   onToggleSort: () =>
                       setState(() => isSortAscending = !isSortAscending),
+                  onToggleExpandAll: () {},
                   onBulkRuleEdit: () {},
                 );
               },

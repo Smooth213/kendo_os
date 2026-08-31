@@ -825,6 +825,7 @@ void main() {
                       });
                     },
                     onToggleSort: () {},
+                    onToggleExpandAll: () {},
                     onBulkRuleEdit: () {},
                   ),
                 ),
@@ -870,6 +871,7 @@ void main() {
                       });
                     },
                     onToggleSort: () {},
+                    onToggleExpandAll: () {},
                     onBulkRuleEdit: () {},
                   ),
                 ),

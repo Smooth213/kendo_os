@@ -8,12 +8,14 @@ class MatchTimelineControlBar extends StatelessWidget {
   final bool isSearchVisible;
   final String searchQuery;
   final bool isSortAscending;
+  final bool isAllExpanded;
   final bool isReadOnlyUI;
   final List<MatchModel> allMatches;
   final bool isDark;
   final ValueChanged<bool> onSearchVisibilityChanged;
   final ValueChanged<String> onSearchQueryChanged;
   final VoidCallback onToggleSort;
+  final VoidCallback onToggleExpandAll;
   final VoidCallback onBulkRuleEdit;
 
   const MatchTimelineControlBar({
@@ -21,154 +23,128 @@ class MatchTimelineControlBar extends StatelessWidget {
     required this.isSearchVisible,
     required this.searchQuery,
     required this.isSortAscending,
+    this.isAllExpanded = false,
     required this.isReadOnlyUI,
     required this.allMatches,
     required this.isDark,
     required this.onSearchVisibilityChanged,
     required this.onSearchQueryChanged,
     required this.onToggleSort,
+    required this.onToggleExpandAll,
     required this.onBulkRuleEdit,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: AppSpacing.sm,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.sm,
+        AppSpacing.xl,
+        AppSpacing.xs,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 1段目: タイトル・検索クエリ表示・検索トグル
           Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '試合リスト',
-                style: TextStyle(
-                  fontSize: AppFontSize.subhead,
-                  fontWeight: AppFontWeight.bold,
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xDE000000),
-                ),
-              ),
-              if (searchQuery.isNotEmpty) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.appColors.primaryAccent.withValues(
-                      alpha: 0.15,
-                    ),
-                    borderRadius: AppRadius.small,
-                    border: Border.all(
-                      color: context.appColors.primaryAccent.withValues(
-                        alpha: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '「$searchQuery」',
-                        style: TextStyle(
-                          fontSize: AppFontSize.caption,
-                          color: context.appColors.primaryAccent,
-                          fontWeight: AppFontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      GestureDetector(
-                        onTap: () {
-                          onSearchQueryChanged('');
-                          onSearchVisibilityChanged(false);
-                        },
-                        child: Icon(
-                          Icons.close,
-                          size: 14,
-                          color: context.appColors.primaryAccent,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      isSearchVisible ? Icons.search_off : Icons.search,
+                  Text(
+                    '試合リスト',
+                    style: TextStyle(
+                      fontSize: AppFontSize.subhead,
+                      fontWeight: AppFontWeight.bold,
                       color: isDark
                           ? const Color(0xFFFFFFFF)
-                          : context.appColors.primaryAccent,
-                      size: 22,
+                          : const Color(0xDE000000),
                     ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    tooltip: isSearchVisible ? '検索を閉じる' : '試合を検索',
-                    onPressed: () =>
-                        onSearchVisibilityChanged(!isSearchVisible),
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
-                    OutlinedButton.icon(
-                      onPressed: onBulkRuleEdit,
-                      icon: Icon(
-                        Icons.gavel,
-                        size: 16,
-                        color: context.appColors.primaryAccent,
+                  if (searchQuery.isNotEmpty) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 2,
                       ),
-                      label: Text(
-                        'ルール一括変更',
-                        style: TextStyle(
-                          fontWeight: AppFontWeight.bold,
-                          fontSize: AppFontSize.small,
-                          color: context.appColors.primaryAccent,
+                      decoration: BoxDecoration(
+                        color: context.appColors.primaryAccent.withValues(
+                          alpha: 0.15,
+                        ),
+                        borderRadius: AppRadius.small,
+                        border: Border.all(
+                          color: context.appColors.primaryAccent.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: context.appColors.primaryAccent,
-                        side: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF38383A)
-                              : context.appColors.primaryAccent,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.compact,
-                          vertical: 0,
-                        ),
-                        minimumSize: const Size(0, 32),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.small,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '「$searchQuery」',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              color: context.appColors.primaryAccent,
+                              fontWeight: AppFontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          GestureDetector(
+                            onTap: () {
+                              onSearchQueryChanged('');
+                              onSearchVisibilityChanged(false);
+                            },
+                            child: Icon(
+                              Icons.close,
+                              size: 14,
+                              color: context.appColors.primaryAccent,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
                   ],
+                ],
+              ),
+              IconButton(
+                icon: Icon(
+                  isSearchVisible ? Icons.search_off : Icons.search,
+                  color: isDark
+                      ? const Color(0xFFFFFFFF)
+                      : context.appColors.primaryAccent,
+                  size: 22,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: isSearchVisible ? '検索を閉じる' : '試合を検索',
+                onPressed: () => onSearchVisibilityChanged(!isSearchVisible),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          // 2段目: 横スクロール可能なアクションボタン群 (ルール変更・ソート・全開閉)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
                   OutlinedButton.icon(
-                    onPressed: onToggleSort,
+                    onPressed: onBulkRuleEdit,
                     icon: Icon(
-                      isSortAscending
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                      size: 16,
+                      Icons.gavel,
+                      size: 15,
+                      color: context.appColors.primaryAccent,
                     ),
                     label: Text(
-                      isSortAscending ? 'カテゴリ昇順' : 'カテゴリ降順',
-                      style: const TextStyle(
+                      'ルール一括変更',
+                      style: TextStyle(
                         fontWeight: AppFontWeight.bold,
                         fontSize: AppFontSize.small,
+                        color: context.appColors.primaryAccent,
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -179,17 +155,79 @@ class MatchTimelineControlBar extends StatelessWidget {
                             : context.appColors.primaryAccent,
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
+                        horizontal: AppSpacing.compact,
                         vertical: 0,
                       ),
-                      minimumSize: const Size(0, 32),
+                      minimumSize: const Size(0, 30),
                       shape: RoundedRectangleBorder(
                         borderRadius: AppRadius.small,
                       ),
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.xs),
                 ],
-              ),
+                OutlinedButton.icon(
+                  onPressed: onToggleSort,
+                  icon: Icon(
+                    isSortAscending ? Icons.arrow_downward : Icons.arrow_upward,
+                    size: 15,
+                  ),
+                  label: Text(
+                    isSortAscending ? 'カテゴリ昇順' : 'カテゴリ降順',
+                    style: const TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.small,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.appColors.primaryAccent,
+                    side: BorderSide(
+                      color: isDark
+                          ? const Color(0xFF38383A)
+                          : context.appColors.primaryAccent,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.compact,
+                      vertical: 0,
+                    ),
+                    minimumSize: const Size(0, 30),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.small,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                OutlinedButton.icon(
+                  onPressed: onToggleExpandAll,
+                  icon: Icon(
+                    isAllExpanded ? Icons.expand_less : Icons.expand_more,
+                    size: 16,
+                  ),
+                  label: Text(
+                    isAllExpanded ? '全て閉じる' : '全て開く',
+                    style: const TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.small,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.appColors.primaryAccent,
+                    side: BorderSide(
+                      color: isDark
+                          ? const Color(0xFF38383A)
+                          : context.appColors.primaryAccent,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.compact,
+                      vertical: 0,
+                    ),
+                    minimumSize: const Size(0, 30),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.small,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
