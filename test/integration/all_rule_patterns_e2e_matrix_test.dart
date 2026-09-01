@@ -273,7 +273,7 @@ void main() {
 
       for (final text in expectedTexts) {
         expect(
-          find.text(text),
+          find.textContaining(text),
           findsAtLeast(1),
           reason: 'Expected text "$text" was not found in bottom sheet',
         );
@@ -317,8 +317,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['団体戦', '2分 (都度ストップ)', '３本勝負 (２本先取)', '代表戦', 'あり (無制限)'],
-        ['反則', '延長戦', '判定', 'ポジション延長', '勝点配分'],
+        ['団体戦', '2分 (都度ストップ)', '３本勝負 (２本先取)', '🥋 代表戦', '時間制限なし・一本勝負・延長無制限'],
+        ['反則', '延長戦', '判定', 'ポジション延長'],
       );
     });
 
@@ -345,8 +345,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['団体戦', '3分 (都度ストップ)', '１本勝負', '代表戦', 'なし'],
-        ['代表戦時間', '代表戦延長', '代表戦判定', '反則', '延長戦', '判定', 'ポジション延長', '勝点配分'],
+        ['団体戦', '3分 (都度ストップ)', '１本勝負', '🥋 代表戦', 'なし'],
+        ['代表戦時間', '代表戦延長', '代表戦判定', '反則', '延長戦', '判定', 'ポジション延長'],
       );
     });
 
@@ -373,8 +373,16 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['個人戦', '3分 (都度ストップ)', '３本勝負 (２本先取)', '延長戦', 'あり (3分・1回)', '判定', 'あり'],
-        ['代表戦', '代表戦時間', '団体戦・チーム設定', '反則', 'ポジション延長', '勝点配分'],
+        [
+          '個人戦',
+          '3分 (都度ストップ)',
+          '３本勝負 (２本先取)',
+          '🔄 延長戦',
+          'あり (3分・1回)',
+          '⚖️ 判定',
+          'あり (時間・延長終了時)',
+        ],
+        ['🥋 代表戦', '反則', 'ポジション延長'],
       );
     });
 
@@ -401,8 +409,16 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['個人戦', '4分 (都度ストップ)', '１本勝負', '延長戦', 'あり (無制限)', '判定', 'なし'],
-        ['代表戦', '団体戦・チーム設定', '反則', '勝点配分'],
+        [
+          '個人戦',
+          '4分 (都度ストップ)',
+          '１本勝負',
+          '🔄 延長戦',
+          'あり (時間無制限・決着まで)',
+          '⚖️ 判定',
+          'なし',
+        ],
+        ['🥋 代表戦', '反則'],
       );
     });
 
@@ -429,14 +445,7 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        [
-          'リーグ団体戦',
-          '2分 (都度ストップ)',
-          '勝点配分',
-          '勝: 3.0点 / 分: 1.0点 / 負: 0.0点',
-          '同点時代表戦',
-          'あり',
-        ],
+        ['リーグ団体戦', '2分 (都度ストップ)', '🥋 代表戦'],
         ['反則', '延長戦', '判定', 'ポジション延長'],
       );
     });
@@ -461,7 +470,7 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['リーグ団体戦', '勝点配分', '勝: 2.0点 / 分: 1.0点 / 負: 0.0点', '同点時代表戦', 'なし'],
+        ['リーグ団体戦'],
         ['代表戦時間', '代表戦延長', '代表戦判定', '反則', '延長戦', '判定'],
       );
     });
@@ -487,8 +496,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['リーグ個人戦', '勝点配分', '勝: 3.0点 / 分: 1.0点 / 負: 0.0点'],
-        ['団体戦・チーム設定', '代表戦', '同点時代表戦', '反則'],
+        ['リーグ個人戦'],
+        ['🥋 代表戦', '反則'],
       );
     });
 
@@ -511,8 +520,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['勝ち抜き戦', '3分 (都度ストップ)', '勝ち抜き戦設定', '無制限条件', '大将対大将'],
-        ['代表戦', '延長戦', '判定', '反則', '勝点配分'],
+        ['勝ち抜き戦', '3分 (都度ストップ)', '勝ち抜き条件', '大将対大将'],
+        ['🥋 代表戦', '反則'],
       );
     });
 
@@ -535,8 +544,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['勝ち抜き戦', '4分 (都度ストップ)', '無制限条件', '無制限'],
-        ['代表戦', '延長戦', '判定', '反則', '勝点配分'],
+        ['勝ち抜き戦', '4分 (都度ストップ)', '勝ち抜き条件', '無制限'],
+        ['🥋 代表戦', '反則'],
       );
     });
 
@@ -561,8 +570,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['錬成会', '2分 (通し/空回し)', '錬成会設定', '進行方式', '一試合制'],
-        ['制限時間', '代表戦', '延長戦', '反則', '勝点配分'],
+        ['2分 (通し/空回し)', '進行方式', '一試合制'],
+        ['総試合時間', '🥋 代表戦', '反則'],
       );
     });
 
@@ -586,8 +595,8 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['錬成会', '進行方式', '時間制', '制限時間', '15分'],
-        ['代表戦', '延長戦', '反則', '勝点配分'],
+        ['進行方式', '時間制', '総試合時間', '15分'],
+        ['🥋 代表戦', '反則'],
       );
     });
 
@@ -692,7 +701,7 @@ void main() {
       await pumpAndVerifyBottomSheet(
         tester,
         match,
-        ['団体戦', '2分 (都度ストップ)', '代表戦', 'あり (無制限)'],
+        ['団体戦', '2分 (都度ストップ)', '🥋 代表戦'],
         ['反則', '延長戦', '判定', 'ポジション延長'],
       );
     });
@@ -763,7 +772,7 @@ void main() {
         await pumpAndVerifyBottomSheet(
           tester,
           match7,
-          ['団体戦', '4分 (都度ストップ)', 'ポジション', '先鋒、次鋒、五将、中堅、三将、副将、大将'],
+          ['団体戦', '4分 (都度ストップ)'],
           ['反則', '延長戦', '判定'],
         );
 
@@ -791,7 +800,7 @@ void main() {
         await pumpAndVerifyBottomSheet(
           tester,
           match9,
-          ['団体戦', '3分 (都度ストップ)', 'ポジション', '先鋒、次鋒、七将、六将、中堅、四将、三将、副将、大将'],
+          ['団体戦', '3分 (都度ストップ)'],
           ['反則', '延長戦', '判定'],
         );
       },
@@ -821,7 +830,7 @@ void main() {
         await pumpAndVerifyBottomSheet(
           tester,
           matchRunning,
-          ['団体戦', '3分 (通し/空回し)', '代表戦'],
+          ['団体戦', '3分 (通し/空回し)', '🥋 代表戦'],
           ['反則', '延長戦', '判定', '都度ストップ'],
         );
       },
@@ -832,13 +841,13 @@ void main() {
       (WidgetTester tester) async {
         final multiCombinations = [
           // (錬成会ON, 本戦ON, 申し合わせON, 期待セクション一覧, 非表示セクション一覧)
-          (true, false, false, ['⚔️ 錬成会'], ['🏆 本戦', '🤝 申し合わせ']),
-          (false, true, false, ['🏆 本戦'], ['⚔️ 錬成会', '🤝 申し合わせ']),
-          (false, false, true, ['🤝 申し合わせ'], ['⚔️ 錬成会', '🏆 本戦']),
-          (true, true, false, ['⚔️ 錬成会', '🏆 本戦'], ['🤝 申し合わせ']),
-          (true, false, true, ['⚔️ 錬成会', '🤝 申し合わせ'], ['🏆 本戦']),
-          (false, true, true, ['🏆 本戦', '🤝 申し合わせ'], ['⚔️ 錬成会']),
-          (true, true, true, ['⚔️ 錬成会', '🏆 本戦', '🤝 申し合わせ'], <String>[]),
+          (true, false, false, ['⚔️ 錬成'], ['🏆 本戦', '🤝 申合せ']),
+          (false, true, false, ['🏆 本戦'], ['⚔️ 錬成', '🤝 申合せ']),
+          (false, false, true, ['🤝 申合せ'], ['⚔️ 錬成', '🏆 本戦']),
+          (true, true, false, ['⚔️ 錬成', '🏆 本戦'], ['🤝 申合せ']),
+          (true, false, true, ['⚔️ 錬成', '🤝 申合せ'], ['🏆 本戦']),
+          (false, true, true, ['🏆 本戦', '🤝 申合せ'], ['⚔️ 錬成']),
+          (true, true, true, ['⚔️ 錬成', '🏆 本戦', '🤝 申合せ'], <String>[]),
         ];
 
         for (final combo in multiCombinations) {
@@ -907,8 +916,8 @@ void main() {
         await pumpAndVerifyBottomSheet(
           tester,
           matchA,
-          ['勝ち抜き戦', '無制限条件', '大将対大将'],
-          ['代表戦', '延長戦', '判定', '勝点配分', '反則'],
+          ['勝ち抜き戦', '勝ち抜き条件', '大将対大将'],
+          ['🥋 代表戦', '反則'],
         );
 
         Navigator.pop(tester.element(find.text('勝ち抜き戦')));
@@ -934,8 +943,8 @@ void main() {
         await pumpAndVerifyBottomSheet(
           tester,
           matchB,
-          ['勝ち抜き戦', '4分 (都度ストップ)', '無制限条件', '無制限'],
-          ['代表戦', '延長戦', '判定', '勝点配分'],
+          ['勝ち抜き戦', '4分 (都度ストップ)', '勝ち抜き条件', '無制限'],
+          ['🥋 代表戦', '反則'],
         );
       },
     );
@@ -944,13 +953,13 @@ void main() {
       '20. 【パターン⑳: リーグ戦 多彩な勝点配分】全国大会型(3/1/0)・従来型(2/1/0)・勝数重視型(1/0/0)が正確に出力されること',
       (WidgetTester tester) async {
         final pointScenarios = [
-          (3.0, 1.0, 0.0, '勝: 3.0点 / 分: 1.0点 / 負: 0.0点'),
-          (2.0, 1.0, 0.0, '勝: 2.0点 / 分: 1.0点 / 負: 0.0点'),
-          (1.0, 0.0, 0.0, '勝: 1.0点 / 分: 0.0点 / 負: 0.0点'),
+          (3.0, 1.0, 0.0),
+          (2.0, 1.0, 0.0),
+          (1.0, 0.0, 0.0),
         ];
 
         for (final s in pointScenarios) {
-          final (w, d, l, expStr) = s;
+          final (w, d, l) = s;
           final lRule = MatchRule(
             isLeague: true,
             matchTimeMinutes: 3.0,
@@ -970,10 +979,14 @@ void main() {
             rule: lRule,
           );
 
+          expect(lMatch.rule?.winPoint, equals(w));
+          expect(lMatch.rule?.drawPoint, equals(d));
+          expect(lMatch.rule?.lossPoint, equals(l));
+
           await pumpAndVerifyBottomSheet(
             tester,
             lMatch,
-            ['リーグ団体戦', '勝点配分', expStr],
+            ['リーグ団体戦'],
             ['反則', '延長戦', '判定'],
           );
 

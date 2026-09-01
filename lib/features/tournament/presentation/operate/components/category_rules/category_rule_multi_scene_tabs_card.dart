@@ -107,7 +107,7 @@ class CategoryRuleMultiSceneTabsCard extends StatelessWidget {
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   title: const Text(
-                    '⚔️ 錬成会ルール',
+                    '⚔️ 錬成ルール',
                     style: TextStyle(fontSize: AppFontSize.body),
                   ),
                   value: useRenseikaiRule,
@@ -131,7 +131,7 @@ class CategoryRuleMultiSceneTabsCard extends StatelessWidget {
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   title: const Text(
-                    '🤝 申し合わせルール',
+                    '🤝 申合せルール',
                     style: TextStyle(fontSize: AppFontSize.body),
                   ),
                   value: useMoushiawaseRule,
@@ -159,9 +159,9 @@ class CategoryRuleMultiSceneTabsCard extends StatelessWidget {
                   fontSize: AppFontSize.body,
                 ),
                 tabs: [
-                  Tab(text: '⚔️ 錬成会ルール'),
+                  Tab(text: '⚔️ 錬成ルール'),
                   Tab(text: '🏆 本戦ルール'),
-                  Tab(text: '🤝 申し合わせルール'),
+                  Tab(text: '🤝 申合せルール'),
                 ],
               ),
               const SizedBox(height: 20),
@@ -172,7 +172,7 @@ class CategoryRuleMultiSceneTabsCard extends StatelessWidget {
                     ListView(
                       children: [
                         CategorySimpleSceneRuleForm(
-                          title: '⚔️ 錬成会ルール',
+                          title: '⚔️ 錬成ルール',
                           time: renseikaiTime,
                           isRunning: renseikaiIsRunningTime,
                           hasHantei: renseikaiHasHantei,
@@ -190,7 +190,7 @@ class CategoryRuleMultiSceneTabsCard extends StatelessWidget {
                     ListView(
                       children: [
                         CategorySimpleSceneRuleForm(
-                          title: '🤝 申し合わせルール',
+                          title: '🤝 申合せルール',
                           time: moushiawaseTime,
                           isRunning: moushiawaseIsRunningTime,
                           hasHantei: moushiawaseHasHantei,

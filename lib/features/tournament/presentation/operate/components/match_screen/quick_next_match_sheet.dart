@@ -287,7 +287,7 @@ class _QuickNextMatchSheetState extends ConsumerState<QuickNextMatchSheet> {
                   const SizedBox(height: AppSpacing.xs),
                   AppTextField(
                     controller: _groupNameCtrl,
-                    hintText: '例: 申し合わせ 第2試合 (空欄可)',
+                    hintText: '例: 申合せ 第2試合 (空欄可)',
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Container(

@@ -49,6 +49,11 @@ class TeamProgressStatus {
   /// 進行パーセンテージ（0 〜 100%）
   int get progressPercent => (progressRatio * 100).toInt();
 
-  /// 全試合終了フラグ
+  /// 全試合終了フラグ（そのチーム全体の全対戦カードが終了）
   bool get isAllFinished => totalCount > 0 && completedCount >= totalCount;
+
+  /// この対戦カード自体が終了しているかフラグ
+  bool get isFinished =>
+      matches.isNotEmpty &&
+      matches.every((m) => m.status == 'finished' || m.status == 'approved');
 }

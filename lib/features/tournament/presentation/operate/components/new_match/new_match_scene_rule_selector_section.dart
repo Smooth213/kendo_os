@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -71,10 +72,13 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
           _buildRuleCard(
             context: context,
             sceneId: 'renseikai',
-            title: '⚔️ 錬成会ルール（午前・練習試合）',
+            title: '⚔️ 錬成ルール（午前・練習試合）',
             subText:
                 '時間: ${ruleSet.renseikaiRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.renseikaiRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.renseikaiRule.hasHantei ? 'あり' : 'なし'} / ${ruleSet.renseikaiRule.renseikaiType}',
-            accentColor: AppKendoColors.amber,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.renseikai,
+              isDark: isDark,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
@@ -83,16 +87,22 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
             title: '🏆 本戦ルール（午後・トーナメント）',
             subText:
                 '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
-            accentColor: AppKendoColors.indigo,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.honsen,
+              isDark: isDark,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
             context: context,
             sceneId: 'moushiawase',
-            title: '🤝 申し合わせルール（終了後・自由戦）',
+            title: '🤝 申合せルール（終了後・自由戦）',
             subText:
                 '時間: ${ruleSet.moushiawaseRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.moushiawaseRule.isRunningTime ? '流し' : '正式'}) / 引き分け: ${ruleSet.moushiawaseRule.hasHantei ? 'あり' : 'なし'}',
-            accentColor: AppKendoColors.teal,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.moushiawase,
+              isDark: isDark,
+            ),
           ),
         ] else if (ruleSet != null) ...[
           _buildRuleCard(
@@ -101,15 +111,21 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
             title: '🏆 本戦（通常戦）ルール',
             subText:
                 '時間: ${ruleSet.normalRule.matchTimeMinutes.toStringAsFixed(0)}分 (${ruleSet.normalRule.isRunningTime ? '流し' : '正式'}) / 延長: ${ruleSet.normalRule.isEnchoUnlimited ? '無制限' : (ruleSet.normalRule.enchoCount > 0 ? 'あり' : 'なし')}',
-            accentColor: AppKendoColors.indigo,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.honsen,
+              isDark: isDark,
+            ),
           ),
         ] else ...[
           _buildRuleCard(
             context: context,
             sceneId: 'renseikai',
-            title: '⚔️ 錬成会（練習試合）',
+            title: '⚔️ 錬成（練習試合）',
             subText: '2分流し / 引き分けあり',
-            accentColor: AppKendoColors.amber,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.renseikai,
+              isDark: isDark,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
@@ -117,15 +133,21 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
             sceneId: 'honsen',
             title: '🏆 本戦（通常戦）',
             subText: '3分正式 / 代表戦・勝敗重視',
-            accentColor: AppKendoColors.indigo,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.honsen,
+              isDark: isDark,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           _buildRuleCard(
             context: context,
             sceneId: 'moushiawase',
-            title: '🤝 申し合わせ（自由対戦）',
+            title: '🤝 申合せ（自由対戦）',
             subText: '2分流し / 引き分けあり',
-            accentColor: AppKendoColors.teal,
+            accentColor: KendoSceneHelper.getColor(
+              KendoMatchScene.moushiawase,
+              isDark: isDark,
+            ),
           ),
         ],
       ],
@@ -137,7 +159,7 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
     required String sceneId,
     required String title,
     required String subText,
-    required MaterialColor accentColor,
+    required Color accentColor,
   }) {
     final isSelected = selectedScene == sceneId;
 
@@ -155,8 +177,8 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark
-                      ? accentColor.shade900.withValues(alpha: 0.4)
-                      : accentColor.shade50)
+                      ? accentColor.withValues(alpha: 0.25)
+                      : accentColor.withValues(alpha: 0.08))
                 : (isDark
                       ? context.appColors.cardBackground
                       : context.appColors.cardBackground.withValues(
@@ -165,7 +187,7 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
             borderRadius: AppRadius.medium,
             border: Border.all(
               color: isSelected
-                  ? (isDark ? accentColor.shade300 : accentColor.shade700)
+                  ? accentColor
                   : (isDark
                         ? context.appColors.separatorColor
                         : context.appColors.separatorColor.withValues(
@@ -187,9 +209,7 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
             children: [
               Icon(
                 isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: isSelected
-                    ? (isDark ? accentColor.shade300 : accentColor.shade700)
-                    : AppKendoColors.grey,
+                color: isSelected ? accentColor : AppKendoColors.grey,
                 size: 22,
               ),
               const SizedBox(width: AppSpacing.md),
@@ -203,9 +223,7 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
                         fontSize: AppFontSize.body,
                         fontWeight: AppFontWeight.bold,
                         color: isSelected
-                            ? (isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : accentColor.shade900)
+                            ? (isDark ? const Color(0xFFFFFFFF) : accentColor)
                             : (context.appColors.subTextColor),
                       ),
                     ),
@@ -219,7 +237,7 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
                                   ? context.appColors.textColor.withValues(
                                       alpha: 0.7,
                                     )
-                                  : accentColor.shade800)
+                                  : accentColor)
                             : context.appColors.subTextColor,
                       ),
                     ),

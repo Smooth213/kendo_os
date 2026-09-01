@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_children_builder.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
@@ -14,6 +13,8 @@ import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 /// タイムライン内の試合グループ（団体戦・リーグ戦・勝ち抜き戦）アコーディオンカード
@@ -99,16 +100,28 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                 children: [
                   if (!isReadOnlyUI)
                     SlidableAction(
-                      onPressed: (context) =>
-                          TimelineDialogHelper.showEditGroupNoteDialog(
-                            context,
-                            ref,
-                            groupList,
-                          ),
-                      backgroundColor: context.appColors.infoColor,
+                      onPressed: (context) {
+                        showAppBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (ctx) {
+                            return MatchEditSheet(
+                              matches: groupList,
+                              tournamentId: tournamentId,
+                              themeColors: AppThemeColors.ofMode(
+                                isDark:
+                                    Theme.of(context).brightness ==
+                                    Brightness.dark,
+                                mode: 'operate',
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      backgroundColor: AppKendoColors.blueAccent,
                       foregroundColor: AppKendoColors.pureWhite,
-                      icon: Icons.edit_note,
-                      label: 'メモ',
+                      icon: Icons.edit,
+                      label: '編集',
                     ),
                   if (canManageTournamentUI && !isReadOnlyUI)
                     SlidableAction(

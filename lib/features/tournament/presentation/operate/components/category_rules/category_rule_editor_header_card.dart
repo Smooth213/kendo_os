@@ -109,13 +109,13 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
         SwitchListTile.adaptive(
           contentPadding: EdgeInsets.zero,
           title: const Text(
-            '⚔️ 遠征マルチシーンルール（錬成会・本戦・申し合わせ）',
+            '⚔️ 遠征マルチシーンルール（錬成・本戦・申合せ）',
             style: TextStyle(
               fontWeight: AppFontWeight.bold,
               fontSize: AppFontSize.subhead,
             ),
           ),
-          subtitle: const Text('ONにすると、1つの部門に「錬成会」「本戦」「申し合わせ」の各ルールを個別に定義できます。'),
+          subtitle: const Text('ONにすると、1つの部門に「錬成」「本戦」「申合せ」の各ルールを個別に定義できます。'),
           value: isMultiScene,
           activeThumbColor: AppKendoColors.ipponGold,
           onChanged: onMultiSceneChanged,

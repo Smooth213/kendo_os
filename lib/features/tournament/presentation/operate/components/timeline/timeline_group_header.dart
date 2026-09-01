@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_summary_input_dialog.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -53,37 +53,11 @@ class TimelineGroupHeader extends ConsumerWidget {
           children: [
             Builder(
               builder: (context) {
-                final scenePrefix = TeamProgressHelper.getScenePrefix(
-                  firstMatch,
-                );
-                if (scenePrefix.isEmpty) {
+                final scene = KendoSceneHelper.detectScene(firstMatch);
+                if (scene == KendoMatchScene.honsen) {
                   return const SizedBox.shrink();
                 }
-                final isMoushiawase = scenePrefix.contains('申合せ');
-                final badgeColor = isMoushiawase
-                    ? context.appColors.warningColor
-                    : context.appColors.primaryAccent;
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.subValue,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeColor.withValues(alpha: 0.12),
-                    borderRadius: AppRadius.sub,
-                    border: Border.all(
-                      color: badgeColor.withValues(alpha: 0.35),
-                    ),
-                  ),
-                  child: Text(
-                    scenePrefix,
-                    style: TextStyle(
-                      fontSize: AppFontSize.nano,
-                      fontWeight: AppFontWeight.bold,
-                      color: badgeColor,
-                    ),
-                  ),
-                );
+                return KendoSceneBadge(scene: scene);
               },
             ),
             const Spacer(),

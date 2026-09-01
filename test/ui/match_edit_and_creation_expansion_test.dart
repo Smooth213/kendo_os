@@ -271,8 +271,8 @@ void main() {
         await tester.tap(ruleTab);
         await tester.pumpAndSettle();
 
-        expect(find.text('試合時間'), findsWidgets);
-        expect(find.textContaining('一本勝負'), findsWidgets);
+        expect(find.textContaining('試合時間'), findsWidgets);
+        expect(find.textContaining('本勝負'), findsWidgets);
 
         // 4. 一括編集画面の全コンポーネント正常描画・操作性の完了検証
         expect(tester.takeException(), isNull);

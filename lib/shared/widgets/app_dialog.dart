@@ -61,28 +61,36 @@ class AppDialog extends StatelessWidget {
     final effectiveTitle =
         titleWidget ??
         (title != null
-            ? Row(
-                children: [
-                  if (titleIcon != null) ...[
-                    Icon(
-                      titleIcon,
-                      size: 22,
-                      color: iconColor ?? themeColors.primaryAccent,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                  ],
-                  Expanded(
-                    child: Text(
+            ? (titleIcon != null
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          titleIcon,
+                          size: 22,
+                          color: iconColor ?? themeColors.primaryAccent,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Flexible(
+                          child: Text(
+                            title!,
+                            style: TextStyle(
+                              fontSize: AppFontSize.title,
+                              fontWeight: AppFontWeight.semiBold,
+                              color: themeColors.textColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
                       title!,
                       style: TextStyle(
                         fontSize: AppFontSize.title,
                         fontWeight: AppFontWeight.semiBold,
                         color: themeColors.textColor,
                       ),
-                    ),
-                  ),
-                ],
-              )
+                    ))
             : null);
 
     return AlertDialog(

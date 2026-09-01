@@ -45,17 +45,17 @@ void main() {
         ),
       );
 
-      expect(find.text('部門別ルールから一括セット'), findsOneWidget);
+      expect(find.text('試合ルール設定から一括セット'), findsOneWidget);
       expect(find.text('一般の部'), findsOneWidget);
       expect(find.text('中学生の部'), findsOneWidget);
       expect(find.text('🏆 本戦 (3分・3本)'), findsOneWidget);
-      expect(find.text('⚔️ 錬成会 (2分・1本)'), findsOneWidget);
+      expect(find.text('⚔️ 錬成 (2分・1本)'), findsOneWidget);
 
       await tester.tap(find.text('中学生の部'));
       await tester.pump();
       expect(selectedCat, '中学生の部');
 
-      await tester.tap(find.text('⚔️ 錬成会 (2分・1本)'));
+      await tester.tap(find.text('⚔️ 錬成 (2分・1本)'));
       await tester.pump();
       expect(selectedScene, 'renseikai');
     });

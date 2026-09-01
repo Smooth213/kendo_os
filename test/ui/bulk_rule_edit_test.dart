@@ -139,8 +139,8 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 「部門別ルールから一括セット」のセクションが表示されていること
-        expect(find.text('部門別ルールから一括セット'), findsOneWidget);
+        // 「試合ルール設定から一括セット」のセクションが表示されていること
+        expect(find.text('試合ルール設定から一括セット'), findsOneWidget);
         // 1段目の部門名チップが表示されていること
         expect(find.text('小学生低学年の部'), findsOneWidget);
         expect(find.text('中学生の部'), findsOneWidget);
@@ -235,14 +235,14 @@ void main() {
         await tester.tap(find.text('小学生の部'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        // 2. 2段目のシーンサブチップ群（本戦、錬成会、申し合わせ）が動的に表示されていること
+        // 2. 2段目のシーンサブチップ群（本戦、錬成、申合せ）が動的に表示されていること
         expect(find.text('試合シーン・ルール用途を選択:'), findsOneWidget);
         expect(find.text('🏆 本戦 (3分・3本)'), findsOneWidget);
-        expect(find.text('⚔️ 錬成会 (2分・1本)'), findsOneWidget);
-        expect(find.text('🤝 申し合わせ (1.5分・1本)'), findsOneWidget);
+        expect(find.text('⚔️ 錬成 (2分・1本)'), findsOneWidget);
+        expect(find.text('🤝 申合せ (1.5分・1本)'), findsOneWidget);
 
-        // 3. 「⚔️ 錬成会 (2分・1本)」サブチップをタップ
-        await tester.tap(find.text('⚔️ 錬成会 (2分・1本)'), warnIfMissed: false);
+        // 3. 「⚔️ 錬成 (2分・1本)」サブチップをタップ
+        await tester.tap(find.text('⚔️ 錬成 (2分・1本)'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
         // 4. 下部の入力フォーム（試合時間 2分・一本勝負 Switch ON）がリアルタイム連動して更新されていることを直接アサート
@@ -494,12 +494,12 @@ void main() {
         await tester.tap(find.text('小学生の部'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        // 2. 「⚔️ 錬成会 (2分・1本)」をタップ
-        await tester.tap(find.text('⚔️ 錬成会 (2分・1本)'), warnIfMissed: false);
+        // 2. 「⚔️ 錬成 (2分・1本)」をタップ
+        await tester.tap(find.text('⚔️ 錬成 (2分・1本)'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        // 3. 「🤝 申し合わせ (1.5分・1本)」をタップ
-        await tester.tap(find.text('🤝 申し合わせ (1.5分・1本)'), warnIfMissed: false);
+        // 3. 「🤝 申合せ (1.5分・1本)」をタップ
+        await tester.tap(find.text('🤝 申合せ (1.5分・1本)'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);

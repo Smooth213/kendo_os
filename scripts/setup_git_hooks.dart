@@ -46,16 +46,31 @@ if [ \$? -ne 0 ]; then
     exit 1
 fi
 
+echo "⚔️ kendo OS 試合シーン（本戦・錬成・申合せ）表記＆配色ガバナンス監査を実行中..."
+python3 scripts/check_kendo_scene_governance.py
+if [ \$? -ne 0 ]; then
+    echo ""
+    echo "🚨 【コミット拒否】試合シーンの表記・配色違反が検出されたため、コミットを中断しました。"
+    echo "   表記は「本戦」「錬成」「申合せ」とし、配色は KendoSceneHelper を使用してください。"
+    exit 1
+fi
+
 echo "✅ pre-commit ガバナンス監査・フォーマット自動修復完了"
 exit 0
 ''';
 
   preCommitFile.writeAsStringSync(hookContent);
 
+  // pre-push フックが存在する場合は重複防止のため削除
+  final prePushFile = File('.git/hooks/pre-push');
+  if (prePushFile.existsSync()) {
+    prePushFile.deleteSync();
+  }
+
   if (!Platform.isWindows) {
     Process.runSync('chmod', ['+x', preCommitFile.path]);
   }
 
   print('✅ [PASS] Git pre-commit hook installed successfully.');
-  print('💡 以降、git commit 実行時に行数監査（500行制限）とデザイン監査が自動実行されます。');
+  print('💡 以降、git commit 実行時に行数・デザイン・試合シーンガバナンスが自動監査されます。');
 }

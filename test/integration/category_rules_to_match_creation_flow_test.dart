@@ -270,9 +270,8 @@ void main() {
 
         expect(find.text('団体戦'), findsOneWidget);
         expect(find.text('2分 (都度ストップ)'), findsOneWidget);
-        expect(find.text('代表戦'), findsOneWidget);
-        expect(find.text('代表戦延長'), findsOneWidget);
-        expect(find.text('あり (無制限)'), findsOneWidget);
+        expect(find.text('🥋 代表戦'), findsOneWidget);
+        expect(find.textContaining('時間制限なし・一本勝負・延長無制限'), findsOneWidget);
         expect(find.text('反則'), findsNothing);
         expect(find.text('延長戦'), findsNothing);
         expect(find.text('判定'), findsNothing);
@@ -458,18 +457,11 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        expect(find.text('代表戦'), findsOneWidget);
-        expect(find.text('あり'), findsAtLeast(2));
-        expect(find.text('代表戦勝負形式'), findsOneWidget);
-        expect(find.text('３本勝負'), findsOneWidget);
-        expect(find.text('代表戦時間'), findsOneWidget);
-        expect(find.text('3分'), findsAtLeast(1));
-        expect(find.text('代表戦延長'), findsOneWidget);
-        expect(find.text('あり (2分・1回)'), findsOneWidget);
-        expect(find.text('代表戦判定'), findsOneWidget);
+        expect(find.text('🥋 代表戦'), findsOneWidget);
+        expect(find.textContaining('3分・三本勝負・延長2分・1回・判定あり'), findsOneWidget);
 
         // 1つ目のシートを閉じる
-        Navigator.pop(tester.element(find.text('代表戦')));
+        Navigator.pop(tester.element(find.text('団体戦')));
         await tester.pumpAndSettle();
 
         // パターンB: 代表戦なし
@@ -504,8 +496,8 @@ void main() {
         await tester.tap(find.text('OpenB'));
         await tester.pumpAndSettle();
 
-        expect(find.text('代表戦'), findsOneWidget);
-        expect(find.text('なし'), findsOneWidget);
+        expect(find.text('🥋 代表戦'), findsOneWidget);
+        expect(find.text('なし'), findsAtLeast(1));
         expect(find.text('代表戦勝負形式'), findsNothing);
         expect(find.text('代表戦時間'), findsNothing);
         expect(find.text('代表戦延長'), findsNothing);
@@ -518,10 +510,19 @@ void main() {
       (WidgetTester tester) async {
         final scenarios = [
           // (試合時間, 延長時間, 延長回数, 無制限フラグ, 判定有無, 期待する時間文字列, 期待する延長文字列, 期待する判定文字列)
-          (2.0, 2.0, 1, false, true, '2分 (都度ストップ)', 'あり (2分・1回)', 'あり'),
+          (
+            2.0,
+            2.0,
+            1,
+            false,
+            true,
+            '2分 (都度ストップ)',
+            'あり (2分・1回)',
+            'あり (時間・延長終了時)',
+          ),
           (3.0, 3.0, 2, false, false, '3分 (都度ストップ)', 'あり (3分・2回)', 'なし'),
-          (4.0, 3.0, 0, true, false, '4分 (都度ストップ)', 'あり (無制限)', 'なし'),
-          (5.0, 0.0, 0, false, true, '5分 (都度ストップ)', 'なし', 'あり'),
+          (4.0, 3.0, 0, true, false, '4分 (都度ストップ)', 'あり (時間無制限・決着まで)', 'なし'),
+          (5.0, 0.0, 0, false, true, '5分 (都度ストップ)', 'なし', 'あり (時間・延長終了時)'),
         ];
 
         for (int i = 0; i < scenarios.length; i++) {
@@ -585,10 +586,7 @@ void main() {
           expect(find.text(expHantei), findsAtLeast(1));
 
           // 代表戦項目が絶対に非表示であること
-          expect(find.text('代表戦'), findsNothing);
-          expect(find.text('代表戦時間'), findsNothing);
-          expect(find.text('代表戦延長'), findsNothing);
-          expect(find.text('代表戦判定'), findsNothing);
+          expect(find.text('🥋 代表戦'), findsNothing);
 
           // シートを閉じる
           Navigator.pop(tester.element(find.text('個人戦')));
@@ -601,11 +599,11 @@ void main() {
       '7. 【団体戦代表戦 試合時間・延長時間・延長回数・判定 完全網羅E2Eテスト】各代表戦パラメータの組み合わせが試合モデルおよびレギュレーション表示へ100%正確に反映されること',
       (WidgetTester tester) async {
         final scenarios = [
-          // (代表戦時間, 代表戦延長あり, 延長回数, 延長時間, 判定有無, 期待代表戦時間, 期待代表戦延長, 期待代表戦判定)
-          (0.0, true, -2, 0.0, false, '時間制限なし', 'あり (無制限)', 'なし'),
-          (2.0, true, 1, 2.0, true, '2分', 'あり (2分・1回)', 'あり'),
-          (3.0, true, 2, 3.0, false, '3分', 'あり (3分・2回)', 'なし'),
-          (4.0, false, 0, 0.0, true, '4分', 'なし', 'あり'),
+          // (代表戦時間, 代表戦延長あり, 延長回数, 延長時間, 判定有無, 期待される代表戦要約文字列)
+          (0.0, true, -2, 0.0, false, '時間制限なし・一本勝負・延長無制限'),
+          (2.0, true, 1, 2.0, true, '2分・一本勝負・延長2分・1回・判定あり'),
+          (3.0, true, 2, 3.0, false, '3分・一本勝負・延長3分・2回'),
+          (4.0, false, 0, 0.0, true, '4分・一本勝負・延長なし・判定あり'),
         ];
 
         for (int i = 0; i < scenarios.length; i++) {
@@ -615,9 +613,7 @@ void main() {
             dEnchoCount,
             dEnchoTime,
             dHasHant,
-            expDTime,
-            expDEncho,
-            expDHantei,
+            expSummary,
           ) = scenarios[i];
 
           final rule = MatchRule(
@@ -665,25 +661,14 @@ void main() {
           await tester.tap(find.text('OpenDaihyo_$i'));
           await tester.pumpAndSettle();
 
-          expect(find.text('代表戦'), findsOneWidget);
-          expect(find.text('代表戦時間'), findsOneWidget);
-          expect(find.text(expDTime), findsAtLeast(1));
-          expect(find.text('代表戦延長'), findsOneWidget);
-          expect(find.text(expDEncho), findsOneWidget);
-          if (dHasHant) {
-            expect(find.text('代表戦判定'), findsOneWidget);
-            expect(find.text(expDHantei), findsAtLeast(1));
-          } else {
-            expect(find.text('代表戦判定'), findsNothing);
-          }
+          expect(find.text('🥋 代表戦'), findsOneWidget);
+          expect(find.textContaining(expSummary), findsOneWidget);
 
           // 個人戦項目が絶対に非表示であること
-          expect(find.text('延長戦'), findsNothing);
-          expect(find.text('判定'), findsNothing);
           expect(find.text('反則'), findsNothing);
 
           // シートを閉じる
-          Navigator.pop(tester.element(find.text('代表戦')));
+          Navigator.pop(tester.element(find.text('団体戦')));
           await tester.pumpAndSettle();
         }
       },

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -78,39 +78,14 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
             Builder(
               builder: (context) {
                 final firstBout = bouts.firstOrNull;
-                final scenePrefix = firstBout != null
-                    ? TeamProgressHelper.getScenePrefix(firstBout)
-                    : '';
-                if (scenePrefix.isEmpty) {
+                if (firstBout == null) return const SizedBox.shrink();
+                final scene = KendoSceneHelper.detectScene(firstBout);
+                if (scene == KendoMatchScene.honsen) {
                   return const SizedBox.shrink();
                 }
-                final isMoushiawase = scenePrefix.contains('申合せ');
-                final badgeColor = isMoushiawase
-                    ? context.appColors.warningColor
-                    : context.appColors.primaryAccent;
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.xs),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.subValue,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: badgeColor.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.sub,
-                      border: Border.all(
-                        color: badgeColor.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Text(
-                      scenePrefix,
-                      style: TextStyle(
-                        fontSize: AppFontSize.nano,
-                        fontWeight: AppFontWeight.bold,
-                        color: badgeColor,
-                      ),
-                    ),
-                  ),
+                  child: KendoSceneBadge(scene: scene),
                 );
               },
             ),

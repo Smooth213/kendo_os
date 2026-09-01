@@ -70,7 +70,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // ヘッダー確認
-      expect(find.text('部門別ルール設定'), findsOneWidget);
+      expect(find.text('試合ルール設定'), findsOneWidget);
 
       // 3つのルールカードがすべて独立して描画されていること（プリセットチップ等と合わせて確認）
       expect(find.text('小学生の部'), findsWidgets);

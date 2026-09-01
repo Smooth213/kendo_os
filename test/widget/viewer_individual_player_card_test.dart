@@ -53,6 +53,5 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('試合中 (LIVE)'), findsOneWidget);
-    expect(find.text('スコア'), findsOneWidget);
   });
 }

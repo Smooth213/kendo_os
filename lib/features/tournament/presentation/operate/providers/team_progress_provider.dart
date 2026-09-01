@@ -294,13 +294,13 @@ List<TeamProgressStatus> calculateTeamProgress(
     );
   }
 
-  // ソート: 試合中（LIVE）が最上位 → 待機中 → 終了
+  // ソート: 試合中（LIVE）が最上位 → 待機中 → 終了（最下部）
   results.sort((a, b) {
     if (a.hasLiveMatch != b.hasLiveMatch) {
       return a.hasLiveMatch ? -1 : 1;
     }
-    if (a.isAllFinished != b.isAllFinished) {
-      return a.isAllFinished ? 1 : -1;
+    if (a.isFinished != b.isFinished) {
+      return a.isFinished ? 1 : -1;
     }
     return a.teamName.compareTo(b.teamName);
   });

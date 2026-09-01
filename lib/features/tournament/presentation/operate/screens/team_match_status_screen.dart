@@ -24,7 +24,20 @@ class TeamMatchStatusScreen extends ConsumerStatefulWidget {
 
 class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
   TeamFilterType _filter = TeamFilterType.all;
-  String _selectedCategory = 'すべて';
+  late final PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +49,7 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
 
     final totalLiveCount = teamList.where((t) => t.hasLiveMatch).length;
     final totalWaitingCount = teamList
-        .where((t) => !t.hasLiveMatch && !t.isAllFinished)
+        .where((t) => !t.hasLiveMatch && !t.isFinished)
         .length;
 
     // カテゴリリストの抽出
@@ -50,7 +63,15 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
         .toList();
     final categories = ['すべて', ...rawCategories];
 
-    // フィルタリング（ステータス ＆ カテゴリ連動）
+    // 現在のインデックスが範囲外にならないようクランプ
+    if (_currentIndex >= categories.length) {
+      _currentIndex = 0;
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(0);
+      }
+    }
+
+    // フィルタリング（ステータス）
     final statusFilteredTeams = teamList.where((t) {
       switch (_filter) {
         case TeamFilterType.all:
@@ -58,18 +79,8 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
         case TeamFilterType.liveOnly:
           return t.hasLiveMatch;
         case TeamFilterType.waitingOnly:
-          return !t.hasLiveMatch && !t.isAllFinished;
+          return !t.hasLiveMatch && !t.isFinished;
       }
-    }).toList();
-
-    final filteredList = statusFilteredTeams.where((t) {
-      if (_selectedCategory != 'すべて') {
-        final cat = t.categoryName.isNotEmpty
-            ? t.categoryName
-            : t.currentCourtName;
-        if (cat != _selectedCategory) return false;
-      }
-      return true;
     }).toList();
 
     return Scaffold(
@@ -93,21 +104,46 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
             color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
           ),
 
-          // チーム一覧
+          // 🥋 スワイプ可能なチーム一覧 PageView
           Expanded(
-            child: filteredList.isEmpty
-                ? _buildEmptyState(context)
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                      horizontal: AppSpacing.xs,
-                    ),
-                    itemCount: filteredList.length,
-                    itemBuilder: (context, index) {
-                      final teamStatus = filteredList[index];
-                      return TeamStatusCard(status: teamStatus, isDark: isDark);
-                    },
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: categories.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemBuilder: (context, catIndex) {
+                final currentCat = categories[catIndex];
+                final filteredList = statusFilteredTeams.where((t) {
+                  if (currentCat != 'すべて') {
+                    final cat = t.categoryName.isNotEmpty
+                        ? t.categoryName
+                        : t.currentCourtName;
+                    if (cat != currentCat) return false;
+                  }
+                  return true;
+                }).toList();
+
+                if (filteredList.isEmpty) {
+                  return _buildEmptyState(context);
+                }
+
+                return ListView.builder(
+                  key: PageStorageKey('team_status_list_$currentCat'),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.md,
+                    horizontal: AppSpacing.xs,
                   ),
+                  itemCount: filteredList.length,
+                  itemBuilder: (context, index) {
+                    final teamStatus = filteredList[index];
+                    return TeamStatusCard(status: teamStatus, isDark: isDark);
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -196,14 +232,15 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
             ),
           ),
 
-          // 🏷️ カテゴリ別アンダーラインタブバー
+          // 🏷️ カテゴリ別アンダーラインタブバー（タップ & スワイプ連動）
           if (categories.length > 1) ...[
             const SizedBox(height: AppSpacing.xs),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: categories.map((cat) {
-                  final isSelected = _selectedCategory == cat;
+                children: List.generate(categories.length, (index) {
+                  final cat = categories[index];
+                  final isSelected = _currentIndex == index;
                   final count = cat == 'すべて'
                       ? statusFilteredTeams.length
                       : statusFilteredTeams.where((t) {
@@ -224,7 +261,11 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
 
                   return InkWell(
                     onTap: () {
-                      setState(() => _selectedCategory = cat);
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                      );
                     },
                     borderRadius: AppRadius.small,
                     child: Container(
@@ -254,7 +295,7 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ),
             ),
           ],

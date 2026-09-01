@@ -114,9 +114,6 @@ void main() {
         // 4段目: 進行中状態（🔴 試合中: vs 相手 太郎（ライバル道場））
         expect(find.textContaining('🔴 試合中: vs 相手 太郎（ライバル道場）'), findsOneWidget);
         expect(find.text('(1 - 0)'), findsOneWidget);
-
-        // 5段目: スコアボタン（26px）
-        expect(find.text('スコア'), findsOneWidget);
       },
     );
 
@@ -221,9 +218,6 @@ void main() {
 
         // 4段目: 試合中対戦相手
         expect(find.textContaining('🔴 試合中: vs 相手 太郎（ライバル道場）'), findsOneWidget);
-
-        // 5段目: スコアボタン
-        expect(find.text('スコア'), findsOneWidget);
       },
     );
   });

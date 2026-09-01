@@ -15,11 +15,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/rul
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart'
     show customTeamNamesProvider;
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -132,37 +132,13 @@ class MatchListTileCard extends ConsumerWidget {
               MatchCardHeaderRow(
                 leading: Builder(
                   builder: (context) {
-                    final scenePrefix = TeamProgressHelper.getScenePrefix(
-                      match,
-                    );
-                    if (scenePrefix.isEmpty) return const SizedBox.shrink();
-                    final isMoushiawase = scenePrefix.contains('申合せ');
-                    final badgeColor = isMoushiawase
-                        ? context.appColors.warningColor
-                        : context.appColors.primaryAccent;
+                    final scene = KendoSceneHelper.detectScene(match);
+                    if (scene == KendoMatchScene.honsen) {
+                      return const SizedBox.shrink();
+                    }
                     return Padding(
                       padding: const EdgeInsets.only(right: AppSpacing.xs),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.subValue,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: badgeColor.withValues(alpha: 0.12),
-                          borderRadius: AppRadius.sub,
-                          border: Border.all(
-                            color: badgeColor.withValues(alpha: 0.35),
-                          ),
-                        ),
-                        child: Text(
-                          scenePrefix,
-                          style: TextStyle(
-                            fontSize: AppFontSize.nano,
-                            fontWeight: AppFontWeight.bold,
-                            color: badgeColor,
-                          ),
-                        ),
-                      ),
+                      child: KendoSceneBadge(scene: scene),
                     );
                   },
                 ),

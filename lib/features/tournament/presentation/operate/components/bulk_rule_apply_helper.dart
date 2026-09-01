@@ -12,6 +12,12 @@ class BulkRuleApplyHelper {
     bool hasHantei,
     bool hasRepresentativeMatch,
     bool isDaihyoIpponShobu,
+    double daihyoMatchTime,
+    bool daihyoHasExtension,
+    double daihyoEnchoTime,
+    int daihyoEnchoCount,
+    bool isDaihyoEnchoUnlimited,
+    bool daihyoHasHantei,
     bool isRenseikai,
     String renseikaiType,
     int overallTimeMinutes,
@@ -33,54 +39,47 @@ class BulkRuleApplyHelper {
     final matchTime = targetRule.matchTimeMinutes;
     final isIpponShobu = targetRule.isIpponShobu;
 
-    bool hasExtension;
-    bool isEnchoUnlimited;
-    double enchoTime;
-    int enchoCount;
-    bool hasHantei;
-    bool hasRepresentativeMatch;
-    bool isDaihyoIpponShobu;
+    // 延長戦: isEnchoUnlimited または enchoCount > 0 または enchoCount == -2
+    final bool hasExtension =
+        targetRule.isEnchoUnlimited ||
+        targetRule.enchoCount > 0 ||
+        targetRule.enchoCount == -2;
+    final bool isEnchoUnlimited =
+        targetRule.isEnchoUnlimited || targetRule.enchoCount == -2;
+    final double enchoTime = targetRule.enchoTimeMinutes > 0
+        ? targetRule.enchoTimeMinutes
+        : 2.0;
+    final int enchoCount = targetRule.enchoCount > 0
+        ? targetRule.enchoCount
+        : 1;
 
-    if (isRenseikaiOrMoushiawase) {
-      hasExtension = false;
-      isEnchoUnlimited = false;
-      enchoTime = 0.0;
-      enchoCount = 0;
-      hasHantei = false;
-      hasRepresentativeMatch = false;
-      isDaihyoIpponShobu = false;
-    } else {
-      final bool extensionEnabled =
-          (targetRule.enchoTimeMinutes > 0) || targetRule.isEnchoUnlimited;
-      hasExtension = extensionEnabled;
-      isEnchoUnlimited = extensionEnabled ? targetRule.isEnchoUnlimited : false;
-      enchoTime = targetRule.enchoTimeMinutes > 0
-          ? targetRule.enchoTimeMinutes
-          : 3.0;
-      enchoCount = targetRule.enchoCount > 0 ? targetRule.enchoCount : 1;
+    // 判定: targetRule.hasHantei をそのまま反映
+    final bool hasHantei = targetRule.hasHantei;
 
-      if (isTeam && !isIndiv) {
-        hasHantei = false;
-        hasRepresentativeMatch = targetRule.hasRepresentativeMatch;
-        isDaihyoIpponShobu = targetRule.hasRepresentativeMatch
-            ? targetRule.isDaihyoIpponShobu
-            : false;
-      } else if (isIndiv && !isTeam) {
-        hasRepresentativeMatch = false;
-        isDaihyoIpponShobu = false;
-        hasHantei = targetRule.hasHantei;
-      } else {
-        hasHantei = targetRule.hasHantei;
-        hasRepresentativeMatch = targetRule.hasRepresentativeMatch;
-        isDaihyoIpponShobu = targetRule.hasRepresentativeMatch
-            ? targetRule.isDaihyoIpponShobu
-            : false;
-      }
-    }
+    // 団体戦・代表戦: targetRule の設定を忠実に反映
+    final bool hasRepresentativeMatch = isIndiv && !isTeam
+        ? false
+        : (targetRule.hasRepresentativeMatch || targetRule.hasLeagueDaihyo);
+    final bool isDaihyoIpponShobu = targetRule.isDaihyoIpponShobu;
+    final double daihyoMatchTime = targetRule.daihyoMatchTimeMinutes;
+    final bool daihyoHasExtension = targetRule.daihyoHasExtension;
+    final double daihyoEnchoTime = targetRule.daihyoEnchoTimeMinutes > 0
+        ? targetRule.daihyoEnchoTimeMinutes
+        : 3.0;
+    final int daihyoEnchoCount = targetRule.daihyoEnchoCount > 0
+        ? targetRule.daihyoEnchoCount
+        : 1;
+    final bool isDaihyoEnchoUnlimited =
+        targetRule.daihyoEnchoCount == -2 || targetRule.isEnchoUnlimited;
+    final bool daihyoHasHantei = targetRule.daihyoHasHantei;
 
     final isRenseikai = isRenseikaiOrMoushiawase || targetRule.isRenseikai;
-    final renseikaiType = targetRule.renseikaiType;
-    final overallTimeMinutes = targetRule.overallTimeMinutes;
+    final renseikaiType = targetRule.renseikaiType.isNotEmpty
+        ? targetRule.renseikaiType
+        : (isRenseikaiOrMoushiawase ? '一試合制' : '一試合制');
+    final overallTimeMinutes = targetRule.overallTimeMinutes > 0
+        ? targetRule.overallTimeMinutes
+        : 30;
 
     return (
       matchTime: matchTime,
@@ -92,6 +91,12 @@ class BulkRuleApplyHelper {
       hasHantei: hasHantei,
       hasRepresentativeMatch: hasRepresentativeMatch,
       isDaihyoIpponShobu: isDaihyoIpponShobu,
+      daihyoMatchTime: daihyoMatchTime,
+      daihyoHasExtension: daihyoHasExtension,
+      daihyoEnchoTime: daihyoEnchoTime,
+      daihyoEnchoCount: daihyoEnchoCount,
+      isDaihyoEnchoUnlimited: isDaihyoEnchoUnlimited,
+      daihyoHasHantei: daihyoHasHantei,
       isRenseikai: isRenseikai,
       renseikaiType: renseikaiType,
       overallTimeMinutes: overallTimeMinutes,

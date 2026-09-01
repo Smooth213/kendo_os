@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// 錬成会・申し合わせ時のマスタータイマー表示・操作Widget
+/// 錬成・申合せ時のマスタータイマー表示・操作Widget
 class RenseikaiMasterTimerWidget extends ConsumerWidget {
   final String groupName;
   final bool isInputLocked;

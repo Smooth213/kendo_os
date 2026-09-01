@@ -102,8 +102,8 @@ void main() {
 
       // Check category card is rendered
       expect(find.text('小学生の部'), findsAtLeast(1));
-      expect(find.text('標準ルール'), findsWidgets);
-      expect(find.text('2分'), findsWidgets);
+      expect(find.text('🥋 個人戦'), findsWidgets);
+      expect(find.text('⏱️ 2分'), findsWidgets);
 
       // Swipe left on the card to reveal edit action
       await tester.drag(
@@ -370,12 +370,12 @@ void main() {
         // 小学生の部が表示されていること
         expect(find.text('小学生の部'), findsAtLeast(1));
 
-        // ★ チェックを入れた「本戦」「申し合わせ」チップは表示されること
+        // ★ チェックを入れた「本戦」「申合せ」チップは表示されること
         expect(find.text('🏆 本戦'), findsOneWidget);
-        expect(find.text('🤝 申し合わせ'), findsOneWidget);
+        expect(find.text('🤝 申合せ'), findsOneWidget);
 
-        // ★ チェックを外した「錬成会」チップは絶対に表示されないこと
-        expect(find.text('⚔️ 錬成会'), findsNothing);
+        // ★ チェックを外した「錬成」チップは絶対に表示されないこと
+        expect(find.text('⚔️ 錬成'), findsNothing);
       },
     );
 
@@ -817,12 +817,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // ★ チェックを入れた「本戦」「申し合わせ」セクションは表示されること
+        // ★ チェックを入れた「本戦」「申合せ」セクションは表示されること
         expect(find.text('🏆 本戦ルール'), findsOneWidget);
-        expect(find.text('🤝 申し合わせルール'), findsOneWidget);
+        expect(find.text('🤝 申合せルール'), findsOneWidget);
 
-        // ★ チェックを外した「錬成会ルール」セクションは絶対に表示されないこと
-        expect(find.text('⚔️ 錬成会ルール'), findsNothing);
+        // ★ チェックを外した「錬成ルール」セクションは絶対に表示されないこと
+        expect(find.text('⚔️ 錬成ルール'), findsNothing);
       },
     );
   });

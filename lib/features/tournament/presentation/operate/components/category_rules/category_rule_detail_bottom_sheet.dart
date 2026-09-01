@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -307,10 +308,13 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
             sections.add(
               _buildRuleSection(
                 context,
-                '⚔️ 錬成会ルール',
+                '${KendoSceneHelper.getIconLabel(KendoMatchScene.renseikai)}ルール',
                 ruleSet.renseikaiRule,
-                AppKendoColors.ipponGold,
-                '錬成会',
+                KendoSceneHelper.getColor(
+                  KendoMatchScene.renseikai,
+                  isDark: isDark,
+                ),
+                '錬成',
               ),
             );
           }
@@ -321,9 +325,12 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
             sections.add(
               _buildRuleSection(
                 context,
-                '🏆 本戦ルール',
+                '${KendoSceneHelper.getIconLabel(KendoMatchScene.honsen)}ルール',
                 ruleSet.normalRule,
-                AppKendoColors.indigo,
+                KendoSceneHelper.getColor(
+                  KendoMatchScene.honsen,
+                  isDark: isDark,
+                ),
                 ruleSet.matchType,
               ),
             );
@@ -335,10 +342,13 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
             sections.add(
               _buildRuleSection(
                 context,
-                '🤝 申し合わせルール',
+                '${KendoSceneHelper.getIconLabel(KendoMatchScene.moushiawase)}ルール',
                 ruleSet.moushiawaseRule,
-                AppKendoColors.teal,
-                '錬成会',
+                KendoSceneHelper.getColor(
+                  KendoMatchScene.moushiawase,
+                  isDark: isDark,
+                ),
+                '錬成',
               ),
             );
           }
@@ -361,7 +371,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                 context,
                 '上位戦（準決勝・決勝等）ルール',
                 ruleSet.advancedRule,
-                AppKendoColors.teal,
+                themeColors.primaryAccent,
                 ruleSet.matchType,
               ),
             );

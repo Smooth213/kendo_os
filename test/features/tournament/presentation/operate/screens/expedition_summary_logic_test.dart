@@ -370,7 +370,7 @@ void main() {
         await tester.tap(find.text('詳細分析 ›'));
         await tester.pumpAndSettle();
 
-        expect(find.text('10:15 錬成会'), findsOneWidget);
+        expect(find.text('10:15 錬成'), findsOneWidget);
         expect(find.textContaining('edb185f4'), findsNothing);
       },
     );

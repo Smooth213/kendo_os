@@ -45,9 +45,9 @@ void main() {
       );
 
       expect(find.text('実施するルールシーンの選択'), findsOneWidget);
-      expect(find.text('⚔️ 錬成会ルール'), findsWidgets);
+      expect(find.text('⚔️ 錬成ルール'), findsWidgets);
       expect(find.text('🏆 本戦ルール'), findsWidgets);
-      expect(find.text('🤝 申し合わせルール'), findsWidgets);
+      expect(find.text('🤝 申合せルール'), findsWidgets);
     },
   );
 }

@@ -76,7 +76,7 @@ class BulkRulePresetCard extends StatelessWidget {
               Icon(Icons.auto_awesome, size: 16, color: primaryAccent),
               const SizedBox(width: 6),
               Text(
-                '部門別ルールから一括セット',
+                '試合ルール設定から一括セット',
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
                   fontWeight: AppFontWeight.bold,
@@ -111,7 +111,7 @@ class BulkRulePresetCard extends StatelessWidget {
             ),
           ),
 
-          // 2段目: 選択中部門のシーンサブチップ（本戦・錬成会・申し合わせ・決勝戦）
+          // 2段目: 選択中部門のシーンサブチップ（本戦・錬成・申合せ・決勝戦）
           if (selectedRuleSet != null) ...[
             const SizedBox(height: 10),
             const Divider(height: 1, thickness: 1),
@@ -140,24 +140,24 @@ class BulkRulePresetCard extends StatelessWidget {
                       targetRule: selectedRuleSet.normalRule,
                     ),
 
-                  // 2) 錬成会 (練習試合)
+                  // 2) 錬成 (練習試合)
                   if (selectedRuleSet.useRenseikaiRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
                       sceneKey: 'renseikai',
                       label:
-                          '⚔️ 錬成会 (${_formatRuleSummary(selectedRuleSet.renseikaiRule)})',
+                          '⚔️ 錬成 (${_formatRuleSummary(selectedRuleSet.renseikaiRule)})',
                       targetRule: selectedRuleSet.renseikaiRule,
                     ),
                   ],
 
-                  // 3) 申し合わせ
+                  // 3) 申合せ
                   if (selectedRuleSet.useMoushiawaseRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
                       sceneKey: 'moushiawase',
                       label:
-                          '🤝 申し合わせ (${_formatRuleSummary(selectedRuleSet.moushiawaseRule)})',
+                          '🤝 申合せ (${_formatRuleSummary(selectedRuleSet.moushiawaseRule)})',
                       targetRule: selectedRuleSet.moushiawaseRule,
                     ),
                   ],

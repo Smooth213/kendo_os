@@ -999,7 +999,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify the sheet is displayed (contains header text)
-      expect(find.text('⚙️ 試合ルールの一括変更'), findsOneWidget);
+      expect(find.text('⚡ ルール一括変更'), findsOneWidget);
 
       // Verify that the team match is grouped and displayed correctly as 'チームA vs チームB'
       expect(find.text('[一般] チームA vs チームB'), findsOneWidget);

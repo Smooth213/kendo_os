@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-
-import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_data_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_rule_and_memo_tab.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_save_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_save_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_state_holder.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_team_and_players_tab.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -34,29 +32,7 @@ class MatchEditSheet extends ConsumerStatefulWidget {
 class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  late bool _isDantai;
-  bool _isSwapped = false;
-  late bool _initialOwnIsRed;
-
-  // 1. チーム・選手情報
-  late TextEditingController _redTeamController;
-  late TextEditingController _whiteTeamController;
-  late List<TextEditingController> _redPlayerControllers;
-  late List<TextEditingController> _whitePlayerControllers;
-
-  // 2. コート・グループ情報
-  late TextEditingController _courtController;
-  late TextEditingController _groupNameController;
-
-  // 3. ルール・メモ
-  MatchRule? _selectedPresetRule;
-  String? _selectedPresetKey;
-  late double _matchTime;
-  late bool _isIpponShobu;
-  late bool _hasHantei;
-  late TextEditingController _noteController;
-  late String _status;
+  late final MatchEditStateHolder _state;
 
   @override
   void initState() {
@@ -66,173 +42,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       vsync: this,
       initialIndex: widget.initialTabIndex.clamp(0, 2),
     );
-
-    final first = widget.matches.first;
-    _isDantai = widget.matches.length > 1 || first.matchType == '団体戦';
-
-    final r = first.rule ?? const MatchRule();
-
-    String detectedKey;
-    if (r.isRenseikai ||
-        r.matchScene == 'renseikai' ||
-        first.matchScene == 'renseikai') {
-      detectedKey = 'renseikai';
-    } else if (r.matchScene == 'moushiawase' ||
-        first.matchScene == 'moushiawase') {
-      detectedKey = 'moushiawase';
-    } else if (r.matchScene == 'honsen' || first.matchScene == 'honsen') {
-      detectedKey = 'honsen';
-    } else {
-      detectedKey = 'honsen';
-    }
-
-    _selectedPresetKey = detectedKey;
-    _selectedPresetRule = r.copyWith(
-      matchScene: detectedKey,
-      isRenseikai: detectedKey == 'renseikai',
-    );
-
-    final extractedRedTeam = MatchEditDataHelper.extractTeamName(
-      first.redName,
-      r.teamName.isNotEmpty ? r.teamName : '赤チーム',
-      _isDantai,
-    );
-    final extractedWhiteTeam = MatchEditDataHelper.extractTeamName(
-      first.whiteName,
-      '白チーム',
-      _isDantai,
-    );
-
-    final originalRuleTeam = r.teamName.trim();
-    if (originalRuleTeam.isNotEmpty) {
-      if (originalRuleTeam == extractedWhiteTeam) {
-        _initialOwnIsRed = false;
-      } else {
-        _initialOwnIsRed = true;
-      }
-    } else {
-      _initialOwnIsRed = true;
-    }
-
-    _redTeamController = TextEditingController(text: extractedRedTeam);
-    _whiteTeamController = TextEditingController(text: extractedWhiteTeam);
-
-    _redPlayerControllers = widget.matches
-        .map(
-          (m) => TextEditingController(
-            text: MatchEditDataHelper.extractPlayerName(m.redName),
-          ),
-        )
-        .toList();
-    _whitePlayerControllers = widget.matches
-        .map(
-          (m) => TextEditingController(
-            text: MatchEditDataHelper.extractPlayerName(m.whiteName),
-          ),
-        )
-        .toList();
-
-    _courtController = TextEditingController(
-      text: MatchEditDataHelper.extractHeadingText(first),
-    );
-    _groupNameController = TextEditingController(text: '');
-
-    _matchTime = r.matchTimeMinutes > 0
-        ? r.matchTimeMinutes
-        : first.matchTimeMinutes;
-    _isIpponShobu = r.isIpponShobu;
-    _hasHantei = (detectedKey == 'renseikai' || detectedKey == 'moushiawase')
-        ? false
-        : r.hasHantei;
-
-    _noteController = TextEditingController(
-      text: MatchEditDataHelper.cleanNoteText(first.note),
-    );
-    _status = first.status;
+    _state = MatchEditStateHolder(widget.matches);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _redTeamController.dispose();
-    _whiteTeamController.dispose();
-    for (var c in _redPlayerControllers) {
-      c.dispose();
-    }
-    for (var c in _whitePlayerControllers) {
-      c.dispose();
-    }
-    _courtController.dispose();
-    _groupNameController.dispose();
-    _noteController.dispose();
+    _state.dispose();
     super.dispose();
-  }
-
-  void _swapTeamsAndPlayers() {
-    setState(() {
-      _isSwapped = !_isSwapped;
-      final tempTeam = _redTeamController.text;
-      _redTeamController.text = _whiteTeamController.text;
-      _whiteTeamController.text = tempTeam;
-
-      for (int i = 0; i < _redPlayerControllers.length; i++) {
-        final tempPlayer = _redPlayerControllers[i].text;
-        _redPlayerControllers[i].text = _whitePlayerControllers[i].text;
-        _whitePlayerControllers[i].text = tempPlayer;
-      }
-    });
-  }
-
-  void _applyTargetPresetRule(MatchRule rule, String key) {
-    final isRenseikaiOrMoushiawase =
-        key == 'renseikai' ||
-        key == 'moushiawase' ||
-        rule.isRenseikai ||
-        rule.matchScene == 'renseikai' ||
-        rule.matchScene == 'moushiawase';
-
-    final sanitizedRule = rule.copyWith(
-      matchScene: key,
-      isRenseikai: key == 'renseikai',
-      hasHantei: isRenseikaiOrMoushiawase ? false : rule.hasHantei,
-      enchoTimeMinutes: isRenseikaiOrMoushiawase ? 0.0 : rule.enchoTimeMinutes,
-      isEnchoUnlimited: isRenseikaiOrMoushiawase
-          ? false
-          : rule.isEnchoUnlimited,
-      hasRepresentativeMatch: isRenseikaiOrMoushiawase
-          ? false
-          : rule.hasRepresentativeMatch,
-    );
-
-    setState(() {
-      _selectedPresetKey = key;
-      _selectedPresetRule = sanitizedRule;
-      _matchTime = sanitizedRule.matchTimeMinutes > 0
-          ? sanitizedRule.matchTimeMinutes
-          : 2.0;
-      _isIpponShobu = sanitizedRule.isIpponShobu;
-      _hasHantei = sanitizedRule.hasHantei;
-    });
-  }
-
-  void _toggleHeadingPreset(String preset) {
-    final currentText = _courtController.text.trim();
-    if (currentText.isEmpty) {
-      _courtController.text = preset;
-      return;
-    }
-
-    final items = currentText
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (items.contains(preset)) {
-      items.remove(preset);
-    } else {
-      items.add(preset);
-    }
-    _courtController.text = items.join(', ');
   }
 
   @override
@@ -244,203 +61,256 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final backgroundColor = themeColors.cardBackground;
     final textColor = context.appColors.textColor;
 
-    final sheetTitle = _isDantai ? '団体戦対戦の編集' : '試合情報の編集';
+    final sheetTitle = _state.isDantai ? '団体戦対戦の編集' : '試合情報の編集';
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
+          top: Radius.circular(AppRadius.largeValue),
         ),
       ),
       child: Column(
         children: [
-          // Drag Handle
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x33000000),
-              borderRadius: AppRadius.micro,
+          // Header Drag Handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(
+                top: AppSpacing.sm,
+                bottom: AppSpacing.xs,
+              ),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF475569)
+                    : const Color(0xFFCBD5E1),
+                borderRadius: AppRadius.large,
+              ),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
 
-          // Header
+          // Header Title & Action Buttons
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.roundValue,
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xs,
             ),
             child: Row(
               children: [
-                Icon(
-                  _isDantai ? Icons.groups : Icons.edit_note,
-                  color: widget.themeColors.primaryAccent,
-                  size: 24,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  sheetTitle,
-                  style: TextStyle(
-                    fontSize: AppFontSize.headline,
-                    fontWeight: AppFontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
                 ),
+                Expanded(
+                  child: Text(
+                    sheetTitle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: AppFontSize.body,
+                      fontWeight: AppFontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48), // バランス用
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
 
           // Tab Bar
           TabBar(
             controller: _tabController,
-            indicatorColor: widget.themeColors.primaryAccent,
-            labelColor: widget.themeColors.primaryAccent,
-            unselectedLabelColor: isDark
-                ? context.appColors.subTextColor
-                : context.appColors.subTextColor,
-            labelPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxs,
-            ),
-            labelStyle: const TextStyle(
-              fontSize: AppFontSize.small,
-              fontWeight: AppFontWeight.bold,
-            ),
-            unselectedLabelStyle: const TextStyle(fontSize: AppFontSize.small),
-            tabs: [
-              Tab(
-                icon: Icon(
-                  _isDantai ? Icons.groups : Icons.people_alt,
-                  size: 18,
-                ),
-                text: _isDantai ? '対戦・選手' : '選手・チーム',
-              ),
-              const Tab(icon: Icon(Icons.place, size: 18), text: 'コート・メモ'),
-              const Tab(icon: Icon(Icons.tune, size: 18), text: '一括ルール'),
+            indicatorColor: themeColors.primaryAccent,
+            labelColor: themeColors.primaryAccent,
+            unselectedLabelColor: context.appColors.subTextColor,
+            tabs: const [
+              Tab(icon: Icon(Icons.people_outline), text: '対戦・選手'),
+              Tab(icon: Icon(Icons.location_on_outlined), text: 'コート・メモ'),
+              Tab(icon: Icon(Icons.tune), text: '一括ルール'),
             ],
           ),
-          const Divider(height: 1),
 
-          // Tab Views
+          // Tab Bar View
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Tab 1: チーム・選手
+                // TAB 1: チーム・選手情報
                 MatchEditTeamAndPlayersTab(
-                  isDantai: _isDantai,
-                  redTeamController: _redTeamController,
-                  whiteTeamController: _whiteTeamController,
-                  redPlayerControllers: _redPlayerControllers,
-                  whitePlayerControllers: _whitePlayerControllers,
-                  primaryAccent: widget.themeColors.primaryAccent,
+                  isDantai: _state.isDantai,
+                  redTeamController: _state.redTeamController,
+                  whiteTeamController: _state.whiteTeamController,
+                  redPlayerControllers: _state.redPlayerControllers,
+                  whitePlayerControllers: _state.whitePlayerControllers,
+                  primaryAccent: themeColors.primaryAccent,
                   isDark: isDark,
                   textColor: textColor,
-                  onSwapTeamsAndPlayers: _swapTeamsAndPlayers,
+                  onSwapTeamsAndPlayers: () =>
+                      setState(() => _state.swapTeamsAndPlayers()),
                 ),
 
-                // Tab 2: コート・グループ
+                // TAB 2: コート・グループ情報
                 MatchEditCourtAndGroupTab(
-                  themeColors: widget.themeColors,
-                  courtController: _courtController,
-                  noteController: _noteController,
+                  themeColors: themeColors,
+                  courtController: _state.courtController,
+                  noteController: _state.noteController,
                   isDark: isDark,
                   textColor: textColor,
-                  onToggleHeadingPreset: _toggleHeadingPreset,
-                  onClearCourt: () => setState(() => _courtController.clear()),
+                  onToggleHeadingPreset: (preset) =>
+                      setState(() => _state.toggleHeadingPreset(preset)),
+                  onClearCourt: () =>
+                      setState(() => _state.courtController.clear()),
                 ),
 
-                // Tab 3: ルール・メモ
+                // TAB 3: ルール・メモ設定
                 MatchEditRuleAndMemoTab(
-                  primaryAccent: widget.themeColors.primaryAccent,
+                  primaryAccent: themeColors.primaryAccent,
                   isDark: isDark,
                   textColor: textColor,
                   tournamentId: widget.tournamentId,
                   match: widget.matches.first,
-                  isDantai: _isDantai,
-                  selectedPresetKey: _selectedPresetKey,
-                  selectedPresetRule: _selectedPresetRule,
-                  matchTime: _matchTime,
-                  isIpponShobu: _isIpponShobu,
-                  hasHantei: _hasHantei,
-                  onPresetSelected: _applyTargetPresetRule,
-                  onMatchTimeChanged: (v) {
-                    setState(() {
-                      _matchTime = v;
-                      if (_selectedPresetRule != null) {
-                        _selectedPresetRule = _selectedPresetRule!.copyWith(
-                          matchTimeMinutes: v,
-                        );
-                      }
-                    });
-                  },
-                  onIpponShobuChanged: (v) {
-                    setState(() {
-                      _isIpponShobu = v;
-                      if (_selectedPresetRule != null) {
-                        _selectedPresetRule = _selectedPresetRule!.copyWith(
-                          isIpponShobu: v,
-                        );
-                      }
-                    });
-                  },
-                  onHanteiChanged: (v) {
-                    setState(() {
-                      _hasHantei = v;
-                      if (_selectedPresetRule != null) {
-                        _selectedPresetRule = _selectedPresetRule!.copyWith(
-                          hasHantei: v,
-                        );
-                      }
-                    });
-                  },
+                  isDantai: _state.isDantai,
+                  selectedPresetKey: _state.selectedPresetKey,
+                  selectedPresetRule: _state.selectedPresetRule,
+                  matchTime: _state.matchTime,
+                  isRunningTime: _state.isRunningTime,
+                  isIpponShobu: _state.isIpponShobu,
+                  ipponLimit: _state.ipponLimit,
+                  hansokuLimit: _state.hansokuLimit,
+                  hasExtension: _state.hasExtension,
+                  enchoTime: _state.enchoTime,
+                  enchoCount: _state.enchoCount,
+                  isEnchoUnlimited: _state.isEnchoUnlimited,
+                  hasHantei: _state.hasHantei,
+                  hasRepresentativeMatch: _state.hasRepresentativeMatch,
+                  isDaihyoIpponShobu: _state.isDaihyoIpponShobu,
+                  daihyoMatchTime: _state.daihyoMatchTime,
+                  daihyoHasExtension: _state.daihyoHasExtension,
+                  daihyoEnchoTime: _state.daihyoEnchoTime,
+                  daihyoEnchoCount: _state.daihyoEnchoCount,
+                  isDaihyoEnchoUnlimited: _state.isDaihyoEnchoUnlimited,
+                  daihyoHasHantei: _state.daihyoHasHantei,
+                  renseikaiType: _state.renseikaiType,
+                  overallTimeController: _state.overallTimeController,
+                  isKachinuki: _state.isKachinuki,
+                  kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
+                  isLeague: _state.isLeague,
+                  winPoint: _state.winPoint,
+                  lossPoint: _state.lossPoint,
+                  drawPoint: _state.drawPoint,
+                  onPresetSelected: (rule, key) =>
+                      setState(() => _state.applyTargetPresetRule(rule, key)),
+                  onMatchTimeChanged: (v) =>
+                      setState(() => _state.matchTime = v),
+                  onRunningTimeChanged: (v) =>
+                      setState(() => _state.isRunningTime = v),
+                  onIpponShobuChanged: (v) =>
+                      setState(() => _state.isIpponShobu = v),
+                  onIpponLimitChanged: (v) =>
+                      setState(() => _state.ipponLimit = v),
+                  onHansokuLimitChanged: (v) =>
+                      setState(() => _state.hansokuLimit = v),
+                  onExtensionChanged: (v) =>
+                      setState(() => _state.hasExtension = v),
+                  onEnchoTimeChanged: (v) =>
+                      setState(() => _state.enchoTime = v),
+                  onEnchoCountChanged: (v) =>
+                      setState(() => _state.enchoCount = v),
+                  onEnchoUnlimitedChanged: (v) =>
+                      setState(() => _state.isEnchoUnlimited = v),
+                  onHanteiChanged: (v) => setState(() => _state.hasHantei = v),
+                  onRepresentativeMatchChanged: (v) =>
+                      setState(() => _state.hasRepresentativeMatch = v),
+                  onDaihyoIpponShobuChanged: (v) =>
+                      setState(() => _state.isDaihyoIpponShobu = v),
+                  onDaihyoMatchTimeChanged: (v) =>
+                      setState(() => _state.daihyoMatchTime = v),
+                  onDaihyoExtensionChanged: (v) =>
+                      setState(() => _state.daihyoHasExtension = v),
+                  onDaihyoEnchoTimeChanged: (v) =>
+                      setState(() => _state.daihyoEnchoTime = v),
+                  onDaihyoEnchoCountChanged: (v) =>
+                      setState(() => _state.daihyoEnchoCount = v),
+                  onDaihyoEnchoUnlimitedChanged: (v) =>
+                      setState(() => _state.isDaihyoEnchoUnlimited = v),
+                  onDaihyoHanteiChanged: (v) =>
+                      setState(() => _state.daihyoHasHantei = v),
+                  onRenseikaiTypeChanged: (v) =>
+                      setState(() => _state.renseikaiType = v),
+                  onOverallTimeChanged: (v) => setState(() {
+                    _state.overallTimeController.text = v.toString();
+                  }),
+                  onKachinukiChanged: (v) =>
+                      setState(() => _state.isKachinuki = v),
+                  onKachinukiUnlimitedTypeChanged: (v) =>
+                      setState(() => _state.kachinukiUnlimitedType = v),
+                  onLeagueChanged: (v) => setState(() => _state.isLeague = v),
+                  onWinPointChanged: (v) => setState(() => _state.winPoint = v),
+                  onLossPointChanged: (v) =>
+                      setState(() => _state.lossPoint = v),
+                  onDrawPointChanged: (v) =>
+                      setState(() => _state.drawPoint = v),
                 ),
               ],
             ),
           ),
 
-          // Footer Save Button
+          // 下部保存ボタン
           MatchEditSaveButton(
-            isDantai: _isDantai,
+            isDantai: _state.isDantai,
             backgroundColor: backgroundColor,
-            primaryAccent: widget.themeColors.primaryAccent,
+            primaryAccent: themeColors.primaryAccent,
             isDark: isDark,
-            onSave: _saveChanges,
+            onSave: () => MatchEditSaveHelper.executeSave(
+              context: context,
+              ref: ref,
+              matches: widget.matches,
+              isDantai: _state.isDantai,
+              isSwapped: _state.isSwapped,
+              initialOwnIsRed: _state.initialOwnIsRed,
+              groupInput: _state.groupNameController.text.trim(),
+              redTeamInput: _state.redTeamController.text.trim(),
+              whiteTeamInput: _state.whiteTeamController.text.trim(),
+              courtInput: _state.courtController.text.trim(),
+              selectedPresetKey: _state.selectedPresetKey,
+              selectedPresetRule: _state.selectedPresetRule,
+              matchTime: _state.matchTime,
+              isRunningTime: _state.isRunningTime,
+              isIpponShobu: _state.isIpponShobu,
+              ipponLimit: _state.ipponLimit,
+              hansokuLimit: _state.hansokuLimit,
+              hasExtension: _state.hasExtension,
+              enchoTime: _state.enchoTime,
+              enchoCount: _state.enchoCount,
+              isEnchoUnlimited: _state.isEnchoUnlimited,
+              hasHantei: _state.hasHantei,
+              hasRepresentativeMatch: _state.hasRepresentativeMatch,
+              isDaihyoIpponShobu: _state.isDaihyoIpponShobu,
+              daihyoMatchTime: _state.daihyoMatchTime,
+              daihyoHasExtension: _state.daihyoHasExtension,
+              daihyoEnchoTime: _state.daihyoEnchoTime,
+              daihyoEnchoCount: _state.daihyoEnchoCount,
+              isDaihyoEnchoUnlimited: _state.isDaihyoEnchoUnlimited,
+              daihyoHasHantei: _state.daihyoHasHantei,
+              renseikaiType: _state.renseikaiType,
+              overallTimeMinutes:
+                  int.tryParse(_state.overallTimeController.text) ?? 30,
+              isKachinuki: _state.isKachinuki,
+              kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
+              isLeague: _state.isLeague,
+              winPoint: _state.winPoint,
+              lossPoint: _state.lossPoint,
+              drawPoint: _state.drawPoint,
+              userNote: _state.noteController.text.trim(),
+              status: _state.status,
+              redPlayerControllers: _state.redPlayerControllers,
+              whitePlayerControllers: _state.whitePlayerControllers,
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  void _saveChanges() {
-    MatchEditSaveHelper.executeSave(
-      context: context,
-      ref: ref,
-      matches: widget.matches,
-      isDantai: _isDantai,
-      isSwapped: _isSwapped,
-      initialOwnIsRed: _initialOwnIsRed,
-      groupInput: _groupNameController.text.trim(),
-      redTeamInput: _redTeamController.text.trim(),
-      whiteTeamInput: _whiteTeamController.text.trim(),
-      courtInput: _courtController.text.trim(),
-      selectedPresetKey: _selectedPresetKey,
-      selectedPresetRule: _selectedPresetRule,
-      matchTime: _matchTime,
-      isIpponShobu: _isIpponShobu,
-      hasHantei: _hasHantei,
-      userNote: _noteController.text.trim(),
-      status: _status,
-      redPlayerControllers: _redPlayerControllers,
-      whitePlayerControllers: _whitePlayerControllers,
     );
   }
 }

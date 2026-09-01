@@ -24,19 +24,25 @@ echo "✅ [Step 1/4] ファイル行数監査: PASS"
 echo ""
 
 # 2. デザインシステム厳格監査
-echo "🎨 [Step 2/4] デザインシステム ガバナンス監査を実行中..."
+echo "🎨 [Step 2/5] デザインシステム ガバナンス監査を実行中..."
 python3 scripts/check_design_tokens.py --strict
-echo "✅ [Step 2/4] デザインシステム監査: PASS"
+echo "✅ [Step 2/5] デザインシステム監査: PASS"
 echo ""
 
-# 3. 静的解析
-echo "🔍 [Step 3/4] Flutter 静的解析を実行中..."
+# 3. 試合シーン表記・カラーガバナンス監査
+echo "⚔️ [Step 3/5] 試合シーン（本戦・錬成・申合せ）ガバナンス監査を実行中..."
+python3 scripts/check_kendo_scene_governance.py
+echo "✅ [Step 3/5] 試合シーンガバナンス監査: PASS"
+echo ""
+
+# 4. 静的解析
+echo "🔍 [Step 4/5] Flutter 静的解析を実行中..."
 flutter analyze
-echo "✅ [Step 3/4] 静的解析: PASS"
+echo "✅ [Step 4/5] 静的解析: PASS"
 echo ""
 
-# 4. 単体テスト
-echo "🧪 [Step 4/4] 単体テストを実行中..."
+# 5. 単体テスト
+echo "🧪 [Step 5/5] 単体テストを実行中..."
 flutter test test/widget/sync_crdt_merger_test.dart \
              test/widget/match_command_queue_test.dart \
              test/widget/match_data_sanitizer_test.dart \

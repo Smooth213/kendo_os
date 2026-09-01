@@ -176,12 +176,43 @@ void main() {
         expect(find.text('道上剣友会'), findsNWidgets(2));
         expect(find.text('雷鳴道場中学'), findsNothing);
 
+        // 「⏳ 待機中のみ (0)」をタップしてフィルター（終了した試合は除外されること！）
+        await tester.tap(find.text('⏳ 待機中のみ (0)'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('道上剣友会'), findsNothing);
+        expect(find.text('雷鳴道場中学'), findsNothing);
+
         // 「すべて表示」をタップして全解除
         await tester.tap(find.text('すべて表示'));
         await tester.pumpAndSettle();
 
         expect(find.text('道上剣友会'), findsNWidgets(2));
         expect(find.text('雷鳴道場中学'), findsNWidgets(2));
+
+        // 🥋 スワイプでタブを移動できることの検証
+        // 左へスワイプして次のカテゴリ「小学生の部」へ移動
+        await tester.drag(find.byType(PageView), const Offset(-500, 0));
+        await tester.pumpAndSettle();
+
+        // 小学生の部のチーム（道上剣友会）のみ表示され、雷鳴道場中学は表示されない
+        expect(find.text('道上剣友会'), findsNWidgets(2));
+        expect(find.text('雷鳴道場中学'), findsNothing);
+
+        // 再度左へスワイプして「中学生」カテゴリへ移動
+        await tester.drag(find.byType(PageView), const Offset(-500, 0));
+        await tester.pumpAndSettle();
+
+        // 中学生の部のチーム（雷鳴道場中学）のみ表示され、道上剣友会は表示されない
+        expect(find.text('雷鳴道場中学'), findsNWidgets(2));
+        expect(find.text('道上剣友会'), findsNothing);
+
+        // 右へスワイプして前のタブへ戻れること
+        await tester.drag(find.byType(PageView), const Offset(500, 0));
+        await tester.pumpAndSettle();
+
+        expect(find.text('道上剣友会'), findsNWidgets(2));
+        expect(find.text('雷鳴道場中学'), findsNothing);
       },
     );
   });

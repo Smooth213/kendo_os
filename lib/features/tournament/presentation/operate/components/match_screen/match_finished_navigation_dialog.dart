@@ -42,7 +42,7 @@ class MatchFinishedNavigationDialog extends StatelessWidget {
       title: '対戦終了',
       content: const Text('対戦がすべて終了しました。\n次のアクションを選択してください。'),
       actions: [
-        // ★ 錬成会・申し合わせ時の「次の対戦を設定」ボタン（同じ相手との試合追加）
+        // ★ 錬成・申合せ時の「次の対戦を設定」ボタン（同じ相手との試合追加）
         if (isRenseikai && onAddNextRenseikaiMatch != null) ...[
           SizedBox(
             width: double.infinity,

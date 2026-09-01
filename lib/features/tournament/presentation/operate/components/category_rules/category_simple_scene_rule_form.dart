@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 
-/// マルチシーン（錬成会・申し合わせ）における簡易ルール設定フォーム（純粋UIコンポーネント）
+/// マルチシーン（錬成・申合せ）における簡易ルール設定フォーム（純粋UIコンポーネント）
 class CategorySimpleSceneRuleForm extends StatelessWidget {
   final String title;
   final double time;

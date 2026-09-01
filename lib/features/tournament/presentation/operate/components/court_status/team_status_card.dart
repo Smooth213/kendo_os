@@ -4,6 +4,7 @@ import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -21,11 +22,7 @@ class TeamStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final liveMatch = status.inProgressMatch;
     final isLive = status.hasLiveMatch;
-    final isFinished =
-        status.isAllFinished ||
-        (liveMatch == null &&
-            status.nextWaitingMatch == null &&
-            status.lastFinishedMatch != null);
+    final isFinished = status.isFinished;
 
     final targetMatch =
         liveMatch ??
@@ -229,29 +226,14 @@ class TeamStatusCard extends StatelessWidget {
   }
 
   Widget _buildScenePrefixBadge(BuildContext context, String scenePrefix) {
-    final isMoushiawase = scenePrefix.contains('申合せ');
-    final badgeColor = isMoushiawase
-        ? context.appColors.warningColor
-        : context.appColors.primaryAccent;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.subValue,
-        vertical: 2,
-      ),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.12),
-        borderRadius: AppRadius.sub,
-        border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        scenePrefix,
-        style: TextStyle(
-          fontSize: AppFontSize.nano,
-          fontWeight: AppFontWeight.bold,
-          color: badgeColor,
-        ),
-      ),
-    );
+    final scene = scenePrefix.contains('申合せ')
+        ? KendoMatchScene.moushiawase
+        : (scenePrefix.contains('錬成')
+              ? KendoMatchScene.renseikai
+              : (scenePrefix.contains('部内戦')
+                    ? KendoMatchScene.bunaiksen
+                    : KendoMatchScene.honsen));
+    return KendoSceneBadge(scene: scene);
   }
 
   Widget _buildCourtSection(BuildContext context) {

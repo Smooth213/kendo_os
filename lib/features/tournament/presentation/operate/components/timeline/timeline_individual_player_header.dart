@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// タイムライン・観客席ビュアー共通の個人戦アコーディオンヘッダー（1〜5段構造）
+/// タイムライン・観客席ビュアー共通の個人戦アコーディオンヘッダー（1〜4段構造）
 class TimelineIndividualPlayerHeader extends ConsumerWidget {
   final String playerName;
   final List<MatchModel> playerMatches;
@@ -30,7 +30,6 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
     if (playerMatches.isEmpty) return const SizedBox.shrink();
 
     final firstMatch = playerMatches.first;
-    final scenePrefix = TeamProgressHelper.getScenePrefix(firstMatch);
 
     final hasInProgress = playerMatches.any((m) => m.status == 'in_progress');
     final allFinished = playerMatches.every(
@@ -64,36 +63,15 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
         // 🔽 【1段目】: 属性バッジ（左） ────── ステータスバッジ（右）
         Row(
           children: [
-            if (scenePrefix.isNotEmpty)
-              Builder(
-                builder: (context) {
-                  final isMoushiawase = scenePrefix.contains('申合せ');
-                  final badgeColor = isMoushiawase
-                      ? context.appColors.warningColor
-                      : context.appColors.primaryAccent;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.subValue,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: badgeColor.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.sub,
-                      border: Border.all(
-                        color: badgeColor.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Text(
-                      scenePrefix,
-                      style: TextStyle(
-                        fontSize: AppFontSize.nano,
-                        fontWeight: AppFontWeight.bold,
-                        color: badgeColor,
-                      ),
-                    ),
-                  );
-                },
-              ),
+            Builder(
+              builder: (context) {
+                final scene = KendoSceneHelper.detectScene(firstMatch);
+                if (scene == KendoMatchScene.honsen) {
+                  return const SizedBox.shrink();
+                }
+                return KendoSceneBadge(scene: scene);
+              },
+            ),
             const Spacer(),
             MatchStatusBadge(
               isPlaying: hasInProgress,
@@ -194,41 +172,6 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
           nextWaitingMatch: nextWaitingMatch,
           allFinished: allFinished,
           stats: stats,
-        ),
-
-        // 🔽 【5段目】: アクションボタン行（スコアボタン）
-        Padding(
-          padding: const EdgeInsets.only(top: AppSpacing.xs),
-          child: Row(
-            children: [
-              const Spacer(),
-              SizedBox(
-                height: 26,
-                child: OutlinedButton(
-                  onPressed: () {
-                    final targetId = targetMatch.id;
-                    final tId = targetMatch.tournamentId ?? '';
-                    context.push('/match/$targetId?tournamentId=$tId');
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                    ),
-                    side: BorderSide(color: titleColor.withValues(alpha: 0.2)),
-                    shape: RoundedRectangleBorder(borderRadius: AppRadius.sub),
-                  ),
-                  child: Text(
-                    'スコア',
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.primaryAccent,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );

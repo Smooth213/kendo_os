@@ -177,7 +177,7 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
-          title: _formState.editingCategory == null ? '部門別ルール設定' : 'ルールの編集',
+          title: _formState.editingCategory == null ? '試合ルール設定' : 'ルールの編集',
           backgroundColor: AppKendoColors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new),

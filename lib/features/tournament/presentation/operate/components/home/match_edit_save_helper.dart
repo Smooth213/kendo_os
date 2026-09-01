@@ -21,8 +21,31 @@ class MatchEditSaveHelper {
     required String? selectedPresetKey,
     required MatchRule? selectedPresetRule,
     required double matchTime,
+    required bool isRunningTime,
     required bool isIpponShobu,
+    int ipponLimit = 2,
+    int hansokuLimit = 2,
+    required bool hasExtension,
+    required double enchoTime,
+    required int enchoCount,
+    required bool isEnchoUnlimited,
     required bool hasHantei,
+    required bool hasRepresentativeMatch,
+    required bool isDaihyoIpponShobu,
+    required double daihyoMatchTime,
+    required bool daihyoHasExtension,
+    required double daihyoEnchoTime,
+    required int daihyoEnchoCount,
+    required bool isDaihyoEnchoUnlimited,
+    required bool daihyoHasHantei,
+    required String renseikaiType,
+    required int overallTimeMinutes,
+    bool isKachinuki = false,
+    String kachinukiUnlimitedType = '大将対大将',
+    bool isLeague = false,
+    double winPoint = 3.0,
+    double lossPoint = 0.0,
+    double drawPoint = 1.0,
     required String userNote,
     required String status,
     required List<TextEditingController> redPlayerControllers,
@@ -56,8 +79,6 @@ class MatchEditSaveHelper {
 
     final String sceneKey = selectedPresetKey ?? 'honsen';
     final bool isRenseikaiBool = sceneKey == 'renseikai';
-    final bool isRenseikaiOrMoushiawase =
-        sceneKey == 'renseikai' || sceneKey == 'moushiawase';
 
     final updatedMatches = <MatchModel>[];
 
@@ -69,17 +90,31 @@ class MatchEditSaveHelper {
         matchScene: sceneKey,
         isRenseikai: isRenseikaiBool,
         matchTimeMinutes: matchTime,
+        isRunningTime: isRunningTime,
         isIpponShobu: isIpponShobu,
-        hasHantei: (isRenseikaiOrMoushiawase || isDantai) ? false : hasHantei,
-        enchoTimeMinutes: (isRenseikaiOrMoushiawase || isDantai)
-            ? 0.0
-            : baseRule.enchoTimeMinutes,
-        isEnchoUnlimited: (isRenseikaiOrMoushiawase || isDantai)
-            ? false
-            : baseRule.isEnchoUnlimited,
-        hasRepresentativeMatch: isRenseikaiOrMoushiawase
-            ? false
-            : baseRule.hasRepresentativeMatch,
+        ipponLimit: isIpponShobu ? 1 : ipponLimit,
+        hansokuLimit: hansokuLimit,
+        hasHantei: hasHantei,
+        enchoTimeMinutes: hasExtension ? enchoTime : 0.0,
+        isEnchoUnlimited: hasExtension && isEnchoUnlimited,
+        enchoCount: hasExtension ? (isEnchoUnlimited ? -2 : enchoCount) : 0,
+        hasRepresentativeMatch: isDantai ? hasRepresentativeMatch : false,
+        isDaihyoIpponShobu: isDaihyoIpponShobu,
+        daihyoMatchTimeMinutes: daihyoMatchTime,
+        daihyoHasExtension: daihyoHasExtension,
+        daihyoEnchoTimeMinutes: daihyoHasExtension ? daihyoEnchoTime : 0.0,
+        daihyoEnchoCount: daihyoHasExtension
+            ? (isDaihyoEnchoUnlimited ? -2 : daihyoEnchoCount)
+            : 0,
+        daihyoHasHantei: daihyoHasHantei,
+        renseikaiType: renseikaiType,
+        overallTimeMinutes: overallTimeMinutes,
+        isKachinuki: isKachinuki,
+        kachinukiUnlimitedType: kachinukiUnlimitedType,
+        isLeague: isLeague,
+        winPoint: winPoint,
+        lossPoint: lossPoint,
+        drawPoint: drawPoint,
         teamName: targetOwnTeamName.isNotEmpty
             ? targetOwnTeamName
             : baseRule.teamName,
@@ -121,6 +156,13 @@ class MatchEditSaveHelper {
         rule: updatedRule,
         matchScene: sceneKey,
         status: status,
+        matchTimeMinutes: matchTime,
+        hasExtension: hasExtension,
+        extensionTimeMinutes: hasExtension ? enchoTime : null,
+        extensionCount: hasExtension
+            ? (isEnchoUnlimited ? -2 : enchoCount)
+            : null,
+        hasHantei: hasHantei,
       );
 
       updatedMatches.add(updatedMatch);

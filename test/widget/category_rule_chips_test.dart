@@ -24,9 +24,9 @@ void main() {
         ),
       );
 
-      expect(find.text('標準ルール'), findsOneWidget);
-      expect(find.text('3分'), findsOneWidget);
-      expect(find.text('延長無制限'), findsOneWidget);
+      expect(find.text('🥋 個人戦'), findsOneWidget);
+      expect(find.text('⏱️ 3分'), findsOneWidget);
+      expect(find.text('⏳ 延長無制限'), findsOneWidget);
     });
 
     testWidgets('Renders multi-scene chips (renseikai, honsen, moushiawase)', (
@@ -54,11 +54,11 @@ void main() {
         ),
       );
 
-      expect(find.text('⚔️ 錬成会'), findsOneWidget);
-      expect(find.text('流し'), findsOneWidget);
+      expect(find.text('⚔️ 錬成'), findsOneWidget);
+      expect(find.text('🔄 通し'), findsOneWidget);
       expect(find.text('🏆 本戦'), findsOneWidget);
-      expect(find.text('4分'), findsOneWidget);
-      expect(find.text('🤝 申し合わせ'), findsOneWidget);
+      expect(find.text('⏱️ 4分'), findsOneWidget);
+      expect(find.text('🤝 申合せ'), findsOneWidget);
     });
   });
 }

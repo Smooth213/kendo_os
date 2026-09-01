@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
   HapticFeedback.mediumImpact();
@@ -28,52 +28,85 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
               rule.positions.length == 1 &&
               (rule.positions.first == '選手' || rule.positions.first == '個人戦')));
 
-  // --- 試合形式 ---
+  // --- 1. 試合シーン ＆ 形式 ---
+  final scene = KendoSceneHelper.detectScene(match);
+  final String sceneTitle = KendoSceneHelper.getIconLabel(scene);
+  final Color sceneColor = KendoSceneHelper.getColor(scene, isDark: isDark);
+
   String formatText = isIndividual ? '個人戦' : '団体戦';
-  if (rule?.isRenseikai ?? false) {
-    formatText = '錬成会';
-  } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
+  if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
     formatText = '勝ち抜き戦';
   } else if (isLeague) {
     formatText = isIndividual ? 'リーグ個人戦' : 'リーグ団体戦';
   }
 
-  // --- 試合時間 ---
+  // --- 2. 試合時間 ＆ 計測方式 ---
   final double matchTime =
       rule?.matchTimeMinutes ?? match.matchTimeMinutes.toDouble();
   final isRunningTime = rule?.isRunningTime ?? match.isRunningTime;
   String timeStr = matchTime == matchTime.toInt()
       ? '${matchTime.toInt()}分'
-      : '${matchTime.toInt()}分${((matchTime % 1) * 60).toInt()}秒';
+      : '${matchTime.toInt()}分${((matchTime % 1) * 60).round()}秒';
   final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
 
-  // --- 勝負形式（本数） ---
+  // --- 3. 勝負形式（本数） ---
   final bool isIpponShobu = rule?.isIpponShobu ?? false;
   final String shobuDesc = isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)';
 
-  // --- 延長戦・判定 (個人戦または明示設定用) ---
+  // --- 4. 延長戦 ---
   final bool isEnchoUnlimited = rule?.isEnchoUnlimited ?? false;
   final double enchoMins =
       rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
   final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 0;
   final bool hasExtension = rule != null
-      ? (isEnchoUnlimited || enchoCount > 0)
+      ? (isEnchoUnlimited || enchoCount > 0 || enchoMins > 0)
       : match.hasExtension;
 
   String enchoDesc = 'なし';
   if (hasExtension) {
     if (isEnchoUnlimited || enchoCount == -2) {
-      enchoDesc = 'あり (無制限)';
+      enchoDesc = 'あり (時間無制限・決着まで)';
     } else {
       String extTimeStr = enchoMins == enchoMins.toInt()
           ? '${enchoMins.toInt()}分'
-          : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).toInt()}秒';
+          : '${enchoMins.toInt()}分${((enchoMins % 1) * 60).round()}秒';
       final countStr = enchoCount > 0 ? '$enchoCount回' : '1回';
       enchoDesc = 'あり ($extTimeStr・$countStr)';
     }
   }
 
+  // --- 5. 判定 ---
   final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
+  final String hanteiDesc = hanteiEnabled ? 'あり (時間・延長終了時)' : 'なし';
+
+  // --- 6. 団体戦・代表戦 ---
+  final bool hasDaihyo = rule?.hasRepresentativeMatch ?? true;
+  String daihyoDesc = 'なし';
+  if (!isIndividual && hasDaihyo) {
+    final daihyoTime = (rule?.daihyoMatchTimeMinutes ?? 0.0) == 0.0
+        ? '時間制限なし'
+        : '${rule!.daihyoMatchTimeMinutes.toInt()}分';
+    final daihyoShobu = (rule?.isDaihyoIpponShobu ?? true) ? '一本勝負' : '三本勝負';
+
+    String daihyoEncho = '延長なし';
+    if (rule?.daihyoHasExtension ?? true) {
+      if ((rule?.daihyoEnchoCount ?? -2) == -2) {
+        daihyoEncho = '延長無制限';
+      } else {
+        final dEnchoTime = rule?.daihyoEnchoTimeMinutes ?? 3.0;
+        final dCount = rule?.daihyoEnchoCount ?? 1;
+        daihyoEncho = '延長${dEnchoTime.toInt()}分・$dCount回';
+      }
+    }
+    final daihyoHantei = (rule?.daihyoHasHantei ?? false) ? '判定あり' : '';
+    final parts = [
+      daihyoTime,
+      daihyoShobu,
+      daihyoEncho,
+      if (daihyoHantei.isNotEmpty) daihyoHantei,
+    ];
+    daihyoDesc = 'あり (${parts.join("・")})';
+  }
 
   // --- 備考・メモ ---
   String cleanNote = match.note;
@@ -112,7 +145,7 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 Icon(
@@ -122,191 +155,89 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  '試合レギュレーション',
+                  '試合レギュレーション確認',
                   style: TextStyle(
                     fontSize: AppFontSize.headline,
                     fontWeight: AppFontWeight.bold,
                     color: context.appColors.textColor,
                   ),
                 ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: sceneColor.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.sub,
+                    border: Border.all(
+                      color: sceneColor.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Text(
+                    sceneTitle,
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: sceneColor,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const Divider(height: 32),
-            if (rule == null)
-              Container(
-                margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: AppKendoColors.orange.withValues(alpha: 0.1),
-                  borderRadius: AppRadius.small,
-                  border: Border.all(color: context.appColors.warningColor),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: context.appColors.warningColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'この試合はアップデート前に作成されたため、詳細なルールが保存されていません。新しく作成した試合では正しく表示されます。',
-                        style: TextStyle(
-                          color: context.appColors.warningColor,
-                          fontSize: AppFontSize.small,
-                          fontWeight: AppFontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            _buildRuleRow('試合形式', formatText, context),
-            _buildRuleRow('勝負形式', shobuDesc, context),
-            _buildRuleRow('試合時間', timeDesc, context),
+            const Divider(height: 28),
 
-            // === 錬成会 ===
+            // 1. 試合形式
+            _buildRuleRow('🎯 試合形式', formatText, context),
+
+            // 2. 試合時間 ＆ 計測方式
+            _buildRuleRow('⏱️ 試合時間', timeDesc, context),
+
+            // 3. 勝負形式
+            _buildRuleRow('⚔️ 勝負形式', shobuDesc, context),
+
+            // 4. 延長戦
+            _buildRuleRow('🔄 延長戦', enchoDesc, context),
+
+            // 5. 判定
+            _buildRuleRow('⚖️ 判定', hanteiDesc, context),
+
+            // 6. 代表戦（団体戦時のみ、勝ち抜き戦・錬成会除く）
+            if (!isIndividual)
+              ...() {
+                final bool isSpecialFormat =
+                    match.isKachinuki ||
+                    (rule?.isKachinuki ?? false) ||
+                    (rule?.isRenseikai ?? false);
+                if (!isSpecialFormat) {
+                  return [_buildRuleRow('🥋 代表戦', daihyoDesc, context)];
+                }
+                return <Widget>[];
+              }(),
+
+            // 錬成会・勝ち抜き戦等の特殊ルール
             if (rule?.isRenseikai ?? false) ...[
-              _buildSectionHeader('錬成会設定', themeColors.primaryAccent),
+              const Divider(height: 20),
               _buildRuleRow('進行方式', rule!.renseikaiType, context),
               if (rule.renseikaiType == '時間制')
-                _buildRuleRow('制限時間', '${rule.overallTimeMinutes}分', context),
-              if (!isIndividual && rule.positions.isNotEmpty)
-                _buildRuleRow('ポジション', rule.positions.join('、'), context),
-            ]
-            // === 個人戦（トーナメント個人戦） ===
-            else if (isIndividual && !isLeague) ...[
-              _buildRuleRow('延長戦', enchoDesc, context),
-              _buildRuleRow('判定', hanteiEnabled ? 'あり' : 'なし', context),
-            ]
-            // === リーグ個人戦 ===
-            else if (isIndividual && isLeague) ...[
-              if (hasExtension) _buildRuleRow('延長戦', enchoDesc, context),
-              if (hanteiEnabled) _buildRuleRow('判定', 'あり', context),
-              if (rule != null &&
-                  (rule.winPoint > 0 ||
-                      rule.drawPoint > 0 ||
-                      rule.lossPoint > 0)) ...[
-                _buildSectionHeader('リーグ勝点設定', themeColors.primaryAccent),
-                _buildRuleRow(
-                  '勝点配分',
-                  '勝: ${rule.winPoint}点 / 分: ${rule.drawPoint}点 / 負: ${rule.lossPoint}点',
-                  context,
-                ),
-              ],
-            ]
-            // === 勝ち抜き戦 ===
-            else if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
-              _buildSectionHeader('勝ち抜き戦設定', themeColors.primaryAccent),
+                _buildRuleRow('総試合時間', '${rule.overallTimeMinutes}分', context),
+            ],
+            if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
+              const Divider(height: 20),
               _buildRuleRow(
-                '無制限条件',
+                '勝ち抜き条件',
                 rule?.kachinukiUnlimitedType ?? '大将対大将',
                 context,
               ),
-              if (rule != null && rule.positions.isNotEmpty)
-                _buildRuleRow('ポジション', rule.positions.join('、'), context),
-            ]
-            // === 団体戦（トーナメント団体戦） ===
-            else if (!isIndividual && !isLeague) ...[
-              _buildSectionHeader('団体戦・チーム設定', themeColors.primaryAccent),
-              _buildRuleRow(
-                '代表戦',
-                rule != null
-                    ? (rule.hasRepresentativeMatch ? 'あり' : 'なし')
-                    : 'あり',
-                context,
-              ),
-              if (rule == null || rule.hasRepresentativeMatch) ...[
-                _buildRuleRow(
-                  '代表戦勝負形式',
-                  (rule?.isDaihyoIpponShobu ?? true) ? '１本勝負' : '３本勝負',
-                  context,
-                ),
-                _buildRuleRow(
-                  '代表戦時間',
-                  (rule?.daihyoMatchTimeMinutes ?? 0.0) == 0.0
-                      ? '時間制限なし'
-                      : '${rule!.daihyoMatchTimeMinutes.toInt()}分',
-                  context,
-                ),
-                if (rule?.daihyoHasExtension ?? true)
-                  _buildRuleRow(
-                    '代表戦延長',
-                    ((rule?.daihyoEnchoCount ?? -2) == -2 ||
-                            (rule?.daihyoEnchoCount ?? -2) == 0)
-                        ? 'あり (無制限)'
-                        : 'あり (${rule!.daihyoEnchoTimeMinutes.toInt()}分・${rule.daihyoEnchoCount}回)',
-                    context,
-                  )
-                else
-                  _buildRuleRow('代表戦延長', 'なし', context),
-                if (rule?.daihyoHasHantei ?? false)
-                  _buildRuleRow('代表戦判定', 'あり', context),
-              ],
-              if (rule != null && rule.positions.isNotEmpty)
-                _buildRuleRow('ポジション', rule.positions.join('、'), context),
-            ]
-            // === リーグ団体戦 ===
-            else if (!isIndividual && isLeague) ...[
-              _buildSectionHeader('リーグ団体戦設定', themeColors.primaryAccent),
-              _buildRuleRow(
-                '同点時代表戦',
-                (rule?.hasLeagueDaihyo ?? false) ? 'あり' : 'なし',
-                context,
-              ),
-              if (rule != null && rule.hasLeagueDaihyo) ...[
-                _buildRuleRow(
-                  '代表戦勝負形式',
-                  rule.isDaihyoIpponShobu ? '１本勝負' : '３本勝負',
-                  context,
-                ),
-                _buildRuleRow(
-                  '代表戦時間',
-                  rule.daihyoMatchTimeMinutes == 0.0
-                      ? '時間制限なし'
-                      : '${rule.daihyoMatchTimeMinutes.toInt()}分',
-                  context,
-                ),
-              ],
-              if (rule != null &&
-                  (rule.winPoint > 0 ||
-                      rule.drawPoint > 0 ||
-                      rule.lossPoint > 0))
-                _buildRuleRow(
-                  '勝点配分',
-                  '勝: ${rule.winPoint}点 / 分: ${rule.drawPoint}点 / 負: ${rule.lossPoint}点',
-                  context,
-                ),
-              if (rule != null && rule.positions.isNotEmpty)
-                _buildRuleRow('ポジション', rule.positions.join('、'), context),
             ],
 
+            // 備考・進行メモ
             if (cleanNote.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.sm),
-              _buildRuleRow('備考・メモ', cleanNote, context),
+              const Divider(height: 20),
+              _buildRuleRow('📝 備考・メモ', cleanNote, context),
             ],
-            const SizedBox(height: AppSpacing.xl),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.appColors.separatorColor,
-                  foregroundColor: context.appColors.textColor,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.modernValue,
-                  ),
-                ),
-                child: const Text(
-                  '閉じる',
-                  style: TextStyle(fontWeight: AppFontWeight.bold),
-                ),
-              ),
-            ),
-            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8),
+            const SizedBox(height: AppSpacing.md),
           ],
         ),
       ),
@@ -314,33 +245,19 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
   );
 }
 
-Widget _buildSectionHeader(String title, Color color) {
-  return Padding(
-    padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.md),
-    child: Text(
-      title,
-      style: TextStyle(
-        fontSize: AppFontSize.small,
-        fontWeight: AppFontWeight.bold,
-        color: color,
-      ),
-    ),
-  );
-}
-
 Widget _buildRuleRow(String label, String value, BuildContext context) {
   return Padding(
-    padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 110,
+          width: 120,
           child: Text(
             label,
             style: TextStyle(
-              fontSize: AppFontSize.bodySmall,
               fontWeight: AppFontWeight.bold,
+              fontSize: AppFontSize.bodySmall,
               color: context.appColors.subTextColor,
             ),
           ),
@@ -349,9 +266,9 @@ Widget _buildRuleRow(String label, String value, BuildContext context) {
           child: Text(
             value,
             style: TextStyle(
-              fontSize: AppFontSize.bodySmall,
-              fontWeight: AppFontWeight.bold,
+              fontSize: AppFontSize.body,
               color: context.appColors.textColor,
+              fontWeight: AppFontWeight.semiBold,
             ),
           ),
         ),

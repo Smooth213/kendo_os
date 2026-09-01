@@ -71,7 +71,7 @@ void main() {
 
         // メモ入力欄
         expect(textFields[1].controller?.text, '');
-        expect(textFields[1].hintText, '例: 申し合わせ 第2試合 (空欄可)');
+        expect(textFields[1].hintText, '例: 申合せ 第2試合 (空欄可)');
 
         // 開始ボタン
         expect(find.text('このオーダーで第1試合を開始'), findsOneWidget);

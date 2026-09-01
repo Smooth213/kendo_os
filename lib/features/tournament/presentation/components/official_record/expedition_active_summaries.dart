@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_models.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
-/// 遠征・大会公式記録のシーン別勝敗サマリー（本戦、錬成会、申し合わせ、個人戦）表示ウィジェット
+/// 遠征・大会公式記録のシーン別勝敗サマリー（本戦、錬成、申合せ、個人戦）表示ウィジェット
 class ExpeditionActiveSummaries extends StatelessWidget {
   final ExpeditionSummaryData summaryData;
 
@@ -11,6 +12,7 @@ class ExpeditionActiveSummaries extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeItems = <Widget>[];
 
     final renseikaiTotal =
@@ -20,11 +22,11 @@ class ExpeditionActiveSummaries extends StatelessWidget {
     if (renseikaiTotal > 0) {
       activeItems.add(
         _buildSummaryItem(
-          '錬成会 (団体)',
+          '錬成 (団体)',
           summaryData.renseikaiWin,
           summaryData.renseikaiLoss,
           summaryData.renseikaiDraw,
-          const Color(0xFFD97706),
+          KendoSceneHelper.getColor(KendoMatchScene.renseikai, isDark: isDark),
         ),
       );
     }
@@ -38,7 +40,7 @@ class ExpeditionActiveSummaries extends StatelessWidget {
           summaryData.honsenWin,
           summaryData.honsenLoss,
           summaryData.honsenDraw,
-          const Color(0xFF3F51B5),
+          KendoSceneHelper.getColor(KendoMatchScene.honsen, isDark: isDark),
         ),
       );
     }
@@ -50,11 +52,14 @@ class ExpeditionActiveSummaries extends StatelessWidget {
     if (moushiawaseTotal > 0) {
       activeItems.add(
         _buildSummaryItem(
-          '申し合わせ',
+          '申合せ',
           summaryData.moushiawaseWin,
           summaryData.moushiawaseLoss,
           summaryData.moushiawaseDraw,
-          const Color(0xFF009688),
+          KendoSceneHelper.getColor(
+            KendoMatchScene.moushiawase,
+            isDark: isDark,
+          ),
         ),
       );
     }

@@ -28,11 +28,11 @@ void main() {
         ),
       );
 
-      expect(find.text('⚔️ 錬成会（練習試合）'), findsOneWidget);
+      expect(find.text('⚔️ 錬成（練習試合）'), findsOneWidget);
       expect(find.text('🏆 本戦（通常戦）'), findsOneWidget);
-      expect(find.text('🤝 申し合わせ（自由対戦）'), findsOneWidget);
+      expect(find.text('🤝 申合せ（自由対戦）'), findsOneWidget);
 
-      await tester.tap(find.text('⚔️ 錬成会（練習試合）'));
+      await tester.tap(find.text('⚔️ 錬成（練習試合）'));
       await tester.pump();
 
       expect(selectedScene, 'renseikai');

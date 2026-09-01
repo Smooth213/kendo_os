@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_models.dart';
 
 /// 遠征成績の団体戦・勝ち抜き戦・個人戦集計プロセッサ
@@ -237,11 +238,12 @@ class ExpeditionTeamMatchProcessor {
             ? DateFormat('HH:mm').format(matchTime)
             : '';
 
-        final String sceneLabel = scene == 'renseikai'
-            ? '錬成会'
-            : (scene == 'moushiawase'
-                  ? '申し合わせ'
-                  : (scene == 'honsen' ? '本戦' : '団体戦'));
+        final kScene = KendoSceneHelper.detectScene(firstMatch);
+        final String sceneLabel = kScene == KendoMatchScene.honsen
+            ? '本戦'
+            : (kScene == KendoMatchScene.renseikai
+                  ? '錬成'
+                  : (kScene == KendoMatchScene.moushiawase ? '申合せ' : '団体戦'));
         final String timeSceneLabel = timeStr.isNotEmpty
             ? '$timeStr $sceneLabel'
             : sceneLabel;

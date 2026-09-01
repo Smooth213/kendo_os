@@ -114,9 +114,9 @@ class MatchFormatRuleStep extends ConsumerWidget {
     );
 
     final displayRuleName = selectedRuleScene == 'renseikai'
-        ? '⚔️ 錬成会ルール'
+        ? '⚔️ 錬成ルール'
         : (selectedRuleScene == 'moushiawase'
-              ? '🤝 申し合わせルール'
+              ? '🤝 申合せルール'
               : (selectedRuleScene == 'advanced'
                     ? '⭐ 上位戦ルール'
                     : '🏆 本戦（通常戦）ルール'));
@@ -164,7 +164,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
               if (ruleSet.isMultiScene) ...[
                 if (ruleSet.useRenseikaiRule)
                   AppChoiceChip(
-                    label: const Text('⚔️ 錬成会ルール'),
+                    label: const Text('⚔️ 錬成ルール'),
                     selected: selectedRuleScene == 'renseikai',
                     onSelected: (selected) {
                       if (selected) {
@@ -184,7 +184,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
                   ),
                 if (ruleSet.useMoushiawaseRule)
                   AppChoiceChip(
-                    label: const Text('🤝 申し合わせルール'),
+                    label: const Text('🤝 申合せルール'),
                     selected: selectedRuleScene == 'moushiawase',
                     onSelected: (selected) {
                       if (selected) {
