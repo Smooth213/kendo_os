@@ -43,7 +43,8 @@ def run_architecture_governance():
         if dart_res.returncode != 0:
             print(dart_res.stdout + dart_res.stderr)
         if test_res.returncode != 0:
-            print(test_res.stdout + test_res.stderr)
+            from test_failure_formatter import parse_and_format_failures
+            print(parse_and_format_failures(test_res.stdout + test_res.stderr))
         sys.exit(1)
 
 if __name__ == "__main__":

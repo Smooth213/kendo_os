@@ -63,46 +63,11 @@ cat << 'EOF' > "$PRE_PUSH_FILE"
 
 echo ""
 echo "================================================================"
-echo " 🛡️  Kendo OS Pre-Push Quality Gate (完全品質要塞)"
+echo " 🛡️  Kendo OS Pre-Push Quality Gate (全テスト完全検証)"
 echo "================================================================"
 echo ""
 
-echo "🚀 [Step 1/3] 全10大ガバナンス個別監査を実行中..."
-python3 scripts/check_file_lines.py || exit 1
-python3 scripts/check_design_tokens.py --strict || exit 1
-python3 scripts/check_kendo_score_governance.py || exit 1
-python3 scripts/check_kendo_metadata_governance.py || exit 1
-python3 scripts/check_kendo_scene_governance.py || exit 1
-python3 scripts/check_security_governance.py || exit 1
-python3 scripts/check_layout_5tier_governance.py || exit 1
-python3 scripts/check_theme_contrast_governance.py || exit 1
-python3 scripts/check_architecture_boundary_governance.py || exit 1
-python3 scripts/check_offline_resilience_governance.py || exit 1
-
-echo ""
-echo "🔍 [Step 2/3] Flutter 静的解析を実行中..."
-flutter analyze || {
-    echo ""
-    echo "🚨 【プッシュ拒否】Flutter静的解析で問題・警告が検出されたため、プッシュを中断しました。"
-    exit 1
-}
-
-echo ""
-echo "🧪 [Step 3/3] Flutter 全テストスイート完全実行中..."
-flutter test || {
-    echo ""
-    echo "🚨 【プッシュ拒否】テストエラーが検出されたため、プッシュを中断しました。"
-    echo "   全テストが 100% PASS するように修正してください。"
-    exit 1
-}
-
-echo ""
-echo "================================================================"
-echo " 🎉 祝！全10大ガバナンス・静的解析・全テストを完全クリアしました！"
-echo "    安全にリモートへのプッシュを実行します。"
-echo "================================================================"
-echo ""
-exit 0
+python3 scripts/run_flutter_tests.py || exit 1
 EOF
 
 chmod +x "$PRE_COMMIT_FILE"

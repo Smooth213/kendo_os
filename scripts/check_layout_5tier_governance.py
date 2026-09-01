@@ -48,7 +48,8 @@ def run_layout_governance():
     else:
         print(" 🔴 監査結果: 違反 (UIレイアウト5段構造に崩れが検出されました)")
         print("=" * 60)
-        print(output)
+        from test_failure_formatter import parse_and_format_failures
+        print(parse_and_format_failures(output))
         sys.exit(1)
 
 if __name__ == "__main__":
