@@ -167,7 +167,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // アコーディオンを展開
-      await tester.tap(find.text('皿田 脩人'));
+      await tester.tap(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('皿田 脩人'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('相手 次郎'), findsOneWidget);

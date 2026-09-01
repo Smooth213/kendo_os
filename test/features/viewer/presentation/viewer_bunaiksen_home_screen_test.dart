@@ -227,7 +227,7 @@ void main() {
       expect(find.text('山田 太郎'), findsOneWidget);
       expect(find.text('123'), findsOneWidget);
       expect(find.text('VS'), findsOneWidget);
-      expect(find.text('進行中'), findsOneWidget);
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
     });
 
     testWidgets(

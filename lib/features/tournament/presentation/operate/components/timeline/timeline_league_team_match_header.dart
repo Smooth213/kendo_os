@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -71,7 +72,7 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔼 【中枠1行目】: コントロールボタン集約ライン
+        // 🔽 【中枠1行目】: 属性プレフィックス・ポジション数・スコア/簡易入力ボタン・ステータスバッジ
         Row(
           children: [
             Builder(
@@ -80,7 +81,9 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
                 final scenePrefix = firstBout != null
                     ? TeamProgressHelper.getScenePrefix(firstBout)
                     : '';
-                if (scenePrefix.isEmpty) return const SizedBox.shrink();
+                if (scenePrefix.isEmpty) {
+                  return const SizedBox.shrink();
+                }
                 final isMoushiawase = scenePrefix.contains('申合せ');
                 final badgeColor = isMoushiawase
                     ? context.appColors.warningColor
@@ -130,14 +133,14 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(right: AppSpacing.subValue),
                 child: SizedBox(
-                  height: 24,
+                  height: 26,
                   child: OutlinedButton.icon(
                     onPressed: () =>
                         onShowSummaryInputDialog(context, ref, bouts),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.flash_on,
-                      size: 11,
-                      color: Color(0xFFD97706),
+                      size: 12,
+                      color: context.appColors.warningColor,
                     ),
                     label: Text(
                       '簡易入力',
@@ -165,7 +168,7 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.subValue),
               child: SizedBox(
-                height: 24,
+                height: 26,
                 child: OutlinedButton(
                   onPressed: () {
                     final target =
@@ -191,38 +194,17 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: AppFontSize.badge,
                       fontWeight: AppFontWeight.bold,
-                      color: mTitleColor,
+                      color: context.appColors.primaryAccent,
                     ),
                   ),
                 ),
               ),
             ),
-            // 状態バナー
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.subValue,
-                vertical: AppSpacing.xxs,
-              ),
-              decoration: BoxDecoration(
-                color: boutsInProgress
-                    ? context.appColors.infoColor
-                    : (boutsAllFinished
-                          ? context.appColors.separatorColor
-                          : (isDark
-                                ? const Color(0xFF2C2C2E)
-                                : context.appColors.separatorColor)),
-                borderRadius: AppRadius.tiny,
-              ),
-              child: Text(
-                boutsInProgress ? '進行中' : (boutsAllFinished ? '終了' : '待機中'),
-                style: TextStyle(
-                  fontSize: AppFontSize.badge,
-                  fontWeight: AppFontWeight.bold,
-                  color: boutsInProgress
-                      ? AppKendoColors.pureWhite
-                      : const Color(0x8A000000),
-                ),
-              ),
+            // 状態バナー（統一 MatchStatusBadge）
+            MatchStatusBadge(
+              isPlaying: boutsInProgress,
+              isFinished: boutsAllFinished,
+              isDark: isDark,
             ),
           ],
         ),

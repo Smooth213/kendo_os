@@ -46,8 +46,14 @@ void main() {
         ),
       );
 
-      expect(find.text('佐藤'), findsWidgets);
-      expect(find.text('個人戦 • 1試合'), findsOneWidget);
+      expect(find.text('佐'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('佐藤'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('終了'), findsOneWidget);
     });
 
     testWidgets('2. TimelineTeamCard renders header and matches', (

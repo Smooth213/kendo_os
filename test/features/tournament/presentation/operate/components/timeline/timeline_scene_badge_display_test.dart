@@ -152,9 +152,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // サブタイトルに【錬成】個人戦 および 【申合せ】個人戦 が表示されること
-        expect(find.text('【錬成】個人戦 • 1試合'), findsOneWidget);
-        expect(find.text('【申合せ】個人戦 • 1試合'), findsOneWidget);
+        // 1段目のバッジに【錬成】および【申合せ】が表示されること
+        expect(find.text('【錬成】'), findsWidgets);
+        expect(find.text('【申合せ】'), findsWidgets);
       },
     );
 

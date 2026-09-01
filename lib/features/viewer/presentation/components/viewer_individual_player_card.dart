@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_individual_player_header.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_list_tile_card.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -29,15 +30,16 @@ class ViewerIndividualPlayerCard extends StatelessWidget {
       (m) => m.status == 'finished' || m.status == 'approved',
     );
 
-    final Color pCardBg = pAllFinished
-        ? (isDark ? const Color(0xFF161618) : context.appColors.inputBackground)
-        : (context.appColors.cardBackground);
-
     final Color pTitleColor = pAllFinished
         ? context.appColors.subTextColor
         : (context.appColors.textColor);
 
-    final Color pSubTitleColor = context.appColors.subTextColor;
+    final Color cardBg = pAllFinished
+        ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
+        : (isDark ? context.appColors.cardBackground : const Color(0xFFFFFFFF));
+    final Color collapsedCardBg = pAllFinished
+        ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
+        : (isDark ? context.appColors.cardBackground : const Color(0xFFFAFAFC));
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -45,99 +47,65 @@ class ViewerIndividualPlayerCard extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
+        color: cardBg,
         borderRadius: AppRadius.medium,
         border: Border.all(
-          color: isDark
-              ? const Color(0xFF38383A)
-              : context.appColors.separatorColor,
-          width: 1,
+          color: pInProgress
+              ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+              : (isDark
+                    ? const Color(0xFF2C2C2E)
+                    : context.appColors.separatorColor),
+          width: pInProgress ? 1.5 : 1.0,
         ),
         boxShadow: pInProgress
             ? [
                 BoxShadow(
-                  color: AppKendoColors.blue.withValues(alpha: 0.1),
+                  color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
                   blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ]
             : [],
       ),
       child: ClipRRect(
         borderRadius: AppRadius.smooth,
-        child: ExpansionTile(
-          collapsedBackgroundColor: pCardBg,
-          backgroundColor: pCardBg,
-          leading: CircleAvatar(
-            backgroundColor: pAllFinished
-                ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0))
-                : const Color(0xFFFFE0B2),
-            child: Text(
-              playerName.isNotEmpty ? playerName[0] : '?',
-              style: TextStyle(
-                color: pAllFinished
-                    ? (isDark
-                          ? const Color(0xFF9E9E9E)
-                          : const Color(0xFF757575))
-                    : const Color(0xFFE65100),
-                fontSize: AppFontSize.small,
-                fontWeight: AppFontWeight.bold,
-              ),
-            ),
+        child: ExpansionTileTheme(
+          data: ExpansionTileThemeData(
+            backgroundColor: cardBg,
+            collapsedBackgroundColor: collapsedCardBg,
+            iconColor: context.appColors.primaryAccent,
+            collapsedIconColor: context.appColors.subTextColor,
+            textColor: context.appColors.textColor,
+            collapsedTextColor: isDark
+                ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
+                : AppKendoColors.pureBlack.withValues(alpha: 0.54),
           ),
-          title: Text(
-            playerName,
-            style: TextStyle(
-              fontWeight: AppFontWeight.bold,
-              fontSize: AppFontSize.bodyMedium,
-              color: pTitleColor,
+          child: ExpansionTile(
+            collapsedBackgroundColor: collapsedCardBg,
+            backgroundColor: cardBg,
+            shape: const Border(),
+            collapsedShape: const Border(),
+            childrenPadding: EdgeInsets.zero,
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xs,
             ),
-          ),
-          subtitle: Row(
-            children: [
-              Text(
-                '$matchLabel • ${playerMatches.length}試合',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  color: pSubTitleColor,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.subValue,
-                  vertical: AppSpacing.xxs,
-                ),
-                decoration: BoxDecoration(
-                  color: pInProgress
-                      ? const Color(0xFF546E7A)
-                      : (pAllFinished
-                            ? context.appColors.separatorColor
-                            : (isDark
-                                  ? const Color(0xFF2C2C2E)
-                                  : context.appColors.separatorColor)),
-                  borderRadius: AppRadius.tiny,
-                ),
-                child: Text(
-                  pInProgress ? '進行中' : (pAllFinished ? '終了' : '待機中'),
-                  style: TextStyle(
-                    fontSize: AppFontSize.badge,
-                    fontWeight: AppFontWeight.bold,
-                    color: pInProgress
-                        ? AppKendoColors.pureWhite
-                        : context.appColors.subTextColor,
+            title: TimelineIndividualPlayerHeader(
+              playerName: playerName,
+              playerMatches: playerMatches,
+              isDark: isDark,
+              isReadOnlyUI: true,
+              titleColor: pTitleColor,
+            ),
+            children: playerMatches
+                .map(
+                  (match) => ViewerMatchListTileCard(
+                    key: Key('viewer_match_card_${match.id}'),
+                    initialMatch: match,
                   ),
-                ),
-              ),
-            ],
+                )
+                .toList(),
           ),
-          children: playerMatches
-              .map(
-                (match) => ViewerMatchListTileCard(
-                  key: Key('viewer_match_card_${match.id}'),
-                  initialMatch: match,
-                ),
-              )
-              .toList(),
         ),
       ),
     );

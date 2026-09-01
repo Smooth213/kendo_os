@@ -45,8 +45,14 @@ void main() {
       ),
     );
 
-    expect(find.text('選手A'), findsOneWidget);
-    expect(find.text('個人戦 • 1試合'), findsOneWidget);
-    expect(find.text('進行中'), findsOneWidget);
+    expect(find.text('選'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is RichText && w.text.toPlainText().contains('選手A'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('試合中 (LIVE)'), findsOneWidget);
+    expect(find.text('スコア'), findsOneWidget);
   });
 }

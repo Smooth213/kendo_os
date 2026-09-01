@@ -52,6 +52,6 @@ void main() {
     );
 
     expect(find.text('チーム東京'), findsWidgets);
-    expect(find.text('進行中'), findsOneWidget);
+    expect(find.text('試合中 (LIVE)'), findsOneWidget);
   });
 }

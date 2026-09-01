@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -176,39 +177,12 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.subValue,
-                        vertical: AppSpacing.xxs,
-                      ),
-                      margin: const EdgeInsets.only(right: AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: isPlaying
-                            ? const Color(0xFF2196F3)
-                            : (isFinished
-                                  ? (isDark
-                                        ? const Color(0xFF424242)
-                                        : const Color(0xFFE0E0E0))
-                                  : (isDark
-                                        ? const Color(0xFF2C2C2E)
-                                        : const Color(0xFFEEEEEE))),
-                        borderRadius: AppRadius.tiny,
-                      ),
-                      child: Text(
-                        isPlaying ? '進行中' : (isFinished ? '終了' : '待機中'),
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          fontWeight: AppFontWeight.bold,
-                          color: isPlaying
-                              ? AppKendoColors.pureWhite
-                              : (isFinished
-                                    ? (isDark
-                                          ? const Color(0xFFBDBDBD)
-                                          : const Color(0xFF757575))
-                                    : (isDark
-                                          ? const Color(0xFFBDBDBD)
-                                          : const Color(0xFF616161))),
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
+                      child: MatchStatusBadge(
+                        isPlaying: isPlaying,
+                        isFinished: isFinished,
+                        isDark: isDark,
                       ),
                     ),
                     Text(

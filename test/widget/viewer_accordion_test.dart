@@ -462,14 +462,18 @@ void main() {
         expect(find.text('[団体戦]'), findsWidgets);
 
         // Verify individual matches (single or in league)
-        final player1Finder = find.text('山田');
+        final player1Finder = find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('山田'),
+        );
         await tester.ensureVisible(player1Finder.first);
         await tester.pumpAndSettle();
         expect(player1Finder, findsWidgets);
 
-        final player2Finder = find.text('鈴木');
+        final player2Finder = find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('鈴木'),
+        );
         await tester.dragUntilVisible(
-          player2Finder,
+          player2Finder.first,
           find.byType(ListView).first,
           const Offset(0, -100),
         );
@@ -529,7 +533,9 @@ void main() {
 
         // 個人戦で自チーム（白虎剣友会）の「鈴木」がアコーディオンヘッダー（playerName）として優先され、
         // かつ自チームではない「山田」はヘッダー名にならない（1つのアコーディオンキー「鈴木」のみが作成される）ことを検証
-        final playerHeaderFinder = find.text('鈴木');
+        final playerHeaderFinder = find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('鈴木'),
+        );
         expect(playerHeaderFinder, findsWidgets);
 
         // アコーディオンを展開

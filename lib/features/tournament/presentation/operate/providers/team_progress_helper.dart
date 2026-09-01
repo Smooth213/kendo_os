@@ -261,4 +261,51 @@ class TeamProgressHelper {
 
     return team.isNotEmpty ? team : '自チーム';
   }
+
+  /// 個人戦における当該選手に対する対戦相手の表示名を抽出
+  static String getOpponentDisplay(MatchModel match, String playerName) {
+    final cleanPlayer = playerName.trim();
+    final rName = match.redName.trim();
+    final wName = match.whiteName.trim();
+
+    String opponentRaw;
+    if (rName.contains(cleanPlayer)) {
+      opponentRaw = wName;
+    } else if (wName.contains(cleanPlayer)) {
+      opponentRaw = rName;
+    } else {
+      opponentRaw = wName;
+    }
+
+    return formatPlayerOrTeamDisplay(opponentRaw, isIndividual: true);
+  }
+
+  /// 個人戦における特定選手の通算戦績を計算
+  static ({int wins, int losses, int draws, int totalPoints})
+  calculatePlayerStats(List<MatchModel> matches, String playerName) {
+    int wins = 0;
+    int losses = 0;
+    int draws = 0;
+    int totalPoints = 0;
+
+    final cleanPlayer = playerName.trim();
+
+    for (final m in matches) {
+      if (m.status != 'finished' && m.status != 'approved') continue;
+      final isRed = m.redName.contains(cleanPlayer);
+      final myScore = isRed ? m.redScore : m.whiteScore;
+      final oppScore = isRed ? m.whiteScore : m.redScore;
+
+      totalPoints += myScore;
+      if (myScore > oppScore) {
+        wins++;
+      } else if (oppScore > myScore) {
+        losses++;
+      } else {
+        draws++;
+      }
+    }
+
+    return (wins: wins, losses: losses, draws: draws, totalPoints: totalPoints);
+  }
 }

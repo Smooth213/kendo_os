@@ -155,10 +155,15 @@ void main() {
 
       // 通常大会ホーム画面の基本UI要素アサーション
       expect(find.text('大会ホーム'), findsOneWidget);
-      expect(find.text('剣道太郎'), findsWidgets);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('剣道太郎'),
+        ),
+        findsWidgets,
+      );
 
       // 個別試合のアコーディオンを展開する
-      await tester.tap(find.text('剣道太郎').last);
+      await tester.tap(find.byType(ExpansionTile).first);
       await tester.pumpAndSettle();
 
       expect(find.text('相手選手'), findsWidgets);
