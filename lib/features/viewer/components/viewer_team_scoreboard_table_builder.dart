@@ -9,26 +9,36 @@ import 'package:kendo_os/shared/utils/name_formatter.dart';
 /// 観戦者用 団体戦スコアボード テーブル行ビルダー
 class ViewerTeamScoreboardTableBuilder {
   static TableRow buildHeaderRow(String r, String w, bool isDark) {
-    final headerBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFF3F51B5);
+    final headerBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9);
     final textColor = isDark
         ? const Color(0xFFFFFFFF)
-        : const Color(0xFF000000);
+        : const Color(0xFF1E293B);
     return TableRow(
       decoration: BoxDecoration(color: headerBg),
       children: [
         _cell('', isH: true, color: textColor, fs: 12),
-        _cell(r, isH: true, color: const Color(0xFFE53935), fs: 16),
-        _cell('赤', isH: true, color: const Color(0xFFE53935), fs: 16),
+        _cell(
+          r,
+          isH: true,
+          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
+          fs: 16,
+        ),
+        _cell(
+          '赤',
+          isH: true,
+          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
+          fs: 14,
+        ),
         _cell(
           '白',
           isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
-          fs: 16,
+          color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
+          fs: 14,
         ),
         _cell(
           w,
           isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B),
           fs: 16,
         ),
       ],
@@ -54,9 +64,9 @@ class ViewerTeamScoreboardTableBuilder {
     final isDaihyo = m.matchType == '代表戦';
     final daihyoBgColor = isDark
         ? const Color(0xFFE53935).withValues(alpha: 0.15)
-        : const Color(0xFFE53935);
+        : const Color(0xFFFFF5F5);
     final matchTypeColor = isDaihyo
-        ? const Color(0xFFE53935)
+        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B));
 
     return TableRow(
@@ -111,10 +121,7 @@ class ViewerTeamScoreboardTableBuilder {
   }
 
   static TableRow buildTotalRow(TeamMatchResult result, bool isDark) {
-    final bg = isDark ? const Color(0xFF3A2E12) : const Color(0xFFD4AF37);
-    final textColor = isDark
-        ? const Color(0xFFFFFFFF)
-        : const Color(0xFF000000);
+    final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8FAFC);
     final isTeamTie = (result.teamWinner == 'draw');
 
     return TableRow(
@@ -124,7 +131,7 @@ class ViewerTeamScoreboardTableBuilder {
         _cell(
           '${result.redWins} / ${result.redPoints}',
           isH: true,
-          color: const Color(0xFFE53935),
+          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
           fs: 18,
         ),
         TableCell(
@@ -144,7 +151,9 @@ class ViewerTeamScoreboardTableBuilder {
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.headline,
-                          color: const Color(0xFFD4AF37),
+                          color: isDark
+                              ? const Color(0xFFFBBF24)
+                              : const Color(0xFFD97706),
                         ),
                       ),
                     )
@@ -153,8 +162,12 @@ class ViewerTeamScoreboardTableBuilder {
                       result.teamWinner == 'red' ? '勝' : '負',
                       isH: true,
                       color: result.teamWinner == 'red'
-                          ? AppKendoColors.red
-                          : textColor,
+                          ? (isDark
+                                ? const Color(0xFFFF6B6B)
+                                : AppKendoColors.hansokuRed)
+                          : (isDark
+                                ? const Color(0xFF8E8E93)
+                                : const Color(0xFF94A3B8)),
                       fs: 20,
                     ),
                 ],
@@ -172,8 +185,12 @@ class ViewerTeamScoreboardTableBuilder {
                       result.teamWinner == 'white' ? '勝' : '負',
                       isH: true,
                       color: result.teamWinner == 'white'
-                          ? AppKendoColors.red
-                          : textColor,
+                          ? (isDark
+                                ? const Color(0xFFFF6B6B)
+                                : AppKendoColors.hansokuRed)
+                          : (isDark
+                                ? const Color(0xFF8E8E93)
+                                : const Color(0xFF94A3B8)),
                       fs: 20,
                     )
                   : const SizedBox.shrink(),
@@ -183,7 +200,7 @@ class ViewerTeamScoreboardTableBuilder {
         _cell(
           '${result.whiteWins} / ${result.whitePoints}',
           isH: true,
-          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
+          color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B),
           fs: 18,
         ),
       ],
@@ -260,7 +277,7 @@ class ViewerTeamScoreboardTableBuilder {
     String? firstSide,
   ) {
     final color = isRed
-        ? const Color(0xFFE53935)
+        ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
     final isFusen = pts.contains('◯');

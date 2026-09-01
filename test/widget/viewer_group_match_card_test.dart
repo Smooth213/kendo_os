@@ -51,7 +51,7 @@ void main() {
 
     expect(find.text('チームA'), findsOneWidget);
     expect(find.text('チームB'), findsOneWidget);
-    expect(find.text('進行中'), findsOneWidget);
+    expect(find.text('試合中 (LIVE)'), findsOneWidget);
     expect(find.text('1回戦'), findsOneWidget);
   });
 }

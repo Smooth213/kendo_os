@@ -64,7 +64,8 @@ List<TeamProgressStatus> calculateTeamProgress(
     cardGroups.putIfAbsent(key, () => []).add(m);
   }
 
-  final List<TeamProgressStatus> results = [];
+  // 2. 各対戦カードの解析用中間モデル
+  final List<_CardAnalysis> analyzedCards = [];
 
   for (final entry in cardGroups.entries) {
     final cardMatches = List<MatchModel>.from(entry.value)
@@ -108,7 +109,6 @@ List<TeamProgressStatus> calculateTeamProgress(
     } else if (hasRedOwn && hasWhiteOwn) {
       isRedPrimary = true;
     } else {
-      // どちらもマッチしない場合、登録チーム名またはルールチーム名に近ければ自チームとして扱う
       final redTeam = TeamProgressHelper.extractTeamName(firstMatch.redName);
       final whiteTeam = TeamProgressHelper.extractTeamName(
         firstMatch.whiteName,
@@ -133,17 +133,14 @@ List<TeamProgressStatus> calculateTeamProgress(
       isIndividual: isIndiv,
     );
 
-    // 対戦カード内のポジション別進行状況集計
-    int completedCount = 0;
-    int totalCount = cardMatches.length;
-    int wins = 0;
-    int losses = 0;
-    int draws = 0;
-    int points = 0;
-
     MatchModel? inProgress;
     MatchModel? lastFinished;
     MatchModel? nextWaiting;
+
+    int myMatchWins = 0;
+    int oppMatchWins = 0;
+    int myCardPoints = 0;
+    int oppCardPoints = 0;
 
     for (final m in cardMatches) {
       final isFinished = m.status == 'finished' || m.status == 'approved';
@@ -153,17 +150,15 @@ List<TeamProgressStatus> calculateTeamProgress(
       final myScore = isRedPrimary ? m.redScore : m.whiteScore;
       final oppScore = isRedPrimary ? m.whiteScore : m.redScore;
 
-      points += myScore;
+      myCardPoints += myScore;
+      oppCardPoints += oppScore;
 
       if (isFinished) {
-        completedCount++;
         lastFinished = m;
         if (myScore > oppScore) {
-          wins++;
+          myMatchWins++;
         } else if (oppScore > myScore) {
-          losses++;
-        } else {
-          draws++;
+          oppMatchWins++;
         }
       } else if (isLive && inProgress == null) {
         inProgress = m;
@@ -201,31 +196,100 @@ List<TeamProgressStatus> calculateTeamProgress(
         ? representativeMatch.groupName
         : null;
 
-    int waitingCount = 0;
-    if (nextWaiting != null && inProgress == null) {
-      waitingCount = 1;
-    }
+    final isCardCompleted = cardMatches.every(
+      (m) => m.status == 'finished' || m.status == 'approved',
+    );
 
-    results.add(
-      TeamProgressStatus(
-        teamName: teamTitle,
+    analyzedCards.add(
+      _CardAnalysis(
+        teamTitle: teamTitle,
         categoryName: categoryName,
         currentCourtName: currentCourtName,
         matchupTitle: matchupTitle,
         targetGroupId: targetGroupId,
         tournamentId: representativeMatch.tournamentId,
-        matches: cardMatches,
+        cardMatches: cardMatches,
         inProgressMatch: inProgress,
         lastFinishedMatch: lastFinished,
         nextWaitingMatch: nextWaiting,
-        completedCount: completedCount,
-        totalCount: totalCount,
+        isCardCompleted: isCardCompleted,
+        isIndividual: isIndiv,
+        myMatchWins: myMatchWins,
+        oppMatchWins: oppMatchWins,
+        myPoints: myCardPoints,
+        oppPoints: oppCardPoints,
+      ),
+    );
+  }
+
+  // 3. 同一チーム・同一カテゴリ（teamKey）ごとに本日の全対戦数と通算成績（団体戦1勝=1）を集計
+  final Map<String, _TeamDailyStats> dailyStatsMap = {};
+  for (final card in analyzedCards) {
+    final teamKey = '${card.teamTitle}::${card.categoryName}';
+    final stats = dailyStatsMap.putIfAbsent(teamKey, () => _TeamDailyStats());
+    stats.totalCards++;
+
+    if (card.isCardCompleted) {
+      stats.completedCards++;
+      if (card.isIndividual) {
+        // 個人戦: その試合のスコア判定
+        if (card.myPoints > card.oppPoints) {
+          stats.totalWins++;
+        } else if (card.oppPoints > card.myPoints) {
+          stats.totalLosses++;
+        } else {
+          stats.totalDraws++;
+        }
+      } else {
+        // 団体戦: チーム勝敗判定（勝者本数または勝星数）
+        if (card.myMatchWins > card.oppMatchWins ||
+            (card.myMatchWins == card.oppMatchWins &&
+                card.myPoints > card.oppPoints)) {
+          stats.totalWins++;
+        } else if (card.oppMatchWins > card.myMatchWins ||
+            (card.myMatchWins == card.oppMatchWins &&
+                card.oppPoints > card.myPoints)) {
+          stats.totalLosses++;
+        } else {
+          stats.totalDraws++;
+        }
+      }
+    }
+    stats.totalPoints += card.myPoints;
+  }
+
+  // 4. 各対戦カードの TeamProgressStatus を生成
+  final List<TeamProgressStatus> results = [];
+
+  for (final card in analyzedCards) {
+    final teamKey = '${card.teamTitle}::${card.categoryName}';
+    final stats = dailyStatsMap[teamKey] ?? _TeamDailyStats();
+
+    int waitingCount = 0;
+    if (card.nextWaitingMatch != null && card.inProgressMatch == null) {
+      waitingCount = 1;
+    }
+
+    results.add(
+      TeamProgressStatus(
+        teamName: card.teamTitle,
+        categoryName: card.categoryName,
+        currentCourtName: card.currentCourtName,
+        matchupTitle: card.matchupTitle,
+        targetGroupId: card.targetGroupId,
+        tournamentId: card.tournamentId,
+        matches: card.cardMatches,
+        inProgressMatch: card.inProgressMatch,
+        lastFinishedMatch: card.lastFinishedMatch,
+        nextWaitingMatch: card.nextWaitingMatch,
+        completedCount: stats.completedCards,
+        totalCount: stats.totalCards,
         waitingMatchCount: waitingCount,
-        totalWins: wins,
-        totalLosses: losses,
-        totalDraws: draws,
-        totalPoints: points,
-        hasLiveMatch: inProgress != null,
+        totalWins: stats.totalWins,
+        totalLosses: stats.totalLosses,
+        totalDraws: stats.totalDraws,
+        totalPoints: stats.totalPoints,
+        hasLiveMatch: card.inProgressMatch != null,
       ),
     );
   }
@@ -266,3 +330,50 @@ final teamProgressListProvider = Provider<List<TeamProgressStatus>>((ref) {
     registeredPlayerNames: registeredPlayers,
   );
 });
+
+class _CardAnalysis {
+  final String teamTitle;
+  final String categoryName;
+  final String currentCourtName;
+  final String matchupTitle;
+  final String? targetGroupId;
+  final String? tournamentId;
+  final List<MatchModel> cardMatches;
+  final MatchModel? inProgressMatch;
+  final MatchModel? lastFinishedMatch;
+  final MatchModel? nextWaitingMatch;
+  final bool isCardCompleted;
+  final bool isIndividual;
+  final int myMatchWins;
+  final int oppMatchWins;
+  final int myPoints;
+  final int oppPoints;
+
+  const _CardAnalysis({
+    required this.teamTitle,
+    required this.categoryName,
+    required this.currentCourtName,
+    required this.matchupTitle,
+    this.targetGroupId,
+    this.tournamentId,
+    required this.cardMatches,
+    this.inProgressMatch,
+    this.lastFinishedMatch,
+    this.nextWaitingMatch,
+    required this.isCardCompleted,
+    required this.isIndividual,
+    required this.myMatchWins,
+    required this.oppMatchWins,
+    required this.myPoints,
+    required this.oppPoints,
+  });
+}
+
+class _TeamDailyStats {
+  int totalCards = 0;
+  int completedCards = 0;
+  int totalWins = 0;
+  int totalLosses = 0;
+  int totalDraws = 0;
+  int totalPoints = 0;
+}

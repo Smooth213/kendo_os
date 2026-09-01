@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('🛡️ MatchStatusBadge Widget Tests', () {
-    testWidgets('Renders 進行中 when isPlaying is true', (
+    testWidgets('Renders 試合中 (LIVE) when isPlaying is true', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -23,7 +23,7 @@ void main() {
         ),
       );
 
-      expect(find.text('進行中'), findsOneWidget);
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
     });
 
     testWidgets('Renders 終了 when isFinished is true', (
@@ -47,7 +47,7 @@ void main() {
       expect(find.text('終了'), findsOneWidget);
     });
 
-    testWidgets('Renders 待機中 when match is pending', (
+    testWidgets('Renders ⏳ 待機中 when match is pending', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -65,7 +65,29 @@ void main() {
         ),
       );
 
-      expect(find.text('待機中'), findsOneWidget);
+      expect(find.text('⏳ 待機中'), findsOneWidget);
+    });
+
+    testWidgets('Renders customFinishedText (🏁 全試合終了) when provided', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: const Scaffold(
+            body: MatchStatusBadge(
+              isPlaying: false,
+              isFinished: true,
+              isDark: false,
+              customFinishedText: '🏁 全試合終了',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('🏁 全試合終了'), findsOneWidget);
     });
   });
 }

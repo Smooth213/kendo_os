@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_children_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_summary_input_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -74,6 +70,13 @@ class TimelineMatchGroupCard extends ConsumerWidget {
     final isGroupExpanded =
         ref.watch(timelineGroupExpansionMapProvider)[groupId] ?? false;
 
+    final Color cardBg = allFinished
+        ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
+        : (isDark ? context.appColors.cardBackground : const Color(0xFFFFFFFF));
+    final Color collapsedCardBg = allFinished
+        ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
+        : (isDark ? context.appColors.cardBackground : const Color(0xFFFAFAFC));
+
     final globalRule = ref.watch(matchRuleProvider);
     final rule = firstMatch.rule ?? globalRule;
 
@@ -102,10 +105,10 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                             ref,
                             groupList,
                           ),
-                      backgroundColor: AppKendoColors.blueAccent,
+                      backgroundColor: context.appColors.infoColor,
                       foregroundColor: AppKendoColors.pureWhite,
                       icon: Icons.edit_note,
-                      label: '備考編集',
+                      label: 'メモ',
                     ),
                   if (canManageTournamentUI && !isReadOnlyUI)
                     SlidableAction(
@@ -113,39 +116,22 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                         final confirm = await showAppDialog<bool>(
                           context: context,
                           builder: (ctx) => AppDialog(
-                            backgroundColor: context.appColors.cardBackground,
-                            titleWidget: Text(
-                              'グループ一括削除',
-                              style: TextStyle(
-                                fontWeight: AppFontWeight.bold,
-                                color: context.appColors.textColor,
-                              ),
-                            ),
+                            title: 'グループ全削除の確認',
                             content: Text(
-                              'このグループに含まれる全試合を\n削除しますか？\n(取り消せません)',
-                              style: TextStyle(
-                                color: context.appColors.textColor,
-                              ),
+                              '「$label」に含まれる全ての試合（${groupList.length}件）を削除しますか？\nこの操作は取り消せません。',
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
-                                child: Text(
-                                  'キャンセル',
-                                  style: TextStyle(
-                                    color: context.appColors.subTextColor,
-                                  ),
-                                ),
+                                child: const Text('キャンセル'),
                               ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: Text(
-                                  '削除する',
-                                  style: TextStyle(
-                                    color: context.appColors.errorColor,
-                                    fontWeight: AppFontWeight.bold,
-                                  ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: context.appColors.errorColor,
+                                  foregroundColor: AppKendoColors.pureWhite,
                                 ),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('全削除する'),
                               ),
                             ],
                           ),
@@ -165,319 +151,103 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                     ),
                 ],
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: AppRadius.medium,
-                  border: Border.all(
-                    color: hasInProgress
-                        ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
-                        : context.appColors.separatorColor,
-                    width: hasInProgress ? 1.5 : 1.0,
-                  ),
-                  boxShadow: hasInProgress
-                      ? [
-                          BoxShadow(
-                            color: AppKendoColors.hansokuRed.withValues(
-                              alpha: 0.15,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: ClipRRect(
-                  borderRadius: AppRadius.smooth,
-                  child: ExpansionTileTheme(
-                    data: ExpansionTileThemeData(
-                      backgroundColor: context.appColors.cardBackground,
-                      collapsedBackgroundColor: isDark
-                          ? context.appColors.cardBackground
-                          : const Color(0xFFFAFAFC),
-                      iconColor: context.appColors.primaryAccent,
-                      collapsedIconColor: context.appColors.subTextColor,
-                      textColor: context.appColors.textColor,
-                      collapsedTextColor: isDark
-                          ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
-                          : AppKendoColors.pureBlack.withValues(alpha: 0.54),
+              child: Opacity(
+                opacity: allFinished ? 0.65 : 1.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: AppRadius.medium,
+                    border: Border.all(
+                      color: hasInProgress
+                          ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+                          : (isDark
+                                ? const Color(0xFF2C2C2E)
+                                : context.appColors.separatorColor),
+                      width: hasInProgress ? 1.5 : 1.0,
                     ),
-                    child: ExpansionTile(
-                      key: expansionVersion == 0
-                          ? ValueKey('group_$groupId')
-                          : ValueKey('group_${groupId}_$expansionVersion'),
-                      initiallyExpanded: isGroupExpanded,
-                      onExpansionChanged: (expanded) {
-                        ref
-                            .read(timelineGroupExpansionMapProvider.notifier)
-                            .setGroup(groupId, expanded);
-                      },
-                      shape: const Border(),
-                      collapsedShape: const Border(),
-                      childrenPadding: EdgeInsets.zero,
-                      tilePadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                      ),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Builder(
-                                builder: (context) {
-                                  final scenePrefix =
-                                      TeamProgressHelper.getScenePrefix(
-                                        firstMatch,
-                                      );
-                                  if (scenePrefix.isEmpty) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  final isMoushiawase = scenePrefix.contains(
-                                    '申合せ',
-                                  );
-                                  final badgeColor = isMoushiawase
-                                      ? context.appColors.warningColor
-                                      : context.appColors.primaryAccent;
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.subValue,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: badgeColor.withValues(alpha: 0.12),
-                                      borderRadius: AppRadius.sub,
-                                      border: Border.all(
-                                        color: badgeColor.withValues(
-                                          alpha: 0.35,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      scenePrefix,
-                                      style: TextStyle(
-                                        fontSize: AppFontSize.nano,
-                                        fontWeight: AppFontWeight.bold,
-                                        color: badgeColor,
-                                      ),
-                                    ),
-                                  );
-                                },
+                    boxShadow: hasInProgress
+                        ? [
+                            BoxShadow(
+                              color: AppKendoColors.hansokuRed.withValues(
+                                alpha: 0.15,
                               ),
-                              const Spacer(),
-                              if (!isReadOnlyUI &&
-                                  !allFinished &&
-                                  !label.contains('個人戦') &&
-                                  !label.contains('勝ち抜き戦') &&
-                                  !label.contains('リーグ戦') &&
-                                  !ownTeams.contains(
-                                    firstMatch.redName.split(':').first.trim(),
-                                  ) &&
-                                  !ownTeams.contains(
-                                    firstMatch.whiteName
-                                        .split(':')
-                                        .first
-                                        .trim(),
-                                  )) ...[
-                                SizedBox(
-                                  height: 26,
-                                  child: OutlinedButton.icon(
-                                    onPressed: () =>
-                                        TimelineSummaryInputDialog.show(
-                                          context,
-                                          ref,
-                                          groupList,
-                                        ),
-                                    icon: Icon(
-                                      Icons.flash_on,
-                                      size: 12,
-                                      color: context.appColors.warningColor,
-                                    ),
-                                    label: Text(
-                                      '簡易入力',
-                                      style: TextStyle(
-                                        fontSize: AppFontSize.nano,
-                                        fontWeight: AppFontWeight.bold,
-                                        color: titleColor,
-                                      ),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.subValue,
-                                      ),
-                                      side: BorderSide(
-                                        color: titleColor.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: AppRadius.sub,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                              ],
-                              if (!allFinished)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: AppSpacing.subValue,
-                                  ),
-                                  child: InkWell(
-                                    onTap: () => showRuleInfoBottomSheet(
-                                      context,
-                                      firstMatch,
-                                    ),
-                                    borderRadius: AppRadius.medium,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(
-                                        AppSpacing.xs,
-                                      ),
-                                      child: Icon(
-                                        Icons.info_outline,
-                                        color: context.appColors.subTextColor,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (!isReadOnlyUI &&
-                                  !allFinished &&
-                                  firstMatch.groupName != null &&
-                                  firstMatch.groupName!.isNotEmpty) ...[
-                                SizedBox(
-                                  height: 26,
-                                  width: 26,
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    icon: Icon(
-                                      Icons.swap_vert,
-                                      size: 18,
-                                      color: context.appColors.infoColor,
-                                    ),
-                                    onPressed: () =>
-                                        TimelineDialogHelper.showOrderReorderSheet(
-                                          context,
-                                          ref,
-                                          groupList,
-                                        ),
-                                    tooltip: 'オーダー編集',
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                              ],
-                              if (!label.contains('リーグ戦')) ...[
-                                SizedBox(
-                                  height: 26,
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      final target =
-                                          (firstMatch.groupName != null &&
-                                              firstMatch.groupName!.isNotEmpty)
-                                          ? firstMatch.groupName!
-                                          : firstMatch.id;
-                                      final encodedTarget = Uri.encodeComponent(
-                                        target,
-                                      );
-                                      final tId = firstMatch.tournamentId ?? '';
-                                      context.push(
-                                        firstMatch.isKachinuki
-                                            ? '/kachinuki-scoreboard/$encodedTarget?tournamentId=$tId'
-                                            : '/team-scoreboard/$encodedTarget?tournamentId=$tId',
-                                      );
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.sm,
-                                      ),
-                                      side: BorderSide(
-                                        color: titleColor.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: AppRadius.sub,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'スコア',
-                                      style: TextStyle(
-                                        fontSize: AppFontSize.badge,
-                                        fontWeight: AppFontWeight.bold,
-                                        color: context.appColors.primaryAccent,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(width: AppSpacing.xs),
-                              MatchStatusBadge(
-                                isPlaying: hasInProgress,
-                                isFinished: allFinished,
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: AppRadius.smooth,
+                    child: ExpansionTileTheme(
+                      data: ExpansionTileThemeData(
+                        backgroundColor: cardBg,
+                        collapsedBackgroundColor: collapsedCardBg,
+                        iconColor: context.appColors.primaryAccent,
+                        collapsedIconColor: context.appColors.subTextColor,
+                        textColor: context.appColors.textColor,
+                        collapsedTextColor: isDark
+                            ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
+                            : AppKendoColors.pureBlack.withValues(alpha: 0.54),
+                      ),
+                      child: ExpansionTile(
+                        key: expansionVersion == 0
+                            ? ValueKey('group_$groupId')
+                            : ValueKey('group_${groupId}_$expansionVersion'),
+                        initiallyExpanded: isGroupExpanded,
+                        onExpansionChanged: (expanded) {
+                          ref
+                              .read(timelineGroupExpansionMapProvider.notifier)
+                              .setGroup(groupId, expanded);
+                        },
+                        shape: const Border(),
+                        collapsedShape: const Border(),
+                        childrenPadding: EdgeInsets.zero,
+                        tilePadding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                        ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 🔽 【1段目〜4段目】: ステータス・対戦名・コート情報・アクション操作行
+                            TimelineGroupHeader(
+                              groupList: groupList,
+                              label: label,
+                              allFinished: allFinished,
+                              hasInProgress: hasInProgress,
+                              isReadOnlyUI: isReadOnlyUI,
+                              canManageTournamentUI: canManageTournamentUI,
+                              isDark: isDark,
+                              ownTeams: ownTeams,
+                              titleColor: titleColor,
+                            ),
+
+                            // 🔽 【5段目】: チーム対戦スコアサマリー（リーグ戦以外）
+                            if (!label.contains('リーグ戦')) ...[
+                              const SizedBox(height: AppSpacing.sm),
+                              TimelineGroupScoreSummary(
+                                groupList: groupList,
+                                rTeam: rTeam,
+                                wTeam: wTeam,
+                                ownTeams: ownTeams,
+                                titleColor: titleColor,
                                 isDark: isDark,
                               ),
                             ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.xxs,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    label.contains('リーグ戦')
-                                        ? label
-                                        : '$rTeam vs $wTeam',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.subhead,
-                                      fontWeight: AppFontWeight.bold,
-                                      color: titleColor,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (firstMatch.note.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.xxs,
-                              ),
-                              child: Text(
-                                firstMatch.note,
-                                style: TextStyle(
-                                  fontSize: AppFontSize.caption,
-                                  color: context.appColors.subTextColor,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
                           ],
-                          if (!label.contains('リーグ戦')) ...[
-                            const SizedBox(height: AppSpacing.sm),
-                            TimelineGroupScoreSummary(
-                              groupList: groupList,
-                              rTeam: rTeam,
-                              wTeam: wTeam,
-                              ownTeams: ownTeams,
-                              titleColor: titleColor,
-                              isDark: isDark,
-                            ),
-                          ],
-                        ],
-                      ),
-                      children: TimelineGroupChildrenBuilder.buildChildren(
-                        context: context,
-                        ref: ref,
-                        groupList: groupList,
-                        groupComments: groupComments,
-                        label: label,
-                        isReadOnlyUI: isReadOnlyUI,
-                        isDark: isDark,
-                        permissions: permissions,
-                        rule: rule,
-                        firstMatch: firstMatch,
+                        ),
+                        children: TimelineGroupChildrenBuilder.buildChildren(
+                          context: context,
+                          ref: ref,
+                          groupList: groupList,
+                          groupComments: groupComments,
+                          label: label,
+                          isReadOnlyUI: isReadOnlyUI,
+                          isDark: isDark,
+                          permissions: permissions,
+                          rule: rule,
+                          firstMatch: firstMatch,
+                        ),
                       ),
                     ),
                   ),

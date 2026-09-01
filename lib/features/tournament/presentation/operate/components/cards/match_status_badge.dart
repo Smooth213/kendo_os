@@ -3,17 +3,19 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// 試合カード右上に「試合中(LIVE) / 待機中 / 終了」を鮮明に表示するステータスバッジ
+/// 試合カード右上に「試合中(LIVE) / 待機中 / 終了 / 全試合終了」を鮮明に表示するステータスバッジ
 class MatchStatusBadge extends StatelessWidget {
   final bool isPlaying;
   final bool isFinished;
   final bool isDark;
+  final String? customFinishedText;
 
   const MatchStatusBadge({
     super.key,
     required this.isPlaying,
     required this.isFinished,
     required this.isDark,
+    this.customFinishedText,
   });
 
   @override
@@ -42,7 +44,7 @@ class MatchStatusBadge extends StatelessWidget {
             ),
             SizedBox(width: AppSpacing.xxs),
             Text(
-              '試合中',
+              '試合中 (LIVE)',
               style: TextStyle(
                 fontSize: AppFontSize.caption,
                 fontWeight: AppFontWeight.bold,
@@ -55,6 +57,7 @@ class MatchStatusBadge extends StatelessWidget {
     }
 
     if (isFinished) {
+      final displayText = customFinishedText ?? '終了';
       return Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
@@ -65,7 +68,7 @@ class MatchStatusBadge extends StatelessWidget {
           borderRadius: AppRadius.capsule,
         ),
         child: Text(
-          '終了',
+          displayText,
           style: TextStyle(
             fontSize: AppFontSize.caption,
             fontWeight: AppFontWeight.bold,

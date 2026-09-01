@@ -97,12 +97,15 @@ class TeamProgressHelper {
   }
 
   /// 試合データから対戦カード名（例: 団体戦：〇〇 vs ◯◯）を抽出
-  static String extractTeamMatchupTitle(MatchModel match) {
+  static String extractTeamMatchupTitle(
+    MatchModel match, {
+    bool includeScenePrefix = false,
+  }) {
     final isIndiv = isIndividualMatch(match);
     final isLeague = isLeagueMatch(match);
     final isKachinuki = isKachinukiMatch(match);
 
-    final prefix = getScenePrefix(match);
+    final prefix = includeScenePrefix ? getScenePrefix(match) : '';
 
     String formatLabel;
     if (isKachinuki) {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -19,7 +21,21 @@ class TeamStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final liveMatch = status.inProgressMatch;
     final isLive = status.hasLiveMatch;
-    final isFinished = status.isAllFinished;
+    final isFinished =
+        status.isAllFinished ||
+        (liveMatch == null &&
+            status.nextWaitingMatch == null &&
+            status.lastFinishedMatch != null);
+
+    final targetMatch =
+        liveMatch ??
+        status.nextWaitingMatch ??
+        status.lastFinishedMatch ??
+        (status.matches.isNotEmpty ? status.matches.first : null);
+
+    final scenePrefix = targetMatch != null
+        ? TeamProgressHelper.getScenePrefix(targetMatch)
+        : '';
 
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
@@ -55,11 +71,6 @@ class TeamStatusCard extends StatelessWidget {
         borderRadius: AppRadius.large,
         child: InkWell(
           onTap: () {
-            final targetMatch =
-                liveMatch ??
-                status.nextWaitingMatch ??
-                status.lastFinishedMatch;
-
             final isDantai =
                 targetMatch != null &&
                 !targetMatch.isKachinuki &&
@@ -91,207 +102,153 @@ class TeamStatusCard extends StatelessWidget {
           borderRadius: AppRadius.large,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Stack(
-              children: [
-                // ⑤ 終了した試合はバッジ以外をグレーアウト
-                Opacity(
-                  opacity: isFinished ? 0.45 : 1.0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1段目: チーム名 + カテゴリ（バッジ分の右余白を確保）
-                      _buildHeaderRow(context),
-                      const SizedBox(height: AppSpacing.xs),
+            child: Opacity(
+              opacity: isFinished ? 0.45 : 1.0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 🔽 【1段目】: チーム名 + カテゴリ名（左） ────── ステータスバッジ（右）
+                  _buildHeaderRow(context, isLive, isFinished),
+                  const SizedBox(height: AppSpacing.xs),
 
-                      // 2段目: コート情報（タップで編集）
-                      _buildCourtSection(context),
-                      const SizedBox(height: AppSpacing.xs),
+                  // 🔽 【2段目】: 【錬成】等の属性プレフィックスバッジ（存在時のみ）
+                  if (scenePrefix.isNotEmpty) ...[
+                    _buildScenePrefixBadge(context, scenePrefix),
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
 
-                      // 3段目: 対戦枠見出し（1段下げて独立表示）
-                      if (status.matchupTitle.isNotEmpty) ...[
-                        _buildMatchupTitleSection(context),
-                        const SizedBox(height: AppSpacing.sm),
-                      ],
+                  // 🔽 【3段目】: 対戦カード見出し（headline）
+                  if (status.matchupTitle.isNotEmpty) ...[
+                    _buildMatchupTitleSection(context),
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
 
-                      // 4段目: メインコンテンツ（試合中 / 次の出番 / 直前終了）
-                      if (liveMatch != null)
-                        TeamStatusCardSections.buildLiveMatchSection(
-                          context,
-                          liveMatch,
-                          isDark,
-                        )
-                      else if (status.nextWaitingMatch != null)
-                        TeamStatusCardSections.buildWaitingMatchSection(
-                          context,
-                          status.nextWaitingMatch!,
-                          isDark,
-                        )
-                      else if (status.lastFinishedMatch != null)
-                        TeamStatusCardSections.buildFinishedMatchSection(
-                          context,
-                          status.lastFinishedMatch!,
-                          isDark,
-                        )
-                      else
-                        _buildNoMatchSection(context),
+                  // 🔽 【4段目】: 第1試合場, 3試合目 (このあと休憩)
+                  _buildCourtSection(context),
+                  const SizedBox(height: AppSpacing.sm),
 
-                      const SizedBox(height: AppSpacing.md),
-                      Divider(
-                        height: 1,
-                        thickness: 0.8,
-                        color: themeColors.separatorColor,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
+                  // 🔽 【5段目以降】: メインコンテンツ（試合中 / 次の出番 / 直前終了）
+                  if (liveMatch != null)
+                    TeamStatusCardSections.buildLiveMatchSection(
+                      context,
+                      liveMatch,
+                      isDark,
+                    )
+                  else if (status.nextWaitingMatch != null)
+                    TeamStatusCardSections.buildWaitingMatchSection(
+                      context,
+                      status.nextWaitingMatch!,
+                      isDark,
+                    )
+                  else if (status.lastFinishedMatch != null)
+                    TeamStatusCardSections.buildFinishedMatchSection(
+                      context,
+                      status.lastFinishedMatch!,
+                      isDark,
+                    )
+                  else
+                    _buildNoMatchSection(context),
 
-                      // 4段目: 本日の通算戦績 ＆ iOSプログレスバー
-                      TeamStatusCardSections.buildFooterStats(
-                        context,
-                        status,
-                        isDark,
-                      ),
-                    ],
+                  const SizedBox(height: AppSpacing.md),
+                  Divider(
+                    height: 1,
+                    thickness: 0.8,
+                    color: themeColors.separatorColor,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+
+                  // 本日の通算戦績 ＆ iOSプログレスバー
+                  TeamStatusCardSections.buildFooterStats(
+                    context,
+                    status,
+                    isDark,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderRow(BuildContext context, bool isLive, bool isFinished) {
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  status.teamName,
+                  style: TextStyle(
+                    fontSize: AppFontSize.headline,
+                    fontWeight: AppFontWeight.bold,
+                    color: context.appColors.textColor,
+                    letterSpacing: -0.3,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (status.categoryName.isNotEmpty) ...[
+                const SizedBox(width: AppSpacing.xs),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFE5E5EA),
+                    borderRadius: AppRadius.capsule,
+                  ),
+                  child: Text(
+                    status.categoryName,
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.medium,
+                      color: context.appColors.subTextColor,
+                    ),
                   ),
                 ),
-
-                // 右上のステータスピルバッジ（グレーアウトの影響を受けず常に鮮明表示）
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: _buildStatusPillBadge(context, isLive, isFinished),
-                ),
               ],
-            ),
+            ],
           ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.xs),
+        MatchStatusBadge(
+          isPlaying: isLive,
+          isFinished: isFinished,
+          isDark: isDark,
+          customFinishedText: status.isAllFinished ? '🏁 全試合終了' : '終了',
+        ),
+      ],
     );
   }
 
-  Widget _buildHeaderRow(BuildContext context) {
-    return Padding(
-      // 右上のバッジと重ならないよう右余白を設定
-      padding: const EdgeInsets.only(
-        right: AppSpacing.giant * 2 + AppSpacing.roundValue,
-      ),
-      child: Row(
-        children: [
-          Flexible(
-            child: Text(
-              status.teamName,
-              style: TextStyle(
-                fontSize: AppFontSize.headline,
-                fontWeight: AppFontWeight.bold,
-                color: context.appColors.textColor,
-                letterSpacing: -0.3,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (status.categoryName.isNotEmpty) ...[
-            const SizedBox(width: AppSpacing.xs),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xxs,
-              ),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF2C2C2E)
-                    : const Color(0xFFE5E5EA),
-                borderRadius: AppRadius.capsule,
-              ),
-              child: Text(
-                status.categoryName,
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  fontWeight: AppFontWeight.medium,
-                  color: context.appColors.subTextColor,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusPillBadge(
-    BuildContext context,
-    bool isLive,
-    bool isFinished,
-  ) {
-    if (isLive) {
-      return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: AppKendoColors.hansokuRed.withValues(alpha: 0.12),
-          borderRadius: AppRadius.capsule,
-          border: Border.all(
-            color: AppKendoColors.hansokuRed.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(
-              Icons.fiber_manual_record,
-              size: 8,
-              color: AppKendoColors.hansokuRed,
-            ),
-            SizedBox(width: AppSpacing.xxs),
-            Text(
-              '試合中 (LIVE)',
-              style: TextStyle(
-                fontSize: AppFontSize.caption,
-                fontWeight: AppFontWeight.bold,
-                color: AppKendoColors.hansokuRed,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // ③ 「全試合終了」でなく「試合終了」バッジに変更
-    if (isFinished) {
-      return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-          borderRadius: AppRadius.capsule,
-        ),
-        child: Text(
-          '🏁 試合終了',
-          style: TextStyle(
-            fontSize: AppFontSize.caption,
-            fontWeight: AppFontWeight.bold,
-            color: context.appColors.subTextColor,
-          ),
-        ),
-      );
-    }
-
+  Widget _buildScenePrefixBadge(BuildContext context, String scenePrefix) {
+    final isMoushiawase = scenePrefix.contains('申合せ');
+    final badgeColor = isMoushiawase
+        ? context.appColors.warningColor
+        : context.appColors.primaryAccent;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
+        horizontal: AppSpacing.subValue,
+        vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-        borderRadius: AppRadius.capsule,
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: AppRadius.sub,
+        border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
       ),
       child: Text(
-        '⏳ 待機中',
+        scenePrefix,
         style: TextStyle(
-          fontSize: AppFontSize.caption,
-          fontWeight: AppFontWeight.semiBold,
-          color: context.appColors.subTextColor,
+          fontSize: AppFontSize.nano,
+          fontWeight: AppFontWeight.bold,
+          color: badgeColor,
         ),
       ),
     );
@@ -372,15 +329,19 @@ class TeamStatusCard extends StatelessWidget {
   }
 
   Widget _buildMatchupTitleSection(BuildContext context) {
+    String cleanTitle = status.matchupTitle;
+    for (final p in ['【錬成】', '【申合せ】', '【本戦】', '【部内戦】']) {
+      cleanTitle = cleanTitle.replaceAll(p, '').trim();
+    }
     return Text(
-      status.matchupTitle,
+      cleanTitle,
       style: TextStyle(
-        fontSize: AppFontSize.bodySmall,
+        fontSize: AppFontSize.headline,
         fontWeight: AppFontWeight.bold,
         color: context.appColors.textColor,
-        letterSpacing: -0.2,
+        letterSpacing: -0.3,
       ),
-      maxLines: 1,
+      maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
   }

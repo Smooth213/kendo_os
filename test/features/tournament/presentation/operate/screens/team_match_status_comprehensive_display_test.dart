@@ -134,8 +134,9 @@ void main() {
       // ① トーナメント団体戦（「団体戦：道上剣友会A vs 相手チーム02」）
       expect(find.text('団体戦：道上剣友会A vs 相手チーム02'), findsOneWidget);
 
-      // ② 錬成会団体戦（「【錬成】団体戦：相手チーム vs テスト」）
-      expect(find.text('【錬成】団体戦：相手チーム vs テスト'), findsOneWidget);
+      // ② 錬成会団体戦（2段目【錬成】バッジ + 3段目「団体戦：相手チーム vs テスト」）
+      expect(find.text('【錬成】'), findsOneWidget);
+      expect(find.text('団体戦：相手チーム vs テスト'), findsOneWidget);
 
       // ③ 待機中団体戦（「団体戦：道上 vs 相手06」）
       expect(find.text('団体戦：道上 vs 相手06'), findsOneWidget);

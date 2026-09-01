@@ -143,6 +143,7 @@ void main() {
 
         final titleRensei = TeamProgressHelper.extractTeamMatchupTitle(
           matchRenseiScene,
+          includeScenePrefix: true,
         );
         expect(titleRensei, '【錬成】団体戦：道上剣友会 vs 相手チームA');
 
@@ -160,6 +161,7 @@ void main() {
 
         final titleMoushiawase = TeamProgressHelper.extractTeamMatchupTitle(
           matchMoushiawaseScene,
+          includeScenePrefix: true,
         );
         expect(titleMoushiawase, '【申合せ】個人戦：皿田 脩人（道上） vs 相手 B（ライバル道場）');
 
@@ -177,6 +179,7 @@ void main() {
 
         final titleNote = TeamProgressHelper.extractTeamMatchupTitle(
           matchRenseiNote,
+          includeScenePrefix: true,
         );
         expect(titleNote, '【錬成】団体戦：道上剣友会 vs 相手チームC');
       });
@@ -184,52 +187,45 @@ void main() {
 
     group('2. 対戦カード完全展開（全試合漏れゼロ保証）', () {
       test('同一チームの1回戦・2回戦および個人戦がそれぞれ独立したカードとして完全展開されること', () {
-        final matches = [
-          // 道上剣友会Aの1回戦（5人制・終了済）
+        final multiMatches = [
+          // ① 団体戦 1回戦（道上剣友会A vs 相手01: 終了済）
           const MatchModel(
             id: 'm1_1',
-            groupName: 'group_dohjo_a_r1',
-            matchType: '先鋒戦',
-            redName: '道上剣友会A: 選手1',
-            whiteName: '相手01: 相手1',
+            groupName: 'group_round_1',
+            matchType: '先鋒',
+            redName: '道上剣友会A: 先鋒',
+            whiteName: '相手01: 先鋒',
             status: 'finished',
-            redScore: 2,
-            whiteScore: 0,
-            note: '第1コート, 1回戦',
-            category: '小学生低学年の部',
             order: 1.0,
+            category: '団体戦の部',
+            note: '第1コート, 1回戦',
           ),
           const MatchModel(
             id: 'm1_2',
-            groupName: 'group_dohjo_a_r1',
-            matchType: '次鋒戦',
-            redName: '道上剣友会A: 選手2',
-            whiteName: '相手01: 相手2',
+            groupName: 'group_round_1',
+            matchType: '大将',
+            redName: '道上剣友会A: 大将',
+            whiteName: '相手01: 大将',
             status: 'finished',
-            redScore: 1,
-            whiteScore: 0,
-            note: '第1コート, 1回戦',
-            category: '小学生低学年の部',
             order: 2.0,
+            category: '団体戦の部',
+            note: '第1コート, 1回戦',
           ),
 
-          // 道上剣友会Aの2回戦（5人制・進行中LIVE）
-          MatchModel(
+          // ② 団体戦 2回戦（道上剣友会A vs 相手02: 進行中LIVE）
+          const MatchModel(
             id: 'm2_1',
-            groupName: 'group_dohjo_a_r2',
-            matchType: '先鋒戦',
-            redName: '道上剣友会A: 皿田 脩人',
-            whiteName: '相手02: 相手3',
+            groupName: 'group_round_2',
+            matchType: '先鋒',
+            redName: '道上剣友会A: 先鋒',
+            whiteName: '相手02: 先鋒',
             status: 'in_progress',
-            redScore: 1,
-            whiteScore: 0,
-            note: '第3試合場, 2回戦',
-            category: '小学生低学年の部',
             order: 3.0,
-            timerStartedAt: DateTime.now(),
+            category: '団体戦の部',
+            note: '第3試合場, 2回戦',
           ),
 
-          // 久安 智也の個人戦1回戦（終了済）
+          // ③ 個人戦（久安 智也: 終了済）
           const MatchModel(
             id: 'indiv_hisayasu',
             matchType: '個人戦',
@@ -257,7 +253,7 @@ void main() {
         ];
 
         final results = calculateTeamProgress(
-          matches,
+          multiMatches,
           myDojoName: '道上',
           registeredTeamNames: ['道上剣友会A'],
           registeredPlayerNames: ['皿田 脩人', '久安 智也', '選手1', '選手2'],
@@ -282,7 +278,8 @@ void main() {
         final r1 = results.firstWhere(
           (r) => r.matches.any((m) => m.id == 'm1_1'),
         );
-        expect(r1.isAllFinished, isTrue);
+        expect(r1.completedCount, 1); // 1対戦完了
+        expect(r1.totalCount, 2); // 全2対戦
         expect(r1.matchupTitle, '団体戦：道上剣友会A vs 相手01');
 
         // ④ 終了済みの個人戦（久安）

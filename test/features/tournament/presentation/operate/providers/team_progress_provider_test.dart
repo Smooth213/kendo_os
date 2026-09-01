@@ -264,16 +264,16 @@ void main() {
         expect(round2Progress.hasLiveMatch, isTrue);
         expect(round2Progress.inProgressMatch?.id, 'm2_jiho');
         expect(round2Progress.nextWaitingMatch?.id, 'm2_chuken');
-        expect(round2Progress.totalCount, 3); // 3人制
-        expect(round2Progress.completedCount, 1); // 先鋒終了
+        expect(round2Progress.totalCount, 2); // 本日の全対戦カード数: 2
+        expect(round2Progress.completedCount, 1); // 終了した対戦カード数: 1
+        expect(round2Progress.totalWins, 1); // 1回戦で団体戦勝利（1勝）
 
         // 1回戦カード（終了済）
         final round1Progress = result[1];
-        expect(round1Progress.isAllFinished, isTrue);
-        expect(round1Progress.totalCount, 5); // 5人制
-        expect(round1Progress.completedCount, 5);
-        expect(round1Progress.totalWins, 3); // 先鋒・次鋒・大将勝ち
-        expect(round1Progress.totalPoints, 5); // 2+1+0+0+2=5本
+        expect(round1Progress.totalCount, 2); // 全2対戦
+        expect(round1Progress.completedCount, 1); // 1対戦完了
+        expect(round1Progress.totalWins, 1); // 団体戦1勝
+        expect(round1Progress.totalPoints, 7); // 1回戦5本 + 2回戦2本 = 7本
       });
 
       test('4. 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦が漏れなくカード化され正しく集計されること', () {

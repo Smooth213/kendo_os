@@ -40,7 +40,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('試合中'), findsOneWidget);
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
       expect(find.byIcon(Icons.fiber_manual_record), findsOneWidget);
       expect(find.text('⏳ 待機中'), findsNothing);
       expect(find.text('終了'), findsNothing);
@@ -53,7 +53,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('⏳ 待機中'), findsOneWidget);
-      expect(find.text('試合中'), findsNothing);
+      expect(find.text('試合中 (LIVE)'), findsNothing);
       expect(find.text('終了'), findsNothing);
     });
 
@@ -64,7 +64,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('終了'), findsOneWidget);
-      expect(find.text('試合中'), findsNothing);
+      expect(find.text('試合中 (LIVE)'), findsNothing);
       expect(find.text('⏳ 待機中'), findsNothing);
     });
 
@@ -76,7 +76,7 @@ void main() {
         buildBadgeWithTheme(isPlaying: true, isFinished: false, isDark: true),
       );
       await tester.pumpAndSettle();
-      expect(find.text('試合中'), findsOneWidget);
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
 
       // 待機中
       await tester.pumpWidget(
