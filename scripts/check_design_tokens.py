@@ -122,9 +122,9 @@ def check_tokens():
             # 21. Legacy share icons (bypassing Icons.ios_share)
             raw_share_icons += len(re.findall(r'Icons\.share\b(?!_rounded)', content))
 
-    print("=" * 50)
-    print(" 📊 【ガバナンス監査 2/4】🎨 デザインシステム トークン 監査レポート")
-    print("=" * 50)
+    print("=" * 60)
+    print(" 📊 【ガバナンス監査 2/10】🎨 デザインシステム トークン 監査レポート")
+    print("=" * 60)
     print(f" 1. AppBar 未移行件数: {raw_appbars} 件")
     print(f" 2. SnackBar 硬直色件数: {raw_snackbars_colors} 件")
     print(f" 3. ボーダー半径 生数値件数 (BorderRadius): {raw_border_radius} 件")
@@ -146,18 +146,21 @@ def check_tokens():
     print(f"19. 生 Switch 呼び出し件数: {raw_switches} 件")
     print(f"20. レガシー 戻るアイコン (arrow_back) 件数: {raw_arrow_back_icons} 件")
     print(f"21. レガシー シェアアイコン (Icons.share) 件数: {raw_share_icons} 件")
-    total_issues = (raw_appbars + raw_snackbars_colors + raw_border_radius + 
+    total_violations = (raw_appbars + raw_snackbars_colors + raw_border_radius + 
                     raw_edge_insets + raw_font_size + raw_colors + 
                     raw_kendo_shades + raw_direct_show_dialog + raw_textfields + 
                     raw_font_weights + raw_isdark_branches + raw_contrast_issues +
                     raw_bottom_sheets + raw_chips + raw_alert_dialogs +
                     raw_dark_black_texts + raw_gold_text_issues + raw_separator_text_issues +
                     raw_switches + raw_arrow_back_icons + raw_share_icons)
-    print("--------------------------------------------------")
-    print(f" 🔴 残存問題 総数: {total_issues} 件")
-    print("==================================================")
+    print("-" * 60)
+    if total_violations == 0:
+        print(" 🟢 監査結果: 合格 (21大デザインシステム規約に完全適合！)")
+    else:
+        print(f" 🔴 監査結果: 違反 ({total_violations} 件の残存問題が検出されました)")
+    print("=" * 60)
 
-    if "--strict" in sys.argv and total_issues > 0:
+    if "--strict" in sys.argv and total_violations > 0:
         print("❌ ERROR: 直書き違反が残存しています。ビルドを中止します。")
         sys.exit(1)
 

@@ -1,20 +1,22 @@
 #!/bin/bash
 # ==============================================================================
-# 🥋 Kendo OS - Git Hooks 自動セットアップスクリプト
+# 🥋 Kendo OS - Git Hooks 自動セットアップスクリプト (pre-commit & pre-push)
 # ==============================================================================
 
 set -e
 
-echo "🔧 Git pre-commit フックをセットアップしています..."
+echo "🔧 Git フック (pre-commit & pre-push) をセットアップしています..."
 
 HOOK_DIR=".git/hooks"
 PRE_COMMIT_FILE="$HOOK_DIR/pre-commit"
+PRE_PUSH_FILE="$HOOK_DIR/pre-push"
 
 if [ ! -d "$HOOK_DIR" ]; then
     echo "❌ .git/hooks ディレクトリが見つかりません。プロジェクトのルートで実行してください。"
     exit 1
 fi
 
+# 1. pre-commit フック作成
 cat << 'EOF' > "$PRE_COMMIT_FILE"
 #!/bin/bash
 # ==============================================================================
@@ -27,44 +29,84 @@ dart format .
 
 git add -A
 
-echo "📏 kendo OS ファイル行数ガバナンス監査を実行中..."
-python3 scripts/check_file_lines.py
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "🚨 【コミット拒否】500行以上の肥大化ファイルが検出されたため、コミットを中断しました。"
-    echo "   単一責任原則に基づき、パーツやヘルパーに切り出して500行未満にスリム化してください。"
-    exit 1
-fi
+echo "🚀 kendo OS 全10大ガバナンス個別監査を実行中..."
 
-python3 scripts/check_design_tokens.py --strict
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "💡 デザインシステム違反が検出されたため、コミットを中断しました。"
-    echo "   AIアシスタントに「デザインシステム違反を文脈に合わせて修正して」とご指示いただければ自動修復いたします。"
-    exit 1
-fi
+python3 scripts/check_file_lines.py || exit 1
+python3 scripts/check_design_tokens.py --strict || exit 1
+python3 scripts/check_kendo_score_governance.py || exit 1
+python3 scripts/check_kendo_metadata_governance.py || exit 1
+python3 scripts/check_kendo_scene_governance.py || exit 1
+python3 scripts/check_security_governance.py || exit 1
+python3 scripts/check_layout_5tier_governance.py || exit 1
+python3 scripts/check_theme_contrast_governance.py || exit 1
+python3 scripts/check_architecture_boundary_governance.py || exit 1
+python3 scripts/check_offline_resilience_governance.py || exit 1
 
-python3 scripts/check_kendo_score_governance.py
-if [ $? -ne 0 ]; then
+echo "🔍 Flutter 静的解析を実行中..."
+flutter analyze || {
     echo ""
-    echo "🚨 【コミット拒否】剣道公式スコア表示・PDF描画のガバナンス違反が検出されました。"
-    echo "   KendoScoreBox規約およびPDFセル寸法(25px)に適合するように修正してください。"
+    echo "🚨 【コミット拒否】Flutter静的解析で問題・警告が検出されました。"
+    echo "   コード内の警告・問題を 0 件に修正してください。"
     exit 1
-fi
+}
 
-python3 scripts/check_kendo_metadata_governance.py
-if [ $? -ne 0 ]; then
+echo "✅ pre-commit 全10大ガバナンス監査・静的解析・フォーマット自動修復完了"
+exit 0
+EOF
+
+# 2. pre-push フック作成
+cat << 'EOF' > "$PRE_PUSH_FILE"
+#!/bin/bash
+# ==============================================================================
+# 🥋 Kendo OS - 自動ガバナンス ＆ 全テスト完全保証 pre-push フック
+# ==============================================================================
+
+echo ""
+echo "================================================================"
+echo " 🛡️  Kendo OS Pre-Push Quality Gate (完全品質要塞)"
+echo "================================================================"
+echo ""
+
+echo "🚀 [Step 1/3] 全10大ガバナンス個別監査を実行中..."
+python3 scripts/check_file_lines.py || exit 1
+python3 scripts/check_design_tokens.py --strict || exit 1
+python3 scripts/check_kendo_score_governance.py || exit 1
+python3 scripts/check_kendo_metadata_governance.py || exit 1
+python3 scripts/check_kendo_scene_governance.py || exit 1
+python3 scripts/check_security_governance.py || exit 1
+python3 scripts/check_layout_5tier_governance.py || exit 1
+python3 scripts/check_theme_contrast_governance.py || exit 1
+python3 scripts/check_architecture_boundary_governance.py || exit 1
+python3 scripts/check_offline_resilience_governance.py || exit 1
+
+echo ""
+echo "🔍 [Step 2/3] Flutter 静的解析を実行中..."
+flutter analyze || {
     echo ""
-    echo "🚨 【コミット拒否】剣道メタデータ（シーンバッジ・名前パース・結果タグ）のガバナンス違反が検出されました。"
-    echo "   KendoEntityNameParser / KendoSceneBadge 規約に適合するように修正してください。"
+    echo "🚨 【プッシュ拒否】Flutter静的解析で問題・警告が検出されたため、プッシュを中断しました。"
     exit 1
-fi
+}
 
-echo "✅ pre-commit 全4大ガバナンス監査・フォーマット自動修復完了"
+echo ""
+echo "🧪 [Step 3/3] Flutter 全テストスイート完全実行中..."
+flutter test || {
+    echo ""
+    echo "🚨 【プッシュ拒否】テストエラーが検出されたため、プッシュを中断しました。"
+    echo "   全テストが 100% PASS するように修正してください。"
+    exit 1
+}
+
+echo ""
+echo "================================================================"
+echo " 🎉 祝！全10大ガバナンス・静的解析・全テストを完全クリアしました！"
+echo "    安全にリモートへのプッシュを実行します。"
+echo "================================================================"
+echo ""
 exit 0
 EOF
 
 chmod +x "$PRE_COMMIT_FILE"
+chmod +x "$PRE_PUSH_FILE"
 
-echo "✅ [PASS] Git pre-commit フックのインストールが完了しました！"
-echo "💡 以降、git commit 実行時に全4大ガバナンス（行数、デザイン、スコア表示・PDF、メタデータ）が自動監査・完全ブロックされます。"
+echo "✅ [PASS] Git フック (pre-commit & pre-push) のインストールが完了しました！"
+echo "💡 以降、git commit 時に全10大ガバナンス＋静的解析、git push 時に全テストが自動監査・完全保証されます。"

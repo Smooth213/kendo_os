@@ -24,9 +24,9 @@ def run_score_governance_check():
     
     passed_all = (result.returncode == 0)
     
-    print("=" * 50)
-    print(" 📊 【ガバナンス監査 3/4】🥋 剣道公式スコア表示＆PDF描画 監査レポート")
-    print("=" * 50)
+    print("=" * 60)
+    print(" 📊 【ガバナンス監査 3/10】🥋 剣道公式スコア表示＆PDF描画 監査レポート")
+    print("=" * 60)
     
     for label, pattern in rules:
         if passed_all:
@@ -38,14 +38,14 @@ def run_score_governance_check():
                 status = "🟢 適合 (Passed)"
         print(f" {label}: {status}")
         
-    print("-" * 50)
+    print("-" * 60)
     if passed_all:
-        print(" 🟢 監査結果: すべての剣道公式スコア表示＆PDF規約に完全合格！")
-        print("=" * 50)
+        print(" 🟢 監査結果: 合格 (すべての剣道公式スコア表示＆PDF規約に完全適合！)")
+        print("=" * 60)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 剣道公式スコア表示・PDF描画に違反が検出されました！")
-        print("=" * 50)
+        print(" 🔴 監査結果: 違反 (剣道公式スコア表示・PDF描画に違反が検出されました)")
+        print("=" * 60)
         print(output)
         sys.exit(1)
 

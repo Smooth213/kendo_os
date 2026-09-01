@@ -99,14 +99,20 @@ def check_scene_governance():
     return violations
 
 def main():
-    print("=" * 70)
-    print(" 🥋 Kendo OS - 試合シーン（本戦・錬成・申合せ）表記＆配色ガバナンス監査")
-    print("=" * 70)
+    print("=" * 60)
+    print(" 📊 【ガバナンス監査 5/10】⚔️ 試合シーン（本戦・錬成・申合せ）表記＆配色 監査レポート")
+    print("=" * 60)
     
     violations = check_scene_governance()
     
+    print(f" 1. 禁止UI表記「申し合わせ/申し合わせ」混入検知: {'🟢 0 件 (適合)' if not any('申し合わせ' in v['content'] for v in violations) else '🔴 違反検出'}")
+    print(f" 2. 禁止UI表記「【錬成会】」混入検知: {'🟢 0 件 (適合)' if not any('【錬成会】' in v['content'] for v in violations) else '🔴 違反検出'}")
+    print(f" 3. ハードコードされたシーン色分岐（isMoushiawase ? 等）: {'🟢 0 件 (適合)' if not any('isMoushiawase ?' in v['content'] for v in violations) else '🔴 違反検出'}")
+    print("-" * 60)
+    
     if violations:
-        print(f"\n🚨 【ガバナンス違反】{len(violations)} 件の表記・配色違反が検出されました:\n")
+        print(f" 🔴 監査結果: 違反 ({len(violations)} 件の表記・配色違反が検出されました)")
+        print("=" * 60)
         for v in violations:
             print(f"  ❌ {v['file']}:{v['line']}")
             print(f"     コード: {v['content']}")
@@ -114,8 +120,8 @@ def main():
         print("💡 表記は「本戦」「錬成」「申合せ」とし、配色は KendoSceneHelper を使用してください。")
         sys.exit(1)
     else:
-        print("\n✅ [PASS] 試合シーン表記・カラーガバナンス監査: 100% 遵守 (違反 0 件)")
-        print("=" * 70)
+        print(" 🟢 監査結果: 合格 (試合シーン表記・カラーガバナンス100%遵守！)")
+        print("=" * 60)
         sys.exit(0)
 
 if __name__ == "__main__":
