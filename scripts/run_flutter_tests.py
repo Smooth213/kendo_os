@@ -1,34 +1,45 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# 🥋 Kendo OS - 全テスト実行 ＆ 失敗ピンポイント表示ランナー
+# 🥋 Kendo OS - 全テスト実行 ＆ 失敗ピンポイント表示ランナー (TTY カラー保持)
 # ==============================================================================
-import subprocess
+import os
+import pty
 import sys
 from test_failure_formatter import parse_and_format_failures
 
 def run_all_tests():
-    print("🧪 Flutter 全テストスイート完全実行中...")
+    print("🧪 Flutter 全テストスイート完全実行中...\n")
     
-    # リアルタイムで出力を流しつつ全体をキャプチャ
+    master, slave = pty.openpty()
+    
+    import subprocess
     process = subprocess.Popen(
         ["flutter", "test"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
+        stdin=slave,
+        stdout=slave,
+        stderr=slave,
+        close_fds=True
     )
+    os.close(slave)
     
-    captured_output = []
-    for line in iter(process.stdout.readline, ''):
-        print(line, end='', flush=True)
-        captured_output.append(line)
-        
-    process.stdout.close()
+    captured_bytes = bytearray()
+    while True:
+        try:
+            data = os.read(master, 1024)
+            if not data:
+                break
+            os.write(sys.stdout.fileno(), data)
+            sys.stdout.flush()
+            captured_bytes.extend(data)
+        except OSError:
+            break
+            
+    os.close(master)
     return_code = process.wait()
     
     if return_code != 0:
-        full_output = "".join(captured_output)
+        full_output = captured_bytes.decode('utf-8', errors='ignore')
         print("\n")
         print(parse_and_format_failures(full_output))
         print("\n🚨 【プッシュ拒否】テストエラーが検出されたため、プッシュを中断しました。")
