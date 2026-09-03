@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_advanced_tabs_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_bottom_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_form_section.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_form_section_builder.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_multi_scene_tabs_card.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -286,122 +285,10 @@ class CategoryRuleEditorView extends StatelessWidget {
   });
 
   Widget _buildFormSection(String title, bool isNormal) {
-    return CategoryRuleFormSection(
+    return CategoryRuleFormSectionBuilder.build(
+      view: this,
       title: title,
       isNormal: isNormal,
-      themeColors: themeColors,
-      matchType: editingMatchType,
-      isRenseikai: editingIsRenseikai,
-      categoryKey: category,
-      matchTime: isNormal ? normalTime : advancedTime,
-      isRunningTime: isNormal ? normalIsRunningTime : advancedIsRunningTime,
-      ipponLimit: isNormal ? normalIpponLimit : advancedIpponLimit,
-      hansokuLimit: isNormal ? normalHansokuLimit : advancedHansokuLimit,
-      hasHantei: isNormal ? normalHasHantei : advancedHasHantei,
-      hasExtension: isNormal ? normalHasExtension : advancedHasExtension,
-      isEnchoUnlimited: isNormal
-          ? normalIsEnchoUnlimited
-          : advancedIsEnchoUnlimited,
-      enchoTime: isNormal ? normalEnchoTime : advancedEnchoTime,
-      enchoCount: isNormal ? normalEnchoCount : advancedEnchoCount,
-      kachinukiUnlimitedType: isNormal
-          ? normalKachinukiUnlimitedType
-          : advancedKachinukiUnlimitedType,
-      hasLeagueDaihyo: isNormal
-          ? normalHasLeagueDaihyo
-          : advancedHasLeagueDaihyo,
-      isDaihyoIpponShobu: isNormal
-          ? normalIsDaihyoIpponShobu
-          : advancedIsDaihyoIpponShobu,
-      winPoint: isNormal ? normalWinPoint : advancedWinPoint,
-      lossPoint: isNormal ? normalLossPoint : advancedLossPoint,
-      drawPoint: isNormal ? normalDrawPoint : advancedDrawPoint,
-      renseikaiType: isNormal ? normalRenseikaiType : advancedRenseikaiType,
-      overallTime: isNormal ? normalOverallTime : advancedOverallTime,
-      daihyoMatchTime: isNormal
-          ? normalDaihyoMatchTime
-          : advancedDaihyoMatchTime,
-      daihyoHasExtension: isNormal
-          ? normalDaihyoHasExtension
-          : advancedDaihyoHasExtension,
-      daihyoEnchoTime: isNormal
-          ? normalDaihyoEnchoTime
-          : advancedDaihyoEnchoTime,
-      daihyoEnchoCount: isNormal
-          ? normalDaihyoEnchoCount
-          : advancedDaihyoEnchoCount,
-      daihyoHasHantei: isNormal
-          ? normalDaihyoHasHantei
-          : advancedDaihyoHasHantei,
-      keywordsController: isNormal ? null : keywordsController,
-      formatMinutes: CategoryRuleMatchHelper.formatMinutes,
-      onMatchTimeChanged: isNormal
-          ? onNormalMatchTimeChanged
-          : onAdvancedMatchTimeChanged,
-      onIsRunningTimeChanged: isNormal
-          ? onNormalIsRunningTimeChanged
-          : onAdvancedIsRunningTimeChanged,
-      onRenseikaiTypeChanged: isNormal
-          ? onNormalRenseikaiTypeChanged
-          : onAdvancedRenseikaiTypeChanged,
-      onOverallTimeChanged: isNormal
-          ? onNormalOverallTimeChanged
-          : onAdvancedOverallTimeChanged,
-      onKachinukiUnlimitedTypeChanged: isNormal
-          ? onNormalKachinukiUnlimitedTypeChanged
-          : onAdvancedKachinukiUnlimitedTypeChanged,
-      onHasExtensionChanged: isNormal
-          ? onNormalHasExtensionChanged
-          : onAdvancedHasExtensionChanged,
-      onIsEnchoUnlimitedChanged: isNormal
-          ? onNormalIsEnchoUnlimitedChanged
-          : onAdvancedIsEnchoUnlimitedChanged,
-      onEnchoCountChanged: isNormal
-          ? onNormalEnchoCountChanged
-          : onAdvancedEnchoCountChanged,
-      onEnchoTimeChanged: isNormal
-          ? onNormalEnchoTimeChanged
-          : onAdvancedEnchoTimeChanged,
-      onHasHanteiChanged: isNormal
-          ? onNormalHasHanteiChanged
-          : onAdvancedHasHanteiChanged,
-      onHasLeagueDaihyoChanged: isNormal
-          ? onNormalHasLeagueDaihyoChanged
-          : onAdvancedHasLeagueDaihyoChanged,
-      onIsDaihyoIpponShobuChanged: isNormal
-          ? onNormalIsDaihyoIpponShobuChanged
-          : onAdvancedIsDaihyoIpponShobuChanged,
-      onDaihyoMatchTimeChanged: isNormal
-          ? onNormalDaihyoMatchTimeChanged
-          : onAdvancedDaihyoMatchTimeChanged,
-      onDaihyoHasExtensionChanged: isNormal
-          ? onNormalDaihyoHasExtensionChanged
-          : onAdvancedDaihyoHasExtensionChanged,
-      onDaihyoEnchoTimeChanged: isNormal
-          ? onNormalDaihyoEnchoTimeChanged
-          : onAdvancedDaihyoEnchoTimeChanged,
-      onDaihyoEnchoCountChanged: isNormal
-          ? onNormalDaihyoEnchoCountChanged
-          : onAdvancedDaihyoEnchoCountChanged,
-      onDaihyoHasHanteiChanged: isNormal
-          ? onNormalDaihyoHasHanteiChanged
-          : onAdvancedDaihyoHasHanteiChanged,
-      onWinPointChanged: isNormal
-          ? onNormalWinPointChanged
-          : onAdvancedWinPointChanged,
-      onLossPointChanged: isNormal
-          ? onNormalLossPointChanged
-          : onAdvancedLossPointChanged,
-      onDrawPointChanged: isNormal
-          ? onNormalDrawPointChanged
-          : onAdvancedDrawPointChanged,
-      onIpponLimitChanged: isNormal
-          ? onNormalIpponLimitChanged
-          : onAdvancedIpponLimitChanged,
-      onHansokuLimitChanged: isNormal
-          ? onNormalHansokuLimitChanged
-          : onAdvancedHansokuLimitChanged,
-      onKeywordsChanged: onKeywordsChanged,
     );
   }
 

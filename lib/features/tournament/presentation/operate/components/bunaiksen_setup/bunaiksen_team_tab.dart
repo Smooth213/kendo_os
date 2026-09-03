@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
-import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen_setup/bunaiksen_team_setup_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen_setup/bunaiksen_team_member_list.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -13,7 +13,6 @@ import 'package:kendo_os/shared/time/time_source.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:kendo_os/shared/widgets/multi_player_select_input.dart';
-import 'package:uuid/uuid.dart';
 
 /// 部内戦 団体戦タブ
 class BunaiksenTeamTab extends StatefulWidget {
@@ -40,36 +39,15 @@ class _BunaiksenTeamTabState extends State<BunaiksenTeamTab> {
   final List<String?> _whiteTeam = List.filled(5, null, growable: true);
 
   void _autoAssignByGrade(List<PlayerModel> masterPlayers) {
-    List<String> sorted = List.from(_poolPlayers);
-    sorted.sort((a, b) {
-      final ga =
-          masterPlayers.where((p) => p.name == a).firstOrNull?.grade ?? 99;
-      final gb =
-          masterPlayers.where((p) => p.name == b).firstOrNull?.grade ?? 99;
-      return ga.compareTo(gb);
-    });
-
+    final result = BunaiksenTeamSetupHelper.autoAssignByGrade(
+      poolPlayers: _poolPlayers,
+      masterPlayers: masterPlayers,
+      teamSize: _teamSize,
+    );
     setState(() {
       for (int i = 0; i < _teamSize; i++) {
-        _redTeam[i] = null;
-        _whiteTeam[i] = null;
-      }
-      for (int i = 0; i < sorted.length; i++) {
-        int pos = i ~/ 2;
-        if (pos >= _teamSize) break;
-        if (i % 4 == 0 || i % 4 == 3) {
-          if (_redTeam[pos] == null) {
-            _redTeam[pos] = sorted[i];
-          } else if (_whiteTeam[pos] == null) {
-            _whiteTeam[pos] = sorted[i];
-          }
-        } else {
-          if (_whiteTeam[pos] == null) {
-            _whiteTeam[pos] = sorted[i];
-          } else if (_redTeam[pos] == null) {
-            _redTeam[pos] = sorted[i];
-          }
-        }
+        _redTeam[i] = result.redTeam[i];
+        _whiteTeam[i] = result.whiteTeam[i];
       }
     });
   }
@@ -286,119 +264,30 @@ class _BunaiksenTeamTabState extends State<BunaiksenTeamTab> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: _teamSize,
-                        itemBuilder: (context, index) {
-                          return DragTarget<String>(
-                            onAcceptWithDetails: (details) =>
-                                setState(() => _redTeam[index] = details.data),
-                            builder: (context, candidateData, rejectedData) {
-                              return Card(
-                                color: candidateData.isNotEmpty
-                                    ? AppKendoColors.hansokuRed.withValues(
-                                        alpha: 0.2,
-                                      )
-                                    : (isDark
-                                          ? const Color(0xFF2C1C1E)
-                                          : const Color(0xFFFFF5F5)),
-                                shape: RoundedRectangleBorder(
-                                  side: BorderSide(
-                                    color: AppKendoColors.hansokuRed,
-                                    width: candidateData.isNotEmpty ? 2 : 1,
-                                  ),
-                                  borderRadius: AppRadius.large,
-                                ),
-                                child: ListTile(
-                                  dense: true,
-                                  leading: CircleAvatar(
-                                    backgroundColor: AppKendoColors.hansokuRed,
-                                    radius: 14,
-                                    child: Text(
-                                      currentPositions[index].substring(0, 1),
-                                      style: const TextStyle(
-                                        color: AppKendoColors.pureWhite,
-                                        fontSize: AppFontSize.badge,
-                                        fontWeight: AppFontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(
-                                    _redTeam[index] ?? '未定',
-                                    style: TextStyle(
-                                      fontWeight: AppFontWeight.bold,
-                                      color: _redTeam[index] == null
-                                          ? (isDark
-                                                ? const Color(0xFF94A3B8)
-                                                : const Color(0xFF64748B))
-                                          : (context.appColors.textColor),
-                                    ),
-                                  ),
-                                  onTap: () =>
-                                      setState(() => _redTeam[index] = null),
-                                ),
-                              );
-                            },
-                          );
-                        },
+                      child: BunaiksenTeamMemberList(
+                        teamSize: _teamSize,
+                        teamMembers: _redTeam,
+                        positions: currentPositions,
+                        teamColor: AppKendoColors.hansokuRed,
+                        isDark: isDark,
+                        onMemberAssigned: (index, player) =>
+                            setState(() => _redTeam[index] = player),
+                        onMemberCleared: (index) =>
+                            setState(() => _redTeam[index] = null),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: _teamSize,
-                        itemBuilder: (context, index) {
-                          return DragTarget<String>(
-                            onAcceptWithDetails: (details) => setState(
-                              () => _whiteTeam[index] = details.data,
-                            ),
-                            builder: (context, candidateData, rejectedData) {
-                              return Card(
-                                color: candidateData.isNotEmpty
-                                    ? const Color(
-                                        0xFF607D8B,
-                                      ).withValues(alpha: 0.2)
-                                    : (isDark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFF8FAFC)),
-                                shape: RoundedRectangleBorder(
-                                  side: BorderSide(
-                                    color: const Color(0xFF607D8B),
-                                    width: candidateData.isNotEmpty ? 2 : 1,
-                                  ),
-                                  borderRadius: AppRadius.large,
-                                ),
-                                child: ListTile(
-                                  dense: true,
-                                  leading: CircleAvatar(
-                                    backgroundColor: const Color(0xFF607D8B),
-                                    radius: 14,
-                                    child: Text(
-                                      currentPositions[index].substring(0, 1),
-                                      style: const TextStyle(
-                                        color: AppKendoColors.pureWhite,
-                                        fontSize: AppFontSize.badge,
-                                        fontWeight: AppFontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(
-                                    _whiteTeam[index] ?? '未定',
-                                    style: TextStyle(
-                                      fontWeight: AppFontWeight.bold,
-                                      color: _whiteTeam[index] == null
-                                          ? (isDark
-                                                ? const Color(0xFF94A3B8)
-                                                : const Color(0xFF64748B))
-                                          : (context.appColors.textColor),
-                                    ),
-                                  ),
-                                  onTap: () =>
-                                      setState(() => _whiteTeam[index] = null),
-                                ),
-                              );
-                            },
-                          );
-                        },
+                      child: BunaiksenTeamMemberList(
+                        teamSize: _teamSize,
+                        teamMembers: _whiteTeam,
+                        positions: currentPositions,
+                        teamColor: const Color(0xFF607D8B),
+                        isDark: isDark,
+                        onMemberAssigned: (index, player) =>
+                            setState(() => _whiteTeam[index] = player),
+                        onMemberCleared: (index) =>
+                            setState(() => _whiteTeam[index] = null),
                       ),
                     ),
                   ],
@@ -416,39 +305,15 @@ class _BunaiksenTeamTabState extends State<BunaiksenTeamTab> {
                   onPressed: () async {
                     final rule = ref.read(bunaiksenRuleProvider);
                     final now = ref.read(timeSourceProvider).now();
-                    final dateStr = DateFormat(
-                      'yyyyMMdd',
-                    ).format(DateTime.now());
-                    final todayId = 'bunaiksen_$dateStr';
-                    final groupId = const Uuid().v4();
-                    final baseOrder = now.millisecondsSinceEpoch.toDouble();
-
-                    List<MatchModel> matchesToSave = [];
-                    for (int i = 0; i < _teamSize; i++) {
-                      final matchId = const Uuid().v4();
-                      matchesToSave.add(
-                        MatchModel(
-                          id: matchId,
-                          tournamentId: todayId,
-                          groupName: groupId,
-                          matchType: currentPositions[i],
-                          redName: _redTeam[i] ?? '未定',
-                          whiteName: _whiteTeam[i] ?? '未定',
-                          matchTimeMinutes: rule.matchTimeMinutes,
-                          hasExtension: false,
-                          extensionTimeMinutes: 0.0,
-                          status: 'waiting',
-                          order: baseOrder + i,
-                          rule: rule.copyWith(
-                            isEnchoUnlimited: false,
-                            enchoTimeMinutes: 0.0,
-                            enchoCount: 0,
-                            hasHantei: false,
-                          ),
-                          note: '部内・団体戦',
-                        ),
-                      );
-                    }
+                    final matchesToSave =
+                        BunaiksenTeamSetupHelper.generateTeamMatches(
+                          teamSize: _teamSize,
+                          currentPositions: currentPositions,
+                          redTeam: _redTeam,
+                          whiteTeam: _whiteTeam,
+                          rule: rule,
+                          now: now,
+                        );
 
                     await ref
                         .read(matchApplicationServiceProvider)

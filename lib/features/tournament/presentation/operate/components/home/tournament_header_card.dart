@@ -1,5 +1,4 @@
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -12,6 +11,7 @@ import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_dialog.dart';
 
 class TournamentHeaderCard extends ConsumerWidget {
   final TournamentModel tournament;
@@ -212,14 +212,14 @@ class TournamentHeaderCard extends ConsumerWidget {
               ),
               onTap: () {
                 Navigator.pop(ctx);
-                _openEditTournamentDialog(
-                  context,
-                  ref,
-                  tournament,
-                  cardColor,
-                  textColor,
-                  subTextColor,
-                  borderColor,
+                TournamentEditDialog.show(
+                  context: context,
+                  ref: ref,
+                  tournament: tournament,
+                  cardColor: cardColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  borderColor: borderColor,
                 );
               },
             ),
@@ -261,161 +261,6 @@ class TournamentHeaderCard extends ConsumerWidget {
             ],
           ],
         ),
-      ),
-    );
-  }
-
-  void _openEditTournamentDialog(
-    BuildContext context,
-    WidgetRef ref,
-    TournamentModel tournament,
-    Color cardColor,
-    Color textColor,
-    Color subTextColor,
-    Color borderColor,
-  ) {
-    final nameController = TextEditingController(text: tournament.name);
-    final venueController = TextEditingController(text: tournament.venue);
-    final notesController = TextEditingController(text: tournament.notes);
-    DateTime selectedDate = tournament.date;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showAppDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AppDialog(
-            title: '大会情報の編集',
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppTextField(
-                    controller: nameController,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      labelText: '大会名',
-                      labelStyle: TextStyle(color: subTextColor),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  InkWell(
-                    onTap: () async {
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2030),
-                        builder: (context, child) => Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
-                              primary: AppKendoColors.indigo,
-                              onPrimary: AppKendoColors.pureWhite,
-                              onSurface: context.appColors.textColor,
-                            ),
-                            dialogTheme: DialogThemeData(
-                              backgroundColor: cardColor,
-                            ),
-                          ),
-                          child: child!,
-                        ),
-                      );
-                      if (picked != null && picked != selectedDate) {
-                        setState(() => selectedDate = picked);
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: '開催年月日',
-                        labelStyle: TextStyle(color: subTextColor),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: borderColor),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            DateFormat('yyyy年MM月dd日').format(selectedDate),
-                            style: TextStyle(color: textColor),
-                          ),
-                          Icon(
-                            Icons.calendar_today,
-                            size: 20,
-                            color: isDark
-                                ? const Color(0xFF3F51B5)
-                                : const Color(0xFF3F51B5),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  AppTextField(
-                    controller: venueController,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      labelText: '会場・住所',
-                      labelStyle: TextStyle(color: subTextColor),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  AppTextField(
-                    controller: notesController,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      labelText: '大会メモ（任意）',
-                      labelStyle: TextStyle(color: subTextColor),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                    ),
-                    maxLines: 3,
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text(
-                  'キャンセル',
-                  style: TextStyle(color: AppKendoColors.grey),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3F51B5),
-                  foregroundColor: AppKendoColors.pureWhite,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
-                ),
-                onPressed: () async {
-                  await ref
-                      .read(tournamentRepositoryProvider)
-                      .updateTournamentDetails(
-                        tournament.id,
-                        name: nameController.text,
-                        venue: venueController.text,
-                        notes: notesController.text,
-                        date: selectedDate,
-                      );
-                  if (ctx.mounted) Navigator.pop(ctx);
-                },
-                child: const Text(
-                  '保存',
-                  style: TextStyle(fontWeight: AppFontWeight.bold),
-                ),
-              ),
-            ],
-          );
-        },
       ),
     );
   }

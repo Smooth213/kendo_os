@@ -2,21 +2,19 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:kendo_os/features/tournament/presentation/components/manual/manual_full_manual_tab_view.dart';
-import 'package:kendo_os/features/tournament/presentation/components/manual/manual_index_pane.dart';
-import 'package:kendo_os/features/tournament/presentation/components/manual/manual_markdown_view.dart';
-import 'package:kendo_os/features/tournament/presentation/components/manual/manual_quick_guide_tab_view.dart';
-import 'package:kendo_os/features/tournament/presentation/components/manual/manual_search_app_bar_actions.dart';
-import 'package:kendo_os/features/tournament/presentation/components/manual/manual_search_app_bar_title.dart';
+import 'package:kendo_os/shared/presentation/screens/embedded_manual_tab_views.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_download_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_markdown_loader_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_print_share_service.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:kendo_os/features/tournament/presentation/components/manual/manual_index_pane.dart';
+import 'package:kendo_os/features/tournament/presentation/components/manual/manual_markdown_view.dart';
+import 'package:kendo_os/features/tournament/presentation/components/manual/manual_search_app_bar_actions.dart';
+import 'package:kendo_os/features/tournament/presentation/components/manual/manual_search_app_bar_title.dart';
 import 'package:kendo_os/shared/presentation/providers/manual_index_provider.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/presentation/screens/embedded_manual_tab_resolver.dart';
 
 class EmbeddedManualScreen extends ConsumerStatefulWidget {
   final String? initialFilePath;
@@ -37,8 +35,7 @@ class EmbeddedManualScreen extends ConsumerStatefulWidget {
 
 class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
     with SingleTickerProviderStateMixin {
-  String _currentFilePath =
-      'packages/documentation_runtime/manuals/quickstart/index.md';
+  String _currentFilePath = EmbeddedManualTabResolver.defaultMarkdownPath;
   String _markdownContent = '';
   String _searchQuery = '';
   bool _isLoading = true;
@@ -56,9 +53,9 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
 
   // ★ ダウンロード＆キャッシュ関連のプロパティ
   final ManualDownloadService _downloadService = ManualDownloadService();
-  final String _fullManualUrl =
-      'https://github.com/Smooth213/kendo_os/releases/download/manuals/Kendo_Sync.pdf';
-  final String _fullManualFileName = 'Kendo_Sync.pdf';
+  final String _fullManualUrl = EmbeddedManualTabResolver.fullManualUrl;
+  final String _fullManualFileName =
+      EmbeddedManualTabResolver.fullManualFileName;
   bool _isPdfDownloaded = false;
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
@@ -71,19 +68,10 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
     _pdfViewerController = PdfViewerController();
 
     // 初期遷移タブの判定
-    if (widget.initialTab != null) {
-      _selectedTabIndex = widget.initialTab!;
-    } else if (widget.initialFilePath != null) {
-      if (widget.initialFilePath!.contains('bunaiksen')) {
-        _selectedTabIndex = 1;
-      } else if (widget.initialFilePath!.contains('quickstart')) {
-        _selectedTabIndex = 0;
-      } else {
-        _selectedTabIndex = 2;
-      }
-    } else {
-      _selectedTabIndex = 2; // デフォルトは総合マニュアル
-    }
+    _selectedTabIndex = EmbeddedManualTabResolver.resolveInitialTabIndex(
+      initialTab: widget.initialTab,
+      initialFilePath: widget.initialFilePath,
+    );
 
     _tabController = TabController(
       length: 3,
@@ -241,80 +229,14 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
     }
   }
 
-  // クイックガイドタブのレイアウト
-  Widget _buildQuickGuideTab(String assetPath, String fileName) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ManualQuickGuideTabView(
-      assetPath: assetPath,
-      fileName: fileName,
-      onPrintPressed: () => _handlePrintPdf(
-        isAsset: true,
-        assetPath: assetPath,
-        fileName: fileName,
-      ),
-      onSharePressed: () => _handleSharePdf(
-        isAsset: true,
-        assetPath: assetPath,
-        fileName: fileName,
-      ),
-      isDark: isDark,
-    );
-  }
-
-  // 総合マニュアルタブのレイアウト
-  Widget _buildFullManualTab(Widget buildIndexPane, Widget markdownPane) {
-    return ManualFullManualTabView(
-      buildIndexPane: buildIndexPane,
-      markdownPane: markdownPane,
-      isPdfDownloaded: _isPdfDownloaded,
-      isDownloading: _isDownloading,
-      downloadProgress: _downloadProgress,
-      forceMarkdownFallback: _forceMarkdownFallback,
-      localPdfFile: _localPdfFile,
-      pdfViewerController: _pdfViewerController,
-      fullManualFileName: _fullManualFileName,
-      onStartDownload: _startDownload,
-      onEnableMarkdownFallback: () {
-        setState(() {
-          _forceMarkdownFallback = true;
-        });
-      },
-      onDisableMarkdownFallback: () {
-        setState(() {
-          _forceMarkdownFallback = false;
-        });
-      },
-      onOpenPdfInBrowser: () async {
-        final encodedUrl = Uri.encodeComponent(_fullManualUrl);
-        final viewerUrl = 'https://docs.google.com/viewer?url=$encodedUrl';
-        final uri = Uri.parse(viewerUrl);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
-      },
-      onShareWebUrl: () async {
-        await SharePlus.instance.share(
-          ShareParams(text: 'Kendo Sync 総合取扱説明書はこちら: $_fullManualUrl'),
-        );
-      },
-      onPrintPdf: () => _handlePrintPdf(
-        isAsset: false,
-        file: _localPdfFile,
-        fileName: _fullManualFileName,
-      ),
-      onSharePdf: () => _handleSharePdf(
-        isAsset: false,
-        file: _localPdfFile,
-        fileName: _fullManualFileName,
-      ),
-    );
-  }
-
   // AppBar用のタイトル（検索モード時は入力フォームを表示）
   Widget _buildAppBarTitle() {
-    final showSearch =
-        _selectedTabIndex == 2 &&
-        (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback));
+    final showSearch = EmbeddedManualTabResolver.shouldShowSearch(
+      selectedTabIndex: _selectedTabIndex,
+      isWeb: kIsWeb,
+      isPdfDownloaded: _isPdfDownloaded,
+      forceMarkdownFallback: _forceMarkdownFallback,
+    );
 
     return ManualSearchAppBarTitle(
       isSearching: showSearch && _isSearchingPdf,
@@ -341,9 +263,12 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
 
   // 検索用 AppBar アクションボタン
   List<Widget> _buildAppBarActions() {
-    final showSearch =
-        _selectedTabIndex == 2 &&
-        (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback));
+    final showSearch = EmbeddedManualTabResolver.shouldShowSearch(
+      selectedTabIndex: _selectedTabIndex,
+      isWeb: kIsWeb,
+      isPdfDownloaded: _isPdfDownloaded,
+      forceMarkdownFallback: _forceMarkdownFallback,
+    );
     final isPdfMode = !(kIsWeb || _forceMarkdownFallback);
 
     return [
@@ -426,8 +351,12 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
           : null,
       appBar: AppHeader(
         leading:
-            (_selectedTabIndex == 2 &&
-                (kIsWeb || (_isPdfDownloaded && !_forceMarkdownFallback)) &&
+            (EmbeddedManualTabResolver.shouldShowSearch(
+                  selectedTabIndex: _selectedTabIndex,
+                  isWeb: kIsWeb,
+                  isPdfDownloaded: _isPdfDownloaded,
+                  forceMarkdownFallback: _forceMarkdownFallback,
+                ) &&
                 _isSearchingPdf)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -462,17 +391,39 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
         controller: _tabController,
         children: [
           // Tab 0: 通常クイックガイド
-          _buildQuickGuideTab(
-            'assets/manuals/kendo_sync_quickguide.pdf',
-            'kendo_sync_quickguide.pdf',
+          EmbeddedManualTabViews.buildQuickGuideTab(
+            context: context,
+            assetPath: EmbeddedManualTabResolver.normalQuickGuideAsset,
+            fileName: EmbeddedManualTabResolver.normalQuickGuideFileName,
+            onPrint: _handlePrintPdf,
+            onShare: _handleSharePdf,
           ),
           // Tab 1: 部内戦クイックガイド
-          _buildQuickGuideTab(
-            'assets/manuals/kendo_sync_bunaiksen_quickguide.pdf',
-            'kendo_sync_bunaiksen_quickguide.pdf',
+          EmbeddedManualTabViews.buildQuickGuideTab(
+            context: context,
+            assetPath: EmbeddedManualTabResolver.bunaiksenQuickGuideAsset,
+            fileName: EmbeddedManualTabResolver.bunaiksenQuickGuideFileName,
+            onPrint: _handlePrintPdf,
+            onShare: _handleSharePdf,
           ),
           // Tab 2: 総合取扱説明書
-          _buildFullManualTab(buildIndexPane(), markdownPane),
+          EmbeddedManualTabViews.buildFullManualTab(
+            buildIndexPane: buildIndexPane(),
+            markdownPane: markdownPane,
+            isPdfDownloaded: _isPdfDownloaded,
+            isDownloading: _isDownloading,
+            downloadProgress: _downloadProgress,
+            forceMarkdownFallback: _forceMarkdownFallback,
+            localPdfFile: _localPdfFile,
+            pdfViewerController: _pdfViewerController,
+            onStartDownload: _startDownload,
+            onEnableMarkdownFallback: () =>
+                setState(() => _forceMarkdownFallback = true),
+            onDisableMarkdownFallback: () =>
+                setState(() => _forceMarkdownFallback = false),
+            onPrint: _handlePrintPdf,
+            onShare: _handleSharePdf,
+          ),
         ],
       ),
     );

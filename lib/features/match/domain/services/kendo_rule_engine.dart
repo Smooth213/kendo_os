@@ -6,6 +6,7 @@ import 'package:kendo_os/features/match/domain/services/match_strategy.dart';
 import 'package:kendo_os/features/match/domain/rules/rule_factory.dart';
 import 'package:kendo_os/features/match/domain/rules/tournament_rule_config.dart'; // ★ Phase 5
 import 'package:kendo_os/shared/time/system_time_source.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_overtime_evaluator.dart';
 
 // ★ 追加: 新しく切り出した集計ロジックを読み込み、外部(UI)へ横流しする
 import 'package:kendo_os/features/match/domain/services/standings_calculator.dart';
@@ -111,20 +112,10 @@ class KendoRuleEngine {
     if (res.transition != null) currentContext = res.transition!.updatedState;
 
     // 延長戦・代表戦（サドンデス）の規定本数を事後計算で補正
-    if (match.matchType == '延長戦' || match.matchType == '代表戦') {
-      int minScore = currentContext.redIppon < currentContext.whiteIppon
-          ? currentContext.redIppon
-          : currentContext.whiteIppon;
-      currentContext = MatchContext(
-        redIppon: currentContext.redIppon,
-        whiteIppon: currentContext.whiteIppon,
-        redHansoku: currentContext.redHansoku,
-        whiteHansoku: currentContext.whiteHansoku,
-        isTimeUp: currentContext.isTimeUp,
-        targetIppon: minScore + 1,
-        hasHantei: currentContext.hasHantei,
-      );
-    }
+    currentContext = KendoOvertimeEvaluator.applyOvertimeCorrectionIfNeeded(
+      currentContext,
+      match.matchType,
+    );
 
     // 3. Time Rule 適用
     ruleCtx = RuleContext(
@@ -174,18 +165,14 @@ class KendoRuleEngine {
     MatchRule? rule,
     List<ScoreEvent> events = const [],
   ]) {
-    // 明示的な決着イベント(判定)がある場合、延長戦には絶対に入らない
-    for (var e in events) {
-      if (e.isCanceled) continue;
-      if (e.isHantei || e.type == PointType.hantei) {
-        return false;
-      }
-    }
-
-    return ctx.isTimeUp &&
-        ctx.redIppon == ctx.whiteIppon &&
-        allowsEncho &&
-        decideResult(ctx, rule, events) == MatchResultStatus.draw;
+    return KendoOvertimeEvaluator.shouldEnterEncho(
+      ctx: ctx,
+      allowsEncho: allowsEncho,
+      rule: rule,
+      events: events,
+      decideResultIsDraw: (c, r, e) =>
+          decideResult(c, r, e) == MatchResultStatus.draw,
+    );
   }
 
   /// (New) イベント履歴を考慮した完全な勝敗判定メソッド (外部からの呼び出し推奨用)
@@ -400,27 +387,7 @@ class KendoRuleEngine {
     List<MatchModel> matches,
     MatchRule? rule,
   ) {
-    bool isAllDone = matches.every(
-      (m) => m.status == 'finished' || m.status == 'approved',
-    );
-    bool hasDaihyo = matches.any((m) => m.matchType == '代表戦');
-
-    if (isAllDone && !hasDaihyo) {
-      int rWins = 0, wWins = 0, rPts = 0, wPts = 0;
-      for (var m in matches) {
-        rPts += m.redScore;
-        wPts += m.whiteScore;
-        if (m.redScore > m.whiteScore) {
-          rWins++;
-        } else if (m.whiteScore > m.redScore) {
-          wWins++;
-        }
-      }
-      if (rWins == wWins && rPts == wPts) {
-        return GroupMatchStatus(isAllDone: true, isTie: true);
-      }
-    }
-    return GroupMatchStatus(isAllDone: isAllDone, isTie: false);
+    return KendoOvertimeEvaluator.analyzeTeamMatchStatus(matches);
   }
 
   GroupMatchStatus _analyzeKachinukiStatus(
@@ -428,46 +395,11 @@ class KendoRuleEngine {
     MatchRule? rule,
     Map<String, dynamic>? lastSettings,
   ) {
-    if (currentMatch.status != 'finished' &&
-        currentMatch.status != 'approved') {
-      return GroupMatchStatus(isAllDone: false, isTie: false);
-    }
-
-    bool isTie = false;
-    bool isAllDone = false;
-
-    if (currentMatch.redScore == currentMatch.whiteScore) {
-      final bool isTaishoVsTaisho =
-          currentMatch.redRemaining.isEmpty &&
-          currentMatch.whiteRemaining.isEmpty;
-      if (isTaishoVsTaisho) {
-        String kType = rule?.kachinukiUnlimitedType ?? '';
-        int maxExt = lastSettings?['extensionCount'] ?? -2;
-        int currentExt = '延長'.allMatches(currentMatch.note).length;
-
-        bool canExtend =
-            kType == '大将引き分け延長' &&
-            (maxExt == -2 || maxExt == -1 || currentExt < maxExt);
-        if (canExtend &&
-            currentMatch.matchType != '大将延長戦' &&
-            currentMatch.status != 'finished') {
-          isAllDone = false;
-        } else {
-          isAllDone = true;
-          isTie = true;
-        }
-      } else {
-        isAllDone =
-            (currentMatch.redRemaining.isEmpty ||
-            currentMatch.whiteRemaining.isEmpty);
-      }
-    } else {
-      isAllDone = (currentMatch.redScore > currentMatch.whiteScore)
-          ? currentMatch.whiteRemaining.isEmpty
-          : currentMatch.redRemaining.isEmpty;
-    }
-
-    return GroupMatchStatus(isAllDone: isAllDone, isTie: isTie);
+    return KendoOvertimeEvaluator.analyzeKachinukiStatus(
+      currentMatch,
+      rule,
+      lastSettings,
+    );
   }
 
   static List<LeagueTeamStat> calculateLeagueStandings(

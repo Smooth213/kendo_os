@@ -20,17 +20,16 @@ import '../providers/last_used_settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_category_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_dynamic_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_section_header.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_detail_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_sticky_bottom_action.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_sync_helper.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_save_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_preset_helper.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
-  return ['1回戦', '2回戦', '準決勝', '決勝', '第1試合', '第2コート'];
+  return MatchFormatPresetHelper.defaultNoteHistory;
 });
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -117,40 +116,21 @@ class _SetupMatchFormatScreenState
   }
 
   void _toggleHeadingPreset(String preset) {
-    final current = _courtController.text.trim();
-    if (current.isEmpty) {
-      setState(() => _courtController.text = preset);
-      return;
-    }
-    final items = current
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (items.contains(preset)) {
-      items.remove(preset);
-    } else {
-      items.add(preset);
-    }
-    setState(() => _courtController.text = items.join(', '));
+    setState(() {
+      _courtController.text = MatchFormatPresetHelper.togglePreset(
+        _courtController.text,
+        preset,
+      );
+    });
   }
 
   void _showTeamDetailDialog(BuildContext context, TeamModel team) {
-    final baseLen = MatchFormatSetupHelper.calculateTeamSize(
-      matchType: team.matchType,
-      selectedTeamId: null,
-      registeredTeams: [],
-    );
-    final posNames = MatchFormatSetupHelper.generatePositions(baseLen);
-    final players = ref.read(playerListProvider).value ?? [];
-
-    MatchFormatTeamDetailDialog.show(
+    MatchFormatPresetHelper.showTeamDetail(
       context: context,
       team: team,
-      posNames: posNames,
       themeColors: _themeColors,
-      players: players,
-      onTeamUpdated: (_) => setState(() {}),
+      players: ref.read(playerListProvider).value ?? [],
+      onTeamUpdated: () => setState(() {}),
     );
   }
 
@@ -396,7 +376,6 @@ class _SetupMatchFormatScreenState
                           prefixIcon: prefixIcon,
                           suffixText: suffixText,
                         ),
-
                     buildSectionHeader: (title, accent) =>
                         MatchFormatSectionHeader(
                           title: title,
@@ -447,30 +426,17 @@ class _SetupMatchFormatScreenState
     final registeredTeams =
         ref.read(registeredTeamsProvider(widget.tournamentId)).value ?? [];
 
-    MatchFormatSaveHelper.commitAndSaveRule(
+    MatchFormatPresetHelper.saveFormatSetup(
       ref: ref,
-      courtText: _courtController.text.trim(),
-      userNote: _noteController.text.trim(),
+      courtText: _courtController.text,
+      userNote: _noteController.text,
       registeredTeams: registeredTeams,
-      selectedTeamId: _state.selectedTeamId,
-      matchType: _state.matchType,
+      state: _state,
       category: _category,
-      matchTime: _state.matchTime,
-      isRunningTime: _state.isRunningTime,
-      isRenseikai: _state.isRenseikai,
-      hasExtension: _state.hasExtension,
-      hasHantei: _state.hasHantei,
-      extCount: _state.extCount,
-      extTime: _state.extTime,
-      kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
-      hasLeagueDaihyo: _state.hasLeagueDaihyo,
-      renseikaiType: _state.renseikaiType,
-      isDaihyoIpponShobu: _state.isDaihyoIpponShobu,
       winPointText: _winPointController.text,
       lossPointText: _lossPointController.text,
       drawPointText: _drawPointController.text,
       overallTimeText: _overallTimeController.text,
-      selectedRuleScene: _state.selectedRuleScene,
     );
 
     context.push('/order-setup/${widget.tournamentId}');

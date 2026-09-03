@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_score_line.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/team_status_member_order_row.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -76,86 +76,18 @@ class TeamStatusCardSections {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              // 赤側（道場名上・選手名下）
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (redTeam.isNotEmpty)
-                      Text(
-                        redTeam,
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          color: context.appColors.subTextColor,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    Text(
-                      redPlayer.isNotEmpty ? redPlayer : '選手未定',
-                      style: TextStyle(
-                        fontSize: AppFontSize.bodyMedium,
-                        fontWeight: AppFontWeight.bold,
-                        color: match.redScore > match.whiteScore
-                            ? AppKendoColors.hansokuRed
-                            : context.appColors.textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-
-              // 中央：取得部位（技マークライン）
-              MatchScoreLine(
-                redPoints: redPoints,
-                whitePoints: whitePoints,
-                isDraw: isDraw,
-                redColor: AppKendoColors.hansokuRed,
-                whiteTextColor: context.appColors.textColor,
-                dividerTextColor: context.appColors.subTextColor,
-              ),
-
-              // 白側（道場名上・選手名下）
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (whiteTeam.isNotEmpty)
-                      Text(
-                        whiteTeam,
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          color: context.appColors.subTextColor,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                      ),
-                    Text(
-                      whitePlayer.isNotEmpty ? whitePlayer : '選手未定',
-                      style: TextStyle(
-                        fontSize: AppFontSize.bodyMedium,
-                        fontWeight: AppFontWeight.bold,
-                        color: match.whiteScore > match.redScore
-                            ? AppKendoColors.hansokuRed
-                            : context.appColors.textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.end,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          TeamStatusMemberOrderRow(
+            redTeam: redTeam,
+            redPlayer: redPlayer,
+            whiteTeam: whiteTeam,
+            whitePlayer: whitePlayer,
+            redPoints: redPoints,
+            whitePoints: whitePoints,
+            isDraw: isDraw,
+            isFinished:
+                match.status == 'finished' || match.status == 'approved',
+            redScore: match.redScore,
+            whiteScore: match.whiteScore,
           ),
         ],
       ),
@@ -299,86 +231,17 @@ class TeamStatusCardSections {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              // 赤側
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (redTeam.isNotEmpty)
-                      Text(
-                        redTeam,
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          color: context.appColors.subTextColor,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    Text(
-                      redPlayer.isNotEmpty ? redPlayer : '選手未定',
-                      style: TextStyle(
-                        fontSize: AppFontSize.bodySmall,
-                        fontWeight: AppFontWeight.bold,
-                        color: lastMatch.redScore > lastMatch.whiteScore
-                            ? AppKendoColors.hansokuRed
-                            : context.appColors.textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-
-              // 中央：取得部位（技マークライン）
-              MatchScoreLine(
-                redPoints: redPoints,
-                whitePoints: whitePoints,
-                isDraw: isDraw,
-                redColor: AppKendoColors.hansokuRed,
-                whiteTextColor: context.appColors.textColor,
-                dividerTextColor: context.appColors.subTextColor,
-              ),
-
-              // 白側
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (whiteTeam.isNotEmpty)
-                      Text(
-                        whiteTeam,
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          color: context.appColors.subTextColor,
-                          fontWeight: AppFontWeight.medium,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                      ),
-                    Text(
-                      whitePlayer.isNotEmpty ? whitePlayer : '選手未定',
-                      style: TextStyle(
-                        fontSize: AppFontSize.bodySmall,
-                        fontWeight: AppFontWeight.bold,
-                        color: lastMatch.whiteScore > lastMatch.redScore
-                            ? AppKendoColors.hansokuRed
-                            : context.appColors.textColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.end,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          TeamStatusMemberOrderRow(
+            redTeam: redTeam,
+            redPlayer: redPlayer,
+            whiteTeam: whiteTeam,
+            whitePlayer: whitePlayer,
+            redPoints: redPoints,
+            whitePoints: whitePoints,
+            isDraw: isDraw,
+            isFinished: true,
+            redScore: lastMatch.redScore,
+            whiteScore: lastMatch.whiteScore,
           ),
         ],
       ),

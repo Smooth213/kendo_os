@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_battle_card_helper.dart';
 
 /// 🥋 勝ち抜き戦 タイムライン中央バトルカード（試合番号、赤白選手、スコアマーク、連勝バッジ表示）
 class KachinukiCenterBattleCard extends StatelessWidget {
@@ -21,14 +21,8 @@ class KachinukiCenterBattleCard extends StatelessWidget {
     required this.wLasts,
   });
 
-  static Map<String, String> parseName(String raw) {
-    if (raw.contains('欠員')) return {'last': '', 'first': ''};
-    String clean = raw.contains(':')
-        ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
-        : raw.trim();
-    var parts = clean.split(RegExp(r'\s+'));
-    return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
-  }
+  static Map<String, String> parseName(String raw) =>
+      KachinukiBattleCardHelper.parseName(raw);
 
   @override
   Widget build(BuildContext context) {
@@ -158,59 +152,20 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                             ? const Color(0xFFE53935)
                             : const Color(0xFFE53935),
                       ),
-                      if (rWin && rStreak >= 2) ...[
+                      if (KachinukiBattleCardHelper.buildStreakBadge(
+                            isWin: rWin,
+                            isStreaking: rIsStreaking,
+                            streak: rStreak,
+                            isDark: isDark,
+                          ) !=
+                          null) ...[
                         const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.3)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                          ),
-                          child: Text(
-                            '🔥 $rStreak人抜き',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ] else if (rIsStreaking) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.1)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                            ),
-                          ),
-                          child: Text(
-                            '🔥 $rStreak人抜き中',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
+                        KachinukiBattleCardHelper.buildStreakBadge(
+                          isWin: rWin,
+                          isStreaking: rIsStreaking,
+                          streak: rStreak,
+                          isDark: isDark,
+                        )!,
                       ],
                     ],
                   ),
@@ -245,7 +200,7 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildScoreMarks(
+                            KachinukiBattleCardHelper.buildScoreMarks(
                               match.redDisplays,
                               isDark
                                   ? const Color(0xFFE53935)
@@ -267,7 +222,7 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            _buildScoreMarks(
+                            KachinukiBattleCardHelper.buildScoreMarks(
                               match.whiteDisplays,
                               isDark
                                   ? const Color(0xFF607D8B)
@@ -328,59 +283,20 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                             ? const Color(0xFF607D8B)
                             : const Color(0xFF607D8B),
                       ),
-                      if (wWin && wStreak >= 2) ...[
+                      if (KachinukiBattleCardHelper.buildStreakBadge(
+                            isWin: wWin,
+                            isStreaking: wIsStreaking,
+                            streak: wStreak,
+                            isDark: isDark,
+                          ) !=
+                          null) ...[
                         const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.3)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                          ),
-                          child: Text(
-                            '🔥 $wStreak人抜き',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ] else if (wIsStreaking) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFFD4AF37).withValues(alpha: 0.1)
-                                : const Color(0xFFD4AF37),
-                            borderRadius: AppRadius.small,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                            ),
-                          ),
-                          child: Text(
-                            '🔥 $wStreak人抜き中',
-                            style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFD4AF37),
-                              fontSize: AppFontSize.badge,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
+                        KachinukiBattleCardHelper.buildStreakBadge(
+                          isWin: wWin,
+                          isStreaking: wIsStreaking,
+                          streak: wStreak,
+                          isDark: isDark,
+                        )!,
                       ],
                     ],
                   ),
@@ -414,54 +330,6 @@ class KachinukiCenterBattleCard extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-
-  static Widget _buildScoreMarks(
-    List<PointDisplay> pts,
-    Color color,
-    bool isFaded,
-    bool isDark,
-  ) {
-    if (pts.isEmpty) return const SizedBox(width: 20);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: pts.map((p) {
-        final textColor = isFaded
-            ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
-            : color;
-        if (p.isFirstMatchPoint && p.mark != '◯') {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: textColor, width: 2),
-            ),
-            child: Text(
-              p.mark,
-              style: TextStyle(
-                fontSize: AppFontSize.small,
-                fontWeight: AppFontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-          child: Text(
-            p.mark,
-            style: TextStyle(
-              fontSize: AppFontSize.subhead,
-              fontWeight: AppFontWeight.black,
-              color: textColor,
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }

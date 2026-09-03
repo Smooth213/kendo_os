@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
-import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -12,6 +11,9 @@ import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provide
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/room_join_validator.dart';
+import 'package:kendo_os/shared/widgets/room_join_qr_dialog_actions.dart';
+import 'package:kendo_os/shared/widgets/room_join_duplicate_warning_dialog.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
 final roomFirestoreProvider = Provider<FirebaseFirestore>(
@@ -51,15 +53,11 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
   /// クラウド（Firestore）へパケットを飛ばし、入力されたIDが既に他者に使われているか
   /// 重複を決定論的に水際検知・ガードする非同期チェックロジック
   void _handleJoin(String roomCode) async {
-    final cleanCode = roomCode.trim().toLowerCase(); // 全小文字化で表記揺れ防止
-    if (cleanCode.isEmpty) {
-      setState(() => _errorMessage = '道場ルームコードを入力してください');
-      return;
-    }
+    final cleanCode = RoomJoinValidator.normalize(roomCode);
+    final validation = RoomJoinValidator.validate(roomCode);
 
-    // 記号制限などのバリデーション
-    if (!RegExp(r'^[a-z0-9_\\-]+$').hasMatch(cleanCode)) {
-      setState(() => _errorMessage = '半角英数字、ハイフン、アンダーバーのみ使用できます');
+    if (!validation.isValid) {
+      setState(() => _errorMessage = validation.errorMessage);
       return;
     }
 
@@ -109,108 +107,10 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
 
   /// ⚠️ 被りが発生した際に、ユーザーを誤操作から物理救済するエラー警告ポップアップ
   void _showDuplicateWarningDialog(BuildContext parentContext, String code) {
-    showAppDialog(
+    RoomJoinDuplicateWarningDialog.show(
       context: parentContext,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final cardBgColor = isDark
-            ? const Color(0xFF1E293B).withValues(alpha: 0.95)
-            : const Color(0xFFFFFFFF).withValues(alpha: 0.95);
-        final textColor = context.appColors.textColor;
-        final subTextColor = context.appColors.subTextColor;
-        final borderColor = isDark
-            ? const Color(0xFF334155)
-            : const Color(0xFFE2E8F0);
-
-        return Dialog(
-          backgroundColor: AppKendoColors.transparent,
-          elevation: 0,
-          child: ClipRRect(
-            borderRadius: AppRadius.xlarge,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                decoration: BoxDecoration(
-                  color: cardBgColor,
-                  borderRadius: AppRadius.xlarge,
-                  border: Border.all(color: borderColor, width: 1.5),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.report_problem_rounded,
-                          color: Color(0xFFD97706),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            '⚠️ ID重複・既存の部屋',
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: AppFontSize.subhead,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'ルームID [ $code ] はすでに存在しています。\n\n'
-                      '他の道場が使用中か、過去に作成された部屋です。このまま接続して共有しますか？\n'
-                      '※新規で作りたい場合はキャンセルし、別のIDに変更してください。',
-                      style: TextStyle(
-                        color: subTextColor,
-                        fontSize: AppFontSize.bodySmall,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    Wrap(
-                      alignment: WrapAlignment.end,
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text(
-                            'キャンセル（変更する）',
-                            style: TextStyle(
-                              color: AppKendoColors.grey,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppKendoColors.teal,
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            _executeFinalConnection(code);
-                          },
-                          child: const Text(
-                            'このまま接続',
-                            style: TextStyle(
-                              color: AppKendoColors.pureWhite,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+      code: code,
+      onConfirm: () => _executeFinalConnection(code),
     );
   }
 
@@ -436,56 +336,11 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 12,
-                    runSpacing: 8,
-                    children: [
-                      OutlinedButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: isDark
-                              ? const Color(0xFFE2E8F0)
-                              : const Color(0xFF475569),
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF475569)
-                                : const Color(0xFFCBD5E1),
-                          ),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
-                        ),
-                        child: const Text(
-                          'キャンセル',
-                          style: TextStyle(fontWeight: AppFontWeight.bold),
-                        ),
-                      ),
-                      _isLoading
-                          ? const AppLoadingIndicator(
-                              color: AppKendoColors.teal,
-                            )
-                          : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppKendoColors.teal,
-                                foregroundColor: AppKendoColors.pureWhite,
-                                elevation: 0,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: AppRadius.medium,
-                                ),
-                              ),
-                              onPressed: () =>
-                                  _handleJoin(_codeController.text),
-                              child: const Text(
-                                '接続開始',
-                                style: TextStyle(
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                              ),
-                            ),
-                    ],
+                  RoomJoinQrDialogActions(
+                    isLoading: _isLoading,
+                    isDark: isDark,
+                    onCancel: () => Navigator.of(context).pop(),
+                    onJoin: () => _handleJoin(_codeController.text),
                   ),
                 ],
               ),

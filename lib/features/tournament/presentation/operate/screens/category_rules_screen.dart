@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_detail_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_list_section.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_view.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_container.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_dialogs.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
@@ -252,196 +252,16 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       settingsProvider.select((s) => s.enableLiquidGlass),
     );
 
-    return CategoryRuleEditorView(
+    return CategoryRuleEditorContainer(
+      tournament: tournament,
       category: category,
       themeColors: themeColors,
       enableLiquidGlass: enableLiquidGlass,
-      editingMatchType: _formState.editingMatchType,
-      isMultiScene: _formState.isMultiScene,
-      useAdvancedRule: _formState.useAdvancedRule,
-      editingIsRenseikai: _formState.editingIsRenseikai,
-      onMatchTypeChanged: (val) =>
-          setState(() => _formState.editingMatchType = val),
-      onMultiSceneChanged: (val) =>
-          setState(() => _formState.isMultiScene = val),
-      onUseAdvancedRuleChanged: (val) =>
-          setState(() => _formState.useAdvancedRule = val),
-      useRenseikaiRule: _formState.useRenseikaiRule,
-      useHonsenRule: _formState.useHonsenRule,
-      useMoushiawaseRule: _formState.useMoushiawaseRule,
-      renseikaiTime: _formState.renseikaiTime,
-      renseikaiIsRunningTime: _formState.renseikaiIsRunningTime,
-      renseikaiHasHantei: _formState.renseikaiHasHantei,
-      renseikaiType: _formState.renseikaiType,
-      renseikaiOverallTime: _formState.renseikaiOverallTime,
-      moushiawaseTime: _formState.moushiawaseTime,
-      moushiawaseIsRunningTime: _formState.moushiawaseIsRunningTime,
-      moushiawaseHasHantei: _formState.moushiawaseHasHantei,
-      moushiawaseType: _formState.moushiawaseType,
-      moushiawaseOverallTime: _formState.moushiawaseOverallTime,
-      onUseRenseikaiRuleChanged: (val) =>
-          setState(() => _formState.useRenseikaiRule = val),
-      onUseHonsenRuleChanged: (val) =>
-          setState(() => _formState.useHonsenRule = val),
-      onUseMoushiawaseRuleChanged: (val) =>
-          setState(() => _formState.useMoushiawaseRule = val),
-      onRenseikaiTimeChanged: (val) =>
-          setState(() => _formState.renseikaiTime = val),
-      onRenseikaiRunningChanged: (val) =>
-          setState(() => _formState.renseikaiIsRunningTime = val),
-      onRenseikaiHanteiChanged: (val) =>
-          setState(() => _formState.renseikaiHasHantei = val),
-      onRenseikaiTypeChanged: (val) =>
-          setState(() => _formState.renseikaiType = val),
-      onRenseikaiOverallTimeChanged: (val) =>
-          setState(() => _formState.renseikaiOverallTime = val),
-      onMoushiawaseTimeChanged: (val) =>
-          setState(() => _formState.moushiawaseTime = val),
-      onMoushiawaseRunningChanged: (val) =>
-          setState(() => _formState.moushiawaseIsRunningTime = val),
-      onMoushiawaseHanteiChanged: (val) =>
-          setState(() => _formState.moushiawaseHasHantei = val),
-      onMoushiawaseTypeChanged: (val) =>
-          setState(() => _formState.moushiawaseType = val),
-      onMoushiawaseOverallTimeChanged: (val) =>
-          setState(() => _formState.moushiawaseOverallTime = val),
-      normalTime: _formState.normalTime,
-      normalIsRunningTime: _formState.normalIsRunningTime,
-      normalIpponLimit: _formState.normalIpponLimit,
-      normalHansokuLimit: _formState.normalHansokuLimit,
-      normalHasHantei: _formState.normalHasHantei,
-      normalHasExtension: _formState.normalHasExtension,
-      normalIsEnchoUnlimited: _formState.normalIsEnchoUnlimited,
-      normalEnchoTime: _formState.normalEnchoTime,
-      normalEnchoCount: _formState.normalEnchoCount,
-      normalKachinukiUnlimitedType: _formState.normalKachinukiUnlimitedType,
-      normalHasLeagueDaihyo: _formState.normalHasLeagueDaihyo,
-      normalIsDaihyoIpponShobu: _formState.normalIsDaihyoIpponShobu,
-      normalWinPoint: _formState.normalWinPoint,
-      normalLossPoint: _formState.normalLossPoint,
-      normalDrawPoint: _formState.normalDrawPoint,
-      normalRenseikaiType: _formState.normalRenseikaiType,
-      normalOverallTime: _formState.normalOverallTime,
-      normalDaihyoMatchTime: _formState.normalDaihyoMatchTime,
-      normalDaihyoHasExtension: _formState.normalDaihyoHasExtension,
-      normalDaihyoEnchoTime: _formState.normalDaihyoEnchoTime,
-      normalDaihyoEnchoCount: _formState.normalDaihyoEnchoCount,
-      normalDaihyoHasHantei: _formState.normalDaihyoHasHantei,
-      advancedTime: _formState.advancedTime,
-      advancedIsRunningTime: _formState.advancedIsRunningTime,
-      advancedIpponLimit: _formState.advancedIpponLimit,
-      advancedHansokuLimit: _formState.advancedHansokuLimit,
-      advancedHasHantei: _formState.advancedHasHantei,
-      advancedHasExtension: _formState.advancedHasExtension,
-      advancedIsEnchoUnlimited: _formState.advancedIsEnchoUnlimited,
-      advancedEnchoTime: _formState.advancedEnchoTime,
-      advancedEnchoCount: _formState.advancedEnchoCount,
-      advancedKachinukiUnlimitedType: _formState.advancedKachinukiUnlimitedType,
-      advancedHasLeagueDaihyo: _formState.advancedHasLeagueDaihyo,
-      advancedIsDaihyoIpponShobu: _formState.advancedIsDaihyoIpponShobu,
-      advancedWinPoint: _formState.advancedWinPoint,
-      advancedLossPoint: _formState.advancedLossPoint,
-      advancedDrawPoint: _formState.advancedDrawPoint,
-      advancedRenseikaiType: _formState.advancedRenseikaiType,
-      advancedOverallTime: _formState.advancedOverallTime,
-      advancedDaihyoMatchTime: _formState.advancedDaihyoMatchTime,
-      advancedDaihyoHasExtension: _formState.advancedDaihyoHasExtension,
-      advancedDaihyoEnchoTime: _formState.advancedDaihyoEnchoTime,
-      advancedDaihyoEnchoCount: _formState.advancedDaihyoEnchoCount,
-      advancedDaihyoHasHantei: _formState.advancedDaihyoHasHantei,
+      formState: _formState,
       keywordsController: _keywordsController,
-      onNormalMatchTimeChanged: (val) =>
-          setState(() => _formState.normalTime = val),
-      onNormalIsRunningTimeChanged: (val) =>
-          setState(() => _formState.normalIsRunningTime = val),
-      onNormalRenseikaiTypeChanged: (val) =>
-          setState(() => _formState.normalRenseikaiType = val),
-      onNormalOverallTimeChanged: (val) =>
-          setState(() => _formState.normalOverallTime = val),
-      onNormalKachinukiUnlimitedTypeChanged: (val) =>
-          setState(() => _formState.normalKachinukiUnlimitedType = val),
-      onNormalHasExtensionChanged: (val) =>
-          setState(() => _formState.normalHasExtension = val),
-      onNormalIsEnchoUnlimitedChanged: (val) =>
-          setState(() => _formState.normalIsEnchoUnlimited = val),
-      onNormalEnchoCountChanged: (val) =>
-          setState(() => _formState.normalEnchoCount = val),
-      onNormalEnchoTimeChanged: (val) =>
-          setState(() => _formState.normalEnchoTime = val),
-      onNormalHasHanteiChanged: (val) =>
-          setState(() => _formState.normalHasHantei = val),
-      onNormalHasLeagueDaihyoChanged: (val) =>
-          setState(() => _formState.normalHasLeagueDaihyo = val),
-      onNormalIsDaihyoIpponShobuChanged: (val) =>
-          setState(() => _formState.normalIsDaihyoIpponShobu = val),
-      onNormalDaihyoMatchTimeChanged: (val) =>
-          setState(() => _formState.normalDaihyoMatchTime = val),
-      onNormalDaihyoHasExtensionChanged: (val) =>
-          setState(() => _formState.normalDaihyoHasExtension = val),
-      onNormalDaihyoEnchoTimeChanged: (val) =>
-          setState(() => _formState.normalDaihyoEnchoTime = val),
-      onNormalDaihyoEnchoCountChanged: (val) =>
-          setState(() => _formState.normalDaihyoEnchoCount = val),
-      onNormalDaihyoHasHanteiChanged: (val) =>
-          setState(() => _formState.normalDaihyoHasHantei = val),
-      onNormalWinPointChanged: (val) =>
-          setState(() => _formState.normalWinPoint = val),
-      onNormalLossPointChanged: (val) =>
-          setState(() => _formState.normalLossPoint = val),
-      onNormalDrawPointChanged: (val) =>
-          setState(() => _formState.normalDrawPoint = val),
-      onNormalIpponLimitChanged: (val) =>
-          setState(() => _formState.normalIpponLimit = val),
-      onNormalHansokuLimitChanged: (val) =>
-          setState(() => _formState.normalHansokuLimit = val),
-      onAdvancedMatchTimeChanged: (val) =>
-          setState(() => _formState.advancedTime = val),
-      onAdvancedIsRunningTimeChanged: (val) =>
-          setState(() => _formState.advancedIsRunningTime = val),
-      onAdvancedRenseikaiTypeChanged: (val) =>
-          setState(() => _formState.advancedRenseikaiType = val),
-      onAdvancedOverallTimeChanged: (val) =>
-          setState(() => _formState.advancedOverallTime = val),
-      onAdvancedKachinukiUnlimitedTypeChanged: (val) =>
-          setState(() => _formState.advancedKachinukiUnlimitedType = val),
-      onAdvancedHasExtensionChanged: (val) =>
-          setState(() => _formState.advancedHasExtension = val),
-      onAdvancedIsEnchoUnlimitedChanged: (val) =>
-          setState(() => _formState.advancedIsEnchoUnlimited = val),
-      onAdvancedEnchoCountChanged: (val) =>
-          setState(() => _formState.advancedEnchoCount = val),
-      onAdvancedEnchoTimeChanged: (val) =>
-          setState(() => _formState.advancedEnchoTime = val),
-      onAdvancedHasHanteiChanged: (val) =>
-          setState(() => _formState.advancedHasHantei = val),
-      onAdvancedHasLeagueDaihyoChanged: (val) =>
-          setState(() => _formState.advancedHasLeagueDaihyo = val),
-      onAdvancedIsDaihyoIpponShobuChanged: (val) =>
-          setState(() => _formState.advancedIsDaihyoIpponShobu = val),
-      onAdvancedDaihyoMatchTimeChanged: (val) =>
-          setState(() => _formState.advancedDaihyoMatchTime = val),
-      onAdvancedDaihyoHasExtensionChanged: (val) =>
-          setState(() => _formState.advancedDaihyoHasExtension = val),
-      onAdvancedDaihyoEnchoTimeChanged: (val) =>
-          setState(() => _formState.advancedDaihyoEnchoTime = val),
-      onAdvancedDaihyoEnchoCountChanged: (val) =>
-          setState(() => _formState.advancedDaihyoEnchoCount = val),
-      onAdvancedDaihyoHasHanteiChanged: (val) =>
-          setState(() => _formState.advancedDaihyoHasHantei = val),
-      onAdvancedWinPointChanged: (val) =>
-          setState(() => _formState.advancedWinPoint = val),
-      onAdvancedLossPointChanged: (val) =>
-          setState(() => _formState.advancedLossPoint = val),
-      onAdvancedDrawPointChanged: (val) =>
-          setState(() => _formState.advancedDrawPoint = val),
-      onAdvancedIpponLimitChanged: (val) =>
-          setState(() => _formState.advancedIpponLimit = val),
-      onAdvancedHansokuLimitChanged: (val) =>
-          setState(() => _formState.advancedHansokuLimit = val),
-      onKeywordsChanged: (kws) =>
-          setState(() => _formState.editingAdvancedKeywords = kws),
       onCancel: () => setState(() => _formState.editingCategory = null),
       onSave: () => _saveCategoryRules(tournament),
+      setState: setState,
     );
   }
 

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/domain/entities/audit_log.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -13,10 +12,8 @@ import 'package:kendo_os/features/match/presentation/providers/match_rule_provid
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/admin/providers/audit_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_message_provider.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart';
-import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/features/match/application/services/match_auto_progression_service.dart';
 import 'package:kendo_os/features/match/application/services/match_persistence_helper.dart';
 import 'package:kendo_os/features/match/application/services/match_rewind_service.dart';
@@ -25,6 +22,7 @@ import 'package:kendo_os/features/match/application/services/match_sound_helper.
 import 'package:kendo_os/features/match/application/services/match_retirement_helper.dart';
 import 'package:kendo_os/features/match/application/services/match_snapshot_helper.dart';
 import 'package:kendo_os/features/match/application/services/match_undo_helper.dart';
+import 'package:kendo_os/features/match/application/usecases/match_progress_calculator.dart';
 
 /// アプリケーション層オーケストレーションサービス
 class MatchApplicationService {
@@ -71,48 +69,20 @@ class MatchApplicationService {
              snapshotHelper ?? const MatchSnapshotHelper(),
            );
 
-  User _getCurrentUser() {
-    String uid = 'unknown_user';
-    try {
-      uid = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
-    } catch (_) {
-      uid = 'test_user';
-    }
-    return User(id: uid, role: Role.admin, organizationId: 'default_org');
-  }
+  User _getCurrentUser() => MatchProgressCalculator.getCurrentUser();
 
   Future<void> _safeExecute(
     Future<void> Function() action,
     String errorPrefix, {
     String? metricName,
     String? traceId,
-  }) async {
-    final stopwatch = Stopwatch()..start();
-    try {
-      await action();
-      stopwatch.stop();
-      if (metricName != null) {
-        _ref
-            .read(metricsProvider)
-            .recordLatency(
-              metricName,
-              stopwatch.elapsedMilliseconds,
-              traceId: traceId,
-            );
-      }
-    } catch (e) {
-      stopwatch.stop();
-      if (e.toString().contains('Concurrency') ||
-          e.toString().contains('競合') ||
-          e.toString().contains('他の端末')) {
-        _ref.read(metricsProvider).recordConcurrencyConflict(traceId: traceId);
-      } else {
-        _ref.read(metricsProvider).recordError(traceId: traceId);
-      }
-      _ref.read(uiMessageProvider.notifier).showError('$errorPrefix: $e');
-      rethrow;
-    }
-  }
+  }) => MatchProgressCalculator.safeExecute(
+    _ref,
+    action,
+    errorPrefix,
+    metricName: metricName,
+    traceId: traceId,
+  );
 
   Future<MatchModel?> _getMatchSafely(String matchId) =>
       _persistenceHelper.getMatchSafely(matchId);

@@ -5,11 +5,12 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'smart_player_input.dart';
-import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
+import 'package:kendo_os/shared/widgets/multi_player_candidate_chip.dart';
 
 class MultiPlayerSelectInput extends ConsumerStatefulWidget {
   final List<String> initialSelected;
@@ -57,70 +58,24 @@ class _MultiPlayerSelectInputState
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
-            List<PlayerModel> filteredMaster = masterPlayers
-                .where((p) => p.name.contains(searchText))
-                .toList();
+            final filteredMaster = MultiPlayerFilterHelper.filterAndSortMaster(
+              masterPlayers: masterPlayers,
+              searchText: searchText,
+              selectedFilter: selectedFilter,
+              isAscending: isAscending,
+            );
 
-            if (selectedFilter != 'すべて') {
-              if (selectedFilter == 'ゲスト') {
-                filteredMaster = [];
-              } else if (selectedFilter == '初心者') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '幼年') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade == 0 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '低学年') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 1 && p.grade <= 4 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '高学年') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 5 && p.grade <= 6 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '中学生') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 7 && p.grade <= 9 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '高校生') {
-                filteredMaster = filteredMaster
-                    .where(
-                      (p) => p.grade >= 10 && p.grade <= 12 && !p.isBeginner,
-                    )
-                    .toList();
-              } else if (selectedFilter == '一般') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 13 && !p.isBeginner)
-                    .toList();
-              } else {
-                filteredMaster = [];
-              }
-            }
+            final filteredGuest = MultiPlayerFilterHelper.filterGuests(
+              guestPlayers: guestPlayers,
+              searchText: searchText,
+              selectedFilter: selectedFilter,
+            );
 
-            // 学年順（同一年齢内はよみがな順）でソート（昇順 / 降順）
-            filteredMaster.sort((a, b) {
-              final gradeCompare = isAscending
-                  ? a.grade.compareTo(b.grade)
-                  : b.grade.compareTo(a.grade);
-              if (gradeCompare != 0) return gradeCompare;
-              return isAscending
-                  ? a.nameKana.compareTo(b.nameKana)
-                  : b.nameKana.compareTo(a.nameKana);
-            });
-
-            final filteredGuest =
-                (selectedFilter == 'すべて' || selectedFilter == 'ゲスト')
-                ? guestPlayers
-                      .where((name) => name.contains(searchText))
-                      .toList()
-                : <String>[];
-
-            final isNewName =
-                searchText.trim().isNotEmpty &&
-                !masterPlayers.any((p) => p.name == searchText.trim()) &&
-                !guestPlayers.any((name) => name == searchText.trim());
+            final isNewName = MultiPlayerFilterHelper.isNewName(
+              searchText: searchText,
+              masterPlayers: masterPlayers,
+              guestPlayers: guestPlayers,
+            );
 
             return Padding(
               padding: EdgeInsets.only(
@@ -276,41 +231,30 @@ class _MultiPlayerSelectInputState
                       horizontal: AppSpacing.lg,
                     ),
                     child: Row(
-                      children:
-                          [
-                            'すべて',
-                            '初心者',
-                            '幼年',
-                            '低学年',
-                            '高学年',
-                            '中学生',
-                            '高校生',
-                            '一般',
-                            'ゲスト',
-                          ].map((filterName) {
-                            final isSelected = selectedFilter == filterName;
-                            final activeColor = _accentColor;
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                right: AppSpacing.sm,
-                              ),
-                              child: AppChoiceChip(
-                                label: Text(filterName),
-                                selected: isSelected,
-                                customSelectedColor: activeColor,
-                                customTextColor: isSelected
-                                    ? AppKendoColors.pureWhite
-                                    : null,
-                                onSelected: (bool selected) {
-                                  if (selected) {
-                                    setStateSheet(
-                                      () => selectedFilter = filterName,
-                                    );
-                                  }
-                                },
-                              ),
-                            );
-                          }).toList(),
+                      children: MultiPlayerFilterHelper.filterCategories.map((
+                        filterName,
+                      ) {
+                        final isSelected = selectedFilter == filterName;
+                        final activeColor = _accentColor;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.sm),
+                          child: AppChoiceChip(
+                            label: Text(filterName),
+                            selected: isSelected,
+                            customSelectedColor: activeColor,
+                            customTextColor: isSelected
+                                ? AppKendoColors.pureWhite
+                                : null,
+                            onSelected: (bool selected) {
+                              if (selected) {
+                                setStateSheet(
+                                  () => selectedFilter = filterName,
+                                );
+                              }
+                            },
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -350,27 +294,12 @@ class _MultiPlayerSelectInputState
                           ),
                         ...filteredGuest.map((name) {
                           final isSelected = tempSelected.contains(name);
-                          return CheckboxListTile(
-                            activeColor: _accentColor,
-                            value: isSelected,
-                            title: Text(name),
-                            subtitle: const Text(
-                              '出稽古・ゲスト',
-                              style: TextStyle(
-                                fontSize: AppFontSize.small,
-                                color: AppKendoColors.grey,
-                              ),
-                            ),
-                            secondary: CircleAvatar(
-                              backgroundColor: AppKendoColors.grey.withAlpha(
-                                26,
-                              ),
-                              child: const Icon(
-                                Icons.person_outline,
-                                color: AppKendoColors.grey,
-                                size: 20,
-                              ),
-                            ),
+                          return MultiPlayerCandidateTile(
+                            name: name,
+                            subtitle: '出稽古・ゲスト',
+                            isSelected: isSelected,
+                            accentColor: AppKendoColors.grey,
+                            icon: Icons.person_outline,
                             onChanged: (bool? val) {
                               setStateSheet(() {
                                 if (val == true) {
@@ -384,25 +313,12 @@ class _MultiPlayerSelectInputState
                         }),
                         ...filteredMaster.map((p) {
                           final isSelected = tempSelected.contains(p.name);
-                          return CheckboxListTile(
-                            activeColor: _accentColor,
-                            value: isSelected,
-                            title: Text(p.name),
-                            subtitle: Text(
-                              p.gradeName,
-                              style: const TextStyle(
-                                fontSize: AppFontSize.small,
-                                color: AppKendoColors.grey,
-                              ),
-                            ),
-                            secondary: CircleAvatar(
-                              backgroundColor: _accentColor.withAlpha(26),
-                              child: Icon(
-                                Icons.person,
-                                color: _accentColor,
-                                size: 20,
-                              ),
-                            ),
+                          return MultiPlayerCandidateTile(
+                            name: p.name,
+                            subtitle: p.gradeName,
+                            isSelected: isSelected,
+                            accentColor: _accentColor,
+                            icon: Icons.person,
                             onChanged: (bool? val) {
                               setStateSheet(() {
                                 if (val == true) {

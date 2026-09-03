@@ -76,20 +76,33 @@ class PdfTeamTableCellRenderer {
     String name,
     PdfColor color,
     pw.Font fontBold,
-  ) => pw.Center(
-    child: pw.Padding(
-      padding: const pw.EdgeInsets.all(AppSpacing.subValue),
-      child: pw.Text(
-        name,
-        style: pw.TextStyle(
-          color: color,
-          fontWeight: pw.FontWeight.bold,
-          font: fontBold,
-          fontSize: AppFontSize.badge,
+  ) {
+    // 極長道場名（20文字超）でもPDFセル高さを破壊しない動的フォントスケール
+    final double fontSize = name.length > 20
+        ? 6.0
+        : (name.length > 12
+              ? 7.0
+              : (name.length > 8 ? 8.0 : AppFontSize.badge));
+    final String displayName = name.length > 25
+        ? '${name.substring(0, 24)}…'
+        : name;
+
+    return pw.Center(
+      child: pw.Padding(
+        padding: const pw.EdgeInsets.all(AppSpacing.subValue),
+        child: pw.Text(
+          displayName,
+          style: pw.TextStyle(
+            color: color,
+            fontWeight: pw.FontWeight.bold,
+            font: fontBold,
+            fontSize: fontSize,
+          ),
+          textAlign: pw.TextAlign.center,
         ),
       ),
-    ),
-  );
+    );
+  }
 
   /// 選手名セル（名字の縦書き ＋ 同姓時の頭文字表示）
   static pw.Widget buildNameCell(
@@ -102,10 +115,17 @@ class PdfTeamTableCellRenderer {
         ? rawName.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
         : rawName.trim();
     var parts = clean.split(RegExp(r'\s+'));
-    final lastName = parts[0];
+    final rawLastName = parts[0];
     final firstName = parts.length > 1 ? parts[1] : '';
+
+    // 極長選手名でも縦書きが1ページ高さを突破しないよう最大8文字ガード
+    final lastName = rawLastName.length > 8
+        ? '${rawLastName.substring(0, 7)}…'
+        : rawLastName;
+    final double fontSize = lastName.length > 5 ? 7.0 : 9.0;
+
     final showInitial =
-        teamLastNames.where((n) => n == lastName).length > 1 &&
+        teamLastNames.where((n) => n == rawLastName).length > 1 &&
         firstName.isNotEmpty;
     return pw.Center(
       child: pw.Padding(
@@ -119,7 +139,7 @@ class PdfTeamTableCellRenderer {
           children: [
             pw.Text(
               lastName.split('').join('\n'),
-              style: pw.TextStyle(font: ttf, fontSize: 9),
+              style: pw.TextStyle(font: ttf, fontSize: fontSize),
               textAlign: pw.TextAlign.center,
             ),
             if (showInitial)

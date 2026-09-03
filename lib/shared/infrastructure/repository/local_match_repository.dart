@@ -5,14 +5,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
-import 'package:kendo_os/features/match/domain/score/score_event.dart'; // ★ ScoreEventの型認識のため追加
 import 'dart:convert'; // ★ 追加: Ruleを文字列に圧縮・解凍するための道具
-import 'package:kendo_os/features/match/domain/rules/match_rule.dart'; // ★ 追加: MatchRuleの型を認識させるため
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart'; // ★ 追加: MatchCommandModel等の型を認識させるため
-import 'package:kendo_os/features/match/domain/match_aggregate.dart'; // ★ 追加
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint
 import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // ★ 追加: クラッシュレポート用
+import 'package:kendo_os/shared/infrastructure/repository/local_match_entity_mapper.dart';
 
 // ==========================================
 // ★ Phase 1-Step 4: ゼロトラストの最終防壁（例外定義）
@@ -43,7 +41,7 @@ class LocalMatchRepository {
     return _isar.matchEntitys.where().watch(fireImmediately: true).map((
       entities,
     ) {
-      return entities.map((e) => _toModel(e)).toList();
+      return entities.map(LocalMatchEntityMapper.toModel).toList();
     });
   }
 
@@ -56,7 +54,7 @@ class LocalMatchRepository {
         .watch(fireImmediately: true)
         .map((entities) {
           if (entities.isEmpty) return null;
-          return _toModel(entities.first);
+          return LocalMatchEntityMapper.toModel(entities.first);
         });
   }
 
@@ -76,7 +74,7 @@ class LocalMatchRepository {
       //   debugPrint('⚠️ [Chaos Recovery] 進行中の試合なのにイベントが空です。データの不整合を検知しました。');
       // }
 
-      return _toModel(entity);
+      return LocalMatchEntityMapper.toModel(entity);
     } catch (e, stack) {
       // ★ Phase 7: 万が一ローカルDBが破損していた場合の緊急回避
       debugPrint('🔥 [Critical] ローカルDBからの読み込みに失敗しました(破損の可能性): $e');
@@ -110,7 +108,7 @@ class LocalMatchRepository {
         }
       }
 
-      final entity = _toEntity(match);
+      final entity = LocalMatchEntityMapper.toEntity(match);
       // ★ Phase 5-2, 5-3: 1〜3秒以内の自動保存を強制し、端末スリープ・強制終了時もデータを100%保護する即時同期的ライトスルー確約
       await _isar.writeTxn(() async {
         final existing = await _isar.matchEntitys
@@ -178,7 +176,7 @@ class LocalMatchRepository {
 
     await _isar.writeTxn(() async {
       for (var match in matches) {
-        final entity = _toEntity(match);
+        final entity = LocalMatchEntityMapper.toEntity(match);
         final existing = await _isar.matchEntitys
             .filter()
             .firestoreIdEqualTo(match.id)
@@ -207,7 +205,7 @@ class LocalMatchRepository {
         .not()
         .syncStateEqualTo(SyncState.synced)
         .findAll();
-    return entities.map((e) => _toModel(e)).toList();
+    return entities.map(LocalMatchEntityMapper.toModel).toList();
   }
 
   // ★ Phase 4 復旧: 同期完了処理
@@ -235,167 +233,6 @@ class LocalMatchRepository {
         .syncStateEqualTo(SyncState.synced)
         .watch(fireImmediately: true)
         .map((events) => events.length);
-  }
-
-  ScoreEventEntity _eventToEntity(ScoreEvent e) {
-    return ScoreEventEntity()
-      ..id = e.id
-      ..side = e.side
-      ..type = e.type
-      ..timestamp = e.timestamp
-      ..userId = e.userId
-      ..sequence = e.sequence
-      ..isCanceled = e.isCanceled
-      ..isUndo = e.isUndo
-      ..isRestore = e.isRestore
-      ..deviceId = e.deviceId
-      ..logicalClock = e.logicalClock
-      ..signature = e.signature;
-  }
-
-  // --- 翻訳機（マッパー関数） ---
-  MatchEntity _toEntity(MatchModel model) {
-    return MatchEntity()
-      ..firestoreId = model.id
-      ..matchType = model.matchType
-      ..redName = model.redName
-      ..whiteName = model.whiteName
-      ..redScore = model.redScore
-      ..whiteScore = model.whiteScore
-      ..status = model.status
-      ..events = model.events
-          .map<ScoreEventEntity>((e) => _eventToEntity(e))
-          .toList() // ★ 型を明示的に指定して変換エラーを回避
-      ..snapshots = model.snapshots
-          .map(
-            (s) => MatchSnapshotEntity()
-              ..id = s.id
-              ..createdAt = s.createdAt
-              ..reason = s.reason
-              ..events = s.events
-                  .map<ScoreEventEntity>((e) => _eventToEntity(e))
-                  .toList(),
-          )
-          .toList()
-      ..syncState = model.syncState
-      ..pendingEvents = model.pendingEvents
-          .map<ScoreEventEntity>((e) => _eventToEntity(e))
-          .toList()
-      ..lastUpdatedAt = model.lastUpdatedAt
-      ..refereeNames = model.refereeNames
-      ..countForStandings = model.countForStandings
-      ..scorerId = model.scorerId
-      ..version = model.version
-      ..isAutoAssigned = model.isAutoAssigned
-      ..order = model.order
-      ..source = model.source
-      ..tournamentId = model.tournamentId
-      ..category = model.category
-      ..groupName = model.groupName
-      ..matchOrder = model.matchOrder
-      ..matchTimeMinutes = model.matchTimeMinutes
-      ..isRunningTime = model.isRunningTime
-      ..hasExtension = model.hasExtension
-      ..extensionTimeMinutes = model.extensionTimeMinutes
-      ..extensionCount = model.extensionCount
-      ..hasHantei = model.hasHantei
-      // ★ 修正: タイマーの進行に必要な詳細プロパティも確実にローカルDBへ保存する
-      ..timerStartedAt = model.timerStartedAt
-      ..timerPausedAt = model.timerPausedAt
-      ..accumulatedPauseDurationMs = model.accumulatedPauseDurationMs
-      ..note = model.note
-      ..isKachinuki = model.isKachinuki
-      // ★ 追加：複雑なルール箱を文字列(JSON)に圧縮してローカルDBにねじ込む！
-      ..ruleJson = model.rule != null ? jsonEncode(model.rule!.toJson()) : null
-      ..redRemaining = model.redRemaining
-      ..whiteRemaining = model.whiteRemaining;
-  }
-
-  ScoreEvent _entityToEvent(ScoreEventEntity e) {
-    return ScoreEventLegacyAdapter.fromLegacy(
-      id: e.id ?? '',
-      side: e.side,
-      type: e.type,
-      timestamp: e.timestamp ?? DateTime.now(),
-      userId: e.userId,
-      sequence: e.sequence,
-      isCanceled: e.isCanceled,
-    ).copyWith(
-      isUndo: e.isUndo,
-      isRestore: e.isRestore,
-      deviceId: e.deviceId,
-      logicalClock: e.logicalClock,
-      signature: e.signature,
-    );
-  }
-
-  MatchModel _toModel(MatchEntity entity) {
-    return MatchModel(
-      id: entity.firestoreId,
-      matchType: entity.matchType,
-      redName: entity.redName,
-      whiteName: entity.whiteName,
-      redScore: entity.redScore,
-      whiteScore: entity.whiteScore,
-      status: entity.status,
-      syncState: entity.syncState,
-      pendingEvents: entity.pendingEvents.map(_entityToEvent).toList(),
-      events: entity.events.map(_entityToEvent).toList(),
-      // ★ Phase 1: スナップショットのモデル変換を追加（Isarからの読み込み）
-      snapshots: entity.snapshots
-          .map(
-            (s) => MatchSnapshot(
-              id: s.id ?? '',
-              matchId: entity.firestoreId,
-              version: s.events.length,
-              state: MatchModel(
-                id: entity.firestoreId,
-                matchType: entity.matchType,
-                redName: entity.redName,
-                whiteName: entity.whiteName,
-              ),
-              createdAt: s.createdAt ?? DateTime.now(),
-              reason: s.reason ?? '',
-              events: s.events.map(_entityToEvent).toList(),
-            ),
-          )
-          .toList(),
-      lastUpdatedAt: entity.lastUpdatedAt,
-      refereeNames: entity.refereeNames,
-      countForStandings: entity.countForStandings,
-      scorerId: entity.scorerId,
-      version: entity.version,
-      isAutoAssigned: entity.isAutoAssigned,
-      order: entity.order,
-      source: entity.source,
-      tournamentId: entity.tournamentId,
-      category: entity.category,
-      groupName: entity.groupName,
-      matchOrder: entity.matchOrder,
-      matchTimeMinutes: entity.matchTimeMinutes,
-      isRunningTime: entity.isRunningTime,
-      hasExtension: entity.hasExtension,
-      extensionTimeMinutes: entity.extensionTimeMinutes,
-      extensionCount: entity.extensionCount,
-      hasHantei: entity.hasHantei,
-      timerStartedAt: entity.timerStartedAt,
-      timerPausedAt: entity.timerPausedAt,
-      // ★ 防衛サニタイズ: 過去のバグや時刻変更等で負の数がDBに入っていた場合、
-      // ドメインアサーションクラッシュを避けるため、一律で安全な「0」に最大値制御（丸め）を行います。
-      accumulatedPauseDurationMs: (entity.accumulatedPauseDurationMs < 0)
-          ? 0
-          : entity.accumulatedPauseDurationMs,
-      note: entity.note,
-      isKachinuki: entity.isKachinuki,
-      // ★ 追加：文字列(JSON)から元のルール箱に解凍して復元する！
-      rule: entity.ruleJson != null
-          ? MatchRule.fromJson(
-              jsonDecode(entity.ruleJson!) as Map<String, dynamic>,
-            )
-          : null,
-      redRemaining: entity.redRemaining,
-      whiteRemaining: entity.whiteRemaining,
-    );
   }
 
   // ============================================================================
@@ -473,7 +310,7 @@ class LocalMatchRepository {
         // 既存の正しいプライベートマッパー関数である `_toModel(entity)` を使用して変換する
         // =========================================================================
         .map((entities) {
-          return entities.map((entity) => _toModel(entity)).toList();
+          return entities.map(LocalMatchEntityMapper.toModel).toList();
         });
   }
 
@@ -492,7 +329,7 @@ class LocalMatchRepository {
         .sortByOrder()
         .watch(fireImmediately: true)
         .map((entities) {
-          return entities.map((entity) => _toModel(entity)).toList();
+          return entities.map(LocalMatchEntityMapper.toModel).toList();
         });
   }
 }

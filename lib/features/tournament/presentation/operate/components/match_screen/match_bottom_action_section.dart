@@ -9,9 +9,11 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/services/match_strategy.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_infinite_handler_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_renseikai_next_button.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_action_button_row.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/last_used_settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_bottom_action_helper.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -133,14 +135,8 @@ class MatchBottomActionSection extends ConsumerWidget {
                   );
                   if (!confirmed) return;
                 }
-                String winnerColor = 'draw';
-                if ((match.redScore as num).toInt() >
-                    (match.whiteScore as num).toInt()) {
-                  winnerColor = 'red';
-                } else if ((match.whiteScore as num).toInt() >
-                    (match.redScore as num).toInt()) {
-                  winnerColor = 'white';
-                }
+                final winnerColor =
+                    MatchBottomActionHelper.determineWinnerColor(match);
 
                 if (!context.mounted) return;
                 showAppDialog(
@@ -231,56 +227,28 @@ class MatchBottomActionSection extends ConsumerWidget {
       final bool isTrulyTeamMatch =
           match.groupName != null && teamMatches.length > 1;
 
-      return GestureDetector(
-        onDoubleTap: settings.confirmBehavior == 'double'
-            ? confirmAction
-            : null,
-        child: ElevatedButton.icon(
-          onPressed: settings.confirmBehavior == 'single'
-              ? confirmAction
-              : (isViewOnly
-                    ? null
-                    : () => AppSnackBar.show(
-                        context,
-                        settings.confirmBehavior == 'double'
-                            ? 'ダブルタップで確定してください'
-                            : '長押しで確定してください',
-                      )),
-          onLongPress: settings.confirmBehavior == 'long'
-              ? confirmAction
-              : null,
-          icon: Icon(
-            (isTie && isTrulyTeamMatch)
-                ? Icons.balance
-                : (isAllDone ? Icons.emoji_events : Icons.verified),
-            size: 24,
-          ),
-          label: Text(
-            (isTie && isTrulyTeamMatch)
-                ? '記録確定・星取表へ'
-                : (isAllDone
-                      ? ((match.tournamentId != null &&
-                                match.tournamentId!.startsWith('bunaiksen_'))
-                            ? '確定・部内戦ホームへ'
-                            : '確定・大会ホームへ')
-                      : '確定・次へ'),
-            style: const TextStyle(
-              fontSize: AppFontSize.subhead,
-              fontWeight: AppFontWeight.bold,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isTie
-                ? AppKendoColors.hansokuRed
-                : (isAllDone
-                      ? const Color(0xFF303F9F)
-                      : const Color(0xFF00897B)),
-            foregroundColor: AppKendoColors.pureWhite,
-            minimumSize: const Size(double.infinity, 36),
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-            elevation: 4,
-          ),
+      return MatchActionButtonRow(
+        label: MatchBottomActionHelper.getConfirmButtonLabel(
+          isTie: isTie,
+          isTrulyTeamMatch: isTrulyTeamMatch,
+          isAllDone: isAllDone,
+          tournamentId: match.tournamentId,
         ),
+        icon: MatchBottomActionHelper.getConfirmButtonIcon(
+          isTie: isTie,
+          isTrulyTeamMatch: isTrulyTeamMatch,
+          isAllDone: isAllDone,
+        ),
+        confirmBehavior: settings.confirmBehavior,
+        onAction: confirmAction,
+        isViewOnly: isViewOnly,
+        backgroundColor: MatchBottomActionHelper.getConfirmButtonColor(
+          isTie: isTie,
+          isAllDone: isAllDone,
+        ),
+        promptMessage: settings.confirmBehavior == 'double'
+            ? 'ダブルタップで確定してください'
+            : '長押しで確定してください',
       );
     } else {
       final finishAction = isViewOnly
@@ -303,14 +271,8 @@ class MatchBottomActionSection extends ConsumerWidget {
                   );
                   if (!confirmed) return;
                 }
-                String winnerColor = 'draw';
-                if ((match.redScore as num).toInt() >
-                    (match.whiteScore as num).toInt()) {
-                  winnerColor = 'red';
-                } else if ((match.whiteScore as num).toInt() >
-                    (match.redScore as num).toInt()) {
-                  winnerColor = 'white';
-                }
+                final winnerColor =
+                    MatchBottomActionHelper.determineWinnerColor(match);
 
                 if (!context.mounted) return;
                 showAppDialog(
@@ -341,26 +303,15 @@ class MatchBottomActionSection extends ConsumerWidget {
                   );
                   if (!confirmed) return;
 
-                  final rule = match.rule;
                   final double extMins =
-                      (match.extensionTimeMinutes != null &&
-                          match.extensionTimeMinutes! > 0)
-                      ? match.extensionTimeMinutes!
-                      : (match.matchType == '代表戦'
-                            ? (rule?.daihyoEnchoTimeMinutes ??
-                                  ((lastSettings['daihyoEnchoTimeMinutes'] ??
-                                              lastSettings['extensionTimeMinutes'] ??
-                                              3.0)
-                                          as num)
-                                      .toDouble())
-                            : (rule?.enchoTimeMinutes ??
-                                  ((lastSettings['extensionTimeMinutes'] ?? 3.0)
-                                          as num)
-                                      .toDouble()));
-                  final int currentExtCount = '延長'
-                      .allMatches(match.note)
-                      .length;
-                  final extStr = '延長${currentExtCount + 1}回目';
+                      MatchBottomActionHelper.calculateExtensionMinutes(
+                        match: match,
+                        lastSettings: lastSettings,
+                      );
+                  final extStr =
+                      MatchBottomActionHelper.formatExtensionCountString(
+                        match.note,
+                      );
 
                   final currentTime = ref.read(timeSourceProvider).now();
                   await ref
@@ -429,40 +380,15 @@ class MatchBottomActionSection extends ConsumerWidget {
           final isProcessing = ref.watch(isMatchCommandProcessingProvider);
           final effectiveFinishAction = isProcessing ? null : finishAction;
 
-          return GestureDetector(
-            onDoubleTap: settings.confirmBehavior == 'double'
-                ? effectiveFinishAction
-                : null,
-            child: ElevatedButton(
-              onPressed: settings.confirmBehavior == 'single'
-                  ? effectiveFinishAction
-                  : (isViewOnly
-                        ? null
-                        : () => AppSnackBar.show(
-                            context,
-                            settings.confirmBehavior == 'double'
-                                ? 'ダブルタップで終了してください'
-                                : '長押しで終了してください',
-                          )),
-              onLongPress: settings.confirmBehavior == 'long'
-                  ? effectiveFinishAction
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppKendoColors.blueAccent,
-                foregroundColor: AppKendoColors.pureWhite,
-                padding: const EdgeInsets.symmetric(vertical: 0),
-                minimumSize: const Size(double.infinity, 38),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-                elevation: 0,
-              ),
-              child: const Text(
-                '試合終了',
-                style: TextStyle(
-                  fontSize: AppFontSize.subhead,
-                  fontWeight: AppFontWeight.bold,
-                ),
-              ),
-            ),
+          return MatchActionButtonRow(
+            label: '試合終了',
+            confirmBehavior: settings.confirmBehavior,
+            onAction: effectiveFinishAction,
+            isViewOnly: isViewOnly,
+            backgroundColor: AppKendoColors.blueAccent,
+            promptMessage: settings.confirmBehavior == 'double'
+                ? 'ダブルタップで終了してください'
+                : '長押しで終了してください',
           );
         },
       );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_chips.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_category_tile.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -178,86 +177,14 @@ class CategoryRulesListSection extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final cat = list[index];
                     final ruleSet = tournament.categoryRules[cat]!;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: Slidable(
-                        key: ValueKey('slidable_rule_$cat'),
-                        endActionPane: ActionPane(
-                          motion: const ScrollMotion(),
-                          children: [
-                            SlidableAction(
-                              onPressed: (context) =>
-                                  onStartEditing(cat, ruleSet),
-                              backgroundColor: AppKendoColors.blueAccent,
-                              foregroundColor: AppKendoColors.pureWhite,
-                              icon: Icons.edit,
-                              label: '編集',
-                            ),
-                            SlidableAction(
-                              onPressed: (context) => onDeleteCategory(cat),
-                              backgroundColor: AppKendoColors.redAccent,
-                              foregroundColor: AppKendoColors.pureWhite,
-                              icon: Icons.delete,
-                              label: '削除',
-                              borderRadius: const BorderRadius.horizontal(
-                                right: Radius.circular(AppRadius.largeValue),
-                              ),
-                            ),
-                          ],
-                        ),
-                        child: Card(
-                          elevation: 0,
-                          margin: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.large,
-                            side: enableLiquidGlass
-                                ? BorderSide(
-                                    color: isDark
-                                        ? const Color(
-                                            0xFFFFFFFF,
-                                          ).withValues(alpha: 0.15)
-                                        : const Color(
-                                            0xFF000000,
-                                          ).withValues(alpha: 0.08),
-                                    width: 0.5,
-                                  )
-                                : BorderSide(
-                                    color: isDark
-                                        ? const Color(0xFF38383A)
-                                        : const Color(0x33000000),
-                                  ),
-                          ),
-                          color: enableLiquidGlass
-                              ? (isDark
-                                    ? const Color(
-                                        0xFF1C1C1E,
-                                      ).withValues(alpha: 0.35)
-                                    : const Color(
-                                        0xFFFFFFFF,
-                                      ).withValues(alpha: 0.65))
-                              : (isDark
-                                    ? const Color(0xFF1C1C1E)
-                                    : context.appColors.cardBackground),
-                          child: ListTile(
-                            onTap: () => onShowRuleDetail(cat, ruleSet),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: AppSpacing.md,
-                            ),
-                            title: Text(
-                              cat,
-                              style: const TextStyle(
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.subhead,
-                              ),
-                            ),
-                            subtitle: CategoryRuleChips(
-                              ruleSet: ruleSet,
-                              isDark: isDark,
-                            ),
-                          ),
-                        ),
-                      ),
+                    return CategoryRuleCategoryTile(
+                      category: cat,
+                      ruleSet: ruleSet,
+                      isDark: isDark,
+                      enableLiquidGlass: enableLiquidGlass,
+                      onStartEditing: () => onStartEditing(cat, ruleSet),
+                      onDeleteCategory: () => onDeleteCategory(cat),
+                      onShowRuleDetail: () => onShowRuleDetail(cat, ruleSet),
                     );
                   },
                 ),
