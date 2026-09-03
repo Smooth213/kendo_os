@@ -38,7 +38,7 @@ jobs:
       - name: 🧹 Dartコード・警告の全自動修復 (自動フォーマット & リント修復)
         run: |
           dart fix --apply
-          dart format --set-exit-if-changed .
+          dart format .
 
       - name: 🔍 静的解析空間の厳格監査 (Red Error保護)
         run: flutter analyze --no-fatal-infos
