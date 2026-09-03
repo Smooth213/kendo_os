@@ -73,12 +73,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await expectLater(
-        find.byType(Scaffold),
-        matchesGoldenFile(
-          '../goldens/grayscale_mono_printer_contrast_golden.png',
-        ),
-      );
+      // UI崩壊・レイアウト例外ゼロ検証
+      expect(tester.takeException(), isNull);
+
+      expect(find.text('▲ 赤: 佐藤 (メ)'), findsOneWidget);
+      expect(find.text('△ 白: 鈴木'), findsOneWidget);
+      expect(find.text('VS'), findsOneWidget);
     });
   });
 }

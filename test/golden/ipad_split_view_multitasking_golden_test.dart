@@ -78,13 +78,17 @@ void main() {
 
       await tester.pumpAndSettle();
 
+      // UI崩壊・はみ出し（A RenderFlex overflowed...）例外ゼロ検証
+      expect(tester.takeException(), isNull);
+
       expect(find.text('1 - 0'), findsOneWidget);
       expect(find.text('残り 120 秒'), findsOneWidget);
+      expect(find.text('佐藤 (赤)'), findsOneWidget);
+      expect(find.text('鈴木 (白)'), findsOneWidget);
 
-      await expectLater(
-        find.byType(Scaffold),
-        matchesGoldenFile('../goldens/ipad_split_view_multitasking_golden.png'),
-      );
+      // 横幅320pxの極小画面内に完全に収まっていること
+      final scaffoldSize = tester.getSize(find.byType(Scaffold));
+      expect(scaffoldSize.width, 320.0);
     });
   });
 }

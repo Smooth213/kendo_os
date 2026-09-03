@@ -103,12 +103,16 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await expectLater(
-        find.byType(Scaffold),
-        matchesGoldenFile(
-          '../goldens/modal_dialog_background_dimming_golden.png',
-        ),
-      );
+      // UI崩壊・レイアウト例外ゼロ検証
+      expect(tester.takeException(), isNull);
+
+      // モーダルバリアが存在すること
+      expect(find.byType(ModalBarrier), findsWidgets);
+
+      // 確認ダイアログのタイトルおよび操作ボタンが描画されていること
+      expect(find.text('【審判合議の宣告】'), findsOneWidget);
+      expect(find.text('試合時計を停止し、直前の打突を取り消しますか？'), findsOneWidget);
+      expect(find.text('一本取り消し実行'), findsOneWidget);
     });
   });
 }

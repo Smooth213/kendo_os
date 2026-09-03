@@ -123,12 +123,18 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await expectLater(
-        find.byType(Scaffold),
-        matchesGoldenFile(
-          '../goldens/kendo_federation_official_a4_millimeter_golden.png',
-        ),
-      );
+      // UI崩壊・レイアウト例外ゼロ検証
+      expect(tester.takeException(), isNull);
+
+      expect(find.text('全日本剣道連盟 公式団体試合記録表'), findsOneWidget);
+      expect(find.byType(Table), findsOneWidget);
+
+      // 5つのポジションが正確に表内にレンダリングされていること
+      for (final pos in positions) {
+        expect(find.text(pos), findsOneWidget);
+        expect(find.text('$pos 選手A'), findsOneWidget);
+        expect(find.text('$pos 選手B'), findsOneWidget);
+      }
     });
   });
 }

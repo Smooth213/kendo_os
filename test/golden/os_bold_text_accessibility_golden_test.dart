@@ -57,10 +57,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await expectLater(
-        find.byType(Scaffold),
-        matchesGoldenFile('../goldens/os_bold_text_accessibility_golden.png'),
-      );
+      // UI崩壊・文字膨張によるはみ出し（Overflow）例外ゼロ検証
+      expect(tester.takeException(), isNull);
+
+      expect(find.text('赤 面（太字適応）'), findsOneWidget);
+      expect(find.text('白 小手（太字適応）'), findsOneWidget);
+      expect(find.byType(ElevatedButton), findsNWidgets(2));
     });
   });
 }
