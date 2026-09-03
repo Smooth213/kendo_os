@@ -3,8 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_container.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_form_state.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
+class _MockSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsModel build() => const SettingsModel(enableLiquidGlass: false);
+}
 
 void main() {
   group('CategoryRuleEditorContainer Widget Tests', () {
@@ -21,7 +28,7 @@ void main() {
       );
 
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-      final formState = CategoryRulesFormState();
+      final formState = CategoryRulesFormState()..editingMatchType = '個人戦';
       final keywordsController = TextEditingController();
       bool canceled = false;
       bool saved = false;
@@ -35,6 +42,9 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(() => _MockSettingsNotifier()),
+          ],
           child: MaterialApp(
             theme: ThemeData.light().copyWith(extensions: [themeColors]),
             home: Scaffold(
