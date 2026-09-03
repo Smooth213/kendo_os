@@ -7,8 +7,9 @@ on:
     branches: [ main, stage2-beta ]
 
 jobs:
-  quality-gate:
-    name: Release Quality Gate & Multi-Layer Governance
+  # 🔍 STEP 1: 静的解析・ガバナンス監査（最速1分で完了・構文/型エラーを即座に検知）
+  static-analysis:
+    name: 🔍 静的解析＆ガバナンス監査 (Fast-Fail)
     runs-on: ubuntu-latest
     steps:
       - name: 📥 リポジトリのチェックアウト
@@ -37,16 +38,44 @@ jobs:
       - name: 🧹 Dartコード・警告の全自動修復 (自動フォーマット & リント修復)
         run: |
           dart fix --apply
-          dart format .
+          dart format --set-exit-if-changed .
 
       - name: 🔍 静的解析空間の厳格監査 (Red Error保護)
         run: flutter analyze --no-fatal-infos
 
-      - name: 🧪 全要塞テストの一斉自動実行＆カバレッジ計測（Unit / Widget / Golden / E2E）
-        run: flutter test --coverage
+  # ⚡ STEP 2: テスト要塞の4並列 Sharding 実行（16分超 ➔ 約4分へ劇的短縮）
+  test-shards:
+    name: 🧪 テスト要塞並列実行 (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
+    runs-on: ubuntu-latest
+    needs: [static-analysis]
+    strategy:
+      fail-fast: false
+      matrix:
+        total-shards: [4]
+        shard-index: [0, 1, 2, 3]
+    steps:
+      - name: 📥 リポジトリのチェックアウト
+        uses: actions/checkout@v4
 
-      - name: 📸 ゴールデン画像の最終自動検証（手動見逃しの物理排除）
-        run: flutter test --update-goldens
+      - name: 🚀 Flutter安定版環境の構築
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 依存パッケージの解決
+        run: flutter pub get
+
+      - name: ⚡ Sharded Test Execution (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
+        run: flutter test --total-shards ${{ matrix.total-shards }} --shard-index ${{ matrix.shard-index }}
+
+  # ⚙️ STEP 3: Cloud Functions 自動テスト
+  cloud-functions:
+    name: ⚙️ Cloud Functions 自動テスト (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 リポジトリのチェックアウト
+        uses: actions/checkout@v4
 
       - name: ⚙️ Node.js環境の構築 (Cloud Functions 用)
         uses: actions/setup-node@v4
