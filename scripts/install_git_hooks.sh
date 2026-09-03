@@ -29,7 +29,7 @@ dart format .
 
 git add -A
 
-echo "🚀 kendo OS 全10大ガバナンス個別監査を実行中..."
+echo "🚀 kendo OS 全14大ガバナンス個別監査を実行中..."
 
 python3 scripts/check_file_lines.py || exit 1
 python3 scripts/check_design_tokens.py --strict || exit 1
@@ -41,6 +41,10 @@ python3 scripts/check_layout_5tier_governance.py || exit 1
 python3 scripts/check_theme_contrast_governance.py || exit 1
 python3 scripts/check_architecture_boundary_governance.py || exit 1
 python3 scripts/check_offline_resilience_governance.py || exit 1
+python3 scripts/check_test_pair_governance.py || exit 1
+python3 scripts/check_pdf_layout_safety_governance.py || exit 1
+python3 scripts/check_web_platform_safety.py || exit 1
+python3 scripts/check_tenant_isolation_governance.py || exit 1
 
 echo "🔍 Flutter 静的解析を実行中..."
 flutter analyze || {
@@ -50,7 +54,7 @@ flutter analyze || {
     exit 1
 }
 
-echo "✅ pre-commit 全10大ガバナンス監査・静的解析・フォーマット自動修復完了"
+echo "✅ pre-commit 全14大ガバナンス監査・静的解析・フォーマット自動修復完了"
 exit 0
 EOF
 
@@ -74,4 +78,4 @@ chmod +x "$PRE_COMMIT_FILE"
 chmod +x "$PRE_PUSH_FILE"
 
 echo "✅ [PASS] Git フック (pre-commit & pre-push) のインストールが完了しました！"
-echo "💡 以降、git commit 時に全10大ガバナンス＋静的解析、git push 時に全テストが自動監査・完全保証されます。"
+echo "💡 以降、git commit 時に全14大ガバナンス＋静的解析、git push 時に全テストが自動監査・完全保証されます。"
