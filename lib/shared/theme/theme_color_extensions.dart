@@ -138,6 +138,24 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       softAccent = isDark
           ? Colors.purple.withValues(alpha: 0.15)
           : Colors.purple.shade50;
+    } else if (mode == 'sunshine') {
+      // ☀️ サンシャイン（直射日光・屋外体育館用 超高コントラスト）
+      return const AppThemeColors(
+        primaryAccent: Color(0xFF0055D4),
+        softAccent: Color(0xFFE5F0FF),
+        cardBackground: Colors.white,
+        scaffoldBackground: Colors.white,
+        textColor: Colors.black,
+        subTextColor: Color(0xFF1C1C1E),
+        separatorColor: Color(0xFF000000),
+        inputBackground: Color(0xFFF2F2F7),
+        hintColor: Color(0xFF3A3A3C),
+        rosePink: Color(0xFFD32F2F),
+        successColor: Color(0xFF1B5E20),
+        warningColor: Color(0xFFE65100),
+        errorColor: Color(0xFFB71C1C),
+        infoColor: Color(0xFF0D47A1),
+      );
     } else {
       // normal: Indigo
       primaryAccent = isDark ? Colors.indigo.shade400 : Colors.indigo.shade700;

@@ -169,6 +169,8 @@ class SettingsListTile extends StatelessWidget {
       ),
       title: Text(
         title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: dynamicTextColor,
           fontSize: AppFontSize.bodyMedium,
@@ -178,7 +180,12 @@ class SettingsListTile extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(subtitle!, style: const TextStyle(fontSize: AppFontSize.small))
           : null,
-      trailing: trailing,
+      trailing: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.sizeOf(context).width * 0.48,
+        ),
+        child: trailing,
+      ),
       onTap: onTap,
     );
   }

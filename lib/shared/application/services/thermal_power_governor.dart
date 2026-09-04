@@ -18,7 +18,7 @@ enum ThermalPowerMode {
 /// 猛暑の体育館（40℃超環境）での終日稼働時、端末の発熱（熱暴走・画面暗転）と
 /// バッテリー枯渇を防ぐため、端末ステータスや稼働状況に応じて
 /// タイマー tick 間隔とポーリング負荷を動的かつ最適に適応制御します。
-class ThermalPowerGovernor {
+class ThermalPowerGovernor extends ChangeNotifier {
   ThermalPowerMode _mode = ThermalPowerMode.normal;
   DateTime _lastUserActivity = DateTime.now();
 
@@ -51,6 +51,7 @@ class ThermalPowerGovernor {
       debugPrint(
         '🔋 [Thermal Governor] モード移行: $newMode (Tick間隔: ${recommendedTickInterval.inMilliseconds}ms)',
       );
+      notifyListeners();
     }
   }
 
@@ -89,6 +90,7 @@ class ThermalPowerGovernor {
 }
 
 /// グローバルな省電力サーマルガバナープロバイダー
-final thermalPowerGovernorProvider = Provider<ThermalPowerGovernor>((ref) {
-  return ThermalPowerGovernor();
-});
+final thermalPowerGovernorProvider =
+    ChangeNotifierProvider<ThermalPowerGovernor>((ref) {
+      return ThermalPowerGovernor();
+    });

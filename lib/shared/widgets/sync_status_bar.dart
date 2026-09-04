@@ -9,6 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart'; // ★ Step 8-3: ヘルプ画面への遷移用
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 import 'package:kendo_os/main.dart'; // ★ 追加: rootNavigatorKey を参照するため
 
 class SyncStatusBar extends ConsumerWidget {
@@ -65,86 +66,107 @@ class SyncStatusBar extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // 1. 左側：現在の状態
-              Text(
-                '【${mode.label}：${activeRole.label}】',
-                style: const TextStyle(
-                  color: AppKendoColors.pureWhite,
-                  fontSize: AppFontSize.badge,
-                  fontWeight: AppFontWeight.bold,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '【${mode.label}：${activeRole.label}】',
+                    style: const TextStyle(
+                      color: AppKendoColors.pureWhite,
+                      fontSize: AppFontSize.badge,
+                      fontWeight: AppFontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(width: AppSpacing.xs),
 
               // 2. 右側：同期ステータス（★ Phase 3-2: ロードマップ指定の4つの安心表現へ完全縮退）
-              Row(
-                children: [
-                  if (!isOnline) ...[
-                    Icon(
-                      Icons.cloud_off,
-                      color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
-                      size: 12,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'オフライン',
-                      style: TextStyle(
-                        color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
-                        fontSize: AppFontSize.badge,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                  ] else if (deadLetterCount > 0 ||
-                      matchStatus == SyncStatus.syncing ||
-                      isGlobalSyncing) ...[
-                    GestureDetector(
-                      onTap: () => _showErrorQueueSheet(context, ref),
-                      child: Container(
-                        color: AppKendoColors.transparent,
-                        child: Row(
-                          children: [
-                            _buildMatchSyncIcon(matchStatus),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              deadLetterCount > 0 ? '再接続中' : '同期中',
-                              style: TextStyle(
-                                fontSize: AppFontSize.badge,
-                                fontWeight: AppFontWeight.bold,
-                                color: deadLetterCount > 0
-                                    ? AppKendoColors.yellowAccent
-                                    : context.appColors.infoColor,
-                              ),
-                            ),
-                            if (deadLetterCount > 0) ...[
-                              const SizedBox(width: AppSpacing.xs),
-                              Text(
-                                '($deadLetterCount)',
-                                style: const TextStyle(
-                                  fontSize: AppFontSize.badge,
-                                  color: AppKendoColors.yellowAccent,
-                                ),
-                              ),
-                            ],
-                          ],
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isOnline) ...[
+                        Icon(
+                          Icons.cloud_off,
+                          color: AppKendoColors.pureWhite.withValues(
+                            alpha: 0.7,
+                          ),
+                          size: 12,
                         ),
-                      ),
-                    ),
-                  ] else ...[
-                    // 送信待ちがなく、ネットワークも健全で同期が完了している状態
-                    const Icon(
-                      Icons.cloud_done_outlined,
-                      color: AppKendoColors.greenAccent,
-                      size: 12,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    const Text(
-                      '保存済み',
-                      style: TextStyle(
-                        color: AppKendoColors.greenAccent,
-                        fontSize: AppFontSize.badge,
-                        fontWeight: AppFontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ],
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'オフライン',
+                          style: TextStyle(
+                            color: AppKendoColors.pureWhite.withValues(
+                              alpha: 0.7,
+                            ),
+                            fontSize: AppFontSize.badge,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ] else if (deadLetterCount > 0 ||
+                          matchStatus == SyncStatus.syncing ||
+                          isGlobalSyncing) ...[
+                        GestureDetector(
+                          onTap: () => _showErrorQueueSheet(context, ref),
+                          child: Container(
+                            color: AppKendoColors.transparent,
+                            child: Row(
+                              children: [
+                                _buildMatchSyncIcon(matchStatus),
+                                const SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  deadLetterCount > 0 ? '再接続中' : '同期中',
+                                  style: TextStyle(
+                                    fontSize: AppFontSize.badge,
+                                    fontWeight: AppFontWeight.bold,
+                                    color: deadLetterCount > 0
+                                        ? AppKendoColors.yellowAccent
+                                        : context.appColors.infoColor,
+                                  ),
+                                ),
+                                if (deadLetterCount > 0) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    '($deadLetterCount)',
+                                    style: const TextStyle(
+                                      fontSize: AppFontSize.badge,
+                                      color: AppKendoColors.yellowAccent,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        // 送信待ちがなく、ネットワークも健全で同期が完了している状態
+                        const Icon(
+                          Icons.cloud_done_outlined,
+                          color: AppKendoColors.greenAccent,
+                          size: 12,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        const Text(
+                          '保存済み',
+                          style: TextStyle(
+                            color: AppKendoColors.greenAccent,
+                            fontSize: AppFontSize.badge,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ],
+                      // 🔋 【設定・安心感の可視化】サーマル冷却＆バッテリー稼働状況ミニバッジ
+                      const SizedBox(width: AppSpacing.sm),
+                      const ThermalStatusBadge(isLightSurface: false),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

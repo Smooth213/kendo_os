@@ -218,8 +218,9 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
 
     final settings = ref.watch(settingsProvider);
 
+    final isSunshine = settings.themeMode == 'sunshine';
     ThemeMode currentThemeMode = ThemeMode.system;
-    if (settings.themeMode == 'light') {
+    if (settings.themeMode == 'light' || isSunshine) {
       currentThemeMode = ThemeMode.light;
     } else if (settings.themeMode == 'dark') {
       currentThemeMode = ThemeMode.dark;
@@ -251,11 +252,18 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
     final lightThemeBase = ThemeData(
       brightness: Brightness.light,
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+      scaffoldBackgroundColor: isSunshine
+          ? AppKendoColors.pureWhite
+          : const Color(0xFFF2F2F7),
       dialogTheme: commonDialogTheme,
       bottomSheetTheme: commonBottomSheetTheme,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.light().textTheme),
-      extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+      extensions: [
+        AppThemeColors.ofMode(
+          isDark: false,
+          mode: isSunshine ? 'sunshine' : 'normal',
+        ),
+      ],
     );
 
     return MaterialApp.router(

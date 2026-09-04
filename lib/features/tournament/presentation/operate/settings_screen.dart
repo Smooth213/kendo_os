@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -62,11 +63,12 @@ class SettingsScreen extends ConsumerWidget {
                     themeColors: themeColors,
                     children: [
                       SettingsListTile(
-                        title: 'ダークモード対応',
+                        title: '外観テーマ',
                         icon: Icons.dark_mode,
                         iconBgColor: AppKendoColors.blue,
                         trailing: DropdownButton<String>(
                           value: settings.themeMode,
+                          isDense: true,
                           underline: const SizedBox(),
                           borderRadius: AppRadius.medium,
                           icon: Icon(
@@ -81,15 +83,16 @@ class SettingsScreen extends ConsumerWidget {
                           items: const [
                             DropdownMenuItem(
                               value: 'system',
-                              child: Text('システム依存'),
+                              child: Text('端末連動'),
                             ),
                             DropdownMenuItem(
                               value: 'light',
-                              child: Text('常にライト'),
+                              child: Text('ライト'),
                             ),
+                            DropdownMenuItem(value: 'dark', child: Text('ダーク')),
                             DropdownMenuItem(
-                              value: 'dark',
-                              child: Text('常にダーク'),
+                              value: 'sunshine',
+                              child: Text('☀️ サンシャイン'),
                             ),
                           ],
                           onChanged: (val) {
@@ -117,11 +120,19 @@ class SettingsScreen extends ConsumerWidget {
                         icon: Icons.eco,
                         iconBgColor: AppKendoColors.green,
                       ),
+                      // 🔋 【設定・安心感の可視化】サーマル冷却＆バッテリー稼働状況タイル
+                      SettingsListTile(
+                        title: 'サーマル冷却・省電力制御',
+                        icon: Icons.shield_rounded,
+                        iconBgColor: AppKendoColors.teal,
+                        subtitle: '猛暑体育館での熱暴走・バッテリー枯渇を自動防止',
+                        trailing: const ThermalStatusBadge(isSwitchSize: true),
+                      ),
                     ],
                   ),
                   const SettingsSectionFooter(
                     text:
-                        'ダークモードは端末本体の設定に連動させることもできます。スリープ防止をオンにすると、長時間の試合記録中に画面が暗くなるのを防ぎます。\n省エネモードをオンにする、または端末のバッテリー残量が20%以下になると自動的に省エネモード（背景アニメーション停止）になり、パフォーマンスを最優先します。',
+                        '☀️ サンシャインモードは直射日光や反射光に負けない最高コントラストを提供します。\nスリープ防止をオンにすると長時間の試合記録中に画面が暗くなるのを防ぎます。\nサーマル冷却制御は端末の熱暴走とバッテリー急減を完全自動で防止しています（時間精度100%保証）。',
                   ),
                   const SizedBox(height: AppSpacing.xl),
 
