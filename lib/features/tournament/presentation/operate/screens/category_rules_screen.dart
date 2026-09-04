@@ -23,6 +23,7 @@ import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_form_state.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 class CategoryRulesScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -205,39 +206,45 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
               ),
           ],
         ),
-        body: asyncTournament.when(
-          data: (tournament) {
-            if (tournament == null) {
-              return const Center(child: Text('大会データが見つかりません'));
-            }
-            if (_formState.editingCategory != null) {
-              return _buildRuleEditor(
-                tournament,
-                _formState.editingCategory!,
-                themeColors,
-              );
-            }
-            final enableLiquidGlass = ref.watch(
-              settingsProvider.select((s) => s.enableLiquidGlass),
-            );
-            return CategoryRulesListSection(
-              tournament: tournament,
-              isDark: isDark,
-              enableLiquidGlass: enableLiquidGlass,
-              newCategoryController: _newCategoryController,
-              presetCategories: CategoryRuleMatchHelper.presetCategories,
-              isFromSetup: widget.isFromSetup,
-              tournamentId: widget.tournamentId,
-              onAddCategory: (name) => _addNewCategory(tournament, name),
-              onStartEditing: (cat, ruleSet) => _startEditing(cat, ruleSet),
-              onDeleteCategory: (cat) => _deleteCategory(tournament, cat),
-              onShowRuleDetail: (cat, ruleSet) =>
-                  _showRuleDetailBottomSheet(context, cat, ruleSet),
-              onCompleteSetup: () => context.go('/home/${widget.tournamentId}'),
-            );
-          },
-          loading: () => const Center(child: AppLoadingIndicator()),
-          error: (e, s) => Center(child: Text('エラーが発生しました: $e')),
+        body: Stack(
+          children: [
+            asyncTournament.when(
+              data: (tournament) {
+                if (tournament == null) {
+                  return const Center(child: Text('大会データが見つかりません'));
+                }
+                if (_formState.editingCategory != null) {
+                  return _buildRuleEditor(
+                    tournament,
+                    _formState.editingCategory!,
+                    themeColors,
+                  );
+                }
+                final enableLiquidGlass = ref.watch(
+                  settingsProvider.select((s) => s.enableLiquidGlass),
+                );
+                return CategoryRulesListSection(
+                  tournament: tournament,
+                  isDark: isDark,
+                  enableLiquidGlass: enableLiquidGlass,
+                  newCategoryController: _newCategoryController,
+                  presetCategories: CategoryRuleMatchHelper.presetCategories,
+                  isFromSetup: widget.isFromSetup,
+                  tournamentId: widget.tournamentId,
+                  onAddCategory: (name) => _addNewCategory(tournament, name),
+                  onStartEditing: (cat, ruleSet) => _startEditing(cat, ruleSet),
+                  onDeleteCategory: (cat) => _deleteCategory(tournament, cat),
+                  onShowRuleDetail: (cat, ruleSet) =>
+                      _showRuleDetailBottomSheet(context, cat, ruleSet),
+                  onCompleteSetup: () =>
+                      context.go('/home/${widget.tournamentId}'),
+                );
+              },
+              loading: () => const Center(child: AppLoadingIndicator()),
+              error: (e, s) => Center(child: Text('エラーが発生しました: $e')),
+            ),
+            FloatingProgramDockButton(tournamentId: widget.tournamentId),
+          ],
         ),
       ),
     );

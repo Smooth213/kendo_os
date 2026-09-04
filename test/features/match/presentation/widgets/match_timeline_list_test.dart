@@ -23,6 +23,8 @@ import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart'
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_comment_slidable_tile.dart';
 
 class FakeSyncEngine implements SyncEngine {
   @override
@@ -1310,6 +1312,79 @@ void main() {
         expect(find.text('×'), findsOneWidget);
         final crossText = tester.widget<Text>(find.text('×'));
         expect(crossText.style?.color, isNot(equals(const Color(0x8A000000))));
+      },
+    );
+
+    testWidgets(
+      '16. 【Null check operator 回帰テスト】見出しコメント（MatchCommentModel）が存在する場合に ReorderableListView がクラッシュせず正常描画されること',
+      (tester) async {
+        final List<MatchModel> matches = [
+          createMockMatch(
+            id: 'm_comment_test',
+            category: '団体戦',
+            groupName: 'group_c',
+            matchType: '先鋒',
+            order: 10.0,
+            redName: '道上剣友会:選手A',
+            whiteName: '相手チーム:選手B',
+          ),
+        ];
+
+        final comment = MatchCommentModel(
+          id: 'test_heading_comment',
+          tournamentId: 't1',
+          category: '団体戦',
+          groupName: '道上剣友会',
+          text: '【連絡事項】11:00より開始',
+          order: 20.0,
+        );
+
+        final widget = ProviderScope(
+          overrides: [
+            matchListProvider.overrideWith((ref) => matches),
+            matchListByTournamentProvider.overrideWith(
+              (ref, id) => Stream.value(matches),
+            ),
+            matchApplicationServiceProvider.overrideWithValue(
+              fakeMatchAppService,
+            ),
+            matchRepositoryProvider.overrideWithValue(FakeMatchRepository()),
+            localMatchRepositoryProvider.overrideWithValue(
+              FakeLocalMatchRepository(),
+            ),
+            playerRepositoryProvider.overrideWithValue(
+              FakePlayerRepository([]),
+            ),
+            syncEngineProvider.overrideWith((ref) => FakeSyncEngine()),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                canCreateMatch: true,
+                canManageTournament: true,
+                isReadOnly: false,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            commentStreamProvider.overrideWith(
+              (ref, arg) => Stream.value([comment]),
+            ),
+            tournamentProvider.overrideWith((ref, id) => Stream.value(null)),
+            isarProvider.overrideWithValue(null),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+            registeredTeamsProvider.overrideWith((ref, id) => Stream.value([])),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: MatchTimelineList(tournamentId: 't1')),
+          ),
+        );
+
+        await tester.pumpWidget(widget);
+        await tester.pumpAndSettle();
+
+        // エラーなく見出しコメントと試合カードが同時に描画されること
+        expect(tester.takeException(), isNull);
+        expect(find.text('【連絡事項】11:00より開始'), findsOneWidget);
+        expect(find.byType(TimelineCommentSlidableTile), findsOneWidget);
       },
     );
   });

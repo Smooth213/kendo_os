@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全14大ガバナンス個別監査 (1/14 〜 14/14: 100% PASS)
+# 1. 全15大ガバナンス個別監査 (1/15 〜 15/15: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,8 +16,8 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全14大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全14大ガバナンス個別監査を実行中..."
+# 1. 全15大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全15大ガバナンス個別監査を実行中..."
 python3 scripts/check_file_lines.py
 python3 scripts/check_design_tokens.py --strict
 python3 scripts/check_kendo_score_governance.py
@@ -32,7 +32,8 @@ python3 scripts/check_test_pair_governance.py
 python3 scripts/check_pdf_layout_safety_governance.py
 python3 scripts/check_web_platform_safety.py
 python3 scripts/check_tenant_isolation_governance.py
-echo "✅ [Step 1/3] 全14大ガバナンス個別監査: ALL PASS"
+python3 scripts/check_rendering_safety_governance.py
+echo "✅ [Step 1/3] 全15大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -52,6 +53,6 @@ echo "✅ [Step 3/3] 単体テスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全14大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全15大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo ""

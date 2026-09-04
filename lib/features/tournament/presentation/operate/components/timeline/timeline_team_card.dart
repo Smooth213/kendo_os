@@ -235,6 +235,7 @@ class TimelineTeamCard extends ConsumerWidget {
                   .map<Widget?>((item) {
                     if (item is CommentTimelineItem) {
                       return TimelineCommentSlidableTile(
+                        key: ValueKey('comment_${item.comment.id}'),
                         comment: item.comment,
                         tournamentId: tournamentId,
                         isDark: isDark,
@@ -277,7 +278,7 @@ class TimelineTeamCard extends ConsumerWidget {
                       }
 
                       return TimelineMatchGroupCard(
-                        key: ValueKey(entry.key),
+                        key: ValueKey('group_${entry.key}'),
                         groupId: entry.key,
                         groupList: groupList,
                         groupComments: item.comments,

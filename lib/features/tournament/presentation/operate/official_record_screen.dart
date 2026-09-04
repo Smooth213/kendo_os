@@ -355,17 +355,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                 appBar: AppHeader(
                   title: screenTitle,
                   backgroundColor: cardColor,
-                  actions: [
-                    ProgramHeaderAction(
-                      tournamentId: tournamentId,
-                      isViewerMode: permissions.isReadOnly,
-                      color: headerTextColor,
-                    ),
-                    ManualHelpButton(
-                      manualPath: 'docs/manuals/operator/official_record.md',
-                      color: headerTextColor,
-                    ),
-                  ],
                   bottom: tabWidget,
                 ),
                 body: Stack(

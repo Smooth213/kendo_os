@@ -29,7 +29,7 @@ dart format .
 
 git add -A
 
-echo "🚀 kendo OS 全14大ガバナンス個別監査を実行中..."
+echo "🚀 kendo OS 全15大ガバナンス個別監査を実行中..."
 
 python3 scripts/check_file_lines.py || exit 1
 python3 scripts/check_design_tokens.py --strict || exit 1
@@ -45,6 +45,7 @@ python3 scripts/check_test_pair_governance.py || exit 1
 python3 scripts/check_pdf_layout_safety_governance.py || exit 1
 python3 scripts/check_web_platform_safety.py || exit 1
 python3 scripts/check_tenant_isolation_governance.py || exit 1
+python3 scripts/check_rendering_safety_governance.py || exit 1
 
 echo "🔍 Flutter 静的解析を実行中..."
 flutter analyze || {
@@ -54,7 +55,7 @@ flutter analyze || {
     exit 1
 }
 
-echo "✅ pre-commit 全14大ガバナンス監査・静的解析・フォーマット自動修復完了"
+echo "✅ pre-commit 全15大ガバナンス監査・静的解析・フォーマット自動修復完了"
 exit 0
 EOF
 
@@ -67,15 +68,22 @@ cat << 'EOF' > "$PRE_PUSH_FILE"
 
 echo ""
 echo "================================================================"
-echo " 🛡️  Kendo OS Pre-Push Quality Gate (全テスト完全検証)"
+echo " 🛡️  Kendo OS Pre-Push Quality Gate (全テスト・ゼロレンダリングエラー完全検証)"
 echo "================================================================"
 echo ""
 
-python3 scripts/run_flutter_tests.py || exit 1
+python3 scripts/check_rendering_safety_governance.py || {
+    echo ""
+    echo "🚨 【プッシュ拒否】全ページ UIゼロレンダリングエラー保証 監査で問題が検出されました。"
+    echo "   画面のレンダリングエラーを 0 件に修正してください。"
+    exit 1
+}
+
+python3 scripts/run_flutter_tests.py --skip-governance || exit 1
 EOF
 
 chmod +x "$PRE_COMMIT_FILE"
 chmod +x "$PRE_PUSH_FILE"
 
 echo "✅ [PASS] Git フック (pre-commit & pre-push) のインストールが完了しました！"
-echo "💡 以降、git commit 時に全14大ガバナンス＋静的解析、git push 時に全テストが自動監査・完全保証されます。"
+echo "💡 以降、git commit 時に全15大ガバナンス＋静的解析、git push 時にゼロレンダリングエラー監査＋全テストが自動監査・完全保証されます。"

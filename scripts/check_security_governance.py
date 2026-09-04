@@ -13,6 +13,7 @@ def run_security_governance():
         "test/widget/hidden_feature_access_test.dart",
         "test/widget/ai_feature_hidden_test.dart",
         "test/widget/internal_metrics_hidden_test.dart",
+        "test/widget/viewer_no_dock_governance_test.dart",
         "--reporter=expanded"
     ]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -24,6 +25,7 @@ def run_security_governance():
         ("2. Feature Flag & DeepLink URL直打ち直接アクセス遮断", "直接URLアクセス（DeepLink）が物理拒否"),
         ("3. AI機能（AiHelpService）完全封鎖・アクセス制限", "AI Runtime 完全封鎖検証テスト"),
         ("4. 内部デバッグメトリクス・安心日本語同期表現規約", "内部メトリクス隠蔽"),
+        ("5. 閲覧専用ビュアー（全7画面）ドック完全排除＆ヘッダー復元規約", "閲覧専用ビュアー フローティングドック完全排除保証テスト"),
     ]
 
     print("=" * 60)

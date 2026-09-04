@@ -3,8 +3,8 @@
 # ==============================================================================
 # 🥋 Kendo OS - フェイルファスト・ガバナンス監査 ＆ テストランナー (TTY カラー保持)
 # ==============================================================================
-# テスト実行前にガバナンス監査（行数制限・21大デザイントークン・静的解析）を即時実行し、
-# 1件でも違反・警告があれば、10分以上かかるテストに突入せず【0.5秒で即時ストップ】します。
+# 手動テスト実行時は事前にガバナンス監査（行数・トークン・静的解析）を即時検証。
+# git push などの連携時は --skip-governance で2重実行を自動回避します。
 # ==============================================================================
 import os
 import pty
@@ -38,13 +38,23 @@ def run_governance_pre_check():
     print("=" * 64 + "\n")
 
 def run_all_tests():
-    # 1. まず事前ガバナンス監査で違反があれば0秒でストップ
-    run_governance_pre_check()
+    raw_args = sys.argv[1:]
+    skip_governance = False
+    test_args = []
     
-    # 2. 任意のテスト引数（--coverage など）をサポート
-    test_args = sys.argv[1:] if len(sys.argv) > 1 else []
+    for arg in raw_args:
+        if arg == "--skip-governance":
+            skip_governance = True
+        else:
+            test_args.append(arg)
+            
+    # pre-commit で既に監査済みの git push 時などはスキップし2重実行を防止
+    if not skip_governance:
+        run_governance_pre_check()
+    else:
+        print("💡 [Info] コミット時ガバナンス監査済みのため、重複実行をスキップしてテストを開始します。\n")
+    
     cmd = ["flutter", "test"] + test_args
-    
     print(f"🧪 Flutter テストスイート完全実行中... ({' '.join(cmd)})\n")
     
     master, slave = pty.openpty()

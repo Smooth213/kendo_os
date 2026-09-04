@@ -20,6 +20,7 @@ import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_save_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 // ★ 安定したProvider定義
 final registeredTeamsProvider = StreamProvider.family
@@ -180,86 +181,94 @@ class _TeamRegistrationScreenState
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
         // ★ 修正：標準の AppBar は使用せず、body 内のコンポーネントでヘッダーを構築（大会作成画面と統一）
-        body: SafeArea(
-          bottom: false, // 下部は StickyBottomAction があるため SafeArea から外す
-          child: Column(
-            children: [
-              // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する
-              AnimatedSize(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut,
-                child: isKeyboardOpen
-                    ? const SizedBox.shrink()
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildImmersiveAppBar(context),
-                          _buildDynamicHeader(),
-                        ],
-                      ),
-              ),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (index) =>
-                      setState(() => _currentPage = index),
-                  children: [
-                    TeamRegistrationCategoryStep(
-                      selectedMajorCategory: _selectedMajorCategory,
-                      selectedMinorCategory: _selectedMinorCategory,
-                      selectedCategory: _selectedCategory,
-                      matchType: _matchType,
-                      showExtraMajorCategories: _showExtraMajorCategories,
-                      showExtraMatchTypes: _showExtraMatchTypes,
-                      themeColors: _themeColors,
-                      onMajorCategoryChanged: (cat) => setState(() {
-                        _selectedMajorCategory = cat;
-                        _selectedMinorCategory = '全体';
-                      }),
-                      onMinorCategoryChanged: (cat) => setState(() {
-                        _selectedMinorCategory = cat;
-                      }),
-                      onMatchTypeChanged: (type) => setState(() {
-                        _matchType = type;
-                        _tempSelectedPlayers.clear();
-                        _substituteCount = 0;
-                      }),
-                      onToggleExtraMajorCategories: () => setState(
-                        () => _showExtraMajorCategories =
-                            !_showExtraMajorCategories,
-                      ),
-                      onToggleExtraMatchTypes: () => setState(
-                        () => _showExtraMatchTypes = !_showExtraMatchTypes,
-                      ),
+        body: Stack(
+          children: [
+            SafeArea(
+              bottom: false, // 下部は StickyBottomAction があるため SafeArea から外す
+              child: Column(
+                children: [
+                  // ★ キーボードが開いた時はヘッダーをスッと隠し、入力エリアを最大化する
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    child: isKeyboardOpen
+                        ? const SizedBox.shrink()
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildImmersiveAppBar(context),
+                              _buildDynamicHeader(),
+                            ],
+                          ),
+                  ),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (index) =>
+                          setState(() => _currentPage = index),
+                      children: [
+                        TeamRegistrationCategoryStep(
+                          selectedMajorCategory: _selectedMajorCategory,
+                          selectedMinorCategory: _selectedMinorCategory,
+                          selectedCategory: _selectedCategory,
+                          matchType: _matchType,
+                          showExtraMajorCategories: _showExtraMajorCategories,
+                          showExtraMatchTypes: _showExtraMatchTypes,
+                          themeColors: _themeColors,
+                          onMajorCategoryChanged: (cat) => setState(() {
+                            _selectedMajorCategory = cat;
+                            _selectedMinorCategory = '全体';
+                          }),
+                          onMinorCategoryChanged: (cat) => setState(() {
+                            _selectedMinorCategory = cat;
+                          }),
+                          onMatchTypeChanged: (type) => setState(() {
+                            _matchType = type;
+                            _tempSelectedPlayers.clear();
+                            _substituteCount = 0;
+                          }),
+                          onToggleExtraMajorCategories: () => setState(
+                            () => _showExtraMajorCategories =
+                                !_showExtraMajorCategories,
+                          ),
+                          onToggleExtraMatchTypes: () => setState(
+                            () => _showExtraMatchTypes = !_showExtraMatchTypes,
+                          ),
+                        ),
+                        playerListAsync.when(
+                          data: (players) => _buildPage2TeamAndOrder(
+                            totalPlayerCount,
+                            posNames,
+                            players,
+                          ),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (e, s) => Center(child: Text('エラー: $e')),
+                        ),
+                        _buildPage3Confirm(
+                          registeredTeamsAsync,
+                          totalPlayerCount,
+                        ),
+                      ],
                     ),
-                    playerListAsync.when(
-                      data: (players) => _buildPage2TeamAndOrder(
-                        totalPlayerCount,
-                        posNames,
-                        players,
-                      ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, s) => Center(child: Text('エラー: $e')),
-                    ),
-                    _buildPage3Confirm(registeredTeamsAsync, totalPlayerCount),
-                  ],
-                ),
+                  ),
+                  // ★ キーボードが開いた時は下のボタンも隠し、画面を押し潰さないようにする
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    child: isKeyboardOpen
+                        ? const SizedBox.shrink()
+                        : _buildStickyBottomAction(totalPlayerCount),
+                  ),
+                ],
               ),
-              // ★ キーボードが開いた時は下のボタンも隠し、画面を押し潰さないようにする
-              AnimatedSize(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut,
-                child: isKeyboardOpen
-                    ? const SizedBox.shrink()
-                    : _buildStickyBottomAction(totalPlayerCount),
-              ),
-            ],
-          ), // Column
-        ), // SafeArea
-      ), // Scaffold
-    ); // LiquidBackground
+            ),
+            FloatingProgramDockButton(tournamentId: widget.tournamentId),
+          ],
+        ),
+      ),
+    );
   }
 
   // ===== ウィザード構成部品 =====

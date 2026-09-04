@@ -20,6 +20,7 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 import '../providers/last_used_settings_provider.dart';
 import '../providers/match_list_provider.dart';
 
@@ -175,129 +176,136 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
             SizedBox(width: AppSpacing.sm),
           ],
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Expanded(
-              child: playerListAsync.when(
-                data: (masterPlayers) => ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    _buildStaticHeader(),
-                    if (rule.isLeague)
-                      OrderSetupLeagueParticipantsSection(
-                        themeColors: _themeColors,
-                        leagueParticipants: _leagueParticipants,
-                        leagueTeamOrders: _leagueTeamOrders,
-                        positions: _positions,
-                        ruleTeamName: rule.teamName,
-                        matchType: matchType,
-                        opponentTeamSuggestions: ref.watch(
-                          opponentTeamHistoryProvider,
+            Column(
+              children: [
+                Expanded(
+                  child: playerListAsync.when(
+                    data: (masterPlayers) => ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        _buildStaticHeader(),
+                        if (rule.isLeague)
+                          OrderSetupLeagueParticipantsSection(
+                            themeColors: _themeColors,
+                            leagueParticipants: _leagueParticipants,
+                            leagueTeamOrders: _leagueTeamOrders,
+                            positions: _positions,
+                            ruleTeamName: rule.teamName,
+                            matchType: matchType,
+                            opponentTeamSuggestions: ref.watch(
+                              opponentTeamHistoryProvider,
+                            ),
+                            onParticipantsChanged: () => setState(() {}),
+                            isDark: isDark,
+                          )
+                        else
+                          OrderSetupMatchupConfigSection(
+                            themeColors: _themeColors,
+                            isOwnTeamRed: _isOwnTeamRed,
+                            onIsOwnTeamRedChanged: (val) =>
+                                setState(() => _isOwnTeamRed = val),
+                            opponentTeamController: _opponentTeamController,
+                            opponentTeamFocusNode: _opponentTeamFocusNode,
+                            opponentTeamSuggestions: ref.watch(
+                              opponentTeamHistoryProvider,
+                            ),
+                            isDark: isDark,
+                          ),
+                        OrderSetupBaseOrderActionsBar(
+                          themeColors: _themeColors,
+                          isDark: isDark,
+                          canLoadBaseOrder: rule.baseOrder.isNotEmpty,
+                          onSaveBaseOrder: () {
+                            final currentOrder = List.generate(
+                              _positions.length,
+                              (i) => _selectedPlayers[i] ?? '',
+                            );
+                            ref
+                                .read(matchRuleProvider.notifier)
+                                .updateBaseOrder(currentOrder);
+                            AppSnackBar.showSuccess(
+                              context,
+                              '現在のオーダーを「基本オーダー」として記憶しました',
+                            );
+                          },
+                          onLoadBaseOrder: () {
+                            setState(() {
+                              for (
+                                int i = 0;
+                                i < rule.baseOrder.length &&
+                                    i < _positions.length;
+                                i++
+                              ) {
+                                if (rule.baseOrder[i].isNotEmpty) {
+                                  _selectedPlayers[i] = rule.baseOrder[i];
+                                } else {
+                                  _selectedPlayers.remove(i);
+                                }
+                              }
+                            });
+                            AppSnackBar.showSuccess(context, '基本オーダーを呼び出しました');
+                          },
                         ),
-                        onParticipantsChanged: () => setState(() {}),
-                        isDark: isDark,
-                      )
-                    else
-                      OrderSetupMatchupConfigSection(
-                        themeColors: _themeColors,
-                        isOwnTeamRed: _isOwnTeamRed,
-                        onIsOwnTeamRedChanged: (val) =>
-                            setState(() => _isOwnTeamRed = val),
-                        opponentTeamController: _opponentTeamController,
-                        opponentTeamFocusNode: _opponentTeamFocusNode,
-                        opponentTeamSuggestions: ref.watch(
-                          opponentTeamHistoryProvider,
+                        OrderSetupReorderableSlotsView(
+                          positions: _positions,
+                          selectedPlayers: _selectedPlayers,
+                          opponentPlayers: _opponentPlayers,
+                          teamName: rule.teamName,
+                          isLeague: rule.isLeague,
+                          isDark: isDark,
+                          themeColors: _themeColors,
+                          masterPlayers: masterPlayers,
+                          onReorder: (oldIndex, newIndex) {
+                            setState(() {
+                              final oldPlayer = _selectedPlayers[oldIndex];
+                              final newPlayer = _selectedPlayers[newIndex];
+
+                              if (oldPlayer != null) {
+                                _selectedPlayers[newIndex] = oldPlayer;
+                              } else {
+                                _selectedPlayers.remove(newIndex);
+                              }
+
+                              if (newPlayer != null) {
+                                _selectedPlayers[oldIndex] = newPlayer;
+                              } else {
+                                _selectedPlayers.remove(oldIndex);
+                              }
+                            });
+                          },
+                          onSelectPlayerTap: (index) async {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            await _selectPlayer(index, masterPlayers);
+                            if (!mounted) return;
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          },
+                          onOpponentChanged: (index, val) {
+                            _opponentPlayers[index] = val;
+                          },
+                          onVacantPressed: (index) {
+                            setState(() => _opponentPlayers[index] = '欠員');
+                            FocusScope.of(context).unfocus();
+                          },
                         ),
-                        isDark: isDark,
-                      ),
-                    OrderSetupBaseOrderActionsBar(
-                      themeColors: _themeColors,
-                      isDark: isDark,
-                      canLoadBaseOrder: rule.baseOrder.isNotEmpty,
-                      onSaveBaseOrder: () {
-                        final currentOrder = List.generate(
-                          _positions.length,
-                          (i) => _selectedPlayers[i] ?? '',
-                        );
-                        ref
-                            .read(matchRuleProvider.notifier)
-                            .updateBaseOrder(currentOrder);
-                        AppSnackBar.showSuccess(
-                          context,
-                          '現在のオーダーを「基本オーダー」として記憶しました',
-                        );
-                      },
-                      onLoadBaseOrder: () {
-                        setState(() {
-                          for (
-                            int i = 0;
-                            i < rule.baseOrder.length && i < _positions.length;
-                            i++
-                          ) {
-                            if (rule.baseOrder[i].isNotEmpty) {
-                              _selectedPlayers[i] = rule.baseOrder[i];
-                            } else {
-                              _selectedPlayers.remove(i);
-                            }
-                          }
-                        });
-                        AppSnackBar.showSuccess(context, '基本オーダーを呼び出しました');
-                      },
+                      ],
                     ),
-                    OrderSetupReorderableSlotsView(
-                      positions: _positions,
-                      selectedPlayers: _selectedPlayers,
-                      opponentPlayers: _opponentPlayers,
-                      teamName: rule.teamName,
-                      isLeague: rule.isLeague,
-                      isDark: isDark,
-                      themeColors: _themeColors,
-                      masterPlayers: masterPlayers,
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          final oldPlayer = _selectedPlayers[oldIndex];
-                          final newPlayer = _selectedPlayers[newIndex];
-
-                          if (oldPlayer != null) {
-                            _selectedPlayers[newIndex] = oldPlayer;
-                          } else {
-                            _selectedPlayers.remove(newIndex);
-                          }
-
-                          if (newPlayer != null) {
-                            _selectedPlayers[oldIndex] = newPlayer;
-                          } else {
-                            _selectedPlayers.remove(oldIndex);
-                          }
-                        });
-                      },
-                      onSelectPlayerTap: (index) async {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        await _selectPlayer(index, masterPlayers);
-                        if (!mounted) return;
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                      onOpponentChanged: (index, val) {
-                        _opponentPlayers[index] = val;
-                      },
-                      onVacantPressed: (index) {
-                        setState(() => _opponentPlayers[index] = '欠員');
-                        FocusScope.of(context).unfocus();
-                      },
-                    ),
-                  ],
+                    loading: () => const Center(child: AppLoadingIndicator()),
+                    error: (err, stack) => Center(child: Text('エラー: $err')),
+                  ),
                 ),
-                loading: () => const Center(child: AppLoadingIndicator()),
-                error: (err, stack) => Center(child: Text('エラー: $err')),
-              ),
+                OrderSetupStickyBottomBar(
+                  themeColors: _themeColors,
+                  isDark: isDark,
+                  enableLiquidGlass: enableLiquidGlass,
+                  onAddExtraPosition: _addExtraPosition,
+                  onConfirmAndProceed: () =>
+                      _handleConfirmAndProceed(matchType),
+                ),
+              ],
             ),
-            OrderSetupStickyBottomBar(
-              themeColors: _themeColors,
-              isDark: isDark,
-              enableLiquidGlass: enableLiquidGlass,
-              onAddExtraPosition: _addExtraPosition,
-              onConfirmAndProceed: () => _handleConfirmAndProceed(matchType),
-            ),
+            FloatingProgramDockButton(tournamentId: widget.tournamentId),
           ],
         ),
       ),
