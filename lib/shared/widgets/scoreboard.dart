@@ -149,18 +149,22 @@ class MatchScoreboard extends ConsumerWidget {
     // ★修正：二段（結果バッジが上、スコアボードが下）になるようにColumnで配置し、上に被らないようにする
     final showResult = viewState.winner != null || viewState.isTie;
 
-    return FittedBox(
-      fit: BoxFit.contain,
-      child: showResult
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildResultOverlay(context, viewState),
-                const SizedBox(height: AppSpacing.lg),
-                scoreboardRow,
-              ],
-            )
-          : scoreboardRow,
+    // 🎨 【Phase 3】RepaintBoundaryによる描画境界の完全分離
+    // スコア変動や勝敗判定の再ペイントをスコアボード内に隔離し、親画面全体の再ペイント・再レイアウトを遮断
+    return RepaintBoundary(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: showResult
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildResultOverlay(context, viewState),
+                  const SizedBox(height: AppSpacing.lg),
+                  scoreboardRow,
+                ],
+              )
+            : scoreboardRow,
+      ),
     );
   }
 

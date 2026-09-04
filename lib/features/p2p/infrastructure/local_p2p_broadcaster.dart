@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/p2p/presentation/assets/web_viewer_html.dart';
+import 'package:kendo_os/shared/utils/payload_compression_helper.dart';
 
 /// 【Phase 5: P2Pローカル配信】端末内蔵の軽量WebSocket＆HTTPサーバー
 class LocalP2pBroadcaster {
@@ -102,6 +103,22 @@ class LocalP2pBroadcaster {
     for (final client in List<WebSocket>.from(_clients)) {
       try {
         client.add(payload);
+      } catch (_) {
+        _clients.remove(client);
+      }
+    }
+  }
+
+  /// 📶 【Phase 9】大量同期データ（大会全試合履歴等）のGzip圧縮ブロードキャスト
+  void broadcastCompressedPayload(Map<String, dynamic> data) {
+    if (!_isRunning || _clients.isEmpty) return;
+
+    final jsonStr = jsonEncode(data);
+    final compressedBytes = PayloadCompressionHelper.compressString(jsonStr);
+
+    for (final client in List<WebSocket>.from(_clients)) {
+      try {
+        client.add(compressedBytes);
       } catch (_) {
         _clients.remove(client);
       }

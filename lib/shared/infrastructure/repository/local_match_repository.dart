@@ -157,9 +157,9 @@ class LocalMatchRepository {
     }
   }
 
-  // 4. 複数試合を一括保存（バッチ処理の代替）
+  // 4. 複数試合を一括保存（🔋 【Phase 5】バッチトランザクション・I/O最適化）
   Future<void> saveMatchesBulk(List<MatchModel> matches) async {
-    if (_isar == null) return;
+    if (_isar == null || matches.isEmpty) return;
     // ★ 複数保存時もすべてのイベントの署名を検証する
     for (final match in matches) {
       for (final event in match.events) {
@@ -174,18 +174,29 @@ class LocalMatchRepository {
       }
     }
 
+    final matchIds = matches.map((m) => m.id).toList();
+
     await _isar.writeTxn(() async {
-      for (var match in matches) {
+      // 🔋 【Phase 5】ループ内の個別findFirstを廃止し、集合クエリ+putAllで1回の一括書き込みへ集約
+      final existingEntities = await _isar.matchEntitys
+          .filter()
+          .anyOf(matchIds, (q, String id) => q.firestoreIdEqualTo(id))
+          .findAll();
+
+      final existingIdMap = {
+        for (final e in existingEntities) e.firestoreId: e.id,
+      };
+
+      final entitiesToPut = matches.map((match) {
         final entity = LocalMatchEntityMapper.toEntity(match);
-        final existing = await _isar.matchEntitys
-            .filter()
-            .firestoreIdEqualTo(match.id)
-            .findFirst();
-        if (existing != null) {
-          entity.id = existing.id; // ここでも既存IDを引き継ぐ
+        final existingId = existingIdMap[match.id];
+        if (existingId != null) {
+          entity.id = existingId;
         }
-        await _isar.matchEntitys.put(entity);
-      }
+        return entity;
+      }).toList();
+
+      await _isar.matchEntitys.putAll(entitiesToPut);
     });
   }
 
@@ -221,6 +232,22 @@ class LocalMatchRepository {
         entity.pendingEvents = []; // ★ 送信が完了したため差分キューを空にする
         await _isar.matchEntitys.put(entity);
       }
+    });
+  }
+
+  // 🔋 【Phase 5】同期完了バッチ処理: 複数試合の同期状態を1回のwriteTxn・putAllで一括更新
+  Future<void> markMatchesAsSynced(List<String> matchIds) async {
+    if (_isar == null || matchIds.isEmpty) return;
+    await _isar.writeTxn(() async {
+      final entities = await _isar.matchEntitys
+          .filter()
+          .anyOf(matchIds, (q, String id) => q.firestoreIdEqualTo(id))
+          .findAll();
+      for (final entity in entities) {
+        entity.syncState = SyncState.synced;
+        entity.pendingEvents = [];
+      }
+      await _isar.matchEntitys.putAll(entities);
     });
   }
 

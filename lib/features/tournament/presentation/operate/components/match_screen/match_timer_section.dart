@@ -23,8 +23,9 @@ class MatchTimerSection extends StatelessWidget {
     final isRenseikaiTimeBased =
         rule.isRenseikai && rule.renseikaiType == '時間制';
 
+    Widget content;
     if (isRenseikaiTimeBased) {
-      return Padding(
+      content = Padding(
         padding: const EdgeInsets.symmetric(
           vertical: 2,
           horizontal: AppSpacing.lg,
@@ -54,8 +55,11 @@ class MatchTimerSection extends StatelessWidget {
           ],
         ),
       );
+    } else {
+      content = TimerWidget(matchId: match.id, isInputLocked: isInputLocked);
     }
 
-    return TimerWidget(matchId: match.id, isInputLocked: isInputLocked);
+    // 🎨 【Phase 3】RepaintBoundaryによるタイマー描画の完全分離
+    return RepaintBoundary(child: content);
   }
 }

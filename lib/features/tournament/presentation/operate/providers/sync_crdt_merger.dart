@@ -6,6 +6,8 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 /// CRDT差分追記マージ・データサニタイズヘルパー
 class SyncCrdtMerger {
+  /// 🏎️ 【Phase 11】AOTインライン化: 通信ペイロードのサニタイズ処理
+  @pragma('vm:prefer-inline')
   static Map<String, dynamic> sanitizeForSync(Map<String, dynamic> data) {
     final Map<String, dynamic> result = {};
     data.forEach((key, value) {
@@ -41,6 +43,8 @@ class SyncCrdtMerger {
     return result;
   }
 
+  /// 🏎️ 【Phase 11】AOTインライン化: イベント履歴CRDTマージ
+  @pragma('vm:prefer-inline')
   static MatchModel mergeAndRebuild({
     required MatchModel remoteMatch,
     required MatchModel localMatch,

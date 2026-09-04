@@ -175,14 +175,23 @@ class AppBootstrapHelper {
           if (existingIsar != null) {
             isar = existingIsar;
           } else {
-            isar = await Isar.open([
-              MatchEntitySchema,
-              LocalStrokeModelSchema,
-              MatchCommentEntitySchema,
-              MatchProjectionEntitySchema,
-              MatchCommandEntitySchema,
-            ], directory: dir.path);
-            debugPrint('🚀 [Isar] 新規にIsarインスタンスをオープンしました。');
+            isar = await Isar.open(
+              [
+                MatchEntitySchema,
+                LocalStrokeModelSchema,
+                MatchCommentEntitySchema,
+                MatchProjectionEntitySchema,
+                MatchCommandEntitySchema,
+              ],
+              directory: dir.path,
+              maxSizeMiB: 1024,
+              relaxedDurability: true,
+              compactOnLaunch: const CompactCondition(
+                minFileSize: 10 * 1024 * 1024,
+                minRatio: 2.0,
+              ),
+            );
+            debugPrint('🚀 [Isar] 新規にIsarインスタンスをオープンしました（MMAP 1024MiB最適化）。');
           }
         }
       } catch (e) {

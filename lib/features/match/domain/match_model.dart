@@ -237,13 +237,17 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
   }
 
   // ★ Phase 4 移行用: 既存の isDirty 参照エラーを防ぐ Strangler Fig パターンの魔法
+  @pragma('vm:prefer-inline')
   bool get isDirty => syncState != SyncState.synced;
 
   // ★ Phase 2: Absolute Time 化によるStrangler Figパターン（参照エラー回避用の魔法）
+  @pragma('vm:prefer-inline')
   bool get timerIsRunning => timerStartedAt != null;
 
   // ★ CQRS/EventSourcing の不変性を保つため、外部から DateTime now を注入する形に変更
   // これにより、過去の任意時点でのリプレイ再生においてタイマー秒数が狂う Replay Drift を防止します。
+  // 🏎️ 【Phase 11】Dart AOT コンパイルインライン化: 毎秒数十回呼ばれる残り時間計算のスタック生成を排除
+  @pragma('vm:prefer-inline')
   int calculateRemainingSeconds(DateTime now) {
     // ★ 修正: Unsupported operation: Infinity or NaN toInt を完全に根絶する防壁
     if (matchTimeMinutes.isInfinite || matchTimeMinutes.isNaN) {

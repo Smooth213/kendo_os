@@ -7,6 +7,7 @@ import 'package:kendo_os/features/match/domain/match_state.dart'; // ★ Phase 1
 import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 
 // ★ 修正1: 監視(watch)ではなく、画面を開いた時の初期値の読み取り(read)に変更。
 // これにより、通信のたびに秒数がリセットされるバグが消滅します。
@@ -176,11 +177,18 @@ class MatchTimer {
       return;
     }
 
-    debugPrint('🕒 [MatchTimer] startLocalTicker: Ticker STARTED.');
+    // 🔋 【Phase 10】アダプティブ省電力・サーマル冷却: 端末状況に応じた推奨更新間隔を動的適用
+    final governor = ref.read(thermalPowerGovernorProvider);
+    governor.recordUserActivity();
+    final tickInterval = governor.recommendedTickInterval;
+
+    debugPrint(
+      '🕒 [MatchTimer] startLocalTicker: Ticker STARTED (interval=${tickInterval.inMilliseconds}ms).',
+    );
     _ticker?.cancel();
     final fallbackStartedAt = ref.read(timeSourceProvider).now();
 
-    _ticker = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _ticker = Timer.periodic(tickInterval, (timer) {
       if (!_expectedIsRunning) {
         timer.cancel();
         return;

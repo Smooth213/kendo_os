@@ -153,6 +153,8 @@ class KendoRuleEngine {
   }
 
   /// 3. 反則が一本に到達したかの判定
+  /// 🏎️ 【Phase 11】AOTインライン化: 反則打突計算の超高頻度述語
+  @pragma('vm:prefer-inline')
   bool isHansokuIppon(int count, [MatchRule? rule]) {
     final limit = (rule ?? const MatchRule()).toRuleConfig.hansoku.hansokuLimit;
     return limit > 0 && count > 0 && count % limit == 0;

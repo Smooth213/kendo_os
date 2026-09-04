@@ -78,15 +78,19 @@ class LargeViewerScoreboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isPortrait = constraints.maxHeight > constraints.maxWidth;
-        if (isPortrait) {
-          return _buildPortraitLayout(context);
-        } else {
-          return _buildLandscapeLayout(context);
-        }
-      },
+    // 🎨 【Phase 3】RepaintBoundaryによる描画境界の完全分離
+    // 大画面観戦スコアボードの頻繁な打突・スコア同期描画を隔離
+    return RepaintBoundary(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isPortrait = constraints.maxHeight > constraints.maxWidth;
+          if (isPortrait) {
+            return _buildPortraitLayout(context);
+          } else {
+            return _buildLandscapeLayout(context);
+          }
+        },
+      ),
     );
   }
 
