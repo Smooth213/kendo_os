@@ -131,16 +131,16 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                             ? (isDark
                                   ? const Color(
                                       0xFFFF9800,
-                                    ).withValues(alpha: 0.3)
-                                  : const Color(0xFFFF9800))
+                                    ).withValues(alpha: 0.2)
+                                  : const Color(0xFFFFF3E0))
                             : themeColors.softAccent,
                         child: Text(
                           isSubstitute ? '補' : posNames[index].substring(0, 1),
                           style: TextStyle(
                             color: isSubstitute
                                 ? (isDark
-                                      ? const Color(0xFFFF9800)
-                                      : const Color(0xFFFF9800))
+                                      ? const Color(0xFFFFB74D)
+                                      : const Color(0xFFE65100))
                                 : themeColors.primaryAccent,
                             fontWeight: AppFontWeight.bold,
                             fontSize: AppFontSize.subhead,
@@ -153,9 +153,7 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                           fontSize: AppFontSize.headline,
                           fontWeight: AppFontWeight.bold,
                           color: tempSelectedPlayers[index] == null
-                              ? (isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : const Color(0x8A000000))
+                              ? context.appColors.subTextColor
                               : textColor,
                         ),
                       ),
@@ -163,7 +161,9 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                         posNames[index],
                         style: TextStyle(
                           color: isSubstitute
-                              ? const Color(0xFFFF9800)
+                              ? (isDark
+                                    ? const Color(0xFFFFB74D)
+                                    : const Color(0xFFE65100))
                               : themeColors.primaryAccent,
                           fontSize: AppFontSize.small,
                           fontWeight: AppFontWeight.bold,

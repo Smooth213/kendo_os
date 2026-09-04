@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/text_input_helper.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
@@ -193,29 +194,83 @@ class NewMatchHeadingNotesCard extends StatelessWidget {
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: roundPresets.map((preset) {
-              final isSelected = selectedItems.contains(preset);
-              return AppFilterChip(
-                selected: isSelected,
+            children: [
+              ...roundPresets.map((preset) {
+                final isSelected = selectedItems.contains(preset);
+                return AppFilterChip(
+                  selected: isSelected,
+                  label: Text(
+                    preset,
+                    style: const TextStyle(fontSize: AppFontSize.caption),
+                  ),
+                  onSelected: (_) {
+                    onHeadingPresetToggled(preset);
+                  },
+                );
+              }),
+              AppActionChip(
                 label: Text(
-                  preset,
-                  style: const TextStyle(fontSize: AppFontSize.caption),
+                  '， (カンマ)',
+                  style: TextStyle(
+                    fontSize: AppFontSize.caption,
+                    fontWeight: AppFontWeight.bold,
+                    color: isDark
+                        ? const Color(0xFFFFFFFF)
+                        : const Color(0xDE000000),
+                  ),
                 ),
-                onSelected: (_) {
-                  onHeadingPresetToggled(preset);
-                },
-              );
-            }).toList(),
+                onPressed: () => TextInputHelper.insertComma(courtController),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.lg),
           const Divider(),
           const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '📝 試合のメモ・詳細コメント',
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  fontWeight: AppFontWeight.bold,
+                  color: isDark
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xDE000000),
+                ),
+              ),
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                icon: Icon(
+                  Icons.add,
+                  size: 14,
+                  color: context.appColors.primaryAccent,
+                ),
+                label: Text(
+                  'カンマ（,）',
+                  style: TextStyle(
+                    fontSize: AppFontSize.caption,
+                    fontWeight: AppFontWeight.bold,
+                    color: context.appColors.primaryAccent,
+                  ),
+                ),
+                onPressed: () => TextInputHelper.insertComma(noteController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
           AppTextField(
             controller: noteController,
             maxLines: 2,
             style: TextStyle(color: context.appColors.textColor),
             decoration: InputDecoration(
-              labelText: '試合のメモ・詳細コメント',
               hintText: 'メモや追記事項があれば入力してください',
               border: const OutlineInputBorder(),
               enabledBorder: OutlineInputBorder(

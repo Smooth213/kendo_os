@@ -142,15 +142,17 @@ class ProgramTitlePreviewDialog {
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       color: isDark
                           ? const Color(0xFF1C1C2E)
-                          : const Color(0xFF3F51B5),
+                          : context.appColors.softAccent,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             '📝 プログラム名（ベースタイトル）',
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
-                              color: AppKendoColors.indigo,
+                              color: isDark
+                                  ? AppKendoColors.pureWhite
+                                  : context.appColors.primaryAccent,
                               fontSize: AppFontSize.bodySmall,
                             ),
                           ),
@@ -160,7 +162,7 @@ class ProgramTitlePreviewDialog {
                             autofocus: false,
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: context.appColors.textColor,
                             ),
                             decoration: InputDecoration(
                               hintText: '例：1日目 進行表',
@@ -170,21 +172,32 @@ class ProgramTitlePreviewDialog {
                               filled: true,
                               fillColor: isDark
                                   ? const Color(0xFF2C2C3E)
-                                  : context.appColors.inputBackground,
+                                  : context.appColors.cardBackground,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.md,
                                 vertical: AppSpacing.md,
                               ),
-                              border: const OutlineInputBorder(
+                              border: OutlineInputBorder(
                                 borderRadius: AppRadius.small,
                                 borderSide: BorderSide(
-                                  color: Color(0xFF3F51B5),
+                                  color: isDark
+                                      ? const Color(0xFF3A3A6A)
+                                      : context.appColors.separatorColor,
                                 ),
                               ),
-                              enabledBorder: const OutlineInputBorder(
+                              enabledBorder: OutlineInputBorder(
                                 borderRadius: AppRadius.small,
                                 borderSide: BorderSide(
-                                  color: Color(0xFF3F51B5),
+                                  color: isDark
+                                      ? const Color(0xFF3A3A6A)
+                                      : context.appColors.separatorColor,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: AppRadius.small,
+                                borderSide: BorderSide(
+                                  color: context.appColors.primaryAccent,
+                                  width: 1.5,
                                 ),
                               ),
                               errorStyle: const TextStyle(
@@ -228,7 +241,7 @@ class ProgramTitlePreviewDialog {
                                     size: 13,
                                     color: showValidationHighlight
                                         ? AppKendoColors.hansokuRed
-                                        : const Color(0xFFFF9800),
+                                        : context.appColors.warningColor,
                                   ),
                                   const SizedBox(width: AppSpacing.xs),
                                   Text(
@@ -237,7 +250,7 @@ class ProgramTitlePreviewDialog {
                                       fontSize: AppFontSize.caption,
                                       color: showValidationHighlight
                                           ? AppKendoColors.hansokuRed
-                                          : const Color(0xFFFF9800),
+                                          : context.appColors.warningColor,
                                       fontWeight: showValidationHighlight
                                           ? AppFontWeight.bold
                                           : AppFontWeight.semiBold,
@@ -256,24 +269,25 @@ class ProgramTitlePreviewDialog {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? const Color(0xFF252540)
-                                    : const Color(0xFF3F51B5).withAlpha(200),
+                                    : context.appColors.cardBackground,
                                 borderRadius: AppRadius.small,
                                 border: Border.all(
                                   color: isDark
                                       ? const Color(0xFF3A3A6A)
-                                      : const Color(0xFF3F51B5),
+                                      : context.appColors.primaryAccent
+                                            .withValues(alpha: 0.25),
                                   width: 1,
                                 ),
                               ),
-                              child: const Row(
+                              child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Icon(
                                     Icons.info_outline,
                                     size: 18,
-                                    color: Color(0xFF3F51B5),
+                                    color: context.appColors.primaryAccent,
                                   ),
-                                  SizedBox(width: AppSpacing.sm),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: Text(
                                       '複数アップロードのガイド：\n'
@@ -282,7 +296,9 @@ class ProgramTitlePreviewDialog {
                                       style: TextStyle(
                                         fontSize: AppFontSize.small,
                                         fontWeight: AppFontWeight.semiBold,
-                                        color: Color(0xFF3F51B5),
+                                        color: isDark
+                                            ? context.appColors.textColor
+                                            : context.appColors.primaryAccent,
                                         height: 1.4,
                                       ),
                                     ),
@@ -300,11 +316,12 @@ class ProgramTitlePreviewDialog {
                         data: Theme.of(context).copyWith(
                           canvasColor: isDark
                               ? const Color(0xFF1C1C1E)
-                              : context.appColors.textColor,
+                              : context.appColors.cardBackground,
                         ),
                         child: ReorderableListView.builder(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
                           ),
                           itemCount: orderedFiles.length,
                           onReorderItem: (oldIndex, newIndex) {
@@ -318,50 +335,97 @@ class ProgramTitlePreviewDialog {
                           itemBuilder: (context, index) {
                             final file = orderedFiles[index];
                             final isSelected = selectedIndex == index;
-                            return ListTile(
+                            return Container(
                               key: ValueKey(
                                 kIsWeb ? file.name : (file.path ?? file.name),
                               ),
-                              selected: isSelected,
-                              selectedTileColor: isDark
-                                  ? context.appColors.primaryAccent.withAlpha(
-                                      180,
-                                    )
-                                  : context.appColors.primaryAccent,
-                              tileColor: isDark
-                                  ? const Color(0xFF1C1C1E)
-                                  : null,
-                              leading: CircleAvatar(
-                                radius: 12,
-                                backgroundColor: isSelected
-                                    ? AppKendoColors.indigo
-                                    : AppKendoColors.grey,
-                                child: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                    color: AppKendoColors.pureWhite,
-                                    fontSize: AppFontSize.caption,
+                              margin: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.xxs,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: AppRadius.small,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: context.appColors.primaryAccent
+                                            .withValues(
+                                              alpha: isDark ? 0.6 : 0.4,
+                                            ),
+                                        width: 1.2,
+                                      )
+                                    : null,
+                              ),
+                              child: Material(
+                                color: isSelected
+                                    ? (isDark
+                                          ? context.appColors.primaryAccent
+                                                .withValues(alpha: 0.25)
+                                          : context.appColors.softAccent)
+                                    : (isDark
+                                          ? const Color(0xFF1C1C1E)
+                                          : AppKendoColors.transparent),
+                                borderRadius: AppRadius.small,
+                                child: ListTile(
+                                  selected: isSelected,
+                                  selectedTileColor: AppKendoColors.transparent,
+                                  tileColor: AppKendoColors.transparent,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: AppRadius.small,
                                   ),
+                                  leading: CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: isSelected
+                                        ? context.appColors.primaryAccent
+                                        : (isDark
+                                              ? const Color(0xFF2C2C2E)
+                                              : const Color(0xFFE5E5EA)),
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? AppKendoColors.pureWhite
+                                            : context.appColors.subTextColor,
+                                        fontSize: AppFontSize.caption,
+                                        fontWeight: AppFontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    file.name,
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.small,
+                                      fontWeight: isSelected
+                                          ? AppFontWeight.bold
+                                          : AppFontWeight.regular,
+                                      color: isSelected
+                                          ? (isDark
+                                                ? AppKendoColors.pureWhite
+                                                : context
+                                                      .appColors
+                                                      .primaryAccent)
+                                          : context.appColors.textColor,
+                                    ),
+                                  ),
+                                  trailing: Icon(
+                                    Icons.drag_handle,
+                                    size: 20,
+                                    color: isSelected
+                                        ? (isDark
+                                              ? AppKendoColors.pureWhite
+                                              : context.appColors.primaryAccent)
+                                        : context.appColors.subTextColor,
+                                  ),
+                                  onTap: () {
+                                    setState(() => selectedIndex = index);
+                                    previewController.animateToPage(
+                                      index,
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  },
                                 ),
                               ),
-                              title: Text(
-                                file.name,
-                                style: TextStyle(
-                                  fontSize: AppFontSize.small,
-                                  fontWeight: isSelected
-                                      ? AppFontWeight.bold
-                                      : AppFontWeight.regular,
-                                ),
-                              ),
-                              trailing: const Icon(Icons.drag_handle, size: 20),
-                              onTap: () {
-                                setState(() => selectedIndex = index);
-                                previewController.animateToPage(
-                                  index,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
                             );
                           },
                         ),

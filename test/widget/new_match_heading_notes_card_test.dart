@@ -58,6 +58,21 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(courtController.text, '');
+
+        // 「第1試合場」を設定し、カンマチップをタップ
+        courtController.text = '第1試合場';
+        noteController.text = '備考1';
+        await tester.pumpAndSettle();
+
+        expect(find.text('， (カンマ)'), findsOneWidget);
+        await tester.tap(find.text('， (カンマ)'));
+        await tester.pumpAndSettle();
+        expect(courtController.text, '第1試合場, ');
+
+        expect(find.text('カンマ（,）'), findsOneWidget);
+        await tester.tap(find.text('カンマ（,）'));
+        await tester.pumpAndSettle();
+        expect(noteController.text, '備考1, ');
       },
     );
   });

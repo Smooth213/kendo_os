@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_delete_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_management_content_views.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_title_preview_dialog.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
@@ -16,6 +18,7 @@ import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import '../helpers/clipboard_program_helper.dart';
 import '../providers/permission_provider.dart';
 
 final programListProvider = StreamProvider.family<List<ProgramModel>, String>((
@@ -39,7 +42,49 @@ class _ProgramManagementScreenState
     extends ConsumerState<ProgramManagementScreen> {
   bool _isUploading = false;
   bool _isGridView = false;
+  bool _isSelectionMode = false;
+  final Set<String> _selectedProgramIds = {};
   final int _sessionBuster = DateTime.now().millisecondsSinceEpoch;
+
+  void _startSelection(ProgramModel program) {
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _isSelectionMode = true;
+      _selectedProgramIds.add(program.id);
+    });
+  }
+
+  void _toggleSelection(ProgramModel program) {
+    setState(() {
+      if (_selectedProgramIds.contains(program.id)) {
+        _selectedProgramIds.remove(program.id);
+        if (_selectedProgramIds.isEmpty) {
+          _isSelectionMode = false;
+        }
+      } else {
+        _selectedProgramIds.add(program.id);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _isSelectionMode = false;
+      _selectedProgramIds.clear();
+    });
+  }
+
+  void _confirmBulkDelete() {
+    final allPrograms =
+        ref.read(programListProvider(widget.tournamentId)).valueOrNull ?? [];
+    ProgramDeleteDialogHelper.confirmBulkDelete(
+      context: context,
+      ref: ref,
+      allPrograms: allPrograms,
+      selectedProgramIds: _selectedProgramIds,
+      onDeleted: _clearSelection,
+    );
+  }
 
   String _getSafeUrl(String url) {
     if (!kIsWeb || url.isEmpty || !url.startsWith('http')) return url;
@@ -52,42 +97,59 @@ class _ProgramManagementScreenState
       context: context,
       builder: (BuildContext context) {
         return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              const Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                child: Text(
-                  'プログラムの追加',
-                  style: TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.subhead,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: Text(
+                    'プログラムの追加',
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.subhead,
+                    ),
                   ),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.photo_library,
-                  color: AppKendoColors.blue,
+                ListTile(
+                  leading: const Icon(
+                    Icons.photo_library,
+                    color: AppKendoColors.blue,
+                  ),
+                  title: const Text('写真ライブラリから選ぶ (複数可)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickAndUpload(isPhoto: true);
+                  },
                 ),
-                title: const Text('写真ライブラリから選ぶ (複数可)'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickAndUpload(isPhoto: true);
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.picture_as_pdf,
-                  color: AppKendoColors.red,
+                ListTile(
+                  leading: const Icon(
+                    Icons.picture_as_pdf,
+                    color: AppKendoColors.red,
+                  ),
+                  title: const Text('ファイルから選ぶ (複数可)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickAndUpload(isPhoto: false);
+                  },
                 ),
-                title: const Text('ファイルから選ぶ (複数可)'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickAndUpload(isPhoto: false);
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
+                ListTile(
+                  leading: const Icon(
+                    Icons.content_paste_go,
+                    color: AppKendoColors.greenAccent,
+                  ),
+                  title: const Text('クリップボードから貼り付け'),
+                  subtitle: const Text('コピーした画像やURLから追加'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pasteAndUpload();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
+            ),
           ),
         );
       },
@@ -104,10 +166,39 @@ class _ProgramManagementScreenState
       );
 
       if (result == null || result.files.isEmpty || !mounted) return;
+      await _confirmAndUploadFiles(result.files);
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.showError(context, 'ファイル選択エラー: $e');
+      }
+    }
+  }
 
+  Future<void> _pasteAndUpload() async {
+    try {
+      final helper = ClipboardProgramHelper();
+      final platformFile = await helper.getPlatformFileFromClipboard();
+
+      if (!mounted) return;
+
+      if (platformFile == null) {
+        AppSnackBar.show(context, 'クリップボードにコピーされた画像またはURLが見つかりませんでした');
+        return;
+      }
+
+      await _confirmAndUploadFiles([platformFile]);
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.showError(context, 'クリップボード読込エラー: $e');
+      }
+    }
+  }
+
+  Future<void> _confirmAndUploadFiles(List<PlatformFile> files) async {
+    try {
       final dialogResult = await ProgramTitlePreviewDialog.show(
         context: context,
-        files: result.files,
+        files: files,
       );
 
       if (dialogResult == null || !mounted) return;
@@ -225,32 +316,12 @@ class _ProgramManagementScreenState
     );
   }
 
-  Future<void> _confirmDelete(ProgramModel program) async {
-    final confirmed = await showAppDialog<bool>(
+  void _confirmDelete(ProgramModel program) {
+    ProgramDeleteDialogHelper.confirmSingleDelete(
       context: context,
-      builder: (context) => AppDialog(
-        title: 'プログラムの削除',
-        titleIcon: Icons.warning_amber_rounded,
-        iconColor: AppKendoColors.red,
-        content: Text('「${program.title}」を削除しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              '削除',
-              style: TextStyle(color: AppKendoColors.red),
-            ),
-          ),
-        ],
-      ),
+      ref: ref,
+      program: program,
     );
-    if (confirmed == true) {
-      await ref.read(programRepositoryProvider).deleteProgram(program);
-    }
   }
 
   @override
@@ -272,15 +343,37 @@ class _ProgramManagementScreenState
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
-          title: isViewerMode ? '大会プログラム' : 'プログラム管理',
-          actions: [
-            IconButton(
-              icon: Icon(
-                _isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded,
-              ),
-              onPressed: () => setState(() => _isGridView = !_isGridView),
-            ),
-          ],
+          leading: _isSelectionMode
+              ? IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: _clearSelection,
+                )
+              : null,
+          title: _isSelectionMode
+              ? '${_selectedProgramIds.length}件選択中'
+              : (isViewerMode ? '大会プログラム' : 'プログラム管理'),
+          actions: _isSelectionMode
+              ? [
+                  if (!isViewerMode)
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: AppKendoColors.red),
+                      tooltip: '選択したプログラムを削除',
+                      onPressed: _selectedProgramIds.isEmpty
+                          ? null
+                          : _confirmBulkDelete,
+                    ),
+                  const SizedBox(width: AppSpacing.sm),
+                ]
+              : [
+                  IconButton(
+                    icon: Icon(
+                      _isGridView
+                          ? Icons.view_list_rounded
+                          : Icons.grid_view_rounded,
+                    ),
+                    onPressed: () => setState(() => _isGridView = !_isGridView),
+                  ),
+                ],
         ),
         body: () {
           final programAsync = ref.watch(
@@ -308,6 +401,10 @@ class _ProgramManagementScreenState
                       getSafeUrl: _getSafeUrl,
                       onDelete: _confirmDelete,
                       isViewerMode: isViewerMode,
+                      isSelectionMode: _isSelectionMode,
+                      selectedProgramIds: _selectedProgramIds,
+                      onToggleSelection: _toggleSelection,
+                      onLongPress: _startSelection,
                     )
                   : ProgramManagementContentViews.buildListView(
                       context: context,
@@ -315,11 +412,15 @@ class _ProgramManagementScreenState
                       getSafeUrl: _getSafeUrl,
                       onDelete: _confirmDelete,
                       isViewerMode: isViewerMode,
+                      isSelectionMode: _isSelectionMode,
+                      selectedProgramIds: _selectedProgramIds,
+                      onToggleSelection: _toggleSelection,
+                      onLongPress: _startSelection,
                     );
             },
           );
         }(),
-        floatingActionButton: isViewerMode
+        floatingActionButton: (isViewerMode || _isSelectionMode)
             ? null
             : FloatingActionButton.extended(
                 onPressed: _isUploading ? null : _showPickerMenu,

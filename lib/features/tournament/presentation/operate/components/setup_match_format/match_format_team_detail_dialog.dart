@@ -263,19 +263,26 @@ class _MatchFormatTeamDetailDialogState
                       : _currentTeam.playerNames[i];
                   final bool isSub = posName == '補欠';
 
+                  final bool isDark =
+                      Theme.of(context).brightness == Brightness.dark;
+
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     onTap: () => _selectAndSwapPlayer(i),
                     leading: CircleAvatar(
                       radius: 18,
                       backgroundColor: isSub
-                          ? context.appColors.warningColor
+                          ? (isDark
+                                ? const Color(0xFFFF9800).withValues(alpha: 0.2)
+                                : const Color(0xFFFFF3E0))
                           : widget.themeColors.softAccent,
                       child: Text(
                         isSub ? '補' : posName.substring(0, 1),
                         style: TextStyle(
                           color: isSub
-                              ? const Color(0xFFFF9800)
+                              ? (isDark
+                                    ? const Color(0xFFFFB74D)
+                                    : const Color(0xFFE65100))
                               : widget.themeColors.primaryAccent,
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.bodySmall,

@@ -59,5 +59,40 @@ void main() {
       await tester.pump();
       expect(cleared, isTrue);
     });
+
+    testWidgets('Tapping comma chip and comma button inserts comma correctly', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchEditCourtAndGroupTab(
+              themeColors: themeColors,
+              courtController: courtController,
+              noteController: noteController,
+              isDark: false,
+              textColor: Colors.black87,
+              onToggleHeadingPreset: (_) {},
+              onClearCourt: () {},
+            ),
+          ),
+        ),
+      );
+
+      // カンマチップが見つかること
+      expect(find.text('， (カンマ)'), findsOneWidget);
+      // メモ横のカンマ追加ボタンが見つかること
+      expect(find.text('カンマ（,）'), findsOneWidget);
+
+      // カンマチップをタップして見出しにカンマが入ることを確認
+      await tester.tap(find.text('， (カンマ)'));
+      await tester.pump();
+      expect(courtController.text, '第1試合場, 1回戦, ');
+
+      // カンマボタンをタップしてメモにカンマが入ることを確認
+      await tester.tap(find.text('カンマ（,）'));
+      await tester.pump();
+      expect(noteController.text, '注意事項テスト, ');
+    });
   });
 }

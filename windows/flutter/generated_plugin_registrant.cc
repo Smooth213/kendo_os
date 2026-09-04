@@ -15,6 +15,7 @@
 #include <firebase_storage/firebase_storage_plugin_c_api.h>
 #include <flutter_tts/flutter_tts_plugin.h>
 #include <isar_community_flutter_libs/isar_flutter_libs_plugin.h>
+#include <pasteboard/pasteboard_plugin.h>
 #include <printing/printing_plugin.h>
 #include <share_plus/share_plus_windows_plugin_c_api.h>
 #include <syncfusion_pdfviewer_windows/syncfusion_pdfviewer_windows_plugin.h>
@@ -39,6 +40,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FlutterTtsPlugin"));
   IsarFlutterLibsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("IsarFlutterLibsPlugin"));
+  PasteboardPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("PasteboardPlugin"));
   PrintingPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("PrintingPlugin"));
   SharePlusWindowsPluginCApiRegisterWithRegistrar(

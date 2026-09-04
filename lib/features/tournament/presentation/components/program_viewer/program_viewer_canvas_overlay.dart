@@ -45,6 +45,10 @@ class _ProgramViewerCanvasOverlayState
   List<StrokeModel> _cachedSharedStrokes = [];
   List<LocalStrokeModel> _cachedPrivateStrokes = [];
 
+  String get _effectiveProgramId => widget.pageIndex == 0
+      ? widget.programId
+      : '${widget.programId}_p${widget.pageIndex}';
+
   Future<void> _eraseStrokeAt(Offset touchPoint) async {
     const double threshold = 25.0;
 
@@ -81,44 +85,49 @@ class _ProgramViewerCanvasOverlayState
     return Stack(
       children: [
         Positioned.fill(
-          child: StreamBuilder<List<StrokeModel>>(
-            stream: ref
-                .watch(strokeRepositoryProvider)
-                .watchStrokes(widget.programId),
-            builder: (context, sharedSnapshot) {
-              final sharedStrokes = sharedSnapshot.data ?? [];
-              _cachedSharedStrokes = sharedStrokes;
-              widget.onSharedStrokesUpdated?.call(sharedStrokes);
+          child: IgnorePointer(
+            child: StreamBuilder<List<StrokeModel>>(
+              stream: ref
+                  .watch(strokeRepositoryProvider)
+                  .watchStrokes(widget.programId),
+              builder: (context, sharedSnapshot) {
+                final allShared = sharedSnapshot.data ?? [];
+                final sharedStrokes = allShared
+                    .where((s) => s.pageIndex == widget.pageIndex)
+                    .toList();
+                _cachedSharedStrokes = sharedStrokes;
+                widget.onSharedStrokesUpdated?.call(sharedStrokes);
 
-              return StreamBuilder<List<LocalStrokeModel>>(
-                stream: ref
-                    .watch(localStrokeRepositoryProvider)
-                    .watchStrokes(widget.programId),
-                builder: (context, privateSnapshot) {
-                  final privateStrokes = privateSnapshot.data ?? [];
-                  _cachedPrivateStrokes = privateStrokes;
-                  widget.onPrivateStrokesUpdated?.call(privateStrokes);
+                return StreamBuilder<List<LocalStrokeModel>>(
+                  stream: ref
+                      .watch(localStrokeRepositoryProvider)
+                      .watchStrokes(_effectiveProgramId),
+                  builder: (context, privateSnapshot) {
+                    final privateStrokes = privateSnapshot.data ?? [];
+                    _cachedPrivateStrokes = privateStrokes;
+                    widget.onPrivateStrokesUpdated?.call(privateStrokes);
 
-                  final isMarker = widget.selectedTool == 'marker';
-                  final paintColor = isMarker
-                      ? widget.activePenColor.withAlpha(90)
-                      : widget.activePenColor;
-                  final paintWidth = isMarker
-                      ? widget.penWidth * 3.0
-                      : widget.penWidth;
+                    final isMarker = widget.selectedTool == 'marker';
+                    final paintColor = isMarker
+                        ? widget.activePenColor.withAlpha(90)
+                        : widget.activePenColor;
+                    final paintWidth = isMarker
+                        ? widget.penWidth * 3.0
+                        : widget.penWidth;
 
-                  return CustomPaint(
-                    painter: StrokePainter(
-                      sharedStrokes: sharedStrokes,
-                      privateStrokes: privateStrokes,
-                      currentPoints: _currentPoints,
-                      currentLineColor: paintColor,
-                      activePenWidth: paintWidth,
-                    ),
-                  );
-                },
-              );
-            },
+                    return CustomPaint(
+                      painter: StrokePainter(
+                        sharedStrokes: sharedStrokes,
+                        privateStrokes: privateStrokes,
+                        currentPoints: _currentPoints,
+                        currentLineColor: paintColor,
+                        activePenWidth: paintWidth,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
         if (widget.isDrawingMode)
@@ -170,7 +179,7 @@ class _ProgramViewerCanvasOverlayState
                         .addStroke(newStroke);
                   } else {
                     final newLocalStroke = LocalStrokeModel()
-                      ..programId = widget.programId
+                      ..programId = _effectiveProgramId
                       ..pointsX = pointsToSave.map((p) => p.dx).toList()
                       ..pointsY = pointsToSave.map((p) => p.dy).toList()
                       ..colorValue = savedColor.toARGB32()

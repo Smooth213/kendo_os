@@ -78,6 +78,7 @@ dependencies:
   flutter_markdown: ^0.7.3  # ★ Phase 5: アプリ内ドキュメント表示用
   firebase_messaging: ^16.4.1
   flutter_local_notifications: ^22.0.1
+  pasteboard: ^0.5.0
 
 dev_dependencies:
   flutter_test:

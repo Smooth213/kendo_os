@@ -51,6 +51,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   late PageController _pageController;
   late int _currentIndex;
   final Map<String, int> _pdfPageCounts = {};
+  final Map<String, int> _pdfCurrentPages = {};
 
   @visibleForTesting
   Map<String, int> get pdfPageCountsForTesting => _pdfPageCounts;
@@ -216,12 +217,23 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     setState(() {});
                   },
                 )
-              : Text(
-                  '${currentProgram.title} (${safeIndex + 1}/${displayPrograms.length})',
-                  style: const TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.subhead,
-                  ),
+              : Builder(
+                  builder: (context) {
+                    final int totalPdfPages =
+                        _pdfPageCounts[currentProgram.fileUrl] ?? 1;
+                    final int curPdfPage =
+                        _pdfCurrentPages[currentProgram.fileUrl] ?? 1;
+                    final String pageSuffix = isFilePdf && totalPdfPages > 1
+                        ? ' - $curPdfPage/$totalPdfPages 頁'
+                        : '';
+                    return Text(
+                      '${currentProgram.title} (${safeIndex + 1}/${displayPrograms.length})$pageSuffix',
+                      style: const TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        fontSize: AppFontSize.subhead,
+                      ),
+                    );
+                  },
                 ),
           actions: [
             if (_isSearchMode) ...[
@@ -369,10 +381,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                       ? program.id
                       : program.fileUrl;
 
-                  Widget buildCanvas({required double penWidth}) {
+                  Widget buildCanvas({
+                    required double penWidth,
+                    int? pageIndex,
+                  }) {
                     return ProgramViewerCanvasOverlay(
                       programId: itemProgramId,
-                      pageIndex: _currentIndex,
+                      pageIndex: isFilePdf ? (pageIndex ?? 0) : _currentIndex,
                       penWidth: penWidth,
                       isDrawingMode: _isDrawingMode,
                       selectedTool: _selectedTool,
@@ -382,49 +397,58 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     );
                   }
 
+                  final Widget childWidget = isFilePdf
+                      ? ProgramViewerPdfBody(
+                          program: program,
+                          pageCount: _pdfPageCounts[program.fileUrl] ?? 1,
+                          pdfViewerController: _pdfViewerController,
+                          sdkPdfBytesFuture: kIsWeb
+                              ? getCachedPdfBytesViaSdk(program.fileUrl)
+                              : null,
+                          onPageCountLoaded: (count) {
+                            if (mounted &&
+                                _pdfPageCounts[program.fileUrl] != count) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  setState(() {
+                                    _pdfPageCounts[program.fileUrl] = count;
+                                  });
+                                }
+                              });
+                            }
+                          },
+                          buildPageOverlay: (pIndex) =>
+                              buildCanvas(penWidth: 10.0, pageIndex: pIndex),
+                          isDrawingMode: _isDrawingMode,
+                          isZoomed: _isZoomed,
+                          initialPage:
+                              (_pdfCurrentPages[program.fileUrl] ?? 1) - 1,
+                          onPageChanged: (pIndex) {
+                            if (mounted) {
+                              setState(() {
+                                _pdfCurrentPages[program.fileUrl] = pIndex + 1;
+                              });
+                            }
+                          },
+                        )
+                      : ProgramViewerImageBody(
+                          program: program,
+                          imageSizeFuture: _mediaCache.getCachedImageSize(
+                            program.fileUrl,
+                          ),
+                          safeUrl: _mediaCache.getSafeUrl(program.fileUrl),
+                          isSearchMode: _isSearchMode,
+                          currentSearchText: _currentSearchText,
+                          buildOverlayLayers: (w) => buildCanvas(penWidth: w),
+                        );
+
                   return InteractiveViewer(
                     transformationController: _transformationController,
                     panEnabled: !_isDrawingMode,
                     scaleEnabled: !_isDrawingMode,
                     minScale: 1.0,
                     maxScale: 5.0,
-                    child: Center(
-                      child: isFilePdf
-                          ? ProgramViewerPdfBody(
-                              program: program,
-                              pageCount: _pdfPageCounts[program.fileUrl] ?? 1,
-                              pdfViewerController: _pdfViewerController,
-                              sdkPdfBytesFuture: kIsWeb
-                                  ? getCachedPdfBytesViaSdk(program.fileUrl)
-                                  : null,
-                              onPageCountLoaded: (count) {
-                                if (mounted &&
-                                    _pdfPageCounts[program.fileUrl] != count) {
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    if (mounted) {
-                                      setState(() {
-                                        _pdfPageCounts[program.fileUrl] = count;
-                                      });
-                                    }
-                                  });
-                                }
-                              },
-                              overlayLayers: buildCanvas(penWidth: 10.0),
-                            )
-                          : ProgramViewerImageBody(
-                              program: program,
-                              imageSizeFuture: _mediaCache.getCachedImageSize(
-                                program.fileUrl,
-                              ),
-                              safeUrl: _mediaCache.getSafeUrl(program.fileUrl),
-                              isSearchMode: _isSearchMode,
-                              currentSearchText: _currentSearchText,
-                              buildOverlayLayers: (w) =>
-                                  buildCanvas(penWidth: w),
-                            ),
-                    ),
+                    child: Center(child: childWidget),
                   );
                 },
               ),

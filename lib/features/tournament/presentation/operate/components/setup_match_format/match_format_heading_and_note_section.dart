@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/text_input_helper.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
@@ -87,8 +88,10 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
                     ),
-                    visualDensity: VisualDensity.compact,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: () {
                     courtController.clear();
@@ -187,46 +190,93 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children:
-                [
-                  '1回戦',
-                  '2回戦',
-                  '準決勝',
-                  '決勝戦',
-                  'Aリーグ',
-                  'Bリーグ',
-                  '3試合目',
-                  '5試合目',
-                ].map((preset) {
-                  final isSelected = courtController.text
-                      .split(',')
-                      .map((e) => e.trim())
-                      .contains(preset);
-                  return AppFilterChip(
-                    selected: isSelected,
-                    label: Text(
-                      preset,
-                      style: TextStyle(
-                        fontSize: AppFontSize.small,
-                        fontWeight: AppFontWeight.bold,
-                        color: isSelected
-                            ? (isDark
-                                  ? AppKendoColors.pureWhite
-                                  : themeColors.primaryAccent)
-                            : (isDark
-                                  ? themeColors.textColor
-                                  : themeColors.primaryAccent),
-                      ),
+            children: [
+              ...[
+                '1回戦',
+                '2回戦',
+                '準決勝',
+                '決勝戦',
+                'Aリーグ',
+                'Bリーグ',
+                '3試合目',
+                '5試合目',
+              ].map((preset) {
+                final isSelected = courtController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .contains(preset);
+                return AppFilterChip(
+                  selected: isSelected,
+                  label: Text(
+                    preset,
+                    style: TextStyle(
+                      fontSize: AppFontSize.small,
+                      fontWeight: AppFontWeight.bold,
+                      color: isSelected
+                          ? (isDark
+                                ? AppKendoColors.pureWhite
+                                : themeColors.primaryAccent)
+                          : (isDark
+                                ? themeColors.textColor
+                                : themeColors.primaryAccent),
                     ),
-                    onSelected: (_) {
-                      onToggleHeadingPreset(preset);
-                    },
-                  );
-                }).toList(),
+                  ),
+                  onSelected: (_) {
+                    onToggleHeadingPreset(preset);
+                  },
+                );
+              }),
+              AppActionChip(
+                label: Text(
+                  '， (カンマ)',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    fontWeight: AppFontWeight.bold,
+                    color: isDark
+                        ? AppKendoColors.cyanAccent
+                        : themeColors.primaryAccent,
+                  ),
+                ),
+                icon: Icons.add,
+                iconColor: isDark
+                    ? AppKendoColors.cyanAccent
+                    : themeColors.primaryAccent,
+                onPressed: () => TextInputHelper.insertComma(courtController),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.lg),
           Divider(color: themeColors.separatorColor),
           const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '📝 試合のメモ・詳細コメント',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    fontWeight: AppFontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.add, size: 14),
+                label: const Text(
+                  'カンマ（,）',
+                  style: TextStyle(fontSize: AppFontSize.caption),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: () => TextInputHelper.insertComma(noteController),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
           AppTextField(
             controller: noteController,
             maxLines: 2,

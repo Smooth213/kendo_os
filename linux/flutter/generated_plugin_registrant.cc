@@ -8,6 +8,7 @@
 
 #include <audioplayers_linux/audioplayers_linux_plugin.h>
 #include <isar_community_flutter_libs/isar_flutter_libs_plugin.h>
+#include <pasteboard/pasteboard_plugin.h>
 #include <printing/printing_plugin.h>
 #include <url_launcher_linux/url_launcher_plugin.h>
 
@@ -18,6 +19,9 @@ void fl_register_plugins(FlPluginRegistry* registry) {
   g_autoptr(FlPluginRegistrar) isar_community_flutter_libs_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "IsarFlutterLibsPlugin");
   isar_flutter_libs_plugin_register_with_registrar(isar_community_flutter_libs_registrar);
+  g_autoptr(FlPluginRegistrar) pasteboard_registrar =
+      fl_plugin_registry_get_registrar_for_plugin(registry, "PasteboardPlugin");
+  pasteboard_plugin_register_with_registrar(pasteboard_registrar);
   g_autoptr(FlPluginRegistrar) printing_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "PrintingPlugin");
   printing_plugin_register_with_registrar(printing_registrar);

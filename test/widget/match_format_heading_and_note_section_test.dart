@@ -47,6 +47,18 @@ void main() {
       await tester.pump();
 
       expect(toggledPreset, '1回戦');
+
+      // カンマチップの存在と動作確認
+      expect(find.text('， (カンマ)'), findsOneWidget);
+      await tester.tap(find.text('， (カンマ)'));
+      await tester.pump();
+      expect(courtCtrl.text, '第1試合場, ');
+
+      // カンマボタンの存在と動作確認
+      expect(find.text('カンマ（,）'), findsOneWidget);
+      await tester.tap(find.text('カンマ（,）'));
+      await tester.pump();
+      expect(noteCtrl.text, '特記事項なし, ');
     },
   );
 }

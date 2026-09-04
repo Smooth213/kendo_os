@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/text_input_helper.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
@@ -165,14 +166,28 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
-                children: roundPresets.map((preset) {
-                  final isSelected = selectedItems.contains(preset);
-                  return AppFilterChip(
-                    selected: isSelected,
-                    label: Text(preset),
-                    onSelected: (_) => onToggleHeadingPreset(preset),
-                  );
-                }).toList(),
+                children: [
+                  ...roundPresets.map((preset) {
+                    final isSelected = selectedItems.contains(preset);
+                    return AppFilterChip(
+                      selected: isSelected,
+                      label: Text(preset),
+                      onSelected: (_) => onToggleHeadingPreset(preset),
+                    );
+                  }),
+                  AppActionChip(
+                    label: Text(
+                      '， (カンマ)',
+                      style: TextStyle(
+                        fontSize: AppFontSize.caption,
+                        fontWeight: AppFontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    onPressed: () =>
+                        TextInputHelper.insertComma(courtController),
+                  ),
+                ],
               ),
             ],
           ),
@@ -183,6 +198,26 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
           label: '📝 試合のメモ・詳細コメント',
           hint: '注意事項や備考を入力',
           maxLines: 3,
+          action: TextButton.icon(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            icon: Icon(Icons.add, size: 14, color: themeColors.primaryAccent),
+            label: Text(
+              'カンマ（,）',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                fontWeight: AppFontWeight.bold,
+                color: themeColors.primaryAccent,
+              ),
+            ),
+            onPressed: () => TextInputHelper.insertComma(noteController),
+          ),
         ),
       ],
     );
@@ -193,17 +228,24 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
     required String label,
     required String hint,
     int maxLines = 1,
+    Widget? action,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: AppFontSize.small,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: AppFontSize.small,
+                fontWeight: AppFontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            ?action,
+          ],
         ),
         const SizedBox(height: 6),
         AppTextField(
