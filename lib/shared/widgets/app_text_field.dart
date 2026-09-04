@@ -29,6 +29,7 @@ class AppTextField extends StatelessWidget {
   final TextAlign textAlign;
   final TextStyle? style;
   final InputDecoration? decoration;
+  final bool expands;
   final EdgeInsets scrollPadding;
 
   const AppTextField({
@@ -51,6 +52,7 @@ class AppTextField extends StatelessWidget {
     this.autofocus = false,
     this.maxLines = 1,
     this.minLines,
+    this.expands = false,
     this.focusNode,
     this.contentPadding,
     this.inputFormatters,
@@ -147,6 +149,7 @@ class AppTextField extends StatelessWidget {
       autofocus: autofocus,
       maxLines: maxLines,
       minLines: minLines,
+      expands: expands,
       inputFormatters: inputFormatters as List<TextInputFormatter>?,
       textAlign: textAlign,
       scrollPadding: scrollPadding,

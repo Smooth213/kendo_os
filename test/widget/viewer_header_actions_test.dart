@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_header_actions.dart';
 import 'package:kendo_os/features/viewer/components/viewer_home_header_actions.dart';
+import 'package:kendo_os/features/viewer/presentation/components/viewer_share_dialog.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
@@ -10,7 +11,7 @@ void main() {
 
   group('🛡️ ViewerHeaderActions Widget Tests', () {
     testWidgets(
-      '1. ViewerHomeHeaderActions renders MoreButton and opens menu correctly',
+      '1. ViewerHomeHeaderActions renders QR share button and opens dialog correctly',
       (tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -37,17 +38,15 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 「…」ボタンが存在すること
-        final moreBtn = find.byIcon(Icons.more_horiz_rounded);
-        expect(moreBtn, findsOneWidget);
+        // QR共有ボタンが存在すること
+        final qrBtn = find.byIcon(Icons.qr_code_2);
+        expect(qrBtn, findsOneWidget);
 
-        // タップしてメニューが展開されること
-        await tester.tap(moreBtn);
+        // タップして共有ダイアログが表示されること
+        await tester.tap(qrBtn);
         await tester.pumpAndSettle();
 
-        expect(find.text('大会を共有する'), findsOneWidget);
-        expect(find.text('表示設定'), findsOneWidget);
-        expect(find.text('観戦ヘルプ・FAQ'), findsOneWidget);
+        expect(find.byType(ViewerShareDialog), findsOneWidget);
       },
     );
 

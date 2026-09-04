@@ -215,5 +215,27 @@ void main() {
         expect(find.text('雷鳴道場中学'), findsNothing);
       },
     );
+
+    testWidgets(
+      '3. TeamMatchStatusScreen: tournamentId存在時にプログラムドックアイコンが表示されること',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [teamProgressListProvider.overrideWithValue([])],
+            child: const MaterialApp(
+              home: TeamMatchStatusScreen(tournamentId: 'tour_test_123'),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 🥋 フローティングプログラムドックボタンが表示されていること
+        expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
+      },
+    );
   });
 }

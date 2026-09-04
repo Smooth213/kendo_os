@@ -13,6 +13,7 @@ import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_table_sections.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_export_bar.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_card_item_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 class ViewerOfficialRecordScreen extends ConsumerWidget {
   final String tournamentId;
@@ -124,6 +125,14 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                 ),
                 title: screenTitle,
                 elevation: 0,
+                actions: [
+                  ProgramHeaderAction(
+                    tournamentId: tournamentId,
+                    isViewerMode: true,
+                    color: headerTextColor,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                ],
                 bottom: TabBar(
                   isScrollable: true,
                   labelColor: headerTextColor,
@@ -136,109 +145,119 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       .toList(),
                 ),
               ),
-              body: TabBarView(
-                children: categories.map((cat) {
-                  final groupKeys = proj.categoryToGroupKeys[cat]!;
+              body: Stack(
+                fit: StackFit.expand,
+                children: [
+                  TabBarView(
+                    children: categories.map((cat) {
+                      final groupKeys = proj.categoryToGroupKeys[cat]!;
 
-                  final sortedGroupKeys = List<String>.from(groupKeys)
-                    ..sort((a, b) {
-                      final aMatches = proj.teamMatches[a]?.matches;
-                      final bMatches = proj.teamMatches[b]?.matches;
-                      if (aMatches == null ||
-                          aMatches.isEmpty ||
-                          bMatches == null ||
-                          bMatches.isEmpty) {
-                        return 0;
-                      }
-                      return aMatches.first.order.compareTo(
-                        bMatches.first.order,
+                      final sortedGroupKeys = List<String>.from(groupKeys)
+                        ..sort((a, b) {
+                          final aMatches = proj.teamMatches[a]?.matches;
+                          final bMatches = proj.teamMatches[b]?.matches;
+                          if (aMatches == null ||
+                              aMatches.isEmpty ||
+                              bMatches == null ||
+                              bMatches.isEmpty) {
+                            return 0;
+                          }
+                          return aMatches.first.order.compareTo(
+                            bMatches.first.order,
+                          );
+                        });
+
+                      return Column(
+                        children: [
+                          ViewerOfficialRecordExportBar(
+                            category: cat,
+                            sortedGroupKeys: sortedGroupKeys,
+                            proj: proj,
+                            tournamentName: tName,
+                            tournamentDate: tDate,
+                            tournamentVenue: tVenue,
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const ClampingScrollPhysics(),
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              itemCount: sortedGroupKeys.length,
+                              itemBuilder: (context, index) {
+                                final groupName = sortedGroupKeys[index];
+                                final teamProj = proj.teamMatches[groupName];
+                                if (teamProj == null) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                final matches = List<MatchListProjection>.from(
+                                  teamProj.matches,
+                                )..sort((a, b) => a.order.compareTo(b.order));
+
+                                // ★ STEP 4/6: matchesが空の場合に matches.first が呼ばれて Bad state で落ちるのを完全に防ぐ防波堤
+                                if (matches.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                if (matches.isNotEmpty &&
+                                    teamProj.isKachinuki) {
+                                  return ViewerOfficialRecordCardItemBuilder.buildKachinukiCard(
+                                    context: context,
+                                    groupName: groupName,
+                                    matches: matches,
+                                    isDark: isDark,
+                                  );
+                                } else if (matches.isNotEmpty &&
+                                    teamProj.isLeague) {
+                                  return ViewerOfficialRecordCardItemBuilder.buildLeagueSection(
+                                    context: context,
+                                    groupName: groupName,
+                                    matches: matches,
+                                    teamProj: teamProj,
+                                    cardColor: cardColor,
+                                    isDark: isDark,
+                                  );
+                                } else if (matches.isNotEmpty &&
+                                    matches.any(
+                                      (m) =>
+                                          m.matchType == 'individual' ||
+                                          m.matchType == '選手' ||
+                                          m.matchType.contains('個人戦'),
+                                    )) {
+                                  // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
+                                  matches.sort(
+                                    (a, b) => a.order.compareTo(b.order),
+                                  );
+                                  // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
+                                  return ViewerOfficialIndividualListCard(
+                                    groupName: groupName,
+                                    matches: matches,
+                                    cardColor: cardColor,
+                                    isDark: isDark,
+                                    applySort: true,
+                                  );
+                                } else {
+                                  // 通常団体戦の描画
+                                  return ViewerOfficialScoreTableCard(
+                                    groupName: groupName,
+                                    matches: matches,
+                                    result: teamProj.result,
+                                    cardColor: cardColor,
+                                    isDark: isDark,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
                       );
-                    });
-
-                  return Column(
-                    children: [
-                      ViewerOfficialRecordExportBar(
-                        category: cat,
-                        sortedGroupKeys: sortedGroupKeys,
-                        proj: proj,
-                        tournamentName: tName,
-                        tournamentDate: tDate,
-                        tournamentVenue: tVenue,
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: const ClampingScrollPhysics(),
-                          padding: const EdgeInsets.all(AppSpacing.sm),
-                          itemCount: sortedGroupKeys.length,
-                          itemBuilder: (context, index) {
-                            final groupName = sortedGroupKeys[index];
-                            final teamProj = proj.teamMatches[groupName];
-                            if (teamProj == null) {
-                              return const SizedBox.shrink();
-                            }
-
-                            final matches = List<MatchListProjection>.from(
-                              teamProj.matches,
-                            )..sort((a, b) => a.order.compareTo(b.order));
-
-                            // ★ STEP 4/6: matchesが空の場合に matches.first が呼ばれて Bad state で落ちるのを完全に防ぐ防波堤
-                            if (matches.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
-
-                            if (matches.isNotEmpty && teamProj.isKachinuki) {
-                              return ViewerOfficialRecordCardItemBuilder.buildKachinukiCard(
-                                context: context,
-                                groupName: groupName,
-                                matches: matches,
-                                isDark: isDark,
-                              );
-                            } else if (matches.isNotEmpty &&
-                                teamProj.isLeague) {
-                              return ViewerOfficialRecordCardItemBuilder.buildLeagueSection(
-                                context: context,
-                                groupName: groupName,
-                                matches: matches,
-                                teamProj: teamProj,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                              );
-                            } else if (matches.isNotEmpty &&
-                                matches.any(
-                                  (m) =>
-                                      m.matchType == 'individual' ||
-                                      m.matchType == '選手' ||
-                                      m.matchType.contains('個人戦'),
-                                )) {
-                              // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
-                              matches.sort(
-                                (a, b) => a.order.compareTo(b.order),
-                              );
-                              // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
-                              return ViewerOfficialIndividualListCard(
-                                groupName: groupName,
-                                matches: matches,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                                applySort: true,
-                              );
-                            } else {
-                              // 通常団体戦の描画
-                              return ViewerOfficialScoreTableCard(
-                                groupName: groupName,
-                                matches: matches,
-                                result: teamProj.result,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                    }).toList(),
+                  ),
+                  FloatingProgramDockButton(
+                    tournamentId: tournamentId,
+                    isViewerMode: true,
+                  ),
+                ],
               ),
             ), // Scaffold
           ), // LiquidBackground

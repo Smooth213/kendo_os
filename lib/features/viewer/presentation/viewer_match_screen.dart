@@ -14,12 +14,14 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -122,6 +124,14 @@ class ViewerMatchScreen extends ConsumerWidget {
                 )
               : null,
           actions: [
+            if (tournamentId.isNotEmpty)
+              ProgramHeaderAction(
+                tournamentId: tournamentId,
+                isViewerMode: true,
+                color: isDark
+                    ? const Color(0xFFFFFFFF)
+                    : context.appColors.primaryAccent,
+              ),
             const ManualHelpButton(
               manualPath: 'docs/manuals/faq/viewer_faq.md',
             ),
@@ -199,6 +209,11 @@ class ViewerMatchScreen extends ConsumerWidget {
                 child: const MatchScoreboard(),
               ),
             ),
+            if (tournamentId.isNotEmpty)
+              FloatingProgramDockButton(
+                tournamentId: tournamentId,
+                isViewerMode: true,
+              ),
           ],
         ),
       ),

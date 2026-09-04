@@ -11,11 +11,23 @@ class ManualMarkdownLoaderService {
         'packages/documentation_runtime/manuals/',
       );
     }
+    if (path.startsWith('manual/') || path.startsWith('manuals/')) {
+      return path.replaceFirst(
+        RegExp(r'^manuals?/'),
+        'packages/documentation_runtime/manuals/',
+      );
+    }
+    if (path.endsWith('manual_index.md') || path.endsWith('index.md')) {
+      return 'packages/documentation_runtime/manuals/manual_index.md';
+    }
     if (path.endsWith('viewer_faq.md')) {
       return 'packages/documentation_runtime/manuals/faq/viewer_faq.md';
     }
     if (path.endsWith('operator_faq.md')) {
       return 'packages/documentation_runtime/manuals/faq/operator_faq.md';
+    }
+    if (!path.startsWith('packages/')) {
+      return 'packages/documentation_runtime/manuals/$path';
     }
     return path;
   }
@@ -27,6 +39,19 @@ class ManualMarkdownLoaderService {
   }) async {
     final resolvedPath = resolvePath(path);
     final rawContent = await rootBundle.loadString(resolvedPath);
+
+    // Web等で存在しないアセットキーに対し index.html が返却された場合の安全防壁
+    if (rawContent.contains('<!DOCTYPE html>') ||
+        rawContent.contains('<script') ||
+        rawContent.contains('IndexedDB 永続化保護')) {
+      // デフォルトのマニュアル目次をロードするフォールバック
+      return loadMarkdownContent(
+        path: 'packages/documentation_runtime/manuals/manual_index.md',
+        searchQuery: searchQuery,
+        initialSearchQuery: initialSearchQuery,
+      );
+    }
+
     // AI用メタデータを取り除く
     String content = rawContent.replaceFirst(
       RegExp(r'^---\s*\n.*?\n---\s*\n', dotAll: true),

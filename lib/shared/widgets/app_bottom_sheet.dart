@@ -26,7 +26,7 @@ Future<T?> showAppBottomSheet<T>({
     enableDrag: enableDrag,
     isDismissible: isDismissible,
     backgroundColor: backgroundColor ?? themeColors.cardBackground,
-    constraints: constraints,
+    constraints: constraints ?? const BoxConstraints(maxWidth: double.infinity),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
     ),

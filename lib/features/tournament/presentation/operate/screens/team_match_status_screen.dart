@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/team_status_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
@@ -14,8 +22,37 @@ enum TeamFilterType { all, liveOnly, waitingOnly }
 /// 🥋 指導者・保護者・生徒向け「チーム試合状況」画面
 class TeamMatchStatusScreen extends ConsumerStatefulWidget {
   final String? tournamentId;
+  final bool isBottomSheet;
+  final VoidCallback? onFullScreen;
 
-  const TeamMatchStatusScreen({super.key, this.tournamentId});
+  const TeamMatchStatusScreen({
+    super.key,
+    this.tournamentId,
+    this.isBottomSheet = false,
+    this.onFullScreen,
+  });
+
+  static Future<void> showAsBottomSheet(
+    BuildContext context, {
+    required String tournamentId,
+    bool isViewerMode = false,
+  }) {
+    final viewerParam = isViewerMode ? '&role=viewer' : '';
+    return showAppBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      enableDrag: false,
+      backgroundColor: AppKendoColors.transparent,
+      builder: (context) => TeamMatchStatusScreen(
+        tournamentId: tournamentId,
+        isBottomSheet: true,
+        onFullScreen: () {
+          Navigator.of(context).pop();
+          context.push('/court-status?tournamentId=$tournamentId$viewerParam');
+        },
+      ),
+    );
+  }
 
   @override
   ConsumerState<TeamMatchStatusScreen> createState() =>
@@ -83,68 +120,103 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
       }
     }).toList();
 
+    final permissions = ref.watch(permissionProvider);
+    final isReadOnly = permissions.isReadOnly;
+
+    final effectiveTournamentId =
+        (widget.tournamentId != null && widget.tournamentId!.isNotEmpty)
+        ? widget.tournamentId!
+        : (ref.watch(currentTournamentIdProvider).isNotEmpty
+              ? ref.watch(currentTournamentIdProvider)
+              : (ref.watch(webCurrentTournamentIdProvider) ?? ''));
+
+    final content = Column(
+      children: [
+        if (widget.isBottomSheet)
+          DockBottomSheetHeader(
+            title: 'チーム試合状況',
+            icon: Icons.groups_rounded,
+            iconColor: AppKendoColors.indigo,
+            onFullScreen: widget.onFullScreen,
+          ),
+        // iOS風サマリーヘッダー & フィルターバー & カテゴリタブ
+        _buildSummaryAndFilterBar(
+          context,
+          isDark,
+          totalLiveCount,
+          totalWaitingCount,
+          teamList,
+          statusFilteredTeams,
+          categories,
+        ),
+        Divider(
+          height: 1,
+          thickness: 0.8,
+          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+        ),
+
+        // 🥋 スワイプ可能なチーム一覧 PageView
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: categories.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemBuilder: (context, catIndex) {
+              final currentCat = categories[catIndex];
+              final filteredList = statusFilteredTeams.where((t) {
+                if (currentCat != 'すべて') {
+                  final cat = t.categoryName.isNotEmpty
+                      ? t.categoryName
+                      : t.currentCourtName;
+                  if (cat != currentCat) return false;
+                }
+                return true;
+              }).toList();
+
+              if (filteredList.isEmpty) {
+                return _buildEmptyState(context);
+              }
+
+              return ListView.builder(
+                key: PageStorageKey('team_status_list_$currentCat'),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.md,
+                  horizontal: AppSpacing.xs,
+                ),
+                itemCount: filteredList.length,
+                itemBuilder: (context, index) {
+                  final teamStatus = filteredList[index];
+                  return TeamStatusCard(status: teamStatus, isDark: isDark);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+
+    if (widget.isBottomSheet) {
+      return DockDraggableSheet(
+        backgroundColor: themeColors.scaffoldBackground,
+        builder: (context, scrollController) => content,
+      );
+    }
+
     return Scaffold(
       backgroundColor: themeColors.scaffoldBackground,
       appBar: const AppHeader(title: 'チーム試合状況'),
-      body: Column(
+      body: Stack(
         children: [
-          // iOS風サマリーヘッダー & フィルターバー & カテゴリタブ
-          _buildSummaryAndFilterBar(
-            context,
-            isDark,
-            totalLiveCount,
-            totalWaitingCount,
-            teamList,
-            statusFilteredTeams,
-            categories,
-          ),
-          Divider(
-            height: 1,
-            thickness: 0.8,
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-          ),
-
-          // 🥋 スワイプ可能なチーム一覧 PageView
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: categories.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              itemBuilder: (context, catIndex) {
-                final currentCat = categories[catIndex];
-                final filteredList = statusFilteredTeams.where((t) {
-                  if (currentCat != 'すべて') {
-                    final cat = t.categoryName.isNotEmpty
-                        ? t.categoryName
-                        : t.currentCourtName;
-                    if (cat != currentCat) return false;
-                  }
-                  return true;
-                }).toList();
-
-                if (filteredList.isEmpty) {
-                  return _buildEmptyState(context);
-                }
-
-                return ListView.builder(
-                  key: PageStorageKey('team_status_list_$currentCat'),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.md,
-                    horizontal: AppSpacing.xs,
-                  ),
-                  itemCount: filteredList.length,
-                  itemBuilder: (context, index) {
-                    final teamStatus = filteredList[index];
-                    return TeamStatusCard(status: teamStatus, isDark: isDark);
-                  },
-                );
-              },
+          content,
+          if (effectiveTournamentId.isNotEmpty)
+            FloatingProgramDockButton(
+              tournamentId: effectiveTournamentId,
+              isViewerMode: isReadOnly,
             ),
-          ),
         ],
       ),
     );

@@ -41,6 +41,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/role
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
     show registeredTeamsProvider;
@@ -417,6 +418,14 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                             whitePlayers: whitePlayers,
                           );
                         },
+                      ),
+                    if ((match.tournamentId?.isNotEmpty ?? false) ||
+                        (tournamentId != null && tournamentId.isNotEmpty))
+                      FloatingProgramDockButton(
+                        tournamentId: match.tournamentId?.isNotEmpty == true
+                            ? match.tournamentId!
+                            : tournamentId!,
+                        isViewerMode: isViewOnly,
                       ),
                   ],
                 ),

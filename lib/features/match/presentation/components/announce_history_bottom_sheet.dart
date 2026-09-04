@@ -12,6 +12,10 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
+
 /// 🌟 既読にしたアナウンスIDのローカル状態を管理・永続化するプロバイダー
 final readAnnouncementsProvider =
     StateNotifierProvider<ReadAnnouncementsNotifier, List<String>>((ref) {
@@ -53,11 +57,13 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
 class AnnounceHistoryBottomSheet extends ConsumerStatefulWidget {
   final String tournamentId;
   final bool isStaffRoom;
+  final bool isFullScreen;
 
   const AnnounceHistoryBottomSheet({
     super.key,
     required this.tournamentId,
     required this.isStaffRoom,
+    this.isFullScreen = false,
   });
 
   static void show(
@@ -68,6 +74,8 @@ class AnnounceHistoryBottomSheet extends ConsumerStatefulWidget {
     showAppBottomSheet(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
+      backgroundColor: AppKendoColors.transparent,
       builder: (context) => AnnounceHistoryBottomSheet(
         tournamentId: tournamentId,
         isStaffRoom: isStaffRoom,
@@ -105,101 +113,94 @@ class _AnnounceHistoryBottomSheetState
     }
 
     final readIds = ref.watch(readAnnouncementsProvider);
+    final title = widget.isStaffRoom ? 'お知らせ (スタッフ専用)' : 'お知らせ一覧';
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1C1C1E)
-            : context.appColors.cardBackground, // クリーンな白ベース
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.roundValue),
-        ),
-      ),
-      child: StreamBuilder<QuerySnapshot>(
-        stream: query.snapshots(),
-        builder: (context, snapshot) {
-          final docs = snapshot.data?.docs ?? [];
-          final allIds = docs.map((d) => d.id).toList();
-          final unreadIds = allIds
-              .where((id) => !readIds.contains(id))
-              .toList();
+    final streamWidget = StreamBuilder<QuerySnapshot>(
+      stream: query.snapshots(),
+      builder: (context, snapshot) {
+        final docs = snapshot.data?.docs ?? [];
+        final allIds = docs.map((d) => d.id).toList();
+        final unreadIds = allIds.where((id) => !readIds.contains(id)).toList();
 
-          return Column(
-            children: [
-              // ボトムシートの引手（インジケータ）
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0x33000000),
-                  borderRadius: AppRadius.micro,
+        final markAllButton = unreadIds.isNotEmpty
+            ? TextButton.icon(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: AppKendoColors.pink,
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: AppSpacing.sm,
+                onPressed: () {
+                  ref
+                      .read(readAnnouncementsProvider.notifier)
+                      .markAllAsRead(unreadIds);
+                },
+                icon: const Icon(Icons.done_all, size: 16),
+                label: const Text(
+                  'すべて既読',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    fontWeight: AppFontWeight.bold,
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.notifications_active_outlined,
-                      color: isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0xFF2C3E50),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        widget.isStaffRoom ? '新着通知一覧 (スタッフ専用)' : '新着通知一覧',
-                        style: TextStyle(
-                          fontSize: AppFontSize.bodyMedium,
-                          fontWeight: AppFontWeight.bold,
-                          color: isDark
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFF2C3E50),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // 🌟 未読があれば「すべて既読にする」ボタンを表示
-                    if (unreadIds.isNotEmpty)
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.xs,
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          foregroundColor: const Color(0xFFFF69B4),
-                        ),
-                        onPressed: () {
-                          ref
-                              .read(readAnnouncementsProvider.notifier)
-                              .markAllAsRead(unreadIds);
-                        },
-                        icon: const Icon(Icons.done_all, size: 18),
-                        label: const Text(
-                          'すべて既読',
-                          style: TextStyle(
-                            fontSize: AppFontSize.small,
-                            fontWeight: AppFontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const Divider(),
-              Expanded(child: _buildList(context, snapshot, readIds)),
-            ],
+              )
+            : null;
+
+        if (widget.isFullScreen) {
+          return Scaffold(
+            backgroundColor: isDark
+                ? const Color(0xFF1C1C1E)
+                : context.appColors.cardBackground,
+            appBar: AppHeader(
+              title: title,
+              actions: [
+                ?markAllButton,
+                const SizedBox(width: AppSpacing.sm),
+              ],
+            ),
+            body: _buildList(context, snapshot, readIds),
           );
-        },
-      ),
+        }
+
+        return Column(
+          children: [
+            DockBottomSheetHeader(
+              title: title,
+              icon: Icons.notifications_active_outlined,
+              iconColor: AppKendoColors.pink,
+              extraActions: markAllButton != null ? [markAllButton] : null,
+              onFullScreen: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (context) => AnnounceHistoryBottomSheet(
+                      tournamentId: widget.tournamentId,
+                      isStaffRoom: widget.isStaffRoom,
+                      isFullScreen: true,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const Divider(height: 1),
+            Expanded(child: _buildList(context, snapshot, readIds)),
+          ],
+        );
+      },
+    );
+
+    if (widget.isFullScreen) {
+      return streamWidget;
+    }
+
+    return DockDraggableSheet(
+      backgroundColor: isDark
+          ? const Color(0xFF1C1C1E)
+          : context.appColors.cardBackground,
+      builder: (context, scrollController) => streamWidget,
     );
   }
 

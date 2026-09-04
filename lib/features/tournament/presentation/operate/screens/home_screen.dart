@@ -5,7 +5,6 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
-import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
@@ -24,6 +23,7 @@ import '../components/home/home_screen_qr_dialog.dart';
 import '../components/home/home_screen_setup_checklist_card.dart';
 import '../components/home/match_timeline_list.dart';
 import '../components/home/operator_action_buttons.dart';
+import '../../components/program_management/floating_program_dock_button.dart';
 import '../providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
@@ -203,10 +203,6 @@ class HomeScreen extends ConsumerWidget {
                             ? AppKendoColors.transparent
                             : themeColors.cardBackground,
                         actions: [
-                          NotificationBellButton(
-                            tournamentId: tournamentId,
-                            isStaffRoom: true,
-                          ),
                           IconButton(
                             icon: Icon(
                               Icons.qr_code_2,
@@ -221,46 +217,55 @@ class HomeScreen extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.sm),
                         ],
                       ),
-                body: MatchTimelineList(
-                  tournamentId: tournamentId,
-                  headerWidgets: [
-                    if (!isReadOnly && allMatchesList.isEmpty)
-                      asyncTournament.maybeWhen(
-                        data: (tournament) {
-                          if (tournament == null) {
-                            return const SizedBox.shrink();
-                          }
-                          return asyncTeams.maybeWhen(
-                            data: (teams) => HomeScreenSetupChecklistCard(
-                              tournament: tournament,
-                              teams: teams,
-                              themeColors: themeColors,
-                              isDark: isDark,
-                              enableLiquidGlass: enableLiquidGlass,
+                body: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    MatchTimelineList(
+                      tournamentId: tournamentId,
+                      headerWidgets: [
+                        if (!isReadOnly && allMatchesList.isEmpty)
+                          asyncTournament.maybeWhen(
+                            data: (tournament) {
+                              if (tournament == null) {
+                                return const SizedBox.shrink();
+                              }
+                              return asyncTeams.maybeWhen(
+                                data: (teams) => HomeScreenSetupChecklistCard(
+                                  tournament: tournament,
+                                  teams: teams,
+                                  themeColors: themeColors,
+                                  isDark: isDark,
+                                  enableLiquidGlass: enableLiquidGlass,
+                                  tournamentId: tournamentId,
+                                ),
+                                orElse: () => const SizedBox.shrink(),
+                              );
+                            },
+                            orElse: () => const SizedBox.shrink(),
+                          ),
+                        HomeScreenCallBanner(
+                          uniqueInProgress: uniqueInProgress,
+                          uniqueWaiting: uniqueWaiting,
+                          themeColors: themeColors,
+                          isDark: isDark,
+                          enableLiquidGlass: enableLiquidGlass,
+                        ),
+                        if (!isReadOnly)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
+                              vertical: 2.0,
+                            ),
+                            child: OperatorActionButtons(
                               tournamentId: tournamentId,
                             ),
-                            orElse: () => const SizedBox.shrink(),
-                          );
-                        },
-                        orElse: () => const SizedBox.shrink(),
-                      ),
-                    HomeScreenCallBanner(
-                      uniqueInProgress: uniqueInProgress,
-                      uniqueWaiting: uniqueWaiting,
-                      themeColors: themeColors,
-                      isDark: isDark,
-                      enableLiquidGlass: enableLiquidGlass,
+                          ),
+                      ],
                     ),
-                    if (!isReadOnly)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: 2.0,
-                        ),
-                        child: OperatorActionButtons(
-                          tournamentId: tournamentId,
-                        ),
-                      ),
+                    FloatingProgramDockButton(
+                      tournamentId: tournamentId,
+                      isViewerMode: isReadOnly,
+                    ),
                   ],
                 ),
               ),

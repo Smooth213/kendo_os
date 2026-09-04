@@ -20,14 +20,8 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import '../helpers/clipboard_program_helper.dart';
 import '../providers/permission_provider.dart';
-
-final programListProvider = StreamProvider.family<List<ProgramModel>, String>((
-  ref,
-  tournamentId,
-) {
-  final repository = ref.watch(programRepositoryProvider);
-  return repository.watchPrograms(tournamentId);
-});
+import '../providers/program_list_provider.dart';
+export '../providers/program_list_provider.dart';
 
 class ProgramManagementScreen extends ConsumerStatefulWidget {
   final String tournamentId;

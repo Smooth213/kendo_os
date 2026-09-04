@@ -208,7 +208,7 @@ void main() {
     );
 
     testWidgets(
-      '5. 観戦席ホーム画面(ViewerHomeScreen)が375pt幅端末で「大会ホーム (観客席)」タイトルを広々と描画し、Moreメニューに共有・設定・FAQが集約されていること',
+      '5. 観戦席ホーム画面(ViewerHomeScreen)が375pt幅端末で「大会ホーム (観客席)」タイトルを広々と描画し、QR共有ボタンが配置されていること',
       (tester) async {
         tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
         tester.view.devicePixelRatio = 2.0;
@@ -244,16 +244,8 @@ void main() {
         // タイトルが文字切れせず描画されていること
         expect(find.text('大会ホーム (観客席)'), findsOneWidget);
 
-        // Moreメニューボタンが存在すること
-        expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
-
-        // Moreメニューをタップして展開
-        await tester.tap(find.byIcon(Icons.more_horiz_rounded));
-        await tester.pumpAndSettle();
-
-        expect(find.text('大会を共有する'), findsOneWidget);
-        expect(find.text('表示設定'), findsOneWidget);
-        expect(find.text('観戦ヘルプ・FAQ'), findsOneWidget);
+        // QR共有ボタンが存在すること
+        expect(find.byIcon(Icons.qr_code_2), findsOneWidget);
       },
     );
 
