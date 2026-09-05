@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
@@ -152,6 +154,10 @@ void main() {
   });
 
   setUp(() async {
+    ProgramViewerMediaCache.shared.clear();
+    ProgramViewerPdfPageCache.shared.clear();
+    HttpOverrides.global = MockHttpOverrides(mockClient);
+
     mockStrokeRepo = MockStrokeRepository();
     mockLocalStrokeRepo = MockLocalStrokeRepository();
     mockProgramRepo = MockProgramRepository();
@@ -358,7 +364,7 @@ void main() {
         id: 'pdf-prog-stack',
         tournamentId: 'tourney-test',
         title: '大会要項PDF',
-        fileUrl: 'https://example.com/test.pdf',
+        fileUrl: 'https://example.com/test_stack_unique.pdf',
         fileType: 'pdf',
         pageCount: 1,
         createdAt: DateTime.now(),
@@ -372,27 +378,24 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      // ProgramViewerCanvasOverlay と SfPdfViewer が同一の親 Stack 内で同居していること
       final overlayFinder = find.byType(ProgramViewerCanvasOverlay);
       expect(overlayFinder, findsOneWidget);
 
-      final parentStackFinder = find.ancestor(
+      final pdfViewerFinder = find.byType(SfPdfViewer);
+      expect(pdfViewerFinder, findsOneWidget);
+
+      // overlayFinder と pdfViewerFinder が用紙キャンバスの同一 Stack 内に同居していること
+      final canvasStackFinder = find.ancestor(
         of: overlayFinder,
         matching: find.byType(Stack),
       );
-      expect(parentStackFinder, findsWidgets);
-
-      final pdfViewerInSameStack = find.descendant(
-        of: parentStackFinder.first,
-        matching: find.byType(SfPdfViewer),
-      );
+      expect(canvasStackFinder, findsWidgets);
+      final directParentStack = canvasStackFinder.first;
       expect(
-        pdfViewerInSameStack,
-        findsOneWidget,
-        reason: 'PDF用紙と手書きペンは同じStack内に一体配置されていなければなりません',
-      );
-      expect(
-        overlayFinder,
+        find.descendant(
+          of: directParentStack,
+          matching: find.byType(SfPdfViewer),
+        ),
         findsOneWidget,
         reason: 'PDF用紙と手書きペンは同じStack内に一体配置されていなければなりません',
       );

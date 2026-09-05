@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
@@ -138,6 +140,9 @@ void main() {
     });
 
     setUp(() async {
+      ProgramViewerMediaCache.shared.clear();
+      ProgramViewerPdfPageCache.shared.clear();
+
       mockStrokeRepo = MockStrokeRepository();
       mockLocalStrokeRepo = MockLocalStrokeRepository();
       mockProgramRepo = MockProgramRepository();
@@ -153,6 +158,8 @@ void main() {
       when(
         () => mockHttpClientForDio.openUrl(any(), any()),
       ).thenAnswer((_) async => mockHttpClientRequest);
+
+      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
 
       SharedPreferences.setMockInitialValues({});
       prefs = await SharedPreferences.getInstance();
@@ -170,6 +177,8 @@ void main() {
 
     tearDown(() {
       HttpOverrides.global = null;
+      ProgramViewerMediaCache.shared.clear();
+      ProgramViewerPdfPageCache.shared.clear();
     });
 
     Widget createViewerWidget(
@@ -201,7 +210,7 @@ void main() {
     }
 
     testWidgets('✅ 1. PDFがRenderFlexオーバーフローエラーを起こさずに描画されること', (tester) async {
-      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+      addTearDown(tester.view.resetPhysicalSize);
 
       // OverflowBox と ClipRect の効果を検証
       tester.view.physicalSize = const Size(1080, 1920);
@@ -228,7 +237,6 @@ void main() {
       expect(find.byType(SfPdfViewer), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 500));
-      HttpOverrides.global = null;
     });
 
     testWidgets('✅ 2. Web特有のCORS回避: 画像読み込みが無限クルクルにならずフォールバックされること', (
@@ -397,7 +405,6 @@ void main() {
     });
 
     testWidgets('✅ 7. 消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
-      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
       final program = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -459,13 +466,11 @@ void main() {
     });
 
     testWidgets('✅ 8. PDFの2重ロード（フェッチ）防止キャッシュの動作検証', (tester) async {
-      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
-
       final pdfProgram = ProgramModel(
         id: 'pdf_1',
         tournamentId: 't1',
         title: '大会進行表 (PDF)',
-        fileUrl: 'https://example.com/dummy.pdf',
+        fileUrl: 'https://example.com/dummy_cache_isolated.pdf',
         fileType: 'pdf',
         pageCount: 1,
         createdAt: DateTime.now(),
@@ -483,17 +488,17 @@ void main() {
       // あらかじめキャッシュにダミー Future をセットして FirebaseStorage の実際の呼び出しを回避
       final dummyFuture = Future.value(Uint8List(0));
       state.setState(() {
-        state.sdkPdfBytesCacheForTesting['https://example.com/dummy.pdf'] =
+        state.sdkPdfBytesCacheForTesting['https://example.com/dummy_cache_isolated.pdf'] =
             dummyFuture;
       });
       await tester.pump();
 
       // 同一URLに対するキャッシュ呼び出しが同じ Future インスタンスを返すことを検証
       final future1 = state.getCachedPdfBytesViaSdk(
-        'https://example.com/dummy.pdf',
+        'https://example.com/dummy_cache_isolated.pdf',
       );
       final future2 = state.getCachedPdfBytesViaSdk(
-        'https://example.com/dummy.pdf',
+        'https://example.com/dummy_cache_isolated.pdf',
       );
 
       expect(future1, equals(dummyFuture));
@@ -501,12 +506,9 @@ void main() {
 
       await tester.pump(const Duration(seconds: 1)); // タイマー消化
       await tester.pump(const Duration(milliseconds: 500));
-      HttpOverrides.global = null;
     });
 
     testWidgets('✅ 9. PDFの複数ページの個別ページ数管理（スワイプ時の競合防止）の検証', (tester) async {
-      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
-
       final program1 = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -553,14 +555,11 @@ void main() {
       );
 
       await tester.pump(const Duration(seconds: 1)); // タイマー消化
-      HttpOverrides.global = null;
     });
 
     testWidgets('✅ 10. 画像共有の適切な実施 (プログラム追加によるリアルタイムでのリスト自動更新) の検証', (
       tester,
     ) async {
-      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
-
       final streamController = StreamController<List<ProgramModel>>.broadcast();
       addTearDown(() => streamController.close());
       when(
@@ -608,14 +607,11 @@ void main() {
       expect(pageView2.childrenDelegate.estimatedChildCount, equals(2));
 
       await tester.pump(const Duration(seconds: 1)); // タイマー完全消化
-      HttpOverrides.global = null;
     });
 
     testWidgets(
       '✅ 11. ピンチズーム（拡大）中に PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
       (tester) async {
-        HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
-
         final program = ProgramModel(
           id: 'p1',
           tournamentId: 't1',
@@ -650,7 +646,6 @@ void main() {
         expect(zoomedPageView.physics, isA<NeverScrollableScrollPhysics>());
 
         await tester.pump(const Duration(seconds: 1)); // タイマー消化
-        HttpOverrides.global = null;
       },
     );
 
@@ -710,7 +705,6 @@ void main() {
     testWidgets(
       '✅ 13. 観客ビュアー(Viewer)権限では、表示されている共有ペンは消しゴムで削除できず、個人ペンのみ削除対象となること',
       (tester) async {
-        HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
         final program = ProgramModel(
           id: 'p_viewer_erase',
           tournamentId: 't1',

@@ -7,8 +7,16 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/prog
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    ProgramViewerMediaCache.shared.clear();
+    ProgramViewerPdfPageCache.shared.clear();
+  });
 
   final dummyPrograms = [
     ProgramModel(

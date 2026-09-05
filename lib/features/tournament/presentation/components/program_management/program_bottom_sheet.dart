@@ -60,7 +60,7 @@ class ProgramBottomSheet extends ConsumerStatefulWidget {
 
 class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
   late int _currentIndex;
-  final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache();
+  final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache.shared;
   late PdfViewerController _pdfController;
   int _pageNumber = 1;
   int _pageCount = 0;

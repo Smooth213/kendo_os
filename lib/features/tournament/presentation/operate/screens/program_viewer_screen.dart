@@ -73,7 +73,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
       _selectedPenColor == AppKendoColors.pink ||
       _selectedPenColor == _yellowPenColor;
 
-  final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache();
+  final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache.shared;
 
   @visibleForTesting
   Map<String, Future<Uint8List>> get sdkPdfBytesCacheForTesting =>
