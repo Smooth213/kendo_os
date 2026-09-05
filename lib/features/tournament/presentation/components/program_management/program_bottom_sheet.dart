@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -242,17 +243,53 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
                   children: [
                     Positioned.fill(
                       child: IgnorePointer(
-                        child: SfPdfViewer.network(
-                          program.fileUrl,
-                          key: ValueKey(program.fileUrl),
-                          initialPageNumber: 1,
-                          pageLayoutMode: PdfPageLayoutMode.single,
-                          canShowScrollHead: false,
-                          canShowScrollStatus: false,
-                          canShowPaginationDialog: false,
-                          enableDoubleTapZooming: false,
-                          enableTextSelection: false,
-                        ),
+                        child: kIsWeb
+                            ? FutureBuilder<Uint8List>(
+                                future: _mediaCache.getCachedPdfBytesViaSdk(
+                                  program.fileUrl,
+                                ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Center(
+                                      child: Text(
+                                        'PDFロード失敗: ${snapshot.error}',
+                                        style: const TextStyle(
+                                          color: AppKendoColors.redAccent,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  if (!snapshot.hasData) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppKendoColors.ipponGold,
+                                      ),
+                                    );
+                                  }
+                                  return SfPdfViewer.memory(
+                                    snapshot.data!,
+                                    key: ValueKey(program.fileUrl),
+                                    initialPageNumber: 1,
+                                    pageLayoutMode: PdfPageLayoutMode.single,
+                                    canShowScrollHead: false,
+                                    canShowScrollStatus: false,
+                                    canShowPaginationDialog: false,
+                                    enableDoubleTapZooming: false,
+                                    enableTextSelection: false,
+                                  );
+                                },
+                              )
+                            : SfPdfViewer.network(
+                                program.fileUrl,
+                                key: ValueKey(program.fileUrl),
+                                initialPageNumber: 1,
+                                pageLayoutMode: PdfPageLayoutMode.single,
+                                canShowScrollHead: false,
+                                canShowScrollStatus: false,
+                                canShowPaginationDialog: false,
+                                enableDoubleTapZooming: false,
+                                enableTextSelection: false,
+                              ),
                       ),
                     ),
                     Positioned.fill(
@@ -313,29 +350,40 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: Image.network(
-                          _mediaCache.getSafeUrl(program.fileUrl),
-                          fit: BoxFit.fill,
-                          errorBuilder: (context, _, _) => Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.broken_image,
-                                  size: 48,
-                                  color: AppKendoColors.grey,
-                                ),
-                                const SizedBox(height: AppSpacing.sm),
-                                Text(
-                                  '画像を読み込めませんでした',
-                                  style: TextStyle(
-                                    color: themeColors.subTextColor,
+                        child: program.fileUrl.contains('example.com')
+                            ? Container(
+                                color: themeColors.cardBackground,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.image,
+                                    size: 64,
+                                    color: themeColors.primaryAccent,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
+                              )
+                            : Image.network(
+                                _mediaCache.getSafeUrl(program.fileUrl),
+                                fit: BoxFit.fill,
+                                errorBuilder: (context, _, _) => Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.broken_image,
+                                        size: 48,
+                                        color: AppKendoColors.grey,
+                                      ),
+                                      const SizedBox(height: AppSpacing.sm),
+                                      Text(
+                                        '画像を読み込めませんでした',
+                                        style: TextStyle(
+                                          color: themeColors.subTextColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                       ),
                       Positioned.fill(
                         child: ProgramStrokeLayer(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/manual_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart';
@@ -75,6 +77,7 @@ class _FloatingProgramDockButtonState
 
   @override
   void dispose() {
+    FloatingDockSheetManager.close(immediate: true);
     _animController.dispose();
     super.dispose();
   }
@@ -114,10 +117,12 @@ class _FloatingProgramDockButtonState
         label: 'プログラム',
         onTap: () {
           _collapse();
-          ProgramBottomSheet.show(
-            context,
-            tournamentId: widget.tournamentId,
-            isViewerMode: widget.isViewerMode,
+          FloatingDockSheetManager.show(
+            context: context,
+            builder: (_) => ProgramBottomSheet(
+              tournamentId: widget.tournamentId,
+              isViewerMode: widget.isViewerMode,
+            ),
           );
         },
       ),
@@ -127,10 +132,18 @@ class _FloatingProgramDockButtonState
         label: '試合状況',
         onTap: () {
           _collapse();
-          TeamMatchStatusScreen.showAsBottomSheet(
-            context,
-            tournamentId: widget.tournamentId,
-            isViewerMode: widget.isViewerMode,
+          FloatingDockSheetManager.show(
+            context: context,
+            builder: (_) => TeamMatchStatusScreen(
+              tournamentId: widget.tournamentId,
+              isBottomSheet: true,
+              onFullScreen: () {
+                FloatingDockSheetManager.close(immediate: true);
+                context.push(
+                  '/team-match-status?id=${widget.tournamentId}&viewer=${widget.isViewerMode}',
+                );
+              },
+            ),
           );
         },
       ),
@@ -140,10 +153,18 @@ class _FloatingProgramDockButtonState
         label: '対戦表',
         onTap: () {
           _collapse();
-          OfficialRecordScreen.showAsBottomSheet(
-            context,
-            tournamentId: widget.tournamentId,
-            isViewerMode: widget.isViewerMode,
+          FloatingDockSheetManager.show(
+            context: context,
+            builder: (_) => OfficialRecordScreen(
+              tournamentId: widget.tournamentId,
+              isBottomSheet: true,
+              onFullScreen: () {
+                FloatingDockSheetManager.close(immediate: true);
+                context.push(
+                  '/official-record?id=${widget.tournamentId}&viewer=${widget.isViewerMode}',
+                );
+              },
+            ),
           );
         },
       ),
@@ -153,7 +174,11 @@ class _FloatingProgramDockButtonState
         label: 'クイックメモ',
         onTap: () {
           _collapse();
-          QuickMemoBottomSheet.show(context, tournamentId: widget.tournamentId);
+          FloatingDockSheetManager.show(
+            context: context,
+            builder: (_) =>
+                QuickMemoBottomSheet(tournamentId: widget.tournamentId),
+          );
         },
       ),
       DockSubItem(
@@ -163,10 +188,12 @@ class _FloatingProgramDockButtonState
         badgeCount: unreadCount,
         onTap: () {
           _collapse();
-          AnnounceHistoryBottomSheet.show(
-            context,
-            widget.tournamentId,
-            !widget.isViewerMode,
+          FloatingDockSheetManager.show(
+            context: context,
+            builder: (_) => AnnounceHistoryBottomSheet(
+              tournamentId: widget.tournamentId,
+              isStaffRoom: !widget.isViewerMode,
+            ),
           );
         },
       ),
@@ -176,7 +203,11 @@ class _FloatingProgramDockButtonState
         label: 'ヘルプ',
         onTap: () {
           _collapse();
-          ManualBottomSheet.show(context, isViewerMode: widget.isViewerMode);
+          FloatingDockSheetManager.show(
+            context: context,
+            builder: (_) =>
+                ManualBottomSheet(isViewerMode: widget.isViewerMode),
+          );
         },
       ),
       DockSubItem(
@@ -188,7 +219,16 @@ class _FloatingProgramDockButtonState
           if (widget.isViewerMode) {
             ViewerSettingsBottomSheet.show(context);
           } else {
-            SettingsScreen.showAsBottomSheet(context);
+            FloatingDockSheetManager.show(
+              context: context,
+              builder: (_) => SettingsScreen(
+                isBottomSheet: true,
+                onFullScreen: () {
+                  FloatingDockSheetManager.close(immediate: true);
+                  context.push('/settings');
+                },
+              ),
+            );
           }
         },
       ),
@@ -388,6 +428,8 @@ class _FloatingProgramDockButtonState
       onTap: () {
         if (_isDocked) {
           _toggleDock();
+        } else if (FloatingDockSheetManager.isOpen) {
+          FloatingDockSheetManager.close();
         } else {
           _toggleExpand();
         }

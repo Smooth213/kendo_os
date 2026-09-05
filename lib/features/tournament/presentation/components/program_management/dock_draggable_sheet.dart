@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -10,6 +11,7 @@ class DockSheetScope extends InheritedWidget {
   final VoidCallback expand;
   final VoidCallback half;
   final VoidCallback toggle;
+  final VoidCallback close;
   final void Function(DragUpdateDetails details) onDragUpdate;
   final void Function(DragEndDetails details) onDragEnd;
 
@@ -19,6 +21,7 @@ class DockSheetScope extends InheritedWidget {
     required this.expand,
     required this.half,
     required this.toggle,
+    required this.close,
     required this.onDragUpdate,
     required this.onDragEnd,
     required super.child,
@@ -44,6 +47,7 @@ class DockDraggableSheet extends StatefulWidget {
   final double minChildSize;
   final double maxChildSize;
   final Color? backgroundColor;
+  final VoidCallback? onClose;
 
   const DockDraggableSheet({
     super.key,
@@ -52,6 +56,7 @@ class DockDraggableSheet extends StatefulWidget {
     this.minChildSize = 0.25,
     this.maxChildSize = 0.95,
     this.backgroundColor,
+    this.onClose,
   });
 
   @override
@@ -127,13 +132,23 @@ class _DockDraggableSheetState extends State<DockDraggableSheet>
     });
   }
 
+  void _close() {
+    AppHaptics.light();
+    if (widget.onClose != null) {
+      widget.onClose!();
+    } else if (FloatingDockSheetManager.isOpen) {
+      FloatingDockSheetManager.close();
+    } else if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
   void _onVerticalDragEnd(DragEndDetails details, double screenHeight) {
     final velocityY = details.primaryVelocity ?? 0.0;
 
     // 下向きの強いフリック、または閾値（40%未満）を下回ったら閉じる
     if (velocityY > 400 || _currentHeightFactor < 0.40) {
-      AppHaptics.light();
-      Navigator.of(context).pop();
+      _close();
       return;
     }
 
@@ -168,6 +183,7 @@ class _DockDraggableSheetState extends State<DockDraggableSheet>
       expand: _expand,
       half: _half,
       toggle: _toggleExpand,
+      close: _close,
       onDragUpdate: (details) =>
           _onVerticalDragUpdate(details, screenSize.height),
       onDragEnd: (details) => _onVerticalDragEnd(details, screenSize.height),
@@ -175,58 +191,61 @@ class _DockDraggableSheetState extends State<DockDraggableSheet>
         alignment: Alignment.bottomCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960),
-          child: Container(
-            height: currentHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: effectiveBgColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.largeValue),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppKendoColors.pureBlack.withValues(alpha: 0.25),
-                  blurRadius: 16,
-                  offset: const Offset(0, -4),
+          child: Material(
+            color: AppKendoColors.transparent,
+            child: Container(
+              height: currentHeight,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: effectiveBgColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppRadius.largeValue),
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // 👆 最上部のドラッグ感知エリア（ドラッグハンドル）
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onVerticalDragUpdate: (details) =>
-                      _onVerticalDragUpdate(details, screenSize.height),
-                  onVerticalDragEnd: (details) =>
-                      _onVerticalDragEnd(details, screenSize.height),
-                  onTap: _toggleExpand,
-                  child: Container(
-                    width: double.infinity,
-                    height: 28,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 44,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: themeColors.separatorColor,
-                          borderRadius: AppRadius.full,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppKendoColors.pureBlack.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // 👆 最上部のドラッグ感知エリア（ドラッグハンドル）
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onVerticalDragUpdate: (details) =>
+                        _onVerticalDragUpdate(details, screenSize.height),
+                    onVerticalDragEnd: (details) =>
+                        _onVerticalDragEnd(details, screenSize.height),
+                    onTap: _toggleExpand,
+                    child: Container(
+                      width: double.infinity,
+                      height: 28,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 44,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: themeColors.separatorColor,
+                            borderRadius: AppRadius.full,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                // コンテンツエリア
-                Expanded(
-                  child: Builder(
-                    builder: (innerContext) =>
-                        widget.builder(innerContext, _scrollController),
+                  // コンテンツエリア
+                  Expanded(
+                    child: Builder(
+                      builder: (innerContext) =>
+                          widget.builder(innerContext, _scrollController),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

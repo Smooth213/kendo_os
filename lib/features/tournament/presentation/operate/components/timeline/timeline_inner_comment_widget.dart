@@ -83,15 +83,29 @@ class TimelineInnerCommentWidget extends StatelessWidget {
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
           children: [
-            SlidableAction(
+            CustomSlidableAction(
               onPressed: (ctx) =>
                   TimelineEditCommentDialog.show(context, ref, comment),
               backgroundColor: AppKendoColors.blueAccent,
               foregroundColor: AppKendoColors.pureWhite,
-              icon: Icons.edit,
-              label: '編集',
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit, size: 16, color: AppKendoColors.pureWhite),
+                  SizedBox(width: AppSpacing.xs),
+                  Text(
+                    '編集',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: AppKendoColors.pureWhite,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SlidableAction(
+            CustomSlidableAction(
               onPressed: (ctx) async {
                 final confirm = await showAppDialog<bool>(
                   context: context,
@@ -139,11 +153,25 @@ class TimelineInnerCommentWidget extends StatelessWidget {
               },
               backgroundColor: AppKendoColors.redAccent,
               foregroundColor: AppKendoColors.pureWhite,
-              icon: Icons.delete,
               borderRadius: const BorderRadius.horizontal(
                 right: Radius.circular(AppRadius.smallValue),
               ),
-              label: '削除',
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.delete, size: 16, color: AppKendoColors.pureWhite),
+                  SizedBox(width: AppSpacing.xs),
+                  Text(
+                    '削除',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: AppKendoColors.pureWhite,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

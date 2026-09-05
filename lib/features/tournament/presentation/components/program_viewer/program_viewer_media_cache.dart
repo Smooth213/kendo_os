@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 /// プログラムビューワー用の画像サイズ取得・PDFバイトキャッシュヘルパー
 class ProgramViewerMediaCache {
+  static final ProgramViewerMediaCache shared = ProgramViewerMediaCache();
+
   final Map<String, Future<Size>> imageSizeCache = {};
   final Map<String, Future<Uint8List>> sdkPdfBytesCache = {};
   final int sessionBuster = DateTime.now().millisecondsSinceEpoch;
@@ -28,6 +30,9 @@ class ProgramViewerMediaCache {
   Future<Size> fetchImageSize(String url) async {
     if (url.isEmpty || url.contains('placehold.co')) {
       return const Size(400, 600);
+    }
+    if (url.contains('example.com')) {
+      return const Size(800, 1000);
     }
     final Completer<Size> completer = Completer();
     final safeUrl = getSafeUrl(url);

@@ -123,7 +123,9 @@ class DockBottomSheetHeader extends StatelessWidget {
                   AppHaptics.light();
                   if (onClose != null) {
                     onClose!();
-                  } else {
+                  } else if (sheetScope != null) {
+                    sheetScope.close();
+                  } else if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();
                   }
                 },
