@@ -35,6 +35,17 @@ class ViewerHomeHeaderActions extends ConsumerWidget {
           isStaffRoom: false,
           color: iconColor,
         ),
+        IconButton(
+          icon: Icon(Icons.qr_code_2, color: iconColor),
+          tooltip: '大会を共有する',
+          onPressed: () {
+            ViewerShareDialog.show(
+              context,
+              tournamentId: tournamentId,
+              dojoId: ref.read(currentDojoIdProvider),
+            );
+          },
+        ),
         PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz_rounded, color: iconColor, size: 26),
           tooltip: 'メニュー',

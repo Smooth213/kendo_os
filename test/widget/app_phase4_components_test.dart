@@ -88,7 +88,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('表示設定'), findsOneWidget);
-      expect(find.text('すりガラス効果'), findsOneWidget);
+      expect(find.text('省エネモード（背景アニメーション停止）'), findsOneWidget);
       expect(find.byType(AppSwitch), findsOneWidget);
     });
   });

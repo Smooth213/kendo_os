@@ -81,7 +81,7 @@ void main() {
       expect(find.byIcon(Icons.open_in_full_rounded), findsWidgets);
     });
 
-    testWidgets('ViewerSettingsBottomSheet が表示設定と全画面ボタンを表示すること', (
+    testWidgets('ViewerSettingsBottomSheet が表示設定とテーマ切り替えを表示すること', (
       tester,
     ) async {
       final prefs = await SharedPreferences.getInstance();
@@ -96,7 +96,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('表示設定'), findsOneWidget);
-      expect(find.byIcon(Icons.open_in_full_rounded), findsOneWidget);
       expect(find.text('テーマの切り替え'), findsOneWidget);
     });
 

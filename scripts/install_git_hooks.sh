@@ -55,7 +55,15 @@ flutter analyze || {
     exit 1
 }
 
-echo "✅ pre-commit 全15大ガバナンス監査・静的解析・フォーマット自動修復完了"
+echo "🛡️ 全単体・ウィジェットテストを実行中（ゼロ破損完全保証）..."
+python3 scripts/run_flutter_tests.py --skip-governance || {
+    echo ""
+    echo "🚨 【コミット拒否】テストエラーが検出されました。"
+    echo "   すべてのテストをパスするまでコミットは中止されます。"
+    exit 1
+}
+
+echo "✅ pre-commit 全15大ガバナンス監査・静的解析・全テスト・フォーマット完了"
 exit 0
 EOF
 

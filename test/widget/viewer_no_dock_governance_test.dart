@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
+import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_match_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_bunaiksen_home_screen.dart';
@@ -106,5 +107,35 @@ void main() {
       // メニューアイコン（PopupMenuButton）が存在すること
       expect(find.byType(PopupMenuButton<String>), findsOneWidget);
     });
+
+    testWidgets(
+      '4. ViewerSettingsBottomSheet に「省エネモード」「サーマル冷却」「サンシャイン」が正しく描画されること',
+      (tester) async {
+        await tester.pumpWidget(
+          RenderingSafetyTestHelper.buildTestWidget(
+            child: const ViewerSettingsBottomSheet(),
+            role: UserRole.viewer,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // タイトル
+        expect(find.text('表示設定'), findsOneWidget);
+        // テーマの切り替えタイル
+        expect(find.text('テーマの切り替え'), findsOneWidget);
+        // 省エネモード（背景アニメーション停止）
+        expect(find.text('省エネモード（背景アニメーション停止）'), findsOneWidget);
+        expect(find.byIcon(Icons.eco), findsOneWidget);
+        // サーマル冷却・省電力制御
+        expect(find.text('サーマル冷却・省電力制御'), findsOneWidget);
+        expect(find.byIcon(Icons.shield_rounded), findsOneWidget);
+        expect(find.byType(ThermalStatusBadge), findsOneWidget);
+        // ドロップダウンを展開してサンシャインモードが存在すること
+        await tester.tap(find.text('📱 端末連動'));
+        await tester.pumpAndSettle();
+        expect(find.text('☀️ サンシャイン'), findsWidgets);
+      },
+    );
   });
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_switch.dart';
+import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 
-/// 🥋 観客用 表示設定ボトムシート (Liquid Glass & テーマ切り替え)
+/// 🥋 観客用 表示設定ボトムシート (省エネ・サーマル・サンシャイン対応)
 class ViewerSettingsBottomSheet extends ConsumerWidget {
   const ViewerSettingsBottomSheet({super.key});
 
@@ -22,13 +24,18 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final Color dynamicTextColor = context.appColors.textColor;
 
     return AppBottomSheetContent(
       showDragHandle: true,
       title: '表示設定',
       padding: const EdgeInsets.only(
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
         bottom: AppSpacing.xxl,
       ),
       child: SafeArea(
@@ -37,104 +44,70 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  const Icon(Icons.palette_outlined),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'テーマの切り替え',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: AppSpacing.md),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppKendoColors.grey.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: AppRadius.small,
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: settings.themeMode,
-                    isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'system',
-                        child: Text('📱 システム設定に従う'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'light',
-                        child: Text('☀️ ライトモード'),
-                      ),
-                      DropdownMenuItem(value: 'dark', child: Text('🌙 ダークモード')),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-                        notifier.state = notifier.state.copyWith(
-                          themeMode: value,
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                '・システム: お使いの端末の設定に自動で連動します。\n'
-                '・ライト: 明るく見やすい標準的なデザインです。\n'
-                '・ダーク: 暗い背景で目に優しく、バッテリー消費も抑えます。',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              Row(
+              SettingsBlock(
+                enableLiquidGlass: settings.enableLiquidGlass,
+                themeColors: themeColors,
                 children: [
-                  const Icon(Icons.auto_awesome),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'すりガラス効果',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  SettingsListTile(
+                    title: 'テーマの切り替え',
+                    icon: Icons.palette_outlined,
+                    iconBgColor: AppKendoColors.blueAccent,
+                    trailing: DropdownButton<String>(
+                      value: settings.themeMode,
+                      isDense: true,
+                      underline: const SizedBox(),
+                      borderRadius: AppRadius.medium,
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: dynamicTextColor,
+                      ),
+                      style: TextStyle(
+                        color: dynamicTextColor,
                         fontWeight: AppFontWeight.bold,
+                        fontSize: AppFontSize.body,
                       ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'system',
+                          child: Text('📱 端末連動'),
+                        ),
+                        DropdownMenuItem(value: 'light', child: Text('☀️ ライト')),
+                        DropdownMenuItem(value: 'dark', child: Text('🌙 ダーク')),
+                        DropdownMenuItem(
+                          value: 'sunshine',
+                          child: Text('☀️ サンシャイン'),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          notifier.updateField(themeMode: val);
+                        }
+                      },
                     ),
                   ),
-                  AppSwitch(
-                    value: settings.enableLiquidGlass,
-                    onChanged: (value) {
-                      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-                      notifier.state = notifier.state.copyWith(
-                        enableLiquidGlass: value,
-                      );
-                    },
+                  SettingsSwitchTile(
+                    title: '省エネモード（背景アニメーション停止）',
+                    value: !settings.enableLiquidGlass,
+                    onChanged: (val) =>
+                        notifier.updateField(enableLiquidGlass: !val),
+                    icon: Icons.eco,
+                    iconBgColor: AppKendoColors.green,
+                  ),
+                  SettingsListTile(
+                    title: 'サーマル冷却・省電力制御',
+                    icon: Icons.shield_rounded,
+                    iconBgColor: AppKendoColors.teal,
+                    subtitle: '猛暑体育館での熱暴走・バッテリー枯渇を自動防止',
+                    trailing: const ThermalStatusBadge(isSwitchSize: true),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                '・背景の試合状況が美しく透けて見えるモダンなデザインになります。\n'
-                '・動作が重く感じる場合や、古い端末をお使いの場合は「OFF」にするとパフォーマンスが向上します。',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
+              const SizedBox(height: AppSpacing.sm),
+              const SettingsSectionFooter(
+                text:
+                    '☀️ サンシャインモードは直射日光や反射光に負けない最高コントラストを提供します。\n'
+                    '省エネモードをオンにすると背景アニメーションを停止し、端末の熱暴走とバッテリー急減を防止します。',
               ),
               const SizedBox(height: AppSpacing.lg),
             ],

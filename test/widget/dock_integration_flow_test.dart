@@ -221,7 +221,7 @@ void main() {
       expect(find.byType(SettingsScreen), findsNothing);
     });
 
-    testWidgets('観客モード（ViewerMode）時に表示設定ボトムシートが起動し拡大できること', (tester) async {
+    testWidgets('観客モード（ViewerMode）時に表示設定ボトムシートが起動すること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -246,12 +246,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ViewerSettingsBottomSheet), findsOneWidget);
-
-      // 拡大ボタンで全開になること
-      await tester.tap(find.byIcon(Icons.expand_less_rounded));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
+      expect(find.text('表示設定'), findsOneWidget);
     });
   });
 }
