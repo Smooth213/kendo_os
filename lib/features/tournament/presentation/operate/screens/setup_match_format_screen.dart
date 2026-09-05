@@ -26,6 +26,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_sync_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_state_initializer.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_preset_helper.dart';
 
@@ -67,36 +68,13 @@ class _SetupMatchFormatScreenState
   void initState() {
     super.initState();
     final last = ref.read(lastUsedSettingsProvider);
-    _state.matchType = last['matchType'] ?? '団体戦';
-
-    final (maj, min) = MatchFormatSetupHelper.parseCategoryToState(
-      last['category'] ?? '小学生低学年の部',
+    MatchFormatStateInitializer.initializeFromLastUsed(
+      state: _state,
+      last: last,
+      winPointController: _winPointController,
+      lossPointController: _lossPointController,
+      drawPointController: _drawPointController,
     );
-    _state.selectedMajorCategory = maj;
-    _state.selectedMinorCategory = min;
-    _state.matchTime = last['matchTime'] ?? 3.0;
-    _state.isRunningTime = last['isRunningTime'] ?? false;
-    _state.hasExtension = last['hasExtension'] ?? false;
-    _state.hasHantei = last['hasHantei'] ?? true;
-    _state.isRenseikai = last['isRenseikai'] ?? false;
-    _state.kachinukiUnlimitedType = last['kachinukiUnlimitedType'] ?? '大将対大将';
-    _state.hasLeagueDaihyo = last['hasLeagueDaihyo'] ?? false;
-    _state.renseikaiType = last['renseikaiType'] ?? '一試合制';
-    _state.isDaihyoIpponShobu = last['isDaihyoIpponShobu'] ?? true;
-    _state.daihyoMatchTime =
-        (last['daihyoMatchTime'] as num?)?.toDouble() ?? 0.0;
-    _state.daihyoHasExtension = last['daihyoHasExtension'] ?? true;
-    _state.daihyoEnchoTime =
-        (last['daihyoEnchoTime'] as num?)?.toDouble() ?? 3.0;
-    _state.daihyoEnchoCount = last['daihyoEnchoCount'] ?? -2;
-    _state.daihyoHasHantei = last['daihyoHasHantei'] ?? false;
-    _state.isIpponShobu = last['isIpponShobu'] ?? false;
-    _state.ipponLimit = last['ipponLimit'] ?? 2;
-    _state.hansokuLimit = last['hansokuLimit'] ?? 2;
-
-    _winPointController.text = (last['winPoint'] ?? 0).toString();
-    _lossPointController.text = (last['lossPoint'] ?? 0).toString();
-    _drawPointController.text = (last['drawPoint'] ?? 0).toString();
 
     _noteController.addListener(_onNoteChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadCategoryRules());

@@ -1,1 +1,732 @@
-[{"path":"packages/documentation_runtime/manuals/quickstart/index.md","title":"⏱️ クイックガイド","headings":["役割別ガイド","困ったときは"],"sort_order":10,"tags":[],"last_updated":"2026-07-08T10:28:41.334984"},{"path":"packages/documentation_runtime/manuals/quickstart/viewer_1pager.md","title":"⏱️ 観客用スコア確認ガイド","headings":["1. アクセス方法（QRコード）","2. 画面の見方","⚠️ ご注意"],"sort_order":10,"tags":[],"last_updated":"2026-07-08T10:28:41.334816"},{"path":"packages/documentation_runtime/manuals/quickstart/operator_1pager.md","title":"⏱️ 記録係 クイックガイド（机上用マニュアル）","headings":["🛠️ 現場での4大基本操作ステップ","↩️ 間違えたら？（Undo・取り消し操作）"],"sort_order":10,"tags":[],"last_updated":"2026-07-08T10:28:41.334635"},{"path":"packages/documentation_runtime/manuals/quickstart/3min_setup.md","title":"⏱️ 🏃 大会開始まで3分","headings":["⚙️ 大会前の1分セットアップ（役割確認）","Step 1: 画面の準備","Step 2: 試合を始める","Step 3: 点数を入れる・直す","Step 4: 試合を終わらせる"],"sort_order":10,"tags":[],"last_updated":"2026-07-08T10:28:41.335323"},{"path":"packages/documentation_runtime/manuals/recovery/observability_dashboard.md","title":"🚨 監視ダッシュボード","headings":["同期遅延とは {#what-is-sync-delay}","Event Queue（同期待ち）とは {#what-is-event-queue}","試合履歴の再構築（Replay）とは {#what-is-replay}","異常検知とは {#anomaly-detection}","何が赤なら危険か {#red-alert}"],"sort_order":20,"tags":[],"last_updated":"2026-07-08T10:28:41.333684"},{"path":"packages/documentation_runtime/manuals/recovery/failure_catalog.md","title":"🚨 緊急復旧ガイド（トラブル解決）","headings":["画面は動きますか？ (YES/NO 診断) {#recovery-flow}","📝 紙での運用（タブレットが壊れた場合） {#recovery-paper}","📡 通信エラー・同期遅延（Wi-Fiが切れた場合） {#recovery-network}","❌ スコアの押し間違い {#recovery-mistake}"],"sort_order":20,"tags":[],"last_updated":"2026-07-08T10:28:41.334116"},{"path":"packages/documentation_runtime/manuals/recovery/index.md","title":"🚨 障害復旧・監査マニュアル","headings":["監査と監視","障害対応"],"sort_order":20,"tags":[],"last_updated":"2026-07-08T10:28:41.334342"},{"path":"packages/documentation_runtime/manuals/operator/settings.md","title":"📋 システム設定画面","headings":["概要","使用タイミング","手順","注意事項","障害時対応","FAQ","関連ページ","困ったとき"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.336825"},{"path":"packages/documentation_runtime/manuals/operator/team_registration.md","title":"📋 チーム・選手登録","headings":["チームを追加する {#add-team}","選手を追加する {#add-player}","名前を修正する {#edit-player}","よくあるミス {#common-mistakes}","関連ページ","困ったとき"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.337427"},{"path":"packages/documentation_runtime/manuals/operator/create_tournament.md","title":"📋 大会を作成する","headings":["画面の見方と手順 {#operate-create-steps}","間違えて作成した場合 {#operate-create-edit}","関連ページ","困ったとき"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.337978"},{"path":"packages/documentation_runtime/manuals/operator/official_record.md","title":"📋 成績管理と公式記録","headings":["試合結果の確認 {#check-results}","PDF出力 {#export-pdf}","CSV出力 {#export-csv}","修正方法 {#fix-results}","関連ページ","困ったとき"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.337743"},{"path":"packages/documentation_runtime/manuals/operator/audit_log.md","title":"📋 監査ログ（操作履歴）の確認","headings":["画面の見方 {#operate-audit-view}","なぜすべて記録されるのか {#operate-audit-reason}","関連ページ","困ったとき"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.337090"},{"path":"packages/documentation_runtime/manuals/operator/match.md","title":"📋 試合の記録（点数入力）","headings":["画面の見方と操作順序 {#operate-match-steps}","試合を終わらせるには {#operate-match-finish}","通信エラーが出た場合 {#operate-match-offline}","関連ページ","困ったとき"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.337228"},{"path":"packages/documentation_runtime/manuals/operator/index.md","title":"📋 運営・記録マニュアル","headings":["目次","関連ページ (Step 2-3)","困ったとき (Step 2-4)","📱 スマホ版・アプリ内ヘルプはこちら"],"sort_order":30,"tags":[],"last_updated":"2026-07-08T10:28:41.337586"},{"path":"packages/documentation_runtime/manuals/viewer/viewer_kachinuki_scoreboard.md","title":"📱 勝ち抜き戦スコアの見方","headings":["画面の見方 {#viewer-kachinuki-view}","勝敗の決まり方 {#viewer-kachinuki-rule}","関連ページ","困ったとき"],"sort_order":40,"tags":[],"last_updated":"2026-07-08T10:28:41.335575"},{"path":"packages/documentation_runtime/manuals/viewer/viewer_team_scoreboard.md","title":"📱 団体戦スコアの見方","headings":["画面の見方 {#viewer-team-view}","勝敗の決まり方 {#viewer-team-rule}","関連ページ","困ったとき"],"sort_order":40,"tags":[],"last_updated":"2026-07-08T10:28:41.335760"},{"path":"packages/documentation_runtime/manuals/viewer/index.md","title":"📱 観客・閲覧マニュアル","headings":["トップ画面の見方 {#viewer-home-view}","目次 {#viewer-contents}","関連ページ (Step 2-3)","困ったとき (Step 2-4)"],"sort_order":40,"tags":[],"last_updated":"2026-07-08T10:28:41.335987"},{"path":"packages/documentation_runtime/manuals/viewer/viewer_match.md","title":"📱 試合画面の見方","headings":["画面の見方 {#viewer-match-view}","表示が止まった場合 {#viewer-match-freeze}","関連ページ","困ったとき"],"sort_order":40,"tags":[],"last_updated":"2026-07-08T10:28:41.336277"},{"path":"packages/documentation_runtime/manuals/faq/viewer_faq.md","title":"💡 FAQ（よくある質問）","headings":["点数が変わらない {#faq-score-not-change}","通信が切断された {#faq-network-disconnected}","時間が止まった {#faq-time-stopped}","画面が暗い / 選手名が違う {#faq-display-error}"],"sort_order":50,"tags":[],"last_updated":"2026-07-08T10:28:41.331587"},{"path":"packages/documentation_runtime/manuals/faq/operator_faq.md","title":"💡 運営・記録 よくある質問","headings":["🚨 現場での5大トラブルシューティング (必須確認項目)","🛡️ β版システム防壁に関する質問"],"sort_order":50,"tags":[],"last_updated":"2026-07-08T10:28:41.333258"}]
+[
+  {
+    "path": "packages/documentation_runtime/manuals/quickstart/3min_setup.md",
+    "title": "🏃 大会開始まで3分 (Quick Start 1-Pager)",
+    "headings": [
+      "⚙️ Step 1: 役割選択と大会の選択（1分）",
+      "🥋 Step 2: 担当コートの試合を開く（30秒）",
+      "⏱️ Step 3: 試合の計時と点数入力（本番）",
+      "🏁 Step 4: 試合の終了と確定（10秒）"
+    ],
+    "sort_order": 10,
+    "tags": [
+      "3分",
+      "セットアップ",
+      "準備",
+      "開始",
+      "簡単",
+      "初心者"
+    ],
+    "last_updated": "2026-09-05T13:31:49.621562"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/quickstart/index.md",
+    "title": "⏱️ クイックガイド",
+    "headings": [
+      "役割別ガイド",
+      "困ったときは"
+    ],
+    "sort_order": 10,
+    "tags": [
+      "クイック",
+      "目次",
+      "スタート",
+      "早見表"
+    ],
+    "last_updated": "2026-09-05T13:31:49.621707"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/quickstart/operator_1pager.md",
+    "title": "⏱️ 記録係 クイックガイド（机上用マニュアル）",
+    "headings": [
+      "🛠️ 現場での5大基本操作ステップ",
+      "💡 右下の「ドックボタン」の活用",
+      "🚨 困ったときの机上チェック"
+    ],
+    "sort_order": 10,
+    "tags": [
+      "記録係",
+      "机上",
+      "1枚",
+      "Undo",
+      "取り消し",
+      "スコア",
+      "タイマー"
+    ],
+    "last_updated": "2026-09-05T13:31:49.622002"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/quickstart/viewer_1pager.md",
+    "title": "📱 観客用スコア確認ガイド",
+    "headings": [
+      "1. アクセス方法（QRコード）",
+      "2. 画面の見方",
+      "3. 右下の「ドックボタン」でさらに便利に！",
+      "⚠️ ご注意"
+    ],
+    "sort_order": 10,
+    "tags": [
+      "観客",
+      "保護者",
+      "1枚",
+      "スマホ",
+      "QR",
+      "見方"
+    ],
+    "last_updated": "2026-09-05T13:31:49.622152"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/recovery/failure_catalog.md",
+    "title": "🚨 緊急復旧ガイド（現場トラブル即時解決）",
+    "headings": [
+      "1. 現場でのYES/NO即答診断チャート",
+      "2. 体育館の電波ゼロ・通信切断時（最重要）",
+      "3. 猛暑による端末の熱暴走・バッテリー低下時",
+      "4. スコアの押し間違い・取り消し（ヒューマンエラー）",
+      "5. 万が一のタブレット物理故障時（紙の記録用紙への切り替え）",
+      "関連ページ"
+    ],
+    "sort_order": 20,
+    "tags": [
+      "障害",
+      "オフライン",
+      "切断",
+      "バッテリー",
+      "熱暴走",
+      "ミス",
+      "Undo",
+      "紙運用"
+    ],
+    "last_updated": "2026-09-05T13:31:49.622473"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/recovery/index.md",
+    "title": "障害復旧・監査マニュアル (Recovery & Audit Manual)",
+    "headings": [
+      "現場障害復旧カタログ",
+      "監査とデータ整合性"
+    ],
+    "sort_order": 20,
+    "tags": [
+      "障害",
+      "復旧",
+      "トラブル",
+      "監査",
+      "目次"
+    ],
+    "last_updated": "2026-09-05T13:31:49.622605"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/recovery/observability_dashboard.md",
+    "title": "監視ダッシュボード (Observability)",
+    "headings": [
+      "同期遅延とは",
+      "Event Queue（同期待ち）とは",
+      "試合履歴の再構築（Replay）とは",
+      "異常検知とは",
+      "何が赤なら危険か"
+    ],
+    "sort_order": 20,
+    "tags": [
+      "監視",
+      "同期",
+      "キュー",
+      "ダッシュボード",
+      "再送",
+      "リプレイ"
+    ],
+    "last_updated": "2026-09-05T13:31:49.622862"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/audit_log.md",
+    "title": "監査ログ（操作履歴）の確認",
+    "headings": [
+      "1. 画面の見方と記録項目",
+      "2. 試合IDによるリアルタイム絞り込み",
+      "3. 改ざん防止とイベントソーシングの仕組み",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "監査ログ",
+      "操作履歴",
+      "タイムスタンプ",
+      "改ざん防止",
+      "疑義確認"
+    ],
+    "last_updated": "2026-09-05T13:31:49.623101"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/bulk_rule_edit.md",
+    "title": "進行中の一括ルール変更",
+    "headings": [
+      "使用するシチュエーション",
+      "画面の呼び出し方",
+      "操作手順",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "一括ルール編集",
+      "一括変更",
+      "複数コート",
+      "時間変更",
+      "延長変更"
+    ],
+    "last_updated": "2026-09-05T13:31:49.623310"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/bunaiksen.md",
+    "title": "部内戦の4大モード運営・公式記録",
+    "headings": [
+      "1. 部内戦の4大セットアップモード",
+      "2. 部内戦ルールの簡易設定",
+      "3. 今日の部内戦ホーム画面",
+      "4. 部内戦 公式記録",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "部内戦",
+      "練習試合",
+      "総当たり",
+      "勝抜戦",
+      "紅白戦",
+      "自由対戦",
+      "途中離脱"
+    ],
+    "last_updated": "2026-09-05T13:31:49.623442"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/category_rules.md",
+    "title": "部門別ルール設定",
+    "headings": [
+      "画面の役割とメリット",
+      "設定できるルール項目",
+      "既存試合への一括適用ダイアログ",
+      "大会ホームへの移動",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "ルール設定",
+      "部門",
+      "試合時間",
+      "延長",
+      "勝敗判定",
+      "代表戦",
+      "判定基準",
+      "独立"
+    ],
+    "last_updated": "2026-09-05T13:31:49.623584"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/create_tournament.md",
+    "title": "大会を作成する",
+    "headings": [
+      "画面の見方と入力項目",
+      "保存と次のステップ",
+      "作成した大会の確認と修正",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "大会作成",
+      "新規",
+      "会場",
+      "コート数",
+      "個人戦",
+      "団体戦"
+    ],
+    "last_updated": "2026-09-05T13:31:49.623867"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/dock_guide.md",
+    "title": "ドック＆フローティングパネル活用法",
+    "headings": [
+      "1. ドックボタンの操作とスピードダイヤル展開",
+      "2. Googleマップ型「フローティングボトムシート」",
+      "3. 背面操作可能UI（最大のメリット）",
+      "4. ボトムシートと全画面表示の切り替え",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "ドック",
+      "常設パネル",
+      "背面操作",
+      "Googleマップ型",
+      "ミニパネル",
+      "並行操作"
+    ],
+    "last_updated": "2026-09-05T13:31:49.624020"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/home_guide.md",
+    "title": "大会ホーム画面の見方",
+    "headings": [
+      "1. 画面上部：呼び出しバナーと大会ヘッダー",
+      "2. タイムラインコントロールバー",
+      "3. 部門別フィルターチップ（Filter Chips）",
+      "4. 試合タイムラインカードの見方",
+      "5. オフライン防衛バナー（体育館電波ゼロ時）",
+      "6. ドックボタン（右下のフローティングボタン）",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "大会ホーム",
+      "試合一覧",
+      "タブ",
+      "対戦サマリー",
+      "進行状況",
+      "カード"
+    ],
+    "last_updated": "2026-09-05T13:31:49.624247"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/index.md",
+    "title": "運営・記録マニュアル (Operate Home)",
+    "headings": [
+      "📋 大会の準備と設定",
+      "🥋 試合当日の進行と記録",
+      "📊 結果の集計・出力・プログラム",
+      "⚔️ 部内戦・システム環境・監査",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "運営",
+      "記録",
+      "目次",
+      "総合"
+    ],
+    "last_updated": "2026-09-05T13:31:49.624393"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/master_management.md",
+    "title": "選手名簿（マスタ）管理",
+    "headings": [
+      "1. 選手の登録と編集",
+      "2. 学年別・カテゴリ別のグルーピング表示",
+      "3. 🌸 新年度の一括進級機能（大人気機能）",
+      "4. データとストレージの管理",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "選手マスタ",
+      "新年度一括進級",
+      "学年繰り上げ",
+      "卒業",
+      "CSV取込",
+      "アーカイブ"
+    ],
+    "last_updated": "2026-09-05T13:31:49.624600"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/match.md",
+    "title": "試合の記録（点数入力）",
+    "headings": [
+      "1. 画面の基本構成と役割",
+      "2. 試合進行の標準的な操作手順",
+      "3. 延長戦（Encho）と判定・代表戦",
+      "4. 試合の確定操作",
+      "5. タイムラインコメントとスライド操作",
+      "6. 体育館オフライン（電波ゼロ）時の動作",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "試合記録",
+      "スコア入力",
+      "タイマー",
+      "面",
+      "小手",
+      "胴",
+      "突き",
+      "反則",
+      "Undo",
+      "一本"
+    ],
+    "last_updated": "2026-09-05T13:31:49.624764"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/official_record.md",
+    "title": "成績管理と公式記録",
+    "headings": [
+      "1. 遠征・戦績集計サマリーカード",
+      "2. 対戦別スコアテーブルカード",
+      "3. 部門別タブ切り替え",
+      "4. 高コントラスト出力と公式エクスポート",
+      "5. ドックからのボトムシート呼び出し",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "公式記録",
+      "PDF出力",
+      "CSV出力",
+      "印刷",
+      "結果共有",
+      "修正"
+    ],
+    "last_updated": "2026-09-05T13:31:49.624994"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/program_management.md",
+    "title": "大会プログラム管理・手書きビューワー",
+    "headings": [
+      "1. プログラムの登録と管理",
+      "2. プログラムビューワーの操作性（直交スクロール）",
+      "3. 手書きアノテーションツールバー",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "大会プログラム",
+      "進行表",
+      "試合順",
+      "コート割",
+      "タイムスケジュール"
+    ],
+    "last_updated": "2026-09-05T13:31:49.625147"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/settings.md",
+    "title": "システム設定画面",
+    "headings": [
+      "1. 表示と画面設定",
+      "2. 音と振動・フィードバック",
+      "3. プッシュ通知設定",
+      "4. 同期と道場ルーム設定",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "設定",
+      "サンシャインモード",
+      "高コントラスト",
+      "サーマル冷却",
+      "フォントサイズ",
+      "省電力"
+    ],
+    "last_updated": "2026-09-05T13:31:49.625364"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/setup_match.md",
+    "title": "試合作成とオーダー設定",
+    "headings": [
+      "1. 試合形式の選択（ステップ1）",
+      "2. 部門と試合場（コート）の指定",
+      "3. オーダー設定と対戦相手の指定（ステップ2）",
+      "4. 試合の保存と開始",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "試合作成",
+      "対戦カード",
+      "コート",
+      "試合順",
+      "オーダー",
+      "ルール選択"
+    ],
+    "last_updated": "2026-09-05T13:31:49.625508"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/standings.md",
+    "title": "順位表・戦績ランキング",
+    "headings": [
+      "表示項目と特徴",
+      "画面の開き方と活用方法",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "成績表",
+      "順位表",
+      "トーナメント表",
+      "予選リーグ",
+      "決勝"
+    ],
+    "last_updated": "2026-09-05T13:31:49.625643"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/team_match_status.md",
+    "title": "チーム試合状況",
+    "headings": [
+      "主な機能とメリット",
+      "画面の見方と操作",
+      "現場での活用例",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "チーム試合状況",
+      "団体戦",
+      "勝者数",
+      "総本数",
+      "先鋒",
+      "次鋒",
+      "中堅",
+      "副将",
+      "大将",
+      "代表戦"
+    ],
+    "last_updated": "2026-09-05T13:31:49.625790"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/operator/team_registration.md",
+    "title": "チーム・選手登録",
+    "headings": [
+      "1. 部門と試合形式の選択",
+      "2. チームと選手の登録手順",
+      "3. 登録済みチームの編集と削除",
+      "4. ルール設定への遷移",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 30,
+    "tags": [
+      "チーム登録",
+      "選手登録",
+      "学校",
+      "道場",
+      "オーダー",
+      "並び順"
+    ],
+    "last_updated": "2026-09-05T13:31:49.625935"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/index.md",
+    "title": "観客・閲覧マニュアル (Viewer Home)",
+    "headings": [
+      "📱 観客向け機能ガイド",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "観客",
+      "保護者",
+      "閲覧",
+      "目次"
+    ],
+    "last_updated": "2026-09-05T13:31:49.626099"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_bunaiksen.md",
+    "title": "観客用部内戦スコア確認",
+    "headings": [
+      "1. 画面の見方",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "部内戦結果",
+      "練習試合",
+      "勝敗表",
+      "個人成績",
+      "保護者"
+    ],
+    "last_updated": "2026-09-05T13:31:49.626299"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_home.md",
+    "title": "観客ホーム画面の見方",
+    "headings": [
+      "1. 画面上部：大会情報と速報アナウンス",
+      "2. 進行中・待機中・終了の試合リスト",
+      "3. 部門別・コート別の絞り込み",
+      "4. 便利なフローティングドックボタン",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "観客ホーム",
+      "コート一覧",
+      "進行中",
+      "リアルタイム",
+      "スコア速報"
+    ],
+    "last_updated": "2026-09-05T13:31:49.626443"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_kachinuki_scoreboard.md",
+    "title": "勝ち抜き戦スコアボードの見方",
+    "headings": [
+      "1. 画面の見方",
+      "2. 勝ち抜き戦の勝敗ルール",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "勝ち抜き戦スコアボード",
+      "勝ち残り",
+      "連続勝ち抜き"
+    ],
+    "last_updated": "2026-09-05T13:31:49.626649"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_match.md",
+    "title": "試合画面の見方（リアルタイム速報）",
+    "headings": [
+      "1. リアルタイム・スコアボードの見方",
+      "2. タイムラインコメントの閲覧",
+      "3. ドックからの便利機能アクセス",
+      "4. 表示が止まった・更新されない場合",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "リアルタイム試合",
+      "一本速報",
+      "タイマー",
+      "スコアボード",
+      "観客"
+    ],
+    "last_updated": "2026-09-05T13:31:49.626867"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_official_record.md",
+    "title": "観客用公式戦記録（全試合結果）",
+    "headings": [
+      "1. 画面の見方と特徴",
+      "2. ☀️ 高コントラスト出力ボタン",
+      "3. 安心・公平のための情報保護規約",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "試合結果",
+      "公式記録",
+      "閲覧",
+      "過去結果",
+      "PDF"
+    ],
+    "last_updated": "2026-09-05T13:31:49.627072"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_program.md",
+    "title": "大会プログラム閲覧・個人メモ",
+    "headings": [
+      "1. プログラムの開き方と操作",
+      "2. 観客向けの手書きアノテーション機能",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "大会プログラム",
+      "個人メモ",
+      "マーカー",
+      "試合順",
+      "保護者"
+    ],
+    "last_updated": "2026-09-05T13:31:49.627213"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_team_match_status.md",
+    "title": "観客用チーム試合状況",
+    "headings": [
+      "1. チーム試合状況の見方",
+      "2. 便利な機能",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "団体戦",
+      "チーム状況",
+      "観客",
+      "勝者数",
+      "取得本数",
+      "サマリー"
+    ],
+    "last_updated": "2026-09-05T13:31:49.627348"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/viewer/viewer_team_scoreboard.md",
+    "title": "団体戦スコアボードの見方",
+    "headings": [
+      "1. 画面の見方",
+      "2. 勝敗の決まり方と代表戦",
+      "関連ページ",
+      "困ったとき"
+    ],
+    "sort_order": 40,
+    "tags": [
+      "団体戦スコアボード",
+      "大型表示",
+      "電光掲示板",
+      "先鋒〜大将"
+    ],
+    "last_updated": "2026-09-05T13:31:49.627486"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/faq/operator_faq.md",
+    "title": "❓ 運営・記録 よくある質問 (FAQ)",
+    "headings": [
+      "🚨 1. 現場の緊急トラブルシューティング",
+      "📋 2. 大会準備・試合作成・ルール設定",
+      "🎯 3. ドック機能（常設ミニパネル）",
+      "📊 4. チーム試合状況・結果一覧・対戦サマリー",
+      "🥋 5. 部内戦（練習試合・総当たり・リーグ）",
+      "👥 6. 選手マスタ管理・新年度一括進級",
+      "☀️ 7. 端末保護・環境設定"
+    ],
+    "sort_order": 50,
+    "tags": [
+      "運営FAQ",
+      "よくある質問",
+      "トラブル",
+      "タイマーずれ",
+      "誤連打",
+      "進級",
+      "ドック"
+    ],
+    "last_updated": "2026-09-05T13:31:49.627773"
+  },
+  {
+    "path": "packages/documentation_runtime/manuals/faq/viewer_faq.md",
+    "title": "❓ 観客・閲覧 よくある質問 (FAQ)",
+    "headings": [
+      "📱 1. 試合観戦・リアルタイム更新",
+      "👥 2. 団体戦（チーム試合状況）",
+      "📖 3. 大会プログラム・組み合わせ表",
+      "☀️ 4. 屋外観戦・表示設定"
+    ],
+    "sort_order": 50,
+    "tags": [
+      "観客FAQ",
+      "よくある質問",
+      "動かない",
+      "止まった",
+      "サンシャイン",
+      "更新"
+    ],
+    "last_updated": "2026-09-05T13:31:49.627940"
+  }
+]

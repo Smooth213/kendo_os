@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_items_builder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/manual_bottom_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/official_record_screen.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/team_match_status_screen.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
-import 'package:kendo_os/features/viewer/presentation/components/viewer_settings_bottom_sheet.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -110,129 +102,14 @@ class _FloatingProgramDockButtonState
     required AppThemeColors themeColors,
     required int unreadCount,
   }) {
-    return [
-      DockSubItem(
-        icon: Icons.menu_book_rounded,
-        color: themeColors.primaryAccent,
-        label: 'プログラム',
-        onTap: () {
-          _collapse();
-          FloatingDockSheetManager.show(
-            context: context,
-            builder: (_) => ProgramBottomSheet(
-              tournamentId: widget.tournamentId,
-              isViewerMode: widget.isViewerMode,
-            ),
-          );
-        },
-      ),
-      DockSubItem(
-        icon: Icons.groups_rounded,
-        color: AppKendoColors.indigo,
-        label: '試合状況',
-        onTap: () {
-          _collapse();
-          FloatingDockSheetManager.show(
-            context: context,
-            builder: (_) => TeamMatchStatusScreen(
-              tournamentId: widget.tournamentId,
-              isBottomSheet: true,
-              onFullScreen: () {
-                FloatingDockSheetManager.close(immediate: true);
-                context.push(
-                  '/team-match-status?id=${widget.tournamentId}&viewer=${widget.isViewerMode}',
-                );
-              },
-            ),
-          );
-        },
-      ),
-      DockSubItem(
-        icon: Icons.scoreboard_rounded,
-        color: AppKendoColors.ipponGold,
-        label: '対戦表',
-        onTap: () {
-          _collapse();
-          FloatingDockSheetManager.show(
-            context: context,
-            builder: (_) => OfficialRecordScreen(
-              tournamentId: widget.tournamentId,
-              isBottomSheet: true,
-              onFullScreen: () {
-                FloatingDockSheetManager.close(immediate: true);
-                context.push(
-                  '/official-record?id=${widget.tournamentId}&viewer=${widget.isViewerMode}',
-                );
-              },
-            ),
-          );
-        },
-      ),
-      DockSubItem(
-        icon: Icons.brush_rounded,
-        color: AppKendoColors.pink,
-        label: 'クイックメモ',
-        onTap: () {
-          _collapse();
-          FloatingDockSheetManager.show(
-            context: context,
-            builder: (_) =>
-                QuickMemoBottomSheet(tournamentId: widget.tournamentId),
-          );
-        },
-      ),
-      DockSubItem(
-        icon: Icons.notifications_rounded,
-        color: AppKendoColors.deepOrange,
-        label: 'お知らせ',
-        badgeCount: unreadCount,
-        onTap: () {
-          _collapse();
-          FloatingDockSheetManager.show(
-            context: context,
-            builder: (_) => AnnounceHistoryBottomSheet(
-              tournamentId: widget.tournamentId,
-              isStaffRoom: !widget.isViewerMode,
-            ),
-          );
-        },
-      ),
-      DockSubItem(
-        icon: Icons.help_outline_rounded,
-        color: AppKendoColors.teal,
-        label: 'ヘルプ',
-        onTap: () {
-          _collapse();
-          FloatingDockSheetManager.show(
-            context: context,
-            builder: (_) =>
-                ManualBottomSheet(isViewerMode: widget.isViewerMode),
-          );
-        },
-      ),
-      DockSubItem(
-        icon: Icons.settings_rounded,
-        color: themeColors.subTextColor,
-        label: '設定',
-        onTap: () {
-          _collapse();
-          if (widget.isViewerMode) {
-            ViewerSettingsBottomSheet.show(context);
-          } else {
-            FloatingDockSheetManager.show(
-              context: context,
-              builder: (_) => SettingsScreen(
-                isBottomSheet: true,
-                onFullScreen: () {
-                  FloatingDockSheetManager.close(immediate: true);
-                  context.push('/settings');
-                },
-              ),
-            );
-          }
-        },
-      ),
-    ];
+    return FloatingDockItemsBuilder.build(
+      context: context,
+      tournamentId: widget.tournamentId,
+      isViewerMode: widget.isViewerMode,
+      themeColors: themeColors,
+      unreadCount: unreadCount,
+      onCollapse: _collapse,
+    );
   }
 
   @override

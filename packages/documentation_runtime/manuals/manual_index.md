@@ -1,23 +1,60 @@
-# Kendo Sync 総合マニュアル
+# Kendo OS 総合マニュアル (Manual Index)
 
-知りたい内容や、ご自身の役割に合わせてメニューを選択してください。
+知りたい内容や、ご自身の役割（運営係・記録係・観客・保護者）に合わせてメニューを選択してください。
 
-## 📱 観客・選手・保護者の方へ
-事前の準備なしで、お手元のスマートフォンから試合の状況を確認できます。
+---
 
-- [観客・閲覧マニュアル (使い方まとめ)](viewer/index.md)
-- [観客用クイックガイド (1枚でわかる見方)](quickstart/viewer_1pager.md)
-- [観客向け よくある質問 (FAQ)](faq/viewer_faq.md)
+## ⏱️ クイックスタート・現場必携シート
+- [⏱️ クイックガイド目次](quickstart/index.md)
+- [🏃 大会開始まで3分セットアップ](quickstart/3min_setup.md)
+- [📋 記録係クイックガイド（机上用1枚シート）](quickstart/operator_1pager.md)
+- [📱 観客・保護者用クイックガイド](quickstart/viewer_1pager.md)
 
-## 📋 記録係・審判・運営の方へ
-試合の点数入力や、大会の各種準備を行うための操作手順です。
+---
 
-- [運営・記録マニュアル (使い方まとめ)](operator/index.md)
-- [記録係クイックガイド (1枚でわかる操作)](quickstart/operator_1pager.md)
-- [運営向け よくある質問 (FAQ)](faq/operator_faq.md)
+## 📋 運営・記録マニュアル (Operator & Recorder)
+大会の準備、試合の作成、得点記録、ドック活用、成績集計、マスター管理の操作手順です。
 
-## 🚨 トラブル・緊急時の対応
-現場で操作に迷ったときや、システムが止まったときはこちらをご確認ください。
+- [📋 運営・記録マニュアル 総合目次](operator/index.md)
+- [🏆 大会作成マニュアル](operator/create_tournament.md)
+- [👥 チーム・選手登録マニュアル](operator/team_registration.md)
+- [⚙️ 部門ルール設定マニュアル（新機能）](operator/category_rules.md)
+- [🥋 試合作成マニュアル（新フロー）](operator/setup_match.md)
+- [🏠 大会ホーム画面ガイド（一覧・タブ・対戦サマリー）](operator/home_guide.md)
+- [⏱️ 試合記録（スコア・タイマー入力）マニュアル](operator/match.md)
+- [⚡ 一括ルール編集マニュアル](operator/bulk_rule_edit.md)
+- [👥 チーム試合状況マニュアル（リアルタイム勝敗）](operator/team_match_status.md)
+- [🏆 成績表・順位表マニュアル](operator/standings.md)
+- [📑 大会記録・公式記録PDF/CSV出力マニュアル](operator/official_record.md)
+- [🎯 ドック機能（常設ミニパネル）操作ガイド](operator/dock_guide.md)
+- [📅 大会プログラム管理マニュアル](operator/program_management.md)
+- [⚔️ 部内戦管理マニュアル（4大モード）](operator/bunaiksen.md)
+- [👤 選手マスタ管理・新年度一括進級マニュアル](operator/master_management.md)
+- [⚙️ システム設定・環境設定マニュアル](operator/settings.md)
+- [🛡️ 監査ログ・操作履歴マニュアル](operator/audit_log.md)
+- [❓ 運営・記録 よくある質問 (FAQ)](faq/operator_faq.md)
 
-- [緊急復旧ガイド (大会を止めないYES/NO診断)](recovery/failure_catalog.md)
-- [監視ダッシュボードの見方 (管理者向け)](recovery/observability_dashboard.md)
+---
+
+## 📱 観客・保護者・選手向け閲覧マニュアル (Viewer)
+お手元のスマートフォンからログイン不要でリアルタイムにスコアや進行状況を確認できます。
+
+- [📱 観客・閲覧マニュアル 総合目次](viewer/index.md)
+- [🏠 観客用ホーム画面ガイド](viewer/viewer_home.md)
+- [⏱️ リアルタイム試合閲覧マニュアル](viewer/viewer_match.md)
+- [👥 団体戦チーム試合状況閲覧マニュアル](viewer/viewer_team_match_status.md)
+- [📅 大会プログラム・個人メモ機能マニュアル](viewer/viewer_program.md)
+- [📑 試合結果・公式記録閲覧マニュアル](viewer/viewer_official_record.md)
+- [⚔️ 部内戦（練習試合）結果閲覧マニュアル](viewer/viewer_bunaiksen.md)
+- [📊 団体戦スコアボード閲覧ガイド](viewer/viewer_team_scoreboard.md)
+- [🏅 勝ち抜き戦スコアボード閲覧ガイド](viewer/viewer_kachinuki_scoreboard.md)
+- [❓ 観客・保護者 よくある質問 (FAQ)](faq/viewer_faq.md)
+
+---
+
+## 🚨 トラブル・現場障害復旧マニュアル (Recovery & Audit)
+通信障害、端末トラブル、操作ミス、または疑義発生時の対応手順です。
+
+- [🚨 障害復旧・監査マニュアル 目次](recovery/index.md)
+- [🚨 現場障害対応・復旧カタログ (YES/NO診断)](recovery/failure_catalog.md)
+- [📊 監視・同期ダッシュボード](recovery/observability_dashboard.md)

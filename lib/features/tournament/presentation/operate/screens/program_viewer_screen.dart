@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_app_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_image_body.dart';
@@ -13,11 +14,7 @@ import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repositor
 import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../providers/permission_provider.dart';
@@ -176,146 +173,46 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
-        appBar: AppHeader(
-          backgroundColor: isDark
-              ? const Color(0xFF1C1C1E)
-              : context.appColors.cardBackground,
-          foregroundColor: context.appColors.textColor,
-          elevation: _isDrawingMode ? 0 : 1,
-          titleWidget: _isSearchMode
-              ? AppTextField(
-                  controller: _searchTextController,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    hintText: '選手名・団体名を検索...',
-                    border: InputBorder.none,
-                  ),
-                  onSubmitted: (value) async {
-                    if (value.isEmpty) {
-                      setState(() {
-                        _currentSearchText = "";
-                        if (isFilePdf) _searchResult.clear();
-                      });
-                      return;
-                    }
-                    setState(() {
-                      _currentSearchText = value;
-                    });
-                    if (isFilePdf) {
-                      _searchResult = _pdfViewerController.searchText(value);
-                      _searchResult.addListener(() {
-                        if (mounted) setState(() {});
-                      });
-                    } else {
-                      if (!(currentProgram.isOcrProcessed ?? false)) {
-                        AppSnackBar.show(context, '現在クラウドで解析中です。しばらくお待ちください。');
-                      } else if (currentProgram.ocrWords == null ||
-                          currentProgram.ocrWords!.isEmpty) {
-                        AppSnackBar.show(context, 'この画像から文字が検出されませんでした。');
-                      }
-                    }
-                    setState(() {});
-                  },
-                )
-              : Builder(
-                  builder: (context) {
-                    final int totalPdfPages =
-                        _pdfPageCounts[currentProgram.fileUrl] ?? 1;
-                    final int curPdfPage =
-                        _pdfCurrentPages[currentProgram.fileUrl] ?? 1;
-                    final String pageSuffix = isFilePdf && totalPdfPages > 1
-                        ? ' - $curPdfPage/$totalPdfPages 頁'
-                        : '';
-                    return Text(
-                      '${currentProgram.title} (${safeIndex + 1}/${displayPrograms.length})$pageSuffix',
-                      style: const TextStyle(
-                        fontWeight: AppFontWeight.bold,
-                        fontSize: AppFontSize.subhead,
-                      ),
-                    );
-                  },
-                ),
-          actions: [
-            if (_isSearchMode) ...[
-              if (isFilePdf) ...[
-                IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_up),
-                  onPressed: () => _searchResult.previousInstance(),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_down),
-                  onPressed: () => _searchResult.nextInstance(),
-                ),
-              ],
-              IconButton(
-                icon: const Icon(Icons.close),
-                tooltip: '検索を終了',
-                onPressed: () => setState(() {
-                  _isSearchMode = false;
-                  _currentSearchText = "";
-                  _searchTextController.clear();
-                  if (isFilePdf) _searchResult.clear();
-                }),
-              ),
-            ],
-            if (!_isSearchMode) ...[
-              if (!isFilePdf)
-                Tooltip(
-                  message: (currentProgram.isOcrProcessed ?? false)
-                      ? '文字検索の準備完了'
-                      : '画像解析の準備中',
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                    ),
-                    child: Icon(
-                      Icons.bolt,
-                      color: (currentProgram.isOcrProcessed ?? false)
-                          ? AppKendoColors.amber
-                          : const Color(0xFFBDBDBD),
-                      size: 20,
-                    ),
-                  ),
-                ),
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () => setState(() => _isSearchMode = true),
-              ),
-            ],
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: MediaQuery.of(context).size.width < 600 || _isSearchMode
-                  ? IconButton(
-                      onPressed: () => setState(() {
-                        _isDrawingMode = !_isDrawingMode;
-                      }),
-                      icon: Icon(_isDrawingMode ? Icons.check : Icons.edit),
-                      color: _isDrawingMode
-                          ? activePenColor
-                          : (context.appColors.textColor),
-                      tooltip: _isDrawingMode ? '完了' : '書き込む',
-                    )
-                  : ElevatedButton.icon(
-                      onPressed: () => setState(() {
-                        _isDrawingMode = !_isDrawingMode;
-                      }),
-                      icon: Icon(
-                        _isDrawingMode ? Icons.check : Icons.edit,
-                        size: 18,
-                      ),
-                      label: Text(_isDrawingMode ? '完了' : '書き込む'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _isDrawingMode
-                            ? activePenColor
-                            : (context.appColors.separatorColor),
-                        foregroundColor: _isDrawingMode
-                            ? AppKendoColors.pureWhite
-                            : (context.appColors.textColor),
-                        elevation: 0,
-                      ),
-                    ),
-            ),
-          ],
+        appBar: ProgramViewerAppBar(
+          isDark: isDark,
+          isDrawingMode: _isDrawingMode,
+          isSearchMode: _isSearchMode,
+          isFilePdf: isFilePdf,
+          currentProgram: currentProgram,
+          safeIndex: safeIndex,
+          totalPrograms: displayPrograms.length,
+          pdfPageCounts: _pdfPageCounts,
+          pdfCurrentPages: _pdfCurrentPages,
+          searchTextController: _searchTextController,
+          pdfViewerController: _pdfViewerController,
+          searchResult: _searchResult,
+          activePenColor: activePenColor,
+          onSearchSubmitted: (value) {
+            setState(() {
+              _currentSearchText = value;
+              if (value.isEmpty && isFilePdf) {
+                _searchResult.clear();
+              }
+            });
+          },
+          onPdfSearchResult: (result) {
+            setState(() {
+              _searchResult = result;
+            });
+            _searchResult.addListener(() {
+              if (mounted) setState(() {});
+            });
+          },
+          onCloseSearch: () => setState(() {
+            _isSearchMode = false;
+            _currentSearchText = "";
+            _searchTextController.clear();
+            if (isFilePdf) _searchResult.clear();
+          }),
+          onOpenSearch: () => setState(() => _isSearchMode = true),
+          onToggleDrawingMode: () => setState(() {
+            _isDrawingMode = !_isDrawingMode;
+          }),
         ),
         body: Column(
           children: [

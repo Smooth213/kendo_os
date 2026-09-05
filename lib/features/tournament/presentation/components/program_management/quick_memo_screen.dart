@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_app_bar_actions.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_canvas_painter.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_storage_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_tab_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_toolbar.dart';
@@ -268,41 +269,17 @@ class _QuickMemoScreenState extends State<QuickMemoScreen> {
       appBar: AppHeader(
         title: 'クイックメモ',
         actions: [
-          if (_mode == QuickMemoMode.drawing) ...[
-            IconButton(
-              icon: const Icon(Icons.undo_rounded),
-              tooltip: '1つ戻す',
-              onPressed: _strokes.isNotEmpty ? _undo : null,
-            ),
-            IconButton(
-              icon: const Icon(Icons.redo_rounded),
-              tooltip: 'やり直す',
-              onPressed: _undoStack.isNotEmpty ? _redo : null,
-            ),
-          ],
-          if (_mode == QuickMemoMode.text) ...[
-            IconButton(
-              icon: const Icon(Icons.schedule_rounded),
-              tooltip: '時刻を挿入',
-              onPressed: _insertTimestamp,
-            ),
-            IconButton(
-              icon: const Icon(Icons.copy_rounded),
-              tooltip: 'コピー',
-              onPressed: _textController.text.isNotEmpty ? _copyText : null,
-            ),
-          ],
-          IconButton(
-            icon: const Icon(Icons.delete_sweep_rounded),
-            tooltip: '全消去',
-            onPressed:
-                (_mode == QuickMemoMode.drawing && _strokes.isNotEmpty) ||
-                    (_mode == QuickMemoMode.text &&
-                        _textController.text.isNotEmpty)
-                ? _clearAll
-                : null,
+          QuickMemoAppBarActions(
+            mode: _mode,
+            hasStrokes: _strokes.isNotEmpty,
+            hasUndo: _undoStack.isNotEmpty,
+            hasText: _textController.text.isNotEmpty,
+            onUndo: _undo,
+            onRedo: _redo,
+            onInsertTimestamp: _insertTimestamp,
+            onCopyText: _copyText,
+            onClearAll: _clearAll,
           ),
-          const SizedBox(width: AppSpacing.sm),
         ],
       ),
       body: Column(
@@ -329,63 +306,42 @@ class _QuickMemoScreenState extends State<QuickMemoScreen> {
                   ),
                 ),
                 // 手書きモード
-                if (_mode == QuickMemoMode.drawing) ...[
-                  Positioned.fill(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onPanStart: _onPanStart,
-                      onPanUpdate: _onPanUpdate,
-                      onPanEnd: _onPanEnd,
-                      child: CustomPaint(
-                        painter: MemoCanvasPainter(
-                          strokes: _strokes,
-                          currentPoints: _currentPoints,
-                          currentColor: _selectedColor,
-                          currentWidth: _selectedWidth,
-                        ),
-                      ),
-                    ),
+                if (_mode == QuickMemoMode.drawing)
+                  QuickMemoDrawingCanvas(
+                    strokes: _strokes,
+                    currentPoints: _currentPoints,
+                    selectedColor: _selectedColor,
+                    selectedWidth: _selectedWidth,
+                    isEraser: _isEraser,
+                    isDark: isDark,
+                    themeColors: themeColors,
+                    onPanStart: _onPanStart,
+                    onPanUpdate: _onPanUpdate,
+                    onPanEnd: _onPanEnd,
+                    onColorChanged: (color) {
+                      setState(() {
+                        _selectedColor = color;
+                        _isEraser = false;
+                      });
+                    },
+                    onToggleWidth: () {
+                      setState(() {
+                        _isEraser = false;
+                        if (_selectedWidth == 2.0) {
+                          _selectedWidth = 4.0;
+                        } else if (_selectedWidth == 4.0) {
+                          _selectedWidth = 8.0;
+                        } else {
+                          _selectedWidth = 2.0;
+                        }
+                      });
+                    },
+                    onToggleEraser: () {
+                      setState(() {
+                        _isEraser = !_isEraser;
+                      });
+                    },
                   ),
-                  if (_strokes.isEmpty && _currentPoints.isEmpty)
-                    QuickMemoEmptyGuidance(textColor: themeColors.textColor),
-                  // 下部ツールバー（手書き用）
-                  Positioned(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    bottom:
-                        MediaQuery.of(context).padding.bottom + AppSpacing.md,
-                    child: QuickMemoDrawingToolbar(
-                      themeColors: themeColors,
-                      isDark: isDark,
-                      selectedColor: _selectedColor,
-                      selectedWidth: _selectedWidth,
-                      isEraser: _isEraser,
-                      onColorChanged: (color) {
-                        setState(() {
-                          _selectedColor = color;
-                          _isEraser = false;
-                        });
-                      },
-                      onToggleWidth: () {
-                        setState(() {
-                          _isEraser = false;
-                          if (_selectedWidth == 2.0) {
-                            _selectedWidth = 4.0;
-                          } else if (_selectedWidth == 4.0) {
-                            _selectedWidth = 8.0;
-                          } else {
-                            _selectedWidth = 2.0;
-                          }
-                        });
-                      },
-                      onToggleEraser: () {
-                        setState(() {
-                          _isEraser = !_isEraser;
-                        });
-                      },
-                    ),
-                  ),
-                ],
                 // テキストモード
                 if (_mode == QuickMemoMode.text) ...[
                   Positioned.fill(
