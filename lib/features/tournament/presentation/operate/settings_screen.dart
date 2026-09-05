@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_accordion_selector.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
@@ -57,12 +58,10 @@ class SettingsScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    final Color dynamicTextColor = context.appColors.textColor;
-
     final listContent = ListView(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xl,
+      padding: EdgeInsets.symmetric(
+        horizontal: isBottomSheet ? AppSpacing.sm : AppSpacing.lg,
+        vertical: isBottomSheet ? AppSpacing.md : AppSpacing.xl,
       ),
       children: [
         // ==========================================
@@ -73,35 +72,20 @@ class SettingsScreen extends ConsumerWidget {
           enableLiquidGlass: enableLiquidGlass,
           themeColors: themeColors,
           children: [
-            SettingsListTile(
+            SettingsAccordionSelector<String>(
               title: '外観テーマ',
               icon: Icons.dark_mode,
               iconBgColor: AppKendoColors.blue,
-              trailing: DropdownButton<String>(
-                value: settings.themeMode,
-                isDense: true,
-                underline: const SizedBox(),
-                borderRadius: AppRadius.medium,
-                icon: Icon(Icons.arrow_drop_down, color: dynamicTextColor),
-                style: TextStyle(
-                  color: dynamicTextColor,
-                  fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.body,
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'system', child: Text('端末連動')),
-                  DropdownMenuItem(value: 'light', child: Text('ライト')),
-                  DropdownMenuItem(value: 'dark', child: Text('ダーク')),
-                  DropdownMenuItem(value: 'sunshine', child: Text('☀️ サンシャイン')),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    ref
-                        .read(settingsProvider.notifier)
-                        .updateField(themeMode: val);
-                  }
-                },
-              ),
+              selectedValue: settings.themeMode,
+              items: const [
+                SettingsAccordionItem(value: 'system', label: '端末連動'),
+                SettingsAccordionItem(value: 'light', label: 'ライト'),
+                SettingsAccordionItem(value: 'dark', label: 'ダーク'),
+                SettingsAccordionItem(value: 'sunshine', label: '☀️ サンシャイン'),
+              ],
+              onSelected: (val) {
+                ref.read(settingsProvider.notifier).updateField(themeMode: val);
+              },
             ),
             SettingsSwitchTile(
               title: 'スリープ(画面消灯)防止',
@@ -141,28 +125,19 @@ class SettingsScreen extends ConsumerWidget {
           enableLiquidGlass: enableLiquidGlass,
           themeColors: themeColors,
           children: [
-            SettingsListTile(
+            SettingsAccordionSelector<String>(
               title: '音声・サウンド設定',
               icon: Icons.volume_up,
               iconBgColor: AppKendoColors.pinkAccent,
-              trailing: DropdownButton<String>(
-                value: settings.audioFeedbackMode,
-                underline: const SizedBox(),
-                borderRadius: AppRadius.medium,
-                icon: Icon(Icons.arrow_drop_down, color: dynamicTextColor),
-                style: TextStyle(
-                  color: dynamicTextColor,
-                  fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.body,
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'off', child: Text('OFF')),
-                  DropdownMenuItem(value: 'effect', child: Text('効果音')),
-                  DropdownMenuItem(value: 'voice', child: Text('音声読み上げ')),
-                ],
-                onChanged: (val) =>
-                    notifier.updateField(audioFeedbackMode: val),
-              ),
+              selectedValue: settings.audioFeedbackMode,
+              items: const [
+                SettingsAccordionItem(value: 'off', label: 'OFF'),
+                SettingsAccordionItem(value: 'effect', label: '効果音'),
+                SettingsAccordionItem(value: 'voice', label: '音声読み上げ'),
+              ],
+              onSelected: (val) {
+                notifier.updateField(audioFeedbackMode: val);
+              },
             ),
             if (settings.audioFeedbackMode != 'off')
               SettingsSwitchTile(
@@ -311,6 +286,12 @@ class SettingsScreen extends ConsumerWidget {
           text: 'ログアウトすると現在のセッションが終了し、次回利用時に再ログインが必要になります。',
         ),
         const SizedBox(height: AppSpacing.xl),
+        if (isBottomSheet)
+          SettingsTestActionPanel(
+            settings: settings,
+            enableLiquidGlass: enableLiquidGlass,
+            themeColors: themeColors,
+          ),
       ],
     );
 
@@ -325,19 +306,22 @@ class SettingsScreen extends ConsumerWidget {
           ),
         Expanded(child: listContent),
         // ==========================================
-        // 6. テスト用インタラクティブエリア（画面下部固定）
+        // 6. テスト用インタラクティブエリア（全画面時のみ画面下部固定）
         // ==========================================
-        SettingsTestActionPanel(
-          settings: settings,
-          enableLiquidGlass: enableLiquidGlass,
-          themeColors: themeColors,
-        ),
+        if (!isBottomSheet)
+          SettingsTestActionPanel(
+            settings: settings,
+            enableLiquidGlass: enableLiquidGlass,
+            themeColors: themeColors,
+          ),
       ],
     );
 
     if (isBottomSheet) {
       return DockDraggableSheet(
-        backgroundColor: themeColors.scaffoldBackground,
+        backgroundColor: isDark
+            ? const Color(0xFF1E1E20)
+            : themeColors.cardBackground,
         builder: (context, scrollController) => bodyContent,
       );
     }

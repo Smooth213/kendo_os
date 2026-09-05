@@ -30,11 +30,13 @@ final viewerProgramListProvider =
 class ProgramViewerScreen extends ConsumerStatefulWidget {
   final List<ProgramModel> programs;
   final int initialIndex;
+  final bool initialDrawingMode;
 
   const ProgramViewerScreen({
     super.key,
     required this.programs,
     required this.initialIndex,
+    this.initialDrawingMode = false,
   });
 
   @override
@@ -65,7 +67,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   bool _isSearchMode = false;
   String _currentSearchText = "";
 
-  bool _isDrawingMode = false;
+  late bool _isDrawingMode;
   Color _selectedPenColor = AppKendoColors.blue;
   bool get _isSharedPen =>
       _selectedPenColor == AppKendoColors.pink ||
@@ -85,6 +87,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _isDrawingMode = widget.initialDrawingMode;
     _pageController = PageController(initialPage: widget.initialIndex);
     _transformationController.addListener(_handleTransformationChanged);
   }
@@ -299,9 +302,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                           program: program,
                           pageCount: _pdfPageCounts[program.fileUrl] ?? 1,
                           pdfViewerController: _pdfViewerController,
-                          sdkPdfBytesFuture: kIsWeb
-                              ? getCachedPdfBytesViaSdk(program.fileUrl)
-                              : null,
+                          sdkPdfBytesFuture: getCachedPdfBytesViaSdk(
+                            program.fileUrl,
+                          ),
                           onPageCountLoaded: (count) {
                             if (mounted &&
                                 _pdfPageCounts[program.fileUrl] != count) {
@@ -345,6 +348,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     scaleEnabled: !_isDrawingMode,
                     minScale: 1.0,
                     maxScale: 5.0,
+                    alignment: Alignment.center,
                     child: Center(child: childWidget),
                   );
                 },

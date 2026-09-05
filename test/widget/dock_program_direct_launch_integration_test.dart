@@ -9,10 +9,22 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/operate/providers/program_list_provider.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  late SharedPreferences mockPrefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({
+      'kendo_os_theme_mode': 'system',
+      'kendo_os_enable_liquid_glass': true,
+    });
+    mockPrefs = await SharedPreferences.getInstance();
+  });
 
   group('🥋 起動後直接ドックからプログラム表示＆リアルタイム更新統合テスト', () {
     tearDown(() async {
@@ -68,6 +80,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
             currentDojoIdProvider.overrideWith((ref) => 'default_dojo_room'),
             programListProvider(
               tournamentId,

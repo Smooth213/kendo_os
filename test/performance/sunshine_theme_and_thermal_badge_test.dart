@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_accordion_selector.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
@@ -188,24 +189,26 @@ void main() {
       expect(find.text('外観テーマ'), findsOneWidget);
       expect(find.byIcon(Icons.dark_mode), findsOneWidget);
 
-      // 2. ドロップダウンを開く
-      final dropdownFinder = find.byType(DropdownButton<String>).first;
-      expect(dropdownFinder, findsOneWidget);
-      await tester.tap(dropdownFinder);
+      // 2. インラインアコーディオンセレクターが存在すること
+      final selectorFinder = find.byType(SettingsAccordionSelector<String>);
+      expect(selectorFinder, findsOneWidget);
+
+      // アコーディオンを展開
+      await tester.tap(selectorFinder);
       await tester.pumpAndSettle();
 
       // 3. 4つのテーマ選択肢がすべて存在すること
-      expect(find.text('端末連動').last, findsOneWidget);
-      expect(find.text('ライト').last, findsOneWidget);
-      expect(find.text('ダーク').last, findsOneWidget);
-      expect(find.text('☀️ サンシャイン').last, findsOneWidget);
+      expect(find.text('端末連動'), findsWidgets);
+      expect(find.text('ライト'), findsWidgets);
+      expect(find.text('ダーク'), findsWidgets);
+      expect(find.text('☀️ サンシャイン'), findsWidgets);
 
       // 4. 「☀️ サンシャイン」をタップして選択できること
       await tester.tap(find.text('☀️ サンシャイン').last);
       await tester.pumpAndSettle();
 
       // 選択が反映されていること
-      expect(find.text('☀️ サンシャイン'), findsOneWidget);
+      expect(find.text('☀️ サンシャイン'), findsWidgets);
     });
 
     testWidgets(

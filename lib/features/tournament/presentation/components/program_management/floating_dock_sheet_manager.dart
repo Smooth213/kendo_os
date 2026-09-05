@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 /// 🥋 ドックから開くボトムシート専用のフローティングマネージャー（Googleマップ型・背面操作可能）
@@ -32,18 +37,84 @@ class FloatingDockSheetManager {
 
     _onClosedCallback = onClosed;
 
+    ProviderContainer? container;
+    try {
+      container = ProviderScope.containerOf(context, listen: false);
+    } catch (_) {
+      container = null;
+    }
+
     late OverlayEntry entry;
     entry = OverlayEntry(
       builder: (overlayContext) {
-        return _FloatingDockSheetHost(
-          onHostCreated: (state) {
-            _currentHostState = state;
-          },
-          onCloseRequested: () {
-            close();
-          },
-          child: builder(overlayContext),
-        );
+        Widget buildSheet(BuildContext ctx, {SettingsModel? settings}) {
+          final bool isDark;
+          final bool isSunshine;
+          if (settings != null) {
+            if (settings.themeMode == 'dark') {
+              isDark = true;
+            } else if (settings.themeMode == 'light' ||
+                settings.themeMode == 'sunshine') {
+              isDark = false;
+            } else {
+              isDark = MediaQuery.platformBrightnessOf(ctx) == Brightness.dark;
+            }
+            isSunshine = settings.themeMode == 'sunshine';
+          } else {
+            isDark = Theme.of(ctx).brightness == Brightness.dark;
+            isSunshine = false;
+          }
+
+          final themeColors = AppThemeColors.ofMode(
+            isDark: isDark,
+            mode: isSunshine ? 'sunshine' : 'normal',
+          );
+
+          final theme = ThemeData(
+            brightness: isDark ? Brightness.dark : Brightness.light,
+            useMaterial3: true,
+            scaffoldBackgroundColor: isDark
+                ? AppKendoColors.pureBlack
+                : (isSunshine
+                      ? AppKendoColors.pureWhite
+                      : const Color(0xFFF2F2F7)),
+            canvasColor: isDark
+                ? const Color(0xFF1E1E20)
+                : AppKendoColors.pureWhite,
+            extensions: [themeColors],
+          );
+
+          return Theme(
+            data: theme,
+            child: _FloatingDockSheetHost(
+              onHostCreated: (state) {
+                _currentHostState = state;
+              },
+              onCloseRequested: () {
+                close();
+              },
+              child: builder(overlayContext),
+            ),
+          );
+        }
+
+        if (container != null) {
+          return UncontrolledProviderScope(
+            container: container,
+            child: Consumer(
+              builder: (ctx, ref, _) {
+                SettingsModel? settings;
+                try {
+                  settings = ref.watch(settingsProvider);
+                } catch (_) {
+                  settings = null;
+                }
+                return buildSheet(ctx, settings: settings);
+              },
+            ),
+          );
+        }
+        return buildSheet(overlayContext);
       },
     );
 

@@ -204,6 +204,7 @@ final appRouter = GoRouter(
           child: ProgramViewerScreen(
             programs: args['programs'] as List<ProgramModel>,
             initialIndex: args['index'] as int,
+            initialDrawingMode: args['initialDrawingMode'] as bool? ?? false,
           ),
         );
       },

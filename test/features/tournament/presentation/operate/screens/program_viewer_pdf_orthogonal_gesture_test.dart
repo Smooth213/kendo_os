@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
@@ -57,7 +57,16 @@ class MockHttpClientRequest extends Mock implements HttpClientRequest {
 }
 
 class MockHttpClientResponse extends Mock implements HttpClientResponse {
-  final List<int> _bytes = utf8.encode('%PDF-1.0\n...\n%%EOF');
+  static final List<int> _mockPdfBytes = () {
+    final doc = PdfDocument();
+    doc.pages.add();
+    doc.pages.add();
+    final bytes = doc.saveSync();
+    doc.dispose();
+    return bytes;
+  }();
+
+  final List<int> _bytes = _mockPdfBytes;
   final HttpHeaders _headers;
 
   MockHttpClientResponse(this._headers);
@@ -239,6 +248,7 @@ void main() {
           equals(Axis.vertical),
           reason: 'PDFページめくりは直感的な縦スクロール（Axis.vertical）でなければなりません',
         );
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -279,6 +289,7 @@ void main() {
           reason:
               'Safariの4096pxメモリ上限を超えないよう、各ページは高さ1414pxの安全サイズで固定されていなければなりません',
         );
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -336,6 +347,7 @@ void main() {
           isA<NeverScrollableScrollPhysics>(),
           reason: 'ペン描画中は誤ってページが縦スクロールしないようロックされなければなりません',
         );
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -384,6 +396,7 @@ void main() {
         findsOneWidget,
         reason: 'PDF用紙と手書きペンは同じStack内に一体配置されていなければなりません',
       );
+      await tester.pump(const Duration(milliseconds: 500));
     });
 
     testWidgets('5. ページごとのペン分離: 各ページの手書きペンがページ番号（pageIndex）ごとに独立管理されること', (
@@ -417,6 +430,7 @@ void main() {
         reason: '1ページ目のペンは pageIndex: 0 として独立管理されなければなりません',
       );
       expect(overlay.programId, equals('pdf-prog-multi'));
+      await tester.pump(const Duration(milliseconds: 500));
     });
   });
 }

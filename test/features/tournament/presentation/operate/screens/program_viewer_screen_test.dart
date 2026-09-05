@@ -227,6 +227,7 @@ void main() {
       // PDFビューアのコンテナがツリーに存在すること
       expect(find.byType(SfPdfViewer), findsOneWidget);
 
+      await tester.pump(const Duration(milliseconds: 500));
       HttpOverrides.global = null;
     });
 
@@ -499,6 +500,7 @@ void main() {
       expect(future2, equals(dummyFuture));
 
       await tester.pump(const Duration(seconds: 1)); // タイマー消化
+      await tester.pump(const Duration(milliseconds: 500));
       HttpOverrides.global = null;
     });
 

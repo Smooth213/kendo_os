@@ -69,6 +69,8 @@ dependencies:
   firebase_storage: ^13.2.0 # ★ Phase 9: authのバージョンと足並みを揃えるため v13.2 へ引き上げ
   file_picker: ^8.0.0 # ★ Phase 9: PDF・画像ファイルの選択
   syncfusion_flutter_pdfviewer: ^28.1.38 # ★ Phase 9: 最強のPDFレンダリング＆検索エンジン
+  syncfusion_flutter_pdf: ^28.1.38 # ★ ページ抽出・回転・PDFドキュメント操作
+  syncfusion_flutter_core: ^28.1.38 # ★ Syncfusion テーマ定義
   flutter_image_compress: ^2.3.0 # ★ Phase 9: 画像の自動圧縮（容量節約）
   path: ^1.9.0
   image: ^4.2.0 # 🎨 Web/Native両対応の画像圧縮ライブラリ

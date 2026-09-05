@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/program_list_provider.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -11,8 +10,15 @@ import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_sheet_empty_state.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_sheet_image_viewer.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_sheet_pagination_bar.dart';
+import 'package:kendo_os/shared/routing/app_router.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../program_viewer/program_viewer_media_cache.dart';
+import '../program_viewer/program_viewer_pdf_body.dart';
 import 'program_stroke_layer.dart';
 
 /// 🥋 大会プログラム 2画面クイック確認シート（ボトムシート＆サイドパネル両対応）
@@ -55,16 +61,49 @@ class ProgramBottomSheet extends ConsumerStatefulWidget {
 class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
   late int _currentIndex;
   final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache();
+  late PdfViewerController _pdfController;
+  int _pageNumber = 1;
+  int _pageCount = 0;
+  String? _cachedPdfUrl;
+  Future<Uint8List>? _cachedPdfBytesFuture;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _pdfController = PdfViewerController();
   }
 
   @override
   void dispose() {
+    _pdfController.dispose();
     super.dispose();
+  }
+
+  Future<Uint8List> _getPdfBytes(String url) {
+    if (_cachedPdfUrl == url && _cachedPdfBytesFuture != null) {
+      return _cachedPdfBytesFuture!;
+    }
+    _cachedPdfUrl = url;
+    _cachedPdfBytesFuture = _mediaCache.getCachedPdfBytesViaSdk(url);
+    return _cachedPdfBytesFuture!;
+  }
+
+  void _openProgramViewer(
+    BuildContext context,
+    List<ProgramModel> programs, {
+    required bool isDrawingMode,
+  }) {
+    AppHaptics.selection();
+    FloatingDockSheetManager.close(immediate: true);
+    appRouter.push(
+      widget.isViewerMode ? '/program-viewer?role=viewer' : '/program-viewer',
+      extra: {
+        'programs': programs,
+        'index': _currentIndex,
+        'initialDrawingMode': isDrawingMode,
+      },
+    );
   }
 
   @override
@@ -74,6 +113,7 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final programAsync = ref.watch(programListProvider(widget.tournamentId));
+    final currentPrograms = programAsync.valueOrNull;
 
     return DockDraggableSheet(
       backgroundColor: isDark
@@ -83,7 +123,7 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
         return Column(
           children: [
             // 統一ヘッダー
-            _buildHeader(context, themeColors, isDark),
+            _buildHeader(context, themeColors, isDark, currentPrograms),
             // プログラムコンテンツ
             Expanded(
               child: programAsync.when(
@@ -96,7 +136,11 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
                 ),
                 data: (programs) {
                   if (programs.isEmpty) {
-                    return _buildEmptyState(context, themeColors);
+                    return ProgramSheetEmptyState(
+                      tournamentId: widget.tournamentId,
+                      isViewerMode: widget.isViewerMode,
+                      themeColors: themeColors,
+                    );
                   }
                   if (_currentIndex >= programs.length) {
                     _currentIndex = 0;
@@ -128,6 +172,7 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
     BuildContext context,
     AppThemeColors themeColors,
     bool isDark,
+    List<ProgramModel>? programs,
   ) {
     return DockBottomSheetHeader(
       title: '大会プログラム・進行表',
@@ -140,40 +185,24 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
             size: 18,
             color: themeColors.primaryAccent,
           ),
-          tooltip: 'ペンでメモを記入',
+          tooltip: 'ペンでメモを記入（全画面手書きモード）',
           onPressed: () {
-            final programs = ref
-                .read(programListProvider(widget.tournamentId))
-                .valueOrNull;
-            if (programs != null && programs.isNotEmpty) {
-              Navigator.pop(context);
-              context.push(
-                widget.isViewerMode
-                    ? '/program-viewer?role=viewer'
-                    : '/program-viewer',
-                extra: {
-                  'programs': programs,
-                  'index': _currentIndex,
-                  'initialDrawingMode': true,
-                },
-              );
-            }
+            final activePrograms =
+                programs ??
+                ref
+                    .read(programListProvider(widget.tournamentId))
+                    .valueOrNull ??
+                [];
+            _openProgramViewer(context, activePrograms, isDrawingMode: true);
           },
         ),
       ],
       onFullScreen: () {
-        final programs = ref
-            .read(programListProvider(widget.tournamentId))
-            .valueOrNull;
-        if (programs != null && programs.isNotEmpty) {
-          Navigator.pop(context);
-          context.push(
-            widget.isViewerMode
-                ? '/program-viewer?role=viewer'
-                : '/program-viewer',
-            extra: {'programs': programs, 'index': _currentIndex},
-          );
-        }
+        final activePrograms =
+            programs ??
+            ref.read(programListProvider(widget.tournamentId)).valueOrNull ??
+            [];
+        _openProgramViewer(context, activePrograms, isDrawingMode: false);
       },
     );
   }
@@ -226,216 +255,65 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
     final itemProgramId = program.id.isNotEmpty ? program.id : program.fileUrl;
 
     if (program.fileType == 'pdf') {
-      const double canvasWidth = 1000.0;
-      const double canvasHeight = 1414.0;
-
-      return ClipRRect(
-        child: InteractiveViewer(
-          minScale: 0.8,
-          maxScale: 4.0,
-          child: Center(
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: SizedBox(
-                width: canvasWidth,
-                height: canvasHeight,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: kIsWeb
-                            ? FutureBuilder<Uint8List>(
-                                future: _mediaCache.getCachedPdfBytesViaSdk(
-                                  program.fileUrl,
-                                ),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasError) {
-                                    return Center(
-                                      child: Text(
-                                        'PDFロード失敗: ${snapshot.error}',
-                                        style: const TextStyle(
-                                          color: AppKendoColors.redAccent,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  if (!snapshot.hasData) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppKendoColors.ipponGold,
-                                      ),
-                                    );
-                                  }
-                                  return SfPdfViewer.memory(
-                                    snapshot.data!,
-                                    key: ValueKey(program.fileUrl),
-                                    initialPageNumber: 1,
-                                    pageLayoutMode: PdfPageLayoutMode.single,
-                                    canShowScrollHead: false,
-                                    canShowScrollStatus: false,
-                                    canShowPaginationDialog: false,
-                                    enableDoubleTapZooming: false,
-                                    enableTextSelection: false,
-                                  );
-                                },
-                              )
-                            : SfPdfViewer.network(
-                                program.fileUrl,
-                                key: ValueKey(program.fileUrl),
-                                initialPageNumber: 1,
-                                pageLayoutMode: PdfPageLayoutMode.single,
-                                canShowScrollHead: false,
-                                canShowScrollStatus: false,
-                                canShowPaginationDialog: false,
-                                enableDoubleTapZooming: false,
-                                enableTextSelection: false,
-                              ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: ProgramStrokeLayer(
-                        programId: itemProgramId,
-                        pageIndex: 0,
-                        penWidth: 10.0,
-                      ),
-                    ),
-                  ],
+      return Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          ClipRRect(
+            child: InteractiveViewer(
+              alignment: Alignment.center,
+              minScale: 0.8,
+              maxScale: 4.0,
+              child: Center(
+                child: ProgramViewerPdfBody(
+                  program: program,
+                  pageCount: _pageCount > 0 ? _pageCount : 1,
+                  pdfViewerController: _pdfController,
+                  sdkPdfBytesFuture: _getPdfBytes(program.fileUrl),
+                  onPageCountLoaded: (count) {
+                    if (mounted && _pageCount != count) {
+                      setState(() => _pageCount = count);
+                    }
+                  },
+                  buildPageOverlay: (pIndex) => ProgramStrokeLayer(
+                    programId: itemProgramId,
+                    pageIndex: pIndex,
+                    penWidth: 10.0,
+                  ),
+                  initialPage: _pageNumber - 1,
+                  onPageChanged: (pIndex) {
+                    if (mounted) {
+                      setState(() => _pageNumber = pIndex + 1);
+                    }
+                  },
                 ),
               ),
             ),
           ),
-        ),
+          // 📄 複数ページPDF対応のページ送りナビゲーションバー
+          Positioned(
+            bottom: AppSpacing.sm,
+            child: ProgramSheetPaginationBar(
+              currentPage: _pageNumber,
+              pageCount: _pageCount,
+              themeColors: themeColors,
+              isDark: isDark,
+              onPageChanged: (newPage) {
+                if (mounted && newPage >= 1 && newPage <= _pageCount) {
+                  setState(() => _pageNumber = newPage);
+                }
+              },
+            ),
+          ),
+        ],
       );
     }
 
-    return ClipRRect(
-      child: InteractiveViewer(
-        minScale: 0.8,
-        maxScale: 4.0,
-        child: Center(
-          child: FutureBuilder<Size>(
-            future: _mediaCache.getCachedImageSize(program.fileUrl),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppKendoColors.ipponGold,
-                  ),
-                );
-              }
-              final imgSize = snapshot.data!;
-              const double maxDimension = 2048.0;
-              final bool isTooLarge =
-                  imgSize.width > maxDimension || imgSize.height > maxDimension;
-              final double scale = isTooLarge
-                  ? (maxDimension /
-                        (imgSize.width > imgSize.height
-                            ? imgSize.width
-                            : imgSize.height))
-                  : 1.0;
-              final Size displaySize = Size(
-                imgSize.width * scale,
-                imgSize.height * scale,
-              );
-              final double imagePenWidth = (displaySize.width * 0.005).clamp(
-                8.0,
-                50.0,
-              );
-
-              return FittedBox(
-                fit: BoxFit.contain,
-                child: SizedBox(
-                  width: displaySize.width,
-                  height: displaySize.height,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: program.fileUrl.contains('example.com')
-                            ? Container(
-                                color: themeColors.cardBackground,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.image,
-                                    size: 64,
-                                    color: themeColors.primaryAccent,
-                                  ),
-                                ),
-                              )
-                            : Image.network(
-                                _mediaCache.getSafeUrl(program.fileUrl),
-                                fit: BoxFit.fill,
-                                errorBuilder: (context, _, _) => Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.broken_image,
-                                        size: 48,
-                                        color: AppKendoColors.grey,
-                                      ),
-                                      const SizedBox(height: AppSpacing.sm),
-                                      Text(
-                                        '画像を読み込めませんでした',
-                                        style: TextStyle(
-                                          color: themeColors.subTextColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                      ),
-                      Positioned.fill(
-                        child: ProgramStrokeLayer(
-                          programId: itemProgramId,
-                          pageIndex: _currentIndex,
-                          penWidth: imagePenWidth,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context, AppThemeColors themeColors) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.menu_book_outlined,
-            size: 56,
-            color: themeColors.subTextColor.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            widget.isViewerMode
-                ? '大会プログラムはまだ登録されていません'
-                : 'プログラム（進行表・トーナメント表）を登録してください',
-            style: TextStyle(
-              color: themeColors.subTextColor,
-              fontSize: AppFontSize.body,
-            ),
-          ),
-          if (!widget.isViewerMode) ...[
-            const SizedBox(height: AppSpacing.md),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('プログラムを追加する'),
-              onPressed: () {
-                Navigator.pop(context);
-                context.push('/tournament/${widget.tournamentId}/programs');
-              },
-            ),
-          ],
-        ],
-      ),
+    return ProgramSheetImageViewer(
+      program: program,
+      programId: itemProgramId,
+      pageIndex: _currentIndex,
+      themeColors: themeColors,
+      mediaCache: _mediaCache,
     );
   }
 }

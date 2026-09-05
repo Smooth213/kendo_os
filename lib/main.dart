@@ -290,7 +290,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
 
             return Scaffold(
               backgroundColor: isDark
-                  ? const Color(0xFFFFFFFF)
+                  ? AppKendoColors.pureBlack
                   : const Color(0xFFF2F2F7),
               body: Column(
                 children: [
