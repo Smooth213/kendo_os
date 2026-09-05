@@ -27,7 +27,8 @@ void main(List<String> args) {
     if (file.contains('lib/domain/rules/')) {
       hasRuleChange = true;
     }
-    if (file.startsWith('docs/manuals/') && file.endsWith('.md')) {
+    if (file.startsWith('packages/documentation_runtime/manuals/') &&
+        file.endsWith('.md')) {
       hasManualUpdate = true;
     }
     // ★ Step 4-4: 監視対象を新しいアセットディレクトリに変更
@@ -36,7 +37,7 @@ void main(List<String> args) {
     }
   }
 
-  final manualsDir = Directory('docs/manuals');
+  final manualsDir = Directory('packages/documentation_runtime/manuals');
   final List<File> allManuals;
   if (manualsDir.existsSync()) {
     allManuals = manualsDir

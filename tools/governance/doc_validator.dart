@@ -8,22 +8,26 @@ import 'dart:io';
 void main() {
   print('📚 [Doc Validator] Scanning documentation constraints...');
 
-  final manualsDir = Directory('docs/manuals');
+  final manualsDir = Directory('packages/documentation_runtime/manuals');
   if (!manualsDir.existsSync()) {
-    print('✅ [PASS] docs/manuals does not exist yet. Skipping deep scan.');
-    return;
+    print('🚨 [BLOCK] packages/documentation_runtime/manuals does not exist.');
+    exit(1);
   }
 
   bool hasError = false;
 
-  // 簡易チェック実装 (md存在確認など)
+  // Markdown存在確認・タイトル検査
   final mdFiles = manualsDir
       .listSync(recursive: true)
       .whereType<File>()
-      .where((f) => f.path.endsWith('.md'));
+      .where((f) => f.path.endsWith('.md'))
+      .toList();
 
   if (mdFiles.isEmpty) {
-    print('⚠️ [WARN] No markdown files found in docs/manuals.');
+    print(
+      '🚨 [FAIL] No markdown files found in packages/documentation_runtime/manuals.',
+    );
+    hasError = true;
   } else {
     for (var file in mdFiles) {
       final content = file.readAsStringSync();
@@ -32,7 +36,6 @@ void main() {
         print('❌ [FAIL] Missing H1 Title (# ) in: ${file.path}');
         hasError = true;
       }
-      // INFO: Broken link and image detection is now fully implemented and delegated to tools/governance_lint/doc_sync_validator.dart (Phase 7).
     }
   }
 
@@ -41,5 +44,7 @@ void main() {
     exit(1);
   }
 
-  print('✅ [PASS] Documentation structure is valid.');
+  print(
+    '✅ [PASS] Documentation structure is valid (${mdFiles.length} files scanned).',
+  );
 }
