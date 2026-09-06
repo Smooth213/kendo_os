@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_data_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_player_slot_tile.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_state_holder.dart'
+    show MatchEditOwnTeamChoice;
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 試合編集シートの「チーム・選手情報」タブ
@@ -17,6 +20,8 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
   final bool isDark;
   final Color textColor;
   final VoidCallback onSwapTeamsAndPlayers;
+  final MatchEditOwnTeamChoice ownTeamChoice;
+  final ValueChanged<MatchEditOwnTeamChoice>? onOwnTeamChoiceChanged;
 
   const MatchEditTeamAndPlayersTab({
     super.key,
@@ -29,6 +34,8 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
     required this.isDark,
     required this.textColor,
     required this.onSwapTeamsAndPlayers,
+    this.ownTeamChoice = MatchEditOwnTeamChoice.none,
+    this.onOwnTeamChoiceChanged,
   });
 
   @override
@@ -100,6 +107,75 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                   ),
                   onPressed: onSwapTeamsAndPlayers,
                 ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Divider(height: 1),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.star_rounded,
+                    size: 16,
+                    color: AppKendoColors.amber,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    '自チーム指定（スコア・勝敗集計の対象）',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  AppChoiceChip(
+                    label: Text(
+                      redTeamController.text.trim().isNotEmpty
+                          ? '🔴 赤（${redTeamController.text.trim()}）'
+                          : '🔴 赤側',
+                    ),
+                    selected: ownTeamChoice == MatchEditOwnTeamChoice.red,
+                    onSelected: (val) {
+                      onOwnTeamChoiceChanged?.call(
+                        val
+                            ? MatchEditOwnTeamChoice.red
+                            : MatchEditOwnTeamChoice.none,
+                      );
+                    },
+                  ),
+                  AppChoiceChip(
+                    label: Text(
+                      whiteTeamController.text.trim().isNotEmpty
+                          ? '⚪ 白（${whiteTeamController.text.trim()}）'
+                          : '⚪ 白側',
+                    ),
+                    selected: ownTeamChoice == MatchEditOwnTeamChoice.white,
+                    onSelected: (val) {
+                      onOwnTeamChoiceChanged?.call(
+                        val
+                            ? MatchEditOwnTeamChoice.white
+                            : MatchEditOwnTeamChoice.none,
+                      );
+                    },
+                  ),
+                  AppChoiceChip(
+                    label: const Text('✖ なし（他チーム同士）'),
+                    selected: ownTeamChoice == MatchEditOwnTeamChoice.none,
+                    onSelected: (val) {
+                      onOwnTeamChoiceChanged?.call(
+                        val
+                            ? MatchEditOwnTeamChoice.none
+                            : MatchEditOwnTeamChoice.none,
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

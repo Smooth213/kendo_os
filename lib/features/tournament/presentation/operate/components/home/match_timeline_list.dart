@@ -9,6 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show tournamentProvider;
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -130,10 +131,12 @@ class MatchTimelineList extends ConsumerWidget {
             final categoryName = catEntry.key;
             final catMatches = catEntry.value;
             final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+            final ownInfo = ref.watch(tournamentOwnInfoProvider(tournamentId));
             final sortedTeams =
                 TimelineCategoryTeamResolver.resolveMatchesByTeam(
                   catMatches: catMatches,
                   ownTeams: ownTeams,
+                  ownInfo: ownInfo,
                 );
 
             return Column(

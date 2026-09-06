@@ -1,4 +1,5 @@
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 
 /// タイムライン画面用 カテゴリ・チーム振り分け解決ロジックヘルパー
 class TimelineCategoryTeamResolver {
@@ -6,23 +7,53 @@ class TimelineCategoryTeamResolver {
   static List<MapEntry<String, List<MatchModel>>> resolveMatchesByTeam({
     required List<MatchModel> catMatches,
     required List<String> ownTeams,
+    TournamentOwnInfo? ownInfo,
   }) {
     final matchesByTeam = <String, List<MatchModel>>{};
     final groupToOwnTeams = <String, Set<String>>{};
     final groupToRepresentativeTeam = <String, String>{};
 
+    String extractTeam(String rawName) {
+      if (rawName.contains(':')) {
+        return rawName.split(':').first.trim();
+      }
+      final resolved = ownInfo?.resolveTeamForPlayer(rawName.trim());
+      if (resolved != null && resolved.isNotEmpty) {
+        return resolved;
+      }
+      return rawName.trim();
+    }
+
+    String extractPlayer(String rawName) {
+      if (rawName.contains(':')) {
+        return rawName.split(':').last.trim();
+      }
+      return rawName.trim();
+    }
+
     for (var m in catMatches) {
       if (m.groupName != null && m.groupName!.isNotEmpty) {
-        String rTeam = m.redName.contains(':')
-            ? m.redName.split(':').first.trim()
-            : m.redName;
-        String wTeam = m.whiteName.contains(':')
-            ? m.whiteName.split(':').first.trim()
-            : m.whiteName;
+        String rTeam = extractTeam(m.redName);
+        String wTeam = extractTeam(m.whiteName);
+        String rPlayer = extractPlayer(m.redName);
+        String wPlayer = extractPlayer(m.whiteName);
+
         final isRedOwnForM =
+            (ownInfo?.isOwnSide(
+                  teamPart: rTeam,
+                  namePart: rPlayer,
+                  ruleTeamName: m.rule?.teamName,
+                ) ??
+                false) ||
             ownTeams.contains(rTeam) ||
             (m.rule?.teamName.isNotEmpty == true && rTeam == m.rule!.teamName);
         final isWhiteOwnForM =
+            (ownInfo?.isOwnSide(
+                  teamPart: wTeam,
+                  namePart: wPlayer,
+                  ruleTeamName: m.rule?.teamName,
+                ) ??
+                false) ||
             ownTeams.contains(wTeam) ||
             (m.rule?.teamName.isNotEmpty == true && wTeam == m.rule!.teamName);
         if (isRedOwnForM) {
@@ -43,17 +74,27 @@ class TimelineCategoryTeamResolver {
     }
 
     for (var m in catMatches) {
-      String rTeam = m.redName.contains(':')
-          ? m.redName.split(':').first.trim()
-          : m.redName;
-      String wTeam = m.whiteName.contains(':')
-          ? m.whiteName.split(':').first.trim()
-          : m.whiteName;
+      String rTeam = extractTeam(m.redName);
+      String wTeam = extractTeam(m.whiteName);
+      String rPlayer = extractPlayer(m.redName);
+      String wPlayer = extractPlayer(m.whiteName);
 
       bool isRedOwn =
+          (ownInfo?.isOwnSide(
+                teamPart: rTeam,
+                namePart: rPlayer,
+                ruleTeamName: m.rule?.teamName,
+              ) ??
+              false) ||
           ownTeams.contains(rTeam) ||
           (m.rule?.teamName.isNotEmpty == true && rTeam == m.rule!.teamName);
       bool isWhiteOwn =
+          (ownInfo?.isOwnSide(
+                teamPart: wTeam,
+                namePart: wPlayer,
+                ruleTeamName: m.rule?.teamName,
+              ) ??
+              false) ||
           ownTeams.contains(wTeam) ||
           (m.rule?.teamName.isNotEmpty == true && wTeam == m.rule!.teamName);
 

@@ -17,6 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart'
     show customTeamNamesProvider;
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
 import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
@@ -194,8 +195,9 @@ class MatchListTileCard extends ConsumerWidget {
               // 🔽 【要塞型・全3行レイアウト大刷新】: チーム名を選手名の上に配置し、スコア圧迫による文字切れを100%防止
               Builder(
                 builder: (context) {
-                  final ownTeams =
-                      ref.watch(customTeamNamesProvider).value ?? [];
+                  final ownInfo = ref.watch(
+                    tournamentOwnInfoProvider(match.tournamentId ?? ''),
+                  );
 
                   String getTeamPart(String raw) {
                     if (raw.contains(':')) return raw.split(':').first.trim();
@@ -218,6 +220,17 @@ class MatchListTileCard extends ConsumerWidget {
                   final wTeam = getTeamPart(match.whiteName);
                   final wName = getNamePart(match.whiteName);
 
+                  final rResolvedTeam = rTeam.isNotEmpty
+                      ? rTeam
+                      : (isIndividual
+                            ? (ownInfo.resolveTeamForPlayer(rName) ?? '')
+                            : '');
+                  final wResolvedTeam = wTeam.isNotEmpty
+                      ? wTeam
+                      : (isIndividual
+                            ? (ownInfo.resolveTeamForPlayer(wName) ?? '')
+                            : '');
+
                   final ptsMap = MatchCalculatorHelper.extractPointsFromModel(
                     match,
                   );
@@ -228,25 +241,27 @@ class MatchListTileCard extends ConsumerWidget {
 
                   final ruleTeam = match.rule?.teamName.trim();
                   final isRedOwn =
-                      (rTeam.isNotEmpty && ownTeams.contains(rTeam)) ||
-                      match.redName.contains('自チーム') ||
-                      (ruleTeam != null &&
-                          ruleTeam.isNotEmpty &&
-                          rTeam == ruleTeam);
+                      ownInfo.isOwnSide(
+                        teamPart: rTeam,
+                        namePart: rName,
+                        ruleTeamName: ruleTeam,
+                      ) ||
+                      match.redName.contains('自チーム');
                   final isWhiteOwn =
-                      (wTeam.isNotEmpty && ownTeams.contains(wTeam)) ||
-                      match.whiteName.contains('自チーム') ||
-                      (ruleTeam != null &&
-                          ruleTeam.isNotEmpty &&
-                          wTeam == ruleTeam);
+                      ownInfo.isOwnSide(
+                        teamPart: wTeam,
+                        namePart: wName,
+                        ruleTeamName: ruleTeam,
+                      ) ||
+                      match.whiteName.contains('自チーム');
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 🏢 【2行目】: 左右チーム名独立表示ライン
                       MatchTeamHeaderRow(
-                        redTeam: rTeam,
-                        whiteTeam: wTeam,
+                        redTeam: rResolvedTeam,
+                        whiteTeam: wResolvedTeam,
                         isRedOwn: isRedOwn,
                         isWhiteOwn: isWhiteOwn,
                         textColor: isDark

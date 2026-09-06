@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_state_holder.dart'
+    show MatchEditOwnTeamChoice;
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
 /// 試合編集シートの一括保存ロジックヘルパー
@@ -14,6 +16,7 @@ class MatchEditSaveHelper {
     required bool isDantai,
     required bool isSwapped,
     required bool initialOwnIsRed,
+    MatchEditOwnTeamChoice? ownTeamChoice,
     required String groupInput,
     required String redTeamInput,
     required String whiteTeamInput,
@@ -76,10 +79,25 @@ class MatchEditSaveHelper {
                     ? groupInput
                     : (firstMatch.groupName ?? '')));
 
-    final bool currentOwnIsRed = isSwapped ? !initialOwnIsRed : initialOwnIsRed;
-    final String targetOwnTeamName = currentOwnIsRed
-        ? redTeamInput
-        : whiteTeamInput;
+    final String targetOwnTeamName;
+    if (ownTeamChoice != null) {
+      switch (ownTeamChoice) {
+        case MatchEditOwnTeamChoice.red:
+          targetOwnTeamName = redTeamInput;
+          break;
+        case MatchEditOwnTeamChoice.white:
+          targetOwnTeamName = whiteTeamInput;
+          break;
+        case MatchEditOwnTeamChoice.none:
+          targetOwnTeamName = '';
+          break;
+      }
+    } else {
+      final bool currentOwnIsRed = isSwapped
+          ? !initialOwnIsRed
+          : initialOwnIsRed;
+      targetOwnTeamName = currentOwnIsRed ? redTeamInput : whiteTeamInput;
+    }
 
     final String sceneKey = selectedPresetKey ?? 'honsen';
     final bool isRenseikaiBool = sceneKey == 'renseikai';
@@ -119,9 +137,11 @@ class MatchEditSaveHelper {
         winPoint: winPoint,
         lossPoint: lossPoint,
         drawPoint: drawPoint,
-        teamName: targetOwnTeamName.isNotEmpty
-            ? targetOwnTeamName
-            : baseRule.teamName,
+        teamName: ownTeamChoice == MatchEditOwnTeamChoice.none
+            ? ''
+            : (targetOwnTeamName.isNotEmpty
+                  ? targetOwnTeamName
+                  : baseRule.teamName),
       );
 
       final redPlayer = redPlayerControllers[i].text.trim();

@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_save_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_state_holder.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_team_and_players_tab.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -42,7 +43,14 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
       vsync: this,
       initialIndex: widget.initialTabIndex.clamp(0, 2),
     );
-    _state = MatchEditStateHolder(widget.matches);
+
+    final tId =
+        widget.tournamentId ??
+        (widget.matches.isNotEmpty
+            ? widget.matches.first.tournamentId ?? ''
+            : '');
+    final ownInfo = ref.read(tournamentOwnInfoProvider(tId));
+    _state = MatchEditStateHolder(widget.matches, ownInfo: ownInfo);
   }
 
   @override
@@ -147,6 +155,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   primaryAccent: themeColors.primaryAccent,
                   isDark: isDark,
                   textColor: textColor,
+                  ownTeamChoice: _state.ownTeamChoice,
+                  onOwnTeamChoiceChanged: (choice) =>
+                      setState(() => _state.ownTeamChoice = choice),
                   onSwapTeamsAndPlayers: () =>
                       setState(() => _state.swapTeamsAndPlayers()),
                 ),
@@ -270,6 +281,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               isDantai: _state.isDantai,
               isSwapped: _state.isSwapped,
               initialOwnIsRed: _state.initialOwnIsRed,
+              ownTeamChoice: _state.ownTeamChoice,
               groupInput: _state.groupNameController.text.trim(),
               redTeamInput: _state.redTeamController.text.trim(),
               whiteTeamInput: _state.whiteTeamController.text.trim(),

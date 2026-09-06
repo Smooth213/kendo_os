@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_data_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
+
+/// 🏆 試合編集時の自チーム所属サイド指定
+enum MatchEditOwnTeamChoice { red, white, none }
 
 /// 🏆 試合編集シート用のステート＆コントローラー管理クラス
 class MatchEditStateHolder {
@@ -9,6 +13,7 @@ class MatchEditStateHolder {
   late bool isDantai;
   bool isSwapped = false;
   late bool initialOwnIsRed;
+  late MatchEditOwnTeamChoice ownTeamChoice;
 
   // 1. チーム・選手情報
   late TextEditingController redTeamController;
@@ -56,7 +61,7 @@ class MatchEditStateHolder {
   late TextEditingController noteController;
   late String status;
 
-  MatchEditStateHolder(this.matches) {
+  MatchEditStateHolder(this.matches, {TournamentOwnInfo? ownInfo}) {
     final first = matches.first;
     isDantai = matches.length > 1 || first.matchType == '団体戦';
 
@@ -85,23 +90,69 @@ class MatchEditStateHolder {
         : (r.teamName.isNotEmpty ? r.teamName : '');
     final fallbackWhite = isDantai ? '白チーム' : '';
 
-    final extractedRedTeam = MatchEditDataHelper.extractTeamName(
+    var extractedRedTeam = MatchEditDataHelper.extractTeamName(
       first.redName,
       fallbackRed,
       isDantai,
     );
-    final extractedWhiteTeam = MatchEditDataHelper.extractTeamName(
+    var extractedWhiteTeam = MatchEditDataHelper.extractTeamName(
       first.whiteName,
       fallbackWhite,
       isDantai,
     );
 
+    final redPlayer = MatchEditDataHelper.extractPlayerName(first.redName);
+    final whitePlayer = MatchEditDataHelper.extractPlayerName(first.whiteName);
+
+    // 💡 大会登録選手リストから所属道場名を自動補完（空の場合のみ）
+    if (!isDantai && ownInfo != null) {
+      if (extractedRedTeam.isEmpty) {
+        final autoTeam = ownInfo.resolveTeamForPlayer(redPlayer);
+        if (autoTeam != null && autoTeam.isNotEmpty) {
+          extractedRedTeam = autoTeam;
+        }
+      }
+      if (extractedWhiteTeam.isEmpty) {
+        final autoTeam = ownInfo.resolveTeamForPlayer(whitePlayer);
+        if (autoTeam != null && autoTeam.isNotEmpty) {
+          extractedWhiteTeam = autoTeam;
+        }
+      }
+    }
+
+    // 🏆 自チーム指定の初期値スマート自動判定
     final originalRuleTeam = r.teamName.trim();
     if (originalRuleTeam.isNotEmpty) {
-      initialOwnIsRed = originalRuleTeam != extractedWhiteTeam;
+      if (originalRuleTeam == extractedRedTeam) {
+        ownTeamChoice = MatchEditOwnTeamChoice.red;
+      } else if (originalRuleTeam == extractedWhiteTeam) {
+        ownTeamChoice = MatchEditOwnTeamChoice.white;
+      } else {
+        ownTeamChoice = MatchEditOwnTeamChoice.none;
+      }
+    } else if (ownInfo != null) {
+      final isRedOwn = ownInfo.isOwnSide(
+        teamPart: extractedRedTeam,
+        namePart: redPlayer,
+      );
+      final isWhiteOwn = ownInfo.isOwnSide(
+        teamPart: extractedWhiteTeam,
+        namePart: whitePlayer,
+      );
+      if (isRedOwn && !isWhiteOwn) {
+        ownTeamChoice = MatchEditOwnTeamChoice.red;
+      } else if (isWhiteOwn && !isRedOwn) {
+        ownTeamChoice = MatchEditOwnTeamChoice.white;
+      } else {
+        ownTeamChoice = MatchEditOwnTeamChoice.none;
+      }
     } else {
-      initialOwnIsRed = true;
+      ownTeamChoice = isDantai
+          ? MatchEditOwnTeamChoice.red
+          : MatchEditOwnTeamChoice.none;
     }
+
+    initialOwnIsRed = ownTeamChoice == MatchEditOwnTeamChoice.red;
 
     redTeamController = TextEditingController(text: extractedRedTeam);
     whiteTeamController = TextEditingController(text: extractedWhiteTeam);
@@ -198,6 +249,12 @@ class MatchEditStateHolder {
       final tempPlayer = redPlayerControllers[i].text;
       redPlayerControllers[i].text = whitePlayerControllers[i].text;
       whitePlayerControllers[i].text = tempPlayer;
+    }
+
+    if (ownTeamChoice == MatchEditOwnTeamChoice.red) {
+      ownTeamChoice = MatchEditOwnTeamChoice.white;
+    } else if (ownTeamChoice == MatchEditOwnTeamChoice.white) {
+      ownTeamChoice = MatchEditOwnTeamChoice.red;
     }
   }
 

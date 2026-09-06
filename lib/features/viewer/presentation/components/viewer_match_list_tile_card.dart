@@ -8,7 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_team_header_row.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -166,19 +166,41 @@ class ViewerMatchListTileCard extends ConsumerWidget {
               // 🔽 【2行目〜3行目】: 掲示板式リアルタイムスコア＆対戦ライン
               Builder(
                 builder: (context) {
-                  final ownTeams =
-                      ref.watch(customTeamNamesProvider).value ?? [];
+                  final ownInfo = ref.watch(
+                    tournamentOwnInfoProvider(match.tournamentId ?? ''),
+                  );
 
-                  String getTeamPart(String raw) =>
-                      raw.contains(':') ? raw.split(':').first.trim() : '';
-                  String getNamePart(String raw) => raw.contains(':')
-                      ? raw.split(':').last.trim()
-                      : raw.trim();
+                  String getTeamPart(String raw) {
+                    if (raw.contains(':')) return raw.split(':').first.trim();
+                    if (!isIndividual) {
+                      return raw.trim();
+                    }
+                    return '';
+                  }
+
+                  String getNamePart(String raw) {
+                    if (raw.contains(':')) return raw.split(':').last.trim();
+                    if (!isIndividual) {
+                      return match.matchType;
+                    }
+                    return raw.trim();
+                  }
 
                   final rTeam = getTeamPart(match.redName);
                   final rName = getNamePart(match.redName);
                   final wTeam = getTeamPart(match.whiteName);
                   final wName = getNamePart(match.whiteName);
+
+                  final rResolvedTeam = rTeam.isNotEmpty
+                      ? rTeam
+                      : (isIndividual
+                            ? (ownInfo.resolveTeamForPlayer(rName) ?? '')
+                            : '');
+                  final wResolvedTeam = wTeam.isNotEmpty
+                      ? wTeam
+                      : (isIndividual
+                            ? (ownInfo.resolveTeamForPlayer(wName) ?? '')
+                            : '');
 
                   final ptsMap = MatchCalculatorHelper.extractPointsFromModel(
                     match,
@@ -189,25 +211,27 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                       isFinished && match.redScore == match.whiteScore;
                   final ruleTeam = match.rule?.teamName.trim();
                   final isRedOwn =
-                      (rTeam.isNotEmpty && ownTeams.contains(rTeam)) ||
-                      match.redName.contains('自チーム') ||
-                      (ruleTeam != null &&
-                          ruleTeam.isNotEmpty &&
-                          rTeam == ruleTeam);
+                      ownInfo.isOwnSide(
+                        teamPart: rTeam,
+                        namePart: rName,
+                        ruleTeamName: ruleTeam,
+                      ) ||
+                      match.redName.contains('自チーム');
                   final isWhiteOwn =
-                      (wTeam.isNotEmpty && ownTeams.contains(wTeam)) ||
-                      match.whiteName.contains('自チーム') ||
-                      (ruleTeam != null &&
-                          ruleTeam.isNotEmpty &&
-                          wTeam == ruleTeam);
+                      ownInfo.isOwnSide(
+                        teamPart: wTeam,
+                        namePart: wName,
+                        ruleTeamName: ruleTeam,
+                      ) ||
+                      match.whiteName.contains('自チーム');
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 🏢 【2行目】: 左右チーム名独立表示ライン
                       MatchTeamHeaderRow(
-                        redTeam: rTeam,
-                        whiteTeam: wTeam,
+                        redTeam: rResolvedTeam,
+                        whiteTeam: wResolvedTeam,
                         isRedOwn: isRedOwn,
                         isWhiteOwn: isWhiteOwn,
                         textColor: context.appColors.subTextColor,
