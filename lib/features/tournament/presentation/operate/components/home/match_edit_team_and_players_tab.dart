@@ -62,8 +62,8 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                   Expanded(
                     child: _buildTextField(
                       controller: redTeamController,
-                      label: '赤（RED）チーム名',
-                      hint: '赤チーム名を入力',
+                      label: isDantai ? '赤（RED）チーム名' : '赤（RED）所属・道場名',
+                      hint: isDantai ? '赤チーム名を入力' : '所属名（任意）を入力',
                       isDark: isDark,
                       textColor: AppKendoColors.red,
                     ),
@@ -72,8 +72,8 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                   Expanded(
                     child: _buildTextField(
                       controller: whiteTeamController,
-                      label: '白（WHITE）チーム名',
-                      hint: '白チーム名を入力',
+                      label: isDantai ? '白（WHITE）チーム名' : '白（WHITE）所属・道場名',
+                      hint: isDantai ? '白チーム名を入力' : '所属名（任意）を入力',
                       isDark: isDark,
                       textColor: context.appColors.textColor,
                     ),

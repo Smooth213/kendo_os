@@ -80,14 +80,19 @@ class MatchEditStateHolder {
       isRenseikai: detectedKey == 'renseikai',
     );
 
+    final fallbackRed = isDantai
+        ? (r.teamName.isNotEmpty ? r.teamName : '赤チーム')
+        : (r.teamName.isNotEmpty ? r.teamName : '');
+    final fallbackWhite = isDantai ? '白チーム' : '';
+
     final extractedRedTeam = MatchEditDataHelper.extractTeamName(
       first.redName,
-      r.teamName.isNotEmpty ? r.teamName : '赤チーム',
+      fallbackRed,
       isDantai,
     );
     final extractedWhiteTeam = MatchEditDataHelper.extractTeamName(
       first.whiteName,
-      '白チーム',
+      fallbackWhite,
       isDantai,
     );
 

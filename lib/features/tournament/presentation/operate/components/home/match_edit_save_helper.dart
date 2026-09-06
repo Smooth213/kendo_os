@@ -70,7 +70,11 @@ class MatchEditSaveHelper {
         ? (courtInput.isNotEmpty
               ? courtInput
               : (groupInput.isNotEmpty ? groupInput : fallbackGroupKey))
-        : (courtInput.isNotEmpty ? courtInput : groupInput);
+        : (courtInput.isNotEmpty
+              ? courtInput
+              : (groupInput.isNotEmpty
+                    ? groupInput
+                    : (firstMatch.groupName ?? '')));
 
     final bool currentOwnIsRed = isSwapped ? !initialOwnIsRed : initialOwnIsRed;
     final String targetOwnTeamName = currentOwnIsRed
@@ -122,21 +126,15 @@ class MatchEditSaveHelper {
 
       final redPlayer = redPlayerControllers[i].text.trim();
       final whitePlayer = whitePlayerControllers[i].text.trim();
+      final redTeam = redTeamInput.trim();
+      final whiteTeam = whiteTeamInput.trim();
 
-      final finalRedName = isDantai
-          ? (redTeamInput.isNotEmpty
-                ? (redPlayer.isNotEmpty
-                      ? '$redTeamInput: $redPlayer'
-                      : redTeamInput)
-                : redPlayer)
+      final finalRedName = redTeam.isNotEmpty
+          ? (redPlayer.isNotEmpty ? '$redTeam: $redPlayer' : redTeam)
           : redPlayer;
 
-      final finalWhiteName = isDantai
-          ? (whiteTeamInput.isNotEmpty
-                ? (whitePlayer.isNotEmpty
-                      ? '$whiteTeamInput: $whitePlayer'
-                      : whiteTeamInput)
-                : whitePlayer)
+      final finalWhiteName = whiteTeam.isNotEmpty
+          ? (whitePlayer.isNotEmpty ? '$whiteTeam: $whitePlayer' : whiteTeam)
           : whitePlayer;
 
       final prefixParts = <String>[];
