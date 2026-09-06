@@ -22,8 +22,14 @@ export 'components/team_scoreboard/team_scoreboard_table_builder.dart'
 class TeamScoreboardScreen extends ConsumerWidget {
   final String? groupName;
   final List<MatchModel>? matches;
+  final String? tournamentId;
 
-  const TeamScoreboardScreen({super.key, this.groupName, this.matches});
+  const TeamScoreboardScreen({
+    super.key,
+    this.groupName,
+    this.matches,
+    this.tournamentId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,9 +44,16 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
     final decodedGroupName = safeDecodeComponent(groupName);
     List<MatchModel> teamMatches = matches ?? [];
-    final urlTournamentId = GoRouterState.of(
-      context,
-    ).uri.queryParameters['tournamentId'];
+    String? urlTournamentId = tournamentId;
+    if (urlTournamentId == null || urlTournamentId.isEmpty) {
+      try {
+        urlTournamentId = GoRouterState.of(
+          context,
+        ).uri.queryParameters['tournamentId'];
+      } catch (_) {
+        urlTournamentId = null;
+      }
+    }
 
     final allMatches = ref.watch(matchListProvider);
     final asyncMatches = (urlTournamentId != null && urlTournamentId.isNotEmpty)

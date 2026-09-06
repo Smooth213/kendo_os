@@ -41,7 +41,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/role
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
     show registeredTeamsProvider;
@@ -52,7 +54,8 @@ final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
 
 class MatchScreen extends ConsumerStatefulWidget {
   final String matchId;
-  const MatchScreen({super.key, required this.matchId});
+  final String? tournamentId;
+  const MatchScreen({super.key, required this.matchId, this.tournamentId});
 
   @override
   ConsumerState<MatchScreen> createState() => _MatchScreenState();
@@ -119,11 +122,19 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    String? tournamentId;
-    try {
-      final uri = GoRouterState.of(context).uri;
-      tournamentId = uri.queryParameters['tournamentId'];
-    } catch (_) {}
+    String? tournamentId = widget.tournamentId;
+    if (tournamentId == null || tournamentId.isEmpty) {
+      try {
+        final uri = GoRouterState.of(context).uri;
+        tournamentId = uri.queryParameters['tournamentId'];
+      } catch (_) {}
+    }
+    if (tournamentId == null || tournamentId.isEmpty) {
+      final curId = ref.watch(currentTournamentIdProvider);
+      tournamentId = curId.isNotEmpty
+          ? curId
+          : ref.watch(webCurrentTournamentIdProvider);
+    }
 
     final List<MatchModel> matches =
         (kIsWeb && tournamentId != null && tournamentId.isNotEmpty)
@@ -419,8 +430,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           );
                         },
                       ),
-                    if ((match.tournamentId?.isNotEmpty ?? false) ||
-                        (tournamentId != null && tournamentId.isNotEmpty))
+                    if (DockSheetScope.of(context) == null &&
+                        ((match.tournamentId?.isNotEmpty ?? false) ||
+                            (tournamentId != null && tournamentId.isNotEmpty)))
                       FloatingProgramDockButton(
                         tournamentId: match.tournamentId?.isNotEmpty == true
                             ? match.tournamentId!

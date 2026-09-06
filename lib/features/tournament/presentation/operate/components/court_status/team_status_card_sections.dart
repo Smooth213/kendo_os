@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/team_status_member_order_row.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -187,7 +190,7 @@ class TeamStatusCardSections {
     );
   }
 
-  /// 終了試合セクション
+  /// 終了試合セクション（タップで個別試合詳細へ遷移可能）
   static Widget buildFinishedMatchSection(
     BuildContext context,
     MatchModel lastMatch,
@@ -203,47 +206,89 @@ class TeamStatusCardSections {
     final whitePoints = points['white'] ?? [];
     final isDraw = lastMatch.redScore == lastMatch.whiteScore;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF9FAFB),
+    final containerColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : const Color(0xFFF9FAFB);
+
+    return Material(
+      color: containerColor,
+      borderRadius: AppRadius.medium,
+      child: InkWell(
         borderRadius: AppRadius.medium,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                size: 16,
-                color: AppKendoColors.indigo,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                '直前の結果: 【${lastMatch.matchType}】',
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  fontWeight: AppFontWeight.bold,
-                  color: context.appColors.subTextColor,
+        onTap: () {
+          final sheetScope = DockSheetScope.of(context);
+          if (sheetScope != null) {
+            sheetScope.expand();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MatchScreen(
+                  matchId: lastMatch.id,
+                  tournamentId: lastMatch.tournamentId,
                 ),
+              ),
+            );
+            return;
+          }
+          context.push('/match/${lastMatch.id}');
+        },
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.medium,
+            border: Border.all(
+              color: AppKendoColors.indigo.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline,
+                        size: 16,
+                        color: AppKendoColors.indigo,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        '直前の結果: 【${lastMatch.matchType}】',
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          fontWeight: AppFontWeight.bold,
+                          color: context.appColors.subTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Text(
+                    '記録を開く 👉',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: AppKendoColors.indigo,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              TeamStatusMemberOrderRow(
+                redTeam: redTeam,
+                redPlayer: redPlayer,
+                whiteTeam: whiteTeam,
+                whitePlayer: whitePlayer,
+                redPoints: redPoints,
+                whitePoints: whitePoints,
+                isDraw: isDraw,
+                isFinished: true,
+                redScore: lastMatch.redScore,
+                whiteScore: lastMatch.whiteScore,
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xs),
-          TeamStatusMemberOrderRow(
-            redTeam: redTeam,
-            redPlayer: redPlayer,
-            whiteTeam: whiteTeam,
-            whitePlayer: whitePlayer,
-            redPoints: redPoints,
-            whitePoints: whitePoints,
-            isDraw: isDraw,
-            isFinished: true,
-            redScore: lastMatch.redScore,
-            whiteScore: lastMatch.whiteScore,
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -9,6 +9,12 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_state_holder.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_team_and_players_tab.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/team_registration_screen.dart'
+    show playerListProvider;
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
+    show registeredTeamsProvider;
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -292,6 +298,66 @@ void main() {
         await tester.tap(find.text('✖ なし（他チーム同士）'));
         await tester.pumpAndSettle();
         expect(selectedChoice, MatchEditOwnTeamChoice.none);
+      },
+    );
+
+    test(
+      '8. tournamentOwnInfoProvider: 合同チームの他道場助っ人選手は自チームから除外され、登録メンバーのみが自チームとなること',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            registeredTeamsProvider('tour-joint').overrideWith(
+              (ref) => Stream.value([
+                const TeamModel(
+                  id: 'team-joint',
+                  tournamentId: 'tour-joint',
+                  category: '小学生高学年の部',
+                  teamName: '道上剣友会',
+                  matchType: '団体戦（5人制）',
+                  playerNames: ['皿田 脩人', '久安 智也', '他道場 助っ人'], // 合同チーム（助っ人含む）
+                ),
+              ]),
+            ),
+            playerListProvider.overrideWith(
+              (ref) => Stream.value([
+                PlayerModel(
+                  id: 'p1',
+                  lastName: '皿田',
+                  firstName: '脩人',
+                  lastNameKana: 'さらだ',
+                  firstNameKana: 'しゅうと',
+                  grade: 5,
+                ),
+                PlayerModel(
+                  id: 'p2',
+                  lastName: '久安',
+                  firstName: '智也',
+                  lastNameKana: 'ひさやす',
+                  firstNameKana: 'ともや',
+                  grade: 6,
+                ),
+              ]),
+            ),
+          ],
+        );
+
+        // StreamProvider の値を解決
+        await container.read(registeredTeamsProvider('tour-joint').future);
+        await container.read(playerListProvider.future);
+
+        final ownInfo = container.read(tournamentOwnInfoProvider('tour-joint'));
+
+        // 自道場の正規メンバーは自チーム
+        expect(ownInfo.ownPlayerNames.contains('皿田 脩人'), isTrue);
+        expect(ownInfo.ownPlayerNames.contains('久安 智也'), isTrue);
+
+        // 合同チームの他道場助っ人は自チームから除外される！
+        expect(ownInfo.ownPlayerNames.contains('他道場 助っ人'), isFalse);
+        expect(ownInfo.isOwnSide(teamPart: '', namePart: '他道場 助っ人'), isFalse);
+
+        // 個人戦で自道場メンバー vs 他道場助っ人が対戦した場合
+        expect(ownInfo.isOwnSide(teamPart: '', namePart: '皿田 脩人'), isTrue);
+        expect(ownInfo.isOwnSide(teamPart: '', namePart: '他道場 助っ人'), isFalse);
       },
     );
   });

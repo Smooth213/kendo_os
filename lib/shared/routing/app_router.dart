@@ -252,6 +252,20 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      path: '/team-match-status',
+      builder: (context, state) {
+        final tId =
+            state.uri.queryParameters['tournamentId'] ??
+            state.uri.queryParameters['id'];
+        return RoleInjector(
+          roleStr: state.uri.queryParameters['role'],
+          dojoId: state.uri.queryParameters['dojoId'],
+          tournamentId: tId,
+          child: TeamMatchStatusScreen(tournamentId: tId),
+        );
+      },
+    ),
+    GoRoute(
       path: '/viewer-home/:tournamentId',
       builder: (context, state) => RoleInjector(
         roleStr: state.uri.queryParameters['role'],

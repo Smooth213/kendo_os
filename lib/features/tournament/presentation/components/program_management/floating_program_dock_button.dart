@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_items_builder.dart';
@@ -46,6 +47,7 @@ class _FloatingProgramDockButtonState
   bool _isExpanded = false;
   late AnimationController _animController;
   late Animation<double> _expandAnimation;
+  bool _isInsideSheet = false;
 
   @override
   void initState() {
@@ -68,8 +70,16 @@ class _FloatingProgramDockButtonState
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _isInsideSheet = DockSheetScope.of(context) != null;
+  }
+
+  @override
   void dispose() {
-    FloatingDockSheetManager.close(immediate: true);
+    if (!_isInsideSheet) {
+      FloatingDockSheetManager.close(immediate: true);
+    }
     _animController.dispose();
     super.dispose();
   }
@@ -114,6 +124,9 @@ class _FloatingProgramDockButtonState
 
   @override
   Widget build(BuildContext context) {
+    if (_isInsideSheet) {
+      return const SizedBox.shrink();
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??

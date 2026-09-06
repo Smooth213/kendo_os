@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
+    show customTeamNamesProvider;
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
@@ -161,7 +165,7 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
 }
 
 /// 🥋 観客用公式記録表: 個人戦リスト表示
-class ViewerOfficialIndividualListCard extends StatelessWidget {
+class ViewerOfficialIndividualListCard extends ConsumerWidget {
   final String groupName;
   final List<MatchListProjection> matches;
   final Color? cardColor;
@@ -178,13 +182,134 @@ class ViewerOfficialIndividualListCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     List<MatchListProjection> displayMatches = List<MatchListProjection>.from(
       matches,
     );
 
+    final tournamentId = matches.isNotEmpty ? matches.first.tournamentId : '';
+    final ownInfo = ref.watch(tournamentOwnInfoProvider(tournamentId));
+    final ownTeams = ref.watch(customTeamNamesProvider).asData?.value ?? [];
+
+    bool isMatchSideOwn(String teamPart, String namePart, String? ruleTeam) {
+      return ownInfo.isOwnSide(
+            teamPart: teamPart,
+            namePart: namePart,
+            ruleTeamName: ruleTeam,
+          ) ||
+          ownTeams.contains(teamPart) ||
+          (ruleTeam != null && ruleTeam.isNotEmpty && teamPart == ruleTeam);
+    }
+
     if (applySort) {
+      // 選手ごとの最初の試合順（初戦のorder）を計算し、選手ごとのまとまりを時系列順に並べる
+      final playerFirstOrderMap = <String, int>{};
+      for (final m in displayMatches) {
+        final rTeam = m.redName.contains(':')
+            ? m.redName.split(':').first.trim()
+            : '';
+        final wTeam = m.whiteName.contains(':')
+            ? m.whiteName.split(':').first.trim()
+            : '';
+        final rName = m.redName.contains(':')
+            ? m.redName.split(':').last.trim()
+            : m.redName.trim();
+        final wName = m.whiteName.contains(':')
+            ? m.whiteName.split(':').last.trim()
+            : m.whiteName.trim();
+
+        final bool rOwn =
+            isMatchSideOwn(rTeam, rName, null) || m.redName.contains('自チーム');
+        final bool wOwn =
+            isMatchSideOwn(wTeam, wName, null) || m.whiteName.contains('自チーム');
+
+        if (rOwn) {
+          playerFirstOrderMap[rName] = (playerFirstOrderMap[rName] == null)
+              ? m.matchOrder
+              : (m.matchOrder < playerFirstOrderMap[rName]!
+                    ? m.matchOrder
+                    : playerFirstOrderMap[rName]!);
+        }
+        if (wOwn) {
+          playerFirstOrderMap[wName] = (playerFirstOrderMap[wName] == null)
+              ? m.matchOrder
+              : (m.matchOrder < playerFirstOrderMap[wName]!
+                    ? m.matchOrder
+                    : playerFirstOrderMap[wName]!);
+        }
+      }
+
+      int getTeamPriority(MatchListProjection m) {
+        final rTeam = m.redName.contains(':')
+            ? m.redName.split(':').first.trim()
+            : '';
+        final wTeam = m.whiteName.contains(':')
+            ? m.whiteName.split(':').first.trim()
+            : '';
+        final rName = m.redName.contains(':')
+            ? m.redName.split(':').last.trim()
+            : m.redName.trim();
+        final wName = m.whiteName.contains(':')
+            ? m.whiteName.split(':').last.trim()
+            : m.whiteName.trim();
+
+        final bool rOwn =
+            isMatchSideOwn(rTeam, rName, null) || m.redName.contains('自チーム');
+        final bool wOwn =
+            isMatchSideOwn(wTeam, wName, null) || m.whiteName.contains('自チーム');
+
+        // ★ 自チームの試合（同門含む）を最優先。同門対決が決勝戦なのに1番上に飛び出すのを完全に防止
+        if (rOwn || wOwn) return 1;
+        return 2;
+      }
+
+      String getSortPlayerKey(MatchListProjection m) {
+        final rTeam = m.redName.contains(':')
+            ? m.redName.split(':').first.trim()
+            : '';
+        final wTeam = m.whiteName.contains(':')
+            ? m.whiteName.split(':').first.trim()
+            : '';
+        final rName = m.redName.contains(':')
+            ? m.redName.split(':').last.trim()
+            : m.redName.trim();
+        final wName = m.whiteName.contains(':')
+            ? m.whiteName.split(':').last.trim()
+            : m.whiteName.trim();
+
+        final bool rOwn =
+            isMatchSideOwn(rTeam, rName, null) || m.redName.contains('自チーム');
+        final bool wOwn =
+            isMatchSideOwn(wTeam, wName, null) || m.whiteName.contains('自チーム');
+
+        if (rOwn && wOwn) {
+          final firstR = playerFirstOrderMap[rName] ?? m.matchOrder;
+          final firstW = playerFirstOrderMap[wName] ?? m.matchOrder;
+          return firstR <= firstW ? rName : wName;
+        }
+        if (rOwn) return rName;
+        if (wOwn) return wName;
+        return rName;
+      }
+
       displayMatches.sort((a, b) {
+        int pA = getTeamPriority(a);
+        int pB = getTeamPriority(b);
+        if (pA != pB) return pA.compareTo(pB);
+
+        String playerA = getSortPlayerKey(a);
+        String playerB = getSortPlayerKey(b);
+
+        // 選手の初戦orderが早い順に選手のまとまりを並べる
+        final firstOrderA = playerFirstOrderMap[playerA] ?? a.matchOrder;
+        final firstOrderB = playerFirstOrderMap[playerB] ?? b.matchOrder;
+        if (firstOrderA != firstOrderB) {
+          return firstOrderA.compareTo(firstOrderB);
+        }
+
+        if (playerA != playerB) return playerA.compareTo(playerB);
+
+        // 同じ選手の中では試合順（1回戦 -> 2回戦 -> 決勝）
         return a.matchOrder.compareTo(b.matchOrder);
       });
     }
@@ -228,6 +353,12 @@ class ViewerOfficialIndividualListCard extends StatelessWidget {
 
       final ptsMap = MatchCalculatorHelper.extractPointsFromProjection(m);
 
+      final hasOwn =
+          isMatchSideOwn(rTeam, rName, null) ||
+          isMatchSideOwn(wTeam, wName, null) ||
+          m.redName.contains('自チーム') ||
+          m.whiteName.contains('自チーム');
+
       return IndividualMatchItem(
         id: m.id,
         note: m.note,
@@ -242,7 +373,7 @@ class ViewerOfficialIndividualListCard extends StatelessWidget {
         isDraw: isDraw,
         rWin: rWin,
         wWin: wWin,
-        hasOwnTeam: false,
+        hasOwnTeam: hasOwn,
         redPoints: ptsMap['red'] ?? [],
         whitePoints: ptsMap['white'] ?? [],
         onTap: () {},

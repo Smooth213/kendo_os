@@ -8,6 +8,9 @@ import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/team_scoreboard_screen.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'team_status_card_sections.dart';
 
@@ -68,6 +71,9 @@ class TeamStatusCard extends StatelessWidget {
         borderRadius: AppRadius.large,
         child: InkWell(
           onTap: () {
+            final sheetScope = DockSheetScope.of(context);
+            final isInsideBottomSheet = sheetScope != null;
+
             final isDantai =
                 targetMatch != null &&
                 !targetMatch.isKachinuki &&
@@ -81,6 +87,19 @@ class TeamStatusCard extends StatelessWidget {
                 isDantai &&
                 status.targetGroupId != null &&
                 status.targetGroupId!.isNotEmpty) {
+              if (isInsideBottomSheet) {
+                sheetScope.expand();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TeamScoreboardScreen(
+                      groupName: status.targetGroupId,
+                      tournamentId: status.tournamentId,
+                    ),
+                  ),
+                );
+                return;
+              }
+
               final tourneyQuery =
                   status.tournamentId != null && status.tournamentId!.isNotEmpty
                   ? '?tournamentId=${status.tournamentId}'
@@ -93,6 +112,18 @@ class TeamStatusCard extends StatelessWidget {
 
             // 個人戦・リーグ個人戦・勝ち抜き戦および進行中/待機中の試合画面へ遷移
             if (targetMatch != null) {
+              if (isInsideBottomSheet) {
+                sheetScope.expand();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => MatchScreen(
+                      matchId: targetMatch.id,
+                      tournamentId: status.tournamentId,
+                    ),
+                  ),
+                );
+                return;
+              }
               context.push('/match/${targetMatch.id}');
             }
           },

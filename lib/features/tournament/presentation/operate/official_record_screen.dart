@@ -27,6 +27,7 @@ import 'package:go_router/go_router.dart';
 import '../components/program_management/floating_program_dock_button.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
+final exportingTypeProvider = StateProvider.autoDispose<String?>((ref) => null);
 
 class OfficialRecordScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -228,11 +229,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
             ),
           OfficialRecordExportBar(
             isExporting: isExporting,
+            exportingType: ref.watch(exportingTypeProvider),
             isDark: isDark,
             onPdfPressed: () => OfficialRecordExportHelper.handleExport(
               context: context,
               ref: ref,
               isExportingController: ref.read(isExportingProvider.notifier),
+              exportingTypeController: ref.read(exportingTypeProvider.notifier),
               sortedGroupKeys: sortedGroupKeys,
               mergedGroups: mergedGroups,
               cat: cat,
@@ -240,11 +243,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               tName: tName,
               tDate: tDate,
               tVenue: tVenue,
+              isBottomSheet: widget.isBottomSheet,
             ),
             onImagePressed: () => OfficialRecordExportHelper.handleExport(
               context: context,
               ref: ref,
               isExportingController: ref.read(isExportingProvider.notifier),
+              exportingTypeController: ref.read(exportingTypeProvider.notifier),
               sortedGroupKeys: sortedGroupKeys,
               mergedGroups: mergedGroups,
               cat: cat,
@@ -252,11 +257,13 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               tName: tName,
               tDate: tDate,
               tVenue: tVenue,
+              isBottomSheet: widget.isBottomSheet,
             ),
             onCsvPressed: () => OfficialRecordExportHelper.handleExport(
               context: context,
               ref: ref,
               isExportingController: ref.read(isExportingProvider.notifier),
+              exportingTypeController: ref.read(exportingTypeProvider.notifier),
               sortedGroupKeys: sortedGroupKeys,
               mergedGroups: mergedGroups,
               cat: cat,
@@ -264,6 +271,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               tName: tName,
               tDate: tDate,
               tVenue: tVenue,
+              isBottomSheet: widget.isBottomSheet,
             ),
           ),
           Expanded(

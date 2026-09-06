@@ -140,10 +140,12 @@ class _ExpeditionPlayerStatsSectionState
                         const SizedBox(width: AppSpacing.xxs),
                         Text(
                           '($displayPoints本)',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: AppFontSize.caption,
                             fontWeight: AppFontWeight.bold,
-                            color: AppKendoColors.indigo,
+                            color: isDark
+                                ? const Color(0xFF60A5FA)
+                                : const Color(0xFF1D4ED8),
                           ),
                         ),
                       ],
@@ -190,7 +192,8 @@ class _ExpeditionPlayerStatsSectionState
         ),
       ),
       selected: isSelected,
-      selectedColor: AppKendoColors.indigo,
+      customSelectedColor: context.appColors.primaryAccent,
+      customTextColor: isSelected ? AppKendoColors.pureWhite : null,
       backgroundColor: widget.isDark
           ? const Color(0xFF38383A)
           : const Color(0xFFE5E5EA),

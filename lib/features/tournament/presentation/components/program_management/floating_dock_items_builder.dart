@@ -53,7 +53,7 @@ class FloatingDockItemsBuilder {
               onFullScreen: () {
                 FloatingDockSheetManager.close(immediate: true);
                 context.push(
-                  '/team-match-status?id=$tournamentId&viewer=$isViewerMode',
+                  '/court-status?tournamentId=$tournamentId&viewer=$isViewerMode',
                 );
               },
             ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
@@ -243,7 +245,20 @@ class TeamScoreboardTableBuilder {
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => ctx.push('/match/${m.id}'),
+        onTap: () {
+          final sheetScope = DockSheetScope.of(ctx);
+          if (sheetScope != null) {
+            sheetScope.expand();
+            Navigator.of(ctx).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    MatchScreen(matchId: m.id, tournamentId: m.tournamentId),
+              ),
+            );
+            return;
+          }
+          ctx.push('/match/${m.id}');
+        },
         child: child,
       ),
     );

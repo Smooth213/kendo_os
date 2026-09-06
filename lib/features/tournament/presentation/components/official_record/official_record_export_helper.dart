@@ -13,6 +13,7 @@ class OfficialRecordExportHelper {
     required BuildContext context,
     required WidgetRef ref,
     required StateController<bool> isExportingController,
+    StateController<String?>? exportingTypeController,
     required List<String> sortedGroupKeys,
     required Map<String, List<MatchModel>> mergedGroups,
     required String cat,
@@ -20,9 +21,11 @@ class OfficialRecordExportHelper {
     String? tName,
     String? tDate,
     String? tVenue,
+    bool isBottomSheet = false,
   }) async {
     if (isExportingController.state) return;
     isExportingController.state = true;
+    exportingTypeController?.state = type;
 
     final groupDataList = sortedGroupKeys
         .map(
@@ -35,14 +38,17 @@ class OfficialRecordExportHelper {
         .toList();
 
     BuildContext? dialogContext;
-    showAppDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        dialogContext = ctx;
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
+    // ボトムシート内では最前面Overlay背後にダイアログが潜るのを防ぐため、ボタン内プログレスで表現
+    if (!isBottomSheet) {
+      showAppDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          dialogContext = ctx;
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    }
 
     try {
       final now = ref.read(timeSourceProvider).now();
@@ -69,15 +75,21 @@ class OfficialRecordExportHelper {
       } else if (type == 'csv') {
         await CsvService.shareOfficialRecordAsCsv(cat, groupDataList);
       }
+
+      if (context.mounted) {
+        final label = type == 'pdf' ? 'PDF' : (type == 'image' ? '画像' : 'CSV');
+        AppSnackBar.showSuccess(context, '公式記録（$label）を出力しました');
+      }
     } catch (e) {
       if (context.mounted) {
         AppSnackBar.showError(context, '出力に失敗しました: $e');
       }
     } finally {
       isExportingController.state = false;
+      exportingTypeController?.state = null;
       if (dialogContext != null && dialogContext!.mounted) {
         Navigator.pop(dialogContext!);
-      } else if (context.mounted) {
+      } else if (!isBottomSheet && context.mounted) {
         Navigator.of(context, rootNavigator: true).pop();
       }
     }

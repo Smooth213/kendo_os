@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart'; // 姓名分割用
 import 'package:kendo_os/shared/utils/kendo_compute_helper.dart';
+import 'package:kendo_os/shared/utils/file_download_helper.dart'
+    if (dart.library.html) 'package:kendo_os/shared/utils/file_download_helper_web.dart'
+    as download_helper;
 
 /// 🧵 【Phase 4】Isolate内で実行される重いCSV生成・バイナリエンコード処理
 Uint8List _encodeCsvToBytes((String, List<Map<String, dynamic>>) input) {
@@ -84,6 +87,16 @@ class CsvService {
     final bytes = await generateCsvBytesAsync(categoryName, groupDataList);
     final fileName =
         '公式記録_${categoryName}_${DateTime.now().millisecondsSinceEpoch}.csv';
+
+    if (kIsWeb) {
+      // Webブラウザ（Safari/Chrome等）では直接ダウンロードを実行
+      download_helper.downloadFileWeb(
+        bytes,
+        fileName,
+        'text/csv;charset=utf-8',
+      );
+      return;
+    }
 
     await SharePlus.instance.share(
       ShareParams(

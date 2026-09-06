@@ -25,9 +25,6 @@ class OfficialRecordGroupHelper {
   ) {
     final mergedGroups = <String, List<MatchModel>>{};
     final individualMergedList = <MatchModel>[];
-    final uuidRegex = RegExp(
-      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-    );
 
     groupsMap.forEach((key, matches) {
       final isIndiv = matches.any(
@@ -37,10 +34,10 @@ class OfficialRecordGroupHelper {
             m.matchType.contains('個人戦'),
       );
       final isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
+      final isKachinuki = matches.any((m) => m.isKachinuki);
 
-      if (isIndiv &&
-          !isLeague &&
-          (uuidRegex.hasMatch(key) || key.length > 20)) {
+      // リーグ戦・勝ち抜き戦以外の個人戦はグループ名の形式を問わず全て単一の個人戦リストに統合
+      if (isIndiv && !isLeague && !isKachinuki) {
         individualMergedList.addAll(matches);
       } else {
         mergedGroups[key] = matches;

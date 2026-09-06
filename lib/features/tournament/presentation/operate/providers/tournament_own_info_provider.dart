@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/team_registration_screen.dart'
-    show customTeamNamesProvider;
+    show customTeamNamesProvider, playerListProvider;
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
@@ -61,6 +62,7 @@ final tournamentOwnInfoProvider = Provider.family<TournamentOwnInfo, String>((
 ) {
   List<TeamModel> registeredTeams = const [];
   List<String> customNames = const [];
+  List<PlayerModel> masterPlayers = const [];
 
   try {
     if (tournamentId.isNotEmpty) {
@@ -78,19 +80,42 @@ final tournamentOwnInfoProvider = Provider.family<TournamentOwnInfo, String>((
     // Firebase 未初期化テスト環境等の安全フォールバック
   }
 
+  try {
+    masterPlayers = ref.watch(playerListProvider).value ?? <PlayerModel>[];
+  } catch (_) {
+    // Firebase 未初期化テスト環境等の安全フォールバック
+  }
+
+  final masterPlayerNames = masterPlayers
+      .map((p) => p.name.trim())
+      .where((n) => n.isNotEmpty)
+      .toSet();
+
   final ownTeamNames = <String>{...customNames};
-  final ownPlayerNames = <String>{};
+  // 道場名簿マスタに登録されている正規メンバーは無条件に自チーム選手
+  final ownPlayerNames = <String>{...masterPlayerNames};
   final playerToTeamMap = <String, String>{};
 
   for (final team in registeredTeams) {
     final tName = team.teamName.trim();
     if (tName.isNotEmpty) {
       ownTeamNames.add(tName);
+      final isIndividual = team.matchType.contains('個人');
+
       for (final p in team.playerNames) {
         final pClean = p.trim();
         if (pClean.isNotEmpty) {
-          ownPlayerNames.add(pClean);
-          playerToTeamMap[pClean] = tName;
+          // ① 大会作成・設定で「個人戦枠」として登録された選手、または
+          // ② 道場名簿マスタ（登録メンバー）に存在する選手のみを自チーム選手として扱う
+          // ※ 合同チーム（団体戦）に参加していた他道場の助っ人選手（名簿外）は除外される！
+          final isMasterMember = masterPlayerNames.contains(pClean);
+          final shouldTreatAsOwn =
+              isIndividual || isMasterMember || masterPlayerNames.isEmpty;
+
+          if (shouldTreatAsOwn) {
+            ownPlayerNames.add(pClean);
+            playerToTeamMap[pClean] = tName;
+          }
         }
       }
     }

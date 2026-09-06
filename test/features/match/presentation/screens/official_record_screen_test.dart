@@ -262,8 +262,8 @@ void main() {
       await tester.tap(pdfButton);
       await tester.pump(); // ダイアログ表示アニメーションへ
 
-      // CircularProgressIndicator が表示されていることを確認
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // CircularProgressIndicator が表示されていることを確認（ダイアログおよびボタン内）
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
 
       // 非同期処理が完了するまで待機（SnackBar等が出た場合も消えるまで待機）
       await tester.pumpAndSettle();

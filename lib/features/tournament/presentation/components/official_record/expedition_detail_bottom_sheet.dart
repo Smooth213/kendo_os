@@ -233,7 +233,7 @@ class ExpeditionDetailBottomSheet {
                   _buildStatPill(
                     '通算勝敗',
                     '${stats.win}勝 ${stats.loss}敗 ${stats.draw > 0 ? "${stats.draw}分" : ""}',
-                    AppKendoColors.indigo,
+                    isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
                   ),
                   _buildStatPill('勝率', '$winRate %', AppKendoColors.teal),
                 ],

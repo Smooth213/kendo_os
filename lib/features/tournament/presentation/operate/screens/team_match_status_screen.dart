@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/team_status_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -60,6 +61,7 @@ class TeamMatchStatusScreen extends ConsumerStatefulWidget {
 }
 
 class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
+  final _navKey = GlobalKey<NavigatorState>();
   TeamFilterType _filter = TeamFilterType.all;
   late final PageController _pageController;
   int _currentIndex = 0;
@@ -130,81 +132,111 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
               ? ref.watch(currentTournamentIdProvider)
               : (ref.watch(webCurrentTournamentIdProvider) ?? ''));
 
-    final content = Column(
-      children: [
-        if (widget.isBottomSheet)
-          DockBottomSheetHeader(
-            title: 'チーム試合状況',
-            icon: Icons.groups_rounded,
-            iconColor: AppKendoColors.indigo,
-            onFullScreen: widget.onFullScreen,
+    Widget buildMainContent(BuildContext innerContext) {
+      return Column(
+        children: [
+          if (widget.isBottomSheet)
+            DockBottomSheetHeader(
+              title: 'チーム試合状況',
+              icon: Icons.groups_rounded,
+              iconColor: AppKendoColors.indigo,
+              onFullScreen: widget.onFullScreen,
+            ),
+          // iOS風サマリーヘッダー & フィルターバー & カテゴリタブ
+          _buildSummaryAndFilterBar(
+            innerContext,
+            isDark,
+            totalLiveCount,
+            totalWaitingCount,
+            teamList,
+            statusFilteredTeams,
+            categories,
           ),
-        // iOS風サマリーヘッダー & フィルターバー & カテゴリタブ
-        _buildSummaryAndFilterBar(
-          context,
-          isDark,
-          totalLiveCount,
-          totalWaitingCount,
-          teamList,
-          statusFilteredTeams,
-          categories,
-        ),
-        Divider(
-          height: 1,
-          thickness: 0.8,
-          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-        ),
+          Divider(
+            height: 1,
+            thickness: 0.8,
+            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+          ),
 
-        // 🥋 スワイプ可能なチーム一覧 PageView
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: categories.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemBuilder: (context, catIndex) {
-              final currentCat = categories[catIndex];
-              final filteredList = statusFilteredTeams.where((t) {
-                if (currentCat != 'すべて') {
-                  final cat = t.categoryName.isNotEmpty
-                      ? t.categoryName
-                      : t.currentCourtName;
-                  if (cat != currentCat) return false;
+          // 🥋 スワイプ可能なチーム一覧 PageView
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: categories.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              itemBuilder: (context, catIndex) {
+                final currentCat = categories[catIndex];
+                final filteredList = statusFilteredTeams.where((t) {
+                  if (currentCat != 'すべて') {
+                    final cat = t.categoryName.isNotEmpty
+                        ? t.categoryName
+                        : t.currentCourtName;
+                    if (cat != currentCat) return false;
+                  }
+                  return true;
+                }).toList();
+
+                if (filteredList.isEmpty) {
+                  return _buildEmptyState(innerContext);
                 }
-                return true;
-              }).toList();
 
-              if (filteredList.isEmpty) {
-                return _buildEmptyState(context);
-              }
-
-              return ListView.builder(
-                key: PageStorageKey('team_status_list_$currentCat'),
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.md,
-                  horizontal: AppSpacing.xs,
-                ),
-                itemCount: filteredList.length,
-                itemBuilder: (context, index) {
-                  final teamStatus = filteredList[index];
-                  return TeamStatusCard(status: teamStatus, isDark: isDark);
-                },
-              );
-            },
+                return ListView.builder(
+                  key: PageStorageKey('team_status_list_$currentCat'),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.md,
+                    horizontal: AppSpacing.xs,
+                  ),
+                  itemCount: filteredList.length,
+                  itemBuilder: (context, index) {
+                    final teamStatus = filteredList[index];
+                    return TeamStatusCard(status: teamStatus, isDark: isDark);
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    }
 
     if (widget.isBottomSheet) {
       return DockDraggableSheet(
         backgroundColor: themeColors.scaffoldBackground,
-        builder: (context, scrollController) => content,
+        builder: (context, scrollController) {
+          return ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppRadius.largeValue),
+            ),
+            child: PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) {
+                if (didPop) return;
+                if (_navKey.currentState?.canPop() ?? false) {
+                  _navKey.currentState!.pop();
+                } else {
+                  FloatingDockSheetManager.close();
+                }
+              },
+              child: Navigator(
+                key: _navKey,
+                onGenerateRoute: (settings) {
+                  return MaterialPageRoute(
+                    builder: (innerNavContext) =>
+                        buildMainContent(innerNavContext),
+                  );
+                },
+              ),
+            ),
+          );
+        },
       );
     }
+
+    final content = buildMainContent(context);
 
     return Scaffold(
       backgroundColor: themeColors.scaffoldBackground,

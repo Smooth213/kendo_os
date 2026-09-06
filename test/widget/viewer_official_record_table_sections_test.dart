@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
+    show customTeamNamesProvider;
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_table_sections.dart';
 
@@ -25,12 +28,17 @@ void main() {
         ];
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ViewerOfficialScoreTableCard(
-                groupName: 'group1',
-                matches: matches,
-                isDark: false,
+          ProviderScope(
+            overrides: [
+              customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: ViewerOfficialScoreTableCard(
+                  groupName: 'group1',
+                  matches: matches,
+                  isDark: false,
+                ),
               ),
             ),
           ),
@@ -60,13 +68,18 @@ void main() {
         ];
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ViewerOfficialIndividualListCard(
-                groupName: '男子個人',
-                matches: matches,
-                isDark: false,
-                applySort: true,
+          ProviderScope(
+            overrides: [
+              customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+            ],
+            child: MaterialApp(
+              home: Scaffold(
+                body: ViewerOfficialIndividualListCard(
+                  groupName: '男子個人',
+                  matches: matches,
+                  isDark: false,
+                  applySort: true,
+                ),
               ),
             ),
           ),

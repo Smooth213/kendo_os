@@ -6,6 +6,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
+import 'package:kendo_os/shared/application/projections/tournament_projection.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -141,10 +142,49 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                 children: categories.map((cat) {
                   final groupKeys = proj.categoryToGroupKeys[cat]!;
 
-                  final sortedGroupKeys = List<String>.from(groupKeys)
+                  // 🛡️ 個人戦グループを単一の __merged_individual__ に集約
+                  final mergedGroupKeys = <String>[];
+                  final individualMatches = <MatchListProjection>[];
+                  TeamMatchProjection? firstIndivProj;
+
+                  for (final key in groupKeys) {
+                    final teamProj = proj.teamMatches[key];
+                    if (teamProj == null) continue;
+                    final isIndiv = teamProj.matches.any(
+                      (m) =>
+                          m.matchType == 'individual' ||
+                          m.matchType == '選手' ||
+                          m.matchType.contains('個人戦'),
+                    );
+                    final isLeague = teamProj.isLeague;
+                    final isKachinuki = teamProj.isKachinuki;
+
+                    if (isIndiv && !isLeague && !isKachinuki) {
+                      individualMatches.addAll(teamProj.matches);
+                      firstIndivProj ??= teamProj;
+                    } else {
+                      mergedGroupKeys.add(key);
+                    }
+                  }
+
+                  final effectiveTeamMatches =
+                      Map<String, TeamMatchProjection>.from(proj.teamMatches);
+                  if (individualMatches.isNotEmpty) {
+                    individualMatches.sort(
+                      (a, b) => a.order.compareTo(b.order),
+                    );
+                    mergedGroupKeys.add('__merged_individual__');
+                    effectiveTeamMatches['__merged_individual__'] =
+                        firstIndivProj!.copyWith(
+                          groupName: '__merged_individual__',
+                          matches: individualMatches,
+                        );
+                  }
+
+                  final sortedGroupKeys = List<String>.from(mergedGroupKeys)
                     ..sort((a, b) {
-                      final aMatches = proj.teamMatches[a]?.matches;
-                      final bMatches = proj.teamMatches[b]?.matches;
+                      final aMatches = effectiveTeamMatches[a]?.matches;
+                      final bMatches = effectiveTeamMatches[b]?.matches;
                       if (aMatches == null ||
                           aMatches.isEmpty ||
                           bMatches == null ||
@@ -156,12 +196,23 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       );
                     });
 
+                  TournamentProjection effectiveProj = proj;
+                  if (individualMatches.isNotEmpty) {
+                    try {
+                      effectiveProj = proj.copyWith(
+                        teamMatches: effectiveTeamMatches,
+                      );
+                    } catch (_) {
+                      effectiveProj = proj;
+                    }
+                  }
+
                   return Column(
                     children: [
                       ViewerOfficialRecordExportBar(
                         category: cat,
                         sortedGroupKeys: sortedGroupKeys,
-                        proj: proj,
+                        proj: effectiveProj,
                         tournamentName: tName,
                         tournamentDate: tDate,
                         tournamentVenue: tVenue,
@@ -174,7 +225,7 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                           itemCount: sortedGroupKeys.length,
                           itemBuilder: (context, index) {
                             final groupName = sortedGroupKeys[index];
-                            final teamProj = proj.teamMatches[groupName];
+                            final teamProj = effectiveTeamMatches[groupName];
                             if (teamProj == null) {
                               return const SizedBox.shrink();
                             }
