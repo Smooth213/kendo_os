@@ -18,6 +18,9 @@ import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
+import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/team_match_sort_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_sort_helper.dart';
+
 enum TeamFilterType { all, liveOnly, waitingOnly }
 
 /// 🥋 指導者・保護者・生徒向け「チーム試合状況」画面
@@ -63,6 +66,7 @@ class TeamMatchStatusScreen extends ConsumerStatefulWidget {
 class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
   final _navKey = GlobalKey<NavigatorState>();
   TeamFilterType _filter = TeamFilterType.all;
+  TeamSortType _sortType = TeamSortType.status;
   late final PageController _pageController;
   int _currentIndex = 0;
 
@@ -102,12 +106,9 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
         .toList();
     final categories = ['すべて', ...rawCategories];
 
-    // 現在のインデックスが範囲外にならないようクランプ
     if (_currentIndex >= categories.length) {
       _currentIndex = 0;
-      if (_pageController.hasClients) {
-        _pageController.jumpToPage(0);
-      }
+      if (_pageController.hasClients) _pageController.jumpToPage(0);
     }
 
     // フィルタリング（ステータス）
@@ -125,8 +126,7 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
     final permissions = ref.watch(permissionProvider);
     final isReadOnly = permissions.isReadOnly;
 
-    final effectiveTournamentId =
-        (widget.tournamentId != null && widget.tournamentId!.isNotEmpty)
+    final effectiveTournamentId = (widget.tournamentId?.isNotEmpty == true)
         ? widget.tournamentId!
         : (ref.watch(currentTournamentIdProvider).isNotEmpty
               ? ref.watch(currentTournamentIdProvider)
@@ -170,7 +170,7 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
               },
               itemBuilder: (context, catIndex) {
                 final currentCat = categories[catIndex];
-                final filteredList = statusFilteredTeams.where((t) {
+                final catFiltered = statusFilteredTeams.where((t) {
                   if (currentCat != 'すべて') {
                     final cat = t.categoryName.isNotEmpty
                         ? t.categoryName
@@ -180,19 +180,26 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
                   return true;
                 }).toList();
 
-                if (filteredList.isEmpty) {
+                final sortedList = TeamProgressSortHelper.sortTeams(
+                  catFiltered,
+                  _sortType,
+                );
+
+                if (sortedList.isEmpty) {
                   return _buildEmptyState(innerContext);
                 }
 
                 return ListView.builder(
-                  key: PageStorageKey('team_status_list_$currentCat'),
+                  key: PageStorageKey(
+                    'team_status_list_${currentCat}_${_sortType.name}',
+                  ),
                   padding: const EdgeInsets.symmetric(
                     vertical: AppSpacing.md,
                     horizontal: AppSpacing.xs,
                   ),
-                  itemCount: filteredList.length,
+                  itemCount: sortedList.length,
                   itemBuilder: (context, index) {
-                    final teamStatus = filteredList[index];
+                    final teamStatus = sortedList[index];
                     return TeamStatusCard(status: teamStatus, isDark: isDark);
                   },
                 );
@@ -272,39 +279,13 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // カウンターバッジ行
-          Row(
-            children: [
-              _buildMetricBadge(
-                label: '全試合',
-                count: allTeams.length,
-                color: context.appColors.primaryAccent,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _buildMetricBadge(
-                label: '🔴 試合中 (LIVE)',
-                count: liveCount,
-                color: AppKendoColors.hansokuRed,
-                highlight: liveCount > 0,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _buildMetricBadge(
-                label: '⏳ 待機中',
-                count: waitingCount,
-                color: AppKendoColors.indigo,
-                highlight: false,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-
           // フィルターチップ行（ステータス）
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 AppChoiceChip(
-                  label: const Text('すべて表示'),
+                  label: Text('すべて表示 (${allTeams.length})'),
                   selected: _filter == TeamFilterType.all,
                   onSelected: (selected) {
                     if (selected) {
@@ -334,6 +315,16 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+
+          // ↕️ 並び替えチップ行
+          TeamMatchSortBar(
+            currentSort: _sortType,
+            onSortChanged: (newSort) {
+              setState(() => _sortType = newSort);
+            },
+            isDark: isDark,
           ),
 
           // 🏷️ カテゴリ別アンダーラインタブバー（タップ & スワイプ連動）
@@ -403,51 +394,6 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricBadge({
-    required String label,
-    required int count,
-    required Color color,
-    bool highlight = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
-      ),
-      decoration: BoxDecoration(
-        color: highlight
-            ? color.withValues(alpha: 0.15)
-            : color.withValues(alpha: 0.08),
-        borderRadius: AppRadius.small,
-        border: Border.all(
-          color: highlight ? color : color.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: AppFontSize.caption,
-              fontWeight: AppFontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: AppFontSize.bodySmall,
-              fontWeight: AppFontWeight.bold,
-              color: color,
-            ),
-          ),
         ],
       ),
     );

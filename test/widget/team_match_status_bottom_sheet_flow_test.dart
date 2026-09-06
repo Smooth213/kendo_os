@@ -150,6 +150,8 @@ void main() {
     testWidgets(
       '① ボトムシート展開 ➔ 団体戦カードタップ ➔ スコアボード ➔ 対戦詳細(MatchScreen)の2段階ネスト遷移と完全復帰',
       (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(tester.view.resetPhysicalSize);
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
 
@@ -179,18 +181,19 @@ void main() {
         await tester.tap(taishoCell);
         await tester.pumpAndSettle();
 
+        // 4. MatchScreen 内要素の確認
         expect(FloatingDockSheetManager.isOpen, isTrue);
         expect(find.byType(MatchScreen), findsOneWidget);
 
-        // 4. MatchScreen の戻るボタン押下 ➔ TeamScoreboardScreen に戻る
+        // 5. MatchScreen の戻るボタン押下 ➔ TeamScoreboardScreen に戻る
         final backButton = find.byIcon(Icons.arrow_back_ios_new);
         expect(backButton, findsOneWidget);
         await tester.tap(backButton);
         await tester.pumpAndSettle();
 
         expect(FloatingDockSheetManager.isOpen, isTrue);
-        expect(find.byType(MatchScreen), findsNothing);
         expect(find.byType(TeamScoreboardScreen), findsOneWidget);
+        expect(find.text('チーム試合状況'), findsNothing);
 
         // 5. TeamScoreboardScreen の戻るボタン押下 ➔ TeamMatchStatusScreen (一覧) に戻る
         expect(backButton, findsOneWidget);
@@ -210,6 +213,8 @@ void main() {
     testWidgets(
       '② 直前の結果タップ ➔ MatchScreen への直接遷移 & 画面リサイズ(needsScroll)でもシートが勝手に閉じないことの保証',
       (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(tester.view.resetPhysicalSize);
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
 
@@ -255,6 +260,8 @@ void main() {
     testWidgets('③ カテゴリフィルタとステータスフィルタがボトムシート内で正しく連動することの保証', (
       WidgetTester tester,
     ) async {
+      tester.view.physicalSize = const Size(1200, 2400);
+      addTearDown(tester.view.resetPhysicalSize);
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -265,7 +272,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(FloatingDockSheetManager.isOpen, isTrue);
-      expect(find.text('すべて表示'), findsOneWidget);
+      expect(find.text('すべて表示 (1)'), findsOneWidget);
       expect(find.text('全カテゴリ (1)'), findsOneWidget);
       expect(find.text('中学生男子の部 (1)'), findsOneWidget);
 

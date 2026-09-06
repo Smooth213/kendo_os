@@ -121,11 +121,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 1. ヘッダーカウンター: 5対戦カード（全5試合）が表示されていること
-      expect(find.text('全試合'), findsOneWidget);
-      expect(find.text('5'), findsWidgets); // 全試合バッジ内のカウント
-      expect(find.text('🔴 試合中 (LIVE)'), findsOneWidget);
-      expect(find.text('⏳ 待機中'), findsWidgets);
+      // 1. フィルターチップ: 5対戦カード（全5試合）が表示されていること
+      expect(find.text('すべて表示 (5)'), findsOneWidget);
+      expect(find.text('🔴 試合中のみ (1)'), findsOneWidget);
+      expect(find.text('⏳ 待機中のみ (2)'), findsOneWidget);
 
       // 2. 「リーグ団体戦」という誤表示が画面内に1件も存在しないこと！
       expect(find.textContaining('リーグ団体戦'), findsNothing);

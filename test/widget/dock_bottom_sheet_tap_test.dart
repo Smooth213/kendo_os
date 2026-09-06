@@ -25,6 +25,8 @@ void main() {
     testWidgets(
       'Inside bottom sheet, finished match section navigates to MatchScreen inside sheet',
       (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(tester.view.resetPhysicalSize);
         final match = MatchModel(
           id: 'match_taisho_123',
           matchType: '大将',
@@ -141,6 +143,8 @@ void main() {
     testWidgets(
       'Inside bottom sheet, finished team match card navigates to TeamScoreboardScreen inside sheet',
       (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(tester.view.resetPhysicalSize);
         final lastFinished = MatchModel(
           id: 'm_finished_1',
           matchType: '大将',
@@ -287,6 +291,8 @@ void main() {
     testWidgets(
       'OfficialRecordScreen export buttons inside FloatingDockSheetManager are tappable',
       (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 2400);
+        addTearDown(tester.view.resetPhysicalSize);
         final testMatch = MatchModel(
           id: 'm1',
           tournamentId: 't1',

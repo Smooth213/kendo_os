@@ -171,7 +171,7 @@ void main() {
       // Step 1: 初期表示 & 自チーム認識（ヘッダー）の検証
       // ----------------------------------------------------
       expect(find.text('チーム試合状況'), findsOneWidget);
-      expect(find.text('全試合'), findsOneWidget);
+      expect(find.textContaining('すべて表示'), findsOneWidget);
 
       // 自道場チームカードの存在確認
       expect(find.text('道上剣友会A'), findsWidgets);
@@ -221,7 +221,7 @@ void main() {
       expect(find.text('道上選抜'), findsNothing);
 
       // 「すべて表示」で全解除
-      await tester.tap(find.text('すべて表示'));
+      await tester.tap(find.textContaining('すべて表示'));
       await tester.pumpAndSettle();
 
       expect(find.text('道上剣友会A'), findsWidgets);

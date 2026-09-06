@@ -144,8 +144,7 @@ void main() {
 
         // ヘッダー確認
         expect(find.text('チーム試合状況'), findsOneWidget);
-        expect(find.text('全試合'), findsOneWidget);
-        expect(find.text('🔴 試合中 (LIVE)'), findsOneWidget);
+        expect(find.text('すべて表示 (2)'), findsOneWidget);
 
         // チームカード確認（ヘッダーおよび選手上段の道場名として道上剣友会が表示されること）
         expect(find.text('道上剣友会'), findsNWidgets(2));
@@ -183,8 +182,8 @@ void main() {
         expect(find.text('道上剣友会'), findsNothing);
         expect(find.text('雷鳴道場中学'), findsNothing);
 
-        // 「すべて表示」をタップして全解除
-        await tester.tap(find.text('すべて表示'));
+        // 「すべて表示 (2)」をタップして全解除
+        await tester.tap(find.text('すべて表示 (2)'));
         await tester.pumpAndSettle();
 
         expect(find.text('道上剣友会'), findsNWidgets(2));
