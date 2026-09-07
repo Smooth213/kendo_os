@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_accordion_selector.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_google_auth_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
@@ -273,6 +274,7 @@ class SettingsScreen extends ConsumerWidget {
           enableLiquidGlass: enableLiquidGlass,
           themeColors: themeColors,
           children: [
+            const SettingsGoogleAuthTile(),
             SettingsListTile(
               title: 'ログアウト',
               icon: Icons.logout,
@@ -283,7 +285,8 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
         const SettingsSectionFooter(
-          text: 'ログアウトすると現在のセッションが終了し、次回利用時に再ログインが必要になります。',
+          text:
+              '※ Googleアカウントと連携すると、PCやiPadなどの異なる端末間でもクイックメモや通知既読が自動同期されます。\n※ ログイン画面が開かない場合は、ブラウザ（SafariやChrome）の「ポップアップブロック」を解除（許可）してください。（iPad/iPhoneの場合は「設定」アプリ→「Safari」→「ポップアップブロック」をオフ）\n※ ログアウトすると現在のセッションが終了し、次回利用時に再ログインが必要になります。',
         ),
         const SizedBox(height: AppSpacing.xl),
         if (isBottomSheet)

@@ -214,20 +214,51 @@ class AppStartup {
       debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外トラックを確立しました');
     }
 
-    // 🛡️ オフライン時の起動ストール防止パッチ（ノンブロッキング非同期実行）
+    // 🛡️ 既存セッションの安全な復元と匿名認証（ノンブロッキング非同期実行）
     unawaited(() async {
       try {
-        if (FirebaseAuth.instance.currentUser == null) {
+        if (kIsWeb) {
+          // Webリダイレクト認証から復帰した直後はリダイレクト結果の受信を待機
+          try {
+            final redirectUser = await FirebaseAuth.instance
+                .getRedirectResult();
+            if (redirectUser.user != null) {
+              debugPrint(
+                '🛡️ [Auth] Webリダイレクト認証ユーザーを確立しました: ${redirectUser.user?.email}',
+              );
+            }
+          } catch (e) {
+            debugPrint('ℹ️ [Auth] Web getRedirectResult: $e');
+          }
+        }
+
+        // 🛡️ Web/Nativeのローカルストレージ（IndexedDB等）から既存認証セッションの復元を確実に待機
+        final existingUser = await FirebaseAuth.instance
+            .authStateChanges()
+            .first
+            .timeout(
+              const Duration(seconds: 3),
+              onTimeout: () => FirebaseAuth.instance.currentUser,
+            );
+
+        if (existingUser == null) {
           await FirebaseAuth.instance.signInAnonymously().timeout(
             const Duration(seconds: 15),
             onTimeout: () {
               throw TimeoutException('Auth 認証タイムアウト（オフライン運用に切り替えます）');
             },
           );
-          debugPrint('🛡️ [Auth] 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
+          debugPrint('🛡️ [Auth] 初回起動: 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
+        } else {
+          final isGoogle = existingUser.providerData.any(
+            (p) => p.providerId == 'google.com',
+          );
+          debugPrint(
+            '🛡️ [Auth] 既存セッションを正常復元しました (UID: ${existingUser.uid}, Google連携: $isGoogle, Email: ${existingUser.email})',
+          );
         }
       } catch (e) {
-        debugPrint('⚠️ [Auth] 匿名認証をスキップしてオフライン起動を継続します: $e');
+        debugPrint('⚠️ [Auth] 認証復元/初期化処理のキャッチ: $e');
       }
     }());
   }

@@ -120,7 +120,14 @@ class AppBootstrapHelper {
 
       () async {
         try {
-          if (FirebaseAuth.instance.currentUser == null) {
+          final existingUser = await FirebaseAuth.instance
+              .authStateChanges()
+              .first
+              .timeout(
+                const Duration(seconds: 3),
+                onTimeout: () => FirebaseAuth.instance.currentUser,
+              );
+          if (existingUser == null) {
             await FirebaseAuth.instance.signInAnonymously().timeout(
               const Duration(seconds: 15),
               onTimeout: () => throw TimeoutException('Auth Timeout'),

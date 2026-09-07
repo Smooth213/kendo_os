@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -55,16 +56,19 @@ class _QuickMemoScreenState extends State<QuickMemoScreen> {
   // テキスト関連
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
+  StreamSubscription<QuickMemoData>? _memoSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadSavedData();
+    _subscribeCloudUpdates();
   }
 
   Future<void> _loadSavedData() async {
     final data = await QuickMemoStorageService.instance.loadMemo(
       widget.tournamentId,
+      forceCloudRefresh: true,
     );
     if (!mounted) return;
     setState(() {
@@ -75,6 +79,27 @@ class _QuickMemoScreenState extends State<QuickMemoScreen> {
         _mode = QuickMemoMode.text;
       }
     });
+  }
+
+  void _subscribeCloudUpdates() {
+    _memoSubscription = QuickMemoStorageService.instance
+        .watchMemo(widget.tournamentId)
+        .listen((cloudData) {
+          if (!mounted) return;
+          if (!_textFocusNode.hasFocus && _currentPoints.isEmpty) {
+            if (_textController.text != cloudData.text ||
+                _strokes.length != cloudData.strokes.length) {
+              setState(() {
+                _strokes.clear();
+                _strokes.addAll(cloudData.strokes);
+                _textController.text = cloudData.text;
+                if (cloudData.modeName == 'text') {
+                  _mode = QuickMemoMode.text;
+                }
+              });
+            }
+          }
+        });
   }
 
   void _saveData() {
@@ -88,6 +113,7 @@ class _QuickMemoScreenState extends State<QuickMemoScreen> {
 
   @override
   void dispose() {
+    _memoSubscription?.cancel();
     _saveData();
     _textController.dispose();
     _textFocusNode.dispose();

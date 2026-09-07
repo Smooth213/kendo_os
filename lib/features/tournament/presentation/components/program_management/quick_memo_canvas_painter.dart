@@ -14,8 +14,15 @@ class MemoStroke {
   });
 
   Map<String, dynamic> toJson() {
+    // 🛡️ Firestoreの「ネスト配列禁止（nested arrays not supported）」を回避するため
+    // [x1, y1, x2, y2, ...] のフラットな数値リストとして保存
+    final flatPoints = <double>[];
+    for (final p in points) {
+      flatPoints.add(p.dx);
+      flatPoints.add(p.dy);
+    }
     return {
-      'points': points.map((p) => [p.dx, p.dy]).toList(),
+      'points': flatPoints,
       'color': color.toARGB32(),
       'strokeWidth': strokeWidth,
     };
@@ -23,10 +30,29 @@ class MemoStroke {
 
   factory MemoStroke.fromJson(Map<String, dynamic> json) {
     final rawPoints = json['points'] as List<dynamic>? ?? [];
-    final points = rawPoints.map((pt) {
-      final list = pt as List<dynamic>;
-      return Offset((list[0] as num).toDouble(), (list[1] as num).toDouble());
-    }).toList();
+    final points = <Offset>[];
+
+    if (rawPoints.isNotEmpty) {
+      if (rawPoints.first is List) {
+        // 旧仕様: [[x, y], [x, y]] の後方互換処理
+        for (final pt in rawPoints) {
+          final list = pt as List<dynamic>;
+          if (list.length >= 2) {
+            points.add(
+              Offset((list[0] as num).toDouble(), (list[1] as num).toDouble()),
+            );
+          }
+        }
+      } else {
+        // 新仕様: フラットリスト [x1, y1, x2, y2, ...]
+        for (int i = 0; i < rawPoints.length - 1; i += 2) {
+          final x = (rawPoints[i] as num).toDouble();
+          final y = (rawPoints[i + 1] as num).toDouble();
+          points.add(Offset(x, y));
+        }
+      }
+    }
+
     final colorVal = json['color'] as int? ?? 0xFF000000;
     final width = (json['strokeWidth'] as num?)?.toDouble() ?? 3.0;
     return MemoStroke(

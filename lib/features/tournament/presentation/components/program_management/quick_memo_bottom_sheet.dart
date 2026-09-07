@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_storage_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_toolbar.dart';
@@ -51,16 +52,19 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
+  StreamSubscription<QuickMemoData>? _memoSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadSavedData();
+    _subscribeCloudUpdates();
   }
 
   Future<void> _loadSavedData() async {
     final data = await QuickMemoStorageService.instance.loadMemo(
       widget.tournamentId,
+      forceCloudRefresh: true,
     );
     if (!mounted) return;
     setState(() {
@@ -71,6 +75,28 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
         _mode = QuickMemoMode.text;
       }
     });
+  }
+
+  void _subscribeCloudUpdates() {
+    _memoSubscription = QuickMemoStorageService.instance
+        .watchMemo(widget.tournamentId)
+        .listen((cloudData) {
+          if (!mounted) return;
+          // 操作中でない場合に最新データをUIへ安全にマージ
+          if (!_textFocusNode.hasFocus && _currentPoints.isEmpty) {
+            if (_textController.text != cloudData.text ||
+                _strokes.length != cloudData.strokes.length) {
+              setState(() {
+                _strokes.clear();
+                _strokes.addAll(cloudData.strokes);
+                _textController.text = cloudData.text;
+                if (cloudData.modeName == 'text') {
+                  _mode = QuickMemoMode.text;
+                }
+              });
+            }
+          }
+        });
   }
 
   void _saveData() {
@@ -84,6 +110,7 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
 
   @override
   void dispose() {
+    _memoSubscription?.cancel();
     _saveData();
     _textController.dispose();
     _textFocusNode.dispose();
@@ -259,6 +286,27 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
             iconColor: AppKendoColors.pink,
             onFullScreen: _openFullScreen,
             extraActions: [
+              IconButton(
+                icon: const Icon(Icons.sync_rounded, size: 18),
+                tooltip: 'クラウドから最新メモを同期',
+                color: themeColors.textColor,
+                onPressed: () async {
+                  AppHaptics.selection();
+                  await _loadSavedData();
+                  if (context.mounted) {
+                    final strokeCount = _strokes.length;
+                    final textLength = _textController.text.trim().length;
+                    final detail = strokeCount > 0 && textLength > 0
+                        ? '（手書き: $strokeCount本、文字: $textLength字）'
+                        : strokeCount > 0
+                        ? '（手書き: $strokeCount本）'
+                        : textLength > 0
+                        ? '（文字: $textLength字）'
+                        : '（メモは空です）';
+                    AppSnackBar.showSuccess(context, '最新のメモを同期しました $detail');
+                  }
+                },
+              ),
               if (_mode == QuickMemoMode.drawing) ...[
                 IconButton(
                   icon: const Icon(Icons.undo_rounded, size: 18),
@@ -293,70 +341,40 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
           Expanded(
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: MemoGridBackgroundPainter(
-                      isDark: isDark,
-                      gridColor: isDark
-                          ? AppKendoColors.pureWhite.withValues(alpha: 0.04)
-                          : AppKendoColors.pureBlack.withValues(alpha: 0.05),
-                    ),
+                if (_mode == QuickMemoMode.drawing)
+                  QuickMemoDrawingCanvas(
+                    strokes: _strokes,
+                    currentPoints: _currentPoints,
+                    selectedColor: _selectedColor,
+                    selectedWidth: _selectedWidth,
+                    isEraser: _isEraser,
+                    isDark: isDark,
+                    themeColors: themeColors,
+                    onPanStart: _onPanStart,
+                    onPanUpdate: _onPanUpdate,
+                    onPanEnd: _onPanEnd,
+                    onColorChanged: (color) {
+                      setState(() {
+                        _selectedColor = color;
+                        _isEraser = false;
+                      });
+                    },
+                    onToggleWidth: () {
+                      setState(() {
+                        _isEraser = false;
+                        if (_selectedWidth == 2.0) {
+                          _selectedWidth = 4.0;
+                        } else if (_selectedWidth == 4.0) {
+                          _selectedWidth = 8.0;
+                        } else {
+                          _selectedWidth = 2.0;
+                        }
+                      });
+                    },
+                    onToggleEraser: () {
+                      setState(() => _isEraser = !_isEraser);
+                    },
                   ),
-                ),
-                if (_mode == QuickMemoMode.drawing) ...[
-                  Positioned.fill(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onPanStart: _onPanStart,
-                      onPanUpdate: _onPanUpdate,
-                      onPanEnd: _onPanEnd,
-                      child: CustomPaint(
-                        painter: MemoCanvasPainter(
-                          strokes: _strokes,
-                          currentPoints: _currentPoints,
-                          currentColor: _selectedColor,
-                          currentWidth: _selectedWidth,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (_strokes.isEmpty && _currentPoints.isEmpty)
-                    QuickMemoEmptyGuidance(textColor: themeColors.textColor),
-                  Positioned(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    bottom:
-                        MediaQuery.of(context).padding.bottom + AppSpacing.md,
-                    child: QuickMemoDrawingToolbar(
-                      themeColors: themeColors,
-                      isDark: isDark,
-                      selectedColor: _selectedColor,
-                      selectedWidth: _selectedWidth,
-                      isEraser: _isEraser,
-                      onColorChanged: (color) {
-                        setState(() {
-                          _selectedColor = color;
-                          _isEraser = false;
-                        });
-                      },
-                      onToggleWidth: () {
-                        setState(() {
-                          _isEraser = false;
-                          if (_selectedWidth == 2.0) {
-                            _selectedWidth = 4.0;
-                          } else if (_selectedWidth == 4.0) {
-                            _selectedWidth = 8.0;
-                          } else {
-                            _selectedWidth = 2.0;
-                          }
-                        });
-                      },
-                      onToggleEraser: () {
-                        setState(() => _isEraser = !_isEraser);
-                      },
-                    ),
-                  ),
-                ],
                 if (_mode == QuickMemoMode.text) ...[
                   Positioned.fill(
                     child: Padding(
