@@ -12,7 +12,9 @@ class DockParentButton extends StatelessWidget {
   final bool isDocked;
   final double buttonSize;
   final double closeButtonSize;
+  final String? timerBadge;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const DockParentButton({
     super.key,
@@ -24,6 +26,8 @@ class DockParentButton extends StatelessWidget {
     required this.buttonSize,
     required this.closeButtonSize,
     required this.onTap,
+    this.timerBadge,
+    this.onLongPress,
   });
 
   @override
@@ -79,6 +83,7 @@ class DockParentButton extends StatelessWidget {
             shape: const CircleBorder(),
             child: InkWell(
               onTap: onTap,
+              onLongPress: onLongPress,
               customBorder: const CircleBorder(),
               child: Center(
                 child: AnimatedRotation(
@@ -98,6 +103,54 @@ class DockParentButton extends StatelessWidget {
             ),
           ),
         ),
+        // タイマー動作中ミニピルバッジ (⏱️ 02:45)
+        if (!isDocked && timerBadge != null && !isExpanded)
+          Positioned(
+            bottom: -8,
+            left: -12,
+            right: -12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xs,
+                vertical: AppSpacing.xxs / 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppKendoColors.deepOrange,
+                borderRadius: AppRadius.round,
+                border: Border.all(color: AppKendoColors.pureWhite, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppKendoColors.black.withValues(alpha: 0.35),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.timer_rounded,
+                    size: 10,
+                    color: AppKendoColors.pureWhite,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    timerBadge!,
+                    style: const TextStyle(
+                      color: AppKendoColors.pureWhite,
+                      fontSize: AppFontSize.micro,
+                      fontWeight: AppFontWeight.bold,
+                      fontFamily: 'monospace',
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        // 未読アナウンスバッジ
         if (!isDocked && unreadCount > 0 && !isExpanded)
           Positioned(
             top: -2,

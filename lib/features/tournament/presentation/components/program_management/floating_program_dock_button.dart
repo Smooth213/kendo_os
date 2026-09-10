@@ -6,6 +6,9 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_items_builder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_items_reorder_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/dock_items_order_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -111,6 +114,9 @@ class _FloatingProgramDockButtonState
     required BuildContext context,
     required AppThemeColors themeColors,
     required int unreadCount,
+    required List<DockItemType> customOrder,
+    required String timerDisplay,
+    required bool isTimerRunning,
   }) {
     return FloatingDockItemsBuilder.build(
       context: context,
@@ -119,6 +125,9 @@ class _FloatingProgramDockButtonState
       themeColors: themeColors,
       unreadCount: unreadCount,
       onCollapse: _collapse,
+      customOrder: customOrder,
+      timerDisplay: timerDisplay,
+      isTimerRunning: isTimerRunning,
     );
   }
 
@@ -132,6 +141,9 @@ class _FloatingProgramDockButtonState
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final screenSize = MediaQuery.of(context).size;
+
+    final itemsOrder = ref.watch(dockItemsOrderProvider);
+    final timerState = ref.watch(dockTimerProvider);
 
     final double safeTop = MediaQuery.of(context).padding.top + 60.0;
     final double rawSafeBottom =
@@ -171,6 +183,9 @@ class _FloatingProgramDockButtonState
       context: context,
       themeColors: themeColors,
       unreadCount: unreadCount,
+      customOrder: itemsOrder,
+      timerDisplay: timerState.formattedDisplay,
+      isTimerRunning: timerState.isRunning,
     );
 
     final double dirX = _isLeft ? 1.0 : -1.0;
@@ -185,8 +200,14 @@ class _FloatingProgramDockButtonState
     final double dirY = normalizedY < 0.5 ? 1.0 : -1.0;
 
     // 画面の上下端（上部20%以内または下部20%以内）ではコーナーに寄り添う「L字型」、
-    // 画面の中央部（20%〜80%）ではスッキリ整然とした「縦1列」に流動的切り替え
-    final bool isNearEdge = normalizedY < 0.20 || normalizedY > 0.80;
+    // また垂直スペースがアイテム全体の配置高さを下回る場合も画面外飛び出し防止で「L字型」に切り替え
+    final double availableVerticalSpace = dirY < 0
+        ? (currentY - safeTop)
+        : (safeBottom - currentY);
+    final double requiredVerticalSpace = items.length * 66.0;
+    final bool isNearEdge =
+        (normalizedY < 0.20 || normalizedY > 0.80) ||
+        (availableVerticalSpace < requiredVerticalSpace);
     final DockLayoutMode layoutMode = isNearEdge
         ? DockLayoutMode.lShape
         : DockLayoutMode.vertical;
@@ -339,6 +360,7 @@ class _FloatingProgramDockButtonState
     required int unreadCount,
     required bool isExpanded,
   }) {
+    final timerState = ref.watch(dockTimerProvider);
     return DockParentButton(
       isDark: isDark,
       themeColors: themeColors,
@@ -347,7 +369,12 @@ class _FloatingProgramDockButtonState
       isDocked: _isDocked,
       buttonSize: _buttonSize,
       closeButtonSize: _closeButtonSize,
+      timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
       onTap: _isDocked ? _toggleDock : _toggleExpand,
+      onLongPress: () {
+        AppHaptics.medium();
+        DockItemsReorderBottomSheet.show(context);
+      },
     );
   }
 }

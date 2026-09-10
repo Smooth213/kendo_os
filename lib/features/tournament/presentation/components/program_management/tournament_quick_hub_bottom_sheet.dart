@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_items_reorder_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/tournament_quick_hub_banner.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/tournament_quick_hub_tile.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/program_list_provider.dart';
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart';
@@ -189,6 +192,43 @@ class TournamentQuickHubBottomSheet extends ConsumerWidget {
                               tournamentId,
                               !isReadOnly,
                             );
+                          },
+                        ),
+                        TournamentQuickHubTile(
+                          themeColors: themeColors,
+                          icon: Icons.qr_code_2_rounded,
+                          iconColor: AppKendoColors.teal,
+                          title: '観戦QRコード',
+                          subtitle: '大画面表示＆共有',
+                          onTap: () {
+                            Navigator.pop(context);
+                            ViewerQrBottomSheet.show(
+                              context,
+                              tournamentId: tournamentId,
+                              isViewerMode: isReadOnly,
+                            );
+                          },
+                        ),
+                        TournamentQuickHubTile(
+                          themeColors: themeColors,
+                          icon: Icons.timer_rounded,
+                          iconColor: AppKendoColors.orangeAccent,
+                          title: '独立タイマー',
+                          subtitle: '進行・アップ測定',
+                          onTap: () {
+                            Navigator.pop(context);
+                            DockTimerBottomSheet.show(context);
+                          },
+                        ),
+                        TournamentQuickHubTile(
+                          themeColors: themeColors,
+                          icon: Icons.sort_rounded,
+                          iconColor: AppKendoColors.indigo,
+                          title: 'ドック並び替え',
+                          subtitle: 'アイテム順序変更',
+                          onTap: () {
+                            Navigator.pop(context);
+                            DockItemsReorderBottomSheet.show(context);
                           },
                         ),
                         if (!isReadOnly)

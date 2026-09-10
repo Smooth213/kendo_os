@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
@@ -139,11 +140,18 @@ class TeamStatusCard extends StatelessWidget {
                   _buildHeaderRow(context, isLive, isFinished),
                   const SizedBox(height: AppSpacing.xs),
 
-                  // 🔽 【2段目】: 【錬成】等の属性プレフィックスバッジ（存在時のみ）
-                  if (scenePrefix.isNotEmpty) ...[
-                    _buildScenePrefixBadge(context, scenePrefix),
-                    const SizedBox(height: AppSpacing.xs),
-                  ],
+                  // 🔽 【2段目】: 【錬成】等の属性プレフィックスバッジ（左） ────── BANDボタン（右・状況バッジ直下）
+                  Row(
+                    children: [
+                      if (scenePrefix.isNotEmpty)
+                        _buildScenePrefixBadge(context, scenePrefix)
+                      else
+                        const SizedBox.shrink(),
+                      const Spacer(),
+                      BandShareButton(teamStatus: status),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
 
                   // 🔽 【3段目】: 対戦カード見出し（headline）
                   if (status.matchupTitle.isNotEmpty) ...[

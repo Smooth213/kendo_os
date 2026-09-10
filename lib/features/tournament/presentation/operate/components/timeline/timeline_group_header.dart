@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
@@ -48,8 +49,9 @@ class TimelineGroupHeader extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔽 【1段目】: 属性プレフィックス（左） ────── ステータスバッジ（右）
+        // 🔽 【1段目】: 属性プレフィックス（左） ────── ステータスバッジ＆BANDボタン（右）
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Builder(
               builder: (context) {
@@ -61,10 +63,18 @@ class TimelineGroupHeader extends ConsumerWidget {
               },
             ),
             const Spacer(),
-            MatchStatusBadge(
-              isPlaying: hasInProgress,
-              isFinished: allFinished,
-              isDark: isDark,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MatchStatusBadge(
+                  isPlaying: hasInProgress,
+                  isFinished: allFinished,
+                  isDark: isDark,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                BandShareButton(matches: groupList),
+              ],
             ),
           ],
         ),

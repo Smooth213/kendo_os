@@ -74,26 +74,33 @@ class DockSpeedDialItemWidget extends StatelessWidget {
       targetDy = dirY * step * (index + 1);
     } else {
       switch (index) {
-        case 0: // 垂直 1個目 (プログラム)
+        case 0: // 垂直 1個目
           targetDy = dirY * step * 1.0;
           break;
-        case 1: // 垂直 2個目 (チーム状況)
+        case 1: // 垂直 2個目
           targetDy = dirY * step * 2.0;
           break;
-        case 2: // 垂直 3個目 (対戦表)
+        case 2: // 垂直 3個目
           targetDy = dirY * step * 3.0;
           break;
-        case 3: // 水平 1個目 (クイックメモ)
+        case 3: // 垂直 4個目
+          targetDy = dirY * step * 4.0;
+          break;
+        case 4: // 水平 1個目
           targetDx = dirX * step * 1.0;
           break;
-        case 4: // 水平 2個目 (お知らせ)
+        case 5: // 水平 2個目
           targetDx = dirX * step * 2.0;
           break;
-        case 5: // 水平 3個目 (ヘルプ)
+        case 6: // 水平 3個目
           targetDx = dirX * step * 3.0;
           break;
-        case 6: // 垂直 4個目 (設定)
-          targetDy = dirY * step * 4.0;
+        case 7: // 水平 4個目
+          targetDx = dirX * step * 4.0;
+          break;
+        case 8: // 対角（内角サポート）
+          targetDy = dirY * step * 1.0;
+          targetDx = dirX * step * 1.0;
           break;
         default:
           targetDy = dirY * step * ((index % 4) + 1);

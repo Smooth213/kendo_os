@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/band/presentation/components/band_settings_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_accordion_selector.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_google_auth_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
@@ -242,6 +243,19 @@ class SettingsScreen extends ConsumerWidget {
         const SettingsSectionFooter(
           text:
               '※ iPhone/Safariで通知を受信するには、必ず「ホーム画面に追加」して起動し、通知スイッチをオンにして表示される「通知の許可」を承諾してください。',
+        ),
+        // ==========================================
+        // 2-3. 外部連携・LIVE配信 (BAND)
+        // ==========================================
+        const SettingsSectionHeader(title: '外部連携・LIVE配信'),
+        SettingsBlock(
+          enableLiquidGlass: enableLiquidGlass,
+          themeColors: themeColors,
+          children: const [BandSettingsTile()],
+        ),
+        const SettingsSectionFooter(
+          text:
+              '※ BANDグループ（低学年・高学年など）を登録しておくと、試合カードからワンタップで対戦情報をコピーして配信を開くことができます。設定した内容は道場ID配下の全端末に自動同期されます。',
         ),
         const SizedBox(height: AppSpacing.xl),
 
