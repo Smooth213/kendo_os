@@ -30,7 +30,7 @@ class BandShareButton extends ConsumerWidget {
     const brandColor = Color(0xFF00C73C);
 
     return SizedBox(
-      height: 24,
+      height: 28,
       child: OutlinedButton.icon(
         onPressed: () async {
           AppHaptics.selection();

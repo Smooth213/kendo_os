@@ -20,6 +20,10 @@ final bandGroupsStreamProvider = StreamProvider<List<BandGroupModel>>((ref) {
 
 /// 🥋 BANDアプリ/Webリンク起動ヘルパー
 class BandLauncherHelper {
+  /// テスト用URL起動インターセプター
+  @visibleForTesting
+  static Future<bool> Function(Uri uri)? urlLauncherOverride;
+
   /// BANDグループURLまたはアプリを開く
   static Future<bool> launchBandUrl(String rawUrl) async {
     String url = rawUrl.trim();
@@ -39,6 +43,10 @@ class BandLauncherHelper {
     if (uri == null) {
       debugPrint('❌ [BandLauncher] 無効なURL: $url');
       return false;
+    }
+
+    if (urlLauncherOverride != null) {
+      return await urlLauncherOverride!(uri);
     }
 
     try {

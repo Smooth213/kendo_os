@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// 🥋 観戦専用ビュアーのQRコード表示＆速報共有ボトムシート
-class ViewerQrBottomSheet extends ConsumerWidget {
+class ViewerQrBottomSheet extends ConsumerStatefulWidget {
   final String tournamentId;
   final bool isViewerMode;
 
@@ -39,7 +40,37 @@ class ViewerQrBottomSheet extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ViewerQrBottomSheet> createState() =>
+      _ViewerQrBottomSheetState();
+}
+
+class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
+  bool _isCopied = false;
+  Timer? _copyResetTimer;
+
+  @override
+  void dispose() {
+    _copyResetTimer?.cancel();
+    super.dispose();
+  }
+
+  void _copyUrl(String shareUrl) {
+    AppHaptics.success();
+    Clipboard.setData(ClipboardData(text: shareUrl));
+    _copyResetTimer?.cancel();
+    setState(() => _isCopied = true);
+
+    _copyResetTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (mounted) {
+        setState(() => _isCopied = false);
+      }
+    });
+
+    AppSnackBar.showSuccess(context, '観戦用URLをクリップボードにコピーしました');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
@@ -47,11 +78,11 @@ class ViewerQrBottomSheet extends ConsumerWidget {
 
     final syncContext = ref.watch(currentSyncContextProvider);
     final dojoId = syncContext.organizationId;
-    final isBunaiksen = tournamentId.startsWith('bunaiksen_');
+    final isBunaiksen = widget.tournamentId.startsWith('bunaiksen_');
 
     final path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
     final shareUrl =
-        'https://kendo-os-beta.web.app/$path/$tournamentId?role=viewer&dojoId=$dojoId';
+        'https://kendo-os-beta.web.app/$path/${widget.tournamentId}?role=viewer&dojoId=$dojoId';
 
     return DockDraggableSheet(
       initialChildSize: 0.72,
@@ -131,7 +162,7 @@ class ViewerQrBottomSheet extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '大会ID: $tournamentId',
+                      '大会ID: ${widget.tournamentId}',
                       style: const TextStyle(
                         fontSize: AppFontSize.badge,
                         color: AppKendoColors.grey,
@@ -177,24 +208,88 @@ class ViewerQrBottomSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
 
+            // 📋 コピー完了トースト通知バッジ（アニメーション表示）
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    alignment: Alignment.topCenter,
+                    child: child,
+                  ),
+                );
+              },
+              child: _isCopied
+                  ? Container(
+                      key: const ValueKey('copied_toast_badge'),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppKendoColors.teal,
+                        borderRadius: AppRadius.medium,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppKendoColors.teal.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: AppKendoColors.pureWhite,
+                            size: 18,
+                          ),
+                          SizedBox(width: AppSpacing.xs),
+                          Text(
+                            '観戦用URLをコピーしました！',
+                            style: TextStyle(
+                              color: AppKendoColors.pureWhite,
+                              fontSize: AppFontSize.bodySmall,
+                              fontWeight: AppFontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(key: ValueKey('copied_toast_none')),
+            ),
+
             // URLコピーボタン
             OutlinedButton.icon(
-              onPressed: () {
-                AppHaptics.selection();
-                Clipboard.setData(ClipboardData(text: shareUrl));
-                AppSnackBar.showSuccess(context, '観戦用URLをクリップボードにコピーしました');
-              },
-              icon: Icon(Icons.copy_rounded, color: themeColors.textColor),
+              onPressed: () => _copyUrl(shareUrl),
+              icon: Icon(
+                _isCopied ? Icons.check_circle_rounded : Icons.copy_rounded,
+                color: _isCopied ? AppKendoColors.teal : themeColors.textColor,
+              ),
               label: Text(
-                '観戦URLをコピー',
+                _isCopied ? 'コピーしました！' : '観戦URLをコピー',
                 style: TextStyle(
-                  color: themeColors.textColor,
+                  color: _isCopied
+                      ? AppKendoColors.teal
+                      : themeColors.textColor,
                   fontWeight: AppFontWeight.bold,
                 ),
               ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                side: BorderSide(color: themeColors.separatorColor),
+                backgroundColor: _isCopied
+                    ? AppKendoColors.teal.withValues(alpha: 0.12)
+                    : null,
+                side: BorderSide(
+                  color: _isCopied
+                      ? AppKendoColors.teal
+                      : themeColors.separatorColor,
+                  width: _isCopied ? 1.5 : 1.0,
+                ),
                 shape: const RoundedRectangleBorder(
                   borderRadius: AppRadius.medium,
                 ),

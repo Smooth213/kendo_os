@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
@@ -13,25 +14,38 @@ Future<T?> showAppBottomSheet<T>({
   double topRadius = AppRadius.roundValue,
   BoxConstraints? constraints,
   Color? backgroundColor,
-}) {
+}) async {
   AppHaptics.selection();
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final themeColors =
       Theme.of(context).extension<AppThemeColors>() ??
       AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-  return showModalBottomSheet<T>(
-    context: context,
-    isScrollControlled: isScrollControlled,
-    enableDrag: enableDrag,
-    isDismissible: isDismissible,
-    backgroundColor: backgroundColor ?? themeColors.cardBackground,
-    constraints: constraints ?? const BoxConstraints(maxWidth: double.infinity),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
-    ),
-    builder: builder,
-  );
+  final isDockOpen = FloatingDockSheetManager.isOpen;
+  if (isDockOpen) {
+    FloatingDockSheetManager.hideTemporarily();
+  }
+
+  try {
+    return await showModalBottomSheet<T>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: isScrollControlled,
+      enableDrag: enableDrag,
+      isDismissible: isDismissible,
+      backgroundColor: backgroundColor ?? themeColors.cardBackground,
+      constraints:
+          constraints ?? const BoxConstraints(maxWidth: double.infinity),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
+      ),
+      builder: builder,
+    );
+  } finally {
+    if (isDockOpen) {
+      FloatingDockSheetManager.restoreVisibility();
+    }
+  }
 }
 
 /// アプリ共通のボトムシートコンテンツ枠（ドラッグハンドル・ヘッダー・レスポンシブパディング内包）

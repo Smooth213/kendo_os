@@ -147,6 +147,22 @@ class FloatingDockSheetManager {
 
     callback?.call();
   }
+
+  static int _hideCount = 0;
+
+  /// 子モーダル（BottomSheet, Dialog）表示中にドックシートを一時非表示にして前面を譲る
+  static void hideTemporarily() {
+    _hideCount++;
+    _currentHostState?.setVisible(false);
+  }
+
+  /// 子モーダル終了時にドックシートの表示を復元する
+  static void restoreVisibility() {
+    _hideCount = (_hideCount - 1).clamp(0, 999);
+    if (_hideCount == 0) {
+      _currentHostState?.setVisible(true);
+    }
+  }
 }
 
 /// 🥋 フローティングシートのスライドイン・アウトおよび背面タップ透過ホスト
@@ -169,6 +185,15 @@ class _FloatingDockSheetHostState extends State<_FloatingDockSheetHost>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
+  bool _visible = true;
+
+  void setVisible(bool visible) {
+    if (_visible != visible && mounted) {
+      setState(() {
+        _visible = visible;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -213,16 +238,19 @@ class _FloatingDockSheetHostState extends State<_FloatingDockSheetHost>
     // 💡 重要: Stack全体に背景バリア（ModalBarrier）を一切敷かない。
     // シートから外れた領域はウィジェットが存在しないため、ヒットテストが
     // 100% 自然に背後の本ページ（スコア入力、対戦表、タイムライン）へ届く。
-    return Stack(
-      children: [
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: widget.child,
+    return Offstage(
+      offstage: !_visible,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: widget.child,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

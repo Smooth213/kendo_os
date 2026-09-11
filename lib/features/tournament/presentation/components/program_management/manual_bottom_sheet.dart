@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_markdown_view.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_markdown_loader_service.dart';
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -99,7 +100,11 @@ class _ManualBottomSheetState extends ConsumerState<ManualBottomSheet> {
   }
 
   void _openFullScreen() {
-    Navigator.of(context).pop();
+    if (FloatingDockSheetManager.isOpen) {
+      FloatingDockSheetManager.close(immediate: true);
+    } else {
+      Navigator.of(context).pop();
+    }
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>

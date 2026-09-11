@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_display_card.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_preset_button.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 /// 🥋 独立型カウントダウンタイマー＆ストップウォッチ・ボトムシート
-class DockTimerBottomSheet extends ConsumerWidget {
+class DockTimerBottomSheet extends ConsumerStatefulWidget {
   const DockTimerBottomSheet({super.key});
 
   static void show(BuildContext context) {
@@ -20,7 +22,13 @@ class DockTimerBottomSheet extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DockTimerBottomSheet> createState() =>
+      _DockTimerBottomSheetState();
+}
+
+class _DockTimerBottomSheetState extends ConsumerState<DockTimerBottomSheet> {
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
@@ -31,10 +39,9 @@ class DockTimerBottomSheet extends ConsumerWidget {
 
     final isStopwatch = timerState.mode == DockTimerMode.stopwatch;
     final isRunning = timerState.isRunning;
-    final isFinished = timerState.isFinished;
 
     return DockDraggableSheet(
-      initialChildSize: 0.72,
+      initialChildSize: 0.60,
       minChildSize: 0.45,
       maxChildSize: 0.92,
       builder: (context, scrollController) {
@@ -150,84 +157,20 @@ class DockTimerBottomSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // 特大デジタル時計表示
-            Center(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                decoration: BoxDecoration(
-                  color: isFinished
-                      ? AppKendoColors.hansokuRed.withValues(alpha: 0.15)
-                      : themeColors.cardBackground,
-                  borderRadius: AppRadius.large,
-                  border: Border.all(
-                    color: isFinished
-                        ? AppKendoColors.hansokuRed
-                        : (isRunning
-                              ? AppKendoColors.orangeAccent
-                              : themeColors.separatorColor.withValues(
-                                  alpha: 0.4,
-                                )),
-                    width: isRunning ? 2.0 : 1.0,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    if (isFinished)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: AppSpacing.xs),
-                        child: Text(
-                          '⏰ TIME UP !',
-                          style: TextStyle(
-                            fontSize: AppFontSize.subhead,
-                            fontWeight: AppFontWeight.bold,
-                            color: AppKendoColors.hansokuRed,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    Text(
-                      timerState.formattedDisplay,
-                      style: TextStyle(
-                        fontSize: AppFontSize.scoreboardTimer,
-                        fontWeight: AppFontWeight.bold,
-                        fontFamily: 'monospace',
-                        color: isFinished
-                            ? AppKendoColors.hansokuRed
-                            : (isRunning
-                                  ? AppKendoColors.orangeAccent
-                                  : themeColors.textColor),
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                    if (!isStopwatch)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.xs,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: AppRadius.small,
-                          child: LinearProgressIndicator(
-                            value: timerState.progress,
-                            minHeight: 6,
-                            backgroundColor: themeColors.separatorColor
-                                .withValues(alpha: 0.3),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              isFinished
-                                  ? AppKendoColors.hansokuRed
-                                  : AppKendoColors.orangeAccent,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+            // ⏱️ 特大デジタル時計カード（タップで直接入力・長押しでその場ホイール変形）
+            DockTimerDisplayCard(
+              timerState: timerState,
+              isRunning: isRunning,
+              isStopwatch: isStopwatch,
+              isDark: isDark,
+              themeColors: themeColors,
+              onTimeChanged: (minutes, seconds) {
+                timerNotifier.setCustomTime(minutes, seconds);
+              },
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
 
-            // カウントダウン時: 定型プリセットチップ群
+            // カウントダウン時: 定型プリセットチップ群（カッコ削除・1分/2分追加）
             if (!isStopwatch) ...[
               const Text(
                 '定型プリセット',
@@ -241,26 +184,38 @@ class DockTimerBottomSheet extends ConsumerWidget {
                 spacing: AppSpacing.xs,
                 runSpacing: AppSpacing.xs,
                 children: [
-                  _PresetButton(
-                    label: '3分 (試合間)',
+                  DockTimerPresetButton(
+                    label: '1分',
+                    seconds: 60,
+                    isActive: timerState.initialSeconds == 60 && !isRunning,
+                    onTap: () => timerNotifier.setPreset(60),
+                  ),
+                  DockTimerPresetButton(
+                    label: '2分',
+                    seconds: 120,
+                    isActive: timerState.initialSeconds == 120 && !isRunning,
+                    onTap: () => timerNotifier.setPreset(120),
+                  ),
+                  DockTimerPresetButton(
+                    label: '3分',
                     seconds: 180,
                     isActive: timerState.initialSeconds == 180 && !isRunning,
                     onTap: () => timerNotifier.setPreset(180),
                   ),
-                  _PresetButton(
-                    label: '5分 (回り稽古)',
+                  DockTimerPresetButton(
+                    label: '5分',
                     seconds: 300,
                     isActive: timerState.initialSeconds == 300 && !isRunning,
                     onTap: () => timerNotifier.setPreset(300),
                   ),
-                  _PresetButton(
-                    label: '10分 (アップ)',
+                  DockTimerPresetButton(
+                    label: '10分',
                     seconds: 600,
                     isActive: timerState.initialSeconds == 600 && !isRunning,
                     onTap: () => timerNotifier.setPreset(600),
                   ),
-                  _PresetButton(
-                    label: '15分 (合同稽古)',
+                  DockTimerPresetButton(
+                    label: '15分',
                     seconds: 900,
                     isActive: timerState.initialSeconds == 900 && !isRunning,
                     onTap: () => timerNotifier.setPreset(900),
@@ -306,7 +261,9 @@ class DockTimerBottomSheet extends ConsumerWidget {
                 Expanded(
                   flex: 3,
                   child: ElevatedButton.icon(
-                    onPressed: timerNotifier.toggleStartPause,
+                    onPressed: () {
+                      timerNotifier.toggleStartPause();
+                    },
                     icon: Icon(
                       isRunning
                           ? Icons.pause_rounded
@@ -367,59 +324,6 @@ class DockTimerBottomSheet extends ConsumerWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class _PresetButton extends StatelessWidget {
-  final String label;
-  final int seconds;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _PresetButton({
-    required this.label,
-    required this.seconds,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeColors =
-        Theme.of(context).extension<AppThemeColors>() ??
-        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: isActive
-              ? AppKendoColors.orangeAccent.withValues(alpha: 0.2)
-              : themeColors.cardBackground,
-          borderRadius: AppRadius.round,
-          border: Border.all(
-            color: isActive
-                ? AppKendoColors.orangeAccent
-                : themeColors.separatorColor,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: AppFontSize.bodySmall,
-            fontWeight: isActive ? AppFontWeight.bold : AppFontWeight.regular,
-            color: isActive
-                ? AppKendoColors.orangeAccent
-                : themeColors.textColor,
-          ),
-        ),
-      ),
     );
   }
 }

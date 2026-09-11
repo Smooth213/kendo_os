@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -10,14 +11,27 @@ Future<T?> showAppDialog<T>({
   required WidgetBuilder builder,
   bool barrierDismissible = true,
   Color? barrierColor,
-}) {
-  return showDialog<T>(
-    context: context,
-    barrierDismissible: barrierDismissible,
-    barrierColor:
-        barrierColor ?? AppKendoColors.pureBlack.withValues(alpha: 0.54),
-    builder: builder,
-  );
+  bool useRootNavigator = true,
+}) async {
+  final isDockOpen = FloatingDockSheetManager.isOpen;
+  if (isDockOpen) {
+    FloatingDockSheetManager.hideTemporarily();
+  }
+
+  try {
+    return await showDialog<T>(
+      context: context,
+      barrierDismissible: barrierDismissible,
+      useRootNavigator: useRootNavigator,
+      barrierColor:
+          barrierColor ?? AppKendoColors.pureBlack.withValues(alpha: 0.54),
+      builder: builder,
+    );
+  } finally {
+    if (isDockOpen) {
+      FloatingDockSheetManager.restoreVisibility();
+    }
+  }
 }
 
 /// アプリ共通のダイアログ枠コンポーネント（統一 Radius: 16px, テーマ背景・ヘッダー・標準ボタン）

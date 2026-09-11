@@ -37,6 +37,16 @@ void main() {
       expect(state.formattedDisplay, '05:00');
     });
 
+    test('カスタム時間設定（手入力・ダイヤル: 7分30秒=450秒）が正しく反映されること', () {
+      final notifier = container.read(dockTimerProvider.notifier);
+      notifier.setCustomTime(7, 30);
+
+      final state = container.read(dockTimerProvider);
+      expect(state.initialSeconds, 450);
+      expect(state.remainingSeconds, 450);
+      expect(state.formattedDisplay, '07:30');
+    });
+
     test('モード切替（ストップウォッチ ⇄ カウントダウン）が正しく動作すること', () {
       final notifier = container.read(dockTimerProvider.notifier);
       notifier.toggleMode();

@@ -38,5 +38,39 @@ void main() {
       expect(find.text('LINEやSNSで観戦URLを送る'), findsOneWidget);
       expect(find.text('観戦URLをコピー'), findsOneWidget);
     });
+
+    testWidgets('観戦URLコピーをタップすると「コピーしました！」トーストが表示されること', (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        createTestWidget(
+          child: const ViewerQrBottomSheet(tournamentId: 'test_tournament_123'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 初期状態ではトーストは非表示
+      expect(find.text('観戦用URLをコピーしました！'), findsNothing);
+
+      // 「観戦URLをコピー」ボタンをタップ
+      await tester.tap(find.text('観戦URLをコピー'));
+      await tester.pump(); // アニメーション開始
+      await tester.pump(const Duration(milliseconds: 300)); // アニメーション完了
+
+      // トーストバッジが表示されていること
+      expect(find.text('観戦用URLをコピーしました！'), findsOneWidget);
+
+      // ボタンのテキストが「コピーしました！」に変わっていること
+      expect(find.text('コピーしました！'), findsOneWidget);
+
+      // 3秒経過後、自動的に消えること
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(find.text('観戦用URLをコピーしました！'), findsNothing);
+      expect(find.text('観戦URLをコピー'), findsOneWidget);
+    });
   });
 }

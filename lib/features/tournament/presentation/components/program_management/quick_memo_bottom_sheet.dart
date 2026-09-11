@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_storage_service.dart';
@@ -262,7 +263,11 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
 
   void _openFullScreen() {
     _saveData();
-    Navigator.of(context).pop();
+    if (FloatingDockSheetManager.isOpen) {
+      FloatingDockSheetManager.close(immediate: true);
+    } else {
+      Navigator.of(context).pop();
+    }
     QuickMemoScreen.show(context, tournamentId: widget.tournamentId);
   }
 

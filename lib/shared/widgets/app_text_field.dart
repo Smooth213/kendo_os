@@ -150,7 +150,7 @@ class AppTextField extends StatelessWidget {
       maxLines: maxLines,
       minLines: minLines,
       expands: expands,
-      inputFormatters: inputFormatters as List<TextInputFormatter>?,
+      inputFormatters: inputFormatters?.cast<TextInputFormatter>(),
       textAlign: textAlign,
       scrollPadding: scrollPadding,
       style: style != null ? defaultStyle.merge(style) : defaultStyle,

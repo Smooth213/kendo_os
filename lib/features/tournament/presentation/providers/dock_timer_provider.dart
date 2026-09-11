@@ -86,6 +86,12 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
     AppHaptics.selection();
   }
 
+  /// 任意カスタム時間（分・秒）を手入力・ダイヤルでセット
+  void setCustomTime(int minutes, int seconds) {
+    final total = (minutes * 60 + seconds).clamp(1, 3599);
+    setPreset(total);
+  }
+
   /// モード切替（カウントダウン ⇄ ストップウォッチ）
   void toggleMode() {
     _timer?.cancel();
