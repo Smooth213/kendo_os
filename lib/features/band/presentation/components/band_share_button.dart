@@ -30,7 +30,7 @@ class BandShareButton extends ConsumerWidget {
     const brandColor = Color(0xFF00C73C);
 
     return SizedBox(
-      height: 28,
+      height: 22,
       child: OutlinedButton.icon(
         onPressed: () async {
           AppHaptics.selection();
@@ -64,8 +64,8 @@ class BandShareButton extends ConsumerWidget {
           borderRadius: AppRadius.micro,
           child: Image.asset(
             'assets/images/band_icon.png',
-            width: 14,
-            height: 14,
+            width: 12,
+            height: 12,
             fit: BoxFit.cover,
           ),
         ),
@@ -79,13 +79,15 @@ class BandShareButton extends ConsumerWidget {
           ),
         ),
         style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.subValue),
           side: BorderSide(
             color: brandColor.withValues(alpha: 0.4),
             width: 1.0,
           ),
           backgroundColor: brandColor.withValues(alpha: 0.06),
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.capsule),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.capsule),
           visualDensity: VisualDensity.compact,
         ),
       ),
