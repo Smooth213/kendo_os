@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 class AuthRepository {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth get _auth => FirebaseAuth.instance;
 
   // ★ 提供されたWebクライアントIDで初期化を確実化
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -16,7 +17,16 @@ class AuthRepository {
         '164010781926-62n3ne0oal1jov5qpa26htp4q9ele8pa.apps.googleusercontent.com',
   );
 
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  Stream<User?> get authStateChanges {
+    try {
+      if (Firebase.apps.isEmpty) {
+        return Stream.value(null);
+      }
+      return _auth.authStateChanges();
+    } catch (_) {
+      return Stream.value(null);
+    }
+  }
 
   // ★ 匿名認証の実装を追加
   Future<void> signInAnonymously() async {

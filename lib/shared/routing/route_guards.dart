@@ -17,14 +17,19 @@ class AuthGuard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
     final session = ref.watch(authSessionProvider);
+    final isSessionValid = session != null && !session.isExpired;
+
+    // 🌟 セッション先行判定：既にPIN認証またはViewer選択を通過している場合は、
+    // Firebase AuthのStream初期化遅延に関わらず即座にchildを表示し、強制送還ループを防ぐ
+    if (isSessionValid) {
+      return child;
+    }
+
+    final authState = ref.watch(authStateProvider);
     return authState.when(
       data: (user) {
         if (user == null) {
-          if (session != null && session.role == UserRole.viewer) {
-            return child;
-          }
           return const RoleSelectScreen();
         }
         return child;

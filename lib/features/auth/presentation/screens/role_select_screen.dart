@@ -21,7 +21,7 @@ class RoleSelectScreen extends ConsumerStatefulWidget {
 }
 
 class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
-  bool _isNavigating = false;
+  DateTime? _lastNavigateTime;
 
   @override
   Widget build(BuildContext context) {
@@ -331,33 +331,34 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
         ),
-        onPressed: _isNavigating
-            ? null
-            : () async {
-                setState(() => _isNavigating = true);
-                try {
-                  if (role == UserRole.viewer) {
-                    if (FirebaseAuth.instance.currentUser == null) {
-                      await FirebaseAuth.instance.signInAnonymously();
-                    }
-                    await ref
-                        .read(authSessionProvider.notifier)
-                        .establishSession(
-                          UserRole.viewer,
-                          ref.read(currentDojoIdProvider),
-                        );
-                    if (mounted) {
-                      context.go('/');
-                    }
-                  } else {
-                    await context.push('/pin-auth?role=${role.name}');
-                  }
-                } finally {
-                  if (mounted) {
-                    setState(() => _isNavigating = false);
-                  }
-                }
-              },
+        onPressed: () async {
+          final now = DateTime.now();
+          if (_lastNavigateTime != null &&
+              now.difference(_lastNavigateTime!) <
+                  const Duration(milliseconds: 600)) {
+            return;
+          }
+          _lastNavigateTime = now;
+
+          if (role == UserRole.viewer) {
+            if (FirebaseAuth.instance.currentUser == null) {
+              await FirebaseAuth.instance.signInAnonymously();
+            }
+            await ref
+                .read(authSessionProvider.notifier)
+                .establishSession(
+                  UserRole.viewer,
+                  ref.read(currentDojoIdProvider),
+                );
+            if (mounted) {
+              context.go('/');
+            }
+          } else {
+            if (mounted) {
+              context.push('/pin-auth?role=${role.name}');
+            }
+          }
+        },
         child: Row(
           children: [
             // 左端バッジ（または位置合わせ用スペース）

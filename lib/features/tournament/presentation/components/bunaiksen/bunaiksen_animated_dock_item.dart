@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_sub_item_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_slot_layout_calculator.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_dock_items_order_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class BunaiksenAnimatedDockItem extends StatelessWidget {
@@ -21,6 +22,7 @@ class BunaiksenAnimatedDockItem extends StatelessWidget {
   final bool isEditMode;
   final bool isDragging;
   final Offset dragDelta;
+  final bool isTimerRunning;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
   final VoidCallback onPanStart;
@@ -45,6 +47,7 @@ class BunaiksenAnimatedDockItem extends StatelessWidget {
     required this.isEditMode,
     required this.isDragging,
     required this.dragDelta,
+    this.isTimerRunning = false,
     required this.onTap,
     required this.onLongPress,
     required this.onPanStart,
@@ -64,6 +67,18 @@ class BunaiksenAnimatedDockItem extends StatelessWidget {
     final targetX = buttonX + offset.dx;
     final targetY = buttonY + offset.dy;
 
+    final IconData itemIcon;
+    final Color itemColor;
+    if (item == BunaiksenDockItemType.timer) {
+      itemIcon = isTimerRunning ? Icons.timer_rounded : Icons.timer_outlined;
+      itemColor = isTimerRunning
+          ? AppKendoColors.deepOrange
+          : item.colorForMode(isDark);
+    } else {
+      itemIcon = item.icon;
+      itemColor = item.colorForMode(isDark);
+    }
+
     return AnimatedBuilder(
       animation: expandAnimation,
       builder: (context, child) {
@@ -79,8 +94,8 @@ class BunaiksenAnimatedDockItem extends StatelessWidget {
             child: Transform.scale(
               scale: 0.4 + (0.6 * p.clamp(0.0, 1.0)),
               child: BunaiksenSubItemButton(
-                icon: item.icon,
-                color: item.colorForMode(isDark),
+                icon: itemIcon,
+                color: itemColor,
                 themeColors: themeColors,
                 isDark: isDark,
                 index: index,

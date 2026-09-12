@@ -11,6 +11,9 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_session.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 
@@ -61,6 +64,13 @@ class SyncEngine {
       );
       _bindListeners();
     });
+    // 🔑 Firebase認証状態が確立した際にも自動再バインド
+    if (!const bool.fromEnvironment('FLUTTER_TEST')) {
+      _ref.listen(authStateProvider, (prev, next) {
+        debugPrint('🔑 [Sync Engine] Firebase認証状態の変化を検知しました');
+        _bindListeners();
+      });
+    }
 
     // 初回バインド
     _bindListeners();
@@ -87,6 +97,17 @@ class SyncEngine {
         '📢 [Sync Engine] dojoId または tournamentId が未確定のため、Firestore監視を保留します。',
       );
       return;
+    }
+
+    // 🛡️ テスト環境以外かつFirebase初期化済みの場合、未認証時のFirestoreストリーム接続を抑止
+    if (!const bool.fromEnvironment('FLUTTER_TEST')) {
+      try {
+        if (Firebase.apps.isNotEmpty &&
+            FirebaseAuth.instance.currentUser == null) {
+          debugPrint('⏳ [Sync Engine] Firebase認証が未確立のため、Firestore監視を保留します。');
+          return;
+        }
+      } catch (_) {}
     }
 
     debugPrint(

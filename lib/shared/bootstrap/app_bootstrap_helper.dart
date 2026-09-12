@@ -118,24 +118,38 @@ class AppBootstrapHelper {
         debugPrint('⚠️ [Crashlytics] 初期化に失敗: $e');
       }
 
-      () async {
-        try {
-          final existingUser = await FirebaseAuth.instance
+      try {
+        final existingUser = FirebaseAuth.instance.currentUser;
+        if (existingUser == null) {
+          final user = await FirebaseAuth.instance
               .authStateChanges()
               .first
               .timeout(
-                const Duration(seconds: 3),
-                onTimeout: () => FirebaseAuth.instance.currentUser,
+                const Duration(milliseconds: 300),
+                onTimeout: () => null,
               );
-          if (existingUser == null) {
-            await FirebaseAuth.instance.signInAnonymously().timeout(
-              const Duration(seconds: 15),
-              onTimeout: () => throw TimeoutException('Auth Timeout'),
+          if (user == null) {
+            unawaited(
+              FirebaseAuth.instance
+                  .signInAnonymously()
+                  .then((cred) {
+                    debugPrint(
+                      '🛡️ [Auth] 匿名ゲスト認証をバックグラウンド確立しました: ${cred.user?.uid}',
+                    );
+                  })
+                  .catchError((e) {
+                    debugPrint('⚠️ [Auth] バックグラウンド匿名認証エラー: $e');
+                  }),
             );
-            debugPrint('🛡️ [Auth] 匿名ゲスト認証を自動確立しました');
+          } else {
+            debugPrint('🛡️ [Auth] 既存の認証セッション(${user.uid})を再利用します');
           }
-        } catch (_) {}
-      }();
+        } else {
+          debugPrint('🛡️ [Auth] 即時認証セッション(${existingUser.uid})を再利用します');
+        }
+      } catch (e) {
+        debugPrint('⚠️ [Auth] 初期匿名認証スキップ/エラー: $e');
+      }
 
       try {
         prefs = await SharedPreferences.getInstance();
@@ -145,35 +159,33 @@ class AppBootstrapHelper {
         prefs = await SharedPreferences.getInstance();
       }
 
-      () async {
-        try {
-          if (!kIsWeb && prefs != null) {
-            final hasCleared =
-                prefs!.getBool('has_cleared_corrupted_firestore_cache_v3') ??
-                false;
-            if (!hasCleared) {
-              try {
-                await FirebaseFirestore.instance.terminate();
-                await FirebaseFirestore.instance.clearPersistence();
-                await prefs!.setBool(
-                  'has_cleared_corrupted_firestore_cache_v3',
-                  true,
-                );
-              } catch (_) {}
-            }
-
-            await FirebaseFirestore.instance.enableNetwork().timeout(
-              const Duration(seconds: 1),
-              onTimeout: () {},
-            );
-            FirebaseFirestore.instance
-                .collectionGroup('matches')
-                .limit(1)
-                .snapshots()
-                .listen((_) {}, onError: (_) {});
+      try {
+        if (!kIsWeb && prefs != null) {
+          final hasCleared =
+              prefs!.getBool('has_cleared_corrupted_firestore_cache_v3') ??
+              false;
+          if (!hasCleared) {
+            try {
+              await FirebaseFirestore.instance.terminate();
+              await FirebaseFirestore.instance.clearPersistence();
+              await prefs!.setBool(
+                'has_cleared_corrupted_firestore_cache_v3',
+                true,
+              );
+            } catch (_) {}
           }
-        } catch (_) {}
-      }();
+
+          await FirebaseFirestore.instance.enableNetwork().timeout(
+            const Duration(seconds: 1),
+            onTimeout: () {},
+          );
+          FirebaseFirestore.instance
+              .collectionGroup('matches')
+              .limit(1)
+              .snapshots()
+              .listen((_) {}, onError: (_) {});
+        }
+      } catch (_) {}
 
       try {
         if (!kIsWeb) {
@@ -209,7 +221,7 @@ class AppBootstrapHelper {
     try {
       await Future.any([
         run().catchError((_) {}),
-        Future.delayed(const Duration(milliseconds: 1500)),
+        Future.delayed(const Duration(milliseconds: 3500)),
       ]);
     } catch (_) {}
 

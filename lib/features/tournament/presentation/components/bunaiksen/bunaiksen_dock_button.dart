@@ -14,6 +14,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_dock_items_order_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -265,8 +266,9 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
   Widget build(BuildContext context) {
     if (widget.isViewerMode) return const SizedBox.shrink();
     final role = ref.watch(currentUserRoleProvider);
-    if (role == UserRole.viewer || _isInsideSheet)
+    if (role == UserRole.viewer || _isInsideSheet) {
       return const SizedBox.shrink();
+    }
 
     final screenSize = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -278,6 +280,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
     final activeOrder = _isEditMode && _localItemsOrder != null
         ? _localItemsOrder!
         : globalOrder;
+    final timerState = ref.watch(dockTimerProvider);
 
     final double buttonX = _isLeft
         ? (_isDocked ? -(_buttonSize - _dockedVisibleWidth) : AppSpacing.sm)
@@ -302,6 +305,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
         child: DockParentGestureDetector(
           isDark: isDark,
           themeColors: themeColors,
+          timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
           buttonSize: _buttonSize,
           closeButtonSize: _closeButtonSize,
           isDocked: _isDocked,
@@ -366,6 +370,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
               isEditMode: _isEditMode,
               isDragging: _itemDraggingIndex == i,
               dragDelta: _itemDraggingIndex == i ? _itemDragDelta : Offset.zero,
+              isTimerRunning: timerState.isRunning,
               onTap: () => _onItemTap(activeOrder[i]),
               onLongPress: _startEditMode,
               onPanStart: () {
@@ -406,6 +411,9 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
               isEditMode: _isEditMode,
               buttonSize: _buttonSize,
               closeButtonSize: _closeButtonSize,
+              timerBadge: timerState.isRunning
+                  ? timerState.formattedDisplay
+                  : null,
               onTap: () {
                 if (_isEditMode) {
                   _endEditMode();

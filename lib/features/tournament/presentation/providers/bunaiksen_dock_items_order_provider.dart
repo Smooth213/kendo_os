@@ -47,7 +47,7 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
       case BunaiksenDockItemType.quickMemo:
         return Icons.brush_rounded;
       case BunaiksenDockItemType.timer:
-        return Icons.timer_rounded;
+        return Icons.timer_outlined;
       case BunaiksenDockItemType.settings:
         return Icons.settings_rounded;
     }

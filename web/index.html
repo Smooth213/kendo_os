@@ -23,7 +23,7 @@
 
   <script src="https://unpkg.com/isar@3.0.0-dev.14/dist/index.js"></script>
 
-  <!-- 🌐 【Phase 7】Safari & Chrome 2大ブラウザ極限最適化スタイル -->
+  <!-- 🌐 iOS PWA 最適化スタイル -->
   <style>
     html, body {
       height: 100%;
@@ -43,7 +43,8 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- 🛡️ iOS PWAステータスバー独立モード：blackを指定し、WebKit起動時タッチズレを物理根絶 -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Kendo OS">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
@@ -104,20 +105,33 @@
     // =========================================================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('flutter_service_worker.js?v=1', {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=4', {
           scope: '.'
         }).then(function (reg) {
           console.log('🛡️ [PWA ServiceWorker] 体育館オフライン防衛アセットキャッシュが有効です。');
+          // 🌟 起動時にService Workerの強制更新を走らせ、古いキャッシュを安全にパージ
+          reg.update();
         }).catch(function (err) {
           console.error('⚠️ [PWA ServiceWorker] 登録失敗:', err);
         });
       });
     }
+
+    // 🛡️ キャッシュバスター：古いService Workerおよびキャッシュストレージの確実なパージ
+    if ('caches' in window) {
+      caches.keys().then(function (names) {
+        for (var i = 0; i < names.length; i++) {
+          if (names[i].indexOf('v4') === -1) {
+            caches.delete(names[i]);
+          }
+        }
+      });
+    }
   </script>
   <script>
-    // 🛡️ Web レンダラーの自動切り替え設定を明示的に強制 (モバイル: HTML, PC: CanvasKit)
+    // 🛡️ Web レンダラーを CanvasKit で完全統一（PWA / Mobile Safari でのタッチ座標ズレを根絶）
     window.flutterConfiguration = {
-      renderer: "auto"
+      renderer: "canvaskit"
     };
   </script>
   <!-- ★ 修正: 絶対パスに変更し、深いURLからでも確実にロードできるようにする（ホワイトアウト対策4） -->

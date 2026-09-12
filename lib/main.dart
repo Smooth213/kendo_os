@@ -91,79 +91,7 @@ void main() {
       runApp(
         UncontrolledProviderScope(
           container: container,
-          child: Consumer(
-            builder: (context, ref, child) {
-              final isOffline =
-                  ref.watch(globalConnectivityProvider).value ?? false;
-
-              return Localizations(
-                locale: PlatformDispatcher.instance.locale,
-                delegates: const [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                child: Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: Overlay(
-                    initialEntries: [
-                      OverlayEntry(
-                        builder: (context) => Stack(
-                          children: [
-                            const KendoOSApp(),
-                            if (isOffline)
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                child: MediaQuery(
-                                  data: MediaQueryData.fromView(
-                                    PlatformDispatcher.instance.views.first,
-                                  ),
-                                  child: Material(
-                                    color: AppKendoColors.transparent,
-                                    child: Container(
-                                      width: double.infinity,
-                                      color: const Color(0xFFD97706),
-                                      padding: const EdgeInsets.only(
-                                        top: 34,
-                                        bottom: AppSpacing.sm,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.wifi_off_rounded,
-                                            color: AppKendoColors.pureWhite,
-                                            size: 18,
-                                          ),
-                                          SizedBox(width: AppSpacing.sm),
-                                          Text(
-                                            '⚠️ 体育館オフライン運営モード：ローカルキャッシュへ即時保存中',
-                                            style: TextStyle(
-                                              color: AppKendoColors.pureWhite,
-                                              fontWeight: AppFontWeight.bold,
-                                              fontSize: AppFontSize.bodySmall,
-                                              decoration: TextDecoration.none,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+          child: const KendoOSApp(),
         ),
       );
     } catch (e) {
@@ -189,6 +117,17 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // 🌟 Web/PWA起動直後のiOS Webkit初期ビューポート判定ラグを強制補正
+        WidgetsBinding.instance.handleMetricsChanged();
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (mounted) {
+            WidgetsBinding.instance.handleMetricsChanged();
+          }
+        });
+      });
+    }
   }
 
   @override

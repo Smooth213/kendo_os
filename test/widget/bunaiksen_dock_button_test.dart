@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -23,11 +24,13 @@ void main() {
     Widget createTestWidget({
       required bool isViewerMode,
       UserRole role = UserRole.admin,
+      List<Override> additionalOverrides = const [],
     }) {
       return ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           currentUserRoleProvider.overrideWith((ref) => role),
+          ...additionalOverrides,
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -110,17 +113,48 @@ void main() {
       expect(find.text('カレンダー'), findsNothing);
       expect(find.text('クイックメモ'), findsNothing);
 
-      // 全6アイテムのアイコンが表示されること（大会ホームと同一シンボルに統一）
+      // 全6アイテムのアイコンが表示されること（大会ホームと同一シンボルに統一：タイマー停止時はtimer_outlined）
       expect(find.byIcon(Icons.format_list_bulleted_rounded), findsOneWidget);
       expect(find.byIcon(Icons.leaderboard_rounded), findsOneWidget);
       expect(find.byIcon(Icons.calendar_month_rounded), findsOneWidget);
       expect(find.byIcon(Icons.brush_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.timer_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.timer_outlined), findsOneWidget);
       expect(find.byIcon(Icons.settings_rounded), findsOneWidget);
     });
 
+    testWidgets(
+      '5. タイマー動作時は親ボタンにタイマーバッジが表示され、展開時はIcons.timer_roundedとなること（大会ホームと同一）',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          createTestWidget(isViewerMode: false, role: UserRole.admin),
+        );
+        await tester.pumpAndSettle();
+
+        // タイマーを開始
+        final element = tester.element(find.byType(BunaiksenDockButton));
+        final container = ProviderScope.containerOf(element);
+        container.read(dockTimerProvider.notifier).start();
+        await tester.pump();
+
+        // 親ボタンにタイマーバッジ (03:00) が表示されること
+        expect(find.text('03:00'), findsOneWidget);
+
+        // 親ボタンをタップして展開
+        await tester.tap(find.byIcon(Icons.widgets_rounded));
+        await tester.pumpAndSettle();
+
+        // 展開時のタイマーアイテムは Icons.timer_rounded（大会ホームと同一）になること
+        expect(find.byIcon(Icons.timer_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.timer_outlined), findsNothing);
+      },
+    );
+
     test(
-      '5. 🛡️ ガバナンス第6条 静的検証: lib/features/viewer/ 配下に BunaiksenDockButton が一切存在しないこと',
+      '6. 🛡️ ガバナンス第6条 静的検証: lib/features/viewer/ 配下に BunaiksenDockButton が一切存在しないこと',
       () {
         final viewerDir = Directory('lib/features/viewer');
         expect(viewerDir.existsSync(), isTrue);

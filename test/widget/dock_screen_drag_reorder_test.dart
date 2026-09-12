@@ -113,8 +113,8 @@ void main() {
       expect(find.byIcon(Icons.brush_rounded), findsOneWidget);
       // 設定: Icons.settings_rounded (歯車)
       expect(find.byIcon(Icons.settings_rounded), findsOneWidget);
-      // タイマー: Icons.timer_rounded
-      expect(find.byIcon(Icons.timer_rounded), findsOneWidget);
+      // タイマー: Icons.timer_outlined（大会ホームと同一）
+      expect(find.byIcon(Icons.timer_outlined), findsOneWidget);
     });
 
     testWidgets('ダークモード時: 試合状況/対戦一覧が高視認性カラーで描画されること', (tester) async {

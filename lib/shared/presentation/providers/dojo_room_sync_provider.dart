@@ -7,6 +7,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/application/projections/projection_store.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
 import 'current_sync_context_provider.dart';
 import 'auth_session_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
@@ -50,6 +53,25 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
   // 🔑 認証セッション状態をwatchし、ログイン成功時に自動的にこのプロバイダーを再起動する
   ref.watch(authSessionProvider);
+
+  // 🛡️ テスト環境以外かつFirebase初期化済みの場合、未認証時のFirestore同期を保留
+  if (!const bool.fromEnvironment('FLUTTER_TEST')) {
+    final authUser = ref.watch(authStateProvider).value;
+    bool hasAuth = false;
+    try {
+      hasAuth =
+          authUser != null ||
+          (Firebase.apps.isNotEmpty &&
+              FirebaseAuth.instance.currentUser != null);
+    } catch (_) {}
+
+    if (!hasAuth && Firebase.apps.isNotEmpty) {
+      debugPrint(
+        '⏳ [DojoRoomSync] Firebase認証確立待ちのため、Firestore同期を待機します (dojoId: $dojoId)',
+      );
+      return;
+    }
+  }
 
   // ★ 修正: watchだと集計データが更新されるたびに通信リスナーが再起動（無限ループ）してしまうため、readに変更
   final store = ref.read(projectionStoreProvider);
