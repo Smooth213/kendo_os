@@ -18,52 +18,71 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
       return match.tournamentId;
     }
 
-    final firestore = FirebaseFirestore.instance;
-    try {
-      var rootGroupSnap = await firestore
-          .collection('matches')
-          .where('groupName', isEqualTo: groupName)
-          .limit(1)
-          .get();
-      if (rootGroupSnap.docs.isNotEmpty) {
-        return rootGroupSnap.docs.first.data()['tournamentId'] as String?;
-      }
-
-      var rootIdSnap = await firestore
-          .collection('matches')
-          .doc(groupName)
-          .get();
-      if (rootIdSnap.exists) {
-        return rootIdSnap.data()?['tournamentId'] as String?;
-      }
-    } catch (e) {
-      debugPrint('🚨 [Root Matches Query Error] $e');
-    }
-
     final dojoId = ref.read(currentDojoIdProvider);
-    if (dojoId.isNotEmpty) {
-      var snapshot = await firestore
-          .collection('organizations')
-          .doc(dojoId)
-          .collection('matches')
+    final firestore = FirebaseFirestore.instance;
+
+    // 1. collectionGroup('matches') での検索（最も確実）
+    try {
+      final groupSnap = await firestore
+          .collectionGroup('matches')
           .where('groupName', isEqualTo: groupName)
           .limit(1)
           .get();
-
-      if (snapshot.docs.isEmpty) {
-        final docSnapshot = await firestore
-            .collection('organizations')
-            .doc(dojoId)
-            .collection('matches')
-            .doc(groupName)
-            .get();
-        if (docSnapshot.exists) {
-          return docSnapshot.data()?['tournamentId'] as String?;
+      if (groupSnap.docs.isNotEmpty) {
+        final tId = groupSnap.docs.first.data()['tournamentId'] as String?;
+        if (tId != null && tId.isNotEmpty) return tId;
+        // 親ドキュメントパスからtournamentIdを抽出: tournaments/{tournamentId}/matches/{matchId}
+        final pathSegments = groupSnap.docs.first.reference.path.split('/');
+        final tIndex = pathSegments.indexOf('tournaments');
+        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
+          return pathSegments[tIndex + 1];
         }
       }
 
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first.data()['tournamentId'] as String?;
+      final idSnap = await firestore
+          .collectionGroup('matches')
+          .where('id', isEqualTo: groupName)
+          .limit(1)
+          .get();
+      if (idSnap.docs.isNotEmpty) {
+        final tId = idSnap.docs.first.data()['tournamentId'] as String?;
+        if (tId != null && tId.isNotEmpty) return tId;
+        final pathSegments = idSnap.docs.first.reference.path.split('/');
+        final tIndex = pathSegments.indexOf('tournaments');
+        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
+          return pathSegments[tIndex + 1];
+        }
+      }
+    } catch (e) {
+      debugPrint('🚨 [collectionGroup matches Error] $e');
+    }
+
+    // 2. dojoId配下のtournamentsを走査して検索
+    if (dojoId.isNotEmpty) {
+      try {
+        final tournamentsSnap = await firestore
+            .collection('organizations')
+            .doc(dojoId)
+            .collection('tournaments')
+            .limit(10)
+            .get();
+
+        for (final tDoc in tournamentsSnap.docs) {
+          final mSnap = await tDoc.reference
+              .collection('matches')
+              .where('groupName', isEqualTo: groupName)
+              .limit(1)
+              .get();
+          if (mSnap.docs.isNotEmpty) {
+            return tDoc.id;
+          }
+        }
+        // もし大会が1つしか存在しないなら、その大会IDを採用
+        if (tournamentsSnap.docs.length == 1) {
+          return tournamentsSnap.docs.first.id;
+        }
+      } catch (e) {
+        debugPrint('🚨 [Organization Tournaments Scan Error] $e');
       }
     }
 

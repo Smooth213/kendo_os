@@ -139,7 +139,7 @@ void main() {
         expect(
           mockClipboardText,
           contains(
-            'https://kendo-os-beta.web.app/viewer/team_group_live_999?dojoId=dojo_test_e2e',
+            'https://kendo-os-beta.web.app/viewer-team/team_group_live_999?tournamentId=tourney_e2e_1&role=viewer&dojoId=dojo_test_e2e',
           ),
         );
 

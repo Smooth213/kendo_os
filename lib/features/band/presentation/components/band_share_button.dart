@@ -14,12 +14,14 @@ class BandShareButton extends ConsumerWidget {
   final List<MatchModel>? matches;
   final TeamProgressStatus? teamStatus;
   final String? tournamentName;
+  final String? tournamentId;
 
   const BandShareButton({
     super.key,
     this.matches,
     this.teamStatus,
     this.tournamentName,
+    this.tournamentId,
   }) : assert(
          matches != null || teamStatus != null,
          'matches または teamStatus のどちらかは必須です',
@@ -35,6 +37,16 @@ class BandShareButton extends ConsumerWidget {
         onPressed: () async {
           AppHaptics.selection();
           final dojoId = ref.read(currentDojoIdProvider);
+          final String? resolvedTournamentId =
+              (tournamentId != null && tournamentId!.isNotEmpty)
+              ? tournamentId
+              : (matches?.firstOrNull?.tournamentId?.isNotEmpty == true
+                    ? matches!.first.tournamentId
+                    : (teamStatus?.tournamentId?.isNotEmpty == true
+                          ? teamStatus!.tournamentId
+                          : (ref.read(currentTournamentIdProvider).isNotEmpty
+                                ? ref.read(currentTournamentIdProvider)
+                                : null)));
 
           // 1. テキスト生成
           final String text;
@@ -42,12 +54,14 @@ class BandShareButton extends ConsumerWidget {
             text = BandMatchTextFormatter.formatFromTeamStatus(
               status: teamStatus!,
               tournamentName: tournamentName,
+              tournamentId: resolvedTournamentId,
               dojoId: dojoId,
             );
           } else {
             text = BandMatchTextFormatter.formatFromMatchGroup(
               matches: matches!,
               tournamentName: tournamentName,
+              tournamentId: resolvedTournamentId,
               dojoId: dojoId,
             );
           }

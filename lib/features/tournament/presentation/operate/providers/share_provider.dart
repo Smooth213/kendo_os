@@ -19,8 +19,38 @@ class ShareService {
   /// をすべて全自動で同時に執行し、現地共有の手間を完全ゼロ化します。
   Future<void> shareMatch(MatchModel match) async {
     const String baseUrl = 'https://kendo-os-beta.web.app';
-    final dojoId = ref.read(currentDojoIdProvider);
-    final String matchUrl = '$baseUrl/viewer/${match.id}?dojoId=$dojoId';
+    final dojoId = ref.read(currentDojoIdProvider).isNotEmpty
+        ? ref.read(currentDojoIdProvider)
+        : 'default_org';
+    final resolvedTournamentId =
+        (match.tournamentId != null && match.tournamentId!.isNotEmpty)
+        ? match.tournamentId!
+        : ref.read(currentTournamentIdProvider);
+
+    final isDantai =
+        match.matchType.contains('団体') ||
+        (match.groupName != null &&
+            match.groupName!.isNotEmpty &&
+            !match.matchType.contains('個人'));
+
+    final String path;
+    final String targetId;
+    if (isDantai && match.groupName != null && match.groupName!.isNotEmpty) {
+      path = match.isKachinuki ? 'viewer-kachinuki' : 'viewer-team';
+      targetId = match.groupName!;
+    } else {
+      path = 'viewer';
+      targetId = match.id;
+    }
+
+    final queryParams = <String, String>{
+      if (resolvedTournamentId.isNotEmpty) 'tournamentId': resolvedTournamentId,
+      'role': 'viewer',
+      'dojoId': dojoId,
+    };
+    final queryString = Uri(queryParameters: queryParams).query;
+    final String matchUrl =
+        '$baseUrl/$path/${Uri.encodeComponent(targetId)}?$queryString';
 
     // クリップボードへ共有URLを先回りして自動強制格納（コピーの手間を破壊）
     await Clipboard.setData(ClipboardData(text: matchUrl));

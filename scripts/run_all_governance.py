@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全18大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全20大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全18大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全20大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 """
 
 import argparse
@@ -108,11 +108,16 @@ AUDIT_DEFINITIONS = [
         "name": "📱 iOS PWA タッチ座標同期＆ロール選択画面規約",
         "cmd": ["python3", "scripts/check_ios_pwa_touch_sync_governance.py"],
     },
+    {
+        "id": 20,
+        "name": "🔗 観客用共有URL・ルーティング・パラメータ整合性規約",
+        "cmd": ["python3", "scripts/check_share_url_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全19大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜19）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全20大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜20）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
@@ -124,7 +129,7 @@ def main():
             sys.exit(1)
 
     print("=" * 72)
-    print(" 🥋 Kendo OS - 全19大ガバナンス監査 統合ランナー (Unified Governance Runner)")
+    print(" 🥋 Kendo OS - 全20大ガバナンス監査 統合ランナー (Unified Governance Runner)")
     print("=" * 72)
     print(f" 実行対象: {len(target_audits)} 項目")
     print("-" * 72)
@@ -137,7 +142,7 @@ def main():
         audit_name = audit["name"]
         cmd = audit["cmd"]
 
-        print(f" [{audit_id:2d}/19] {audit_name} ... ", end="", flush=True)
+        print(f" [{audit_id:2d}/20] {audit_name} ... ", end="", flush=True)
         t_start = time.time()
 
         proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -165,7 +170,7 @@ def main():
     all_passed = all(r["passed"] for r in results)
 
     print("-" * 72)
-    print(" 📊 【全19大ガバナンス監査 総合サマリーレポート】")
+    print(" 📊 【全20大ガバナンス監査 総合サマリーレポート】")
     print("-" * 72)
     for r in results:
         badge = "🟢 PASS" if r["passed"] else "🔴 FAIL"

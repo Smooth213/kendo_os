@@ -255,10 +255,11 @@ class ViewerMatchScreen extends ConsumerWidget {
     String tournamentId,
   ) {
     final dojoId = ref.read(currentDojoIdProvider);
+    final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
     final String shareUrl = isBunaiksen
-        ? 'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId'
-        : 'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+        ? 'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo'
+        : 'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo';
 
     showAppDialog(
       context: context,

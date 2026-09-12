@@ -36,8 +36,9 @@ class BunaiksenShareDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
     final String shareUrl =
-        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId';
+        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo';
 
     return AppDialog(
       title: '$dateDisplay 観戦リンク',

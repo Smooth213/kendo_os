@@ -87,9 +87,14 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/viewer/:id',
-      builder: (context, state) => AppThemeModeWrapper(
-        mode: 'normal_viewer',
-        child: ViewerMatchScreen(matchId: state.pathParameters['id']!),
+      builder: (context, state) => RoleInjector(
+        roleStr: state.uri.queryParameters['role'] ?? 'viewer',
+        dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.uri.queryParameters['tournamentId'],
+        child: AppThemeModeWrapper(
+          mode: 'normal_viewer',
+          child: ViewerMatchScreen(matchId: state.pathParameters['id']!),
+        ),
       ),
     ),
     GoRoute(

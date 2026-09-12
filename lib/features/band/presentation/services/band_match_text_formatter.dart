@@ -10,6 +10,7 @@ class BandMatchTextFormatter {
   static String formatFromMatchGroup({
     required List<MatchModel> matches,
     String? tournamentName,
+    String? tournamentId,
     String? dojoId,
     String baseUrl = _defaultBaseUrl,
   }) {
@@ -81,15 +82,39 @@ class BandMatchTextFormatter {
     }
 
     // 5. リアルタイム速報URL
-    final targetId =
-        (firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty)
-        ? firstMatch.groupName!
-        : firstMatch.id;
+    final String path;
+    final String targetId;
+    if (isDantai) {
+      path = firstMatch.isKachinuki ? 'viewer-kachinuki' : 'viewer-team';
+      targetId =
+          (firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty)
+          ? firstMatch.groupName!
+          : firstMatch.id;
+    } else {
+      path = 'viewer';
+      targetId = firstMatch.id;
+    }
+
     final safeDojo = (dojoId != null && dojoId.isNotEmpty)
         ? dojoId
         : 'default_org';
+    final resolvedTournamentId =
+        (tournamentId != null && tournamentId.isNotEmpty)
+        ? tournamentId
+        : (firstMatch.tournamentId != null &&
+                  firstMatch.tournamentId!.isNotEmpty
+              ? firstMatch.tournamentId
+              : null);
+
+    final queryParams = <String, String>{
+      if (resolvedTournamentId != null && resolvedTournamentId.isNotEmpty)
+        'tournamentId': resolvedTournamentId,
+      'role': 'viewer',
+      'dojoId': safeDojo,
+    };
+    final queryString = Uri(queryParameters: queryParams).query;
     final viewerUrl =
-        '$baseUrl/viewer/${Uri.encodeComponent(targetId)}?dojoId=$safeDojo';
+        '$baseUrl/$path/${Uri.encodeComponent(targetId)}?$queryString';
 
     buffer.writeln();
     buffer.writeln('▼ リアルタイム速報・スコア詳細');
@@ -102,6 +127,7 @@ class BandMatchTextFormatter {
   static String formatFromTeamStatus({
     required TeamProgressStatus status,
     String? tournamentName,
+    String? tournamentId,
     String? dojoId,
     String baseUrl = _defaultBaseUrl,
   }) {
@@ -150,11 +176,32 @@ class BandMatchTextFormatter {
         status.targetGroupId ??
         (status.matches.isNotEmpty ? status.matches.first.id : '');
     if (targetId.isNotEmpty) {
+      final firstMatch = status.matches.isNotEmpty
+          ? status.matches.first
+          : null;
+      final isKachinuki = firstMatch?.isKachinuki ?? false;
+      final path = isKachinuki ? 'viewer-kachinuki' : 'viewer-team';
+
       final safeDojo = (dojoId != null && dojoId.isNotEmpty)
           ? dojoId
           : 'default_org';
+      final resolvedTournamentId =
+          (tournamentId != null && tournamentId.isNotEmpty)
+          ? tournamentId
+          : (status.tournamentId != null && status.tournamentId!.isNotEmpty
+                ? status.tournamentId
+                : null);
+
+      final queryParams = <String, String>{
+        if (resolvedTournamentId != null && resolvedTournamentId.isNotEmpty)
+          'tournamentId': resolvedTournamentId,
+        'role': 'viewer',
+        'dojoId': safeDojo,
+      };
+      final queryString = Uri(queryParameters: queryParams).query;
       final viewerUrl =
-          '$baseUrl/viewer/${Uri.encodeComponent(targetId)}?dojoId=$safeDojo';
+          '$baseUrl/$path/${Uri.encodeComponent(targetId)}?$queryString';
+
       buffer.writeln();
       buffer.writeln('▼ リアルタイム速報・スコア詳細');
       buffer.write(viewerUrl);
