@@ -100,7 +100,7 @@ class MatchProjectionMapper {
     return MatchListProjection(
       id: model.id,
       tournamentId: model.tournamentId ?? '',
-      matchOrder: model.matchOrder ?? 0,
+      matchOrder: model.matchOrder ?? model.order.round(),
       matchType: model.matchType,
       status: model.status,
       redName: model.redName,
@@ -141,7 +141,7 @@ class MatchProjectionMapper {
     return MatchProjection(
       id: model.id,
       tournamentId: model.tournamentId ?? '',
-      matchOrder: model.matchOrder ?? 0,
+      matchOrder: model.matchOrder ?? model.order.round(),
       matchType: model.matchType,
       status: model.status,
       groupName: model.groupName ?? '',

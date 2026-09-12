@@ -6,6 +6,8 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 
+import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
+
 class TournamentProjectionMapper {
   /// ★ 修正: 内部で toListProjection を使用し、軽量版のリストを作るように変更
   static TournamentProjection fromModels(
@@ -65,9 +67,12 @@ class TournamentProjectionMapper {
       categoryToGroupKeys.putIfAbsent(cat, () => <String>{}).add(p.groupName);
 
       if (!teamMatches.containsKey(p.groupName)) {
-        final groupProjections = projections
+        final rawGroupProjections = projections
             .where((m) => m.groupName == p.groupName)
             .toList();
+        final groupProjections = KendoPositionSorter.sortProjections(
+          rawGroupProjections,
+        );
 
         // 団体戦結果の簡易計算
         int rWins = 0, wWins = 0, rPts = 0, wPts = 0;

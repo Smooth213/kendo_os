@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
@@ -201,6 +202,9 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
             AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
         final cardColor = themeColors.cardBackground;
         final borderColor = context.appColors.separatorColor;
+        final sortedMatches = KendoPositionSorter.sortProjections(
+          teamProj.matches,
+        );
 
         return LiquidBackground(
           child: Scaffold(
@@ -301,13 +305,13 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                               teamProj.whiteTeamName,
                               isDark,
                             ),
-                            ...teamProj.matches.map(
+                            ...sortedMatches.map(
                               (m) =>
                                   ViewerTeamScoreboardTableBuilder.buildMatchRow(
                                     m,
                                     context,
                                     isDark,
-                                    (teamProj.matches as Iterable<dynamic>)
+                                    sortedMatches
                                         .map<String>(
                                           (x) =>
                                               NameFormatter.parse(
@@ -317,7 +321,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                                         )
                                         .where((String s) => s.isNotEmpty)
                                         .toList(),
-                                    (teamProj.matches as Iterable<dynamic>)
+                                    sortedMatches
                                         .map<String>(
                                           (x) =>
                                               NameFormatter.parse(

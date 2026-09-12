@@ -11,6 +11,7 @@ import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scor
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
@@ -95,7 +96,7 @@ class TeamScoreboardScreen extends ConsumerWidget {
       return KachinukiScoreboardScreen(groupName: firstMatch.groupName ?? '');
     }
 
-    teamMatches.sort((a, b) => a.order.compareTo(b.order));
+    teamMatches = KendoPositionSorter.sortMatches(teamMatches);
 
     final isDaihyoAllowed =
         teamMatches.first.rule?.hasRepresentativeMatch ?? true;

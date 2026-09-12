@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_provider.dart';
@@ -14,7 +15,9 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
 export '../components/kachinuki/kachinuki_bracket_painter.dart'
@@ -22,18 +25,69 @@ export '../components/kachinuki/kachinuki_bracket_painter.dart'
 
 class KachinukiScoreboardScreen extends ConsumerWidget {
   final String groupName;
-  const KachinukiScoreboardScreen({super.key, required this.groupName});
+  final bool isViewer;
+
+  const KachinukiScoreboardScreen({
+    super.key,
+    required this.groupName,
+    this.isViewer = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String safeDecodeComponent(String input) {
+      try {
+        return Uri.decodeComponent(input);
+      } catch (_) {
+        return input;
+      }
+    }
+
+    final decodedGroupName = safeDecodeComponent(groupName);
+
+    final urlTournamentId = GoRouterState.of(
+      context,
+    ).uri.queryParameters['tournamentId'];
+    final asyncMatches = (urlTournamentId != null && urlTournamentId.isNotEmpty)
+        ? ref.watch(matchListByTournamentProvider(urlTournamentId))
+        : null;
+
     final allMatches = ref.watch(matchListProvider);
-    final teamMatchesModels = allMatches
-        .where((m) => m.groupName == groupName)
+    var teamMatchesModels = allMatches
+        .where(
+          (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,
+        )
         .toList();
-    teamMatchesModels.sort((a, b) => a.order.compareTo(b.order));
+
+    if (teamMatchesModels.isEmpty && asyncMatches != null) {
+      if (asyncMatches.isLoading &&
+          (asyncMatches.valueOrNull == null ||
+              asyncMatches.valueOrNull!.isEmpty)) {
+        return Scaffold(
+          backgroundColor: context.appColors.scaffoldBackground,
+          appBar: AppHeader(
+            title: isViewer ? '勝ち抜き戦 スコア (観戦)' : decodedGroupName,
+          ),
+          body: const Center(child: AppLoadingIndicator()),
+        );
+      }
+      teamMatchesModels = (asyncMatches.value ?? [])
+          .where(
+            (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,
+          )
+          .toList();
+    }
+
+    teamMatchesModels = KendoPositionSorter.sortMatches(teamMatchesModels);
 
     if (teamMatchesModels.isEmpty) {
-      return const Scaffold(body: Center(child: Text('データがありません')));
+      return Scaffold(
+        backgroundColor: context.appColors.scaffoldBackground,
+        appBar: AppHeader(
+          title: isViewer ? '勝ち抜き戦 スコア (観戦)' : decodedGroupName,
+        ),
+        body: const Center(child: Text('データがありません')),
+      );
     }
 
     final engine = ref.read(kendoRuleEngineProvider);
@@ -53,7 +107,32 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         child: Scaffold(
           backgroundColor: AppKendoColors.transparent,
           appBar: AppHeader(
-            title: groupName,
+            leading: isViewer
+                ? IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
+                      color: isDark
+                          ? const Color(0xFFFFFFFF)
+                          : context.appColors.primaryAccent,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        final tId =
+                            urlTournamentId ??
+                            teamMatchesModels.firstOrNull?.tournamentId;
+                        if (tId != null && tId.isNotEmpty) {
+                          context.go('/viewer-home/$tId');
+                        } else {
+                          context.go('/');
+                        }
+                      }
+                    },
+                  )
+                : null,
+            title: isViewer ? '勝ち抜き戦 スコア (観戦)' : decodedGroupName,
             actions: [
               IconButton(
                 icon: const Icon(Icons.info_outline, size: 24),

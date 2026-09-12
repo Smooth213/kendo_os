@@ -209,5 +209,79 @@ void main() {
       expect(projection.teamMatches.containsKey(uuidGroupName), isTrue);
       expect(projection.categoryToGroupKeys['小学生の部'], contains(uuidGroupName));
     });
+
+    test('7. 【剣道順序正常化】団体戦の試合順序がバラバラでも先鋒〜大将〜代表戦にソートされること', () {
+      final scrambledMatches = [
+        MatchListProjection(
+          id: 'm_chuken',
+          tournamentId: 'tour_test_1',
+          matchOrder: 2,
+          matchType: '中堅',
+          status: 'finished',
+          redName: '道上剣友会: 皿田',
+          whiteName: '相手0012: 相手2',
+          redScore: 1,
+          whiteScore: 0,
+          groupName: 'group_test_order',
+          isKachinuki: false,
+          note: '',
+        ),
+        MatchListProjection(
+          id: 'm_daihyo',
+          tournamentId: 'tour_test_1',
+          matchOrder: 4,
+          matchType: '代表戦',
+          status: 'finished',
+          redName: '道上剣友会: 塚本',
+          whiteName: '相手0012: 相手1',
+          redScore: 1,
+          whiteScore: 0,
+          groupName: 'group_test_order',
+          isKachinuki: false,
+          note: '',
+        ),
+        MatchListProjection(
+          id: 'm_taisho',
+          tournamentId: 'tour_test_1',
+          matchOrder: 3,
+          matchType: '大将',
+          status: 'finished',
+          redName: '道上剣友会: 久安',
+          whiteName: '相手0012: 相手3',
+          redScore: 0,
+          whiteScore: 1,
+          groupName: 'group_test_order',
+          isKachinuki: false,
+          note: '',
+        ),
+        MatchListProjection(
+          id: 'm_sempo',
+          tournamentId: 'tour_test_1',
+          matchOrder: 1,
+          matchType: '先鋒',
+          status: 'finished',
+          redName: '道上剣友会: 塚本',
+          whiteName: '相手0012: 相手1',
+          redScore: 2,
+          whiteScore: 0,
+          groupName: 'group_test_order',
+          isKachinuki: false,
+          note: '',
+        ),
+      ];
+
+      final projection = TournamentProjectionMapper.fromProjections(
+        fakeTournament,
+        scrambledMatches,
+      );
+
+      final teamMatch = projection.teamMatches['group_test_order'];
+      expect(teamMatch, isNotNull);
+      final orderedTypes = teamMatch!.matches.map((m) => m.matchType).toList();
+      expect(orderedTypes, ['先鋒', '中堅', '大将', '代表戦']);
+      expect(teamMatch.matches.first.redName, contains('塚本'));
+      expect(teamMatch.matches[1].redName, contains('皿田'));
+      expect(teamMatch.matches[2].redName, contains('久安'));
+    });
   });
 }

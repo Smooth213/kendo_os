@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
     show customTeamNamesProvider;
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
+import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 import 'package:kendo_os/shared/widgets/match_tables/individual_list_card.dart';
 import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
 
@@ -31,15 +32,17 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (matches.isEmpty) return const SizedBox.shrink();
 
-    final note = matches.first.note;
+    final sortedMatches = KendoPositionSorter.sortProjections(matches);
+
+    final note = sortedMatches.first.note;
     final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
 
-    final redTeam = matches.first.redName.contains(':')
-        ? matches.first.redName.split(':').first.trim()
-        : matches.first.redName;
-    final whiteTeam = matches.first.whiteName.contains(':')
-        ? matches.first.whiteName.split(':').first.trim()
-        : matches.first.whiteName;
+    final redTeam = sortedMatches.first.redName.contains(':')
+        ? sortedMatches.first.redName.split(':').first.trim()
+        : sortedMatches.first.redName;
+    final whiteTeam = sortedMatches.first.whiteName.contains(':')
+        ? sortedMatches.first.whiteName.split(':').first.trim()
+        : sortedMatches.first.whiteName;
 
     // 試合形式に合わせてヘッダーテキストを生成
     String matchTypeStr = '団体戦';
@@ -73,11 +76,11 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
       wPts = result!.whitePoints;
       allFinished = result!.allFinished;
     } else {
-      allFinished = matches.every(
+      allFinished = sortedMatches.every(
         (m) => m.status == 'approved' || m.status == 'finished',
       );
       MatchListProjection? daihyoMatch;
-      for (var m in matches) {
+      for (var m in sortedMatches) {
         if (m.status == 'approved' || m.status == 'finished') {
           final rs = m.redScore;
           final ws = m.whiteScore;
@@ -112,9 +115,11 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
       }
     }
 
-    final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
-    final scenePrefix = matches.isNotEmpty
-        ? TeamProgressHelper.getScenePrefixFromDynamic(matches.first)
+    final bool isSummary = sortedMatches.any(
+      (m) => m.note.contains('[SUMMARY]'),
+    );
+    final scenePrefix = sortedMatches.isNotEmpty
+        ? TeamProgressHelper.getScenePrefixFromDynamic(sortedMatches.first)
         : '';
 
     final info = ScoreTableGroupInfo(
@@ -132,7 +137,7 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
       allFinished: allFinished,
     );
 
-    final matchItems = matches.map((m) {
+    final matchItems = sortedMatches.map((m) {
       final isFinished = m.status == 'approved' || m.status == 'finished';
       final ptsMap = MatchCalculatorHelper.extractPointsFromProjection(m);
       return ScoreTableMatchItem(
