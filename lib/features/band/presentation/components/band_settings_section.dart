@@ -30,7 +30,9 @@ class BandSettingsTile extends ConsumerWidget {
         style: TextStyle(fontWeight: AppFontWeight.bold),
       ),
       subtitle: Text(
-        count > 0 ? '$count件のグループが登録されています' : '未登録（タップしてグループを追加）',
+        count > 0
+            ? '$count件のグループが登録されています（※要BANDアプリ）'
+            : '未登録（タップしてグループを追加 ※要BANDアプリ）',
         style: const TextStyle(fontSize: AppFontSize.caption),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 14),
@@ -69,6 +71,40 @@ class BandSettingsManagementSheet extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00C73C).withValues(alpha: 0.1),
+              borderRadius: AppRadius.small,
+              border: Border.all(
+                color: const Color(0xFF00C73C).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: Color(0xFF00C73C),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    'ワンタップ直接起動には各端末に「BANDアプリ」のインストールが必要です。',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: themeColors.textColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             '道場ID配下で保存され、同じ道場の全メンバーの端末に自動同期されます。学年別・所属別（低学年・高学年など）のグループURLを登録してください。',
             style: TextStyle(

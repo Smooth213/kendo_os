@@ -153,7 +153,11 @@ void main() {
         await pumpAnimation(tester);
 
         expect(launchedUri, isNotNull);
-        expect(launchedUri.toString(), 'https://band.us/@dojo_low');
+        expect(
+          launchedUri.toString(),
+          'https://band.us/@dojo_low',
+          reason: 'LIVE配信や通常投稿が可能なグループ画面へ直行するため登録グループURLが起動されること',
+        );
         expect(find.text('BANDでLIVE配信・共有'), findsNothing);
       },
     );
@@ -292,7 +296,7 @@ void main() {
 
       // 1. 設定タイルにグループ件数が反映されていること
       expect(find.text('BAND連携・LIVE配信設定'), findsOneWidget);
-      expect(find.text('2件のグループが登録されています'), findsOneWidget);
+      expect(find.text('2件のグループが登録されています（※要BANDアプリ）'), findsOneWidget);
 
       // 2. タイルをタップ ➔ 管理シート展開
       await tester.tap(find.byType(BandSettingsTile));

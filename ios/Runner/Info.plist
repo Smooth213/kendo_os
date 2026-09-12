@@ -81,5 +81,11 @@
 	<string>164010781926-edhio21bgkije5lhoj4s6vh1tcso82sp.apps.googleusercontent.com</string>
 	<key>FLTEnableImpeller</key>
 	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>bandapp</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
 </dict>
 </plist>

@@ -64,13 +64,26 @@ class BandGroupSelectSheet extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
-                  child: Text(
-                    '対戦カードをコピーしました！\n配信先のBANDグループを選択してください。',
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      fontWeight: AppFontWeight.bold,
-                      color: themeColors.textColor,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '対戦カードをコピーしました！\n配信先のBANDグループを選択してください。',
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          fontWeight: AppFontWeight.bold,
+                          color: themeColors.textColor,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        '※グループへの直接起動には端末に「BANDアプリ」のインストールが必要です。未インストールの場合は「コピーのみで閉じる」からLINE等に貼り付けてご共有ください。',
+                        style: TextStyle(
+                          fontSize: AppFontSize.nano,
+                          color: themeColors.subTextColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -162,7 +175,7 @@ class BandGroupSelectSheet extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
-            'グループを登録しておくと、ワンタップでそのBandへジャンプできます。',
+            'グループを登録しておくと、ワンタップでそのBandへジャンプできます。\n※ご利用には端末に「BANDアプリ」のインストールが必要です。',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: AppFontSize.caption,
@@ -176,7 +189,10 @@ class BandGroupSelectSheet extends ConsumerWidget {
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  BandLauncherHelper.launchBandUrl('https://band.us');
+                  BandLauncherHelper.launchBandUrl(
+                    'bandapp://',
+                    postText: formattedText,
+                  );
                 },
                 icon: const Icon(Icons.open_in_new, size: 16),
                 label: const Text('BANDアプリを開く'),
@@ -203,86 +219,133 @@ class BandGroupSelectSheet extends ConsumerWidget {
     AppThemeColors themeColors,
     bool isDark,
   ) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: groups.length,
-      separatorBuilder: (context, index) =>
-          const SizedBox(height: AppSpacing.xs),
-      itemBuilder: (context, index) {
-        final group = groups[index];
-        return Material(
-          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-          borderRadius: AppRadius.medium,
-          child: InkWell(
-            borderRadius: AppRadius.medium,
-            onTap: () {
-              AppHaptics.selection();
-              Navigator.of(context).pop();
-              BandLauncherHelper.launchBandUrl(group.url);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '登録グループ (${groups.length})',
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  fontWeight: AppFontWeight.bold,
+                  color: themeColors.subTextColor,
+                ),
               ),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: AppRadius.small,
-                    child: Image.asset(
-                      'assets/images/band_icon.png',
-                      width: 36,
-                      height: 36,
-                      fit: BoxFit.cover,
-                    ),
+              TextButton.icon(
+                onPressed: () {
+                  AppHaptics.selection();
+                  Navigator.of(context).pop();
+                  BandLauncherHelper.launchBandUrl(
+                    'bandapp://',
+                    postText: formattedText,
+                  );
+                },
+                icon: const Icon(Icons.open_in_new, size: 14),
+                label: const Text('BANDアプリを開く'),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  foregroundColor: const Color(0xFF00C73C),
+                  textStyle: const TextStyle(
+                    fontSize: AppFontSize.caption,
+                    fontWeight: AppFontWeight.bold,
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          group.name,
-                          style: const TextStyle(
-                            fontSize: AppFontSize.body,
-                            fontWeight: AppFontWeight.bold,
-                          ),
-                        ),
-                        if (group.url.isNotEmpty)
-                          Text(
-                            group.url,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: AppFontSize.nano,
-                              color: themeColors.subTextColor,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.edit_outlined,
-                      size: 18,
-                      color: themeColors.subTextColor,
-                    ),
-                    tooltip: '編集',
-                    onPressed: () =>
-                        BandGroupEditDialog.show(context, initialGroup: group),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: themeColors.subTextColor,
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: groups.length,
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: AppSpacing.xs),
+          itemBuilder: (context, index) {
+            final group = groups[index];
+            return Material(
+              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+              borderRadius: AppRadius.medium,
+              child: InkWell(
+                borderRadius: AppRadius.medium,
+                onTap: () {
+                  AppHaptics.selection();
+                  Navigator.of(context).pop();
+                  BandLauncherHelper.launchBandUrl(
+                    group.url,
+                    postText: formattedText,
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: AppRadius.small,
+                        child: Image.asset(
+                          'assets/images/band_icon.png',
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              group.name,
+                              style: const TextStyle(
+                                fontSize: AppFontSize.body,
+                                fontWeight: AppFontWeight.bold,
+                              ),
+                            ),
+                            if (group.url.isNotEmpty)
+                              Text(
+                                group.url,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: AppFontSize.nano,
+                                  color: themeColors.subTextColor,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: themeColors.subTextColor,
+                        ),
+                        tooltip: '編集',
+                        onPressed: () => BandGroupEditDialog.show(
+                          context,
+                          initialGroup: group,
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 14,
+                        color: themeColors.subTextColor,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
