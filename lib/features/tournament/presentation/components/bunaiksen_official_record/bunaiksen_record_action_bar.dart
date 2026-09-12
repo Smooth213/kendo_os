@@ -41,7 +41,7 @@ class BunaiksenRecordActionBar extends StatelessWidget {
             child: _buildButton(
               icon: Icons.print,
               label: 'PDF印刷',
-              color: context.appColors.textColor,
+              color: context.appColors.errorColor,
               onTap: isExporting ? null : onPrintPdf,
             ),
           ),

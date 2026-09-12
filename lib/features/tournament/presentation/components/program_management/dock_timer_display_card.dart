@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_wheel_picker.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -367,111 +367,19 @@ class _DockTimerDisplayCardState extends State<DockTimerDisplayCard> {
   }
 
   Widget _buildWheelPickerContent() {
-    return Column(
-      key: const ValueKey('wheel_picker'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.tune_rounded,
-                  size: 16,
-                  color: AppKendoColors.orangeAccent,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  'ダイヤル調整',
-                  style: TextStyle(
-                    fontSize: AppFontSize.caption,
-                    fontWeight: AppFontWeight.bold,
-                    color: widget.themeColors.textColor,
-                  ),
-                ),
-              ],
-            ),
-            TextButton.icon(
-              onPressed: _commitWheelMode,
-              icon: const Icon(Icons.check, size: 16),
-              label: const Text('完了'),
-              style: TextButton.styleFrom(
-                foregroundColor: AppKendoColors.orangeAccent,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                visualDensity: VisualDensity.compact,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(
-          height: 120,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSingleWheel(_minScrollController, 60, '分', (v) {
-                _wheelMinutes = v;
-                AppHaptics.selection();
-              }),
-              const SizedBox(width: AppSpacing.md),
-              _buildSingleWheel(_secScrollController, 60, '秒', (v) {
-                _wheelSeconds = v;
-                AppHaptics.selection();
-              }),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSingleWheel(
-    FixedExtentScrollController controller,
-    int count,
-    String label,
-    ValueChanged<int> onChanged,
-  ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 60,
-          child: CupertinoPicker(
-            scrollController: controller,
-            itemExtent: 36,
-            selectionOverlay: Container(
-              decoration: BoxDecoration(
-                color: AppKendoColors.orangeAccent.withValues(alpha: 0.12),
-                borderRadius: AppRadius.small,
-              ),
-            ),
-            onSelectedItemChanged: onChanged,
-            children: List.generate(
-              count,
-              (i) => Center(
-                child: Text(
-                  i.toString().padLeft(2, '0'),
-                  style: TextStyle(
-                    fontSize: AppFontSize.titleLarge,
-                    fontWeight: AppFontWeight.bold,
-                    fontFamily: 'monospace',
-                    color: widget.themeColors.textColor,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xxs),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: AppFontSize.caption,
-            color: widget.themeColors.subTextColor,
-            fontWeight: AppFontWeight.bold,
-          ),
-        ),
-      ],
+    return DockTimerWheelPicker(
+      themeColors: widget.themeColors,
+      minScrollController: _minScrollController,
+      secScrollController: _secScrollController,
+      onMinutesChanged: (v) {
+        _wheelMinutes = v;
+        AppHaptics.selection();
+      },
+      onSecondsChanged: (v) {
+        _wheelSeconds = v;
+        AppHaptics.selection();
+      },
+      onCommit: _commitWheelMode,
     );
   }
 

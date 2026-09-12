@@ -10,6 +10,7 @@ class DockParentButton extends StatelessWidget {
   final int unreadCount;
   final bool isExpanded;
   final bool isDocked;
+  final bool isEditMode;
   final double buttonSize;
   final double closeButtonSize;
   final String? timerBadge;
@@ -23,6 +24,7 @@ class DockParentButton extends StatelessWidget {
     required this.unreadCount,
     required this.isExpanded,
     required this.isDocked,
+    this.isEditMode = false,
     required this.buttonSize,
     required this.closeButtonSize,
     required this.onTap,
@@ -48,30 +50,38 @@ class DockParentButton extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: isExpanded
-                  ? [AppKendoColors.deepOrange, AppKendoColors.redAccent]
-                  : (isDark
-                        ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
-                        : [
-                            themeColors.cardBackground,
-                            themeColors.cardBackground.withValues(alpha: 0.95),
-                          ]),
+              colors: isEditMode
+                  ? [AppKendoColors.teal, AppKendoColors.successGreen]
+                  : (isExpanded
+                        ? [AppKendoColors.deepOrange, AppKendoColors.redAccent]
+                        : (isDark
+                              ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
+                              : [
+                                  themeColors.cardBackground,
+                                  themeColors.cardBackground.withValues(
+                                    alpha: 0.95,
+                                  ),
+                                ])),
             ),
             border: Border.all(
-              color: isExpanded
-                  ? AppKendoColors.pureWhite.withValues(alpha: 0.8)
-                  : AppKendoColors.ipponGold.withValues(
-                      alpha: isDocked ? 0.6 : 0.95,
-                    ),
+              color: isEditMode
+                  ? AppKendoColors.pureWhite
+                  : (isExpanded
+                        ? AppKendoColors.pureWhite.withValues(alpha: 0.8)
+                        : AppKendoColors.ipponGold.withValues(
+                            alpha: isDocked ? 0.6 : 0.95,
+                          )),
               width: 2.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: isExpanded
-                    ? AppKendoColors.redAccent.withValues(alpha: 0.4)
-                    : AppKendoColors.ipponGold.withValues(
-                        alpha: isDocked ? 0.25 : 0.4,
-                      ),
+                color: isEditMode
+                    ? AppKendoColors.teal.withValues(alpha: 0.4)
+                    : (isExpanded
+                          ? AppKendoColors.redAccent.withValues(alpha: 0.4)
+                          : AppKendoColors.ipponGold.withValues(
+                              alpha: isDocked ? 0.25 : 0.4,
+                            )),
                 blurRadius: 10,
                 spreadRadius: 1,
                 offset: const Offset(0, 4),
@@ -87,11 +97,15 @@ class DockParentButton extends StatelessWidget {
               customBorder: const CircleBorder(),
               child: Center(
                 child: AnimatedRotation(
-                  turns: isExpanded ? 0.25 : 0.0,
+                  turns: isEditMode ? 0.0 : (isExpanded ? 0.25 : 0.0),
                   duration: const Duration(milliseconds: 220),
                   child: Icon(
-                    isExpanded ? Icons.close_rounded : Icons.widgets_rounded,
-                    color: isExpanded
+                    isEditMode
+                        ? Icons.check_rounded
+                        : (isExpanded
+                              ? Icons.close_rounded
+                              : Icons.widgets_rounded),
+                    color: (isEditMode || isExpanded)
                         ? AppKendoColors.pureWhite
                         : (isDark
                               ? AppKendoColors.ipponGold

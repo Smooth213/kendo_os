@@ -32,6 +32,7 @@ void main() {
         'bunaiksen_home_screen.dart',
         'bunaiksen_official_record_screen.dart',
         'match_screen.dart',
+        'match_floating_dock_entry.dart',
       };
 
       final dartFiles = libDir

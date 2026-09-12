@@ -5,6 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_matches_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -30,6 +31,9 @@ class BunaiksenDockCalendarSheet extends ConsumerWidget {
 
     final currentDate = ref.watch(bunaiksenViewDateProvider);
     final isToday = _isSameDay(currentDate, DateTime.now());
+    final availableDates =
+        ref.watch(bunaiksenAvailableDatesProvider).valueOrNull ??
+        const <String>{};
 
     return DockDraggableSheet(
       initialChildSize: 0.65,
@@ -143,6 +147,15 @@ class BunaiksenDockCalendarSheet extends ConsumerWidget {
                     initialDate: currentDate,
                     firstDate: DateTime(2020),
                     lastDate: DateTime(2035),
+                    selectableDayPredicate: (date) {
+                      if (availableDates.isEmpty) return true;
+                      final dateStr = DateFormat('yyyyMMdd').format(date);
+                      final tStr = DateFormat(
+                        'yyyyMMdd',
+                      ).format(DateTime.now());
+                      return availableDates.contains(dateStr) ||
+                          dateStr == tStr;
+                    },
                     onDateChanged: (newDate) {
                       AppHaptics.selection();
                       ref.read(bunaiksenViewDateProvider.notifier).state =

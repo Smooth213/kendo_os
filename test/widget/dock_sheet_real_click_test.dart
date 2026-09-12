@@ -202,8 +202,8 @@ void main() {
       await tester.tap(find.byType(BunaiksenDockButton));
       await tester.pumpAndSettle();
 
-      // 「設定」アイコン（Icons.settings_outlined）をタップ
-      final settingsDockIcon = find.byIcon(Icons.settings_outlined);
+      // 「設定」アイコン（Icons.settings_rounded）をタップ
+      final settingsDockIcon = find.byIcon(Icons.settings_rounded);
       expect(settingsDockIcon, findsWidgets);
       await tester.tap(settingsDockIcon.first);
       await tester.pumpAndSettle();

@@ -13,11 +13,18 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 
-class RoleSelectScreen extends ConsumerWidget {
+class RoleSelectScreen extends ConsumerStatefulWidget {
   const RoleSelectScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RoleSelectScreen> createState() => _RoleSelectScreenState();
+}
+
+class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
+  bool _isNavigating = false;
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // 🌟 換装核心：アプリの最上位ゲートで一括同期サービスを常時リッスン。
@@ -266,8 +273,6 @@ class RoleSelectScreen extends ConsumerWidget {
 
                           // 1. 代表・管理者 (Admin)
                           _buildRoleRow(
-                            context,
-                            ref,
                             title: '代表・管理者 (Admin)',
                             role: UserRole.admin,
                             color: AppKendoColors.purple,
@@ -276,8 +281,6 @@ class RoleSelectScreen extends ConsumerWidget {
 
                           // 2. 監督・引率責任者 (Operator)
                           _buildRoleRow(
-                            context,
-                            ref,
                             title: '監督・引率責任者 (Operator)',
                             role: UserRole.operator,
                             color: AppKendoColors.teal,
@@ -286,8 +289,6 @@ class RoleSelectScreen extends ConsumerWidget {
 
                           // 3. スコア・記録係 (Recorder)
                           _buildRoleRow(
-                            context,
-                            ref,
                             title: 'スコア・記録係 (Recorder)',
                             role: UserRole.recorder,
                             color: AppKendoColors.indigo,
@@ -296,8 +297,6 @@ class RoleSelectScreen extends ConsumerWidget {
 
                           // 4. 応援・保護者・選手 (Viewer)
                           _buildRoleRow(
-                            context,
-                            ref,
                             title: '応援・保護者・選手 (Viewer)',
                             role: UserRole.viewer,
                             color: AppKendoColors.blueGrey,
@@ -316,9 +315,7 @@ class RoleSelectScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRoleRow(
-    BuildContext context,
-    WidgetRef ref, {
+  Widget _buildRoleRow({
     required String title,
     required UserRole role,
     required Color color,
@@ -334,24 +331,33 @@ class RoleSelectScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
         ),
-        onPressed: () async {
-          if (role == UserRole.viewer) {
-            if (FirebaseAuth.instance.currentUser == null) {
-              await FirebaseAuth.instance.signInAnonymously();
-            }
-            await ref
-                .read(authSessionProvider.notifier)
-                .establishSession(
-                  UserRole.viewer,
-                  ref.read(currentDojoIdProvider),
-                );
-            if (context.mounted) {
-              context.go('/');
-            }
-          } else {
-            context.push('/pin-auth?role=${role.name}');
-          }
-        },
+        onPressed: _isNavigating
+            ? null
+            : () async {
+                setState(() => _isNavigating = true);
+                try {
+                  if (role == UserRole.viewer) {
+                    if (FirebaseAuth.instance.currentUser == null) {
+                      await FirebaseAuth.instance.signInAnonymously();
+                    }
+                    await ref
+                        .read(authSessionProvider.notifier)
+                        .establishSession(
+                          UserRole.viewer,
+                          ref.read(currentDojoIdProvider),
+                        );
+                    if (mounted) {
+                      context.go('/');
+                    }
+                  } else {
+                    await context.push('/pin-auth?role=${role.name}');
+                  }
+                } finally {
+                  if (mounted) {
+                    setState(() => _isNavigating = false);
+                  }
+                }
+              },
         child: Row(
           children: [
             // 左端バッジ（または位置合わせ用スペース）

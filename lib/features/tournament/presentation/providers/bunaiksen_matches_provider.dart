@@ -125,17 +125,22 @@ final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>(
     }
 
     if (firestore == null) {
-      final localRepository = ref.watch(localMatchRepositoryProvider);
-      return localRepository.watchAllLocalMatches().map((allMatches) {
-        return allMatches
-            .where(
-              (m) =>
-                  m.tournamentId != null &&
-                  m.tournamentId!.startsWith('bunaiksen_'),
-            )
-            .map((m) => m.tournamentId!.replaceFirst('bunaiksen_', ''))
-            .toSet();
-      });
+      try {
+        final localRepository = ref.watch(localMatchRepositoryProvider);
+        return localRepository.watchAllLocalMatches().map((allMatches) {
+          return allMatches
+              .where(
+                (m) =>
+                    m.tournamentId != null &&
+                    m.tournamentId!.startsWith('bunaiksen_'),
+              )
+              .map((m) => m.tournamentId!.replaceFirst('bunaiksen_', ''))
+              .toSet();
+        });
+      } catch (e) {
+        debugPrint('⚠️ [日付同期] LocalRepository取得失敗: $e');
+        return Stream.value(const <String>{});
+      }
     }
 
     return firestore.collectionGroup('matches').snapshots().map((snap) {

@@ -149,9 +149,9 @@ class BunaiksenIndividualMatchesList extends StatelessWidget {
                       width: 55,
                       child: Text(
                         m.note.isNotEmpty ? m.note : '第${index + 1}試合',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: AppFontSize.badge,
-                          color: Color(0x8A000000),
+                          color: context.appColors.subTextColor,
                           fontWeight: AppFontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -164,9 +164,9 @@ class BunaiksenIndividualMatchesList extends StatelessWidget {
                           if (rTeam.isNotEmpty)
                             Text(
                               rTeam,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: Color(0x8A000000),
+                                color: context.appColors.subTextColor,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -219,9 +219,9 @@ class BunaiksenIndividualMatchesList extends StatelessWidget {
                           if (wTeam.isNotEmpty)
                             Text(
                               wTeam,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: AppFontSize.nano,
-                                color: Color(0x8A000000),
+                                color: context.appColors.subTextColor,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),

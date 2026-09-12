@@ -25,19 +25,24 @@ class FloatingDockItemsBuilder {
     required AppThemeColors themeColors,
     required int unreadCount,
     required VoidCallback onCollapse,
+    VoidCallback? onLongPress,
     List<DockItemType>? customOrder,
     String? timerDisplay,
     bool isTimerRunning = false,
   }) {
     final order = customOrder ?? DockItemsOrderNotifier.defaultOrder;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return order.map((type) {
       switch (type) {
         case DockItemType.program:
           return DockSubItem(
             icon: Icons.menu_book_rounded,
-            color: themeColors.primaryAccent,
+            color: isDark
+                ? const Color(0xFFA78BFA) // Violet 400 (ダーク背景で高視認性)
+                : themeColors.primaryAccent,
             label: 'プログラム',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               FloatingDockSheetManager.show(
@@ -53,8 +58,11 @@ class FloatingDockItemsBuilder {
         case DockItemType.matchStatus:
           return DockSubItem(
             icon: Icons.groups_rounded,
-            color: AppKendoColors.indigo,
+            color: isDark
+                ? const Color(0xFF818CF8) // Indigo 400 (ダーク背景で高視認性)
+                : AppKendoColors.indigo,
             label: '試合状況',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               FloatingDockSheetManager.show(
@@ -78,6 +86,7 @@ class FloatingDockItemsBuilder {
             icon: Icons.scoreboard_rounded,
             color: AppKendoColors.ipponGold,
             label: '対戦表',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               FloatingDockSheetManager.show(
@@ -99,8 +108,11 @@ class FloatingDockItemsBuilder {
         case DockItemType.quickMemo:
           return DockSubItem(
             icon: Icons.brush_rounded,
-            color: AppKendoColors.pink,
+            color: isDark
+                ? const Color(0xFFF472B6) // Pink 400
+                : AppKendoColors.pink,
             label: 'クイックメモ',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               FloatingDockSheetManager.show(
@@ -116,10 +128,13 @@ class FloatingDockItemsBuilder {
             icon: isTimerRunning ? Icons.timer_rounded : Icons.timer_outlined,
             color: isTimerRunning
                 ? AppKendoColors.deepOrange
-                : AppKendoColors.orangeAccent,
+                : (isDark
+                      ? const Color(0xFFFB923C) // Orange 400
+                      : AppKendoColors.orangeAccent),
             label: timerDisplay != null && isTimerRunning
                 ? timerDisplay
                 : 'タイマー',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               DockTimerBottomSheet.show(context);
@@ -129,8 +144,11 @@ class FloatingDockItemsBuilder {
         case DockItemType.viewerQr:
           return DockSubItem(
             icon: Icons.qr_code_2_rounded,
-            color: AppKendoColors.teal,
+            color: isDark
+                ? const Color(0xFF2DD4BF) // Teal 400
+                : AppKendoColors.teal,
             label: '観戦QR',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               ViewerQrBottomSheet.show(
@@ -144,9 +162,12 @@ class FloatingDockItemsBuilder {
         case DockItemType.announcements:
           return DockSubItem(
             icon: Icons.notifications_rounded,
-            color: AppKendoColors.deepOrange,
+            color: isDark
+                ? const Color(0xFFFB7185) // Rose 400
+                : AppKendoColors.deepOrange,
             label: 'お知らせ',
             badgeCount: unreadCount,
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               FloatingDockSheetManager.show(
@@ -162,8 +183,11 @@ class FloatingDockItemsBuilder {
         case DockItemType.manual:
           return DockSubItem(
             icon: Icons.help_outline_rounded,
-            color: AppKendoColors.teal,
+            color: isDark
+                ? const Color(0xFF2DD4BF) // Teal 400
+                : AppKendoColors.teal,
             label: 'ヘルプ',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               FloatingDockSheetManager.show(
@@ -176,8 +200,11 @@ class FloatingDockItemsBuilder {
         case DockItemType.settings:
           return DockSubItem(
             icon: Icons.settings_rounded,
-            color: themeColors.subTextColor,
+            color: isDark
+                ? const Color(0xFFCBD5E1) // Slate 200 (高視認性シルバーホワイト)
+                : themeColors.subTextColor,
             label: '設定',
+            onLongPress: onLongPress,
             onTap: () {
               onCollapse();
               if (isViewerMode) {

@@ -8,15 +8,13 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_storage_service.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_view.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 🥋 クイックメモ ボトムシート（ドックから即座に起動＆全画面拡大対応）
 class QuickMemoBottomSheet extends StatefulWidget {
@@ -60,6 +58,17 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
     super.initState();
     _loadSavedData();
     _subscribeCloudUpdates();
+  }
+
+  @override
+  void didUpdateWidget(QuickMemoBottomSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tournamentId != widget.tournamentId) {
+      _saveData();
+      _memoSubscription?.cancel();
+      _loadSavedData();
+      _subscribeCloudUpdates();
+    }
   }
 
   Future<void> _loadSavedData() async {
@@ -380,63 +389,17 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
                       setState(() => _isEraser = !_isEraser);
                     },
                   ),
-                if (_mode == QuickMemoMode.text) ...[
-                  Positioned.fill(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        AppSpacing.lg,
-                        AppSpacing.lg,
-                        80,
-                      ),
-                      child: AppTextField(
-                        controller: _textController,
-                        focusNode: _textFocusNode,
-                        maxLines: null,
-                        expands: true,
-                        style: TextStyle(
-                          fontSize: AppFontSize.body,
-                          color: themeColors.textColor,
-                          height: 1.6,
-                        ),
-                        hintText: 'ここに試合メモ・連絡事項・確認事項を入力できます...',
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        onChanged: (_) {
-                          setState(() {});
-                          _saveData();
-                        },
-                      ),
-                    ),
+                if (_mode == QuickMemoMode.text)
+                  QuickMemoTextView(
+                    controller: _textController,
+                    focusNode: _textFocusNode,
+                    themeColors: themeColors,
+                    isDark: isDark,
+                    onChanged: _saveData,
+                    onInsertTimestamp: _insertTimestamp,
+                    onCopy: _copyText,
+                    onClear: _clearAll,
                   ),
-                  Positioned(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                        ? MediaQuery.of(context).viewInsets.bottom +
-                              AppSpacing.sm
-                        : MediaQuery.of(context).padding.bottom + AppSpacing.md,
-                    child: Center(
-                      child: QuickMemoTextToolbar(
-                        themeColors: themeColors,
-                        isDark: isDark,
-                        charCount: _textController.text.length,
-                        onInsertTimestamp: _insertTimestamp,
-                        onCopy: _textController.text.isNotEmpty
-                            ? _copyText
-                            : null,
-                        onClear: _textController.text.isNotEmpty
-                            ? _clearAll
-                            : null,
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

@@ -35,11 +35,15 @@ class BunaiksenScoreMarks extends StatelessWidget {
             ? (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569))
             : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF475569)));
 
-    // 完全無得点の引き分け
+    // 完全無得点の場合（待機中は「ー」、試合終了時は引き分け「✕」）
     if (match.redScore == 0 && match.whiteScore == 0) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: Icon(Icons.close, size: 18, color: effectiveIconColor),
+        child: Icon(
+          isFinished ? Icons.close : Icons.remove,
+          size: 18,
+          color: effectiveIconColor,
+        ),
       );
     }
 
@@ -77,7 +81,7 @@ class BunaiksenScoreMarks extends StatelessWidget {
         })
         .join('');
 
-    final bool isDraw = match.redScore == match.whiteScore;
+    final bool isDraw = isFinished && (match.redScore == match.whiteScore);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

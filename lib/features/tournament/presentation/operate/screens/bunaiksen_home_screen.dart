@@ -56,7 +56,8 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
         DateFormat('yyyyMMdd').format(DateTime.now());
 
     final availableDates =
-        ref.watch(bunaiksenAvailableDatesProvider).value ?? const <String>{};
+        ref.watch(bunaiksenAvailableDatesProvider).valueOrNull ??
+        const <String>{};
 
     // 選択された日の部内戦のみ表示
     final matches = ref.watch(bunaiksenMatchesProvider(dateId));
@@ -124,9 +125,10 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.sports_kabaddi,
-                            size: 64,
+                          Image.asset(
+                            'assets/kendo_icon.png',
+                            width: 64,
+                            height: 64,
                             color: themeColors.subTextColor.withValues(
                               alpha: 0.5,
                             ),

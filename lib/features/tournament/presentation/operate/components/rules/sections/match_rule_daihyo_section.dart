@@ -133,7 +133,7 @@ class MatchRuleDaihyoSection extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        Icons.sports_kabaddi,
+                        Icons.sports_martial_arts,
                         color: primaryAccent,
                         size: 18,
                       ),

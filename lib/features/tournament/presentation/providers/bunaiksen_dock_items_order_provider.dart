@@ -45,11 +45,11 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
       case BunaiksenDockItemType.calendar:
         return Icons.calendar_month_rounded;
       case BunaiksenDockItemType.quickMemo:
-        return Icons.edit_note_rounded;
+        return Icons.brush_rounded;
       case BunaiksenDockItemType.timer:
-        return Icons.timer_outlined;
+        return Icons.timer_rounded;
       case BunaiksenDockItemType.settings:
-        return Icons.settings_outlined;
+        return Icons.settings_rounded;
     }
   }
 
@@ -67,6 +67,24 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
         return AppKendoColors.orangeAccent;
       case BunaiksenDockItemType.settings:
         return AppKendoColors.grey;
+    }
+  }
+
+  Color colorForMode(bool isDark) {
+    if (!isDark) return defaultColor;
+    switch (this) {
+      case BunaiksenDockItemType.matches:
+        return const Color(0xFF818CF8); // Indigo 400 (高コントラスト)
+      case BunaiksenDockItemType.standings:
+        return AppKendoColors.ipponGold;
+      case BunaiksenDockItemType.calendar:
+        return const Color(0xFF2DD4BF); // Teal 400
+      case BunaiksenDockItemType.quickMemo:
+        return const Color(0xFFF472B6); // Pink 400
+      case BunaiksenDockItemType.timer:
+        return const Color(0xFFFB923C); // Orange 400
+      case BunaiksenDockItemType.settings:
+        return const Color(0xFFCBD5E1); // Slate 200 (高視認性シルバーホワイト)
     }
   }
 
@@ -195,6 +213,16 @@ class BunaiksenDockItemsOrderNotifier
     } catch (_) {}
 
     _pushToCloud(list);
+  }
+
+  /// 並び順を一括更新して保存
+  Future<void> updateOrder(List<BunaiksenDockItemType> newOrder) async {
+    state = List.from(newOrder);
+    try {
+      final prefs = _ref.read(sharedPreferencesProvider);
+      await prefs.setStringList(_key, newOrder.map((e) => e.name).toList());
+    } catch (_) {}
+    _pushToCloud(newOrder);
   }
 
   /// デフォルト順への復元

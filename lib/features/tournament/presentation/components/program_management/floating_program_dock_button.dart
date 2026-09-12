@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_gesture_detector.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_slot_layout_calculator.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_items_builder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_items_reorder_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_items_order_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -14,9 +15,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 
-export 'program_header_action.dart';
-
-/// 🥋 画面端に常駐し、タップで流動的L字スピードダイヤルが飛び出すフローティングボタン
+/// 🥋 大会ホーム用フローティングドックボタン（画面上iPhone風ジグル並び替え対応）
 class FloatingProgramDockButton extends ConsumerStatefulWidget {
   final String tournamentId;
   final bool isViewerMode;
@@ -36,20 +35,25 @@ class FloatingProgramDockButton extends ConsumerStatefulWidget {
 
 class _FloatingProgramDockButtonState
     extends ConsumerState<FloatingProgramDockButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const double _buttonSize = 58.0;
   static const double _closeButtonSize = 46.0;
   static const double _dockedVisibleWidth = 20.0;
+  static const double _itemStep = 66.0;
 
   bool _isDocked = false;
   late bool _isLeft;
-  bool _isDragging = false;
   double _yOffset = 0.70;
-  double _horizontalDragDistance = 0.0;
 
   bool _isExpanded = false;
+  bool _isEditMode = false;
+  int? _itemDraggingIndex;
+  Offset _itemDragDelta = Offset.zero;
+  List<DockItemType>? _localItemsOrder;
+
   late AnimationController _animController;
   late Animation<double> _expandAnimation;
+  late AnimationController _jiggleController;
   bool _isInsideSheet = false;
 
   @override
@@ -67,9 +71,17 @@ class _FloatingProgramDockButtonState
     );
     _animController.addStatusListener((status) {
       if (status == AnimationStatus.dismissed && _isExpanded) {
-        setState(() => _isExpanded = false);
+        setState(() {
+          _isExpanded = false;
+          _isEditMode = false;
+        });
       }
     });
+
+    _jiggleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 140),
+    );
   }
 
   @override
@@ -84,20 +96,18 @@ class _FloatingProgramDockButtonState
       FloatingDockSheetManager.close(immediate: true);
     }
     _animController.dispose();
+    _jiggleController.dispose();
     super.dispose();
-  }
-
-  void _toggleDock() {
-    AppHaptics.selection();
-    setState(() {
-      _isDocked = !_isDocked;
-    });
   }
 
   void _toggleExpand() {
     AppHaptics.selection();
     if (_isExpanded) {
-      _collapse();
+      if (_isEditMode) {
+        _endEditMode();
+      } else {
+        _collapse();
+      }
     } else {
       setState(() => _isExpanded = true);
       _animController.forward(from: 0.0);
@@ -105,48 +115,116 @@ class _FloatingProgramDockButtonState
   }
 
   void _collapse() {
+    if (_isEditMode) _endEditMode();
     if (_isExpanded) {
       _animController.reverse().then((_) {
         if (mounted && _isExpanded) {
-          setState(() => _isExpanded = false);
+          setState(() {
+            _isExpanded = false;
+            _isEditMode = false;
+          });
         }
       });
     }
   }
 
-  List<DockSubItem> _buildItems({
-    required BuildContext context,
-    required AppThemeColors themeColors,
-    required int unreadCount,
-    required List<DockItemType> customOrder,
-    required String timerDisplay,
-    required bool isTimerRunning,
+  void _startEditMode() {
+    if (_isEditMode) return;
+    AppHaptics.medium();
+    setState(() {
+      _isEditMode = true;
+      _localItemsOrder = List<DockItemType>.from(
+        ref.read(dockItemsOrderProvider),
+      );
+    });
+    _jiggleController.repeat();
+  }
+
+  void _endEditMode() {
+    if (!_isEditMode) return;
+    AppHaptics.light();
+    _jiggleController.stop();
+    setState(() {
+      _isEditMode = false;
+      _itemDraggingIndex = null;
+      _itemDragDelta = Offset.zero;
+    });
+    if (_localItemsOrder != null) {
+      ref.read(dockItemsOrderProvider.notifier).updateOrder(_localItemsOrder!);
+    }
+  }
+
+  void _onItemPanUpdate({
+    required int index,
+    required DragUpdateDetails details,
+    required DockLayoutMode layoutMode,
+    required double dirX,
+    required double dirY,
+    required int itemCount,
   }) {
-    return FloatingDockItemsBuilder.build(
-      context: context,
-      tournamentId: widget.tournamentId,
-      isViewerMode: widget.isViewerMode,
-      themeColors: themeColors,
-      unreadCount: unreadCount,
-      onCollapse: _collapse,
-      customOrder: customOrder,
-      timerDisplay: timerDisplay,
-      isTimerRunning: isTimerRunning,
-    );
+    if (_itemDraggingIndex == null) return;
+    setState(() {
+      _itemDragDelta += details.delta;
+      final curSlot = DockSlotLayoutCalculator.getTournamentSlotOffset(
+        index: _itemDraggingIndex!,
+        layoutMode: layoutMode,
+        dirX: dirX,
+        dirY: dirY,
+        step: _itemStep,
+      );
+      final currentPos = curSlot + _itemDragDelta;
+
+      final target = DockSlotLayoutCalculator.findSwapTarget(
+        currentPos: currentPos,
+        currentDraggingIndex: _itemDraggingIndex!,
+        itemCount: itemCount,
+        step: _itemStep,
+        slotOffsetGetter: (idx) =>
+            DockSlotLayoutCalculator.getTournamentSlotOffset(
+              index: idx,
+              layoutMode: layoutMode,
+              dirX: dirX,
+              dirY: dirY,
+              step: _itemStep,
+            ),
+      );
+
+      if (target != null) {
+        final list = List<DockItemType>.from(
+          _localItemsOrder ?? ref.read(dockItemsOrderProvider),
+        );
+        final moved = list.removeAt(_itemDraggingIndex!);
+        list.insert(target, moved);
+        _localItemsOrder = list;
+
+        final targetSlot = DockSlotLayoutCalculator.getTournamentSlotOffset(
+          index: target,
+          layoutMode: layoutMode,
+          dirX: dirX,
+          dirY: dirY,
+          step: _itemStep,
+        );
+        _itemDragDelta = currentPos - targetSlot;
+        _itemDraggingIndex = target;
+        AppHaptics.selection();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isInsideSheet) {
-      return const SizedBox.shrink();
-    }
+    if (_isInsideSheet) return const SizedBox.shrink();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final screenSize = MediaQuery.of(context).size;
 
-    final itemsOrder = ref.watch(dockItemsOrderProvider);
+    final globalOrder = ref.watch(dockItemsOrderProvider);
+    final activeOrder = _isEditMode && _localItemsOrder != null
+        ? _localItemsOrder!
+        : globalOrder;
     final timerState = ref.watch(dockTimerProvider);
 
     final double safeTop = MediaQuery.of(context).padding.top + 60.0;
@@ -158,23 +236,11 @@ class _FloatingProgramDockButtonState
       safeBottom,
     );
 
-    final double targetX;
-    if (_isLeft) {
-      targetX = _isDocked
-          ? -(_buttonSize - _dockedVisibleWidth)
-          : AppSpacing.md;
-    } else {
-      targetX = _isDocked
-          ? screenSize.width - _dockedVisibleWidth
-          : screenSize.width - _buttonSize - AppSpacing.md;
-    }
-
-    final double currentX = _isDragging && !_isDocked
-        ? (targetX + _horizontalDragDistance).clamp(
-            AppSpacing.md,
-            screenSize.width - _buttonSize - AppSpacing.md,
-          )
-        : targetX;
+    final double targetX = _isLeft
+        ? (_isDocked ? -(_buttonSize - _dockedVisibleWidth) : AppSpacing.md)
+        : (_isDocked
+              ? screenSize.width - _dockedVisibleWidth
+              : screenSize.width - _buttonSize - AppSpacing.md);
 
     final unreadAsync = ref.watch(
       unreadAnnouncementCountProvider((
@@ -183,66 +249,86 @@ class _FloatingProgramDockButtonState
       )),
     );
     final unreadCount = unreadAsync.valueOrNull ?? 0;
-    final items = _buildItems(
+    final items = FloatingDockItemsBuilder.build(
       context: context,
+      tournamentId: widget.tournamentId,
+      isViewerMode: widget.isViewerMode,
       themeColors: themeColors,
       unreadCount: unreadCount,
-      customOrder: itemsOrder,
+      onCollapse: _collapse,
+      onLongPress: _startEditMode,
+      customOrder: activeOrder,
       timerDisplay: timerState.formattedDisplay,
       isTimerRunning: timerState.isRunning,
     );
 
     final double dirX = _isLeft ? 1.0 : -1.0;
-
-    // 画面の垂直位置の正規化比率 (0.0: 上端 〜 1.0: 下端)
     final double verticalRange = safeBottom - safeTop;
     final double normalizedY = verticalRange > 0
         ? ((currentY - safeTop) / verticalRange).clamp(0.0, 1.0)
         : 0.5;
-
-    // 展開する垂直方向: 画面中央より上なら下向き(+1.0)、中央より下なら上向き(-1.0)
     final double dirY = normalizedY < 0.5 ? 1.0 : -1.0;
 
-    // 画面の上下端（上部20%以内または下部20%以内）ではコーナーに寄り添う「L字型」、
-    // また垂直スペースがアイテム全体の配置高さを下回る場合も画面外飛び出し防止で「L字型」に切り替え
-    final double availableVerticalSpace = dirY < 0
+    final double availableSpace = dirY < 0
         ? (currentY - safeTop)
         : (safeBottom - currentY);
-    final double requiredVerticalSpace = items.length * 66.0;
+    final double requiredSpace = items.length * _itemStep;
     final bool isNearEdge =
         (normalizedY < 0.20 || normalizedY > 0.80) ||
-        (availableVerticalSpace < requiredVerticalSpace);
+        (availableSpace < requiredSpace);
     final DockLayoutMode layoutMode = isNearEdge
         ? DockLayoutMode.lShape
         : DockLayoutMode.vertical;
 
-    // 折りたたみ時は AnimatedPositioned を返して他操作を一切邪魔しない
     if (!_isExpanded && _animController.isDismissed) {
       return AnimatedPositioned(
-        duration: _isDragging
-            ? Duration.zero
-            : const Duration(milliseconds: 380),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
-        left: currentX,
+        left: targetX,
         top: currentY,
-        child: _buildParentGestureDetector(
-          context,
-          isDark,
-          themeColors,
-          unreadCount,
-          screenSize,
+        child: DockParentGestureDetector(
+          isDark: isDark,
+          themeColors: themeColors,
+          unreadCount: unreadCount,
+          timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
+          buttonSize: _buttonSize,
+          closeButtonSize: _closeButtonSize,
+          isDocked: _isDocked,
+          isLeft: _isLeft,
+          yOffset: _yOffset,
+          onTap: () {
+            if (_isDocked) {
+              setState(() => _isDocked = false);
+            } else if (FloatingDockSheetManager.isOpen) {
+              FloatingDockSheetManager.close();
+            } else {
+              _toggleExpand();
+            }
+          },
+          onLongPress: () {
+            if (!_isDocked) {
+              _toggleExpand();
+              _startEditMode();
+            }
+          },
+          onPositionChanged: (newY, isLeft, isDocked) {
+            setState(() {
+              _yOffset = newY;
+              _isLeft = isLeft;
+              _isDocked = isDocked;
+            });
+          },
         ),
       );
     }
 
-    // 展開時: 画面全体の透明バリアを展開し、任意箇所タップで吸い込み収納
     return Positioned.fill(
       child: Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: _collapse,
+              onTap: _isEditMode ? _endEditMode : _collapse,
               child: AnimatedBuilder(
                 animation: _animController,
                 builder: (context, _) => Container(
@@ -264,26 +350,77 @@ class _FloatingProgramDockButtonState
                       item: items[i],
                       index: i,
                       progress: progress,
-                      originX: currentX,
+                      originX: targetX,
                       originY: currentY,
                       dirX: dirX,
                       dirY: dirY,
                       isDark: isDark,
                       themeColors: themeColors,
                       layoutMode: layoutMode,
+                      buttonSize: _buttonSize,
+                      subSize: _buttonSize,
+                      step: _itemStep,
+                      isEditMode: _isEditMode,
+                      isDragging: _itemDraggingIndex == i,
+                      dragDelta: _itemDraggingIndex == i
+                          ? _itemDragDelta
+                          : Offset.zero,
+                      jiggleAnimation: _jiggleController,
+                      onPanStart: (_) {
+                        setState(() {
+                          _itemDraggingIndex = i;
+                          _itemDragDelta = Offset.zero;
+                        });
+                      },
+                      onPanUpdate: (details) => _onItemPanUpdate(
+                        index: i,
+                        details: details,
+                        layoutMode: layoutMode,
+                        dirX: dirX,
+                        dirY: dirY,
+                        itemCount: items.length,
+                      ),
+                      onPanEnd: (_) {
+                        setState(() {
+                          _itemDraggingIndex = null;
+                          _itemDragDelta = Offset.zero;
+                        });
+                        if (_localItemsOrder != null) {
+                          ref
+                              .read(dockItemsOrderProvider.notifier)
+                              .updateOrder(_localItemsOrder!);
+                        }
+                      },
                     ),
                   Positioned(
                     left:
-                        currentX +
+                        targetX +
                         ((_buttonSize - _closeButtonSize) / 2 * progress),
                     top:
                         currentY +
                         ((_buttonSize - _closeButtonSize) / 2 * progress),
-                    child: _buildParentButton(
+                    child: DockParentButton(
                       isDark: isDark,
                       themeColors: themeColors,
                       unreadCount: unreadCount,
                       isExpanded: true,
+                      isDocked: false,
+                      isEditMode: _isEditMode,
+                      buttonSize: _buttonSize,
+                      closeButtonSize: _closeButtonSize,
+                      timerBadge: timerState.isRunning
+                          ? timerState.formattedDisplay
+                          : null,
+                      onTap: () {
+                        if (_isEditMode) {
+                          _endEditMode();
+                        } else {
+                          _toggleExpand();
+                        }
+                      },
+                      onLongPress: () {
+                        if (!_isEditMode) _startEditMode();
+                      },
                     ),
                   ),
                 ],
@@ -292,93 +429,6 @@ class _FloatingProgramDockButtonState
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildParentGestureDetector(
-    BuildContext context,
-    bool isDark,
-    AppThemeColors themeColors,
-    int unreadCount,
-    Size screenSize,
-  ) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onPanStart: (_) {
-        setState(() {
-          _isDragging = true;
-          _horizontalDragDistance = 0.0;
-        });
-      },
-      onPanUpdate: (details) {
-        setState(() {
-          _yOffset += details.delta.dy / screenSize.height;
-          _horizontalDragDistance += details.delta.dx;
-          if (_isLeft) {
-            if (details.delta.dx < -5) _isDocked = true;
-            if (details.delta.dx > 5) _isDocked = false;
-          } else {
-            if (details.delta.dx > 5) _isDocked = true;
-            if (details.delta.dx < -5) _isDocked = false;
-          }
-        });
-      },
-      onPanEnd: (details) {
-        final vx = details.velocity.pixelsPerSecond.dx;
-        setState(() {
-          _isDragging = false;
-          if (!_isDocked) {
-            if (!_isLeft && (vx < -200 || _horizontalDragDistance < -40.0)) {
-              _isLeft = true;
-              AppHaptics.selection();
-            } else if (_isLeft &&
-                (vx > 200 || _horizontalDragDistance > 40.0)) {
-              _isLeft = false;
-              AppHaptics.selection();
-            }
-          }
-          _horizontalDragDistance = 0.0;
-        });
-      },
-      onTap: () {
-        if (_isDocked) {
-          _toggleDock();
-        } else if (FloatingDockSheetManager.isOpen) {
-          FloatingDockSheetManager.close();
-        } else {
-          _toggleExpand();
-        }
-      },
-      child: _buildParentButton(
-        isDark: isDark,
-        themeColors: themeColors,
-        unreadCount: unreadCount,
-        isExpanded: false,
-      ),
-    );
-  }
-
-  Widget _buildParentButton({
-    required bool isDark,
-    required AppThemeColors themeColors,
-    required int unreadCount,
-    required bool isExpanded,
-  }) {
-    final timerState = ref.watch(dockTimerProvider);
-    return DockParentButton(
-      isDark: isDark,
-      themeColors: themeColors,
-      unreadCount: unreadCount,
-      isExpanded: isExpanded,
-      isDocked: _isDocked,
-      buttonSize: _buttonSize,
-      closeButtonSize: _closeButtonSize,
-      timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
-      onTap: _isDocked ? _toggleDock : _toggleExpand,
-      onLongPress: () {
-        AppHaptics.medium();
-        DockItemsReorderBottomSheet.show(context);
-      },
     );
   }
 }

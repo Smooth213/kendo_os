@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_calendar_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_items_reorder_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_matches_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_standings_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_sub_item_button.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_animated_dock_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_gesture_detector.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_slot_layout_calculator.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart';
@@ -20,9 +21,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 
-/// 🥋 部内戦専用フローティングドックボタン
-/// 画面端に常駐し、タップでスピードダイヤル展開、長押しで並び替えボトムシートが起動。
-/// 観戦専用ビュアー（Viewer）には一切描画されません。
+/// 🥋 部内戦専用フローティングドックボタン（画面上iPhone風ジグル並び替え・大会ホーム統一サイズ）
 class BunaiksenDockButton extends ConsumerStatefulWidget {
   final String tournamentId;
   final bool isViewerMode;
@@ -45,20 +44,21 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
   static const double _buttonSize = 58.0;
   static const double _closeButtonSize = 46.0;
   static const double _dockedVisibleWidth = 20.0;
+  static const double _itemStep = 66.0;
 
   bool _isDocked = false;
   late bool _isLeft;
-  bool _isDragging = false;
   double _yOffset = 0.70;
-  double _horizontalDragDistance = 0.0;
 
   bool _isExpanded = false;
+  bool _isEditMode = false;
+  int? _itemDraggingIndex;
+  Offset _itemDragDelta = Offset.zero;
+  List<BunaiksenDockItemType>? _localItemsOrder;
+
   late AnimationController _expandAnimationController;
   late Animation<double> _expandAnimation;
-
-  // iPhone風 Wiggle（揺れる）アニメーション用
-  late AnimationController _wiggleController;
-  late Animation<double> _wiggleAnimation;
+  late AnimationController _jiggleController;
   bool _isInsideSheet = false;
 
   @override
@@ -77,16 +77,16 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
     );
     _expandAnimationController.addStatusListener((status) {
       if (status == AnimationStatus.dismissed && _isExpanded) {
-        setState(() => _isExpanded = false);
+        setState(() {
+          _isExpanded = false;
+          _isEditMode = false;
+        });
       }
     });
 
-    _wiggleController = AnimationController(
+    _jiggleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 140),
-    );
-    _wiggleAnimation = Tween<double>(begin: -0.04, end: 0.04).animate(
-      CurvedAnimation(parent: _wiggleController, curve: Curves.easeInOut),
     );
   }
 
@@ -98,34 +98,72 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
 
   @override
   void dispose() {
+    if (!_isInsideSheet) {
+      FloatingDockSheetManager.close(immediate: true);
+    }
     _expandAnimationController.dispose();
-    _wiggleController.dispose();
+    _jiggleController.dispose();
     super.dispose();
   }
 
   void _toggleExpand() {
     AppHaptics.selection();
     if (_isExpanded) {
-      _wiggleController.stop();
-      _expandAnimationController.reverse();
+      if (_isEditMode) {
+        _endEditMode();
+      } else {
+        _collapse();
+      }
     } else {
       setState(() => _isExpanded = true);
-      _expandAnimationController.forward();
+      _expandAnimationController.forward(from: 0.0);
     }
   }
 
   void _collapse() {
+    if (_isEditMode) _endEditMode();
     if (_isExpanded) {
-      _wiggleController.stop();
       _expandAnimationController.reverse().then((_) {
         if (mounted && _isExpanded) {
-          setState(() => _isExpanded = false);
+          setState(() {
+            _isExpanded = false;
+            _isEditMode = false;
+          });
         }
       });
     }
   }
 
+  void _startEditMode() {
+    if (_isEditMode) return;
+    AppHaptics.medium();
+    setState(() {
+      _isEditMode = true;
+      _localItemsOrder = List<BunaiksenDockItemType>.from(
+        ref.read(bunaiksenDockItemsOrderProvider),
+      );
+    });
+    _jiggleController.repeat();
+  }
+
+  void _endEditMode() {
+    if (!_isEditMode) return;
+    AppHaptics.light();
+    _jiggleController.stop();
+    setState(() {
+      _isEditMode = false;
+      _itemDraggingIndex = null;
+      _itemDragDelta = Offset.zero;
+    });
+    if (_localItemsOrder != null) {
+      ref
+          .read(bunaiksenDockItemsOrderProvider.notifier)
+          .updateOrder(_localItemsOrder!);
+    }
+  }
+
   void _onItemTap(BunaiksenDockItemType item) {
+    if (_isEditMode) return;
     _collapse();
     AppHaptics.light();
 
@@ -166,27 +204,69 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
     }
   }
 
-  void _onItemLongPress() {
-    AppHaptics.heavy();
-    _wiggleController.repeat(reverse: true);
-    // iPhone風の並び替えボトムシートを起動
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) {
-        _collapse();
-        BunaiksenDockItemsReorderBottomSheet.show(context);
+  void _onItemPanUpdate({
+    required int index,
+    required DragUpdateDetails details,
+    required bool isVertical,
+    required double dirX,
+    required double dirY,
+    required int itemCount,
+  }) {
+    if (_itemDraggingIndex == null) return;
+    setState(() {
+      _itemDragDelta += details.delta;
+      final curSlot = DockSlotLayoutCalculator.getBunaiksenSlotOffset(
+        index: _itemDraggingIndex!,
+        isVertical: isVertical,
+        dirX: dirX,
+        dirY: dirY,
+        step: _itemStep,
+      );
+      final currentPos = curSlot + _itemDragDelta;
+
+      final target = DockSlotLayoutCalculator.findSwapTarget(
+        currentPos: currentPos,
+        currentDraggingIndex: _itemDraggingIndex!,
+        itemCount: itemCount,
+        step: _itemStep,
+        slotOffsetGetter: (idx) =>
+            DockSlotLayoutCalculator.getBunaiksenSlotOffset(
+              index: idx,
+              isVertical: isVertical,
+              dirX: dirX,
+              dirY: dirY,
+              step: _itemStep,
+            ),
+      );
+
+      if (target != null) {
+        final list = List<BunaiksenDockItemType>.from(
+          _localItemsOrder ?? ref.read(bunaiksenDockItemsOrderProvider),
+        );
+        final moved = list.removeAt(_itemDraggingIndex!);
+        list.insert(target, moved);
+        _localItemsOrder = list;
+
+        final targetSlot = DockSlotLayoutCalculator.getBunaiksenSlotOffset(
+          index: target,
+          isVertical: isVertical,
+          dirX: dirX,
+          dirY: dirY,
+          step: _itemStep,
+        );
+        _itemDragDelta = currentPos - targetSlot;
+        _itemDraggingIndex = target;
+        AppHaptics.selection();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // 🛡️ ガバナンス第6条: 観戦専用ビュアー（Viewer）には100%非表示
     if (widget.isViewerMode) return const SizedBox.shrink();
     final role = ref.watch(currentUserRoleProvider);
-    if (role == UserRole.viewer) return const SizedBox.shrink();
-
-    // ボトムシートの内部にある場合は背景二重描画を防止
-    if (_isInsideSheet) return const SizedBox.shrink();
+    if (role == UserRole.viewer || _isInsideSheet)
+      return const SizedBox.shrink();
 
     final screenSize = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -194,85 +274,41 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    final orderedItems = ref.watch(bunaiksenDockItemsOrderProvider);
+    final globalOrder = ref.watch(bunaiksenDockItemsOrderProvider);
+    final activeOrder = _isEditMode && _localItemsOrder != null
+        ? _localItemsOrder!
+        : globalOrder;
 
-    final double buttonX;
-    if (_isDragging) {
-      final base = _isLeft
-          ? AppSpacing.sm
-          : (screenSize.width - _buttonSize - AppSpacing.sm);
-      buttonX = (base + _horizontalDragDistance).clamp(
-        AppSpacing.sm,
-        screenSize.width - _buttonSize - AppSpacing.sm,
-      );
-    } else if (_isDocked) {
-      buttonX = _isLeft
-          ? -(_buttonSize - _dockedVisibleWidth)
-          : screenSize.width - _dockedVisibleWidth;
-    } else {
-      buttonX = _isLeft
-          ? AppSpacing.sm
-          : screenSize.width - _buttonSize - AppSpacing.sm;
-    }
+    final double buttonX = _isLeft
+        ? (_isDocked ? -(_buttonSize - _dockedVisibleWidth) : AppSpacing.sm)
+        : (_isDocked
+              ? screenSize.width - _dockedVisibleWidth
+              : screenSize.width - _buttonSize - AppSpacing.sm);
 
     final double buttonY = (_yOffset * screenSize.height - _buttonSize / 2)
         .clamp(screenSize.height * 0.15, screenSize.height * 0.85);
 
     final isNearBottom = _yOffset > 0.65;
     final isVerticalMode = !isNearBottom;
+    final double dirX = _isLeft ? 1.0 : -1.0;
+    final double dirY = _yOffset < 0.5 ? 1.0 : -1.0;
 
-    // 折りたたみ時は AnimatedPositioned を返して他操作を一切邪魔しない
     if (!_isExpanded && _expandAnimationController.isDismissed) {
       return AnimatedPositioned(
-        duration: _isDragging
-            ? Duration.zero
-            : const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         left: buttonX,
         top: buttonY,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (_) {
-            setState(() {
-              _isDragging = true;
-              _horizontalDragDistance = 0.0;
-            });
-          },
-          onPanUpdate: (details) {
-            setState(() {
-              _yOffset = (_yOffset + details.delta.dy / screenSize.height)
-                  .clamp(0.18, 0.82);
-              _horizontalDragDistance += details.delta.dx;
-              if (_isLeft) {
-                if (details.delta.dx < -5) _isDocked = true;
-                if (details.delta.dx > 5) _isDocked = false;
-              } else {
-                if (details.delta.dx > 5) _isDocked = true;
-                if (details.delta.dx < -5) _isDocked = false;
-              }
-            });
-          },
-          onPanEnd: (details) {
-            final vx = details.velocity.pixelsPerSecond.dx;
-            setState(() {
-              _isDragging = false;
-              if (!_isDocked) {
-                if (!_isLeft &&
-                    (vx < -200 || _horizontalDragDistance < -40.0)) {
-                  _isLeft = true;
-                  AppHaptics.selection();
-                } else if (_isLeft &&
-                    (vx > 200 || _horizontalDragDistance > 40.0)) {
-                  _isLeft = false;
-                  AppHaptics.selection();
-                }
-              }
-              _horizontalDragDistance = 0.0;
-            });
-          },
+        child: DockParentGestureDetector(
+          isDark: isDark,
+          themeColors: themeColors,
+          buttonSize: _buttonSize,
+          closeButtonSize: _closeButtonSize,
+          isDocked: _isDocked,
+          isLeft: _isLeft,
+          yOffset: _yOffset,
           onTap: () {
             if (_isDocked) {
-              AppHaptics.light();
               setState(() => _isDocked = false);
             } else {
               _toggleExpand();
@@ -280,43 +316,28 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
           },
           onLongPress: () {
             if (!_isDocked) {
-              _onItemLongPress();
+              _toggleExpand();
+              _startEditMode();
             }
           },
-          child: DockParentButton(
-            isDark: isDark,
-            themeColors: themeColors,
-            unreadCount: 0,
-            isExpanded: false,
-            isDocked: _isDocked,
-            buttonSize: _buttonSize,
-            closeButtonSize: _closeButtonSize,
-            onTap: () {
-              if (_isDocked) {
-                AppHaptics.light();
-                setState(() => _isDocked = false);
-              } else {
-                _toggleExpand();
-              }
-            },
-            onLongPress: () {
-              if (!_isDocked) {
-                _onItemLongPress();
-              }
-            },
-          ),
+          onPositionChanged: (newY, isLeft, isDocked) {
+            setState(() {
+              _yOffset = newY;
+              _isLeft = isLeft;
+              _isDocked = isDocked;
+            });
+          },
         ),
       );
     }
 
-    // 展開時: 画面全体の透明バリアを展開し、任意箇所タップで吸い込み収納
     return Positioned.fill(
       child: Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: _collapse,
+              onTap: _isEditMode ? _endEditMode : _collapse,
               child: AnimatedBuilder(
                 animation: _expandAnimation,
                 builder: (context, _) => Container(
@@ -327,141 +348,77 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
               ),
             ),
           ),
-          ...orderedItems.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-
-            return _buildAnimatedDialItem(
-              context: context,
-              index: index,
-              totalItems: orderedItems.length,
-              item: item,
+          for (int i = 0; i < activeOrder.length; i++)
+            BunaiksenAnimatedDockItem(
+              index: i,
+              item: activeOrder[i],
               buttonX: buttonX,
               buttonY: buttonY,
-              isVerticalMode: isVerticalMode,
+              itemStep: _itemStep,
+              isVertical: isVerticalMode,
+              dirX: dirX,
+              dirY: dirY,
               themeColors: themeColors,
               isDark: isDark,
-            );
-          }),
-          Positioned(
-            left: buttonX,
-            top: buttonY,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _toggleExpand,
-              child: DockParentButton(
-                isDark: isDark,
-                themeColors: themeColors,
-                unreadCount: 0,
-                isExpanded: true,
-                isDocked: false,
-                buttonSize: _buttonSize,
-                closeButtonSize: _closeButtonSize,
-                onTap: _toggleExpand,
+              itemCount: activeOrder.length,
+              expandAnimation: _expandAnimation,
+              jiggleController: _jiggleController,
+              isEditMode: _isEditMode,
+              isDragging: _itemDraggingIndex == i,
+              dragDelta: _itemDraggingIndex == i ? _itemDragDelta : Offset.zero,
+              onTap: () => _onItemTap(activeOrder[i]),
+              onLongPress: _startEditMode,
+              onPanStart: () {
+                setState(() {
+                  _itemDraggingIndex = i;
+                  _itemDragDelta = Offset.zero;
+                });
+              },
+              onPanUpdate: (d) => _onItemPanUpdate(
+                index: i,
+                details: d,
+                isVertical: isVerticalMode,
+                dirX: dirX,
+                dirY: dirY,
+                itemCount: activeOrder.length,
               ),
+              onPanEnd: () {
+                setState(() {
+                  _itemDraggingIndex = null;
+                  _itemDragDelta = Offset.zero;
+                });
+                if (_localItemsOrder != null) {
+                  ref
+                      .read(bunaiksenDockItemsOrderProvider.notifier)
+                      .updateOrder(_localItemsOrder!);
+                }
+              },
+            ),
+          Positioned(
+            left: buttonX + ((_buttonSize - _closeButtonSize) / 2),
+            top: buttonY + ((_buttonSize - _closeButtonSize) / 2),
+            child: DockParentButton(
+              isDark: isDark,
+              themeColors: themeColors,
+              unreadCount: 0,
+              isExpanded: true,
+              isDocked: false,
+              isEditMode: _isEditMode,
+              buttonSize: _buttonSize,
+              closeButtonSize: _closeButtonSize,
+              onTap: () {
+                if (_isEditMode) {
+                  _endEditMode();
+                } else {
+                  _toggleExpand();
+                }
+              },
+              onLongPress: () {
+                if (!_isEditMode) _startEditMode();
+              },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAnimatedDialItem({
-    required BuildContext context,
-    required int index,
-    required int totalItems,
-    required BunaiksenDockItemType item,
-    required double buttonX,
-    required double buttonY,
-    required bool isVerticalMode,
-    required AppThemeColors themeColors,
-    required bool isDark,
-  }) {
-    const double subSize = 52.0;
-    const double step = 64.0;
-    final double centerDiff = (_buttonSize - subSize) / 2;
-    final double dirX = _isLeft ? 1.0 : -1.0;
-    final double dirY = _yOffset < 0.5 ? 1.0 : -1.0;
-
-    double targetDx = 0.0;
-    double targetDy = 0.0;
-
-    if (isVerticalMode) {
-      targetDy = dirY * step * (index + 1);
-      targetDx = 0.0;
-    } else {
-      switch (index) {
-        case 0:
-          targetDy = dirY * step * 1.0;
-          targetDx = 0.0;
-          break;
-        case 1:
-          targetDy = dirY * step * 2.0;
-          targetDx = 0.0;
-          break;
-        case 2:
-          targetDy = dirY * step * 3.0;
-          targetDx = 0.0;
-          break;
-        case 3:
-          targetDx = dirX * step * 1.0;
-          targetDy = 0.0;
-          break;
-        case 4:
-          targetDx = dirX * step * 2.0;
-          targetDy = 0.0;
-          break;
-        case 5:
-          targetDx = dirX * step * 3.0;
-          targetDy = 0.0;
-          break;
-        default:
-          targetDy = dirY * step * ((index % 3) + 1);
-          targetDx = dirX * step * ((index ~/ 3) + 1);
-          break;
-      }
-    }
-
-    final double targetX = buttonX + centerDiff + targetDx;
-    final double targetY = buttonY + centerDiff + targetDy;
-    final double originX = buttonX + centerDiff;
-    final double originY = buttonY + centerDiff;
-
-    return AnimatedBuilder(
-      animation: _expandAnimation,
-      builder: (context, child) {
-        final animProgress = _expandAnimation.value;
-        final currentX = originX + (targetX - originX) * animProgress;
-        final currentY = originY + (targetY - originY) * animProgress;
-
-        return Positioned(
-          left: currentX,
-          top: currentY,
-          child: Opacity(
-            opacity: animProgress.clamp(0.0, 1.0),
-            child: Transform.scale(
-              scale: 0.4 + (0.6 * animProgress.clamp(0.0, 1.0)),
-              child: child,
-            ),
-          ),
-        );
-      },
-      child: AnimatedBuilder(
-        animation: _wiggleAnimation,
-        builder: (context, child) {
-          final angle = _wiggleController.isAnimating
-              ? _wiggleAnimation.value * (index.isEven ? 1 : -1)
-              : 0.0;
-          return Transform.rotate(angle: angle, child: child);
-        },
-        child: BunaiksenSubItemButton(
-          icon: item.icon,
-          color: item.defaultColor,
-          themeColors: themeColors,
-          isDark: isDark,
-          onTap: () => _onItemTap(item),
-          onLongPress: _onItemLongPress,
-        ),
       ),
     );
   }

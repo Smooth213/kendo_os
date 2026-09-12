@@ -218,6 +218,12 @@ class DockItemsOrderNotifier extends StateNotifier<List<DockItemType>> {
     await _save(updated);
   }
 
+  /// 並び順を一括更新して保存
+  Future<void> updateOrder(List<DockItemType> newOrder) async {
+    state = List.from(newOrder);
+    await _save(newOrder);
+  }
+
   /// 初期並び順へリセット
   Future<void> resetToDefault() async {
     state = List.from(defaultOrder);

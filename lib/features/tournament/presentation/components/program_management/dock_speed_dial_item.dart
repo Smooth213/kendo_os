@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_jiggle_drag_wrapper.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_slot_layout_calculator.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -10,6 +12,7 @@ class DockSubItem {
   final Color color;
   final String label;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final int badgeCount;
 
   const DockSubItem({
@@ -17,6 +20,7 @@ class DockSubItem {
     required this.color,
     required this.label,
     required this.onTap,
+    this.onLongPress,
     this.badgeCount = 0,
   });
 }
@@ -30,7 +34,7 @@ enum DockLayoutMode {
   lShape,
 }
 
-/// 🥋 スピードダイヤルの子ボタン（配置＆アニメーションウィジェット）
+/// 🥋 スピードダイヤルの子ボタン（配置＆アニメーション＆ジグルドラッグウィジェット）
 class DockSpeedDialItemWidget extends StatelessWidget {
   final DockSubItem item;
   final int index;
@@ -45,6 +49,13 @@ class DockSpeedDialItemWidget extends StatelessWidget {
   final double subSize;
   final double step;
   final DockLayoutMode layoutMode;
+  final bool isEditMode;
+  final bool isDragging;
+  final Offset dragDelta;
+  final Animation<double>? jiggleAnimation;
+  final GestureDragStartCallback? onPanStart;
+  final GestureDragUpdateCallback? onPanUpdate;
+  final GestureDragEndCallback? onPanEnd;
 
   const DockSpeedDialItemWidget({
     super.key,
@@ -61,57 +72,32 @@ class DockSpeedDialItemWidget extends StatelessWidget {
     this.subSize = 58.0,
     this.step = 66.0,
     this.layoutMode = DockLayoutMode.vertical,
+    this.isEditMode = false,
+    this.isDragging = false,
+    this.dragDelta = Offset.zero,
+    this.jiggleAnimation,
+    this.onPanStart,
+    this.onPanUpdate,
+    this.onPanEnd,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 流動的配置のオフセット計算（縦一列 vs L字型）
-    double targetDx = 0.0;
-    double targetDy = 0.0;
-
-    if (layoutMode == DockLayoutMode.vertical) {
-      targetDx = 0.0;
-      targetDy = dirY * step * (index + 1);
-    } else {
-      switch (index) {
-        case 0: // 垂直 1個目
-          targetDy = dirY * step * 1.0;
-          break;
-        case 1: // 垂直 2個目
-          targetDy = dirY * step * 2.0;
-          break;
-        case 2: // 垂直 3個目
-          targetDy = dirY * step * 3.0;
-          break;
-        case 3: // 垂直 4個目
-          targetDy = dirY * step * 4.0;
-          break;
-        case 4: // 水平 1個目
-          targetDx = dirX * step * 1.0;
-          break;
-        case 5: // 水平 2個目
-          targetDx = dirX * step * 2.0;
-          break;
-        case 6: // 水平 3個目
-          targetDx = dirX * step * 3.0;
-          break;
-        case 7: // 水平 4個目
-          targetDx = dirX * step * 4.0;
-          break;
-        case 8: // 対角（内角サポート）
-          targetDy = dirY * step * 1.0;
-          targetDx = dirX * step * 1.0;
-          break;
-        default:
-          targetDy = dirY * step * ((index % 4) + 1);
-          targetDx = dirX * step * (index ~/ 4);
-          break;
-      }
-    }
+    final targetOffset = DockSlotLayoutCalculator.getTournamentSlotOffset(
+      index: index,
+      layoutMode: layoutMode,
+      dirX: dirX,
+      dirY: dirY,
+      step: step,
+    );
 
     final double centerDiff = (buttonSize - subSize) / 2;
-    final double currentItemX = originX + centerDiff + (targetDx * progress);
-    final double currentItemY = originY + centerDiff + (targetDy * progress);
+    final double baseItemX =
+        originX + centerDiff + (targetOffset.dx * progress);
+    final double baseItemY =
+        originY + centerDiff + (targetOffset.dy * progress);
+    final double currentItemX = baseItemX + (isDragging ? dragDelta.dx : 0.0);
+    final double currentItemY = baseItemY + (isDragging ? dragDelta.dy : 0.0);
 
     return Positioned(
       left: currentItemX,
@@ -120,7 +106,22 @@ class DockSpeedDialItemWidget extends StatelessWidget {
         opacity: progress.clamp(0.0, 1.0),
         child: Transform.scale(
           scale: 0.4 + (0.6 * progress.clamp(0.0, 1.0)),
-          child: _buildButton(),
+          child: DockJiggleDragWrapper(
+            index: index,
+            isEditMode: isEditMode,
+            isDragging: isDragging,
+            jiggleAnimation: jiggleAnimation,
+            onLongPress: () {
+              if (item.onLongPress != null) {
+                AppHaptics.medium();
+                item.onLongPress!();
+              }
+            },
+            onPanStart: onPanStart,
+            onPanUpdate: onPanUpdate,
+            onPanEnd: onPanEnd,
+            child: _buildButton(),
+          ),
         ),
       ),
     );
@@ -129,8 +130,10 @@ class DockSpeedDialItemWidget extends StatelessWidget {
   Widget _buildButton() {
     return GestureDetector(
       onTap: () {
-        AppHaptics.light();
-        item.onTap();
+        if (!isEditMode) {
+          AppHaptics.light();
+          item.onTap();
+        }
       },
       child: Stack(
         clipBehavior: Clip.none,
@@ -144,8 +147,8 @@ class DockSpeedDialItemWidget extends StatelessWidget {
                   ? const Color(0xFF1E293B)
                   : AppKendoColors.pureWhite,
               border: Border.all(
-                color: item.color.withValues(alpha: 0.45),
-                width: 1.4,
+                color: item.color.withValues(alpha: isDark ? 0.65 : 0.45),
+                width: isDark ? 1.6 : 1.4,
               ),
               boxShadow: [
                 BoxShadow(
@@ -157,7 +160,7 @@ class DockSpeedDialItemWidget extends StatelessWidget {
             ),
             child: Icon(item.icon, color: item.color, size: 26),
           ),
-          if (item.badgeCount > 0)
+          if (item.badgeCount > 0 && !isEditMode)
             Positioned(
               top: -2,
               right: -2,

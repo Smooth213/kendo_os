@@ -1,6 +1,5 @@
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -32,6 +31,8 @@ import 'components/match_screen/match_score_action_section.dart';
 import 'components/match_screen/match_content_layout_builder.dart';
 import 'components/match_screen/match_header_widgets.dart';
 import 'components/match_screen/match_dialog_helper.dart';
+import 'components/match_screen/match_loading_view.dart';
+import 'components/match_screen/match_floating_dock_entry.dart';
 
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
@@ -42,9 +43,6 @@ import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
-import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
     show registeredTeamsProvider;
@@ -145,24 +143,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final match = matches.where((m) => m.id == widget.matchId).firstOrNull;
 
     if (match == null) {
-      return Scaffold(
-        appBar: const AppHeader(title: '試合読み込み中...'),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: AppSpacing.md),
-              const Text('試合データを取得しています...'),
-              const SizedBox(height: AppSpacing.md),
-              ElevatedButton(
-                onPressed: () => context.pop(),
-                child: const Text('戻る'),
-              ),
-            ],
-          ),
-        ),
-      );
+      return const MatchLoadingView();
     }
 
     final MatchRule rule =
@@ -431,27 +412,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                           );
                         },
                       ),
-                    if (DockSheetScope.of(context) == null &&
-                        ((match.tournamentId?.isNotEmpty ?? false) ||
-                            (tournamentId != null && tournamentId.isNotEmpty)))
-                      (match.tournamentId?.isNotEmpty == true
-                                  ? match.tournamentId!
-                                  : tournamentId!)
-                              .startsWith('bunaiksen_')
-                          ? BunaiksenDockButton(
-                              tournamentId:
-                                  match.tournamentId?.isNotEmpty == true
-                                  ? match.tournamentId!
-                                  : tournamentId!,
-                              isViewerMode: isViewOnly,
-                            )
-                          : FloatingProgramDockButton(
-                              tournamentId:
-                                  match.tournamentId?.isNotEmpty == true
-                                  ? match.tournamentId!
-                                  : tournamentId!,
-                              isViewerMode: isViewOnly,
-                            ),
+                    MatchFloatingDockEntry(
+                      tournamentId: match.tournamentId?.isNotEmpty == true
+                          ? match.tournamentId!
+                          : tournamentId,
+                      isViewOnly: isViewOnly,
+                    ),
                   ],
                 ),
               );

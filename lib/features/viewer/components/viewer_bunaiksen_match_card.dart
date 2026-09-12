@@ -35,10 +35,15 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
         ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000));
 
+    // 完全無得点の場合（待機中は「ー」、試合終了時は引き分け「✕」）
     if (match.redScore == 0 && match.whiteScore == 0) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        child: Icon(Icons.close, size: 18, color: iconColor),
+        child: Icon(
+          isFinished ? Icons.close : Icons.remove,
+          size: 18,
+          color: iconColor,
+        ),
       );
     }
 
@@ -74,7 +79,7 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
         })
         .join('');
 
-    final bool isDraw = match.redScore == match.whiteScore;
+    final bool isDraw = isFinished && (match.redScore == match.whiteScore);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

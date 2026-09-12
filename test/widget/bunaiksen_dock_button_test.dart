@@ -110,13 +110,13 @@ void main() {
       expect(find.text('カレンダー'), findsNothing);
       expect(find.text('クイックメモ'), findsNothing);
 
-      // 全6アイテムのアイコンが表示されること
+      // 全6アイテムのアイコンが表示されること（大会ホームと同一シンボルに統一）
       expect(find.byIcon(Icons.format_list_bulleted_rounded), findsOneWidget);
       expect(find.byIcon(Icons.leaderboard_rounded), findsOneWidget);
       expect(find.byIcon(Icons.calendar_month_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.edit_note_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.timer_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.brush_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.timer_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.settings_rounded), findsOneWidget);
     });
 
     test(
