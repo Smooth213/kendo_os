@@ -1,51 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 
-/// アプリ全体で統一されたデザインと動作を提供する Modal Bottom Sheet 呼び出し関数
+/// アプリ全体で統一されたデザインと角丸・パディングを提供する ModalBottomSheet 呼び出し関数
 Future<T?> showAppBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool isScrollControlled = true,
   bool enableDrag = true,
   bool isDismissible = true,
-  double topRadius = AppRadius.roundValue,
+  double topRadius = AppRadius.largeValue,
   BoxConstraints? constraints,
   Color? backgroundColor,
+  bool? useRootNavigator,
 }) async {
   AppHaptics.selection();
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final isInsideDock = DockSheetScope.of(context) != null;
+  final effectiveUseRootNav = useRootNavigator ?? !isInsideDock;
+
+  final targetContext = context.mounted
+      ? context
+      : (rootNavigatorKey.currentContext?.mounted == true
+            ? rootNavigatorKey.currentContext!
+            : context);
+  final isDark = Theme.of(targetContext).brightness == Brightness.dark;
   final themeColors =
-      Theme.of(context).extension<AppThemeColors>() ??
+      Theme.of(targetContext).extension<AppThemeColors>() ??
       AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-  final isDockOpen = FloatingDockSheetManager.isOpen;
-  if (isDockOpen) {
-    FloatingDockSheetManager.hideTemporarily();
-  }
-
-  try {
-    return await showModalBottomSheet<T>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: isScrollControlled,
-      enableDrag: enableDrag,
-      isDismissible: isDismissible,
-      backgroundColor: backgroundColor ?? themeColors.cardBackground,
-      constraints:
-          constraints ?? const BoxConstraints(maxWidth: double.infinity),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
-      ),
-      builder: builder,
-    );
-  } finally {
-    if (isDockOpen) {
-      FloatingDockSheetManager.restoreVisibility();
-    }
-  }
+  return await showModalBottomSheet<T>(
+    context: targetContext,
+    useRootNavigator: effectiveUseRootNav,
+    isScrollControlled: isScrollControlled,
+    enableDrag: enableDrag,
+    isDismissible: isDismissible,
+    backgroundColor: backgroundColor ?? themeColors.cardBackground,
+    constraints: constraints ?? const BoxConstraints(maxWidth: double.infinity),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
+    ),
+    builder: builder,
+  );
 }
 
 /// アプリ共通のボトムシートコンテンツ枠（ドラッグハンドル・ヘッダー・レスポンシブパディング内包）

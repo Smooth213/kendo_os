@@ -1,20 +1,18 @@
-import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
 /// 🌟 既読にしたアナウンスIDのローカル＆クラウド状態を管理・永続化するプロバイダー
@@ -30,10 +28,19 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
 
   ReadAnnouncementsNotifier(this._prefs)
     : super(_prefs.getStringList(_key) ?? []) {
-    _syncFromCloud();
+    syncFromCloud();
   }
 
+  @visibleForTesting
+  static FirebaseFirestore? testFirestore;
+  @visibleForTesting
+  static String? testOverrideUid;
+
+  FirebaseFirestore get _firestore =>
+      testFirestore ?? FirebaseFirestore.instance;
+
   String? get _linkedUid {
+    if (testOverrideUid != null) return testOverrideUid;
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
@@ -46,12 +53,12 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
     }
   }
 
-  Future<void> _syncFromCloud() async {
+  Future<void> syncFromCloud() async {
     final uid = _linkedUid;
     if (uid == null) return;
 
     try {
-      final doc = await FirebaseFirestore.instance
+      final doc = await _firestore
           .collection('users')
           .doc(uid)
           .collection('settings')
@@ -102,7 +109,7 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
     final uid = _linkedUid;
     if (uid == null || newIds.isEmpty) return;
 
-    FirebaseFirestore.instance
+    _firestore
         .collection('users')
         .doc(uid)
         .collection('settings')

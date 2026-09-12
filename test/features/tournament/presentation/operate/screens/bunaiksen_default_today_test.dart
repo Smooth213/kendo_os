@@ -52,8 +52,10 @@ void main() {
       expect(viewDate.month, equals(today.month));
       expect(viewDate.day, equals(today.day));
 
-      // 4. Verify that the app bar title is displayed as "今日の部内戦"
-      expect(find.text('今日の部内戦'), findsOneWidget);
+      // 4. Verify that the app bar title is displayed with today's date
+      final expectedTitle = '$yyyy/$mm/$dd 部内戦';
+      expect(find.text(expectedTitle), findsOneWidget);
+      expect(find.text('本日の試合はまだありません'), findsOneWidget);
     },
   );
 }

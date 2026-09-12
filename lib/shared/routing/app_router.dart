@@ -40,6 +40,7 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/routing/match_router.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -423,6 +424,8 @@ final appRouter = GoRouter(
 );
 
 final routeObserverProvider = Provider<void>((ref) {
+  String? lastLocation;
+
   void listener() {
     final location = appRouter.routeInformationProvider.value.uri.path;
     final targetMode = location.contains('master')
@@ -433,6 +436,15 @@ final routeObserverProvider = Provider<void>((ref) {
         ref.read(operationModeProvider.notifier).state = targetMode;
       });
     }
+
+    // 🥋 部内戦・大会ドックシートの画面外残留を完全防止：
+    // ルートが変わった際、もしドックシートが開いていれば即座に閉じる
+    if (lastLocation != null && lastLocation != location) {
+      if (FloatingDockSheetManager.isOpen) {
+        FloatingDockSheetManager.close(immediate: true);
+      }
+    }
+    lastLocation = location;
   }
 
   listener();

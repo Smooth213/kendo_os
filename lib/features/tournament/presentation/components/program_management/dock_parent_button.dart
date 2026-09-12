@@ -90,7 +90,7 @@ class DockParentButton extends StatelessWidget {
                   turns: isExpanded ? 0.25 : 0.0,
                   duration: const Duration(milliseconds: 220),
                   child: Icon(
-                    isExpanded ? Icons.close_rounded : Icons.menu_book_rounded,
+                    isExpanded ? Icons.close_rounded : Icons.widgets_rounded,
                     color: isExpanded
                         ? AppKendoColors.pureWhite
                         : (isDark

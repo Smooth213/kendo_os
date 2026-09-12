@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_individual_matches_list.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_kachinuki_record_card.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_league_grid_table.dart';
@@ -17,13 +18,28 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
-class BunaiksenOfficialRecordScreen extends ConsumerWidget {
+class BunaiksenOfficialRecordScreen extends ConsumerStatefulWidget {
   const BunaiksenOfficialRecordScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BunaiksenOfficialRecordScreen> createState() =>
+      _BunaiksenOfficialRecordScreenState();
+}
+
+class _BunaiksenOfficialRecordScreenState
+    extends ConsumerState<BunaiksenOfficialRecordScreen> {
+  @override
+  void dispose() {
+    FloatingDockSheetManager.close(immediate: true);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExporting = ref.watch(isExportingProvider);
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
@@ -45,22 +61,32 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
     );
 
     if (categoryGroups.isEmpty) {
-      return LiquidBackground(
-        child: Scaffold(
-          backgroundColor: AppKendoColors.transparent,
-          appBar: AppHeader(
-            backgroundColor: enableLiquidGlass
-                ? AppKendoColors.transparent
-                : cardColor,
-            foregroundColor: headerTextColor,
-            title: '成績一覧',
-            elevation: 0,
-            centerTitle: true,
-          ),
-          body: const Center(
-            child: Text(
-              'この日の記録データはありません',
-              style: TextStyle(color: AppKendoColors.grey),
+      return PopScope(
+        onPopInvokedWithResult: (didPop, _) {
+          FloatingDockSheetManager.close(immediate: true);
+        },
+        child: LiquidBackground(
+          child: Scaffold(
+            backgroundColor: AppKendoColors.transparent,
+            appBar: AppHeader(
+              backgroundColor: enableLiquidGlass
+                  ? AppKendoColors.transparent
+                  : cardColor,
+              foregroundColor: headerTextColor,
+              title: '成績一覧',
+              elevation: 0,
+              centerTitle: true,
+            ),
+            body: Stack(
+              children: [
+                const Center(
+                  child: Text(
+                    'この日の記録データはありません',
+                    style: TextStyle(color: AppKendoColors.grey),
+                  ),
+                ),
+                BunaiksenDockButton(tournamentId: tournamentId),
+              ],
             ),
           ),
         ),
@@ -69,160 +95,176 @@ class BunaiksenOfficialRecordScreen extends ConsumerWidget {
 
     final categories = categoryGroups.keys.toList();
 
-    return DefaultTabController(
-      length: categories.length,
-      child: LiquidBackground(
-        child: Scaffold(
-          backgroundColor: AppKendoColors.transparent,
-          appBar: AppHeader(
-            backgroundColor: enableLiquidGlass
-                ? AppKendoColors.transparent
-                : cardColor,
-            foregroundColor: headerTextColor,
-            title: '${DateFormat('yyyy/MM/dd').format(viewDate)} 成績',
-            elevation: 0,
-            centerTitle: true,
-            bottom: TabBar(
-              isScrollable: true,
-              labelColor: headerTextColor,
-              unselectedLabelColor: AppKendoColors.grey,
-              indicatorColor: themeColors.primaryAccent,
-              tabs: categories.map((cat) => Tab(text: cat)).toList(),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        FloatingDockSheetManager.close(immediate: true);
+      },
+      child: DefaultTabController(
+        length: categories.length,
+        child: LiquidBackground(
+          child: Scaffold(
+            backgroundColor: AppKendoColors.transparent,
+            appBar: AppHeader(
+              backgroundColor: enableLiquidGlass
+                  ? AppKendoColors.transparent
+                  : cardColor,
+              foregroundColor: headerTextColor,
+              title: '${DateFormat('yyyy/MM/dd').format(viewDate)} 成績',
+              elevation: 0,
+              centerTitle: true,
+              bottom: TabBar(
+                isScrollable: true,
+                labelColor: headerTextColor,
+                unselectedLabelColor: AppKendoColors.grey,
+                indicatorColor: themeColors.primaryAccent,
+                tabs: categories.map((cat) => Tab(text: cat)).toList(),
+              ),
             ),
-          ),
-          body: TabBarView(
-            children: categories.map((cat) {
-              final groupsMap = categoryGroups[cat]!;
+            body: Stack(
+              children: [
+                TabBarView(
+                  children: categories.map((cat) {
+                    final groupsMap = categoryGroups[cat]!;
 
-              // 個人戦グループを統合するためのマップ
-              final mergedGroups = <String, List<MatchModel>>{};
-              final List<MatchModel> individualMergedList = [];
-              final uuidRegex = RegExp(
-                r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-              );
+                    // 個人戦グループを統合するためのマップ
+                    final mergedGroups = <String, List<MatchModel>>{};
+                    final List<MatchModel> individualMergedList = [];
+                    final uuidRegex = RegExp(
+                      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+                    );
 
-              groupsMap.forEach((key, matches) {
-                final isIndiv = matches.any(
-                  (m) =>
-                      m.matchType == 'individual' ||
-                      m.matchType == '選手' ||
-                      m.matchType.contains('個人戦'),
-                );
-                final isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
+                    groupsMap.forEach((key, matches) {
+                      final isIndiv = matches.any(
+                        (m) =>
+                            m.matchType == 'individual' ||
+                            m.matchType == '選手' ||
+                            m.matchType.contains('個人戦'),
+                      );
+                      final isLeague = matches.any(
+                        (m) => m.note.contains('[リーグ戦]'),
+                      );
 
-                // 通常の個人戦（リーグ戦以外）かつ、ID形式のグループ名を統合対象とする
-                if (isIndiv &&
-                    !isLeague &&
-                    (uuidRegex.hasMatch(key) || key.length > 20)) {
-                  individualMergedList.addAll(matches);
-                } else {
-                  mergedGroups[key] = matches;
-                }
-              });
+                      // 通常の個人戦（リーグ戦以外）かつ、ID形式のグループ名を統合対象とする
+                      if (isIndiv &&
+                          !isLeague &&
+                          (uuidRegex.hasMatch(key) || key.length > 20)) {
+                        individualMergedList.addAll(matches);
+                      } else {
+                        mergedGroups[key] = matches;
+                      }
+                    });
 
-              // 統合された個人戦がある場合、特殊なキーで登録
-              if (individualMergedList.isNotEmpty) {
-                individualMergedList.sort((a, b) => a.order.compareTo(b.order));
-                mergedGroups['__merged_individual__'] = individualMergedList;
-              }
+                    // 統合された個人戦がある場合、特殊なキーで登録
+                    if (individualMergedList.isNotEmpty) {
+                      individualMergedList.sort(
+                        (a, b) => a.order.compareTo(b.order),
+                      );
+                      mergedGroups['__merged_individual__'] =
+                          individualMergedList;
+                    }
 
-              final sortedGroupKeys = mergedGroups.keys.toList()..sort();
+                    final sortedGroupKeys = mergedGroups.keys.toList()..sort();
 
-              return Column(
-                children: [
-                  // 共有・印刷アクションバー
-                  BunaiksenRecordActionBar(
-                    cardColor: cardColor,
-                    isDark: isDark,
-                    isExporting: isExporting,
-                    onPrintPdf: () => BunaiksenRecordExportHelper.handleExport(
-                      context: context,
-                      ref: ref,
-                      isExportingController: ref.read(
-                        isExportingProvider.notifier,
-                      ),
-                      cat: cat,
-                      groupsMap: mergedGroups,
-                      sortedGroupKeys: sortedGroupKeys,
-                      isPdf: true,
-                      tName: tName,
-                      tDate: tDate,
-                    ),
-                    onShareImage: () =>
-                        BunaiksenRecordExportHelper.handleExport(
-                          context: context,
-                          ref: ref,
-                          isExportingController: ref.read(
-                            isExportingProvider.notifier,
-                          ),
-                          cat: cat,
-                          groupsMap: mergedGroups,
-                          sortedGroupKeys: sortedGroupKeys,
-                          isPdf: false,
-                          tName: tName,
-                          tDate: tDate,
+                    return Column(
+                      children: [
+                        // 共有・印刷アクションバー
+                        BunaiksenRecordActionBar(
+                          cardColor: cardColor,
+                          isDark: isDark,
+                          isExporting: isExporting,
+                          onPrintPdf: () =>
+                              BunaiksenRecordExportHelper.handleExport(
+                                context: context,
+                                ref: ref,
+                                isExportingController: ref.read(
+                                  isExportingProvider.notifier,
+                                ),
+                                cat: cat,
+                                groupsMap: mergedGroups,
+                                sortedGroupKeys: sortedGroupKeys,
+                                isPdf: true,
+                                tName: tName,
+                                tDate: tDate,
+                              ),
+                          onShareImage: () =>
+                              BunaiksenRecordExportHelper.handleExport(
+                                context: context,
+                                ref: ref,
+                                isExportingController: ref.read(
+                                  isExportingProvider.notifier,
+                                ),
+                                cat: cat,
+                                groupsMap: mergedGroups,
+                                sortedGroupKeys: sortedGroupKeys,
+                                isPdf: false,
+                                tName: tName,
+                                tDate: tDate,
+                              ),
                         ),
-                  ),
-                  // 記録コンテンツ
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      itemCount: sortedGroupKeys.length,
-                      itemBuilder: (context, index) {
-                        final groupName = sortedGroupKeys[index];
-                        final bouts = mergedGroups[groupName]!
-                          ..sort((a, b) => a.order.compareTo(b.order));
+                        // 記録コンテンツ
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            itemCount: sortedGroupKeys.length,
+                            itemBuilder: (context, index) {
+                              final groupName = sortedGroupKeys[index];
+                              final bouts = mergedGroups[groupName]!
+                                ..sort((a, b) => a.order.compareTo(b.order));
 
-                        // 1. 勝ち抜き戦の描画
-                        if (bouts.isNotEmpty && bouts.first.isKachinuki) {
-                          return BunaiksenKachinukiRecordCard(
-                            matches: bouts,
-                            isDark: isDark,
-                            ref: ref,
-                          );
-                        }
+                              // 1. 勝ち抜き戦の描画
+                              if (bouts.isNotEmpty && bouts.first.isKachinuki) {
+                                return BunaiksenKachinukiRecordCard(
+                                  matches: bouts,
+                                  isDark: isDark,
+                                  ref: ref,
+                                );
+                              }
 
-                        // 2. リーグ戦の描画
-                        if (bouts.isNotEmpty &&
-                            bouts.any((m) => m.note.contains('[リーグ戦]'))) {
-                          return _buildLeagueSection(
-                            context,
-                            ref,
-                            groupName,
-                            bouts,
-                            cardColor,
-                            isDark,
-                          );
-                        }
+                              // 2. リーグ戦の描画
+                              if (bouts.isNotEmpty &&
+                                  bouts.any((m) => m.note.contains('[リーグ戦]'))) {
+                                return _buildLeagueSection(
+                                  context,
+                                  ref,
+                                  groupName,
+                                  bouts,
+                                  cardColor,
+                                  isDark,
+                                );
+                              }
 
-                        // 3. 通常の団体戦・個人戦の描画
-                        if (bouts.isNotEmpty &&
-                            bouts.any(
-                              (m) =>
-                                  m.matchType == 'individual' ||
-                                  m.matchType == '選手' ||
-                                  m.matchType.contains('個人戦'),
-                            )) {
-                          return BunaiksenIndividualMatchesList(
-                            groupName: groupName,
-                            matches: bouts,
-                            cardColor: cardColor,
-                            isDark: isDark,
-                          );
-                        } else {
-                          return BunaiksenTeamScoreTable(
-                            groupName: groupName,
-                            matches: bouts,
-                            cardColor: cardColor,
-                            isDark: isDark,
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
+                              // 3. 通常の団体戦・個人戦の描画
+                              if (bouts.isNotEmpty &&
+                                  bouts.any(
+                                    (m) =>
+                                        m.matchType == 'individual' ||
+                                        m.matchType == '選手' ||
+                                        m.matchType.contains('個人戦'),
+                                  )) {
+                                return BunaiksenIndividualMatchesList(
+                                  groupName: groupName,
+                                  matches: bouts,
+                                  cardColor: cardColor,
+                                  isDark: isDark,
+                                );
+                              } else {
+                                return BunaiksenTeamScoreTable(
+                                  groupName: groupName,
+                                  matches: bouts,
+                                  cardColor: cardColor,
+                                  isDark: isDark,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+                BunaiksenDockButton(tournamentId: tournamentId),
+              ],
+            ),
           ),
         ),
       ),

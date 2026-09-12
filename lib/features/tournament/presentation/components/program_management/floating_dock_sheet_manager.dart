@@ -131,6 +131,7 @@ class FloatingDockSheetManager {
     _currentEntry = null;
     _currentHostState = null;
     _onClosedCallback = null;
+    _temporaryHideCount = 0;
 
     if (entry == null) return;
 
@@ -148,19 +149,28 @@ class FloatingDockSheetManager {
     callback?.call();
   }
 
-  static int _hideCount = 0;
+  static int _temporaryHideCount = 0;
 
-  /// 子モーダル（BottomSheet, Dialog）表示中にドックシートを一時非表示にして前面を譲る
+  /// 子モーダル（ダイアログやサブボトムシート）表示中にドックシートを安全に一時退避
+  /// ※ タップジェスチャー処理中の同期的な消失（Offstage破壊）を防ぐため、次フレームでIgnorePointerと透明化を適用します。
   static void hideTemporarily() {
-    _hideCount++;
-    _currentHostState?.setVisible(false);
+    _temporaryHideCount++;
+    if (_temporaryHideCount == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_temporaryHideCount > 0) {
+          _currentHostState?.setTemporarilyHidden(true);
+        }
+      });
+    }
   }
 
-  /// 子モーダル終了時にドックシートの表示を復元する
+  /// 子モーダル終了時にドックシートの表示と操作を即座に復帰
   static void restoreVisibility() {
-    _hideCount = (_hideCount - 1).clamp(0, 999);
-    if (_hideCount == 0) {
-      _currentHostState?.setVisible(true);
+    if (_temporaryHideCount > 0) {
+      _temporaryHideCount--;
+      if (_temporaryHideCount == 0) {
+        _currentHostState?.setTemporarilyHidden(false);
+      }
     }
   }
 }
@@ -185,15 +195,7 @@ class _FloatingDockSheetHostState extends State<_FloatingDockSheetHost>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
-  bool _visible = true;
-
-  void setVisible(bool visible) {
-    if (_visible != visible && mounted) {
-      setState(() {
-        _visible = visible;
-      });
-    }
-  }
+  bool _isTemporarilyHidden = false;
 
   @override
   void initState() {
@@ -223,6 +225,15 @@ class _FloatingDockSheetHostState extends State<_FloatingDockSheetHost>
     super.dispose();
   }
 
+  /// 子モーダル表示時の透過＆タッチ透過切り替え
+  void setTemporarilyHidden(bool hidden) {
+    if (mounted && _isTemporarilyHidden != hidden) {
+      setState(() {
+        _isTemporarilyHidden = hidden;
+      });
+    }
+  }
+
   /// 下へのスライドアウト退場アニメーション
   Future<void> slideOut() async {
     if (!mounted) return;
@@ -238,18 +249,23 @@ class _FloatingDockSheetHostState extends State<_FloatingDockSheetHost>
     // 💡 重要: Stack全体に背景バリア（ModalBarrier）を一切敷かない。
     // シートから外れた領域はウィジェットが存在しないため、ヒットテストが
     // 100% 自然に背後の本ページ（スコア入力、対戦表、タイムライン）へ届く。
-    return Offstage(
-      offstage: !_visible,
-      child: Stack(
-        children: [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: widget.child,
+    // また、子モーダル（ダイアログ等）表示中は IgnorePointer & 透明化により背後モーダルへ 100% タップが届く。
+    return IgnorePointer(
+      ignoring: _isTemporarilyHidden,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 120),
+        opacity: _isTemporarilyHidden ? 0.0 : 1.0,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: widget.child,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/team_scoreboard_screen.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'team_status_card_sections.dart';
@@ -83,9 +83,8 @@ class TeamStatusCard extends StatelessWidget {
                         targetMatch.groupName!.isNotEmpty &&
                         !targetMatch.matchType.contains('個人')));
 
-            // ④ 終了した団体戦の場合は団体戦スコアボードへ遷移
-            if (isFinished &&
-                isDantai &&
+            // ① 団体戦（進行中・待機中・終了すべて）の場合は団体戦スコアボードへ遷移
+            if (isDantai &&
                 status.targetGroupId != null &&
                 status.targetGroupId!.isNotEmpty) {
               if (isInsideBottomSheet) {
@@ -101,9 +100,6 @@ class TeamStatusCard extends StatelessWidget {
                 return;
               }
 
-              if (isInsideBottomSheet && FloatingDockSheetManager.isOpen) {
-                FloatingDockSheetManager.close(immediate: true);
-              }
               final tourneyQuery =
                   status.tournamentId != null && status.tournamentId!.isNotEmpty
                   ? '?tournamentId=${status.tournamentId}'
@@ -114,10 +110,19 @@ class TeamStatusCard extends StatelessWidget {
               return;
             }
 
-            // 個人戦・リーグ個人戦・勝ち抜き戦および進行中/待機中の試合画面へ遷移
+            // ② 個人戦・リーグ個人戦・勝ち抜き戦および単独試合画面へ遷移
             if (targetMatch != null) {
-              if (isInsideBottomSheet && FloatingDockSheetManager.isOpen) {
-                FloatingDockSheetManager.close(immediate: true);
+              if (isInsideBottomSheet) {
+                sheetScope.expand();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => MatchScreen(
+                      matchId: targetMatch.id,
+                      tournamentId: status.tournamentId,
+                    ),
+                  ),
+                );
+                return;
               }
               context.push('/match/${targetMatch.id}');
             }

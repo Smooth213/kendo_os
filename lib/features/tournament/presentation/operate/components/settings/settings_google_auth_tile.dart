@@ -230,10 +230,26 @@ class _SettingsGoogleAuthTileState
         ),
         trailing: TextButton(
           onPressed: () => _showUnlinkConfirmation(context),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(60, 40),
+            tapTargetSize: MaterialTapTargetSize.padded,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: AppRadius.medium,
+              side: BorderSide(
+                color: themeColors.separatorColor.withValues(alpha: 0.8),
+                width: 1.0,
+              ),
+            ),
+          ),
           child: Text(
             '解除',
             style: TextStyle(
               fontSize: AppFontSize.caption,
+              fontWeight: AppFontWeight.semiBold,
               color: themeColors.subTextColor,
             ),
           ),

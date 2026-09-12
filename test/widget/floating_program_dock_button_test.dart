@@ -76,7 +76,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(FloatingProgramDockButton), findsOneWidget);
-      expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
     });
 
     testWidgets('タップすると流動的スピードダイヤルが展開され、子アイコン群と✕ボタンが表示されること', (tester) async {

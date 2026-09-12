@@ -18,8 +18,10 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 
@@ -60,7 +62,11 @@ class SettingsScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    final listContent = ListView(
+    Widget buildListContent(
+      BuildContext sheetContext, [
+      ScrollController? scrollController,
+    ]) => ListView(
+      controller: isBottomSheet ? scrollController : null,
       padding: EdgeInsets.symmetric(
         horizontal: isBottomSheet ? AppSpacing.sm : AppSpacing.lg,
         vertical: isBottomSheet ? AppSpacing.md : AppSpacing.xl,
@@ -110,6 +116,10 @@ class SettingsScreen extends ConsumerWidget {
               iconBgColor: AppKendoColors.teal,
               subtitle: '猛暑体育館での熱暴走・バッテリー枯渇を自動防止',
               trailing: const ThermalStatusBadge(isSwitchSize: true),
+              onTap: () {
+                final governor = ref.read(thermalPowerGovernorProvider);
+                ThermalStatusBadge.showThermalInfoSheet(sheetContext, governor);
+              },
             ),
           ],
         ),
@@ -294,7 +304,7 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.logout,
               iconBgColor: AppKendoColors.redAccent,
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showLogoutConfirmation(context),
+              onTap: () => _showLogoutConfirmation(sheetContext),
             ),
           ],
         ),
@@ -312,7 +322,10 @@ class SettingsScreen extends ConsumerWidget {
       ],
     );
 
-    final bodyContent = Column(
+    Widget buildBodyContent(
+      BuildContext sheetContext, [
+      ScrollController? scrollController,
+    ]) => Column(
       children: [
         if (isBottomSheet)
           DockBottomSheetHeader(
@@ -321,7 +334,7 @@ class SettingsScreen extends ConsumerWidget {
             iconColor: themeColors.subTextColor,
             onFullScreen: onFullScreen,
           ),
-        Expanded(child: listContent),
+        Expanded(child: buildListContent(sheetContext, scrollController)),
         // ==========================================
         // 6. テスト用インタラクティブエリア（全画面時のみ画面下部固定）
         // ==========================================
@@ -335,11 +348,33 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     if (isBottomSheet) {
+      final navKey = GlobalKey<NavigatorState>();
       return DockDraggableSheet(
         backgroundColor: isDark
             ? const Color(0xFF1E1E20)
             : themeColors.cardBackground,
-        builder: (context, scrollController) => bodyContent,
+        builder: (context, scrollController) {
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) return;
+              if (navKey.currentState?.canPop() ?? false) {
+                navKey.currentState!.pop();
+              } else {
+                FloatingDockSheetManager.close();
+              }
+            },
+            child: Navigator(
+              key: navKey,
+              onGenerateRoute: (settings) {
+                return MaterialPageRoute(
+                  builder: (innerNavContext) =>
+                      buildBodyContent(innerNavContext, scrollController),
+                );
+              },
+            ),
+          );
+        },
       );
     }
 
@@ -356,7 +391,7 @@ class SettingsScreen extends ConsumerWidget {
             SizedBox(width: AppSpacing.sm),
           ],
         ),
-        body: bodyContent,
+        body: buildBodyContent(context),
       ),
     );
   }

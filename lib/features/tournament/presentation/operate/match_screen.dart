@@ -43,6 +43,7 @@ import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
@@ -433,12 +434,24 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     if (DockSheetScope.of(context) == null &&
                         ((match.tournamentId?.isNotEmpty ?? false) ||
                             (tournamentId != null && tournamentId.isNotEmpty)))
-                      FloatingProgramDockButton(
-                        tournamentId: match.tournamentId?.isNotEmpty == true
-                            ? match.tournamentId!
-                            : tournamentId!,
-                        isViewerMode: isViewOnly,
-                      ),
+                      (match.tournamentId?.isNotEmpty == true
+                                  ? match.tournamentId!
+                                  : tournamentId!)
+                              .startsWith('bunaiksen_')
+                          ? BunaiksenDockButton(
+                              tournamentId:
+                                  match.tournamentId?.isNotEmpty == true
+                                  ? match.tournamentId!
+                                  : tournamentId!,
+                              isViewerMode: isViewOnly,
+                            )
+                          : FloatingProgramDockButton(
+                              tournamentId:
+                                  match.tournamentId?.isNotEmpty == true
+                                  ? match.tournamentId!
+                                  : tournamentId!,
+                              isViewerMode: isViewOnly,
+                            ),
                   ],
                 ),
               );

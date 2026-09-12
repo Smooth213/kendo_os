@@ -33,8 +33,17 @@ class QuickMemoStorageService {
 
   static const String _keyPrefix = 'quick_memo_data_v1_';
 
+  @visibleForTesting
+  static FirebaseFirestore? testFirestore;
+  @visibleForTesting
+  static String? testOverrideUid;
+
+  FirebaseFirestore get _firestore =>
+      testFirestore ?? FirebaseFirestore.instance;
+
   /// Google連携中のUIDを取得（未連携・Firebase未初期化ならnull）
   String? get _linkedUid {
+    if (testOverrideUid != null) return testOverrideUid;
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
@@ -102,7 +111,7 @@ class QuickMemoStorageService {
     // 3. Google連携中の場合、Firestoreのクラウドデータを取得・同期
     if (uid != null) {
       try {
-        final doc = await FirebaseFirestore.instance
+        final doc = await _firestore
             .collection('users')
             .doc(uid)
             .collection('quick_memos')
@@ -160,7 +169,7 @@ class QuickMemoStorageService {
     if (uid == null) {
       return const Stream.empty();
     }
-    return FirebaseFirestore.instance
+    return _firestore
         .collection('users')
         .doc(uid)
         .collection('quick_memos')
@@ -244,7 +253,7 @@ class QuickMemoStorageService {
 
   /// クラウド Firestore 保存ヘルパー（失敗しても例外を握りつぶしてローカル保護）
   void _saveToCloud(String uid, String resolvedId, QuickMemoData data) {
-    FirebaseFirestore.instance
+    _firestore
         .collection('users')
         .doc(uid)
         .collection('quick_memos')
@@ -281,7 +290,7 @@ class QuickMemoStorageService {
 
     final uid = _linkedUid;
     if (uid != null) {
-      FirebaseFirestore.instance
+      _firestore
           .collection('users')
           .doc(uid)
           .collection('quick_memos')

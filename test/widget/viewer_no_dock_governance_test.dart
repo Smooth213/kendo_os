@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart';
@@ -46,12 +47,19 @@ void main() {
                 '🚨 閲覧専用ビュアー (${file.path}) に FloatingProgramDockButton が検出されました！'
                 '閲覧者にはドックを表示してはなりません。',
           );
+          expect(
+            content.contains('BunaiksenDockButton'),
+            isFalse,
+            reason:
+                '🚨 閲覧専用ビュアー (${file.path}) に BunaiksenDockButton が検出されました！'
+                '閲覧者にはドックを表示してはなりません。',
+          );
         }
       },
     );
 
     testWidgets(
-      '2. 閲覧専用全7画面で FloatingProgramDockButton が画面上に物理排除されていること（findsNothing）',
+      '2. 閲覧専用全7画面で FloatingProgramDockButton および BunaiksenDockButton が画面上に物理排除されていること（findsNothing）',
       (tester) async {
         final viewerScreens = <Widget>[
           const ViewerHomeScreen(tournamentId: testTournamentId),
@@ -83,6 +91,11 @@ void main() {
             findsNothing,
             reason:
                 '🚨 ${screen.runtimeType} に FloatingProgramDockButton が描画されています！',
+          );
+          expect(
+            find.byType(BunaiksenDockButton),
+            findsNothing,
+            reason: '🚨 ${screen.runtimeType} に BunaiksenDockButton が描画されています！',
           );
         }
       },

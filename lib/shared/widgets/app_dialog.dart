@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
-import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -11,27 +11,25 @@ Future<T?> showAppDialog<T>({
   required WidgetBuilder builder,
   bool barrierDismissible = true,
   Color? barrierColor,
-  bool useRootNavigator = true,
+  bool? useRootNavigator,
 }) async {
-  final isDockOpen = FloatingDockSheetManager.isOpen;
-  if (isDockOpen) {
-    FloatingDockSheetManager.hideTemporarily();
-  }
+  final isInsideDock = DockSheetScope.of(context) != null;
+  final effectiveUseRootNav = useRootNavigator ?? !isInsideDock;
 
-  try {
-    return await showDialog<T>(
-      context: context,
-      barrierDismissible: barrierDismissible,
-      useRootNavigator: useRootNavigator,
-      barrierColor:
-          barrierColor ?? AppKendoColors.pureBlack.withValues(alpha: 0.54),
-      builder: builder,
-    );
-  } finally {
-    if (isDockOpen) {
-      FloatingDockSheetManager.restoreVisibility();
-    }
-  }
+  final targetContext = context.mounted
+      ? context
+      : (rootNavigatorKey.currentContext?.mounted == true
+            ? rootNavigatorKey.currentContext!
+            : context);
+
+  return await showDialog<T>(
+    context: targetContext,
+    barrierDismissible: barrierDismissible,
+    useRootNavigator: effectiveUseRootNav,
+    barrierColor:
+        barrierColor ?? AppKendoColors.pureBlack.withValues(alpha: 0.54),
+    builder: builder,
+  );
 }
 
 /// アプリ共通のダイアログ枠コンポーネント（統一 Radius: 16px, テーマ背景・ヘッダー・標準ボタン）

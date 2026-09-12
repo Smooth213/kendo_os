@@ -106,7 +106,11 @@ class _FloatingProgramDockButtonState
 
   void _collapse() {
     if (_isExpanded) {
-      _animController.reverse();
+      _animController.reverse().then((_) {
+        if (mounted && _isExpanded) {
+          setState(() => _isExpanded = false);
+        }
+      });
     }
   }
 

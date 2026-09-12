@@ -233,7 +233,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 🥋 フローティングプログラムドックボタンが表示されていること
-        expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
       },
     );
   });

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
+import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
 /// 🥋 ドック独立型タイマーの動作モード
 enum DockTimerMode { countdown, stopwatch }
@@ -73,6 +74,17 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
     super.dispose();
   }
 
+  /// クラウドから復元された初期タイマー秒数を反映（未実行時のみ）
+  void restoreInitialSeconds(int seconds) {
+    if (state.isRunning || seconds <= 0) return;
+    state = state.copyWith(
+      initialSeconds: seconds,
+      remainingSeconds: seconds,
+      elapsedSeconds: 0,
+      isFinished: false,
+    );
+  }
+
   /// プリセット時間（秒）をセット
   void setPreset(int seconds) {
     _timer?.cancel();
@@ -84,6 +96,9 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
       isFinished: false,
     );
     AppHaptics.selection();
+    _ref
+        .read(userDataCloudSyncManagerProvider)
+        .pushTimerPreferencesToCloud(seconds);
   }
 
   /// 任意カスタム時間（分・秒）を手入力・ダイヤルでセット

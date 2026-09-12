@@ -10,6 +10,8 @@ def run_dock_lifecycle_governance():
     test_files = [
         "test/governance/floating_dock_lifecycle_governance_test.dart",
         "test/widget/viewer_no_dock_governance_test.dart",
+        "test/governance/bunaiksen_dock_isolation_governance_test.dart",
+        "test/governance/dock_subsheet_and_navigation_governance_test.dart",
     ]
 
     cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
@@ -21,6 +23,8 @@ def run_dock_lifecycle_governance():
         ("2. 二重展開防止・旧オーバーレイ自動解放規約", passed_all),
         ("3. 未展開時安全 close＆例外ゼロ規約", passed_all),
         ("4. 観客（Viewer）全7画面 ドック物理完全排除規約", passed_all),
+        ("5. 部内戦ドック完全隔離・部内戦外残留ゼロ保証規約", passed_all),
+        ("6. ドックボトムシート サブシート最前面表示＆ネスト遷移・アンマウント防止規約", passed_all),
     ]
 
     print("=" * 60)

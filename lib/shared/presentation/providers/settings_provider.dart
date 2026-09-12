@@ -7,6 +7,7 @@ import 'package:battery_plus/battery_plus.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★ 追加：設定変更時に音響エンジンを更新するため
+import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 
@@ -53,6 +54,25 @@ class SettingsNotifier extends Notifier<SettingsModel> {
 
     // ★ 追加：マナーモード設定が変更されたら、即座にオーディオエンジンを書き換える
     ref.read(soundServiceProvider).configureAudio(newSettings.ignoreMannerMode);
+
+    // ☁️ Googleアカウント連携時はFirestoreへ非同期プッシュ
+    try {
+      ref
+          .read(userDataCloudSyncManagerProvider)
+          .pushPreferencesToCloud(newSettings);
+    } catch (_) {}
+  }
+
+  /// ☁️ クラウド（Googleアカウント）から取得した設定をローカルへマージ・反映
+  Future<void> applyCloudSettings(SettingsModel cloudSettings) async {
+    state = cloudSettings;
+    KendoHaptics.isEnabled = cloudSettings.haptic;
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString(_key, jsonEncode(cloudSettings.toJson()));
+    _applyWakelock(cloudSettings.sleepPrevent);
+    ref
+        .read(soundServiceProvider)
+        .configureAudio(cloudSettings.ignoreMannerMode);
   }
 
   // 設定を更新し、かつ重要な変更（セキュリティ等）は監査ログに記録する
@@ -198,11 +218,13 @@ class SettingsNotifier extends Notifier<SettingsModel> {
   }
 
   void _applyWakelock(bool enable) {
-    if (enable) {
-      WakelockPlus.enable();
-    } else {
-      WakelockPlus.disable();
-    }
+    try {
+      if (enable) {
+        WakelockPlus.enable().catchError((_) {});
+      } else {
+        WakelockPlus.disable().catchError((_) {});
+      }
+    } catch (_) {}
   }
 }
 

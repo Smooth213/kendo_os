@@ -43,7 +43,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Find the calendar IconButton and tap it
-      final calendarFinder = find.byIcon(Icons.calendar_month);
+      final calendarFinder = find.byTooltip('日付選択');
       expect(calendarFinder, findsOneWidget);
 
       await tester.tap(calendarFinder);

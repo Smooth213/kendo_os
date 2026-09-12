@@ -82,8 +82,9 @@ class ThermalStatusBadge extends ConsumerWidget {
 
     return Tooltip(
       message: 'サーマル冷却ステータス（タップして詳細表示）',
+      triggerMode: TooltipTriggerMode.longPress,
       child: InkWell(
-        onTap: () => _showThermalInfoSheet(context, governor),
+        onTap: () => showThermalInfoSheet(context, governor),
         borderRadius: badgeRadius,
         child: Container(
           width: isSwitchSize ? 64.0 : null,
@@ -122,7 +123,8 @@ class ThermalStatusBadge extends ConsumerWidget {
     );
   }
 
-  static void _showThermalInfoSheet(
+  /// サーマル＆省電力 詳細ステータスボトムシートを表示
+  static void showThermalInfoSheet(
     BuildContext context,
     ThermalPowerGovernor governor,
   ) {

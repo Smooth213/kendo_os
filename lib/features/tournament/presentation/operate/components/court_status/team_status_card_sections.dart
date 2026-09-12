@@ -47,7 +47,6 @@ class TeamStatusCardSections {
         match.redScore == match.whiteScore;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF9FAFB),
         borderRadius: AppRadius.medium,
@@ -55,44 +54,70 @@ class TeamStatusCardSections {
           color: AppKendoColors.hansokuRed.withValues(alpha: 0.25),
         ),
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '【${match.matchType}】',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: context.appColors.textColor,
+      child: Material(
+        color: AppKendoColors.transparent,
+        borderRadius: AppRadius.medium,
+        child: InkWell(
+          borderRadius: AppRadius.medium,
+          onTap: () {
+            final sheetScope = DockSheetScope.of(context);
+            if (sheetScope != null) {
+              sheetScope.expand();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MatchScreen(
+                    matchId: match.id,
+                    tournamentId: match.tournamentId,
+                  ),
                 ),
-              ),
-              const Text(
-                'タップして記録を開く 👉',
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  fontWeight: AppFontWeight.medium,
-                  color: AppKendoColors.indigo,
+              );
+              return;
+            }
+            context.push('/match/${match.id}');
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '【${match.matchType}】',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: context.appColors.textColor,
+                      ),
+                    ),
+                    const Text(
+                      'タップして記録を開く 👉',
+                      style: TextStyle(
+                        fontSize: AppFontSize.caption,
+                        fontWeight: AppFontWeight.medium,
+                        color: AppKendoColors.indigo,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.sm),
+                TeamStatusMemberOrderRow(
+                  redTeam: redTeam,
+                  redPlayer: redPlayer,
+                  whiteTeam: whiteTeam,
+                  whitePlayer: whitePlayer,
+                  redPoints: redPoints,
+                  whitePoints: whitePoints,
+                  isDraw: isDraw,
+                  isFinished:
+                      match.status == 'finished' || match.status == 'approved',
+                  redScore: match.redScore,
+                  whiteScore: match.whiteScore,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          TeamStatusMemberOrderRow(
-            redTeam: redTeam,
-            redPlayer: redPlayer,
-            whiteTeam: whiteTeam,
-            whitePlayer: whitePlayer,
-            redPoints: redPoints,
-            whitePoints: whitePoints,
-            isDraw: isDraw,
-            isFinished:
-                match.status == 'finished' || match.status == 'approved',
-            redScore: match.redScore,
-            whiteScore: match.whiteScore,
-          ),
-        ],
+        ),
       ),
     );
   }

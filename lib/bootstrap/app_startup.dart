@@ -25,6 +25,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
+import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
 class AppStartup {
   static Future<ProviderContainer> initialize() async {
@@ -59,6 +60,9 @@ class AppStartup {
         isarProvider.overrideWithValue(isar),
       ],
     );
+
+    // ☁️ Google連携アカウント設定・履歴のクラウド自動同期マネージャー起動
+    container.read(userDataCloudSyncManagerProvider).initialize();
 
     // 🔊 【Phase 8】オーディオPre-warming（ノンブロッキング非同期で事前暖機）
     unawaited(container.read(soundServiceProvider).prewarm());

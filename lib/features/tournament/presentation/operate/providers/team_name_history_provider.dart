@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart'; // sharedPreferencesProvider を使うため
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart'; // ★ 追加: repositoryへアクセスするため
+import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
 class TeamNameHistoryNotifier extends Notifier<List<String>> {
   static const _key = 'kendo_team_name_history';
@@ -22,6 +23,25 @@ class TeamNameHistoryNotifier extends Notifier<List<String>> {
     return [];
   }
 
+  /// クラウドからのチーム名履歴をローカル履歴とスマートマージ
+  Future<void> mergeCloudTeamNames(List<String> cloudNames) async {
+    if (cloudNames.isEmpty) return;
+    try {
+      final currentList = List<String>.from(state);
+      for (final name in cloudNames) {
+        if (!currentList.contains(name) && name.trim().isNotEmpty) {
+          currentList.add(name);
+        }
+      }
+      if (currentList.length > _maxItems) {
+        currentList.removeRange(_maxItems, currentList.length);
+      }
+      state = currentList;
+      final prefs = ref.read(sharedPreferencesProvider);
+      await prefs.setString(_key, jsonEncode(currentList));
+    } catch (_) {}
+  }
+
   // チーム名を追加（古いものから押し出し）
   Future<void> addHistory(String name) async {
     if (name.trim().isEmpty) return;
@@ -39,6 +59,9 @@ class TeamNameHistoryNotifier extends Notifier<List<String>> {
     state = currentList;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_key, jsonEncode(currentList));
+    ref
+        .read(userDataCloudSyncManagerProvider)
+        .pushInputHistoryToCloud(currentList);
   }
 
   // ★ Phase 7: UIからの「追加」指示を受け取る窓口
@@ -61,6 +84,9 @@ class TeamNameHistoryNotifier extends Notifier<List<String>> {
     state = currentList;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_key, jsonEncode(currentList));
+    ref
+        .read(userDataCloudSyncManagerProvider)
+        .pushInputHistoryToCloud(currentList);
   }
 }
 
