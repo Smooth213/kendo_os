@@ -5,6 +5,8 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 /// 🔋 【設定・安心感の可視化】サーマル冷却＆バッテリー稼働状況ミニバッジ
 ///
@@ -131,169 +133,241 @@ class ThermalStatusBadge extends ConsumerWidget {
     showAppBottomSheet(
       context: context,
       builder: (ctx) {
-        final mode = governor.mode;
-        String modeTitle;
-        String modeDesc;
-        String savingText;
-        IconData modeIcon;
-        Color modeColor;
+        return Consumer(
+          builder: (sheetContext, ref, _) {
+            final currentGovernor = ref.watch(thermalPowerGovernorProvider);
+            String currentPref = currentGovernor.preference;
+            try {
+              final settings = ref.watch(settingsProvider);
+              currentPref = settings.thermalPowerPreference;
+            } catch (_) {}
+            final mode = currentGovernor.mode;
 
-        switch (mode) {
-          case ThermalPowerMode.normal:
-            modeTitle = '通常高速モード (100ms)';
-            modeDesc = '最高精度のレスポンスで快適に動作しています。';
-            savingText = 'CPU負荷: 標準稼働';
-            modeIcon = Icons.bolt_rounded;
-            modeColor = const Color(0xFF3B82F6);
-            break;
-          case ThermalPowerMode.ecoCooling:
-            modeTitle = 'エコサーマル冷却モード (500ms)';
-            modeDesc = '端末の発熱（熱暴走）を防ぐため、ポーリング間隔を自動調整しています。';
-            savingText = 'CPU負荷: 80% 削減中（端末冷却・発熱防止）';
-            modeIcon = Icons.battery_charging_full_rounded;
-            modeColor = const Color(0xFF10B981);
-            break;
-          case ThermalPowerMode.ultraSave:
-            modeTitle = '極限省電力モード (1000ms)';
-            modeDesc = 'バッテリー低下を検知し、大会終了まで稼働を最優先で延命しています。';
-            savingText = 'CPU負荷: 90% 削減中（最大バッテリー延命）';
-            modeIcon = Icons.energy_savings_leaf_rounded;
-            modeColor = const Color(0xFFF59E0B);
-            break;
-        }
+            String modeTitle;
+            String modeDesc;
+            String savingText;
+            IconData modeIcon;
+            Color modeColor;
 
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl,
-              vertical: AppSpacing.roundValue,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            switch (mode) {
+              case ThermalPowerMode.normal:
+                modeTitle = '通常高速モード (100ms)';
+                modeDesc = '最高精度のレスポンスで快適に動作しています。';
+                savingText = 'CPU負荷: 標準稼働';
+                modeIcon = Icons.bolt_rounded;
+                modeColor = const Color(0xFF3B82F6);
+                break;
+              case ThermalPowerMode.ecoCooling:
+                modeTitle = 'エコサーマル冷却モード (500ms)';
+                modeDesc = '端末の発熱（熱暴走）を防ぐため、ポーリング間隔を自動調整しています。';
+                savingText = 'CPU負荷: 80% 削減中（端末冷却・発熱防止）';
+                modeIcon = Icons.battery_charging_full_rounded;
+                modeColor = const Color(0xFF10B981);
+                break;
+              case ThermalPowerMode.ultraSave:
+                modeTitle = '極限省電力モード (1000ms)';
+                modeDesc = 'バッテリー低下や高熱を検知し、大会終了まで稼働を最優先で延命しています。';
+                savingText = 'CPU負荷: 90% 削減中（最大バッテリー延命）';
+                modeIcon = Icons.energy_savings_leaf_rounded;
+                modeColor = const Color(0xFFF59E0B);
+                break;
+            }
+
+            final options = [
+              {'id': 'auto', 'label': '🤖 自動適応', 'sub': 'OS低電力・温度追従'},
+              {'id': 'normal', 'label': '⚡ 通常高速', 'sub': '100ms 高精度'},
+              {'id': 'ecoCooling', 'label': '❄️ エコ冷却', 'sub': '500ms 発熱防止'},
+              {'id': 'ultraSave', 'label': '🌿 極限省電力', 'sub': '1000ms 最大延命'},
+            ];
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.roundValue,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: modeColor.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        modeIcon,
-                        color: modeColor,
-                        size: AppFontSize.display,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '🛡️ サーマル冷却＆省電力ステータス',
-                            style: TextStyle(
-                              fontSize: AppFontSize.bodySmall,
-                              color: context.appColors.subTextColor,
-                              fontWeight: AppFontWeight.semiBold,
-                            ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: modeColor.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
                           ),
-                          Text(
-                            modeTitle,
-                            style: TextStyle(
-                              fontSize: AppFontSize.subhead,
-                              fontWeight: AppFontWeight.bold,
-                              color: modeColor,
+                          child: Icon(
+                            modeIcon,
+                            color: modeColor,
+                            size: AppFontSize.display,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '🛡️ サーマル冷却＆省電力ステータス',
+                                style: TextStyle(
+                                  fontSize: AppFontSize.bodySmall,
+                                  color: sheetContext.appColors.subTextColor,
+                                  fontWeight: AppFontWeight.semiBold,
+                                ),
+                              ),
+                              Text(
+                                modeTitle,
+                                style: TextStyle(
+                                  fontSize: AppFontSize.subhead,
+                                  fontWeight: AppFontWeight.bold,
+                                  color: modeColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: modeColor.withValues(alpha: 0.08),
+                        borderRadius: AppRadius.medium,
+                        border: Border.all(
+                          color: modeColor.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: modeColor,
+                            size: AppFontSize.headline,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              savingText,
+                              style: TextStyle(
+                                fontSize: AppFontSize.small,
+                                fontWeight: AppFontWeight.bold,
+                                color: modeColor,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: modeColor.withValues(alpha: 0.08),
-                    borderRadius: AppRadius.medium,
-                    border: Border.all(color: modeColor.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        color: modeColor,
-                        size: AppFontSize.headline,
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      modeDesc,
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        height: 1.4,
+                        color: sheetContext.appColors.textColor,
                       ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          savingText,
-                          style: TextStyle(
-                            fontSize: AppFontSize.small,
-                            fontWeight: AppFontWeight.bold,
-                            color: modeColor,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    const Divider(),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      '動作モード（手動固定・切り替え）',
+                      style: TextStyle(
+                        fontSize: AppFontSize.small,
+                        fontWeight: AppFontWeight.bold,
+                        color: sheetContext.appColors.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: options.map((opt) {
+                        final isSelected = currentPref == opt['id'];
+                        return AppChoiceChip(
+                          label: Text(opt['label']!),
+                          selected: isSelected,
+                          selectedColor: sheetContext.appColors.primaryAccent
+                              .withValues(alpha: 0.2),
+                          side: BorderSide(
+                            color: isSelected
+                                ? sheetContext.appColors.primaryAccent
+                                : sheetContext.appColors.borderColor,
+                            width: isSelected ? 1.5 : 0.8,
+                          ),
+                          labelStyle: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: isSelected
+                                ? AppFontWeight.bold
+                                : AppFontWeight.medium,
+                            color: isSelected
+                                ? sheetContext.appColors.primaryAccent
+                                : sheetContext.appColors.textColor,
+                          ),
+                          onSelected: (_) {
+                            try {
+                              ref
+                                  .read(settingsProvider.notifier)
+                                  .updateField(
+                                    thermalPowerPreference: opt['id'],
+                                  );
+                            } catch (_) {
+                              currentGovernor.updatePreference(opt['id']!);
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const Divider(),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.verified_outlined,
+                          color: sheetContext.appColors.primaryAccent,
+                          size: AppFontSize.subhead,
+                        ),
+                        const SizedBox(width: AppSpacing.subValue),
+                        Expanded(
+                          child: Text(
+                            '【時間精度100%保証】タイマーは端末の内蔵絶対時計から計算しているため、省電力中でも残り秒数がズレることは一切ありません。',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              color: sheetContext.appColors.subTextColor,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  modeDesc,
-                  style: TextStyle(
-                    fontSize: AppFontSize.bodySmall,
-                    height: 1.4,
-                    color: context.appColors.textColor,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const Divider(),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.verified_outlined,
-                      color: context.appColors.primaryAccent,
-                      size: AppFontSize.subhead,
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.subValue),
-                    Expanded(
-                      child: Text(
-                        '【時間精度100%保証】タイマーは端末の内蔵絶対時計から計算しているため、省電力中でも残り秒数がズレることは一切ありません。',
-                        style: TextStyle(
-                          fontSize: AppFontSize.caption,
-                          color: context.appColors.subTextColor,
+                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              sheetContext.appColors.inputBackground,
+                          foregroundColor: sheetContext.appColors.textColor,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.compact,
+                          ),
+                        ),
+                        child: const Text(
+                          '閉じる',
+                          style: TextStyle(fontWeight: AppFontWeight.bold),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.appColors.inputBackground,
-                      foregroundColor: context.appColors.textColor,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppRadius.compact,
-                      ),
-                    ),
-                    child: const Text(
-                      '閉じる',
-                      style: TextStyle(fontWeight: AppFontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

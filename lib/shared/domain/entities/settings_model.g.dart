@@ -20,6 +20,8 @@ _SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) =>
       leftHanded: json['leftHanded'] as bool? ?? false,
       themeMode: json['themeMode'] as String? ?? 'system',
       enableLiquidGlass: json['enableLiquidGlass'] as bool? ?? true,
+      thermalPowerPreference:
+          json['thermalPowerPreference'] as String? ?? 'auto',
       notifyOnEmergency: json['notifyOnEmergency'] as bool? ?? true,
       notifyOnMatchAdded: json['notifyOnMatchAdded'] as bool? ?? true,
       notifyOnMatchStarted: json['notifyOnMatchStarted'] as bool? ?? true,
@@ -43,6 +45,7 @@ Map<String, dynamic> _$SettingsModelToJson(_SettingsModel instance) =>
       'leftHanded': instance.leftHanded,
       'themeMode': instance.themeMode,
       'enableLiquidGlass': instance.enableLiquidGlass,
+      'thermalPowerPreference': instance.thermalPowerPreference,
       'notifyOnEmergency': instance.notifyOnEmergency,
       'notifyOnMatchAdded': instance.notifyOnMatchAdded,
       'notifyOnMatchStarted': instance.notifyOnMatchStarted,

@@ -109,12 +109,27 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.eco,
               iconBgColor: AppKendoColors.green,
             ),
+            SettingsAccordionSelector<String>(
+              title: '省電力モード設定',
+              icon: Icons.shield_rounded,
+              iconBgColor: AppKendoColors.teal,
+              selectedValue: settings.thermalPowerPreference,
+              items: const [
+                SettingsAccordionItem(value: 'auto', label: '🤖 自動適応（推奨）'),
+                SettingsAccordionItem(value: 'normal', label: '⚡ 通常高速固定'),
+                SettingsAccordionItem(value: 'ecoCooling', label: '❄️ エコ冷却固定'),
+                SettingsAccordionItem(value: 'ultraSave', label: '🌿 極限省電力固定'),
+              ],
+              onSelected: (val) {
+                notifier.updateField(thermalPowerPreference: val);
+              },
+            ),
             // 🔋 【設定・安心感の可視化】サーマル冷却＆バッテリー稼働状況タイル
             SettingsListTile(
               title: 'サーマル冷却・省電力制御',
-              icon: Icons.shield_rounded,
+              icon: Icons.thermostat_rounded,
               iconBgColor: AppKendoColors.teal,
-              subtitle: '猛暑体育館での熱暴走・バッテリー枯渇を自動防止',
+              subtitle: 'タップして詳細と時間精度保証を確認',
               trailing: const ThermalStatusBadge(isSwitchSize: true),
               onTap: () {
                 final governor = ref.read(thermalPowerGovernorProvider);

@@ -189,8 +189,11 @@ void main() {
       expect(find.text('外観テーマ'), findsOneWidget);
       expect(find.byIcon(Icons.dark_mode), findsOneWidget);
 
-      // 2. インラインアコーディオンセレクターが存在すること
-      final selectorFinder = find.byType(SettingsAccordionSelector<String>);
+      // 2. インラインアコーディオンセレクター（外観テーマ）が存在すること
+      final selectorFinder = find.widgetWithText(
+        SettingsAccordionSelector<String>,
+        '外観テーマ',
+      );
       expect(selectorFinder, findsOneWidget);
 
       // アコーディオンを展開

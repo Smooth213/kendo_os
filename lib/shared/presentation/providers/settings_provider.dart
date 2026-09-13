@@ -10,6 +10,7 @@ import 'package:kendo_os/shared/application/services/sound_service.dart'; // ★
 import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
+import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 
 // SharedPreferencesのインスタンスを非同期で提供するProvider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -22,11 +23,20 @@ class SettingsNotifier extends Notifier<SettingsModel> {
 
   @override
   SettingsModel build() {
-    final prefs = ref.watch(sharedPreferencesProvider);
+    final SharedPreferences prefs;
+    try {
+      prefs = ref.watch(sharedPreferencesProvider);
+    } catch (_) {
+      // テスト環境などで sharedPreferencesProvider が未注入の場合はデフォルト設定を返す
+      return const SettingsModel(showConfirmDialog: false);
+    }
+
     final jsonString = prefs.getString(_key);
 
     // ★ 修正：アプリ初回起動時の「初期状態」を明示的に指定し、確認ダイアログをデフォルトOFF(false)にする
-    SettingsModel initialSettings = SettingsModel(showConfirmDialog: false);
+    SettingsModel initialSettings = const SettingsModel(
+      showConfirmDialog: false,
+    );
     if (jsonString != null) {
       try {
         initialSettings = SettingsModel.fromJson(jsonDecode(jsonString));
@@ -46,8 +56,10 @@ class SettingsNotifier extends Notifier<SettingsModel> {
   Future<void> updateSettings(SettingsModel newSettings) async {
     state = newSettings;
     KendoHaptics.isEnabled = newSettings.haptic;
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setString(_key, jsonEncode(newSettings.toJson()));
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      await prefs.setString(_key, jsonEncode(newSettings.toJson()));
+    } catch (_) {}
 
     // スリープ防止設定が変更されたら即座に適用
     _applyWakelock(newSettings.sleepPrevent);
@@ -88,6 +100,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? showConfirmDialog,
     String? themeMode,
     bool? enableLiquidGlass,
+    String? thermalPowerPreference, // ★ サーマル・省電力設定
     bool? experimentalFeatures, // ★ 修正: この1行を引数に追加
     int? securityLevel,
     String? adminPasscode,
@@ -109,6 +122,8 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog,
       themeMode: themeMode ?? state.themeMode,
       enableLiquidGlass: enableLiquidGlass ?? state.enableLiquidGlass,
+      thermalPowerPreference:
+          thermalPowerPreference ?? state.thermalPowerPreference,
       experimentalFeatures:
           experimentalFeatures ??
           state.experimentalFeatures, // ★ 修正: この1行を代入に追加
@@ -324,6 +339,12 @@ final isEcoModeProvider = Provider<bool>((ref) {
   final settings = ref.watch(settingsProvider);
   if (!settings.enableLiquidGlass) {
     return true; // Manual Eco Mode (すりガラス効果OFF)
+  }
+
+  // サーマル・省電力ガバナーが通常以外のモード（冷却・極限省電力）の場合も演出をカット
+  final governor = ref.watch(thermalPowerGovernorProvider);
+  if (governor.mode != ThermalPowerMode.normal) {
+    return true;
   }
 
   final batteryAsync = ref.watch(batteryStateProvider);

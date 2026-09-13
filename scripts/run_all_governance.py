@@ -123,11 +123,16 @@ AUDIT_DEFINITIONS = [
         "name": "🥋 団体戦スコア順序（先鋒〜大将・代表戦）剣道標準配列 永続保証規約",
         "cmd": ["python3", "scripts/check_team_match_order_governance.py"],
     },
+    {
+        "id": 23,
+        "name": "🔋 端末サーマル冷却＆省電力モード管理（温度＞手動＞自動 ガバナンス永続保証規約）",
+        "cmd": ["python3", "scripts/check_thermal_power_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全22大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜22）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全23大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜23）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
@@ -139,7 +144,7 @@ def main():
             sys.exit(1)
 
     print("=" * 72)
-    print(" 🥋 Kendo OS - 全22大ガバナンス監査 統合ランナー (Unified Governance Runner)")
+    print(" 🥋 Kendo OS - 全23大ガバナンス監査 統合ランナー (Unified Governance Runner)")
     print("=" * 72)
     print(f" 実行対象: {len(target_audits)} 項目")
     print("-" * 72)
@@ -152,7 +157,7 @@ def main():
         audit_name = audit["name"]
         cmd = audit["cmd"]
 
-        print(f" [{audit_id:2d}/22] {audit_name} ... ", end="", flush=True)
+        print(f" [{audit_id:2d}/23] {audit_name} ... ", end="", flush=True)
         t_start = time.time()
 
         proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -180,7 +185,7 @@ def main():
     all_passed = all(r["passed"] for r in results)
 
     print("-" * 72)
-    print(" 📊 【全22大ガバナンス監査 総合サマリーレポート】")
+    print(" 📊 【全23大ガバナンス監査 総合サマリーレポート】")
     print("-" * 72)
     for r in results:
         badge = "🟢 PASS" if r["passed"] else "🔴 FAIL"

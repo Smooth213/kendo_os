@@ -20,6 +20,7 @@ import 'package:kendo_os/shared/routing/app_router.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/thermal_floating_toast.dart';
 
 export 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 export 'package:kendo_os/shared/routing/app_router.dart';
@@ -231,46 +232,48 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
               backgroundColor: isDark
                   ? AppKendoColors.pureBlack
                   : const Color(0xFFF2F2F7),
-              body: Column(
-                children: [
-                  if (isOffline)
-                    Container(
-                      width: double.infinity,
-                      color: const Color(0xFFD97706),
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + 8,
-                        bottom: AppSpacing.sm,
-                        left: AppSpacing.lg,
-                        right: AppSpacing.lg,
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.wifi_off_rounded,
-                            color: AppKendoColors.pureWhite,
-                            size: 18,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Flexible(
-                            child: Text(
-                              kIsWeb
-                                  ? '⚠️ 体育館オフライン運営モード：ブラウザキャッシュへ即時保存中'
-                                  : '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
-                              style: const TextStyle(
-                                color: AppKendoColors.pureWhite,
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.bodySmall,
-                                decoration: TextDecoration.none,
+              body: ThermalToastListener(
+                child: Column(
+                  children: [
+                    if (isOffline)
+                      Container(
+                        width: double.infinity,
+                        color: const Color(0xFFD97706),
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top + 8,
+                          bottom: AppSpacing.sm,
+                          left: AppSpacing.lg,
+                          right: AppSpacing.lg,
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.wifi_off_rounded,
+                              color: AppKendoColors.pureWhite,
+                              size: 18,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Flexible(
+                              child: Text(
+                                kIsWeb
+                                    ? '⚠️ 体育館オフライン運営モード：ブラウザキャッシュへ即時保存中'
+                                    : '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
+                                style: const TextStyle(
+                                  color: AppKendoColors.pureWhite,
+                                  fontWeight: AppFontWeight.bold,
+                                  fontSize: AppFontSize.bodySmall,
+                                  decoration: TextDecoration.none,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  Expanded(child: child),
-                ],
+                    Expanded(child: child),
+                  ],
+                ),
               ),
             );
           },

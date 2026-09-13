@@ -26,6 +26,9 @@ abstract class SettingsModel with _$SettingsModel {
     String themeMode, // ★ ダークモード対応 ('system', 'light', 'dark')
     @Default(true)
     bool enableLiquidGlass, // ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
+    @Default('auto')
+    String
+    thermalPowerPreference, // ★ サーマル・省電力設定 ('auto', 'normal', 'ecoCooling', 'ultraSave')
     // 【通知・ポップアップ設定】
     @Default(true) bool notifyOnEmergency, // 【緊急アナウンス】ポップアップ＆バナー
     @Default(true) bool notifyOnMatchAdded, // 【試合追加】バナー通知

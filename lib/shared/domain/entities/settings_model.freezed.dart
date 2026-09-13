@@ -27,6 +27,7 @@ mixin _$SettingsModel {
  bool get leftHanded;// 左利きモード（赤白反転）
  String get themeMode;// ★ ダークモード対応 ('system', 'light', 'dark')
  bool get enableLiquidGlass;// ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
+ String get thermalPowerPreference;// ★ サーマル・省電力設定 ('auto', 'normal', 'ecoCooling', 'ultraSave')
 // 【通知・ポップアップ設定】
  bool get notifyOnEmergency;// 【緊急アナウンス】ポップアップ＆バナー
  bool get notifyOnMatchAdded;// 【試合追加】バナー通知
@@ -48,16 +49,16 @@ $SettingsModelCopyWith<SettingsModel> get copyWith => _$SettingsModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsModel&&(identical(other.organizationId, organizationId) || other.organizationId == organizationId)&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.enableLiquidGlass, enableLiquidGlass) || other.enableLiquidGlass == enableLiquidGlass)&&(identical(other.notifyOnEmergency, notifyOnEmergency) || other.notifyOnEmergency == notifyOnEmergency)&&(identical(other.notifyOnMatchAdded, notifyOnMatchAdded) || other.notifyOnMatchAdded == notifyOnMatchAdded)&&(identical(other.notifyOnMatchStarted, notifyOnMatchStarted) || other.notifyOnMatchStarted == notifyOnMatchStarted)&&(identical(other.notifyOnResult, notifyOnResult) || other.notifyOnResult == notifyOnResult)&&(identical(other.experimentalFeatures, experimentalFeatures) || other.experimentalFeatures == experimentalFeatures)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsModel&&(identical(other.organizationId, organizationId) || other.organizationId == organizationId)&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.enableLiquidGlass, enableLiquidGlass) || other.enableLiquidGlass == enableLiquidGlass)&&(identical(other.thermalPowerPreference, thermalPowerPreference) || other.thermalPowerPreference == thermalPowerPreference)&&(identical(other.notifyOnEmergency, notifyOnEmergency) || other.notifyOnEmergency == notifyOnEmergency)&&(identical(other.notifyOnMatchAdded, notifyOnMatchAdded) || other.notifyOnMatchAdded == notifyOnMatchAdded)&&(identical(other.notifyOnMatchStarted, notifyOnMatchStarted) || other.notifyOnMatchStarted == notifyOnMatchStarted)&&(identical(other.notifyOnResult, notifyOnResult) || other.notifyOnResult == notifyOnResult)&&(identical(other.experimentalFeatures, experimentalFeatures) || other.experimentalFeatures == experimentalFeatures)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,organizationId,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,enableLiquidGlass,notifyOnEmergency,notifyOnMatchAdded,notifyOnMatchStarted,notifyOnResult,experimentalFeatures,securityLevel,adminPasscode]);
+int get hashCode => Object.hashAll([runtimeType,organizationId,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,enableLiquidGlass,thermalPowerPreference,notifyOnEmergency,notifyOnMatchAdded,notifyOnMatchStarted,notifyOnResult,experimentalFeatures,securityLevel,adminPasscode]);
 
 @override
 String toString() {
-  return 'SettingsModel(organizationId: $organizationId, confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, enableLiquidGlass: $enableLiquidGlass, notifyOnEmergency: $notifyOnEmergency, notifyOnMatchAdded: $notifyOnMatchAdded, notifyOnMatchStarted: $notifyOnMatchStarted, notifyOnResult: $notifyOnResult, experimentalFeatures: $experimentalFeatures, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
+  return 'SettingsModel(organizationId: $organizationId, confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, enableLiquidGlass: $enableLiquidGlass, thermalPowerPreference: $thermalPowerPreference, notifyOnEmergency: $notifyOnEmergency, notifyOnMatchAdded: $notifyOnMatchAdded, notifyOnMatchStarted: $notifyOnMatchStarted, notifyOnResult: $notifyOnResult, experimentalFeatures: $experimentalFeatures, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
 }
 
 
@@ -68,7 +69,7 @@ abstract mixin class $SettingsModelCopyWith<$Res>  {
   factory $SettingsModelCopyWith(SettingsModel value, $Res Function(SettingsModel) _then) = _$SettingsModelCopyWithImpl;
 @useResult
 $Res call({
- String organizationId, String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, bool enableLiquidGlass, bool notifyOnEmergency, bool notifyOnMatchAdded, bool notifyOnMatchStarted, bool notifyOnResult, bool experimentalFeatures, int securityLevel, String? adminPasscode
+ String organizationId, String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, bool enableLiquidGlass, String thermalPowerPreference, bool notifyOnEmergency, bool notifyOnMatchAdded, bool notifyOnMatchStarted, bool notifyOnResult, bool experimentalFeatures, int securityLevel, String? adminPasscode
 });
 
 
@@ -85,7 +86,7 @@ class _$SettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of SettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? organizationId = null,Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? enableLiquidGlass = null,Object? notifyOnEmergency = null,Object? notifyOnMatchAdded = null,Object? notifyOnMatchStarted = null,Object? notifyOnResult = null,Object? experimentalFeatures = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? organizationId = null,Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? enableLiquidGlass = null,Object? thermalPowerPreference = null,Object? notifyOnEmergency = null,Object? notifyOnMatchAdded = null,Object? notifyOnMatchStarted = null,Object? notifyOnResult = null,Object? experimentalFeatures = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
   return _then(_self.copyWith(
 organizationId: null == organizationId ? _self.organizationId : organizationId // ignore: cast_nullable_to_non_nullable
 as String,confirmBehavior: null == confirmBehavior ? _self.confirmBehavior : confirmBehavior // ignore: cast_nullable_to_non_nullable
@@ -99,7 +100,8 @@ as bool,sleepPrevent: null == sleepPrevent ? _self.sleepPrevent : sleepPrevent /
 as bool,leftHanded: null == leftHanded ? _self.leftHanded : leftHanded // ignore: cast_nullable_to_non_nullable
 as bool,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as String,enableLiquidGlass: null == enableLiquidGlass ? _self.enableLiquidGlass : enableLiquidGlass // ignore: cast_nullable_to_non_nullable
-as bool,notifyOnEmergency: null == notifyOnEmergency ? _self.notifyOnEmergency : notifyOnEmergency // ignore: cast_nullable_to_non_nullable
+as bool,thermalPowerPreference: null == thermalPowerPreference ? _self.thermalPowerPreference : thermalPowerPreference // ignore: cast_nullable_to_non_nullable
+as String,notifyOnEmergency: null == notifyOnEmergency ? _self.notifyOnEmergency : notifyOnEmergency // ignore: cast_nullable_to_non_nullable
 as bool,notifyOnMatchAdded: null == notifyOnMatchAdded ? _self.notifyOnMatchAdded : notifyOnMatchAdded // ignore: cast_nullable_to_non_nullable
 as bool,notifyOnMatchStarted: null == notifyOnMatchStarted ? _self.notifyOnMatchStarted : notifyOnMatchStarted // ignore: cast_nullable_to_non_nullable
 as bool,notifyOnResult: null == notifyOnResult ? _self.notifyOnResult : notifyOnResult // ignore: cast_nullable_to_non_nullable
@@ -191,10 +193,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String organizationId,  String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool enableLiquidGlass,  bool notifyOnEmergency,  bool notifyOnMatchAdded,  bool notifyOnMatchStarted,  bool notifyOnResult,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String organizationId,  String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool enableLiquidGlass,  String thermalPowerPreference,  bool notifyOnEmergency,  bool notifyOnMatchAdded,  bool notifyOnMatchStarted,  bool notifyOnResult,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsModel() when $default != null:
-return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.enableLiquidGlass,_that.notifyOnEmergency,_that.notifyOnMatchAdded,_that.notifyOnMatchStarted,_that.notifyOnResult,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
+return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.enableLiquidGlass,_that.thermalPowerPreference,_that.notifyOnEmergency,_that.notifyOnMatchAdded,_that.notifyOnMatchStarted,_that.notifyOnResult,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
   return orElse();
 
 }
@@ -212,10 +214,10 @@ return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String organizationId,  String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool enableLiquidGlass,  bool notifyOnEmergency,  bool notifyOnMatchAdded,  bool notifyOnMatchStarted,  bool notifyOnResult,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String organizationId,  String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool enableLiquidGlass,  String thermalPowerPreference,  bool notifyOnEmergency,  bool notifyOnMatchAdded,  bool notifyOnMatchStarted,  bool notifyOnResult,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsModel():
-return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.enableLiquidGlass,_that.notifyOnEmergency,_that.notifyOnMatchAdded,_that.notifyOnMatchStarted,_that.notifyOnResult,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
+return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.enableLiquidGlass,_that.thermalPowerPreference,_that.notifyOnEmergency,_that.notifyOnMatchAdded,_that.notifyOnMatchStarted,_that.notifyOnResult,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -232,10 +234,10 @@ return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String organizationId,  String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool enableLiquidGlass,  bool notifyOnEmergency,  bool notifyOnMatchAdded,  bool notifyOnMatchStarted,  bool notifyOnResult,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String organizationId,  String confirmBehavior,  bool isLocked,  bool showConfirmDialog,  bool haptic,  bool strikeVib,  String audioFeedbackMode,  bool ignoreMannerMode,  bool sleepPrevent,  bool leftHanded,  String themeMode,  bool enableLiquidGlass,  String thermalPowerPreference,  bool notifyOnEmergency,  bool notifyOnMatchAdded,  bool notifyOnMatchStarted,  bool notifyOnResult,  bool experimentalFeatures,  int securityLevel,  String? adminPasscode)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsModel() when $default != null:
-return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.enableLiquidGlass,_that.notifyOnEmergency,_that.notifyOnMatchAdded,_that.notifyOnMatchStarted,_that.notifyOnResult,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
+return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.showConfirmDialog,_that.haptic,_that.strikeVib,_that.audioFeedbackMode,_that.ignoreMannerMode,_that.sleepPrevent,_that.leftHanded,_that.themeMode,_that.enableLiquidGlass,_that.thermalPowerPreference,_that.notifyOnEmergency,_that.notifyOnMatchAdded,_that.notifyOnMatchStarted,_that.notifyOnResult,_that.experimentalFeatures,_that.securityLevel,_that.adminPasscode);case _:
   return null;
 
 }
@@ -247,7 +249,7 @@ return $default(_that.organizationId,_that.confirmBehavior,_that.isLocked,_that.
 @JsonSerializable()
 
 class _SettingsModel implements SettingsModel {
-  const _SettingsModel({this.organizationId = 'default_org', this.confirmBehavior = 'double', this.isLocked = false, this.showConfirmDialog = false, this.haptic = true, this.strikeVib = true, this.audioFeedbackMode = 'off', this.ignoreMannerMode = true, this.sleepPrevent = true, this.leftHanded = false, this.themeMode = 'system', this.enableLiquidGlass = true, this.notifyOnEmergency = true, this.notifyOnMatchAdded = true, this.notifyOnMatchStarted = true, this.notifyOnResult = false, this.experimentalFeatures = false, this.securityLevel = 1, this.adminPasscode});
+  const _SettingsModel({this.organizationId = 'default_org', this.confirmBehavior = 'double', this.isLocked = false, this.showConfirmDialog = false, this.haptic = true, this.strikeVib = true, this.audioFeedbackMode = 'off', this.ignoreMannerMode = true, this.sleepPrevent = true, this.leftHanded = false, this.themeMode = 'system', this.enableLiquidGlass = true, this.thermalPowerPreference = 'auto', this.notifyOnEmergency = true, this.notifyOnMatchAdded = true, this.notifyOnMatchStarted = true, this.notifyOnResult = false, this.experimentalFeatures = false, this.securityLevel = 1, this.adminPasscode});
   factory _SettingsModel.fromJson(Map<String, dynamic> json) => _$SettingsModelFromJson(json);
 
 /// ★ 新・同期空間統治キー：この環境設定が適用される道場ルームのID
@@ -274,6 +276,8 @@ class _SettingsModel implements SettingsModel {
 // ★ ダークモード対応 ('system', 'light', 'dark')
 @override@JsonKey() final  bool enableLiquidGlass;
 // ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
+@override@JsonKey() final  String thermalPowerPreference;
+// ★ サーマル・省電力設定 ('auto', 'normal', 'ecoCooling', 'ultraSave')
 // 【通知・ポップアップ設定】
 @override@JsonKey() final  bool notifyOnEmergency;
 // 【緊急アナウンス】ポップアップ＆バナー
@@ -303,16 +307,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsModel&&(identical(other.organizationId, organizationId) || other.organizationId == organizationId)&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.enableLiquidGlass, enableLiquidGlass) || other.enableLiquidGlass == enableLiquidGlass)&&(identical(other.notifyOnEmergency, notifyOnEmergency) || other.notifyOnEmergency == notifyOnEmergency)&&(identical(other.notifyOnMatchAdded, notifyOnMatchAdded) || other.notifyOnMatchAdded == notifyOnMatchAdded)&&(identical(other.notifyOnMatchStarted, notifyOnMatchStarted) || other.notifyOnMatchStarted == notifyOnMatchStarted)&&(identical(other.notifyOnResult, notifyOnResult) || other.notifyOnResult == notifyOnResult)&&(identical(other.experimentalFeatures, experimentalFeatures) || other.experimentalFeatures == experimentalFeatures)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsModel&&(identical(other.organizationId, organizationId) || other.organizationId == organizationId)&&(identical(other.confirmBehavior, confirmBehavior) || other.confirmBehavior == confirmBehavior)&&(identical(other.isLocked, isLocked) || other.isLocked == isLocked)&&(identical(other.showConfirmDialog, showConfirmDialog) || other.showConfirmDialog == showConfirmDialog)&&(identical(other.haptic, haptic) || other.haptic == haptic)&&(identical(other.strikeVib, strikeVib) || other.strikeVib == strikeVib)&&(identical(other.audioFeedbackMode, audioFeedbackMode) || other.audioFeedbackMode == audioFeedbackMode)&&(identical(other.ignoreMannerMode, ignoreMannerMode) || other.ignoreMannerMode == ignoreMannerMode)&&(identical(other.sleepPrevent, sleepPrevent) || other.sleepPrevent == sleepPrevent)&&(identical(other.leftHanded, leftHanded) || other.leftHanded == leftHanded)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.enableLiquidGlass, enableLiquidGlass) || other.enableLiquidGlass == enableLiquidGlass)&&(identical(other.thermalPowerPreference, thermalPowerPreference) || other.thermalPowerPreference == thermalPowerPreference)&&(identical(other.notifyOnEmergency, notifyOnEmergency) || other.notifyOnEmergency == notifyOnEmergency)&&(identical(other.notifyOnMatchAdded, notifyOnMatchAdded) || other.notifyOnMatchAdded == notifyOnMatchAdded)&&(identical(other.notifyOnMatchStarted, notifyOnMatchStarted) || other.notifyOnMatchStarted == notifyOnMatchStarted)&&(identical(other.notifyOnResult, notifyOnResult) || other.notifyOnResult == notifyOnResult)&&(identical(other.experimentalFeatures, experimentalFeatures) || other.experimentalFeatures == experimentalFeatures)&&(identical(other.securityLevel, securityLevel) || other.securityLevel == securityLevel)&&(identical(other.adminPasscode, adminPasscode) || other.adminPasscode == adminPasscode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,organizationId,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,enableLiquidGlass,notifyOnEmergency,notifyOnMatchAdded,notifyOnMatchStarted,notifyOnResult,experimentalFeatures,securityLevel,adminPasscode]);
+int get hashCode => Object.hashAll([runtimeType,organizationId,confirmBehavior,isLocked,showConfirmDialog,haptic,strikeVib,audioFeedbackMode,ignoreMannerMode,sleepPrevent,leftHanded,themeMode,enableLiquidGlass,thermalPowerPreference,notifyOnEmergency,notifyOnMatchAdded,notifyOnMatchStarted,notifyOnResult,experimentalFeatures,securityLevel,adminPasscode]);
 
 @override
 String toString() {
-  return 'SettingsModel(organizationId: $organizationId, confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, enableLiquidGlass: $enableLiquidGlass, notifyOnEmergency: $notifyOnEmergency, notifyOnMatchAdded: $notifyOnMatchAdded, notifyOnMatchStarted: $notifyOnMatchStarted, notifyOnResult: $notifyOnResult, experimentalFeatures: $experimentalFeatures, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
+  return 'SettingsModel(organizationId: $organizationId, confirmBehavior: $confirmBehavior, isLocked: $isLocked, showConfirmDialog: $showConfirmDialog, haptic: $haptic, strikeVib: $strikeVib, audioFeedbackMode: $audioFeedbackMode, ignoreMannerMode: $ignoreMannerMode, sleepPrevent: $sleepPrevent, leftHanded: $leftHanded, themeMode: $themeMode, enableLiquidGlass: $enableLiquidGlass, thermalPowerPreference: $thermalPowerPreference, notifyOnEmergency: $notifyOnEmergency, notifyOnMatchAdded: $notifyOnMatchAdded, notifyOnMatchStarted: $notifyOnMatchStarted, notifyOnResult: $notifyOnResult, experimentalFeatures: $experimentalFeatures, securityLevel: $securityLevel, adminPasscode: $adminPasscode)';
 }
 
 
@@ -323,7 +327,7 @@ abstract mixin class _$SettingsModelCopyWith<$Res> implements $SettingsModelCopy
   factory _$SettingsModelCopyWith(_SettingsModel value, $Res Function(_SettingsModel) _then) = __$SettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- String organizationId, String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, bool enableLiquidGlass, bool notifyOnEmergency, bool notifyOnMatchAdded, bool notifyOnMatchStarted, bool notifyOnResult, bool experimentalFeatures, int securityLevel, String? adminPasscode
+ String organizationId, String confirmBehavior, bool isLocked, bool showConfirmDialog, bool haptic, bool strikeVib, String audioFeedbackMode, bool ignoreMannerMode, bool sleepPrevent, bool leftHanded, String themeMode, bool enableLiquidGlass, String thermalPowerPreference, bool notifyOnEmergency, bool notifyOnMatchAdded, bool notifyOnMatchStarted, bool notifyOnResult, bool experimentalFeatures, int securityLevel, String? adminPasscode
 });
 
 
@@ -340,7 +344,7 @@ class __$SettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of SettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? organizationId = null,Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? enableLiquidGlass = null,Object? notifyOnEmergency = null,Object? notifyOnMatchAdded = null,Object? notifyOnMatchStarted = null,Object? notifyOnResult = null,Object? experimentalFeatures = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? organizationId = null,Object? confirmBehavior = null,Object? isLocked = null,Object? showConfirmDialog = null,Object? haptic = null,Object? strikeVib = null,Object? audioFeedbackMode = null,Object? ignoreMannerMode = null,Object? sleepPrevent = null,Object? leftHanded = null,Object? themeMode = null,Object? enableLiquidGlass = null,Object? thermalPowerPreference = null,Object? notifyOnEmergency = null,Object? notifyOnMatchAdded = null,Object? notifyOnMatchStarted = null,Object? notifyOnResult = null,Object? experimentalFeatures = null,Object? securityLevel = null,Object? adminPasscode = freezed,}) {
   return _then(_SettingsModel(
 organizationId: null == organizationId ? _self.organizationId : organizationId // ignore: cast_nullable_to_non_nullable
 as String,confirmBehavior: null == confirmBehavior ? _self.confirmBehavior : confirmBehavior // ignore: cast_nullable_to_non_nullable
@@ -354,7 +358,8 @@ as bool,sleepPrevent: null == sleepPrevent ? _self.sleepPrevent : sleepPrevent /
 as bool,leftHanded: null == leftHanded ? _self.leftHanded : leftHanded // ignore: cast_nullable_to_non_nullable
 as bool,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as String,enableLiquidGlass: null == enableLiquidGlass ? _self.enableLiquidGlass : enableLiquidGlass // ignore: cast_nullable_to_non_nullable
-as bool,notifyOnEmergency: null == notifyOnEmergency ? _self.notifyOnEmergency : notifyOnEmergency // ignore: cast_nullable_to_non_nullable
+as bool,thermalPowerPreference: null == thermalPowerPreference ? _self.thermalPowerPreference : thermalPowerPreference // ignore: cast_nullable_to_non_nullable
+as String,notifyOnEmergency: null == notifyOnEmergency ? _self.notifyOnEmergency : notifyOnEmergency // ignore: cast_nullable_to_non_nullable
 as bool,notifyOnMatchAdded: null == notifyOnMatchAdded ? _self.notifyOnMatchAdded : notifyOnMatchAdded // ignore: cast_nullable_to_non_nullable
 as bool,notifyOnMatchStarted: null == notifyOnMatchStarted ? _self.notifyOnMatchStarted : notifyOnMatchStarted // ignore: cast_nullable_to_non_nullable
 as bool,notifyOnResult: null == notifyOnResult ? _self.notifyOnResult : notifyOnResult // ignore: cast_nullable_to_non_nullable
