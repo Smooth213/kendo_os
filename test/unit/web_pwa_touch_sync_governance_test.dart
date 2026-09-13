@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🛡️ iOS PWA ステータスバー独立＆WebKitタッチ座標同期ガバナンステスト (web/index.html)', () {
+  group('🛡️ iOS PWA WebKit タッチ座標同期（ステルスTouchSync）ガバナンステスト (web/index.html)', () {
     late String indexHtmlContent;
 
     setUpAll(() {
@@ -11,33 +11,63 @@ void main() {
       indexHtmlContent = file.readAsStringSync();
     });
 
-    test('1. iOS PWA ステータスバー独立モード（black）が設定され、起動時タッチズレが物理根絶されていること', () {
-      // 🛡️ black-translucent ではなく black を指定してステータスバーを独立管理し、起動時ズレを物理根絶
+    test(
+      '1. iOS PWA 全画面最適化（black-translucent & viewport-fit=cover）が設定されていること',
+      () {
+        expect(
+          indexHtmlContent.contains(
+            'name="apple-mobile-web-app-status-bar-style" content="black-translucent"',
+          ),
+          isTrue,
+          reason: 'iOS PWAの全画面表示のためにblack-translucentが必須',
+        );
+        expect(
+          indexHtmlContent.contains('viewport-fit=cover'),
+          isTrue,
+          reason: 'セーフエリア全体へ描画を展開するために必須',
+        );
+        expect(
+          indexHtmlContent.contains('mobile-web-app-capable'),
+          isTrue,
+          reason: 'PWAスタンドアロン起動タグが必須',
+        );
+      },
+    );
+
+    test('2. WebKit 起動直後タッチ座標56pxズレ防止 TouchSync ステルス補正システムが確実に実装されていること', () {
+      // 🛡️ TouchSync の核心ロジックが確実に index.html に存在することを物理防衛
       expect(
-        indexHtmlContent.contains(
-          'name="apple-mobile-web-app-status-bar-style" content="black"',
-        ),
+        indexHtmlContent.contains('getStatusBarHeight()'),
         isTrue,
-        reason:
-            'ステータスバーを黒帯独立モード（black）にしてWebKitの起動時47px/54pxスクロールフリーズバグを物理根絶するために必須',
+        reason: 'ステータスバーインセット（safe-area-inset-top）の動的計測ロジックが必須',
       );
       expect(
-        indexHtmlContent.contains('viewport-fit=cover'),
+        indexHtmlContent.contains('env(safe-area-inset-top'),
         isTrue,
-        reason: 'セーフエリア全体へ描画を展開するために必須',
+        reason: 'CSS safe-area-inset-top による正確なインセット検出が必須',
       );
       expect(
-        indexHtmlContent.contains('mobile-web-app-capable'),
+        indexHtmlContent.contains('markSynced()'),
         isTrue,
-        reason: 'PWAスタンドアロン起動タグが必須',
+        reason: 'スワイプ検知による補正自動解除（正規化）機構が必須',
+      );
+      expect(
+        indexHtmlContent.contains('nativeClientY'),
+        isTrue,
+        reason: 'MouseEventプロトタイプgetterによる多重減算防止機構が必須',
+      );
+      expect(
+        indexHtmlContent.contains('restoreViewportFit()'),
+        isTrue,
+        reason: 'Flutterによるviewport-fit剥奪を阻止するMutationObserverが必須',
       );
     });
 
-    test('2. 起動時タッチズレの原因となる black-translucent 設定が排除されていること', () {
+    test('3. UIデザインを汚すデバッグ用HUDが画面上に描画されていないこと（完全ステルス保証）', () {
       expect(
-        indexHtmlContent.contains('content="black-translucent"'),
+        indexHtmlContent.contains('kendo-touch-hud'),
         isFalse,
-        reason: 'black-translucentは起動時スクロールオフセットフリーズを引き起こすため禁止',
+        reason: '本番環境のUIにデバッグHUD要素が残留してはならない',
       );
     });
   });

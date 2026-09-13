@@ -43,8 +43,8 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <!-- 🛡️ iOS PWAステータスバー独立モード：blackを指定し、WebKit起動時タッチズレを物理根絶 -->
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- 🛡️ iOS PWA フルスクリーン最適化（TouchSyncステルス補正併用） -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Kendo OS">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
@@ -72,6 +72,137 @@
         console.log('🔄 [BFCache] ページキャッシュから瞬時復帰しました。');
       }
     });
+  </script>
+
+  <script>
+    // =========================================================================
+    // 🛡️ Kendo OS: iOS PWA WebKit 起動直後タッチ座標56pxズレ 完全物理根絶システム (v3.0 Stealth)
+    //
+    // 【真因と解決メカニズム】
+    // 1. iOS PWA / Safari 起動時、WebKit 内部の UIScrollView がステータスバー分（54px/47px）
+    //    インセットされたまま初期化がフリーズし、未同期の間すべてのタッチイベントの clientY に誤加算される。
+    // 2. WebKit の元の MouseEvent.prototype.clientY getter から直接生の値（rawY）を抽出し、
+    //    多重減算を物理的に防ぎながら fixedY = rawY - statusBarHeight を厳密に適用。
+    // 3. ユーザーの実際の指スワイプ（移動量 > 10px）のみで正規化完了（isSynced = true）と判定。
+    //    （※ 起動時の resize や初期 scroll による誤解除を完全排除）
+    // 4. UIデザインを一切汚さない完全ステルス動作（HUD非表示）。
+    // =========================================================================
+    (function () {
+      var isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (!isIos) return; // iOS 以外は完全バイパス
+
+      // 1. ステータスバー高さの正確な計測
+      function getStatusBarHeight() {
+        try {
+          var probe = document.createElement('div');
+          probe.style.cssText = 'position:fixed;top:0;left:0;height:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none;z-index:-1;';
+          document.documentElement.appendChild(probe);
+          var h = probe.offsetHeight;
+          probe.remove();
+          if (h > 0) return h;
+        } catch (_) {}
+
+        if (window.visualViewport && window.visualViewport.offsetTop > 0) {
+          return window.visualViewport.offsetTop;
+        }
+
+        var screenH = Math.max(window.screen.width || 0, window.screen.height || 0);
+        if (screenH >= 852) return 54; // Dynamic Island (iPhone 14 Pro / 15 / 16)
+        if (screenH >= 812) return 47; // Notch (iPhone X / 11 / 12 / 13 / 14)
+        return 20; // Home button
+      }
+
+      var statusBarHeight = getStatusBarHeight();
+      var isSynced = false;
+
+      // 2. スワイプ（指移動 > 10px）のみで正規化完了と判定
+      function markSynced() {
+        if (!isSynced) {
+          isSynced = true;
+          console.log('✅ [Kendo OS Touch Sync] ユーザーのスワイプを検知。WebKitネイティブ座標系が正規化されたため補正を解除しました。');
+        }
+      }
+
+      var touchStartX = null;
+      var touchStartY = null;
+
+      window.addEventListener('touchstart', function (e) {
+        if (e.touches && e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { capture: true, passive: true });
+
+      window.addEventListener('touchmove', function (e) {
+        if (touchStartY !== null && e.touches && e.touches.length > 0) {
+          var dy = Math.abs(e.touches[0].clientY - touchStartY);
+          var dx = Math.abs(e.touches[0].clientX - touchStartX);
+          if (dy > 10 || dx > 10) {
+            markSynced();
+          }
+        }
+      }, { capture: true, passive: true });
+
+      // 3. ネイティブプロトタイプgetterを退避（多重減算の完全防止）
+      var nativeClientY = MouseEvent.prototype ? 
+                          Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'clientY').get : null;
+      var nativePageY = MouseEvent.prototype ? 
+                        Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'pageY').get : null;
+
+      var pointerEvents = [
+        'pointerdown', 'pointerup', 'pointermove',
+        'touchstart', 'touchend', 'touchmove',
+        'mousedown', 'mouseup', 'click'
+      ];
+
+      function patchEvent(e) {
+        if (!e) return;
+        if (isSynced || statusBarHeight <= 0) return;
+
+        // WebKit ネイティブの真の raw 値を取得
+        var rawY = nativeClientY ? nativeClientY.call(e) : e.clientY;
+        var fixedY = rawY - statusBarHeight;
+
+        try {
+          Object.defineProperty(e, 'clientY', {
+            get: function () { return isSynced ? rawY : fixedY; },
+            configurable: true
+          });
+          Object.defineProperty(e, 'pageY', {
+            get: function () { return isSynced ? (nativePageY ? nativePageY.call(e) : e.pageY) : fixedY; },
+            configurable: true
+          });
+          Object.defineProperty(e, 'offsetY', {
+            get: function () { return isSynced ? e.offsetY : fixedY; },
+            configurable: true
+          });
+        } catch (_) {}
+      }
+
+      for (var i = 0; i < pointerEvents.length; i++) {
+        window.addEventListener(pointerEvents[i], patchEvent, { capture: true, passive: true });
+      }
+
+      // 4. 🛡️ Flutter Web の FullPageEmbeddingStrategy が viewport-fit=cover を剥奪するのを常時阻止
+      function restoreViewportFit() {
+        var metas = document.querySelectorAll('meta[name="viewport"]');
+        for (var i = 0; i < metas.length; i++) {
+          var c = metas[i].getAttribute('content') || '';
+          if (!c.includes('viewport-fit=cover')) {
+            metas[i].setAttribute('content', c + ', viewport-fit=cover');
+          }
+        }
+      }
+      try {
+        var observer = new MutationObserver(function () {
+          restoreViewportFit();
+        });
+        observer.observe(document.head, { childList: true, subtree: true, attributes: true });
+        restoreViewportFit();
+      } catch (_) {}
+    })();
   </script>
 </head>
 <body>
@@ -105,7 +236,7 @@
     // =========================================================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('flutter_service_worker.js?v=4', {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=5', {
           scope: '.'
         }).then(function (reg) {
           console.log('🛡️ [PWA ServiceWorker] 体育館オフライン防衛アセットキャッシュが有効です。');
@@ -121,7 +252,7 @@
     if ('caches' in window) {
       caches.keys().then(function (names) {
         for (var i = 0; i < names.length; i++) {
-          if (names[i].indexOf('v4') === -1) {
+          if (names[i].indexOf('v5') === -1) {
             caches.delete(names[i]);
           }
         }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ==============================================================================
-# 🥋 kendo OS - 【ガバナンス監査 19/19】📱 iOS PWA ステータスバー独立＆ロール選択画面 監査スクリプト
+# 🥋 kendo OS - 【ガバナンス監査 19/19】📱 iOS PWA WebKitタッチ座標同期＆ロール選択画面 監査スクリプト
 # ==============================================================================
 import subprocess
 import sys
@@ -17,8 +17,8 @@ def run_ios_pwa_touch_sync_governance():
     passed_all = (result.returncode == 0)
 
     rules = [
-        ("1. iOS PWAステータスバー独立モード (black / viewport-fit=cover) 保持規約", passed_all),
-        ("2. black-translucent起因スクロールフリーズバグ完全排除規約", passed_all),
+        ("1. iOS PWA 全画面最適化 (black-translucent / viewport-fit=cover) 規約", passed_all),
+        ("2. WebKit 起動直後タッチ座標56pxズレ防止 TouchSync ステルス補正規約", passed_all),
         ("3. ロール選択画面 全4権限ボタン常時活性化 (Anti-Disable) 規約", passed_all),
         ("4. スワイプバック・Pop画面復帰時 操作性即時維持規約", passed_all),
         ("5. タップ領域 56px確保＆Bounding Box 重複完全排除規約", passed_all),
@@ -26,7 +26,7 @@ def run_ios_pwa_touch_sync_governance():
     ]
 
     print("=" * 60)
-    print(" 📊 【ガバナンス監査 19/19】📱 iOS PWA ステータスバー独立＆ロール選択画面 監査レポート")
+    print(" 📊 【ガバナンス監査 19/19】📱 iOS PWA WebKitタッチ座標同期＆ロール選択画面 監査レポート")
     print("=" * 60)
 
     for label, is_ok in rules:
@@ -35,11 +35,11 @@ def run_ios_pwa_touch_sync_governance():
 
     print("-" * 60)
     if passed_all:
-        print(" 🟢 監査結果: 合格 (iOS PWAステータスバー独立・ロール選択画面不具合防止に完全適合！)")
+        print(" 🟢 監査結果: 合格 (iOS PWA TouchSync座標同期・ロール選択画面不具合防止に完全適合！)")
         print("=" * 60)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (PWAステータスバーまたはロール選択画面に違反があります)")
+        print(" 🔴 監査結果: 違反 (PWA TouchSyncまたはロール選択画面に違反があります)")
         print("=" * 60)
         print("\n🚨 テスト実行エラー:")
         try:
