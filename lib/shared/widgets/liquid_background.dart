@@ -9,8 +9,13 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 class LiquidBackground extends ConsumerStatefulWidget {
   final Widget child;
+  final bool isAnimated;
 
-  const LiquidBackground({super.key, required this.child});
+  const LiquidBackground({
+    super.key,
+    required this.child,
+    this.isAnimated = true,
+  });
 
   @override
   ConsumerState<LiquidBackground> createState() => _LiquidBackgroundState();
@@ -112,8 +117,8 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
           'TestWidgetsFlutterBinding',
         ));
 
-    // 🌟 通常モード時はアニメーションを再生（テスト環境では無限アニメーションによるタイムアウトを防ぐため停止）
-    if (isTest) {
+    // 🌟 通常モード時はアニメーションを再生（テスト環境または静止モードでは停止）
+    if (isTest || !widget.isAnimated) {
       if (_controller.isAnimating) {
         _controller.stop();
       }
@@ -129,6 +134,64 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
     final orb2Color = isDark
         ? const Color(0xFF009688).withValues(alpha: 0.30)
         : const Color(0xFF009688).withValues(alpha: 0.16);
+
+    // 🔋 静止モード（試合画面・省負荷優先画面）: AnimatedBuilderを完全バイパスして毎フレームの再描画・GPU負荷をゼロ化
+    if (!widget.isAnimated) {
+      return RepaintBoundary(
+        child: Stack(
+          children: [
+            // ベース背景色
+            Container(color: themeColors.scaffoldBackground),
+            // オーブ1: 左上 (固定位置)
+            Positioned(
+              top: -120,
+              left: -120,
+              child: IgnorePointer(
+                child: Container(
+                  width: 450,
+                  height: 450,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        orb1Color,
+                        orb1Color.withValues(alpha: orb1Color.a * 0.5),
+                        orb1Color.withValues(alpha: 0.0),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // オーブ2: 右下 (固定位置)
+            Positioned(
+              bottom: -180,
+              right: -80,
+              child: IgnorePointer(
+                child: Container(
+                  width: 550,
+                  height: 550,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        orb2Color,
+                        orb2Color.withValues(alpha: orb2Color.a * 0.5),
+                        orb2Color.withValues(alpha: 0.0),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // 前面の Scaffold 等
+            widget.child,
+          ],
+        ),
+      );
+    }
 
     return RepaintBoundary(
       child: AnimatedBuilder(

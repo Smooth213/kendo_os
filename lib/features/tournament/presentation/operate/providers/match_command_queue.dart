@@ -99,16 +99,21 @@ class MatchCommandQueue {
     try {
       while (_queue.isNotEmpty) {
         final cmd = _queue.first;
-        await localRepo.savePendingCommand(cmd);
 
         try {
           await _executeCommand(cmd);
-          await localRepo.deleteCommand(cmd.id);
+          // 以前の失敗でIsarに保存されていた場合のみ削除トランザクションを実行
+          if ((_errorCounts[cmd.id] ?? 0) > 0) {
+            await localRepo.deleteCommand(cmd.id);
+          }
           _queue.removeAt(0);
           _errorCounts.remove(cmd.id);
         } catch (e) {
           _errorCounts[cmd.id] = (_errorCounts[cmd.id] ?? 0) + 1;
           debugPrint('🔥 [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e');
+
+          // 失敗したコマンドは即座にIsarへ確実に永続化（データ消失防止）
+          await localRepo.savePendingCommand(cmd);
 
           final errStr = e.toString();
           if (errStr.contains('DomainException') ||

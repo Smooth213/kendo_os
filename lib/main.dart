@@ -137,9 +137,8 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
     if (kIsWeb) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信データの強制同期を試行します...');
+      debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信キューの同期を試行します...');
       ref.read(syncEngineProvider).processQueue();
-      ref.read(legacy_sync.syncEngineProvider).syncNow();
     }
   }
 

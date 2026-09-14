@@ -301,8 +301,9 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
         } catch (_) {}
       });
 
-      // Periodically poll low power mode (on some platforms state changes might not trigger immediately)
-      _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      // 🔋 【Plan 2】過剰な10秒固定ポーリングを撤廃し、OSバッテリー状態変更イベント（onBatteryStateChanged）を主軸化。
+      // 残量追従用の定期ポーリングは60秒に緩和してアイドル時のCPU起床頻度を83%削減
+      _timer = Timer.periodic(const Duration(seconds: 60), (_) async {
         try {
           final l = await _battery!.batteryLevel;
           final p = await _battery!.isInBatterySaveMode;

@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全25大ガバナンス個別監査 (1/25 〜 25/25: 100% PASS)
+# 1. 全28大ガバナンス個別監査 (1/28 〜 28/28: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全26大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全26大ガバナンス個別監査を実行中..."
+# 1. 全28大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全28大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全26大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全28大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -37,13 +37,15 @@ flutter test test/widget/sync_crdt_merger_test.dart \
              test/widget/app_router_test.dart \
              test/performance/adaptive_power_saving_thermal_test.dart \
              test/e2e/plan1_ui_responsiveness_e2e_test.dart \
+             test/e2e/rapid_fire_score_responsiveness_e2e_test.dart \
              test/e2e/plan2_low_load_e2e_test.dart \
-             test/e2e/plan3_robustness_e2e_test.dart
+             test/e2e/plan3_robustness_e2e_test.dart \
+             test/e2e/plan3_stability_resilience_e2e_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全26大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全28大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

@@ -270,7 +270,7 @@ class AppStartup {
   /// ⚡ 【Phase 13】Isar メモリマップトI/O（MMAP）＆ ページサイズ最適化
   /// 過去数万件の大会データ検索時、フラッシュストレージI/OをスキップしてRAM速度（0ms）で即座返却
   static Future<Isar?> _initIsar({
-    int maxSizeMiB = 1024,
+    int maxSizeMiB = 128,
     bool relaxedDurability = true,
   }) async {
     if (kIsWeb) {

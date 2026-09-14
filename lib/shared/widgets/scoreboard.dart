@@ -1,33 +1,29 @@
-import 'package:flutter/material.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart'; // kIsWeb用
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/features/match/application/usecases/match_usecases.dart'; // ★ 追加: UseCaseの参照
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_ui_assist_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart'; // ★ Phase 3: ViewStateの参照
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart'; // ★ 追加: matchListProvider
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_ui_assist_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-// ★ 追加: Scoreboard を const として扱うための Provider
 final scoreboardMatchIdProvider = Provider<String>(
   (ref) => throw UnimplementedError(),
 );
 final scoreboardNameTapProvider = Provider<void Function(String side)?>(
   (ref) => null,
 );
-// ★ 追加: 親ウィジェットから直接最新のMatchModelを注入するためのProvider
 final scoreboardMatchProvider = Provider<MatchModel?>((ref) => null);
 
-// ★ 追加: Firestoreから受信したデータを確実にMatchModelにパースするための再帰的サニタイズ関数
 Map<String, dynamic> _sanitizeWebFirestoreData(Map<String, dynamic> data) {
   final Map<String, dynamic> result = {};
   data.forEach((key, value) {
@@ -63,7 +59,6 @@ Map<String, dynamic> _sanitizeWebFirestoreData(Map<String, dynamic> data) {
   return result;
 }
 
-// ★ 追加: Web環境（Viewer）で直接Firestoreから特定の試合データを取得するストリームプロバイダ
 final webScoreboardMatchProvider = StreamProvider.family
     .autoDispose<MatchModel?, String>((ref, matchId) {
       final dojoId = ref.watch(currentDojoIdProvider);
@@ -73,8 +68,6 @@ final webScoreboardMatchProvider = StreamProvider.family
           ? activeTournamentId
           : (webTournamentId ?? '');
 
-      // ⚡ 最適化: dojoId と tournamentId が判明している場合は O(1) 直接パスでドキュメント監視
-      // 重い collectionGroup 全件インデックススキャンを完全にバイパスします
       if (dojoId.isNotEmpty && tournamentId.isNotEmpty) {
         return FirebaseFirestore.instance
             .collection('organizations')
@@ -88,12 +81,10 @@ final webScoreboardMatchProvider = StreamProvider.family
               if (!doc.exists || doc.data() == null) return null;
               final data = doc.data()!;
               data['id'] = doc.id;
-              final sanitized = _sanitizeWebFirestoreData(data);
-              return MatchModel.fromJson(sanitized);
+              return MatchModel.fromJson(_sanitizeWebFirestoreData(data));
             });
       }
 
-      // フォールバック: パラメータ未解決のレガシーアクセス時のみ collectionGroup を使用
       return FirebaseFirestore.instance
           .collectionGroup('matches')
           .where('id', isEqualTo: matchId)
@@ -103,69 +94,74 @@ final webScoreboardMatchProvider = StreamProvider.family
             final doc = snapshot.docs.first;
             final data = doc.data();
             data['id'] = doc.id;
-            final sanitized = _sanitizeWebFirestoreData(data);
-            return MatchModel.fromJson(sanitized);
+            return MatchModel.fromJson(_sanitizeWebFirestoreData(data));
           });
     });
 
 class MatchScoreboard extends ConsumerWidget {
-  const MatchScoreboard({super.key});
+  final String? matchId;
+  final MatchModel? match;
+  final void Function(String side)? onNameTap;
+
+  const MatchScoreboard({super.key, this.matchId, this.match, this.onNameTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final matchId = ref.watch(scoreboardMatchIdProvider);
-    final onNameTap = ref.watch(scoreboardNameTapProvider);
+    final String effectiveMatchId =
+        match?.id ?? matchId ?? ref.watch(scoreboardMatchIdProvider);
+    final effectiveOnNameTap =
+        onNameTap ?? ref.watch(scoreboardNameTapProvider);
 
-    // ★ 修正: 親から直接最新 of MatchModelが注入されていればそれを優先使用する (Webでの入力遅延防止)
-    MatchModel? match = ref.watch(scoreboardMatchProvider);
-
-    match ??= kIsWeb
-        ? ref.watch(webScoreboardMatchProvider(matchId)).value
+    MatchModel? currentMatch = match ?? ref.watch(scoreboardMatchProvider);
+    currentMatch ??= kIsWeb
+        ? ref.watch(webScoreboardMatchProvider(effectiveMatchId)).value
         : ref.watch(
             matchListProvider.select(
-              (list) => list.where((m) => m.id == matchId).firstOrNull,
+              (list) => list.where((m) => m.id == effectiveMatchId).firstOrNull,
             ),
           );
-    if (match == null) return const SizedBox.shrink();
+    if (currentMatch == null) return const SizedBox.shrink();
+    final MatchModel targetMatch = currentMatch;
 
     final calculatePointDisplays = ref.watch(
       calculatePointDisplaysUseCaseProvider,
     );
-    final ptsMap = calculatePointDisplays.execute(match);
-    final viewState = ref.watch(matchViewStateProvider(matchId));
-    final isFlipped = ref.watch(isMatchViewFlippedProvider(matchId));
+    final ptsMap = calculatePointDisplays.execute(targetMatch);
+    final viewState = ref.watch(matchViewStateProvider(effectiveMatchId));
+    final isFlipped = ref.watch(isMatchViewFlippedProvider(effectiveMatchId));
 
     final redColumn = _buildScoreColumn(
       context,
       Side.red,
-      match,
+      targetMatch,
       ptsMap,
       viewState,
-      onNameTap,
+      effectiveOnNameTap,
     );
     final whiteColumn = _buildScoreColumn(
       context,
       Side.white,
-      match,
+      targetMatch,
       ptsMap,
       viewState,
-      onNameTap,
+      effectiveOnNameTap,
     );
 
     final scoreboardRow = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         final isDone =
-            match?.status == 'finished' || match?.status == 'approved';
+            targetMatch.status == 'finished' ||
+            targetMatch.status == 'approved';
         if (!isDone) {
-          final isRunning = match?.timerIsRunning ?? false;
+          final isRunning = targetMatch.timerIsRunning;
           await KendoHaptics.timerToggle(isStarting: !isRunning);
-          ref.read(matchTimerProvider).toggleTimer(matchId);
+          ref.read(matchTimerProvider).toggleTimer(effectiveMatchId);
         }
       },
       child: SizedBox(
         width: 800,
-        height: 320, // ★ 高さの無駄な余白を詰めるため 380 から 320 に圧縮
+        height: 320,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: isFlipped
@@ -175,11 +171,8 @@ class MatchScoreboard extends ConsumerWidget {
       ),
     );
 
-    // ★修正：二段（結果バッジが上、スコアボードが下）になるようにColumnで配置し、上に被らないようにする
     final showResult = viewState.winner != null || viewState.isTie;
 
-    // 🎨 【Phase 3】RepaintBoundaryによる描画境界の完全分離
-    // スコア変動や勝敗判定の再ペイントをスコアボード内に隔離し、親画面全体の再ペイント・再レイアウトを遮断
     return RepaintBoundary(
       child: FittedBox(
         fit: BoxFit.contain,
@@ -207,31 +200,27 @@ class MatchScoreboard extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pts = allPts[side] ?? [];
-
-    // ★ 修正: 計算を削除し ViewState に依存
     final isWinner = viewState.winner == side.name;
     final isFinished = match.status == 'approved' || match.status == 'finished';
-
     final nameColor = side == Side.red
         ? context.appColors.errorColor
         : context.appColors.textColor;
 
     return SizedBox(
-      width: 380, // 左右均等な幅を明示的に確保
-      height: 320, // ★ 380 から 320 に圧縮
+      width: 380,
+      height: 320,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center, // 垂直中央ロックの前提
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: AppSpacing.lg), // ★ 余白圧縮 (24 -> 16)
+          const SizedBox(height: AppSpacing.lg),
           GestureDetector(
             onTap: onNameTap != null ? () => onNameTap(side.name) : null,
             child: Container(
-              height: 54, // ★ 選手名表示サイズに合わせて高さを拡張
+              height: 54,
               alignment: side == Side.red
-                  ? Alignment
-                        .centerRight // 赤側は右寄せで中央に対比
-                  : Alignment.centerLeft, // 白側は左寄せで中央に対比
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               decoration: BoxDecoration(
                 color: isDark
@@ -240,7 +229,7 @@ class MatchScoreboard extends ConsumerWidget {
                 borderRadius: AppRadius.small,
               ),
               child: FittedBox(
-                fit: BoxFit.scaleDown, // 🌟 基本は40ptで表示、長い名前の時だけ自動縮小
+                fit: BoxFit.scaleDown,
                 alignment: side == Side.red
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
@@ -249,15 +238,14 @@ class MatchScoreboard extends ConsumerWidget {
                       ? viewState.redCleanName
                       : viewState.whiteCleanName,
                   style: TextStyle(
-                    fontSize: AppFontSize
-                        .scoreboardMedium, // 🌟 視認性をさらに高める40ptへサイズアップ
-                    fontWeight: AppFontWeight.bold, // 力強い超太字 (w900)
+                    fontSize: AppFontSize.scoreboardMedium,
+                    fontWeight: AppFontWeight.bold,
                     color: nameColor,
                     height: 1.2,
                     letterSpacing: 1.2,
                   ),
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis, // 🛡️ 究極のレイアウト崩れ防衛
+                  overflow: TextOverflow.ellipsis,
                   textAlign: side == Side.red
                       ? TextAlign.right
                       : TextAlign.left,
@@ -265,9 +253,7 @@ class MatchScoreboard extends ConsumerWidget {
               ),
             ),
           ),
-
-          const SizedBox(height: 10), // ★ 余白圧縮 (16 -> 10)
-          // ポイントアイコンの拡大
+          const SizedBox(height: 10),
           SizedBox(
             width: 180,
             height: 180,
@@ -286,15 +272,14 @@ class MatchScoreboard extends ConsumerWidget {
                       ),
                     ),
                   ),
-
                 SizedBox(
-                  width: 130, // ★ 内側の技マーク配置エリアを大幅に拡張 (100 -> 130)
+                  width: 130,
                   height: 130,
                   child: Stack(
                     children: [
                       if (pts.isNotEmpty)
                         Positioned(
-                          top: 6, // ★ 130x130の円周にあわせ配置調整
+                          top: 6,
                           left: 6,
                           child: _buildPoint(
                             context,
@@ -305,7 +290,7 @@ class MatchScoreboard extends ConsumerWidget {
                         ),
                       if (pts.length > 1)
                         Positioned(
-                          bottom: 6, // ★ 130x130の円周にあわせ配置調整
+                          bottom: 6,
                           right: 6,
                           child: _buildPoint(
                             context,
@@ -316,7 +301,7 @@ class MatchScoreboard extends ConsumerWidget {
                         ),
                       if (pts.length > 2)
                         Positioned(
-                          top: 35, // ★ 中央に配置
+                          top: 35,
                           left: 35,
                           child: _buildPoint(
                             context,
@@ -331,8 +316,6 @@ class MatchScoreboard extends ConsumerWidget {
               ],
             ),
           ),
-
-          // 反則表示 (▲)
           Builder(
             builder: (context) {
               final engine = KendoRuleEngine();
@@ -344,9 +327,7 @@ class MatchScoreboard extends ConsumerWidget {
                         (e.isHansoku || e.type == PointType.hansoku),
                   )
                   .length;
-              if (hansokuCount == 0) {
-                return const SizedBox.shrink(); // ★ 反則なし時は完全に高さを0にして余白を消滅させる
-              }
+              if (hansokuCount == 0) return const SizedBox.shrink();
               return Container(
                 height: 36,
                 alignment: Alignment.center,
@@ -366,89 +347,76 @@ class MatchScoreboard extends ConsumerWidget {
     );
   }
 
-  // ★ 改善: _cleanName を削除。UI側で文字列操作（ビジネス/プレゼンテーションロジック）を持たないようにする。
-  // (※呼び出し元の _buildScoreColumn 内で Text() に渡す値も修正します)
   Widget _buildPoint(
     BuildContext context,
     PointDisplay pd,
     bool isDark,
     Color color,
   ) {
-    const double fs = 38; // ★ 技マークフォントサイズを大幅に大きく (26 -> 38)
-    Widget pointWidget;
-
-    if (pd.isFirstMatchPoint) {
-      pointWidget = Container(
-        width: 60, // ★ 技マークバッジの直径を大きく拡張 (42 -> 60)
-        height: 60,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: color.withValues(alpha: isDark ? 0.7 : 1.0),
-            width: 3.5, // ★ 枠線も視認性を高める太さに変更 (2.5 -> 3.5)
-          ),
-        ),
-        child: Text(
-          pd.mark,
-          style: TextStyle(
-            fontSize: fs,
-            fontWeight: AppFontWeight.bold,
-            color: color,
-            height: 1.0,
-          ),
-        ),
-      );
-    } else {
-      pointWidget = SizedBox(
-        width: 60, // ★ 技マークバッジの大きさを大きく拡張 (42 -> 60)
-        height: 60,
-        child: Center(
-          child: Text(
-            pd.mark,
-            style: TextStyle(
-              fontSize: fs,
-              fontWeight: AppFontWeight.bold,
-              color: color,
-              height: 1.0,
+    const double fs = 38;
+    final pointWidget = pd.isFirstMatchPoint
+        ? Container(
+            width: 60,
+            height: 60,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: color.withValues(alpha: isDark ? 0.7 : 1.0),
+                width: 3.5,
+              ),
             ),
-          ),
-        ),
-      );
-    }
+            child: Text(
+              pd.mark,
+              style: TextStyle(
+                fontSize: fs,
+                fontWeight: AppFontWeight.bold,
+                color: color,
+                height: 1.0,
+              ),
+            ),
+          )
+        : SizedBox(
+            width: 60,
+            height: 60,
+            child: Center(
+              child: Text(
+                pd.mark,
+                style: TextStyle(
+                  fontSize: fs,
+                  fontWeight: AppFontWeight.bold,
+                  color: color,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          );
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.1, end: 1.0),
       duration: const Duration(milliseconds: 600),
       curve: Curves.elasticOut,
-      builder: (context, scale, child) {
-        return Transform.scale(
-          scale: scale,
-          child: Opacity(opacity: scale.clamp(0.0, 1.0), child: child),
-        );
-      },
+      builder: (context, scale, child) => Transform.scale(
+        scale: scale,
+        child: Opacity(opacity: scale.clamp(0.0, 1.0), child: child),
+      ),
       child: pointWidget,
     );
   }
 
   Widget _buildResultOverlay(BuildContext context, MatchViewState viewState) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     String resultText = '引き分け';
     if (viewState.winner == 'red') resultText = '赤 の勝ち';
     if (viewState.winner == 'white') resultText = '白 の勝ち';
 
     return Container(
-      height: 60, // ★ 二段配置になったため、重なりを気にせず視認性の高い60pxまで拡大
+      height: 60,
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.giant,
-      ), // ★ 横幅にゆとりを持たせる
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.giant),
       decoration: BoxDecoration(
-        color: isDark
-            ? context.appColors.primaryAccent
-            : context.appColors.primaryAccent,
-        borderRadius: AppRadius.full, // ★ 角丸を調整
+        color: context.appColors.primaryAccent,
+        borderRadius: AppRadius.full,
         border: isDark
             ? Border.all(color: const Color(0xFF3F51B5), width: 1.5)
             : null,
@@ -461,13 +429,12 @@ class MatchScoreboard extends ConsumerWidget {
         ],
       ),
       child: FittedBox(
-        // ★ 文字が絶対にはみ出さないようガード
         child: Text(
           resultText,
           style: const TextStyle(
             color: AppKendoColors.pureWhite,
             fontWeight: AppFontWeight.bold,
-            fontSize: AppFontSize.hero, // ★ 堂々とした28pt特大サイズへ拡大
+            fontSize: AppFontSize.hero,
             letterSpacing: 1.5,
           ),
         ),

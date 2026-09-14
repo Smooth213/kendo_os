@@ -8,6 +8,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
@@ -17,10 +18,14 @@ void main() {
 
     setUp(() {
       mockLocalRepo = MockLocalMatchRepository();
-      // Setup mock behaviors for MockLocalMatchRepository to avoid null exceptions during watch
+      // Setup mock behaviors for MockLocalMatchRepository to avoid null exceptions during watch and save
       when(
         () => mockLocalRepo.watchLocalMatches(any()),
       ).thenAnswer((_) => Stream.value([]));
+      when(() => mockLocalRepo.saveMatchesBulk(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalRepo.getPendingCommands(),
+      ).thenAnswer((_) async => []);
     });
 
     test(
@@ -114,12 +119,19 @@ void main() {
           overrides: [
             firestoreProvider.overrideWithValue(fakeFirestore),
             currentDojoIdProvider.overrideWith((ref) => 'test202'),
+            currentTournamentIdProvider.overrideWith(
+              (ref) => targetTournamentId,
+            ),
             localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
           ],
         );
 
         final subscription = container.listen(
           matchListByTournamentProvider(targetTournamentId),
+          (previous, next) {},
+        );
+        final syncSubscription = container.listen(
+          syncEngineProvider,
           (previous, next) {},
         );
 
@@ -135,6 +147,7 @@ void main() {
         expect(match.timerStartedAt, isNull);
 
         subscription.close();
+        syncSubscription.close();
       },
     );
 

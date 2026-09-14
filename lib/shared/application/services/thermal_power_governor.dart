@@ -73,6 +73,19 @@ class ThermalPowerGovernor extends ChangeNotifier {
     }
   }
 
+  /// 🔋 【Plan 2】試合タイマー用のアダプティブ更新間隔
+  /// 通常の「分:秒」表示では1000ms（毎秒1回）に抑えてCPU起床を90%削減し、
+  /// 代表戦・延長戦などの0.1秒精度要求時のみ高精度Tick（100ms）を動的適用する
+  Duration getTickIntervalForMatch({bool isHighPrecision = false}) {
+    if (isHighPrecision) {
+      return recommendedTickInterval;
+    }
+    if (_mode == ThermalPowerMode.normal) {
+      return const Duration(milliseconds: 1000);
+    }
+    return recommendedTickInterval;
+  }
+
   /// ユーザー設定ポリシー（preference）の更新
   void updatePreference(String preference) {
     if (_preference != preference) {

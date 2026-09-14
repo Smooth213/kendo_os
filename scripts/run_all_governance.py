@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全26大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全27大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全26大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全27大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 """
 
 
@@ -144,11 +144,21 @@ AUDIT_DEFINITIONS = [
         "name": "🛡️ 堅牢性・同期整合性・データ完全性 永続保証規約",
         "cmd": ["python3", "scripts/check_robustness_governance.py"],
     },
+    {
+        "id": 27,
+        "name": "⚡ UI極限軽快化・動的ProviderScope排除＆I/Oバッチ集約 永続保証規約",
+        "cmd": ["python3", "scripts/check_extreme_responsiveness_governance.py"],
+    },
+    {
+        "id": 28,
+        "name": "🛡️ 絶対的安定性・同期無限ループ根絶＆データ消失ゼロ 永続保証規約",
+        "cmd": ["python3", "scripts/check_stability_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全26大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜26）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全28大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜28）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
@@ -160,7 +170,7 @@ def main():
             sys.exit(1)
 
     print("=" * 72)
-    print(" 🥋 Kendo OS - 全26大ガバナンス監査 統合ランナー (Unified Governance Runner)")
+    print(" 🥋 Kendo OS - 全27大ガバナンス監査 統合ランナー (Unified Governance Runner)")
     print("=" * 72)
     print(f" 実行対象: {len(target_audits)} 項目")
     print("-" * 72)

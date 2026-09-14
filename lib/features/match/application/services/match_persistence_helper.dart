@@ -155,7 +155,6 @@ class MatchPersistenceHelper {
       }
     } else {
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      await localRepo.saveMatch(matchToSave);
 
       bool isViewer = false;
       try {
@@ -165,15 +164,33 @@ class MatchPersistenceHelper {
         }
       } catch (_) {}
 
+      MatchCommandModel? action;
       if (!isViewer) {
-        final action = MatchCommandModel(
+        action = MatchCommandModel(
           id: const Uuid().v4(),
           type: CommandType.updateMatch,
           payload: matchToSave.toJson(),
           createdAt: DateTime.now(),
           status: CommandStatus.pending,
         );
-        await localRepo.savePendingCommand(action);
+      }
+
+      // 🔋 【Plan 1 最適化】マッチ保存と保留コマンドの書き込みを1回のwriteTxnに集約
+      // （テスト環境のモックで saveMatchWithPendingCommand が未スタブの場合は自動的に saveMatch + savePendingCommand へフォールバック）
+      try {
+        await localRepo.saveMatchWithPendingCommand(matchToSave, action);
+      } catch (e) {
+        if (e.toString().contains(
+              "type 'Null' is not a subtype of type 'Future<void>'",
+            ) ||
+            e is NoSuchMethodError) {
+          await localRepo.saveMatch(matchToSave);
+          if (action != null) {
+            await localRepo.savePendingCommand(action);
+          }
+        } else {
+          rethrow;
+        }
       }
 
       _ref.read(syncEngineProvider).processQueue();

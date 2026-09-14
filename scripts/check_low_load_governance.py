@@ -9,6 +9,7 @@ import sys
 def run_low_load_governance():
     test_files = [
         "test/governance/plan2_low_load_governance_test.dart",
+        "test/governance/plan2_extreme_low_load_governance_test.dart",
     ]
 
     cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
@@ -21,6 +22,9 @@ def run_low_load_governance():
         ("3. [LRUメモリ保護] program_viewer_pdf_page_cache.dart の 8ページ上限 ＆ clearUrl規約", passed_all),
         ("4. [ドキュメント軽量化] match_snapshot_helper.dart のスナップショット1件保持規約", passed_all),
         ("5. [通信リーク根絶] match_list_provider.dart の autoDispose ＆ keepAliveキャッシュ規約", passed_all),
+        ("6. [試合画面静止化] match_screen.dart の LiquidBackground 静止モード・GPU毎フレーム再描画ゼロ規約", passed_all),
+        ("7. [タイマーTick適正化] match_timer_provider.dart の 通常1000ms Tick間引き規約", passed_all),
+        ("8. [同期統合＆Isar適正化] 二重Firestoreリスナー根絶 ＆ Isar 128MB MMAP ＆ 3世代緊急バックアップ規約", passed_all),
     ]
 
     print("=" * 60)

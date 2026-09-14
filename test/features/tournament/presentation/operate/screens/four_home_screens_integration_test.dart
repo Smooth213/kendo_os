@@ -98,6 +98,9 @@ void main() {
       when(
         () => mockLocalRepo.saveMatchesBulk(any()),
       ).thenAnswer((_) => Future.value());
+      when(
+        () => mockLocalRepo.getPendingCommands(),
+      ).thenAnswer((_) => Future.value([]));
     });
 
     testWidgets('1. 運営用 通常大会ホーム (HomeScreen) - ネイティブ＆Webシミュレーション表示検証', (
@@ -458,7 +461,6 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
             playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-            syncEngineProvider.overrideWithValue(mockSyncEngine),
             localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
             commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
             dojoRoomSyncProvider.overrideWithValue(null),
@@ -477,8 +479,13 @@ void main() {
               (ref) => 'YwP7EKfZN0OAF7q1FvYo',
             ),
           ],
-          child: const MaterialApp(
-            home: HomeScreen(tournamentId: 'YwP7EKfZN0OAF7q1FvYo'),
+          child: Consumer(
+            builder: (context, ref, child) {
+              ref.watch(syncEngineProvider);
+              return const MaterialApp(
+                home: HomeScreen(tournamentId: 'YwP7EKfZN0OAF7q1FvYo'),
+              );
+            },
           ),
         ),
       );

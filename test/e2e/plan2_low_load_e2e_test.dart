@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +9,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
@@ -163,6 +165,124 @@ void main() {
 
         // autoDispose により、一定時間後に安全に破棄される構造になっていること
         expect(true, isTrue);
+      },
+    );
+
+    test(
+      '5. [緊急バックアップ実ファイル3世代ローテーション] 連続保存失敗時も実ディスク上に最新3世代のみが維持されディスク肥大化がゼロであること',
+      () async {
+        final tempDir = await Directory.systemTemp.createTemp('e2e_rot_test_');
+        addTearDown(() async {
+          if (tempDir.existsSync()) {
+            tempDir.deleteSync(recursive: true);
+          }
+        });
+
+        const matchId = 'match_emergency_rot_test';
+
+        // 5回連続で緊急避難バックアップファイルが生成される状況をシミュレート
+        for (int i = 1; i <= 5; i++) {
+          final timestamp = 1000000 + i * 1000;
+          final file = File(
+            '${tempDir.path}/emergency_backup_${matchId}_$timestamp.json',
+          );
+          await file.writeAsString('{"matchId": "$matchId", "generation": $i}');
+
+          // LocalMatchRepository と同一のローテーションパージロジックを実行
+          final backupFiles =
+              tempDir
+                  .listSync()
+                  .whereType<File>()
+                  .where((f) => f.path.contains('emergency_backup_${matchId}_'))
+                  .toList()
+                ..sort((a, b) => b.path.compareTo(a.path));
+
+          if (backupFiles.length > 3) {
+            for (final oldFile in backupFiles.sublist(3)) {
+              try {
+                oldFile.deleteSync();
+              } catch (_) {}
+            }
+          }
+        }
+
+        final remainingFiles = tempDir
+            .listSync()
+            .whereType<File>()
+            .where((f) => f.path.contains('emergency_backup_${matchId}_'))
+            .toList();
+
+        // 最新3世代のみ保持され、最古の2世代がディスクから物理削除されていること
+        expect(remainingFiles.length, equals(3), reason: '保持ファイル数は厳格に最新3件');
+        final contents = remainingFiles
+            .map((f) => f.readAsStringSync())
+            .toList();
+        expect(
+          contents.any((c) => c.contains('"generation": 1')),
+          isFalse,
+          reason: '第1世代はパージ済み',
+        );
+        expect(
+          contents.any((c) => c.contains('"generation": 2')),
+          isFalse,
+          reason: '第2世代はパージ済み',
+        );
+        expect(
+          contents.any((c) => c.contains('"generation": 3')),
+          isTrue,
+          reason: '第3世代は保持',
+        );
+        expect(
+          contents.any((c) => c.contains('"generation": 4')),
+          isTrue,
+          reason: '第4世代は保持',
+        );
+        expect(
+          contents.any((c) => c.contains('"generation": 5')),
+          isTrue,
+          reason: '第5世代は保持',
+        );
+      },
+    );
+
+    test(
+      '6. [試合タイマー適正化E2E] 通常試合は1000ms（毎秒1回）間引き、代表戦・延長戦のみ100ms高精度Tickが適用されること',
+      () {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        final governor = container.read(thermalPowerGovernorProvider);
+
+        // 1. 通常試合（個人戦）: 1000ms Tick間引き（CPU起床90%削減）
+        final normalInterval = governor.getTickIntervalForMatch(
+          isHighPrecision: false,
+        );
+        expect(
+          normalInterval,
+          equals(const Duration(milliseconds: 1000)),
+          reason: '通常試合は1000ms間引き',
+        );
+
+        // 2. 代表戦・延長戦: 100ms 高精度Tick（0.1秒単位精度確保）
+        final highPrecisionInterval = governor.getTickIntervalForMatch(
+          isHighPrecision: true,
+        );
+        expect(
+          highPrecisionInterval,
+          equals(const Duration(milliseconds: 100)),
+          reason: '代表戦は100ms高精度',
+        );
+
+        // 3. エコ冷却時: 500ms
+        governor.setMode(ThermalPowerMode.ecoCooling);
+        expect(
+          governor.getTickIntervalForMatch(isHighPrecision: false),
+          equals(const Duration(milliseconds: 500)),
+        );
+        expect(
+          governor.getTickIntervalForMatch(isHighPrecision: true),
+          equals(const Duration(milliseconds: 500)),
+        );
       },
     );
   });

@@ -1,48 +1,44 @@
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:async';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/match_state.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
-
-import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
-
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_message_provider.dart';
+import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
-import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
-import 'components/match_screen/match_mini_log_undo_section.dart';
-import 'components/match_screen/match_operate_action_buttons_grid.dart';
-import 'components/match_screen/match_view_only_notice_banner.dart';
-import 'components/match_screen/match_daihyo_overlay.dart';
-import 'components/match_screen/match_bottom_action_section.dart';
-import 'components/match_screen/match_timer_section.dart';
-import 'components/match_screen/match_score_action_section.dart';
-import 'components/match_screen/match_content_layout_builder.dart';
-import 'components/match_screen/match_header_widgets.dart';
-import 'components/match_screen/match_dialog_helper.dart';
-import 'components/match_screen/match_loading_view.dart';
-import 'components/match_screen/match_floating_dock_entry.dart';
-
-import 'package:kendo_os/shared/application/services/sound_service.dart';
-import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
-import 'package:kendo_os/shared/widgets/scoreboard.dart';
-import 'package:kendo_os/features/match/domain/match_state.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
-import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/widgets/scoreboard.dart';
+import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
+import 'components/match_screen/match_bottom_action_section.dart';
+import 'components/match_screen/match_content_layout_builder.dart';
+import 'components/match_screen/match_daihyo_overlay.dart';
+import 'components/match_screen/match_dialog_helper.dart';
+import 'components/match_screen/match_floating_dock_entry.dart';
+import 'components/match_screen/match_header_widgets.dart';
+import 'components/match_screen/match_loading_view.dart';
+import 'components/match_screen/match_mini_log_undo_section.dart';
+import 'components/match_screen/match_operate_action_buttons_grid.dart';
+import 'components/match_screen/match_score_action_section.dart';
+import 'components/match_screen/match_timer_section.dart';
+import 'components/match_screen/match_view_only_notice_banner.dart';
 
 export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
     show registeredTeamsProvider;
@@ -147,28 +143,28 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ref.watch(singleMatchProvider(widget.matchId)))
         : ref.watch(singleMatchProvider(widget.matchId));
 
-    if (match == null) {
-      return const MatchLoadingView();
-    }
+    if (match == null) return const MatchLoadingView();
 
     final MatchRule rule =
         match.rule ?? ref.watch(matchRuleProvider) ?? MatchRule();
 
-    final teamMatches = match.groupName != null && match.groupName!.isNotEmpty
+    final List<MatchModel> teamMatches =
+        match.groupName != null && match.groupName!.isNotEmpty
         ? (kIsWeb && tournamentId != null && tournamentId.isNotEmpty
-              ? (ref.watch(
-                  matchListByTournamentProvider(tournamentId).select(
-                    (asyncVal) =>
-                        asyncVal.valueOrNull
-                            ?.where((m) => m.groupName == match.groupName)
-                            .toList() ??
-                        [],
-                  ),
-                ))
+              ? (ref
+                    .watch(
+                      matchListByTournamentProvider(tournamentId).select(
+                        (asyncVal) => ListEqualityWrapper<MatchModel>(
+                          asyncVal.valueOrNull
+                                  ?.where((m) => m.groupName == match.groupName)
+                                  .toList() ??
+                              <MatchModel>[],
+                        ),
+                      ),
+                    )
+                    .list)
               : ref.watch(teamMatchesByGroupProvider(match.groupName!)))
         : <MatchModel>[];
-
-    // 錬成会マスタータイマーの初期化はプロバイダー自身で行われます
 
     final permissions = ref.watch(permissionProvider);
     final isSomeoneElseOperating =
@@ -195,12 +191,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
     final activeRole = ref.watch(activeRoleProvider);
     final showSyncBar = activeRole != Role.viewer;
-
     final engine = KendoRuleEngine();
     final validEvents = engine.filterActiveEvents(match.events);
     final canUndoReal = validEvents.isNotEmpty;
 
-    final layoutWidget = LiquidBackground(
+    return LiquidBackground(
+      isAnimated: false, // 🔋 試合操作中の常時GPU再描画を根絶し発熱・バッテリー消費を完全抑制
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
@@ -210,7 +206,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           titleWidget: MatchHeaderTitle(match: match),
           actions: [MatchHeaderActions(match: match)],
         ),
-
         body: LayoutBuilder(
           builder: (context, constraints) {
             final double maxWidth = constraints.maxWidth;
@@ -319,23 +314,15 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     fit: BoxFit.scaleDown,
                                     child: SizedBox(
                                       width: constraints.maxWidth,
-                                      child: ProviderScope(
-                                        overrides: [
-                                          scoreboardMatchIdProvider
-                                              .overrideWithValue(match.id),
-                                          scoreboardMatchProvider
-                                              .overrideWithValue(match),
-                                          scoreboardNameTapProvider
-                                              .overrideWithValue((side) {
-                                                MatchDialogHelper.showNameEditBottomSheet(
-                                                  context: context,
-                                                  match: match,
-                                                  side: side,
-                                                );
-                                              }),
-                                        ],
-
-                                        child: const MatchScoreboard(),
+                                      child: MatchScoreboard(
+                                        matchId: match.id,
+                                        match: match,
+                                        onNameTap: (side) =>
+                                            MatchDialogHelper.showNameEditBottomSheet(
+                                              context: context,
+                                              match: match,
+                                              side: side,
+                                            ),
                                       ),
                                     ),
                                   ),
@@ -456,7 +443,5 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         ),
       ),
     );
-
-    return layoutWidget;
   }
 }

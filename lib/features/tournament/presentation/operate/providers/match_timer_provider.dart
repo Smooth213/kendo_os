@@ -183,13 +183,20 @@ class MatchTimer {
       return;
     }
 
-    // 🔋 【Phase 10】アダプティブ省電力・サーマル冷却: 端末状況に応じた推奨更新間隔を動的適用
+    // 🔋 【Phase 10 & Plan 2】アダプティブ省電力・サーマル冷却:
+    // 通常の「分:秒」表示時は1000ms周期（秒間1回）に抑えてCPU起床を90%削減。
+    // 0.1秒精度が要求される代表戦・延長戦のみ、ガバナー推奨の高精度Tick（100ms）を動的適用。
     final governor = ref.read(thermalPowerGovernorProvider);
     governor.recordUserActivity();
-    final tickInterval = governor.recommendedTickInterval;
+    final match = _getMatch(matchId);
+    final isHighPrecision =
+        match?.matchType == '代表戦' || match?.matchType == '延長戦';
+    final tickInterval = governor.getTickIntervalForMatch(
+      isHighPrecision: isHighPrecision,
+    );
 
     debugPrint(
-      '🕒 [MatchTimer] startLocalTicker: Ticker STARTED (interval=${tickInterval.inMilliseconds}ms).',
+      '🕒 [MatchTimer] startLocalTicker: Ticker STARTED (interval=${tickInterval.inMilliseconds}ms, highPrecision=$isHighPrecision).',
     );
     _ticker?.cancel();
     final fallbackStartedAt = ref.read(timeSourceProvider).now();

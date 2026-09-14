@@ -35,6 +35,37 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
+/// 🛡️ 【Plan 3 最適化】真実のオンライン状態ストリーム（接続時: true, 切断時: false）
+final isOnlineStreamProvider = StreamProvider.autoDispose<bool>((ref) {
+  final controller = StreamController<bool>();
+
+  Connectivity().checkConnectivity().then((result) {
+    if (!controller.isClosed) {
+      controller.add(!result.contains(ConnectivityResult.none));
+    }
+  });
+
+  final subscription = Connectivity().onConnectivityChanged.listen((result) {
+    if (!controller.isClosed) {
+      controller.add(!result.contains(ConnectivityResult.none));
+    }
+  });
+
+  ref.onDispose(() {
+    subscription.cancel();
+    controller.close();
+  });
+
+  return controller.stream;
+});
+
+/// 🛡️ 【Plan 3 最適化】オフライン判定用ストリーム（切断時: true, 接続時: false）
+final isOfflineStreamProvider = StreamProvider.autoDispose<bool>((ref) {
+  final isOnline = ref.watch(isOnlineStreamProvider).value ?? true;
+  return Stream.value(!isOnline);
+});
+
+/// 互換性維持のためのオフライン判定エイリアス（従来の globalConnectivityProvider 互換）
 final globalConnectivityProvider = StreamProvider.autoDispose<bool>((ref) {
   final controller = StreamController<bool>();
 
@@ -203,14 +234,14 @@ class AppBootstrapHelper {
                 MatchCommandEntitySchema,
               ],
               directory: dir.path,
-              maxSizeMiB: 1024,
+              maxSizeMiB: 128,
               relaxedDurability: true,
               compactOnLaunch: const CompactCondition(
                 minFileSize: 10 * 1024 * 1024,
                 minRatio: 2.0,
               ),
             );
-            debugPrint('🚀 [Isar] 新規にIsarインスタンスをオープンしました（MMAP 1024MiB最適化）。');
+            debugPrint('🚀 [Isar] 新規にIsarインスタンスをオープンしました（MMAP 128MiB最適化）。');
           }
         }
       } catch (e) {

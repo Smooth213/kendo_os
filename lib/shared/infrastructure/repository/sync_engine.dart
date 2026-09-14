@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -9,13 +11,23 @@ import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart'
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
-import 'package:uuid/uuid.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
+    as sync_provider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_session.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+
+bool _isTestEnvironment() {
+  if (const bool.fromEnvironment('FLUTTER_TEST')) return true;
+  if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return true;
+  try {
+    return WidgetsBinding.instance.runtimeType.toString().contains('Test');
+  } catch (_) {
+    return true;
+  }
+}
 
 class SyncEngine {
   final Ref _ref;
@@ -31,20 +43,35 @@ class SyncEngine {
   StreamSubscription? _bunaiksenSubscription;
 
   SyncEngine(this._ref) {
-    // 🌟 起動と同時に自動ポーリング同期ループを開始
-    _startSyncLoop();
+    // 🌟 未送信キューの初回確認（キューが存在する場合のみポーリング同期ループを開始）
+    processQueue();
     // 🌟 Firestoreダウンストリーム監視の初期設定
     _setupFirestoreDownstream();
   }
 
   void _startSyncLoop() {
-    _syncTimer?.cancel();
+    if (_syncTimer != null && _syncTimer!.isActive) return;
     _syncTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
       await processQueue();
     });
   }
 
+  void _stopSyncLoop() {
+    _syncTimer?.cancel();
+    _syncTimer = null;
+  }
+
   void _setupFirestoreDownstream() {
+    // 📡 ネットワーク回復時にキュー同期を自動再開（テスト実行時の不要タイマー生成を抑止）
+    if (!_isTestEnvironment()) {
+      _ref.listen<bool>(sync_provider.isOnlineProvider, (prev, isOnline) {
+        if (isOnline && (prev == false || prev == null)) {
+          debugPrint('📡 [Sync Engine] ネットワーク復帰を検知: キュー処理を再開します');
+          resetBackoffAndProcess();
+        }
+      });
+    }
+
     // DojoId または TournamentId が変わったときに再バインドする
     _ref.listen<String>(
       currentDojoIdProvider,
@@ -66,7 +93,7 @@ class SyncEngine {
       _bindListeners();
     });
     // 🔑 Firebase認証状態が確立した際にも自動再バインド
-    if (!const bool.fromEnvironment('FLUTTER_TEST')) {
+    if (!_isTestEnvironment()) {
       _ref.listen(authStateProvider, (prev, next) {
         debugPrint('🔑 [Sync Engine] Firebase認証状態の変化を検知しました');
         _bindListeners();
@@ -103,7 +130,7 @@ class SyncEngine {
     }
 
     // 🛡️ テスト環境以外かつFirebase初期化済みの場合、未認証時のFirestoreストリーム接続を抑止
-    if (!const bool.fromEnvironment('FLUTTER_TEST')) {
+    if (!_isTestEnvironment()) {
       try {
         if (Firebase.apps.isNotEmpty &&
             FirebaseAuth.instance.currentUser == null) {
@@ -193,7 +220,10 @@ class SyncEngine {
               final id =
                   sanitized['id']?.toString() ??
                   'bunaiksen_match_${DateTime.now().millisecondsSinceEpoch}';
-              final match = MatchModel.fromJson({...sanitized, 'id': id});
+              final rawMatch = MatchModel.fromJson({...sanitized, 'id': id});
+              final match = MatchDataSanitizer.healRepresentativeMatch(
+                rawMatch,
+              );
               matches.add(match);
             } catch (e) {
               debugPrint(
@@ -204,7 +234,9 @@ class SyncEngine {
         }
 
         if (matches.isNotEmpty) {
-          final healedMatches = matches.map(_healMatchSignatures).toList();
+          final healedMatches = matches
+              .map(MatchDataSanitizer.healMatchSignatures)
+              .toList();
           final localRepo = _ref.read(localMatchRepositoryProvider);
           await localRepo.saveMatchesBulk(healedMatches);
           debugPrint(
@@ -227,7 +259,8 @@ class SyncEngine {
       for (final doc in snapshot.docs) {
         try {
           final sanitized = _sanitizeFirestoreData(doc.data());
-          final match = MatchModel.fromJson({...sanitized, 'id': doc.id});
+          final rawMatch = MatchModel.fromJson({...sanitized, 'id': doc.id});
+          final match = MatchDataSanitizer.healRepresentativeMatch(rawMatch);
           matches.add(match);
         } catch (e) {
           debugPrint(
@@ -237,7 +270,9 @@ class SyncEngine {
       }
 
       if (matches.isNotEmpty) {
-        final healedMatches = matches.map(_healMatchSignatures).toList();
+        final healedMatches = matches
+            .map(MatchDataSanitizer.healMatchSignatures)
+            .toList();
         final localRepo = _ref.read(localMatchRepositoryProvider);
         await localRepo.saveMatchesBulk(healedMatches);
         debugPrint(
@@ -248,86 +283,6 @@ class SyncEngine {
       debugPrint(
         '🔥 [Sync Engine Downstream Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
       );
-    }
-  }
-
-  MatchModel _healMatchSignatures(MatchModel match) {
-    try {
-      final healedEvents = match.events.map((event) {
-        try {
-          if (ScoreEventLegacyAdapter.verifySignature(
-            event,
-            'kendo_os_secret_key_v1',
-          )) {
-            return event;
-          }
-          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
-          final uid = event.userId ?? 'unknown_user';
-          final payload =
-              '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
-          final signature = ScoreEventLegacyAdapter.generateSignature(
-            payload,
-            'kendo_os_secret_key_v1',
-          );
-          return event.copyWith(id: eventId, signature: signature);
-        } catch (e) {
-          debugPrint(
-            '⚠️ [Sync Engine Downstream] Failed to verify/heal single event signature: $e',
-          );
-          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
-          final uid = event.userId ?? 'unknown_user';
-          final payload =
-              '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
-          final signature = ScoreEventLegacyAdapter.generateSignature(
-            payload,
-            'kendo_os_secret_key_v1',
-          );
-          return event.copyWith(id: eventId, signature: signature);
-        }
-      }).toList();
-
-      final healedPendingEvents = match.pendingEvents.map((event) {
-        try {
-          if (ScoreEventLegacyAdapter.verifySignature(
-            event,
-            'kendo_os_secret_key_v1',
-          )) {
-            return event;
-          }
-          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
-          final uid = event.userId ?? 'unknown_user';
-          final payload =
-              '$eventId:$uid:${event.timestamp.toIso8601String()}:${event.side.name}:${event.type.name}';
-          final signature = ScoreEventLegacyAdapter.generateSignature(
-            payload,
-            'kendo_os_secret_key_v1',
-          );
-          return event.copyWith(id: eventId, signature: signature);
-        } catch (e) {
-          debugPrint(
-            '⚠️ [Sync Engine Downstream] Failed to verify/heal single pending event signature: $e',
-          );
-          final eventId = event.id.isNotEmpty ? event.id : const Uuid().v4();
-          final uid = event.userId ?? 'unknown_user';
-          final payload =
-              '$eventId:$uid:${DateTime.now().toIso8601String()}:${event.side.name}:${event.type.name}';
-          final signature = ScoreEventLegacyAdapter.generateSignature(
-            payload,
-            'kendo_os_secret_key_v1',
-          );
-          return event.copyWith(id: eventId, signature: signature);
-        }
-      }).toList();
-
-      return match.copyWith(
-        events: healedEvents,
-        pendingEvents: healedPendingEvents,
-      );
-    } catch (e) {
-      debugPrint(
-        '⚠️ [Sync Engine Downstream] Error in _healMatchSignatures: $e',
-      );
-      return match;
     }
   }
 
@@ -391,8 +346,12 @@ class SyncEngine {
         _retryCount = 0; // キューが空ならリトライカウントをリセット
         _nextAttemptAt = null;
         _isProcessing = false;
+        _stopSyncLoop(); // 🔋 アイドル時は10秒タイマーを停止してCPUをディープスリープへ
         return;
       }
+
+      // 未送信データが存在する場合はタイマーループが確実に回っていることを保証
+      _startSyncLoop();
 
       debugPrint('🔄 [Sync Engine] 未送信キューを検知しました: ${pendingActions.length} 件');
 
@@ -418,6 +377,12 @@ class SyncEngine {
           // ⚡ 重要: スレッドをブロックせず即座にループを脱出（UIや他処理をフリーズさせない）
           break;
         }
+      }
+
+      // 処理完了後にキューが空になった場合はタイマーを停止
+      final remaining = await localRepo.getPendingCommands();
+      if (remaining.isEmpty) {
+        _stopSyncLoop();
       }
     } catch (e) {
       debugPrint('🔥 [Sync Engine Critical] キュー処理中に例外が発生しました: $e');

@@ -171,10 +171,15 @@ void main() {
         final content = file.readAsStringSync();
 
         // matchListByTournamentProvider が autoDispose であること
+        final hasAutoDispose =
+            content.contains(
+              'StreamProvider.family.autoDispose<List<MatchModel>, String>',
+            ) ||
+            RegExp(
+              r'StreamProvider\.family\s*\.autoDispose<List<MatchModel>,\s*String>',
+            ).hasMatch(content);
         expect(
-          content.contains(
-            'StreamProvider.family.autoDispose<List<MatchModel>, String>',
-          ),
+          hasAutoDispose,
           isTrue,
           reason:
               '非アクティブな大会のFirestoreリスナーがバックグラウンドで動作し続けるのを防ぐため、autoDispose が必須です。',

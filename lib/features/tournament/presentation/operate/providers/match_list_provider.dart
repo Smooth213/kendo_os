@@ -59,185 +59,134 @@ final matchListProvider = Provider<List<MatchModel>>((ref) {
   return ref.watch(matchStreamProvider).value ?? const [];
 });
 
-final matchListByTournamentProvider = StreamProvider.family.autoDispose<List<MatchModel>, String>((
-  ref,
-  tournamentId,
-) {
-  // 🔋 5分間のキャッシュ保持: 画面遷移時の瞬間的な切断・再接続チラつきを防ぎつつ、
-  // 誰も見ていない大会のFirestoreリスナーを確実にクリーンアップして通信リークを根絶
-  final link = ref.keepAlive();
-  Timer? keepAliveTimer;
-  ref.onDispose(() => keepAliveTimer?.cancel());
-  ref.onCancel(() {
-    keepAliveTimer = Timer(const Duration(minutes: 5), () {
-      link.close();
-    });
-  });
-  ref.onResume(() {
-    keepAliveTimer?.cancel();
-  });
-  if (kIsWeb || debugIsWebOverride) {
-    final firestore = ref.watch(firestoreProvider);
-    final dojoId = ref.watch(currentDojoIdProvider);
-
-    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'default_org';
-    final safeTournamentId = tournamentId.isNotEmpty
-        ? tournamentId
-        : 'default_tournament';
-
-    // ★ Plan 3-④: 大会切り替え時に前大会の試合データが画面に残留するのを即時リセット
-    final activeWebTournamentId = ref.read(webCurrentTournamentIdProvider);
-    if (activeWebTournamentId != safeTournamentId) {
-      Future.microtask(() {
-        ref.read(webCurrentTournamentMatchesProvider.notifier).state = const [];
-        ref.read(webCurrentTournamentIdProvider.notifier).state =
-            safeTournamentId;
-      });
-    }
-
-    debugPrint(
-      '🌐 [matchListByTournamentProvider] Webモード単方向直列監視開始 - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId"',
-    );
-
-    final controller = StreamController<List<MatchModel>>();
-    StreamSubscription? sub;
-
-    MatchModel? parseMatch(DocumentSnapshot<Map<String, dynamic>> doc) {
-      try {
-        final data = MatchDataSanitizer.sanitizeFirestoreData(doc.data() ?? {});
-        final match = MatchModel.fromJson({
-          ...data,
-          'id': doc.id,
-          'tournamentId': safeTournamentId,
+final matchListByTournamentProvider = StreamProvider.family
+    .autoDispose<List<MatchModel>, String>((ref, tournamentId) {
+      // 🔋 5分間のキャッシュ保持: 画面遷移時の瞬間的な切断・再接続チラつきを防ぎつつ、
+      // 誰も見ていない大会のFirestoreリスナーを確実にクリーンアップして通信リークを根絶
+      final link = ref.keepAlive();
+      Timer? keepAliveTimer;
+      ref.onDispose(() => keepAliveTimer?.cancel());
+      ref.onCancel(() {
+        keepAliveTimer = Timer(const Duration(minutes: 5), () {
+          link.close();
         });
-        return MatchDataSanitizer.healRepresentativeMatch(match);
-      } catch (e) {
-        debugPrint('🚨 [Parse Error] ID:${doc.id} -> $e');
-        return null;
-      }
-    }
+      });
+      ref.onResume(() {
+        keepAliveTimer?.cancel();
+      });
+      if (kIsWeb || debugIsWebOverride) {
+        final firestore = ref.watch(firestoreProvider);
+        final dojoId = ref.watch(currentDojoIdProvider);
 
-    controller.onListen = () {
-      sub = firestore
-          .collection('organizations')
-          .doc(safeDojoId)
-          .collection('tournaments')
-          .doc(safeTournamentId)
-          .collection('matches')
-          .snapshots()
-          .listen(
-            (snap) {
-              if (controller.isClosed) return;
-              final matches = snap.docs
-                  .map(parseMatch)
-                  .whereType<MatchModel>()
-                  .toList();
+        final safeDojoId = dojoId.isNotEmpty ? dojoId : 'default_org';
+        final safeTournamentId = tournamentId.isNotEmpty
+            ? tournamentId
+            : 'default_tournament';
 
-              controller.add(matches);
-
-              Future.microtask(() {
-                try {
-                  ref.read(webCurrentTournamentMatchesProvider.notifier).state =
-                      matches;
-                  ref.read(webCurrentTournamentIdProvider.notifier).state =
-                      safeTournamentId;
-                  ref.read(currentTournamentIdProvider.notifier).state =
-                      safeTournamentId;
-                  ref.read(currentDojoIdProvider.notifier).state = safeDojoId;
-                } catch (_) {}
-              });
-            },
-            onError: (e) {
-              debugPrint('🚨 [Match Query Error] Web: $e');
-              if (!controller.isClosed) {
-                controller.add([]);
-              }
-            },
-          );
-    };
-
-    ref.onDispose(() {
-      sub?.cancel();
-      if (!controller.isClosed) {
-        controller.close();
-      }
-    });
-
-    return controller.stream;
-  }
-
-  final localRepository = ref.watch(localMatchRepositoryProvider);
-  final dojoId = ref.watch(currentDojoIdProvider);
-
-  if (dojoId.isNotEmpty && tournamentId.isNotEmpty) {
-    final firestore = ref.watch(firestoreProvider);
-    final safeDojoId = dojoId;
-    final safeTournamentId = tournamentId;
-
-    final isBunaiksen =
-        safeTournamentId.startsWith('bunaiksen_') ||
-        safeTournamentId == 'bunaiksen';
-    debugPrint(
-      '📱 [matchListByTournamentProvider] Native mode background listener start - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId" (isBunaiksen: $isBunaiksen)',
-    );
-
-    final matchesCollection = firestore
-        .collection('organizations')
-        .doc(safeDojoId)
-        .collection('tournaments')
-        .doc(safeTournamentId)
-        .collection('matches');
-
-    final sub = matchesCollection.snapshots().listen(
-      (snap) async {
-        try {
-          final matches = <MatchModel>[];
-          for (final doc in snap.docs) {
-            try {
-              final sanitized = MatchDataSanitizer.sanitizeFirestoreData(
-                doc.data(),
-              );
-              final match = MatchDataSanitizer.healRepresentativeMatch(
-                MatchModel.fromJson({...sanitized, 'id': doc.id}),
-              );
-              matches.add(match);
-            } catch (e) {
-              debugPrint(
-                '⚠️ [Native Downstream Sync] Match parsing failed for doc ${doc.id}: $e',
-              );
-            }
-          }
-
-          if (matches.isNotEmpty) {
-            final healedMatches = matches
-                .map(MatchDataSanitizer.healMatchSignatures)
-                .toList();
-            await localRepository.saveMatchesBulk(healedMatches);
-            debugPrint(
-              '⚡ [Native Downstream Sync] Firestoreから ${healedMatches.length} 件の試合データをIsarに同期しました。',
-            );
-          }
-        } catch (e) {
-          debugPrint(
-            '🔥 [Native Downstream Sync Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
-          );
+        // ★ Plan 3-④: 大会切り替え時に前大会の試合データが画面に残留するのを即時リセット
+        final activeWebTournamentId = ref.read(webCurrentTournamentIdProvider);
+        if (activeWebTournamentId != safeTournamentId) {
+          Future.microtask(() {
+            ref.read(webCurrentTournamentMatchesProvider.notifier).state =
+                const [];
+            ref.read(webCurrentTournamentIdProvider.notifier).state =
+                safeTournamentId;
+          });
         }
-      },
-      onError: (e) {
-        debugPrint('🚨 [Native Downstream Sync] Firestore listen error: $e');
-      },
-    );
 
-    ref.onDispose(() {
-      debugPrint(
-        '📱 [matchListByTournamentProvider] Native mode background listener disposed for tournamentId: $safeTournamentId',
-      );
-      sub.cancel();
+        debugPrint(
+          '🌐 [matchListByTournamentProvider] Webモード単方向直列監視開始 - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId"',
+        );
+
+        final controller = StreamController<List<MatchModel>>();
+        StreamSubscription? sub;
+
+        MatchModel? parseMatch(DocumentSnapshot<Map<String, dynamic>> doc) {
+          try {
+            final data = MatchDataSanitizer.sanitizeFirestoreData(
+              doc.data() ?? {},
+            );
+            final match = MatchModel.fromJson({
+              ...data,
+              'id': doc.id,
+              'tournamentId': safeTournamentId,
+            });
+            return MatchDataSanitizer.healRepresentativeMatch(match);
+          } catch (e) {
+            debugPrint('🚨 [Parse Error] ID:${doc.id} -> $e');
+            return null;
+          }
+        }
+
+        controller.onListen = () {
+          sub = firestore
+              .collection('organizations')
+              .doc(safeDojoId)
+              .collection('tournaments')
+              .doc(safeTournamentId)
+              .collection('matches')
+              .snapshots()
+              .listen(
+                (snap) {
+                  if (controller.isClosed) return;
+                  final matches = snap.docs
+                      .map(parseMatch)
+                      .whereType<MatchModel>()
+                      .toList();
+
+                  controller.add(matches);
+
+                  Future.microtask(() {
+                    try {
+                      ref
+                              .read(
+                                webCurrentTournamentMatchesProvider.notifier,
+                              )
+                              .state =
+                          matches;
+                      ref.read(webCurrentTournamentIdProvider.notifier).state =
+                          safeTournamentId;
+                      ref.read(currentTournamentIdProvider.notifier).state =
+                          safeTournamentId;
+                      ref.read(currentDojoIdProvider.notifier).state =
+                          safeDojoId;
+                    } catch (_) {}
+                  });
+                },
+                onError: (e) {
+                  debugPrint('🚨 [Match Query Error] Web: $e');
+                  if (!controller.isClosed) {
+                    controller.add([]);
+                  }
+                },
+              );
+        };
+
+        ref.onDispose(() {
+          sub?.cancel();
+          if (!controller.isClosed) {
+            controller.close();
+          }
+        });
+
+        return controller.stream;
+      }
+
+      final localRepository = ref.watch(localMatchRepositoryProvider);
+      final currentTournamentId = ref.watch(currentTournamentIdProvider);
+      if (tournamentId.isNotEmpty && currentTournamentId != tournamentId) {
+        Future.microtask(() {
+          try {
+            ref.read(currentTournamentIdProvider.notifier).state = tournamentId;
+          } catch (_) {}
+        });
+      }
+
+      // 🔋 【Plan 2 最適化】二重リスナーおよび二重saveMatchesBulkを撤廃
+      // ネイティブ環境におけるFirestoreダウンストリーム同期は SyncEngine に完全一本化し、
+      // ここではIsarのリアクティブストリームのみを安全・低負荷に返却する
+      return localRepository.watchLocalMatches(tournamentId);
     });
-  }
-
-  return localRepository.watchLocalMatches(tournamentId);
-});
 
 final currentDojoNameProvider = StreamProvider.autoDispose<String>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
@@ -267,15 +216,35 @@ final singleMatchProvider = Provider.family<MatchModel?, String>((
   );
 });
 
+/// ⚡ リストの中身（要素順・内容）が同一であれば同一とみなすラッパー（不要なWidgetリビルド連鎖を根絶）
+@immutable
+class ListEqualityWrapper<T> {
+  final List<T> list;
+  const ListEqualityWrapper(this.list);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ListEqualityWrapper<T> && listEquals(list, other.list);
+
+  @override
+  int get hashCode => Object.hashAll(list);
+}
+
 /// ⚡ 最適化: 団体戦グループ（groupName）専用の試合リストセレクター
+/// ListEqualityWrapperにより、要素の中身が変化しない限りリスナーへの再通知を100%遮断する
 final teamMatchesByGroupProvider = Provider.family<List<MatchModel>, String>((
   ref,
   groupName,
 ) {
   if (groupName.isEmpty) return const [];
-  return ref.watch(
-    matchListProvider.select(
-      (list) => list.where((m) => m.groupName == groupName).toList(),
-    ),
-  );
+  return ref
+      .watch(
+        matchListProvider.select(
+          (list) => ListEqualityWrapper(
+            list.where((m) => m.groupName == groupName).toList(),
+          ),
+        ),
+      )
+      .list;
 });
