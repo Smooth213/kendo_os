@@ -52,8 +52,9 @@ class MatchSnapshotService {
     );
 
     final newSnapshots = [...match.snapshots, snapshot];
-    if (newSnapshots.length > 20) {
-      newSnapshots.removeRange(0, newSnapshots.length - 20);
+    // 🔋 直前Undo用に最新1件のみ保持し、ドキュメントの肥大化を防ぐ
+    if (newSnapshots.length > 1) {
+      newSnapshots.removeRange(0, newSnapshots.length - 1);
     }
 
     final updatedMatch = match.copyWith(snapshots: newSnapshots);

@@ -9,6 +9,9 @@ import 'package:http/http.dart' as http;
 class ProgramViewerMediaCache {
   static final ProgramViewerMediaCache shared = ProgramViewerMediaCache();
 
+  /// 🔋 キャッシュする最大PDFドキュメント数（大容量バイナリのメモリ保護）
+  static const int maxCachedPdfs = 5;
+
   final Map<String, Future<Size>> imageSizeCache = {};
   final Map<String, Future<Uint8List>> sdkPdfBytesCache = {};
   final int sessionBuster = DateTime.now().millisecondsSinceEpoch;
@@ -24,10 +27,20 @@ class ProgramViewerMediaCache {
   }
 
   Future<Uint8List> getCachedPdfBytes(String url) {
-    if (!sdkPdfBytesCache.containsKey(url)) {
-      sdkPdfBytesCache[url] = _fetchPdfBytes(url);
+    if (sdkPdfBytesCache.containsKey(url)) {
+      final future = sdkPdfBytesCache.remove(url)!;
+      sdkPdfBytesCache[url] = future;
+      return future;
     }
-    return sdkPdfBytesCache[url]!;
+
+    if (sdkPdfBytesCache.length >= maxCachedPdfs) {
+      final oldestKey = sdkPdfBytesCache.keys.first;
+      sdkPdfBytesCache.remove(oldestKey);
+    }
+
+    final future = _fetchPdfBytes(url);
+    sdkPdfBytesCache[url] = future;
+    return future;
   }
 
   Future<Uint8List> _fetchPdfBytes(String url) async {
@@ -103,6 +116,11 @@ class ProgramViewerMediaCache {
       imageSizeCache[url] = fetchImageSize(url);
     }
     return imageSizeCache[url]!;
+  }
+
+  void clearUrl(String url) {
+    imageSizeCache.remove(url);
+    sdkPdfBytesCache.remove(url);
   }
 
   void clear() {

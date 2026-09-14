@@ -15,6 +15,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 // ★ 追加: Scoreboard を const として扱うための Provider
 final scoreboardMatchIdProvider = Provider<String>(
@@ -65,6 +66,34 @@ Map<String, dynamic> _sanitizeWebFirestoreData(Map<String, dynamic> data) {
 // ★ 追加: Web環境（Viewer）で直接Firestoreから特定の試合データを取得するストリームプロバイダ
 final webScoreboardMatchProvider = StreamProvider.family
     .autoDispose<MatchModel?, String>((ref, matchId) {
+      final dojoId = ref.watch(currentDojoIdProvider);
+      final activeTournamentId = ref.watch(currentTournamentIdProvider);
+      final webTournamentId = ref.watch(webCurrentTournamentIdProvider);
+      final tournamentId = activeTournamentId.isNotEmpty
+          ? activeTournamentId
+          : (webTournamentId ?? '');
+
+      // ⚡ 最適化: dojoId と tournamentId が判明している場合は O(1) 直接パスでドキュメント監視
+      // 重い collectionGroup 全件インデックススキャンを完全にバイパスします
+      if (dojoId.isNotEmpty && tournamentId.isNotEmpty) {
+        return FirebaseFirestore.instance
+            .collection('organizations')
+            .doc(dojoId)
+            .collection('tournaments')
+            .doc(tournamentId)
+            .collection('matches')
+            .doc(matchId)
+            .snapshots()
+            .map((doc) {
+              if (!doc.exists || doc.data() == null) return null;
+              final data = doc.data()!;
+              data['id'] = doc.id;
+              final sanitized = _sanitizeWebFirestoreData(data);
+              return MatchModel.fromJson(sanitized);
+            });
+      }
+
+      // フォールバック: パラメータ未解決のレガシーアクセス時のみ collectionGroup を使用
       return FirebaseFirestore.instance
           .collectionGroup('matches')
           .where('id', isEqualTo: matchId)

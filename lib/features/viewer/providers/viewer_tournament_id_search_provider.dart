@@ -21,43 +21,7 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
     final dojoId = ref.read(currentDojoIdProvider);
     final firestore = FirebaseFirestore.instance;
 
-    // 1. collectionGroup('matches') での検索（最も確実）
-    try {
-      final groupSnap = await firestore
-          .collectionGroup('matches')
-          .where('groupName', isEqualTo: groupName)
-          .limit(1)
-          .get();
-      if (groupSnap.docs.isNotEmpty) {
-        final tId = groupSnap.docs.first.data()['tournamentId'] as String?;
-        if (tId != null && tId.isNotEmpty) return tId;
-        // 親ドキュメントパスからtournamentIdを抽出: tournaments/{tournamentId}/matches/{matchId}
-        final pathSegments = groupSnap.docs.first.reference.path.split('/');
-        final tIndex = pathSegments.indexOf('tournaments');
-        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
-          return pathSegments[tIndex + 1];
-        }
-      }
-
-      final idSnap = await firestore
-          .collectionGroup('matches')
-          .where('id', isEqualTo: groupName)
-          .limit(1)
-          .get();
-      if (idSnap.docs.isNotEmpty) {
-        final tId = idSnap.docs.first.data()['tournamentId'] as String?;
-        if (tId != null && tId.isNotEmpty) return tId;
-        final pathSegments = idSnap.docs.first.reference.path.split('/');
-        final tIndex = pathSegments.indexOf('tournaments');
-        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
-          return pathSegments[tIndex + 1];
-        }
-      }
-    } catch (e) {
-      debugPrint('🚨 [collectionGroup matches Error] $e');
-    }
-
-    // 2. dojoId配下のtournamentsを走査して検索
+    // 1. dojoId配下のtournamentsを優先して直接走査（O(1)〜小件数のため圧倒的に高速・インデックス不要）
     if (dojoId.isNotEmpty) {
       try {
         final tournamentsSnap = await firestore
@@ -84,6 +48,41 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
       } catch (e) {
         debugPrint('🚨 [Organization Tournaments Scan Error] $e');
       }
+    }
+
+    // 2. フォールバック: collectionGroup('matches') での検索（組織跨ぎ・パラメータ完全欠落時のみ）
+    try {
+      final groupSnap = await firestore
+          .collectionGroup('matches')
+          .where('groupName', isEqualTo: groupName)
+          .limit(1)
+          .get();
+      if (groupSnap.docs.isNotEmpty) {
+        final tId = groupSnap.docs.first.data()['tournamentId'] as String?;
+        if (tId != null && tId.isNotEmpty) return tId;
+        final pathSegments = groupSnap.docs.first.reference.path.split('/');
+        final tIndex = pathSegments.indexOf('tournaments');
+        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
+          return pathSegments[tIndex + 1];
+        }
+      }
+
+      final idSnap = await firestore
+          .collectionGroup('matches')
+          .where('id', isEqualTo: groupName)
+          .limit(1)
+          .get();
+      if (idSnap.docs.isNotEmpty) {
+        final tId = idSnap.docs.first.data()['tournamentId'] as String?;
+        if (tId != null && tId.isNotEmpty) return tId;
+        final pathSegments = idSnap.docs.first.reference.path.split('/');
+        final tIndex = pathSegments.indexOf('tournaments');
+        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
+          return pathSegments[tIndex + 1];
+        }
+      }
+    } catch (e) {
+      debugPrint('🚨 [collectionGroup matches Error] $e');
     }
 
     final fallbackMatches = ref.read(matchListProvider);

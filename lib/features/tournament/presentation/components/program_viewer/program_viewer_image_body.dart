@@ -63,6 +63,8 @@ class ProgramViewerImageBody extends StatelessWidget {
                   child: Image.network(
                     safeUrl,
                     fit: BoxFit.fill,
+                    cacheWidth: displaySize.width.toInt(),
+                    cacheHeight: displaySize.height.toInt(),
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: const Color(0xFFEEEEEE),

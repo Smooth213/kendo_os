@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:ui';
 import 'dart:math' as math;
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -106,10 +105,12 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
       );
     }
 
-    // Check if we are running in tests to prevent pumpAndSettle timeouts
+    // テスト実行環境の安全な判定（StackTrace文字列化による毎フレームのCPU高負荷を完全撤廃）
     final isTest =
         const bool.fromEnvironment('FLUTTER_TEST') ||
-        RegExp(r'test').hasMatch(StackTrace.current.toString());
+        (WidgetsBinding.instance.runtimeType.toString().contains(
+          'TestWidgetsFlutterBinding',
+        ));
 
     // 🌟 通常モード時はアニメーションを再生（テスト環境では無限アニメーションによるタイムアウトを防ぐため停止）
     if (isTest) {
@@ -122,62 +123,78 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
       }
     }
 
-    return AnimatedBuilder(
-      animation: _controller,
-      child: widget.child,
-      builder: (context, childWidget) {
-        final angle = _controller.value * 2 * math.pi;
-        final dx1 = 30 * math.sin(angle);
-        final dy1 = 30 * math.cos(angle);
-        final dx2 = 40 * math.cos(angle);
-        final dy2 = 40 * math.sin(angle);
+    final orb1Color = isDark
+        ? const Color(0xFF3F51B5).withValues(alpha: 0.35)
+        : const Color(0xFF3F51B5).withValues(alpha: 0.20);
+    final orb2Color = isDark
+        ? const Color(0xFF009688).withValues(alpha: 0.30)
+        : const Color(0xFF009688).withValues(alpha: 0.16);
 
-        return Stack(
-          children: [
-            // ベース背景色
-            Container(color: themeColors.scaffoldBackground),
-            // オーブ1: 左上 (テーマカラー: インディゴ)
-            Positioned(
-              top: -100 + dy1,
-              left: -100 + dx1,
-              child: Container(
-                width: 350,
-                height: 350,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDark
-                      ? const Color(0xFF3F51B5).withValues(alpha: 0.3)
-                      : const Color(0xFF3F51B5).withValues(alpha: 0.15),
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        child: widget.child,
+        builder: (context, childWidget) {
+          final angle = _controller.value * 2 * math.pi;
+          final dx1 = 30 * math.sin(angle);
+          final dy1 = 30 * math.cos(angle);
+          final dx2 = 40 * math.cos(angle);
+          final dy2 = 40 * math.sin(angle);
+
+          return Stack(
+            children: [
+              // ベース背景色
+              Container(color: themeColors.scaffoldBackground),
+              // オーブ1: 左上 (テーマカラー: インディゴ、RadialGradientで境界をソフトにブレンド)
+              Positioned(
+                top: -120 + dy1,
+                left: -120 + dx1,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 450,
+                    height: 450,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          orb1Color,
+                          orb1Color.withValues(alpha: orb1Color.a * 0.5),
+                          orb1Color.withValues(alpha: 0.0),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            // オーブ2: 右下 (テーマカラー: ティール)
-            Positioned(
-              bottom: -150 + dy2,
-              right: -50 + dx2,
-              child: Container(
-                width: 450,
-                height: 450,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDark
-                      ? const Color(0xFF009688).withValues(alpha: 0.25)
-                      : const Color(0xFF009688).withValues(alpha: 0.12),
+              // オーブ2: 右下 (テーマカラー: ティール、RadialGradientで境界をソフトにブレンド)
+              Positioned(
+                bottom: -180 + dy2,
+                right: -80 + dx2,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 550,
+                    height: 550,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          orb2Color,
+                          orb2Color.withValues(alpha: orb2Color.a * 0.5),
+                          orb2Color.withValues(alpha: 0.0),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-            // 強力なブラー（すりガラスフィルター）を全体にかける
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 80.0, sigmaY: 80.0),
-                child: Container(color: AppKendoColors.transparent),
-              ),
-            ),
-            // 前面の Scaffold 等
-            childWidget!,
-          ],
-        );
-      },
+              // 前面の Scaffold 等
+              childWidget!,
+            ],
+          );
+        },
+      ),
     );
   }
 }

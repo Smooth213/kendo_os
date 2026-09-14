@@ -209,31 +209,33 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
     }
   }
 
-  // ★ Phase 1: 状態遷移関数 (これ以外によるstatus変更を将来的に禁止していく)
-  MatchModel transition(MatchLifecycleState nextState) {
-    String nextStatus;
-    switch (nextState) {
-      case MatchLifecycleState.notStarted:
-      case MatchLifecycleState.waitingForPlayers:
-      case MatchLifecycleState.ready:
-        nextStatus = 'waiting';
-        break;
-      case MatchLifecycleState.inProgress:
-      case MatchLifecycleState.paused:
-      case MatchLifecycleState.encho:
-      case MatchLifecycleState.hanteiPending:
-        nextStatus = 'in_progress';
-        break;
-      case MatchLifecycleState.completed:
-      case MatchLifecycleState.canceled:
-      case MatchLifecycleState.fusen:
-        nextStatus = 'finished';
-        break;
-      case MatchLifecycleState.corrupted:
-        nextStatus = 'corrupted';
-        break;
+  @pragma('vm:prefer-inline')
+  MatchLifecycleState get lifecycleState {
+    final base = MatchLifecycleStateLegacyExt.fromLegacyString(status);
+    if (base == MatchLifecycleState.inProgress && !timerIsRunning) {
+      return MatchLifecycleState.paused;
     }
-    return copyWith(status: nextStatus);
+    return base;
+  }
+
+  // ★ Phase 1 & Plan 3: 状態遷移関数 (FSM有限状態機械に準拠した安全な状態更新)
+  MatchModel transition(MatchLifecycleState nextState) {
+    if (nextState == MatchLifecycleState.paused) {
+      return copyWith(status: nextState.toLegacyString(), timerStartedAt: null);
+    }
+    if (nextState == MatchLifecycleState.inProgress && timerStartedAt == null) {
+      return copyWith(
+        status: nextState.toLegacyString(),
+        timerStartedAt: DateTime.now().toUtc(),
+      );
+    }
+    return copyWith(status: nextState.toLegacyString());
+  }
+
+  /// FSM (有限状態機械) に基づき、イベントトリガーによる安全な状態遷移を実行
+  MatchModel transitionEvent(StateTransitionEvent event) {
+    final nextState = MatchStateMachine.transition(lifecycleState, event);
+    return transition(nextState);
   }
 
   // ★ Phase 4 移行用: 既存の isDirty 参照エラーを防ぐ Strangler Fig パターンの魔法

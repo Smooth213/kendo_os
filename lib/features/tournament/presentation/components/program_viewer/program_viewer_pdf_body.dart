@@ -112,6 +112,8 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
   @override
   void dispose() {
     _pageController.dispose();
+    // 🔋 画面破棄時にこのドキュメントの単一ページキャッシュを解放し、メモリリーク・OOMを防ぐ
+    ProgramViewerPdfPageCache.shared.clearUrl(widget.program.fileUrl);
     super.dispose();
   }
 

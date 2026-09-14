@@ -135,12 +135,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           : ref.watch(webCurrentTournamentIdProvider);
     }
 
-    final List<MatchModel> matches =
+    final MatchModel? match =
         (kIsWeb && tournamentId != null && tournamentId.isNotEmpty)
-        ? (ref.watch(matchListByTournamentProvider(tournamentId)).valueOrNull ??
-              ref.watch(matchListProvider))
-        : ref.watch(matchListProvider);
-    final match = matches.where((m) => m.id == widget.matchId).firstOrNull;
+        ? (ref.watch(
+                matchListByTournamentProvider(tournamentId).select(
+                  (asyncVal) => asyncVal.valueOrNull
+                      ?.where((m) => m.id == widget.matchId)
+                      .firstOrNull,
+                ),
+              ) ??
+              ref.watch(singleMatchProvider(widget.matchId)))
+        : ref.watch(singleMatchProvider(widget.matchId));
 
     if (match == null) {
       return const MatchLoadingView();
@@ -150,7 +155,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         match.rule ?? ref.watch(matchRuleProvider) ?? MatchRule();
 
     final teamMatches = match.groupName != null && match.groupName!.isNotEmpty
-        ? matches.where((m) => m.groupName == match.groupName).toList()
+        ? (kIsWeb && tournamentId != null && tournamentId.isNotEmpty
+              ? (ref.watch(
+                  matchListByTournamentProvider(tournamentId).select(
+                    (asyncVal) =>
+                        asyncVal.valueOrNull
+                            ?.where((m) => m.groupName == match.groupName)
+                            .toList() ??
+                        [],
+                  ),
+                ))
+              : ref.watch(teamMatchesByGroupProvider(match.groupName!)))
         : <MatchModel>[];
 
     // 錬成会マスタータイマーの初期化はプロバイダー自身で行われます
@@ -244,76 +259,84 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 },
                               );
 
-                              final undoArea = MatchMiniLogUndoSection(
-                                validEvents: validEvents,
-                                canUndo: canUndoReal,
-                                isDark: isDark,
-                                onUndo: () => ref
-                                    .read(matchCommandProvider)
-                                    .undoLastEvent(match.id),
-                              );
-
-                              final timerPart = MatchTimerSection(
-                                match: match,
-                                rule: rule,
-                                isInputLocked: isInputLocked,
-                              );
-
-                              final groupButtonPart = MatchOperateActionButtonsGrid(
-                                isViewOnly: isViewOnly,
-                                isKachinuki: match.isKachinuki,
-                                onShareUrl: () =>
-                                    MatchDialogHelper.showMatchShareOptionsSheet(
-                                      context,
-                                      match,
-                                    ),
-                                onRestoreHistory: () =>
-                                    MatchDialogHelper.showSnapshotDialog(
-                                      context,
-                                      ref,
-                                      match,
-                                      validEvents,
-                                      isDark,
-                                    ),
-                                onCheckScore: () => match.isKachinuki
-                                    ? context.push(
-                                        '/kachinuki-scoreboard/${match.groupName}',
-                                      )
-                                    : context.push(
-                                        '/team-scoreboard/${match.groupName}',
-                                      ),
-                                onCheckRule: () =>
-                                    MatchDialogHelper.showRuleInfoSheet(
-                                      context,
-                                      match,
-                                    ),
-                              );
-
-                              final scoreboardPart = ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: constraints.maxHeight * 0.28,
+                              final undoArea = RepaintBoundary(
+                                child: MatchMiniLogUndoSection(
+                                  validEvents: validEvents,
+                                  canUndo: canUndoReal,
+                                  isDark: isDark,
+                                  onUndo: () => ref
+                                      .read(matchCommandProvider)
+                                      .undoLastEvent(match.id),
                                 ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: SizedBox(
-                                    width: constraints.maxWidth,
-                                    child: ProviderScope(
-                                      overrides: [
-                                        scoreboardMatchIdProvider
-                                            .overrideWithValue(match.id),
-                                        scoreboardMatchProvider
-                                            .overrideWithValue(match),
-                                        scoreboardNameTapProvider
-                                            .overrideWithValue((side) {
-                                              MatchDialogHelper.showNameEditBottomSheet(
-                                                context: context,
-                                                match: match,
-                                                side: side,
-                                              );
-                                            }),
-                                      ],
+                              );
 
-                                      child: const MatchScoreboard(),
+                              final timerPart = RepaintBoundary(
+                                child: MatchTimerSection(
+                                  match: match,
+                                  rule: rule,
+                                  isInputLocked: isInputLocked,
+                                ),
+                              );
+
+                              final groupButtonPart = RepaintBoundary(
+                                child: MatchOperateActionButtonsGrid(
+                                  isViewOnly: isViewOnly,
+                                  isKachinuki: match.isKachinuki,
+                                  onShareUrl: () =>
+                                      MatchDialogHelper.showMatchShareOptionsSheet(
+                                        context,
+                                        match,
+                                      ),
+                                  onRestoreHistory: () =>
+                                      MatchDialogHelper.showSnapshotDialog(
+                                        context,
+                                        ref,
+                                        match,
+                                        validEvents,
+                                        isDark,
+                                      ),
+                                  onCheckScore: () => match.isKachinuki
+                                      ? context.push(
+                                          '/kachinuki-scoreboard/${match.groupName}',
+                                        )
+                                      : context.push(
+                                          '/team-scoreboard/${match.groupName}',
+                                        ),
+                                  onCheckRule: () =>
+                                      MatchDialogHelper.showRuleInfoSheet(
+                                        context,
+                                        match,
+                                      ),
+                                ),
+                              );
+
+                              final scoreboardPart = RepaintBoundary(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight * 0.28,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: SizedBox(
+                                      width: constraints.maxWidth,
+                                      child: ProviderScope(
+                                        overrides: [
+                                          scoreboardMatchIdProvider
+                                              .overrideWithValue(match.id),
+                                          scoreboardMatchProvider
+                                              .overrideWithValue(match),
+                                          scoreboardNameTapProvider
+                                              .overrideWithValue((side) {
+                                                MatchDialogHelper.showNameEditBottomSheet(
+                                                  context: context,
+                                                  match: match,
+                                                  side: side,
+                                                );
+                                              }),
+                                        ],
+
+                                        child: const MatchScoreboard(),
+                                      ),
                                     ),
                                   ),
                                 ),

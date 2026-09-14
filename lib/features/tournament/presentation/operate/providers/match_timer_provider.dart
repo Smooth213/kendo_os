@@ -35,6 +35,7 @@ class RenseikaiMasterTimerNotifier extends FamilyNotifier<int, String> {
   @override
   int build(String arg) {
     ref.onDispose(() {
+      _saveState();
       _timer?.cancel();
     });
 
@@ -75,16 +76,21 @@ class RenseikaiMasterTimerNotifier extends FamilyNotifier<int, String> {
     }
   }
 
-  void _saveState() {
-    final prefs = ref.read(sharedPreferencesProvider);
-    prefs.setInt('master_timer_seconds_$arg', state);
-    final isRunning = _timer != null && _timer!.isActive;
-    prefs.setBool('master_timer_running_$arg', isRunning);
-    if (isRunning) {
-      prefs.setString(
-        'master_timer_last_tick_$arg',
-        DateTime.now().toIso8601String(),
-      );
+  void _saveState({bool? isRunningOverride}) {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      prefs.setInt('master_timer_seconds_$arg', state);
+      final isRunning =
+          isRunningOverride ?? (_timer != null && _timer!.isActive);
+      prefs.setBool('master_timer_running_$arg', isRunning);
+      if (isRunning) {
+        prefs.setString(
+          'master_timer_last_tick_$arg',
+          DateTime.now().toIso8601String(),
+        );
+      }
+    } catch (_) {
+      // 画面破棄時やコンテナDispose時の例外を安全に吸収
     }
   }
 
@@ -101,12 +107,12 @@ class RenseikaiMasterTimerNotifier extends FamilyNotifier<int, String> {
     if (state <= 0) return;
 
     ref.read(isMasterTimerRunningProvider(arg).notifier).state = true;
-    _saveState();
+    _saveState(isRunningOverride: true);
 
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (state > 0) {
+        // 🔋 毎秒のディスクI/O (SharedPreferences書き込み) を撤廃し、メモリ内State更新のみに集約
         state--;
-        _saveState();
       } else {
         state = 0;
         t.cancel();
@@ -291,9 +297,7 @@ class MatchTimer {
       }
     }
 
-    MatchModel updatedMatch = match.copyWith(
-      status: currentState.toLegacyString(),
-    );
+    MatchModel updatedMatch = match.transition(currentState);
 
     if (newIsRunning) {
       // ★ 修正: スタート時は時刻を記録するだけ
@@ -309,30 +313,29 @@ class MatchTimer {
       startLocalTicker(matchId, isImmediateStart: true);
     } else {
       _ticker?.cancel();
-      // ★ 修正: 見かけ上一時停止でも裏で動き続けるバグの真の原因は、
-      // 停止時に timerStartedAt が null にならない（古い時間が残る）ことによる時間の再計算です。
-      // UIの現在の残り秒数を絶対値として取得し、それをベースに時間を完全に固定します。
-      final currentSeconds = ref.read(liveRemainingSecondsProvider(matchId));
-      debugPrint(
-        '🕒 [MatchTimer] toggleTimer(STOP): currentSeconds=$currentSeconds, match.timerStartedAt=${match.timerStartedAt}',
-      );
+      // ★ 修正 (Plan 3-①): 天井秒からの逆算を撤廃し、ミリ秒端数の生差分を直接加算して100%の精度を維持
+      int additionalMs = 0;
+      if (match.timerStartedAt != null) {
+        additionalMs = now.difference(match.timerStartedAt!).inMilliseconds;
+        if (additionalMs < 0) additionalMs = 0;
+      }
+      final newAccMs = match.accumulatedPauseDurationMs + additionalMs;
 
-      // ★ 修正: copyWith と updateRemainingSeconds の順序を逆転させます。
-      // 先に状態(status等)を変更し、最後に isTimerStopping=true を呼んで「JSON経由での再生成」で確実に timerStartedAt を消去します。
       updatedMatch = match
-          .copyWith(status: currentState.toLegacyString(), timerPausedAt: now)
-          .updateRemainingSeconds(
-            currentSeconds,
-            ref.read(timeSourceProvider).now(),
-            isTimerStopping: true,
+          .transition(currentState)
+          .copyWith(
+            timerStartedAt: null,
+            timerPausedAt: now,
+            accumulatedPauseDurationMs: newAccMs,
           );
 
+      final derivedSeconds = updatedMatch.calculateRemainingSeconds(now);
       debugPrint(
-        '🕒 [MatchTimer] toggleTimer(STOP): regenerated match.timerStartedAt=${updatedMatch.timerStartedAt}, isRunning=${updatedMatch.timerIsRunning}',
+        '🕒 [MatchTimer] toggleTimer(STOP): newAccMs=$newAccMs (+${additionalMs}ms), derivedSeconds=$derivedSeconds',
       );
 
       ref.read(liveRemainingSecondsProvider(matchId).notifier).state =
-          currentSeconds;
+          derivedSeconds;
       ref.read(matchApplicationServiceProvider).saveMatch(updatedMatch);
     }
   }
@@ -353,11 +356,12 @@ class MatchTimer {
 
     if (isTimeUp) {
       // ★ 修正: タイムアップ時も確実にステータスを一時停止状態にし、裏で回り続けるのを防ぐ
-      updatedMatch = updatedMatch.copyWith(
-        status: MatchLifecycleState.paused.toLegacyString(),
-        timerPausedAt: ref.read(timeSourceProvider).now(),
-        timerStartedAt: null, // ★ タイムアップ時も確実に null にする
-      );
+      updatedMatch = updatedMatch
+          .transition(MatchLifecycleState.paused)
+          .copyWith(
+            timerPausedAt: ref.read(timeSourceProvider).now(),
+            timerStartedAt: null, // ★ タイムアップ時も確実に null にする
+          );
       _expectedIsRunning = false;
     }
 

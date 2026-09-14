@@ -50,15 +50,32 @@ final matchListProvider = Provider<List<MatchModel>>((ref) {
     if (currentTournamentId == null || currentTournamentId.isEmpty) {
       return const [];
     }
-    return ref.watch(webCurrentTournamentMatchesProvider);
+    final allMatches = ref.watch(webCurrentTournamentMatchesProvider);
+    // ★ Plan 3-④: 大会IDが一致する試合のみを厳格にフィルタリングし、異大会データのゴースト混入を物理的に遮断
+    return allMatches
+        .where((m) => m.tournamentId == currentTournamentId)
+        .toList();
   }
   return ref.watch(matchStreamProvider).value ?? const [];
 });
 
-final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, String>((
+final matchListByTournamentProvider = StreamProvider.family.autoDispose<List<MatchModel>, String>((
   ref,
   tournamentId,
 ) {
+  // 🔋 5分間のキャッシュ保持: 画面遷移時の瞬間的な切断・再接続チラつきを防ぎつつ、
+  // 誰も見ていない大会のFirestoreリスナーを確実にクリーンアップして通信リークを根絶
+  final link = ref.keepAlive();
+  Timer? keepAliveTimer;
+  ref.onDispose(() => keepAliveTimer?.cancel());
+  ref.onCancel(() {
+    keepAliveTimer = Timer(const Duration(minutes: 5), () {
+      link.close();
+    });
+  });
+  ref.onResume(() {
+    keepAliveTimer?.cancel();
+  });
   if (kIsWeb || debugIsWebOverride) {
     final firestore = ref.watch(firestoreProvider);
     final dojoId = ref.watch(currentDojoIdProvider);
@@ -67,6 +84,16 @@ final matchListByTournamentProvider = StreamProvider.family<List<MatchModel>, St
     final safeTournamentId = tournamentId.isNotEmpty
         ? tournamentId
         : 'default_tournament';
+
+    // ★ Plan 3-④: 大会切り替え時に前大会の試合データが画面に残留するのを即時リセット
+    final activeWebTournamentId = ref.read(webCurrentTournamentIdProvider);
+    if (activeWebTournamentId != safeTournamentId) {
+      Future.microtask(() {
+        ref.read(webCurrentTournamentMatchesProvider.notifier).state = const [];
+        ref.read(webCurrentTournamentIdProvider.notifier).state =
+            safeTournamentId;
+      });
+    }
 
     debugPrint(
       '🌐 [matchListByTournamentProvider] Webモード単方向直列監視開始 - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId"',
@@ -225,4 +252,30 @@ final currentDojoNameProvider = StreamProvider.autoDispose<String>((ref) {
       .doc(safeDojoId)
       .snapshots()
       .map((doc) => doc.exists ? (doc.data()?['name'] as String? ?? '') : '');
+});
+
+/// ⚡ 最適化: 単一試合（matchId）専用のセレクタープロバイダ
+/// 他の試合や別コートの更新による画面全体のリビルド連鎖を完全に遮断します
+final singleMatchProvider = Provider.family<MatchModel?, String>((
+  ref,
+  matchId,
+) {
+  return ref.watch(
+    matchListProvider.select(
+      (list) => list.where((m) => m.id == matchId).firstOrNull,
+    ),
+  );
+});
+
+/// ⚡ 最適化: 団体戦グループ（groupName）専用の試合リストセレクター
+final teamMatchesByGroupProvider = Provider.family<List<MatchModel>, String>((
+  ref,
+  groupName,
+) {
+  if (groupName.isEmpty) return const [];
+  return ref.watch(
+    matchListProvider.select(
+      (list) => list.where((m) => m.groupName == groupName).toList(),
+    ),
+  );
 });

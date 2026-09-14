@@ -27,34 +27,20 @@ class PdfService {
     String? tournamentVenue,
     required DateTime outputTime,
   }) async {
-    final fontPair = await PdfFontLoader.loadFonts();
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(AppSpacing.xxl),
-        theme: pw.ThemeData.withFont(
-          base: fontPair.regular,
-          bold: fontPair.bold,
-        ),
-        header: (pw.Context context) => PdfPageLayoutHelper.buildHeader(
-          categoryName: categoryName,
-          tournamentName: tournamentName,
-          tournamentDate: tournamentDate,
-          tournamentVenue: tournamentVenue,
-          outputTime: outputTime,
-        ),
-        footer: (pw.Context context) =>
-            PdfPageLayoutHelper.buildFooter(context),
-        build: (pw.Context context) => PdfPageLayoutHelper.buildContentWidgets(
-          groupDataList: groupDataList,
-          ttf: fontPair.regular,
-          ttfBold: fontPair.bold,
-        ),
-      ),
+    final rawFontBytes = await PdfFontLoader.loadFontBytes();
+    final params = _PdfWorkerParams(
+      categoryName: categoryName,
+      groupDataList: groupDataList,
+      tournamentName: tournamentName,
+      tournamentDate: tournamentDate,
+      tournamentVenue: tournamentVenue,
+      outputTimeMillis: outputTime.millisecondsSinceEpoch,
+      regularFontBytes: rawFontBytes.regular,
+      boldFontBytes: rawFontBytes.bold,
     );
-    return pdf.save();
+
+    // ⚡ 最適化: NativeではIsolate、Webでは非同期マイクロタスクで実行し、UIスレッドのフリーズを根絶
+    return compute(_generatePdfBytesInWorker, params);
   }
 
   static Future<void> printOfficialRecord(
@@ -169,4 +155,59 @@ class PdfService {
       );
     }
   }
+}
+
+class _PdfWorkerParams {
+  final String categoryName;
+  final List<Map<String, dynamic>> groupDataList;
+  final String? tournamentName;
+  final String? tournamentDate;
+  final String? tournamentVenue;
+  final int outputTimeMillis;
+  final Uint8List regularFontBytes;
+  final Uint8List boldFontBytes;
+
+  const _PdfWorkerParams({
+    required this.categoryName,
+    required this.groupDataList,
+    this.tournamentName,
+    this.tournamentDate,
+    this.tournamentVenue,
+    required this.outputTimeMillis,
+    required this.regularFontBytes,
+    required this.boldFontBytes,
+  });
+}
+
+Future<Uint8List> _generatePdfBytesInWorker(_PdfWorkerParams params) async {
+  final regular = pw.Font.ttf(ByteData.sublistView(params.regularFontBytes));
+  final bold = pw.Font.ttf(ByteData.sublistView(params.boldFontBytes));
+  final pdf = pw.Document();
+
+  final outputTime = DateTime.fromMillisecondsSinceEpoch(
+    params.outputTimeMillis,
+  );
+
+  pdf.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(AppSpacing.xxl),
+      theme: pw.ThemeData.withFont(base: regular, bold: bold),
+      header: (pw.Context context) => PdfPageLayoutHelper.buildHeader(
+        categoryName: params.categoryName,
+        tournamentName: params.tournamentName,
+        tournamentDate: params.tournamentDate,
+        tournamentVenue: params.tournamentVenue,
+        outputTime: outputTime,
+      ),
+      footer: (pw.Context context) => PdfPageLayoutHelper.buildFooter(context),
+      build: (pw.Context context) => PdfPageLayoutHelper.buildContentWidgets(
+        groupDataList: params.groupDataList,
+        ttf: regular,
+        ttfBold: bold,
+      ),
+    ),
+  );
+
+  return pdf.save();
 }

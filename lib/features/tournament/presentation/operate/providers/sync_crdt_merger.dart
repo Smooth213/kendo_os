@@ -43,7 +43,7 @@ class SyncCrdtMerger {
     return result;
   }
 
-  /// 🏎️ 【Phase 11】AOTインライン化: イベント履歴CRDTマージ
+  /// 🏎️ 【Phase 11 & Plan 3-③】AOTインライン化: 3者イベント履歴CRDTマージ ＆ LWWタイマー調停
   @pragma('vm:prefer-inline')
   static MatchModel mergeAndRebuild({
     required MatchModel remoteMatch,
@@ -52,11 +52,23 @@ class SyncCrdtMerger {
     required RebuildMatchFromEventsUseCase rebuilder,
   }) {
     final Map<String, ScoreEvent> mergedEventsMap = {};
+    // 1. リモート確定イベント
     for (var e in remoteMatch.events) {
       mergedEventsMap[e.id] = e;
     }
+    // 2. ローカル確定イベント (万が一クラウド未達の確定イベントの消失防止)
+    for (var e in localMatch.events) {
+      final existing = mergedEventsMap[e.id];
+      if (existing == null || e.logicalClock >= existing.logicalClock) {
+        mergedEventsMap[e.id] = e;
+      }
+    }
+    // 3. ローカル未送信イベント
     for (var e in localMatch.pendingEvents) {
-      mergedEventsMap[e.id] = e;
+      final existing = mergedEventsMap[e.id];
+      if (existing == null || e.logicalClock >= existing.logicalClock) {
+        mergedEventsMap[e.id] = e;
+      }
     }
 
     final mergedEvents = mergedEventsMap.values.toList()
@@ -67,12 +79,40 @@ class SyncCrdtMerger {
         return a.timestamp.compareTo(b.timestamp);
       });
 
+    // タイマーおよびステータスの Last-Write-Wins (LWW) 調停
+    final bool preferLocal;
+    if (localMatch.pendingEvents.isNotEmpty) {
+      preferLocal = true;
+    } else if (localMatch.lastUpdatedAt != null &&
+        remoteMatch.lastUpdatedAt != null) {
+      preferLocal = !remoteMatch.lastUpdatedAt!.isAfter(
+        localMatch.lastUpdatedAt!,
+      );
+    } else if (localMatch.lastUpdatedAt != null) {
+      preferLocal = true;
+    } else if (remoteMatch.lastUpdatedAt != null) {
+      preferLocal = false;
+    } else {
+      preferLocal = true;
+    }
+
+    final chosenTimerStartedAt = preferLocal
+        ? localMatch.timerStartedAt
+        : remoteMatch.timerStartedAt;
+    final chosenTimerPausedAt = preferLocal
+        ? localMatch.timerPausedAt
+        : remoteMatch.timerPausedAt;
+    final chosenAccPauseMs = preferLocal
+        ? localMatch.accumulatedPauseDurationMs
+        : remoteMatch.accumulatedPauseDurationMs;
+    final chosenStatus = preferLocal ? localMatch.status : remoteMatch.status;
+
     MatchModel rebuiltMatch = remoteMatch.copyWith(
       events: mergedEvents,
-      timerStartedAt: localMatch.timerStartedAt,
-      timerPausedAt: localMatch.timerPausedAt,
-      accumulatedPauseDurationMs: localMatch.accumulatedPauseDurationMs,
-      status: localMatch.status,
+      timerStartedAt: chosenTimerStartedAt,
+      timerPausedAt: chosenTimerPausedAt,
+      accumulatedPauseDurationMs: chosenAccPauseMs,
+      status: chosenStatus,
     );
 
     try {

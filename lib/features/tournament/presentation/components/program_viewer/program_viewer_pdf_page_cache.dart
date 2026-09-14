@@ -8,7 +8,10 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 class ProgramViewerPdfPageCache {
   static final ProgramViewerPdfPageCache shared = ProgramViewerPdfPageCache();
 
-  /// URL -> (pageIndex -> 単一ページPDFのバイナリ)
+  /// 🔋 キャッシュする最大単一ページPDF数（LRU上限）
+  static const int maxCachedPagesPerDoc = 8;
+
+  /// URL -> (pageIndex -> 単一ページPDFのバイナリ)（挿入順を利用したLRUキャッシュ）
   final Map<String, Map<int, Uint8List>> _singlePageBytesCache = {};
 
   /// URL -> (pageIndex -> キャンバスサイズ)
@@ -127,6 +130,7 @@ class ProgramViewerPdfPageCache {
   }
 
   /// 単一ページのPDFバイト列を取得（キャッシュがあれば即時返却、なければ抽出してキャッシュ）
+  /// 🔋 LRU（直近利用エントリを最新化、上限8件超過で最古エントリを自動破棄）
   Uint8List getOrExtractSinglePage(
     String url,
     Uint8List sourceBytes,
@@ -134,7 +138,10 @@ class ProgramViewerPdfPageCache {
   ) {
     final pageMap = _singlePageBytesCache.putIfAbsent(url, () => {});
     if (pageMap.containsKey(pageIndex)) {
-      return pageMap[pageIndex]!;
+      // LRU更新: アクセスされたキーを末尾（最新）に移動
+      final bytes = pageMap.remove(pageIndex)!;
+      pageMap[pageIndex] = bytes;
+      return bytes;
     }
 
     // 初回ならドキュメント情報も更新
@@ -143,11 +150,28 @@ class ProgramViewerPdfPageCache {
     }
 
     final Uint8List singlePageBytes = extractSinglePage(sourceBytes, pageIndex);
+
+    // LRU上限チェック: 上限に達していたら最も古いエントリ（先頭）を削除してメモリ解放
+    if (pageMap.length >= maxCachedPagesPerDoc) {
+      final oldestKey = pageMap.keys.first;
+      pageMap.remove(oldestKey);
+    }
+
     pageMap[pageIndex] = singlePageBytes;
     return singlePageBytes;
   }
 
-  /// キャッシュのクリア（メモリ解放用）
+  /// 指定したURLの現在キャッシュされている単一ページ数を取得（LRU検証・メモリ監視用）
+  int getCachedSinglePageCount(String url) {
+    return _singlePageBytesCache[url]?.length ?? 0;
+  }
+
+  /// 特定URLの単一ページバイナリキャッシュを解放（メタデータであるサイズ・ページ数は保持）
+  void clearUrl(String url) {
+    _singlePageBytesCache.remove(url);
+  }
+
+  /// 全キャッシュのクリア（メモリ解放用）
   void clear() {
     _singlePageBytesCache.clear();
     _pageCanvasSizeCache.clear();

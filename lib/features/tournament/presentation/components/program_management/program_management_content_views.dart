@@ -76,6 +76,7 @@ class ProgramManagementContentViews {
                     : Image.network(
                         getSafeUrl(program.fileUrl),
                         fit: BoxFit.cover,
+                        cacheWidth: 400,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: context.appColors.separatorColor,
                           child: const Icon(
@@ -84,6 +85,7 @@ class ProgramManagementContentViews {
                           ),
                         ),
                       ),
+
                 if (isSelectionMode)
                   Positioned(
                     top: AppSpacing.sm,
@@ -203,6 +205,7 @@ class ProgramManagementContentViews {
                       : Image.network(
                           getSafeUrl(program.fileUrl),
                           fit: BoxFit.cover,
+                          cacheWidth: 150,
                           errorBuilder: (context, error, stackTrace) =>
                               const Center(
                                 child: Icon(

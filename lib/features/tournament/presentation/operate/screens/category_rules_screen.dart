@@ -78,7 +78,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
     final allMatches =
         ref.read(matchListByTournamentProvider(widget.tournamentId)).value ??
-        [];
+        ref.read(matchListProvider) ??
+        const [];
     final targetMatches = allMatches.where((m) {
       if (m.status == 'finished' || m.status == 'approved') return false;
       final mCat = m.category?.trim() ?? '';
@@ -173,6 +174,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
     final asyncTournament = ref.watch(tournamentProvider(widget.tournamentId));
+    // 画面表示中は当該大会の試合リスト購読を維持し、ルール保存時の一括適用判定を即時可能にする
+    ref.watch(matchListByTournamentProvider(widget.tournamentId));
 
     return LiquidBackground(
       child: Scaffold(

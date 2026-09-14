@@ -45,7 +45,7 @@ void main() {
     );
 
     test(
-      '2. addSnapshotToMatch caps snapshots at 20 items (sliding window)',
+      '2. addSnapshotToMatch caps snapshots at 1 item by default (sliding window for light memory/DB footprint)',
       () {
         var currentMatch = MatchModel(
           id: 'match-1',
@@ -64,11 +64,37 @@ void main() {
           );
         }
 
-        // 上限20件に制限されていること
-        expect(currentMatch.snapshots.length, 20);
-        // 最も古い5件が破棄され、6〜25件目が保持されていること
+        // 上限1件に制限されていること（直前Undo用）
+        expect(currentMatch.snapshots.length, 1);
+        // 最新の25件目のみが保持されていること
+        expect(currentMatch.snapshots.first.reason, 'Snapshot #25');
+      },
+    );
+
+    test(
+      '3. addSnapshotToMatch supports configurable maxSnapshots parameter',
+      () {
+        const customHelper = MatchSnapshotHelper(maxSnapshots: 5);
+        var currentMatch = MatchModel(
+          id: 'match-1',
+          tournamentId: 'tour-1',
+          matchOrder: 1,
+          matchType: '先鋒',
+          status: 'in_progress',
+          redName: '選手A',
+          whiteName: '選手B',
+        );
+
+        for (int i = 1; i <= 10; i++) {
+          currentMatch = customHelper.addSnapshotToMatch(
+            currentMatch,
+            'Snapshot #$i',
+          );
+        }
+
+        expect(currentMatch.snapshots.length, 5);
         expect(currentMatch.snapshots.first.reason, 'Snapshot #6');
-        expect(currentMatch.snapshots.last.reason, 'Snapshot #25');
+        expect(currentMatch.snapshots.last.reason, 'Snapshot #10');
       },
     );
   });

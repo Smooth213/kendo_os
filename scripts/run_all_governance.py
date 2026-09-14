@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全22大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全26大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全22大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全26大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 """
+
 
 import argparse
 import os
@@ -128,11 +129,26 @@ AUDIT_DEFINITIONS = [
         "name": "🔋 端末サーマル冷却＆省電力モード管理（温度＞手動＞自動 ガバナンス永続保証規約）",
         "cmd": ["python3", "scripts/check_thermal_power_governance.py"],
     },
+    {
+        "id": 24,
+        "name": "⚡ UIレスポンス高速化・局所再描画・非同期バックオフ 永続保証規約",
+        "cmd": ["python3", "scripts/check_ui_performance_governance.py"],
+    },
+    {
+        "id": 25,
+        "name": "🔋 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護 永続保証規約",
+        "cmd": ["python3", "scripts/check_low_load_governance.py"],
+    },
+    {
+        "id": 26,
+        "name": "🛡️ 堅牢性・同期整合性・データ完全性 永続保証規約",
+        "cmd": ["python3", "scripts/check_robustness_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全23大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜23）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全26大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜26）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
@@ -144,7 +160,7 @@ def main():
             sys.exit(1)
 
     print("=" * 72)
-    print(" 🥋 Kendo OS - 全23大ガバナンス監査 統合ランナー (Unified Governance Runner)")
+    print(" 🥋 Kendo OS - 全26大ガバナンス監査 統合ランナー (Unified Governance Runner)")
     print("=" * 72)
     print(f" 実行対象: {len(target_audits)} 項目")
     print("-" * 72)
@@ -157,36 +173,60 @@ def main():
         audit_name = audit["name"]
         cmd = audit["cmd"]
 
-        print(f" [{audit_id:2d}/23] {audit_name} ... ", end="", flush=True)
-        t_start = time.time()
+        total_count = len(AUDIT_DEFINITIONS)
+        if args.verbose:
+            print(f"▶ 実行中 [{audit_id:2d}/{total_count}] {audit_name} ...")
+        else:
+            print(f" [{audit_id:2d}/{total_count}] {audit_name} ... ", end="", flush=True)
 
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        duration = time.time() - t_start
-        passed = (proc.returncode == 0)
+        start_time = time.time()
+        try:
+            res = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            duration = time.time() - start_time
+            passed = res.returncode == 0
 
-        status_str = "🟢 PASS" if passed else "🔴 FAIL"
-        print(f"{status_str} ({duration:.1f}s)")
+            if passed:
+                print(f"🟢 PASS ({duration:.1f}s)")
+            else:
+                print(f"🔴 FAIL ({duration:.1f}s)")
+                if not args.verbose:
+                    print(f"\n--- [詳細ログ: {audit_name}] ---")
+                    print(res.stdout)
+                    print(res.stderr)
+                    print("-" * 40)
 
-        if args.verbose or not passed:
-            output = (proc.stdout + proc.stderr).strip()
-            if output:
-                for line in output.splitlines():
-                    print(f"      {line}")
-
-        results.append({
-            "id": audit_id,
-            "name": audit_name,
-            "passed": passed,
-            "duration": duration,
-            "output": proc.stdout + proc.stderr,
-        })
+            results.append({
+                "id": audit_id,
+                "name": audit_name,
+                "passed": passed,
+                "duration": duration,
+                "stdout": res.stdout,
+                "stderr": res.stderr,
+            })
+        except Exception as e:
+            duration = time.time() - start_time
+            print(f"💥 ERROR ({duration:.1f}s) -> {e}")
+            results.append({
+                "id": audit_id,
+                "name": audit_name,
+                "passed": False,
+                "duration": duration,
+                "stdout": "",
+                "stderr": str(e),
+            })
 
     total_duration = time.time() - total_start
     all_passed = all(r["passed"] for r in results)
 
     print("-" * 72)
-    print(" 📊 【全23大ガバナンス監査 総合サマリーレポート】")
+    print(f" 📊 【全{len(results)}大ガバナンス監査 総合サマリーレポート】")
     print("-" * 72)
+
     for r in results:
         badge = "🟢 PASS" if r["passed"] else "🔴 FAIL"
         print(f"  {badge} | 第{r['id']:2d}条 | {r['duration']:4.1f}s | {r['name']}")

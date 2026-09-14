@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -209,47 +210,57 @@ final viewerTournamentProjectionProvider =
     });
 
 /// 🌟 部内戦画面が使用する試合一覧ストリーム
-final bunaiksenMatchesProvider = StreamProvider.family<List<MatchModel>, String>((
-  ref,
-  tournamentId,
-) async* {
-  if (!kIsWeb) {
-    final asyncVal = ref.watch(matchListByTournamentProvider(tournamentId));
-    if (asyncVal.hasValue) {
-      yield asyncVal.value!;
-    }
-    return;
-  }
-
-  ref.watch(dojoRoomSyncProvider);
-  final dojoId = ref.watch(currentDojoIdProvider);
-
-  final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
-  final tournament = tournamentId.isNotEmpty
-      ? tournamentId
-      : 'default_tournament';
-
-  yield* FirebaseFirestore.instance
-      .collection('organizations')
-      .doc(dojo)
-      .collection('tournaments')
-      .doc(tournament)
-      .collection('matches')
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs
-            .map((doc) {
-              try {
-                final data = _sanitizeFirestoreData(doc.data());
-                return MatchModel.fromJson({...data, 'id': doc.id});
-              } catch (e, stack) {
-                debugPrint(
-                  '⚠️ [bunaiksenMatchesProvider] Error parsing match ${doc.id}: $e\n$stack',
-                );
-                return null;
-              }
-            })
-            .whereType<MatchModel>()
-            .toList();
+final bunaiksenMatchesProvider = StreamProvider.family
+    .autoDispose<List<MatchModel>, String>((ref, tournamentId) async* {
+      // 🔋 5分間のキャッシュ保持
+      final link = ref.keepAlive();
+      Timer? keepAliveTimer;
+      ref.onDispose(() => keepAliveTimer?.cancel());
+      ref.onCancel(() {
+        keepAliveTimer = Timer(const Duration(minutes: 5), () {
+          link.close();
+        });
       });
-});
+      ref.onResume(() {
+        keepAliveTimer?.cancel();
+      });
+      if (!kIsWeb) {
+        final asyncVal = ref.watch(matchListByTournamentProvider(tournamentId));
+        if (asyncVal.hasValue) {
+          yield asyncVal.value!;
+        }
+        return;
+      }
+
+      ref.watch(dojoRoomSyncProvider);
+      final dojoId = ref.watch(currentDojoIdProvider);
+
+      final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+      final tournament = tournamentId.isNotEmpty
+          ? tournamentId
+          : 'default_tournament';
+
+      yield* FirebaseFirestore.instance
+          .collection('organizations')
+          .doc(dojo)
+          .collection('tournaments')
+          .doc(tournament)
+          .collection('matches')
+          .snapshots()
+          .map((snapshot) {
+            return snapshot.docs
+                .map((doc) {
+                  try {
+                    final data = _sanitizeFirestoreData(doc.data());
+                    return MatchModel.fromJson({...data, 'id': doc.id});
+                  } catch (e, stack) {
+                    debugPrint(
+                      '⚠️ [bunaiksenMatchesProvider] Error parsing match ${doc.id}: $e\n$stack',
+                    );
+                    return null;
+                  }
+                })
+                .whereType<MatchModel>()
+                .toList();
+          });
+    });

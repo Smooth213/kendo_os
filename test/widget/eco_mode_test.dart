@@ -221,8 +221,14 @@ void main() {
         // Verify that the child is built
         expect(find.text('Content inside LiquidBackground'), findsOneWidget);
 
-        // In Normal Mode, BackdropFilter and Positioned orbs must be rendered
-        expect(find.byType(BackdropFilter), findsOneWidget);
+        // In Normal Mode, AnimatedBuilder and Positioned orbs must be rendered (BackdropFilter replaced by RadialGradient for battery efficiency)
+        expect(
+          find.descendant(
+            of: find.byType(LiquidBackground),
+            matching: find.byType(AnimatedBuilder),
+          ),
+          findsOneWidget,
+        );
         expect(find.text('エコモード'), findsNothing);
       },
     );

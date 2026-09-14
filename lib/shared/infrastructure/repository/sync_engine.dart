@@ -24,6 +24,7 @@ class SyncEngine {
   QuerySnapshot<Map<String, dynamic>>? _pendingMatchesSnapshot;
   bool _isProcessing = false;
   int _retryCount = 0;
+  DateTime? _nextAttemptAt;
 
   // ダウンストリーム監視用のサブスクリプション
   StreamSubscription? _matchesSubscription;
@@ -83,6 +84,8 @@ class SyncEngine {
     _matchesSubscription = null;
     _bunaiksenSubscription = null;
     _pendingMatchesSnapshot = null;
+    _nextAttemptAt = null;
+    _retryCount = 0;
 
     final dojoId = _ref.read(currentDojoIdProvider);
     final tournamentId = _ref.read(currentTournamentIdProvider);
@@ -362,8 +365,21 @@ class SyncEngine {
   // =========================================================================
   // 🛡️ Phase 1 - STEP 1-2 要件：指数バックオフ・重複防止付き再送エンジン
   // =========================================================================
+  /// 指数バックオフをリセットし、即座にキューの再送信を試行します（電波復帰時や手動同期時）
+  void resetBackoffAndProcess() {
+    _nextAttemptAt = null;
+    _retryCount = 0;
+    processQueue();
+  }
+
   Future<void> processQueue() async {
     if (_isProcessing) return;
+
+    // ⚡ バックオフ期間中の場合はスレッドをロックせず即時リターン（非同期バックオフ）
+    if (_nextAttemptAt != null && DateTime.now().isBefore(_nextAttemptAt!)) {
+      return;
+    }
+
     _isProcessing = true;
 
     try {
@@ -373,6 +389,7 @@ class SyncEngine {
 
       if (pendingActions.isEmpty) {
         _retryCount = 0; // キューが空ならリトライカウントをリセット
+        _nextAttemptAt = null;
         _isProcessing = false;
         return;
       }
@@ -387,15 +404,19 @@ class SyncEngine {
           // 送信成功時：Isar上の保留キューから物理削除
           await localRepo.deleteCommand(action.id);
           _retryCount = 0;
+          _nextAttemptAt = null;
         } else {
-          // 劣悪ネットワーク環境下での指数バックオフ制御（最大5分まで段階的に遅延を挿入）
+          // 劣悪ネットワーク環境下での指数バックオフ制御（最大5分まで段階的に遅延を算出）
           _retryCount++;
           final backoffSeconds = min(pow(2, _retryCount).toInt(), 300);
-          debugPrint(
-            '⚠️ [Sync Engine] 通信断の可能性。指数バックオフを実行します。次の再送まで: $backoffSeconds秒',
+          _nextAttemptAt = DateTime.now().add(
+            Duration(seconds: backoffSeconds),
           );
-          await Future.delayed(Duration(seconds: backoffSeconds));
-          break; // 一度エラーが起きたら順序保証のため以降のキュー処理を中断
+          debugPrint(
+            '⚠️ [Sync Engine] 通信断の可能性。非同期バックオフを設定しました。次回試行時刻: $_nextAttemptAt (+$backoffSeconds秒)',
+          );
+          // ⚡ 重要: スレッドをブロックせず即座にループを脱出（UIや他処理をフリーズさせない）
+          break;
         }
       }
     } catch (e) {
