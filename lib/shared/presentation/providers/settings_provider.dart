@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:battery_plus/battery_plus.dart';
@@ -327,7 +327,7 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
   }
 
   bool zoneValuesContainsTestKey() {
-    return RegExp(r'test').hasMatch(StackTrace.current.toString());
+    return WidgetsBinding.instance.runtimeType.toString().contains('Test');
   }
 }
 

@@ -167,7 +167,10 @@ class MockLocalMatchRepository implements LocalMatchRepository {
   @override
   Stream<List<MatchModel>> watchMatches() => Stream.value(mockMatches);
   @override
-  Future<void> saveMatchesBulk(List<MatchModel> matches) async {}
+  Future<void> saveMatchesBulk(
+    List<MatchModel> matches, {
+    bool skipTwin = false,
+  }) async {}
 
   // ★ 追加: ローカル側でも大会ID指定が呼ばれる可能性への対応
   Stream<List<MatchModel>> watchMatchesByTournament(String tournamentId) =>

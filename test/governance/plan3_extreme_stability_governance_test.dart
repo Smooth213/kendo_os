@@ -96,17 +96,17 @@ void main() {
     );
 
     test(
-      '3. [ネイティブ電波検知修復] sync_provider.dart で999日スタックが完全撤廃され、全環境でConnectivityストリームが稼働すること',
+      '3. [ネイティブ電波検知修復] 共通Connectivityプロバイダで999日スタックが完全撤廃され、全環境でストリームが稼働すること',
       () {
-        final syncFile = File(
-          'lib/features/tournament/presentation/operate/providers/sync_provider.dart',
+        final helperFile = File(
+          'lib/shared/bootstrap/app_bootstrap_helper.dart',
         );
-        final content = syncFile.readAsStringSync();
+        final content = helperFile.readAsStringSync();
 
         expect(
           content.contains('days: 999'),
           isFalse,
-          reason: 'sync_provider.dart にネイティブ環境をスタックさせる 999日ディレイが残っていてはならない',
+          reason: '共通Connectivityプロバイダにネイティブ環境をスタックさせる 999日ディレイが残っていてはならない',
         );
         expect(
           content.contains('Connectivity().onConnectivityChanged'),

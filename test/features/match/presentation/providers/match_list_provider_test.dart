@@ -30,8 +30,11 @@ class MockLocalMatchRepository extends Mock implements LocalMatchRepository {
   );
 
   @override
-  Future<void> saveMatchesBulk(List<MatchModel> matches) => super.noSuchMethod(
-    Invocation.method(#saveMatchesBulk, [matches]),
+  Future<void> saveMatchesBulk(
+    List<MatchModel> matches, {
+    bool skipTwin = false,
+  }) => super.noSuchMethod(
+    Invocation.method(#saveMatchesBulk, [matches], {#skipTwin: skipTwin}),
     returnValue: Future.value(),
   );
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
@@ -11,6 +10,7 @@ import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -35,13 +35,6 @@ final tournamentProvider = StreamProvider.family<TournamentModel?, String>((
 ) {
   final repo = ref.watch(tournamentRepositoryProvider);
   return repo.getTournamentStream(id);
-});
-
-// 🌟 物理ネットワーク接続を監視するプロバイダ
-final connectivityProvider = StreamProvider.autoDispose<bool>((ref) {
-  return Connectivity().onConnectivityChanged.map((result) {
-    return result.contains(ConnectivityResult.none);
-  });
 });
 
 class HomeScreen extends ConsumerWidget {
@@ -76,18 +69,7 @@ class HomeScreen extends ConsumerWidget {
     final asyncTournament = ref.watch(tournamentProvider(tournamentId));
     final asyncTeams = ref.watch(registeredTeamsProvider(tournamentId));
 
-    // =========================================================================
-    // 🔍 【原因特定用】デバッグログ強制出力セクション
-    // =========================================================================
-    final isPhysicalOffline = ref.watch(connectivityProvider).value ?? false;
-    debugPrint('╔═══════════════ kendo_os OFFLINE DEBUG ═══════════════╗');
-    debugPrint('║ 📡 物理ネットワーク切断フラグ (isPhysicalOffline): $isPhysicalOffline');
-    debugPrint('║ 📊 Firestoreストリーム状態 (matchState):');
-    debugPrint('║    - isLoading: ${asyncMatches.isLoading}');
-    debugPrint('║    - hasError: ${asyncMatches.hasError}');
-    debugPrint('║    - hasValue: ${asyncMatches.hasValue}');
-    debugPrint('║    - 件数: ${asyncMatches.value?.length ?? 0}件');
-    debugPrint('╚══════════════════════════════════════════════════════╝');
+    final isPhysicalOffline = ref.watch(isOfflineStreamProvider).value ?? false;
 
     final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
       ..sort((a, b) => a.order.compareTo(b.order));

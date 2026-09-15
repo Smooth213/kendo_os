@@ -16,9 +16,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_message_provider.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
-import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
-import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -41,19 +39,12 @@ import 'components/match_screen/match_operate_action_buttons_grid.dart';
 import 'components/match_screen/match_score_action_section.dart';
 import 'components/match_screen/match_timer_section.dart';
 import 'components/match_screen/match_view_only_notice_banner.dart';
-
-export 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
-    show registeredTeamsProvider;
-
-final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
-  return ref.watch(playerRepositoryProvider).getPlayers();
-});
+export 'providers/match_screen_providers.dart';
 
 class MatchScreen extends ConsumerStatefulWidget {
   final String matchId;
   final String? tournamentId;
   const MatchScreen({super.key, required this.matchId, this.tournamentId});
-
   @override
   ConsumerState<MatchScreen> createState() => _MatchScreenState();
 }
@@ -61,7 +52,6 @@ class MatchScreen extends ConsumerStatefulWidget {
 class _MatchScreenState extends ConsumerState<MatchScreen> {
   String? _myUserId;
   ProviderContainer? _container;
-
   @override
   void initState() {
     super.initState();
@@ -70,7 +60,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     } catch (_) {
       _myUserId = 'local_user';
     }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.matchId.isNotEmpty && mounted) {
         try {
@@ -133,7 +122,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           ? curId
           : ref.watch(webCurrentTournamentIdProvider);
     }
-
     final MatchModel? match =
         (kIsWeb && tournamentId != null && tournamentId.isNotEmpty)
         ? (ref.watch(
@@ -145,12 +133,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ) ??
               ref.watch(singleMatchProvider(widget.matchId)))
         : ref.watch(singleMatchProvider(widget.matchId));
-
     if (match == null) return const MatchLoadingView();
-
     final MatchRule rule =
         match.rule ?? ref.watch(matchRuleProvider) ?? MatchRule();
-
     final List<MatchModel> teamMatches =
         match.groupName != null && match.groupName!.isNotEmpty
         ? (kIsWeb && tournamentId != null && tournamentId.isNotEmpty
@@ -168,20 +153,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                     .list)
               : ref.watch(teamMatchesByGroupProvider(match.groupName!)))
         : <MatchModel>[];
-
     final permissions = ref.watch(permissionProvider);
     final isSomeoneElseOperating =
         match.scorerId != null && match.scorerId != _myUserId;
     final isViewOnly = permissions.isReadOnly || isSomeoneElseOperating;
     final isInputLocked =
         isViewOnly || match.status == 'finished' || match.status == 'approved';
-
     final isTie = ref.watch(
       matchViewStateProvider(widget.matchId).select((vs) => vs.isTie),
     );
     final isApproved = match.status == 'approved';
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     ref.listen<UiMessage?>(uiMessageProvider, (previous, next) {
       if (next != null) {
         if (next.isError) {
@@ -191,21 +173,15 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         }
       }
     });
-
     final activeRole = ref.watch(activeRoleProvider);
     final showSyncBar = activeRole != Role.viewer;
     final engine = KendoRuleEngine();
     final validEvents = engine.filterActiveEvents(match.events);
     final canUndoReal = validEvents.isNotEmpty;
-
-    // 🛡️ 【Plan 3-3】アクティブ試合のCrash Preserverへの随時追跡登録
     EmergencyCrashPreserver.registerActiveMatch(match);
-
     final bool isMatchFinished =
         match.status == 'finished' || match.status == 'approved';
-    // 🛡️ 【Plan 3-4】ドック内ネスト遷移はユーザー意図的な制御遷移のため離脱ガード不要
     final bool isInsideDock = DockSheetScope.of(context) != null;
-
     return PopScope(
       canPop: isMatchFinished || isInsideDock,
       onPopInvokedWithResult: (didPop, result) async {
@@ -236,7 +212,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               final double maxHeight = constraints.maxHeight;
               const double absoluteMinContentHeight = 665.0;
               final bool needsScroll = maxHeight < absoluteMinContentHeight;
-
               Widget buildMatchLayout(double currentHeight) {
                 return SizedBox(
                   width: maxWidth,
@@ -258,7 +233,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                 final corruptedBanner = isCorrupted
                                     ? CorruptedMatchBanner(matchId: match.id)
                                     : const SizedBox.shrink();
-
                                 final viewOnlyBanner = MatchViewOnlyNoticeBanner(
                                   isSomeoneElseOperating:
                                       isSomeoneElseOperating,
@@ -281,7 +255,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     }
                                   },
                                 );
-
                                 final undoArea = RepaintBoundary(
                                   child: MatchMiniLogUndoSection(
                                     validEvents: validEvents,
@@ -292,7 +265,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         .undoLastEvent(match.id),
                                   ),
                                 );
-
                                 final timerPart = RepaintBoundary(
                                   child: MatchTimerSection(
                                     match: match,
@@ -300,7 +272,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     isInputLocked: isInputLocked,
                                   ),
                                 );
-
                                 final groupButtonPart = RepaintBoundary(
                                   child: MatchOperateActionButtonsGrid(
                                     isViewOnly: isViewOnly,
@@ -332,7 +303,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         ),
                                   ),
                                 );
-
                                 final scoreboardPart = RepaintBoundary(
                                   child: ConstrainedBox(
                                     constraints: BoxConstraints(
@@ -356,7 +326,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     ),
                                   ),
                                 );
-
                                 final isAllDone = teamMatches.isNotEmpty
                                     ? teamMatches.every(
                                         (m) =>
@@ -365,7 +334,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                             m.id == match.id,
                                       )
                                     : true;
-
                                 final bottomButtonPart = RepaintBoundary(
                                   child: MatchBottomActionSection(
                                     match: match,
@@ -404,7 +372,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                         ),
                                   ),
                                 );
-
                                 final actionPanelPart = RepaintBoundary(
                                   child: MatchScoreActionSection(
                                     matchId: match.id,
@@ -412,7 +379,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                     isDark: isDark,
                                   ),
                                 );
-
                                 return MatchContentLayoutBuilder(
                                   constraints: constraints,
                                   isDark: isDark,

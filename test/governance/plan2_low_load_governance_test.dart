@@ -51,15 +51,24 @@ void main() {
           isTrue,
           reason: 'match_timer_provider.dart が存在すること',
         );
-        final content = file.readAsStringSync();
+        final masterTimerFile = File(
+          'lib/features/tournament/presentation/operate/providers/renseikai_master_timer_provider.dart',
+        );
+        expect(
+          masterTimerFile.existsSync(),
+          isTrue,
+          reason: '分離されたマスタータイマーProviderが存在すること',
+        );
+        final content = [
+          file,
+          masterTimerFile,
+        ].map((source) => source.readAsStringSync()).join('\n');
 
         // RenseikaiMasterTimerNotifier の Timer.periodic 内でメモリ集約されていること
         expect(
-          content.contains(
-            '// 🔋 毎秒のディスクI/O (SharedPreferences書き込み) を撤廃し、メモリ内State更新のみに集約',
-          ),
+          content.contains('Timer.periodic') && content.contains('state--;'),
           isTrue,
-          reason: 'タイマーループ内でのメモリ集約・毎秒Prefs書き込み排除コメントが存在すること',
+          reason: 'タイマーループ内でメモリState更新によるカウントダウンが実装されていること',
         );
 
         // state > 0 のブロック内で _saveState() が呼ばれていないこと（毎秒ディスクI/Oの完全禁止）

@@ -34,7 +34,10 @@ class FakeLocalMatchRepository implements LocalMatchRepository {
   Future<void> saveMatch(MatchModel match) async {}
 
   @override
-  Future<void> saveMatchesBulk(List<MatchModel> matches) async {}
+  Future<void> saveMatchesBulk(
+    List<MatchModel> matches, {
+    bool skipTwin = false,
+  }) async {}
 
   @override
   dynamic noSuchMethod(Invocation invocation) => Future.value(null);

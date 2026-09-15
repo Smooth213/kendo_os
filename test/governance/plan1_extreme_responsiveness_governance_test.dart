@@ -225,9 +225,9 @@ void main() {
 
         // saveMatchesBulk による一括Isar永続化
         expect(
-          syncContent.contains(
-            'await localRepo.saveMatchesBulk(syncedMatchesToSave)',
-          ),
+          RegExp(
+            r'await localRepo\.saveMatchesBulk\(\s*syncedMatchesToSave',
+          ).hasMatch(syncContent),
           isTrue,
           reason:
               'sync_provider.dart は同期完了試合を saveMatchesBulk で単一トランザクション一括保存しなければならない',

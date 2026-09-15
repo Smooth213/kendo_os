@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,34 +9,12 @@ import 'package:kendo_os/features/match/presentation/providers/match_rule_provid
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_backup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'match_list_provider.dart';
 
-final connectivityProvider = StreamProvider<bool>((ref) {
-  final isTest =
-      const bool.fromEnvironment('FLUTTER_TEST') ||
-      WidgetsBinding.instance.runtimeType.toString().contains('Test') ||
-      RegExp(r'test').hasMatch(StackTrace.current.toString());
-  if (isTest) return Stream.value(true);
-  return _connectivityStream();
-});
-
-Stream<bool> _connectivityStream() async* {
-  try {
-    final initialResults = await Connectivity().checkConnectivity();
-    debugPrint('📡 [Connectivity] 初期状態: $initialResults');
-    yield !initialResults.contains(ConnectivityResult.none);
-
-    await for (final results in Connectivity().onConnectivityChanged) {
-      debugPrint('📡 [Connectivity] 状態変化: $results');
-      yield !results.contains(ConnectivityResult.none);
-    }
-  } catch (e) {
-    debugPrint('⚠️ [Connectivity] ストリーム監視エラー (fallback to true): $e');
-    yield true;
-  }
-}
+final connectivityProvider = isOnlineStreamProvider;
 
 final isOnlineProvider = Provider<bool>(
   (ref) => ref.watch(connectivityProvider).value ?? true,
@@ -322,7 +299,7 @@ class SyncEngine {
 
       // 3. ⚡【Plan 1 最適化】全試合を単一トランザクションでIsarに一括反映
       if (syncedMatchesToSave.isNotEmpty) {
-        await localRepo.saveMatchesBulk(syncedMatchesToSave);
+        await localRepo.saveMatchesBulk(syncedMatchesToSave, skipTwin: true);
         debugPrint(
           '⚡ [Sync Engine] ${syncedMatchesToSave.length}件の同期完了試合を単一トランザクションでIsarに一括反映しました',
         );

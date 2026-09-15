@@ -1,4 +1,3 @@
-// ignore_for_file: experimental_member_use
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -11,16 +10,15 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/twin_match_persistence_helper.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_entity_mapper.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_micro_batch.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_signature_verifier.dart';
 import 'package:path_provider/path_provider.dart';
-
 export 'package:kendo_os/shared/infrastructure/repository/match_signature_verifier.dart'
     show TamperedEventException;
 
 final isarProvider = Provider<Isar?>(
   (ref) => throw UnimplementedError('main.dartでIsarを初期化してoverrideしてください'),
 );
-
 final localMatchRepositoryProvider = Provider<LocalMatchRepository>(
   (ref) => LocalMatchRepository(ref.read(isarProvider)),
 );
@@ -28,67 +26,20 @@ final localMatchRepositoryProvider = Provider<LocalMatchRepository>(
 class LocalMatchRepository {
   final Isar? _isar;
   LocalMatchRepository(this._isar);
-
   final Set<String> _verifiedSignatureKeys = <String>{};
   late final MatchSignatureVerifier _signatureVerifier = MatchSignatureVerifier(
     _verifiedSignatureKeys,
   );
+  late final LocalMatchMicroBatch _microBatch = LocalMatchMicroBatch(
+    saveMatch: saveMatch,
+    saveMatchesBulk: saveMatchesBulk,
+  );
+  Future<void> saveMatchBatched(MatchModel match, {bool isCritical = false}) =>
+      _microBatch.saveMatchBatched(match, isCritical: isCritical);
 
-  // 🔋 【Plan 2-3】適応型マイクロバッチング用メモリバッファ＆デバウンスタイマー
-  Timer? _microBatchTimer;
-  final Map<String, MatchModel> _microBatchBuffer = {};
+  Future<void> flushMicroBatch() => _microBatch.flush();
 
-  /// 🔋 【Plan 2-3】適応型マイクロバッチング保存
-  /// タイマー更新等の微細な変更はメモリバッファへ蓄積し、1000msデバウンスでまとめてディスク（Isar）へフラッシュ。
-  /// クリティカルな変更（得点、反則、合議、ステータス終了）または isCritical: true の場合は即座にフラッシュ。
-  Future<void> saveMatchBatched(
-    MatchModel match, {
-    bool isCritical = false,
-  }) async {
-    _microBatchBuffer[match.id] = match;
-
-    if (isCritical || _isCriticalMatchChange(match)) {
-      await flushMicroBatch();
-      return;
-    }
-
-    _microBatchTimer?.cancel();
-    _microBatchTimer = Timer(const Duration(milliseconds: 1000), () async {
-      await flushMicroBatch();
-    });
-  }
-
-  bool _isCriticalMatchChange(MatchModel match) {
-    return match.status == 'finished' ||
-        match.status == 'paused' ||
-        match.redScore > 0 ||
-        match.whiteScore > 0 ||
-        match.events.isNotEmpty;
-  }
-
-  Future<void> flushMicroBatch() async {
-    _microBatchTimer?.cancel();
-    _microBatchTimer = null;
-    if (_microBatchBuffer.isEmpty) return;
-
-    final toFlush = _microBatchBuffer.values.toList();
-    _microBatchBuffer.clear();
-
-    if (toFlush.length == 1) {
-      await saveMatch(toFlush.first);
-    } else {
-      await saveMatchesBulk(toFlush);
-    }
-    debugPrint(
-      '💾 [Adaptive Micro-Batch] ${toFlush.length} 件の試合データをディスクへ一括フラッシュしました',
-    );
-  }
-
-  void dispose() {
-    _microBatchTimer?.cancel();
-    _microBatchTimer = null;
-    flushMicroBatch();
-  }
+  void dispose() => _microBatch.dispose();
 
   Stream<List<MatchModel>> watchMatches() => _isar == null
       ? Stream.value([])
@@ -96,7 +47,6 @@ class LocalMatchRepository {
             .where()
             .watch(fireImmediately: true)
             .map((e) => e.map(LocalMatchEntityMapper.toModel).toList());
-
   Stream<MatchModel?> watchSingleMatch(String matchId) => _isar == null
       ? Stream.value(null)
       : _isar.matchEntitys
@@ -106,12 +56,10 @@ class LocalMatchRepository {
             .map(
               (e) => e.isEmpty ? null : LocalMatchEntityMapper.toModel(e.first),
             );
-
   bool _verifyMatchSignatures(
     MatchModel match, {
     bool allowQuarantine = false,
   }) => _signatureVerifier.verify(match, allowQuarantine: allowQuarantine);
-
   Future<MatchModel?> getMatch(String matchId) async {
     if (_isar != null) {
       try {
@@ -127,9 +75,6 @@ class LocalMatchRepository {
             .catchError((_) {});
       }
     }
-
-    // 🛡️ 【Plan 3-1】ツイン・エンジン自己修復（Self-Healing）
-    // Isarで見つからない場合やDB破損時はスナップショットから自己修復
     final recovered = await TwinMatchPersistenceHelper.recoverMatch(matchId);
     if (recovered != null && _isar != null) {
       try {
@@ -143,10 +88,8 @@ class LocalMatchRepository {
 
   Future<void> saveMatch(MatchModel match) =>
       _saveMatchInternal(match, allowQuarantine: false);
-
   Future<void> saveMatchSafeMode(MatchModel match) =>
       _saveMatchInternal(match, allowQuarantine: true);
-
   Future<void> _saveMatchInternal(
     MatchModel match, {
     required bool allowQuarantine,
@@ -168,7 +111,6 @@ class LocalMatchRepository {
         '🛡️ [Security Quarantine] 署名不一致データを緊急JSONに隔離退避しました ID: ${match.id}',
       );
     }
-
     if (_isar != null) {
       try {
         final entity = LocalMatchEntityMapper.toEntity(targetMatch);
@@ -190,7 +132,6 @@ class LocalMatchRepository {
         rethrow;
       }
     }
-    // 🛡️ 【Plan 3-1】ツイン・エンジン永続化: スナップショットへの二重書き込み
     unawaited(TwinMatchPersistenceHelper.saveSnapshot(targetMatch));
   }
 
@@ -210,7 +151,6 @@ class LocalMatchRepository {
               ..payloadJson = jsonEncode(command.payload)
               ..createdAt = command.createdAt
               ..status = command.status.name);
-
       await _isar.writeTxn(() async {
         final existing = await _isar.matchEntitys
             .filter()
@@ -218,7 +158,6 @@ class LocalMatchRepository {
             .findFirst();
         if (existing != null) entity.id = existing.id;
         await _isar.matchEntitys.put(entity);
-
         if (cmdEntity != null && command != null) {
           final existingCmd = await _isar.matchCommandEntitys
               .filter()
@@ -286,7 +225,6 @@ class LocalMatchRepository {
   Future<void> _saveEmergencyBackupWithRotation(MatchModel match) async {
     await TwinMatchPersistenceHelper.saveSnapshot(match);
     if (kIsWeb) return;
-
     try {
       final dir = await getApplicationDocumentsDirectory();
       final backupFiles =
@@ -306,15 +244,20 @@ class LocalMatchRepository {
     } catch (_) {}
   }
 
-  Future<void> saveMatchesBulk(List<MatchModel> matches) =>
-      _saveMatchesBulkInternal(matches, allowQuarantine: false);
-
+  Future<void> saveMatchesBulk(
+    List<MatchModel> matches, {
+    bool skipTwin = false,
+  }) => _saveMatchesBulkInternal(
+    matches,
+    allowQuarantine: false,
+    skipTwin: skipTwin,
+  );
   Future<void> saveMatchesBulkSafeMode(List<MatchModel> matches) =>
-      _saveMatchesBulkInternal(matches, allowQuarantine: true);
-
+      _saveMatchesBulkInternal(matches, allowQuarantine: true, skipTwin: false);
   Future<void> _saveMatchesBulkInternal(
     List<MatchModel> matches, {
     required bool allowQuarantine,
+    required bool skipTwin,
   }) async {
     if (_isar == null || matches.isEmpty) return;
     final processedMatches = <MatchModel>[];
@@ -337,7 +280,6 @@ class LocalMatchRepository {
         processedMatches.add(match);
       }
     }
-
     final matchIds = processedMatches.map((m) => m.id).toList();
     await _isar.writeTxn(() async {
       final existingEntities = await _isar.matchEntitys
@@ -355,10 +297,10 @@ class LocalMatchRepository {
       }).toList();
       await _isar.matchEntitys.putAll(entitiesToPut);
     });
-
-    // 🛡️ 【Plan 3-1】ツイン・エンジン永続化（一括二重書き込み）
-    for (final m in processedMatches) {
-      unawaited(TwinMatchPersistenceHelper.saveSnapshot(m));
+    if (!skipTwin) {
+      for (final m in processedMatches) {
+        unawaited(TwinMatchPersistenceHelper.saveSnapshot(m));
+      }
     }
   }
 
