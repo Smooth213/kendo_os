@@ -22,7 +22,11 @@ void main() {
       when(
         () => mockLocalRepo.watchLocalMatches(any()),
       ).thenAnswer((_) => Stream.value([]));
+      when(
+        () => mockLocalRepo.watchAllLocalMatches(),
+      ).thenAnswer((_) => Stream.value([]));
       when(() => mockLocalRepo.saveMatchesBulk(any())).thenAnswer((_) async {});
+      when(() => mockLocalRepo.getPendingMatches()).thenAnswer((_) async => []);
       when(
         () => mockLocalRepo.getPendingCommands(),
       ).thenAnswer((_) async => []);

@@ -26,7 +26,7 @@ void main() {
       'snapshot_twin_repo_',
     );
     isar = await Isar.open(
-      [MatchEntitySchema],
+      [MatchEntitySchema, MatchEventArchiveEntitySchema],
       directory: isarDirectory.path,
       name: 'twin_behavior_${DateTime.now().microsecondsSinceEpoch}',
       inspector: false,

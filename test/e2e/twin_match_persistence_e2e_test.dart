@@ -26,7 +26,7 @@ void main() {
       'snapshot_twin_e2e_',
     );
     isar = await Isar.open(
-      [MatchEntitySchema],
+      [MatchEntitySchema, MatchEventArchiveEntitySchema],
       directory: isarDirectory.path,
       name: 'twin_e2e_${DateTime.now().microsecondsSinceEpoch}',
       inspector: false,

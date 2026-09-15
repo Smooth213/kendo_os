@@ -311,6 +311,7 @@ class AppStartup {
     return Isar.open(
       [
         MatchEntitySchema,
+        MatchEventArchiveEntitySchema,
         LocalStrokeModelSchema,
         MatchCommentEntitySchema,
         MatchProjectionEntitySchema,

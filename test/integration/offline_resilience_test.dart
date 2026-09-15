@@ -240,7 +240,7 @@ void main() {
         );
 
         isar = await Isar.open(
-          [MatchEntitySchema],
+          [MatchEntitySchema, MatchEventArchiveEntitySchema],
           directory: tempDir.path,
           name:
               'offline_resilience_test_db_${DateTime.now().microsecondsSinceEpoch}',

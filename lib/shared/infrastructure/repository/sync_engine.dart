@@ -11,8 +11,6 @@ import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart'
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
-    as sync_provider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
@@ -43,8 +41,6 @@ class SyncEngine {
   StreamSubscription? _bunaiksenSubscription;
 
   SyncEngine(this._ref) {
-    // 🌟 未送信キューの初回確認（キューが存在する場合のみポーリング同期ループを開始）
-    processQueue();
     // 🌟 Firestoreダウンストリーム監視の初期設定
     _setupFirestoreDownstream();
   }
@@ -62,16 +58,6 @@ class SyncEngine {
   }
 
   void _setupFirestoreDownstream() {
-    // 📡 ネットワーク回復時にキュー同期を自動再開（テスト実行時の不要タイマー生成を抑止）
-    if (!_isTestEnvironment()) {
-      _ref.listen<bool>(sync_provider.isOnlineProvider, (prev, isOnline) {
-        if (isOnline && (prev == false || prev == null)) {
-          debugPrint('📡 [Sync Engine] ネットワーク復帰を検知: キュー処理を再開します');
-          resetBackoffAndProcess();
-        }
-      });
-    }
-
     // DojoId または TournamentId が変わったときに再バインドする
     _ref.listen<String>(
       currentDojoIdProvider,
@@ -238,7 +224,11 @@ class SyncEngine {
               .map(MatchDataSanitizer.healMatchSignatures)
               .toList();
           final localRepo = _ref.read(localMatchRepositoryProvider);
-          await localRepo.saveMatchesBulk(healedMatches);
+          await _applyRemoteMatches(
+            localRepo,
+            healedMatches,
+            tournamentId: _ref.read(currentTournamentIdProvider),
+          );
           debugPrint(
             '⚡ [Sync Engine Downstream] bunaiksenドキュメント直下のリストから ${healedMatches.length} 件の試合データをIsarに同期しました。',
           );
@@ -256,25 +246,43 @@ class SyncEngine {
   ) async {
     try {
       final matches = <MatchModel>[];
-      for (final doc in snapshot.docs) {
+      final removedIds = <String>{};
+      var parseFailed = false;
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.removed) {
+          removedIds.add(change.doc.id);
+          continue;
+        }
+        final doc = change.doc;
         try {
-          final sanitized = _sanitizeFirestoreData(doc.data());
+          final data = doc.data();
+          if (data == null) {
+            parseFailed = true;
+            continue;
+          }
+          final sanitized = _sanitizeFirestoreData(data);
           final rawMatch = MatchModel.fromJson({...sanitized, 'id': doc.id});
           final match = MatchDataSanitizer.healRepresentativeMatch(rawMatch);
           matches.add(match);
         } catch (e) {
+          parseFailed = true;
           debugPrint(
             '⚠️ [Sync Engine Downstream] Match parsing failed for doc ${doc.id}: $e',
           );
         }
       }
 
-      if (matches.isNotEmpty) {
-        final healedMatches = matches
-            .map(MatchDataSanitizer.healMatchSignatures)
-            .toList();
-        final localRepo = _ref.read(localMatchRepositoryProvider);
-        await localRepo.saveMatchesBulk(healedMatches);
+      final healedMatches = matches
+          .map(MatchDataSanitizer.healMatchSignatures)
+          .toList();
+      final localRepo = _ref.read(localMatchRepositoryProvider);
+      await _applyRemoteMatches(
+        localRepo,
+        healedMatches,
+        tournamentId: _ref.read(currentTournamentIdProvider),
+        removedIds: parseFailed ? const <String>{} : removedIds,
+      );
+      if (healedMatches.isNotEmpty) {
         debugPrint(
           '⚡ [Sync Engine Downstream] Firestoreから ${healedMatches.length} 件の試合データをIsarに同期しました。',
         );
@@ -283,6 +291,33 @@ class SyncEngine {
       debugPrint(
         '🔥 [Sync Engine Downstream Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
       );
+    }
+  }
+
+  Future<void> _applyRemoteMatches(
+    LocalMatchRepository localRepo,
+    List<MatchModel> remoteMatches, {
+    required String tournamentId,
+    Set<String> removedIds = const <String>{},
+  }) async {
+    final localMatches = await localRepo.watchAllLocalMatches().first;
+    final localById = {for (final match in localMatches) match.id: match};
+    final safeMatches = remoteMatches.where((remote) {
+      final local = localById[remote.id];
+      return local == null || !local.isDirty;
+    }).toList();
+
+    if (safeMatches.isNotEmpty) {
+      await localRepo.saveMatchesBulk(safeMatches);
+    }
+
+    if (removedIds.isEmpty) return;
+    for (final local in localMatches) {
+      if (removedIds.contains(local.id) &&
+          (tournamentId.isEmpty || local.tournamentId == tournamentId) &&
+          !local.isDirty) {
+        await localRepo.deleteMatch(local.id);
+      }
     }
   }
 

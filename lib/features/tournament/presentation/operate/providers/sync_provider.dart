@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:kendo_os/features/match/presentation/providers/match_rule_provid
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_backup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_event_cloud_codec.dart';
 import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,7 +76,7 @@ class SyncEngine {
       lifecycleListener.dispose();
     });
 
-    Future.delayed(const Duration(seconds: 2), () => syncNow());
+    Future.microtask(syncNow);
   }
 
   Future<void> _performReconnectReplay() async {
@@ -222,7 +224,11 @@ class SyncEngine {
                         version: targetVersion,
                       )
                       .toJson();
-                  await docRef.set(uploadData);
+                  await _setWithVersionPrecondition(
+                    docRef,
+                    uploadData,
+                    expectedRemoteVersion: remoteVersion,
+                  );
                   await localRepo.markAsSynced(match.id);
                   return;
                 }
@@ -241,7 +247,11 @@ class SyncEngine {
                       version: targetVersion,
                     )
                     .toJson();
-                await docRef.set(uploadData);
+                await _setWithVersionPrecondition(
+                  docRef,
+                  uploadData,
+                  expectedRemoteVersion: remoteVersion,
+                );
 
                 final currentLocal = await localRepo.getMatch(match.id);
                 if (currentLocal != null &&
@@ -272,7 +282,13 @@ class SyncEngine {
                   version: targetVersion,
                 )
                 .toJson();
-            await docRef.set(uploadData);
+            await _setWithVersionPrecondition(
+              docRef,
+              uploadData,
+              expectedRemoteVersion: snapshot.exists
+                  ? (snapshot.data()?['version'] as num?)?.toInt() ?? 1
+                  : null,
+            );
 
             final currentLocal = await localRepo.getMatch(match.id);
             if (currentLocal != null &&
@@ -347,6 +363,61 @@ class SyncEngine {
   void _isProcessing() {
     _isSyncing = true;
     ref.read(isSyncingStateProvider.notifier).state = true;
+  }
+
+  Future<void> _setWithVersionPrecondition(
+    DocumentReference<Map<String, dynamic>> docRef,
+    Map<String, dynamic> data, {
+    required int? expectedRemoteVersion,
+  }) async {
+    final firestore = ref.read(firestoreProvider);
+    await firestore.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      final actualVersion = snapshot.exists
+          ? (snapshot.data()?['version'] as num?)?.toInt() ?? 1
+          : null;
+      if (actualVersion != expectedRemoteVersion) {
+        throw StateError(
+          'Remote version changed while syncing: '
+          'expected=$expectedRemoteVersion actual=$actualVersion',
+        );
+      }
+      final eventList = data['events'] is List
+          ? data['events'] as List
+          : const [];
+      final cloudData = Map<String, dynamic>.from(data);
+      if (eventList.length > MatchEventCloudCodec.hotEventLimit) {
+        cloudData['events'] = eventList
+            .skip(eventList.length - MatchEventCloudCodec.hotEventLimit)
+            .toList();
+        cloudData['eventArchiveVersion'] = eventList.length;
+        final coldEvents = eventList.take(
+          eventList.length - MatchEventCloudCodec.hotEventLimit,
+        );
+        for (
+          var offset = 0;
+          offset < coldEvents.length;
+          offset += MatchEventCloudCodec.archiveChunkSize
+        ) {
+          final events = coldEvents
+              .skip(offset)
+              .take(MatchEventCloudCodec.archiveChunkSize)
+              .toList();
+          transaction.set(
+            docRef
+                .collection('events')
+                .doc('${offset ~/ MatchEventCloudCodec.archiveChunkSize}'),
+            {
+              'matchId': docRef.id,
+              'chunkIndex': offset ~/ MatchEventCloudCodec.archiveChunkSize,
+              'version': offset + events.length,
+              'events': events,
+            },
+          );
+        }
+      }
+      transaction.set(docRef, cloudData);
+    });
   }
 
   void _isDone() {

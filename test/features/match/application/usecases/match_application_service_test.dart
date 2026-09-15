@@ -5,8 +5,8 @@ import 'package:kendo_os/features/match/application/usecases/match_application_s
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
-import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 // --- モッククラスの定義 ---
@@ -17,6 +17,7 @@ class MockMatchRepository extends Mock implements MatchRepository {}
 class MockSyncEngine extends Mock implements SyncEngine {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late ProviderContainer container;
   late MockLocalMatchRepository mockLocalRepo;
   late MockMatchRepository mockRemoteRepo;
@@ -54,7 +55,7 @@ void main() {
     when(
       () => mockLocalRepo.savePendingCommand(any()),
     ).thenAnswer((_) async {});
-    when(() => mockSyncEngine.processQueue()).thenAnswer((_) async {});
+    when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
 
     // ProviderContainer で使用するプロバイダをモックに差し替え
     container = ProviderContainer(

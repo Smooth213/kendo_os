@@ -164,10 +164,15 @@ AUDIT_DEFINITIONS = [
         "name": "⚡ 極限高速化・UIスレッドIsolate完全分離＆ゼロ遅延即応 永続保証規約",
         "cmd": ["python3", "scripts/check_speed_and_isolate_governance.py"],
     },
+    {
+        "id": 31,
+        "name": "🗃️ 長期イベント履歴分割・全件復元・孤立チャンク防止規約",
+        "cmd": ["python3", "scripts/check_event_history_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全30大ガバナンス監査 統合ランナー")
+    parser = argparse.ArgumentParser(description="Kendo OS 全31大ガバナンス監査 統合ランナー")
     parser.add_argument("--only", type=int, help="指定した監査番号（1〜30）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()

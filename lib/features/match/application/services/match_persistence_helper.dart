@@ -6,10 +6,10 @@ import 'package:uuid/uuid.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/isar_projection_store.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
-import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 /// 🥋 試合データの安全な取得（ローカル・メモリ・Web直接Firestore）および保存リトライ・永続化ヘルパー
@@ -193,7 +193,7 @@ class MatchPersistenceHelper {
         }
       }
 
-      _ref.read(syncEngineProvider).processQueue();
+      _ref.read(syncEngineProvider).syncNow();
       _ref.invalidate(matchListProvider);
     }
   }
@@ -261,7 +261,7 @@ class MatchPersistenceHelper {
         }
       }
 
-      _ref.read(syncEngineProvider).processQueue();
+      _ref.read(syncEngineProvider).syncNow();
       _ref.invalidate(matchListProvider);
     }
   }

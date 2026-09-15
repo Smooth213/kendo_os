@@ -7,6 +7,7 @@ import 'dart:io';
 
 // ※ プロジェクトの実際のパスに合わせてインポートを調整してください
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
@@ -26,7 +27,7 @@ void main() {
 
       tempDir = Directory.systemTemp.createTempSync('isar_repo_test_');
       isar = await Isar.open(
-        [MatchEntitySchema],
+        [MatchEntitySchema, MatchEventArchiveEntitySchema],
         directory: tempDir.path,
         name: 'repo_test_db_${DateTime.now().microsecondsSinceEpoch}',
         inspector: false, // CI環境でのポート衝突を防ぐためインスペクターは無効化
@@ -67,7 +68,7 @@ void main() {
       );
 
       // When: リポジトリを経由して保存を実行
-      await repository.saveMatch(match);
+      await repository.saveMatchSafeMode(match);
 
       // Then: 保存されたデータをストリームから取得して検証
       final stream = repository.watchMatches();
@@ -101,6 +102,46 @@ void main() {
 
       expect(savedMatches.length, 1, reason: '同IDで保存した場合は新規追加ではなく上書きされるべき');
       expect(savedMatches.first.redScore, 1, reason: 'スコアの更新が正しく反映されているべき');
+    });
+
+    test('長期運用: 201件以上のイベントを分離保存し、全履歴を復元できること', () async {
+      final events = List.generate(
+        450,
+        (index) => ScoreEvent(
+          id: 'long_event_$index',
+          side: Side.red,
+          timestamp: DateTime.fromMillisecondsSinceEpoch(index),
+          sequence: index,
+        ),
+      );
+      final match = MatchModel(
+        id: 'long_running_match',
+        tournamentId: 'long_tournament',
+        matchType: '個人戦',
+        redName: '赤',
+        whiteName: '白',
+        events: events,
+      );
+
+      await repository.saveMatchSafeMode(match);
+
+      final entity = await isar.matchEntitys
+          .filter()
+          .firestoreIdEqualTo(match.id)
+          .findFirst();
+      final archives = await isar.matchEventArchiveEntitys
+          .filter()
+          .matchIdEqualTo(match.id)
+          .findAll();
+      final restored = await repository.getMatch(match.id);
+
+      expect(entity?.events.length, 200);
+      expect(archives.length, 2);
+      expect(restored?.events.length, events.length);
+      expect(
+        restored?.events.map((event) => event.id),
+        orderedEquals(events.map((event) => event.id)),
+      );
     });
   });
 }

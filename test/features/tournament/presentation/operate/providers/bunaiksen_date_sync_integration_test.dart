@@ -67,6 +67,9 @@ void main() {
         () => mockLocalRepo.getPendingCommands(),
       ).thenAnswer((_) => Future.value(<MatchCommandModel>[]));
       when(
+        () => mockLocalRepo.getPendingMatches(),
+      ).thenAnswer((_) => Future.value(<MatchModel>[]));
+      when(
         () => mockLocalRepo.watchPendingMatchesCount(),
       ).thenAnswer((_) => Stream.value(0));
     });

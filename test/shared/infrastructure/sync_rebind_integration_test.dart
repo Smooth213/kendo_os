@@ -47,6 +47,9 @@ void main() {
     when(
       () => mockLocalRepo.getPendingCommands(),
     ).thenAnswer((_) => Future.value([]));
+    when(
+      () => mockLocalRepo.watchAllLocalMatches(),
+    ).thenAnswer((_) => Stream.value(const <MatchModel>[]));
   });
 
   group('🔄 ログイン・認証連動試合同期 (Sync Rebind) 統合検証テスト', () {

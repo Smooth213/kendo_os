@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全30大ガバナンス個別監査 (1/30 〜 30/30: 100% PASS)
+# 1. 全31大ガバナンス個別監査 (1/31 〜 31/31: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -17,9 +17,9 @@ echo "================================================================"
 echo ""
 
 # 1. 全30大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全30大ガバナンス個別監査を実行中..."
+echo "🚀 [Step 1/3] 全31大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全30大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全31大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -42,12 +42,13 @@ flutter test test/governance/cross_platform_parity_governance_test.dart \
              test/e2e/rapid_fire_score_responsiveness_e2e_test.dart \
              test/e2e/plan2_low_load_e2e_test.dart \
              test/e2e/plan3_robustness_e2e_test.dart \
-             test/e2e/plan3_stability_resilience_e2e_test.dart
+             test/e2e/plan3_stability_resilience_e2e_test.dart \
+             test/e2e/event_history_partition_e2e_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全30大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全31大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

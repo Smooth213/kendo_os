@@ -47,7 +47,6 @@ final bunaiksenMatchesStreamProvider = StreamProvider.family
                   .toList();
             });
       } else {
-        final localRepository = ref.watch(localMatchRepositoryProvider);
         final controller = StreamController<List<MatchModel>>();
         StreamSubscription? sub;
 
@@ -87,10 +86,16 @@ final bunaiksenMatchesStreamProvider = StreamProvider.family
                       .map(MatchDataSanitizer.healMatchSignatures)
                       .toList();
 
-                  try {
-                    await localRepository.saveMatchesBulk(healedMatches);
-                  } catch (e) {
-                    debugPrint('⚠️ [Sync Exception] Isar一括保存エラー: $e');
+                  // 🗄️ ネイティブ環境: FirestoreデータをIsarにキャッシュして双方向同期を保証
+                  if (healedMatches.isNotEmpty) {
+                    try {
+                      final localRepo = ref.read(localMatchRepositoryProvider);
+                      await localRepo.saveMatchesBulk(healedMatches);
+                    } catch (e) {
+                      debugPrint(
+                        '⚠️ [bunaiksenMatchesStreamProvider] Isarキャッシュ書き込み失敗: $e',
+                      );
+                    }
                   }
 
                   if (!controller.isClosed) {
@@ -112,57 +117,62 @@ final bunaiksenMatchesStreamProvider = StreamProvider.family
       }
     });
 
-final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>(
-  (ref) {
-    final dojoId = ref.watch(currentDojoIdProvider);
-    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>((
+  ref,
+) {
+  final dojoId = ref.watch(currentDojoIdProvider);
+  final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
 
-    FirebaseFirestore? firestore;
+  FirebaseFirestore? firestore;
+  try {
+    firestore = ref.watch(firestoreProvider);
+  } catch (e) {
+    debugPrint('⚠️ [日付同期] Firestore取得失敗: $e');
+  }
+
+  if (firestore == null) {
     try {
-      firestore = ref.watch(firestoreProvider);
+      final localRepository = ref.watch(localMatchRepositoryProvider);
+      return localRepository.watchAllLocalMatches().map((allMatches) {
+        return allMatches
+            .where(
+              (m) =>
+                  m.tournamentId != null &&
+                  m.tournamentId!.startsWith('bunaiksen_'),
+            )
+            .map((m) => m.tournamentId!.replaceFirst('bunaiksen_', ''))
+            .toSet();
+      });
     } catch (e) {
-      debugPrint('⚠️ [日付同期] Firestore取得失敗: $e');
+      debugPrint('⚠️ [日付同期] LocalRepository取得失敗: $e');
+      return Stream.value(const <String>{});
     }
+  }
 
-    if (firestore == null) {
-      try {
-        final localRepository = ref.watch(localMatchRepositoryProvider);
-        return localRepository.watchAllLocalMatches().map((allMatches) {
-          return allMatches
-              .where(
-                (m) =>
-                    m.tournamentId != null &&
-                    m.tournamentId!.startsWith('bunaiksen_'),
-              )
-              .map((m) => m.tournamentId!.replaceFirst('bunaiksen_', ''))
-              .toSet();
-        });
-      } catch (e) {
-        debugPrint('⚠️ [日付同期] LocalRepository取得失敗: $e');
-        return Stream.value(const <String>{});
-      }
-    }
-
-    return firestore.collectionGroup('matches').snapshots().map((snap) {
-      return snap.docs
-          .where((doc) {
-            final path = doc.reference.path;
-            return path.contains('organizations/$safeDojoId/');
-          })
-          .map((doc) {
-            try {
-              return doc.data()['tournamentId'] as String?;
-            } catch (_) {
-              return null;
-            }
-          })
-          .whereType<String>()
-          .where((id) => id.startsWith('bunaiksen_'))
-          .map((id) => id.replaceFirst('bunaiksen_', ''))
-          .toSet();
-    });
-  },
-);
+  // ✅ matches collectionGroupから自テナントのパスに限定してtournamentIdを抽出。
+  // doc.reference.pathを使いorganizations/{safeDojoId}/tournaments/{id}/matches 形式で確認し、
+  // tournamentId部分をパスの第4セグメントから直接取得することで確実なテナント隔離を保証する。
+  return firestore.collectionGroup('matches').snapshots().map((snap) {
+    final prefix = 'organizations/$safeDojoId/tournaments/';
+    return snap.docs
+        .where((doc) => doc.reference.path.startsWith(prefix))
+        .map((doc) {
+          // path: organizations/{dojoId}/tournaments/{tournamentId}/matches/{matchId}
+          final segments = doc.reference.path.split('/');
+          if (segments.length != 6 ||
+              segments[0] != 'organizations' ||
+              segments[2] != 'tournaments' ||
+              segments[4] != 'matches') {
+            return null;
+          }
+          return segments[3];
+        })
+        .whereType<String>()
+        .where((id) => id.startsWith('bunaiksen_'))
+        .map((id) => id.replaceFirst('bunaiksen_', ''))
+        .toSet();
+  });
+});
 
 final bunaiksenMatchesProvider = Provider.family
     .autoDispose<List<MatchModel>, String>((ref, tournamentId) {

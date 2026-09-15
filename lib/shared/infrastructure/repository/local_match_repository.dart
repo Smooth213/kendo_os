@@ -24,6 +24,7 @@ final localMatchRepositoryProvider = Provider<LocalMatchRepository>(
 );
 
 class LocalMatchRepository {
+  static const int _hotEventLimit = 200;
   final Isar? _isar;
   LocalMatchRepository(this._isar);
   final Set<String> _verifiedSignatureKeys = <String>{};
@@ -46,15 +47,16 @@ class LocalMatchRepository {
       : _isar.matchEntitys
             .where()
             .watch(fireImmediately: true)
-            .map((e) => e.map(LocalMatchEntityMapper.toModel).toList());
+            .asyncMap(_loadModelsWithArchivedEvents);
   Stream<MatchModel?> watchSingleMatch(String matchId) => _isar == null
       ? Stream.value(null)
       : _isar.matchEntitys
             .filter()
             .firestoreIdEqualTo(matchId)
             .watch(fireImmediately: true)
-            .map(
-              (e) => e.isEmpty ? null : LocalMatchEntityMapper.toModel(e.first),
+            .asyncMap(
+              (e) async =>
+                  e.isEmpty ? null : _loadModelWithArchivedEvents(e.first),
             );
   bool _verifyMatchSignatures(
     MatchModel match, {
@@ -67,7 +69,7 @@ class LocalMatchRepository {
             .filter()
             .firestoreIdEqualTo(matchId)
             .findFirst();
-        if (entity != null) return LocalMatchEntityMapper.toModel(entity);
+        if (entity != null) return _loadModelWithArchivedEvents(entity);
       } catch (e, stack) {
         debugPrint('🔥 [Critical] ローカルDBからの読み込みに失敗しました: $e');
         FirebaseCrashlytics.instance
@@ -113,7 +115,8 @@ class LocalMatchRepository {
     }
     if (_isar != null) {
       try {
-        final entity = LocalMatchEntityMapper.toEntity(targetMatch);
+        final archivedMatch = await _archiveAndTrimEvents(targetMatch);
+        final entity = LocalMatchEntityMapper.toEntity(archivedMatch);
         await _isar.writeTxn(() async {
           final existing = await _isar.matchEntitys
               .filter()
@@ -142,7 +145,8 @@ class LocalMatchRepository {
     if (_isar == null) return;
     try {
       _verifyMatchSignatures(match);
-      final entity = LocalMatchEntityMapper.toEntity(match);
+      final archivedMatch = await _archiveAndTrimEvents(match);
+      final entity = LocalMatchEntityMapper.toEntity(archivedMatch);
       final cmdEntity = command == null
           ? null
           : (MatchCommandEntity()
@@ -185,7 +189,8 @@ class LocalMatchRepository {
     if (_isar == null) return;
     try {
       _verifyMatchSignatures(match);
-      final entity = LocalMatchEntityMapper.toEntity(match);
+      final archivedMatch = await _archiveAndTrimEvents(match);
+      final entity = LocalMatchEntityMapper.toEntity(archivedMatch);
       await _isar.writeTxn(() async {
         final existing = await _isar.matchEntitys
             .filter()
@@ -280,6 +285,10 @@ class LocalMatchRepository {
         processedMatches.add(match);
       }
     }
+    final archivedMatches = <MatchModel>[];
+    for (final match in processedMatches) {
+      archivedMatches.add(await _archiveAndTrimEvents(match));
+    }
     final matchIds = processedMatches.map((m) => m.id).toList();
     await _isar.writeTxn(() async {
       final existingEntities = await _isar.matchEntitys
@@ -289,7 +298,7 @@ class LocalMatchRepository {
       final existingIdMap = {
         for (final e in existingEntities) e.firestoreId: e.id,
       };
-      final entitiesToPut = processedMatches.map((match) {
+      final entitiesToPut = archivedMatches.map((match) {
         final entity = LocalMatchEntityMapper.toEntity(match);
         final existingId = existingIdMap[match.id];
         if (existingId != null) entity.id = existingId;
@@ -298,17 +307,21 @@ class LocalMatchRepository {
       await _isar.matchEntitys.putAll(entitiesToPut);
     });
     if (!skipTwin) {
-      for (final m in processedMatches) {
-        unawaited(TwinMatchPersistenceHelper.saveSnapshot(m));
-      }
+      await Future.wait(
+        processedMatches.map(TwinMatchPersistenceHelper.saveSnapshot),
+      );
     }
   }
 
   Future<void> deleteMatch(String matchId) async {
     if (_isar == null) return;
-    await _isar.writeTxn(
-      () => _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).deleteAll(),
-    );
+    await _isar.writeTxn(() async {
+      await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).deleteAll();
+      await _isar.matchEventArchiveEntitys
+          .filter()
+          .matchIdEqualTo(matchId)
+          .deleteAll();
+    });
   }
 
   Future<List<MatchModel>> getPendingMatches() async {
@@ -414,7 +427,7 @@ class LocalMatchRepository {
             .tournamentIdEqualTo(tournamentId)
             .sortByOrder()
             .watch(fireImmediately: true)
-            .map((e) => e.map(LocalMatchEntityMapper.toModel).toList());
+            .asyncMap(_loadModelsWithArchivedEvents);
 
   Stream<List<MatchModel>> watchAllLocalMatches() => _isar == null
       ? Stream.value([])
@@ -422,5 +435,65 @@ class LocalMatchRepository {
             .where()
             .sortByOrder()
             .watch(fireImmediately: true)
-            .map((e) => e.map(LocalMatchEntityMapper.toModel).toList());
+            .asyncMap(_loadModelsWithArchivedEvents);
+
+  Future<List<MatchModel>> _loadModelsWithArchivedEvents(
+    List<MatchEntity> entities,
+  ) async => Future.wait(entities.map(_loadModelWithArchivedEvents));
+
+  Future<MatchModel> _loadModelWithArchivedEvents(MatchEntity entity) async {
+    final model = LocalMatchEntityMapper.toModel(entity);
+    if (_isar == null) return model;
+    final archives = await _isar.matchEventArchiveEntitys
+        .filter()
+        .matchIdEqualTo(entity.firestoreId)
+        .sortByChunkIndex()
+        .findAll();
+    if (archives.isEmpty) return model;
+    final archivedEvents = archives
+        .expand((archive) => archive.events)
+        .map(LocalMatchEntityMapper.entityToEvent)
+        .toList();
+    return model.copyWith(events: [...archivedEvents, ...model.events]);
+  }
+
+  Future<MatchModel> _archiveAndTrimEvents(MatchModel match) async {
+    if (_isar == null) return match;
+    if (match.events.length <= _hotEventLimit) {
+      await _isar.writeTxn(
+        () => _isar.matchEventArchiveEntitys
+            .filter()
+            .matchIdEqualTo(match.id)
+            .deleteAll(),
+      );
+      return match;
+    }
+    final splitAt = match.events.length - _hotEventLimit;
+    final coldEvents = match.events.take(splitAt).toList();
+    final chunkSize = _hotEventLimit;
+    await _isar.writeTxn(() async {
+      for (var offset = 0; offset < coldEvents.length; offset += chunkSize) {
+        final chunk = coldEvents.skip(offset).take(chunkSize).toList();
+        final chunkIndex = offset ~/ chunkSize;
+        final archive = MatchEventArchiveEntity()
+          ..archiveKey = '${match.id}:$chunkIndex'
+          ..matchId = match.id
+          ..chunkIndex = chunkIndex
+          ..events = chunk.map(LocalMatchEntityMapper.eventToEntity).toList();
+        final existing = await _isar.matchEventArchiveEntitys
+            .filter()
+            .archiveKeyEqualTo(archive.archiveKey)
+            .findFirst();
+        if (existing != null) archive.id = existing.id;
+        await _isar.matchEventArchiveEntitys.put(archive);
+      }
+      final lastChunkIndex = (coldEvents.length - 1) ~/ chunkSize;
+      await _isar.matchEventArchiveEntitys
+          .filter()
+          .matchIdEqualTo(match.id)
+          .chunkIndexGreaterThan(lastChunkIndex)
+          .deleteAll();
+    });
+    return match.copyWith(events: match.events.skip(splitAt).toList());
+  }
 }

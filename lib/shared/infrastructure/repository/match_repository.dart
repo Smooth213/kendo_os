@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_event_cloud_codec.dart';
 
 final matchRepositoryProvider = Provider<MatchRepository>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
@@ -32,21 +33,10 @@ class MatchRepository {
 
   // ★ 1-C. 全試合をリアルタイム監視（主にWeb観客席用）
   Stream<List<MatchModel>> watchAllMatches() {
-    return _collectionRef.snapshots().map((snapshot) {
-      final validMatches = <MatchModel>[];
-      for (final doc in snapshot.docs) {
-        try {
-          validMatches.add(
-            MatchModel.fromJson(<String, dynamic>{...doc.data(), 'id': doc.id}),
-          );
-        } catch (e, stack) {
-          debugPrint(
-            '🔥 [watchAllMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack',
-          );
-        }
-      }
-      return validMatches;
-    });
+    return _collectionRef
+        .snapshots()
+        .asyncMap((snapshot) => Future.wait(snapshot.docs.map(_readMatch)))
+        .map((matches) => matches.whereType<MatchModel>().toList());
   }
 
   // 1-A. 進行中と待機中（新規追加）の試合をリアルタイム監視（パケット節約と追加検知を両立）
@@ -54,24 +44,8 @@ class MatchRepository {
     return _collectionRef
         .where('status', whereIn: ['in_progress', 'waiting'])
         .snapshots()
-        .map((snapshot) {
-          final validMatches = <MatchModel>[];
-          for (final doc in snapshot.docs) {
-            try {
-              validMatches.add(
-                MatchModel.fromJson(<String, dynamic>{
-                  ...doc.data(),
-                  'id': doc.id,
-                }),
-              );
-            } catch (e, stack) {
-              debugPrint(
-                '🔥 [watchActiveMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack',
-              );
-            }
-          }
-          return validMatches;
-        });
+        .asyncMap((snapshot) => Future.wait(snapshot.docs.map(_readMatch)))
+        .map((matches) => matches.whereType<MatchModel>().toList());
   }
 
   // 1-B. 終了済みの試合を1回だけ取得（キャッシュ用）
@@ -80,19 +54,8 @@ class MatchRepository {
         .where('status', whereIn: ['finished', 'approved'])
         .get();
 
-    final validMatches = <MatchModel>[];
-    for (final doc in snapshot.docs) {
-      try {
-        validMatches.add(
-          MatchModel.fromJson(<String, dynamic>{...doc.data(), 'id': doc.id}),
-        );
-      } catch (e, stack) {
-        debugPrint(
-          '🔥 [getStaticMatches Parse Error] 試合ID: ${doc.id} のパースに失敗 (スキップします): $e\n$stack',
-        );
-      }
-    }
-    return validMatches;
+    final matches = await Future.wait(snapshot.docs.map(_readMatch));
+    return matches.whereType<MatchModel>().toList();
   }
 
   // 2. 特定の1試合をリアルタイム監視（MatchProviderで使用）
@@ -101,12 +64,37 @@ class MatchRepository {
         .doc(matchId)
         .snapshots()
         .where((doc) => doc.exists)
-        .map((doc) {
-          return MatchModel.fromJson(<String, dynamic>{
-            ...doc.data() ?? {},
-            'id': doc.id,
-          });
-        });
+        .asyncMap(_readMatch)
+        .where((match) => match != null)
+        .cast<MatchModel>();
+  }
+
+  Future<MatchModel?> _readMatch(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
+    try {
+      final data = <String, dynamic>{...doc.data() ?? {}, 'id': doc.id};
+      if (data['eventArchiveVersion'] != null) {
+        final chunks = await doc.reference.collection('events').get();
+        if (chunks.docs.isNotEmpty) {
+          final archived = chunks.docs
+              .map((chunk) => chunk.data()['events'])
+              .whereType<List>()
+              .expand((events) => events)
+              .toList();
+          data['events'] = [
+            ...archived,
+            ...(data['events'] as List? ?? const []),
+          ];
+        }
+      }
+      return MatchModel.fromJson(data);
+    } catch (e, stack) {
+      debugPrint(
+        '🔥 [MatchRepository Parse Error] 試合ID: ${doc.id}: $e\n$stack',
+      );
+      return null;
+    }
   }
 
   // 3. 試合を保存・更新
@@ -150,14 +138,15 @@ class MatchRepository {
         nextVersion = remoteVersion + 1;
 
         // 保存時にバージョンをインクリメントし、isDirty フラグを管理する
-        final updatedData = match
-            .copyWith(
-              version: nextVersion,
-              // ※ ここではまだオンライン前提だが、PHASE 1以降でここを「Local保存のみ」に切り替える
-            )
-            .toJson();
-
-        transaction.set(docRef, updatedData);
+        final cloudMatch = match.copyWith(version: nextVersion);
+        transaction.set(docRef, MatchEventCloudCodec.matchData(cloudMatch));
+        for (final archive in MatchEventCloudCodec.archiveData(cloudMatch)) {
+          final chunkIndex = archive['chunkIndex'] as int;
+          transaction.set(
+            docRef.collection('events').doc('$chunkIndex'),
+            archive,
+          );
+        }
       });
       return nextVersion;
     } catch (e) {
@@ -169,7 +158,14 @@ class MatchRepository {
   // 4. 試合を削除
   Future<void> deleteMatch(String matchId) async {
     try {
-      await _collectionRef.doc(matchId).delete();
+      final matchRef = _collectionRef.doc(matchId);
+      final eventChunks = await matchRef.collection('events').get();
+      final batch = _firestore.batch();
+      for (final chunk in eventChunks.docs) {
+        batch.delete(chunk.reference);
+      }
+      batch.delete(matchRef);
+      await batch.commit();
     } catch (e) {
       debugPrint('Repository削除エラー: $e');
       rethrow;

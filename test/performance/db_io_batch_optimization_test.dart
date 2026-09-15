@@ -21,7 +21,7 @@ void main() {
 
       tempDir = Directory.systemTemp.createTempSync('isar_batch_test_');
       isar = await Isar.open(
-        [MatchEntitySchema],
+        [MatchEntitySchema, MatchEventArchiveEntitySchema],
         directory: tempDir.path,
         name: 'batch_test_db_${DateTime.now().microsecondsSinceEpoch}',
         inspector: false,

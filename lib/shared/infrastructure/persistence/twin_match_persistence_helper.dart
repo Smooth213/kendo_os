@@ -16,6 +16,7 @@ class TwinMatchPersistenceHelper {
   static bool? isWebOverride;
 
   static bool get _isWeb => isWebOverride ?? kIsWeb;
+  static final Map<String, Future<void>> _pendingWrites = {};
 
   static Future<Directory> _getDirectory() async {
     if (customDirectory != null) return customDirectory!;
@@ -24,6 +25,19 @@ class TwinMatchPersistenceHelper {
 
   /// 試合データを緊急JSONスナップショットへ二重保存（Atomic Write & Rotation）
   static Future<void> saveSnapshot(MatchModel match) async {
+    final previous = _pendingWrites[match.id] ?? Future<void>.value();
+    final current = previous.catchError((_) {}).then((_) {
+      return _saveSnapshotInternal(match);
+    });
+    _pendingWrites[match.id] = current.whenComplete(() {
+      if (identical(_pendingWrites[match.id], current)) {
+        _pendingWrites.remove(match.id);
+      }
+    });
+    await current;
+  }
+
+  static Future<void> _saveSnapshotInternal(MatchModel match) async {
     try {
       final jsonStr = jsonEncode(match.toJson());
       if (_isWeb) {
@@ -34,7 +48,9 @@ class TwinMatchPersistenceHelper {
 
       final dir = await _getDirectory();
       final snapshotFile = File('${dir.path}/twin_snapshot_${match.id}.json');
-      await snapshotFile.writeAsString(jsonStr, flush: true);
+      final temporaryFile = File('${snapshotFile.path}.tmp');
+      await temporaryFile.writeAsString(jsonStr, flush: true);
+      await temporaryFile.rename(snapshotFile.path);
 
       // ローテーションバックアップ（最大3世代）
       final timestamp = DateTime.now().millisecondsSinceEpoch;

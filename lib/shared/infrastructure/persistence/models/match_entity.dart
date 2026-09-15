@@ -99,6 +99,22 @@ class MatchEntity {
   List<String> whiteRemaining = [];
 }
 
+/// 試合本体から分離した、過去イベントの不変チャンク。
+/// MatchEntityには直近イベントだけを残し、履歴そのものは削除しない。
+@collection
+class MatchEventArchiveEntity {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true, replace: true)
+  late String archiveKey;
+
+  @Index()
+  late String matchId;
+
+  int chunkIndex = 0;
+  List<ScoreEventEntity> events = [];
+}
+
 // ★ Phase 2: コマンド永続化用テーブル
 // アプリがクラッシュしても、キューに残っていた「未処理の操作」をここから復元します
 @collection

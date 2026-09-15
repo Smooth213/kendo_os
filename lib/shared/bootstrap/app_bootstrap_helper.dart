@@ -212,6 +212,7 @@ class AppBootstrapHelper {
             isar = await Isar.open(
               [
                 MatchEntitySchema,
+                MatchEventArchiveEntitySchema,
                 LocalStrokeModelSchema,
                 MatchCommentEntitySchema,
                 MatchProjectionEntitySchema,
