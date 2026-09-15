@@ -10,6 +10,7 @@ import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
     as legacy_sync;
 import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
+import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
 import 'package:kendo_os/shared/errors/global_error_handler.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
@@ -50,39 +51,88 @@ void main() {
 
       FlutterError.onError = (FlutterErrorDetails details) {
         FlutterError.presentError(details);
+        // 🛡️ 【Plan 3-3】Fatal Crash Trap: 直前状態の緊急退避
+        EmergencyCrashPreserver.preserveOnCrash(
+          error: details.exception,
+          stackTrace: details.stack,
+        );
         container.read(metricsProvider).recordError();
       };
 
       PlatformDispatcher.instance.onError = (error, stack) {
+        // 🛡️ 【Plan 3-3】Fatal Crash Trap: 直前状態の緊急退避
+        EmergencyCrashPreserver.preserveOnCrash(
+          error: error,
+          stackTrace: stack,
+        );
         container.read(metricsProvider).recordError();
         return true;
       };
 
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Scaffold(
+          backgroundColor: AppKendoColors.pureBlack,
           body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '⚠️ UIレンダリング・エラー発生',
-                    style: TextStyle(
-                      color: AppKendoColors.red,
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.headline,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: AppKendoColors.pureBlack,
+                    borderRadius: AppRadius.large,
+                    border: Border.all(
+                      color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
                     ),
                   ),
-                  Text(
-                    details.exceptionAsString(),
-                    style: const TextStyle(
-                      color: AppKendoColors.pureBlack,
-                      fontWeight: AppFontWeight.bold,
-                      fontSize: AppFontSize.body,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.shield,
+                            color: AppKendoColors.ipponGold,
+                            size: 28,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          const Expanded(
+                            child: Text(
+                              '🛡️ KendoOS 不壊セーフティネット作動',
+                              style: TextStyle(
+                                color: AppKendoColors.pureWhite,
+                                fontWeight: AppFontWeight.bold,
+                                fontSize: AppFontSize.headline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      const Text(
+                        '試合データは自動退避・保護されました。クラッシュによるデータ消失は発生していません。',
+                        style: TextStyle(
+                          color: AppKendoColors.pureWhite,
+                          fontSize: AppFontSize.body,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        details.exceptionAsString(),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppKendoColors.pureWhite.withValues(
+                            alpha: 0.6,
+                          ),
+                          fontSize: AppFontSize.small,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

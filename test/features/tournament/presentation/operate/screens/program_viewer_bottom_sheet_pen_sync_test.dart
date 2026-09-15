@@ -400,6 +400,13 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));
 
+        // 旧ビュー破棄後にボトムシートのページ向きメタデータを再構築する。
+        ProgramViewerPdfPageCache.shared.clear();
+        ProgramViewerPdfPageCache.shared.parseDocumentInfo(
+          testPdfUrl,
+          mixedPdfBytes,
+        );
+
         // ボトムシートのページ送りを実行して 2ページ目（横向き）へ
         final bsPageViewFinder = find.descendant(
           of: find.byType(ProgramViewerPdfBody),

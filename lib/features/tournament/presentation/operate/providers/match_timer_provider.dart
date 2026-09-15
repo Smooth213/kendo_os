@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'match_list_provider.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_state.dart'; // ★ Phase 1 & 3: FSM連携用
-import 'package:flutter/foundation.dart'; // ★ 追加: debugPrint用
 import 'package:kendo_os/shared/time/time_source.dart'; // ★ 追加
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
@@ -153,10 +153,50 @@ class MatchTimer {
   DateTime _lastToggledAt = DateTime.fromMillisecondsSinceEpoch(
     0,
   ); // ★ 修正: 手動操作直後のゴースト再起動を防ぐ
+  String? _activeMatchId;
+  AppLifecycleListener? _lifecycleListener;
 
-  MatchTimer(this.ref);
+  MatchTimer(this.ref) {
+    // 🔋 【Plan 2-2】バックグラウンド待機時の完全コールドスリープ連携
+    // アプリ非表示・待機時にタイマーの定期起床を停止し、復帰時に絶対時刻で一括補正
+    try {
+      _lifecycleListener = AppLifecycleListener(
+        onStateChange: (state) {
+          if (state == AppLifecycleState.paused ||
+              state == AppLifecycleState.inactive ||
+              state == AppLifecycleState.hidden) {
+            enterColdSleep();
+          } else if (state == AppLifecycleState.resumed) {
+            resumeFromColdSleep();
+          }
+        },
+      );
+    } catch (_) {}
+  }
+
+  /// 🔋 【Plan 2-2】アプリがバックグラウンドに回った際の完全コールドスリープ
+  /// Tickerを停止し、CPU起床を0にして待機バッテリー消費を完全抑制
+  void enterColdSleep() {
+    if (_ticker != null && _ticker!.isActive) {
+      debugPrint('🌙 [MatchTimer] enterColdSleep: Tickerを一時停止（完全コールドスリープ）');
+      _ticker?.cancel();
+      _ticker = null;
+    }
+  }
+
+  /// 🔋 【Plan 2-2】フォアグラウンド復帰時のコールドスリープ解除＆時刻同期補正
+  void resumeFromColdSleep() {
+    final currentId = _activeMatchId;
+    if (currentId != null && _expectedIsRunning) {
+      debugPrint(
+        '☀️ [MatchTimer] resumeFromColdSleep: 絶対時刻同期補正＆Ticker再開 ($currentId)',
+      );
+      syncOnAppResume(currentId);
+    }
+  }
 
   void startLocalTicker(String matchId, {bool isImmediateStart = false}) {
+    _activeMatchId = matchId;
     debugPrint(
       '🕒 [MatchTimer] startLocalTicker requested. matchId=$matchId, immediate=$isImmediateStart',
     );
@@ -409,6 +449,9 @@ class MatchTimer {
   void dispose() {
     _expectedIsRunning = false;
     _ticker?.cancel();
+    _ticker = null;
+    _activeMatchId = null;
+    _lifecycleListener?.dispose();
   }
 
   MatchModel? _getMatch(String id) {

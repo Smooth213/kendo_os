@@ -71,6 +71,7 @@ class MatchCommandQueue {
   final Ref ref;
   final List<MatchCommandModel> _queue = [];
   final Map<String, int> _errorCounts = {};
+  final Set<String> _processedCommandIds = {};
   bool _isProcessing = false;
 
   MatchCommandQueue(this.ref);
@@ -79,12 +80,26 @@ class MatchCommandQueue {
     final localRepo = ref.read(localMatchRepositoryProvider);
     final pendingCommands = await localRepo.getPendingCommands();
     if (pendingCommands.isNotEmpty) {
-      _queue.addAll(pendingCommands);
+      for (final cmd in pendingCommands) {
+        if (!_processedCommandIds.contains(cmd.id) &&
+            !_queue.any((c) => c.id == cmd.id)) {
+          _queue.add(cmd);
+        }
+      }
       _process();
     }
   }
 
+  /// 🛡️ 【Plan 3-5】完全べき等（Idempotent）キューイング
+  /// 同一UUIDのコマンドは重複実行せず、確実に1度のみ実行
   Future<void> enqueue(MatchCommandModel cmd) async {
+    if (_processedCommandIds.contains(cmd.id) ||
+        _queue.any((c) => c.id == cmd.id)) {
+      debugPrint(
+        '🛡️ [CommandQueue] 重複コマンドを検知し安全にスキップしました (Idempotency Key: ${cmd.id})',
+      );
+      return;
+    }
     _queue.add(cmd);
     _process();
   }
@@ -102,6 +117,10 @@ class MatchCommandQueue {
 
         try {
           await _executeCommand(cmd);
+          _processedCommandIds.add(cmd.id);
+          if (_processedCommandIds.length > 2000) {
+            _processedCommandIds.remove(_processedCommandIds.first);
+          }
           // 以前の失敗でIsarに保存されていた場合のみ削除トランザクションを実行
           if ((_errorCounts[cmd.id] ?? 0) > 0) {
             await localRepo.deleteCommand(cmd.id);
@@ -126,13 +145,15 @@ class MatchCommandQueue {
             continue;
           }
 
-          if (errStr.contains('ConcurrencyException') &&
-              _errorCounts[cmd.id]! < 5) {
-            await Future.delayed(const Duration(milliseconds: 200));
+          final errCount = _errorCounts[cmd.id]!;
+          if (errStr.contains('ConcurrencyException') && errCount < 5) {
+            // 🛡️ 【Plan 3-5】適応型指数バックオフ（Exponential Backoff）
+            final backoffMs = (200 * (1 << (errCount - 1))).clamp(200, 2000);
+            await Future.delayed(Duration(milliseconds: backoffMs));
             continue;
           }
 
-          if (_errorCounts[cmd.id]! >= 3) {
+          if (errCount >= 3) {
             debugPrint('🚨 [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
             ref.read(deadLetterQueueProvider.notifier).addErrorCommand(cmd);
             _queue.removeAt(0);

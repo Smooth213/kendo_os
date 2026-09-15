@@ -289,9 +289,12 @@ class TournamentListScreen extends ConsumerWidget {
                     );
                   }
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [header, buildUnifiedCard()],
+                  // ⚡ 【Plan 1-3】RepaintBoundaryによるリストアイテム描画カリング＆GPU再ラスタライズ防止
+                  return RepaintBoundary(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [header, buildUnifiedCard()],
+                    ),
                   );
                 },
               ),

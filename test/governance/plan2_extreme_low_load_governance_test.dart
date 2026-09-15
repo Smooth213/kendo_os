@@ -126,5 +126,92 @@ void main() {
       final content = file.readAsStringSync();
       expect(content.contains('Duration(seconds: 60)'), isTrue);
     });
+
+    test(
+      '8. [Plan 2-1 VRR制御] ThermalPowerGovernor の targetFps / isVrrThrottled 規約',
+      () {
+        final governor = ThermalPowerGovernor();
+        // 通常時は60fps
+        expect(governor.targetFps, equals(60));
+        expect(governor.isVrrThrottled, isFalse);
+
+        // ecoCooling 時は30fpsスロットリング
+        governor.setMode(ThermalPowerMode.ecoCooling);
+        expect(governor.targetFps, equals(30));
+        expect(governor.isVrrThrottled, isTrue);
+
+        // ultraSave 時は15fps極限スロットリング
+        governor.setMode(ThermalPowerMode.ultraSave);
+        expect(governor.targetFps, equals(15));
+        expect(governor.isVrrThrottled, isTrue);
+      },
+    );
+
+    test(
+      '9. [Plan 2-2 コールドスリープ] match_timer_provider.dart の enterColdSleep / resumeFromColdSleep 規約',
+      () {
+        final file = File(
+          'lib/features/tournament/presentation/operate/providers/match_timer_provider.dart',
+        );
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(content.contains('void enterColdSleep()'), isTrue);
+        expect(content.contains('void resumeFromColdSleep()'), isTrue);
+        expect(content.contains('AppLifecycleListener'), isTrue);
+      },
+    );
+
+    test(
+      '10. [Plan 2-3 マイクロバッチング] local_match_repository.dart の saveMatchBatched / flushMicroBatch 規約',
+      () {
+        final file = File(
+          'lib/shared/infrastructure/repository/local_match_repository.dart',
+        );
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(content.contains('saveMatchBatched'), isTrue);
+        expect(content.contains('flushMicroBatch'), isTrue);
+      },
+    );
+
+    test(
+      '11. [Plan 2-4 メモリ即時解放] program_viewer_screen.dart & pdf_service.dart のキャッシュ解放規約',
+      () {
+        final viewerFile = File(
+          'lib/features/tournament/presentation/operate/screens/program_viewer_screen.dart',
+        );
+        expect(viewerFile.existsSync(), isTrue);
+        final viewerContent = viewerFile.readAsStringSync();
+        expect(
+          viewerContent.contains('ProgramViewerPdfPageCache.shared.clear()'),
+          isTrue,
+        );
+        expect(
+          viewerContent.contains('PaintingBinding.instance.imageCache.clear()'),
+          isTrue,
+        );
+
+        final pdfFile = File('lib/features/pdf/pdf_service.dart');
+        expect(pdfFile.existsSync(), isTrue);
+        final pdfContent = pdfFile.readAsStringSync();
+        expect(
+          pdfContent.contains('PaintingBinding.instance.imageCache.clear()'),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      '12. [Plan 2-5 差分デルタ伝送] local_p2p_broadcaster.dart の broadcastMatchDelta 規約',
+      () {
+        final file = File(
+          'lib/features/p2p/infrastructure/local_p2p_broadcaster.dart',
+        );
+        expect(file.existsSync(), isTrue);
+        final content = file.readAsStringSync();
+        expect(content.contains('broadcastMatchDelta'), isTrue);
+        expect(content.contains('MATCH_DELTA'), isTrue);
+      },
+    );
   });
 }

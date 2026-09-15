@@ -364,19 +364,25 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(seconds: 2));
+
+      // 旧ビュー破棄後にボトムシートのページ向きメタデータを再構築する。
+      ProgramViewerPdfPageCache.shared.clear();
+      ProgramViewerPdfPageCache.shared.parseDocumentInfo(
+        testPdfUrl,
+        mixedPdfBytes,
+      );
 
       // ボトムシート内のPageViewで2ページ目（横向き）へ送る
       final bsPageViewFinder = find.descendant(
         of: find.byType(ProgramBottomSheet),
         matching: find.byType(PageView),
       );
-      if (bsPageViewFinder.evaluate().isNotEmpty) {
-        final PageView bsPageView = tester.widget(bsPageViewFinder);
-        bsPageView.controller?.jumpToPage(1);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
-      }
+      expect(bsPageViewFinder, findsOneWidget);
+      final PageView bsPageView = tester.widget(bsPageViewFinder);
+      bsPageView.controller?.jumpToPage(1);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // ボトムシート側でも横向きキャンバス (1414x1000) が生成されていること
       final sheetLandscapeCanvas = find.descendant(

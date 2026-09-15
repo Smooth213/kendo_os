@@ -8,6 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
 import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
@@ -98,6 +99,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     _transformationController.dispose();
     _pageController.dispose();
     _searchTextController.dispose();
+    // 🔋 【Plan 2-4】大型Viewer離脱時の即時キャッシュクリア＆LRUメモリ保護
+    try {
+      ProgramViewerPdfPageCache.shared.clear();
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+    } catch (_) {}
     super.dispose();
   }
 

@@ -120,34 +120,37 @@ class ScoreActionPanel extends ConsumerWidget {
           horizontal: 1.0,
           vertical: AppSpacing.xxs,
         ),
-        child: HoldConfirmButton(
-          label: label,
-          color: color,
-          textColor: textColor ?? AppKendoColors.pureWhite,
-          disabled: effectiveLocked,
-          onConfirm: () async {
-            await KendoHaptics.scorePoint();
-            final strike = type == PointType.men
-                ? StrikeType.men
-                : (type == PointType.kote
-                      ? StrikeType.kote
-                      : (type == PointType.doIdo
-                            ? StrikeType.dou
-                            : StrikeType.tsuki));
-            final event = ScoreEvent(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              side: side,
-              strikeType: strike,
-              isIppon: true,
-              timestamp: DateTime.now(),
-            );
-            ref
-                .read(pendingSmartUndoProvider(matchId).notifier)
-                .registerEvent(event);
-            await ref
-                .read(matchCommandProvider)
-                .addScoreEvent(matchId, side, type);
-          },
+        // ⚡ 【Plan 1-1】ボタン単位のRepaintBoundary隔離でGPU再ラスタライズコストを局所化
+        child: RepaintBoundary(
+          child: HoldConfirmButton(
+            label: label,
+            color: color,
+            textColor: textColor ?? AppKendoColors.pureWhite,
+            disabled: effectiveLocked,
+            onConfirm: () {
+              // ⚡ 【Plan 1-4】先行オプティミスティック触覚＆UI更新（ゼロ遅延化）
+              KendoHaptics.scorePoint();
+              final strike = type == PointType.men
+                  ? StrikeType.men
+                  : (type == PointType.kote
+                        ? StrikeType.kote
+                        : (type == PointType.doIdo
+                              ? StrikeType.dou
+                              : StrikeType.tsuki));
+              final event = ScoreEvent(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                side: side,
+                strikeType: strike,
+                isIppon: true,
+                timestamp: DateTime.now(),
+              );
+              ref
+                  .read(pendingSmartUndoProvider(matchId).notifier)
+                  .registerEvent(event);
+              // コマンドキューへ非同期追記（UIスレッドを1ミリ秒もブロックしない）
+              ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
+            },
+          ),
         ),
       ),
     );
@@ -166,27 +169,30 @@ class ScoreActionPanel extends ConsumerWidget {
           horizontal: 1.0,
           vertical: AppSpacing.xxs,
         ),
-        child: HoldConfirmButton(
-          label: label,
-          color: const Color(0xFFD97706),
-          textColor: AppKendoColors.pureBlack,
-          disabled: effectiveLocked,
-          isFoul: true,
-          onConfirm: () async {
-            await KendoHaptics.foulHansoku();
-            final event = ScoreEvent(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              side: side,
-              isHansoku: true,
-              timestamp: DateTime.now(),
-            );
-            ref
-                .read(pendingSmartUndoProvider(matchId).notifier)
-                .registerEvent(event);
-            await ref
-                .read(matchCommandProvider)
-                .addScoreEvent(matchId, side, type);
-          },
+        // ⚡ 【Plan 1-1】ボタン単位のRepaintBoundary隔離でGPU再ラスタライズコストを局所化
+        child: RepaintBoundary(
+          child: HoldConfirmButton(
+            label: label,
+            color: const Color(0xFFD97706),
+            textColor: AppKendoColors.pureBlack,
+            disabled: effectiveLocked,
+            isFoul: true,
+            onConfirm: () {
+              // ⚡ 【Plan 1-4】先行オプティミスティック触覚＆UI更新（ゼロ遅延化）
+              KendoHaptics.foulHansoku();
+              final event = ScoreEvent(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                side: side,
+                isHansoku: true,
+                timestamp: DateTime.now(),
+              );
+              ref
+                  .read(pendingSmartUndoProvider(matchId).notifier)
+                  .registerEvent(event);
+              // コマンドキューへ非同期追記（UIスレッドを1ミリ秒もブロックしない）
+              ref.read(matchCommandProvider).addScoreEvent(matchId, side, type);
+            },
+          ),
         ),
       ),
     );

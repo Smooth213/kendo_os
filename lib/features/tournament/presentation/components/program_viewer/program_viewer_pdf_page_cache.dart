@@ -31,9 +31,26 @@ class ProgramViewerPdfPageCache {
   }
 
   /// PDF全体のバイト列から全ページの基本情報（総ページ数、各ページの縦横比）を解析・キャッシュ
-  int parseDocumentInfo(String url, Uint8List sourceBytes) {
-    if (_pageCountCache.containsKey(url)) {
-      return _pageCountCache[url]!;
+  int parseDocumentInfo(
+    String url,
+    Uint8List sourceBytes, {
+    bool force = false,
+  }) {
+    if (force) {
+      _pageCountCache.remove(url);
+      _pageCanvasSizeCache.remove(url);
+    }
+    final cachedCount = _pageCountCache[url];
+    final cachedSizes = _pageCanvasSizeCache[url];
+    final hasAllPageSizes =
+        cachedCount != null &&
+        cachedSizes != null &&
+        List.generate(
+          cachedCount,
+          cachedSizes.containsKey,
+        ).every((hasSize) => hasSize);
+    if (cachedCount != null && hasAllPageSizes) {
+      return cachedCount;
     }
 
     try {
@@ -166,9 +183,11 @@ class ProgramViewerPdfPageCache {
     return _singlePageBytesCache[url]?.length ?? 0;
   }
 
-  /// 特定URLの単一ページバイナリキャッシュを解放（メタデータであるサイズ・ページ数は保持）
+  /// 特定URLのPDFキャッシュを解放し、次回表示時にページ情報を再解析させる
   void clearUrl(String url) {
     _singlePageBytesCache.remove(url);
+    _pageCanvasSizeCache.remove(url);
+    _pageCountCache.remove(url);
   }
 
   /// 全キャッシュのクリア（メモリ解放用）

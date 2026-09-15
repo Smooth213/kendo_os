@@ -71,248 +71,251 @@ class IndividualListCard extends StatelessWidget {
     final headerBgColor = themeColors.inputBackground;
     final textColor = themeColors.textColor;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        vertical: AppSpacing.sm,
-        horizontal: AppSpacing.xs,
-      ),
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
-        side: BorderSide(color: borderColor),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            color: headerBgColor,
-            width: double.infinity,
-            child: Row(
-              children: [
-                if (scenePrefix.isNotEmpty) ...[
-                  Builder(
-                    builder: (context) {
-                      final isMoushiawase = scenePrefix.contains('申合せ');
-                      final badgeColor = isMoushiawase
-                          ? themeColors.warningColor
-                          : themeColors.primaryAccent;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.subValue,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: badgeColor.withValues(alpha: 0.12),
-                            borderRadius: AppRadius.sub,
-                            border: Border.all(
-                              color: badgeColor.withValues(alpha: 0.35),
+    // ⚡ 【Plan 1-3】RepaintBoundaryによる個人戦リストカードの描画キャッシュとラスタライズ分離
+    return RepaintBoundary(
+      child: Card(
+        margin: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.xs,
+        ),
+        elevation: 0,
+        color: cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.large,
+          side: BorderSide(color: borderColor),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              color: headerBgColor,
+              width: double.infinity,
+              child: Row(
+                children: [
+                  if (scenePrefix.isNotEmpty) ...[
+                    Builder(
+                      builder: (context) {
+                        final isMoushiawase = scenePrefix.contains('申合せ');
+                        final badgeColor = isMoushiawase
+                            ? themeColors.warningColor
+                            : themeColors.primaryAccent;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.xs),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.subValue,
+                              vertical: 2,
                             ),
-                          ),
-                          child: Text(
-                            scenePrefix,
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              fontWeight: AppFontWeight.bold,
-                              color: badgeColor,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                Expanded(
-                  child: Text(
-                    headerTitle,
-                    style: TextStyle(
-                      fontWeight: AppFontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: matches.length,
-            separatorBuilder: (context, index) => Divider(
-              color: borderColor,
-              height: 1,
-              indent: 16,
-              endIndent: 16,
-            ),
-            itemBuilder: (context, index) {
-              final m = matches[index];
-
-              Widget rowContent = Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.md,
-                  horizontal: AppSpacing.md,
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 55,
-                      child: Text(
-                        m.note.isNotEmpty ? m.note : '第${index + 1}試合',
-                        style: TextStyle(
-                          fontSize: AppFontSize.badge,
-                          color: context.appColors.subTextColor,
-                          fontWeight: AppFontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (m.redTeam.isNotEmpty)
-                            Text(
-                              m.redTeam,
-                              style: TextStyle(
-                                fontSize: AppFontSize.nano,
-                                color: context.appColors.subTextColor,
+                            decoration: BoxDecoration(
+                              color: badgeColor.withValues(alpha: 0.12),
+                              borderRadius: AppRadius.sub,
+                              border: Border.all(
+                                color: badgeColor.withValues(alpha: 0.35),
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          Text(
-                            m.redName,
-                            style: TextStyle(
-                              fontWeight: m.rWin
-                                  ? AppFontWeight.bold
-                                  : AppFontWeight.bold,
-                              color: m.rWin
-                                  ? AppKendoColors.hansokuRed
-                                  : textColor,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    PointBox(
-                      points: m.redPoints,
-                      isWinner: m.rWin,
-                      isRed: true,
-                      isDark: isDark,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                      ),
-                      child: Text(
-                        m.isDraw ? '✕' : '-',
-                        style: TextStyle(
-                          color: context.appColors.subTextColor,
-                          fontWeight: AppFontWeight.light,
-                          fontSize: AppFontSize.subhead,
-                        ),
-                      ),
-                    ),
-                    PointBox(
-                      points: m.whitePoints,
-                      isWinner: m.wWin,
-                      isRed: false,
-                      isDark: isDark,
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (m.whiteTeam.isNotEmpty)
-                            Text(
-                              m.whiteTeam,
+                            child: Text(
+                              scenePrefix,
                               style: TextStyle(
-                                fontSize: AppFontSize.nano,
-                                color: context.appColors.subTextColor,
+                                fontSize: AppFontSize.caption,
+                                fontWeight: AppFontWeight.bold,
+                                color: badgeColor,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          Text(
-                            m.whiteName,
-                            style: TextStyle(
-                              fontWeight: m.wWin
-                                  ? AppFontWeight.bold
-                                  : AppFontWeight.bold,
-                              color: m.wWin
-                                  ? AppKendoColors.hansokuRed
-                                  : textColor,
-                            ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ],
-                ),
-              );
+                  Expanded(
+                    child: Text(
+                      headerTitle,
+                      style: TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: matches.length,
+              separatorBuilder: (context, index) => Divider(
+                color: borderColor,
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+              ),
+              itemBuilder: (context, index) {
+                final m = matches[index];
 
-              if (m.onTap != null) {
-                rowContent = InkWell(onTap: m.onTap, child: rowContent);
-              }
-
-              if (m.isSummary && !m.hasOwnTeam) {
-                return Container(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
-                      : AppKendoColors.grey.withValues(alpha: 0.05),
-                  child: Stack(
-                    alignment: Alignment.center,
+                Widget rowContent = Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.md,
+                    horizontal: AppSpacing.md,
+                  ),
+                  child: Row(
                     children: [
-                      Opacity(opacity: 0.2, child: rowContent),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF1C1C1E)
-                              : const Color(0xFFFFFFFF),
-                          borderRadius: AppRadius.small,
-                          border: Border.all(
-                            color: context.appColors.separatorColor,
-                            width: 0.5,
+                      SizedBox(
+                        width: 55,
+                        child: Text(
+                          m.note.isNotEmpty ? m.note : '第${index + 1}試合',
+                          style: TextStyle(
+                            fontSize: AppFontSize.badge,
+                            color: context.appColors.subTextColor,
+                            fontWeight: AppFontWeight.bold,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppKendoColors.pureBlack.withValues(
-                                alpha: 0.1,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (m.redTeam.isNotEmpty)
+                              Text(
+                                m.redTeam,
+                                style: TextStyle(
+                                  fontSize: AppFontSize.nano,
+                                  color: context.appColors.subTextColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              blurRadius: 4,
+                            Text(
+                              m.redName,
+                              style: TextStyle(
+                                fontWeight: m.rWin
+                                    ? AppFontWeight.bold
+                                    : AppFontWeight.bold,
+                                color: m.rWin
+                                    ? AppKendoColors.hansokuRed
+                                    : textColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      PointBox(
+                        points: m.redPoints,
+                        isWinner: m.rWin,
+                        isRed: true,
+                        isDark: isDark,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
                         child: Text(
-                          '※簡易入力された結果です\n（詳細スコアはありません）',
-                          textAlign: TextAlign.center,
+                          m.isDraw ? '✕' : '-',
                           style: TextStyle(
-                            fontSize: AppFontSize.caption,
-                            fontWeight: AppFontWeight.bold,
-                            color: isDark
-                                ? const Color(0xFFFFFFFF)
-                                : const Color(0xDE000000),
+                            color: context.appColors.subTextColor,
+                            fontWeight: AppFontWeight.light,
+                            fontSize: AppFontSize.subhead,
                           ),
+                        ),
+                      ),
+                      PointBox(
+                        points: m.whitePoints,
+                        isWinner: m.wWin,
+                        isRed: false,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (m.whiteTeam.isNotEmpty)
+                              Text(
+                                m.whiteTeam,
+                                style: TextStyle(
+                                  fontSize: AppFontSize.nano,
+                                  color: context.appColors.subTextColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            Text(
+                              m.whiteName,
+                              style: TextStyle(
+                                fontWeight: m.wWin
+                                    ? AppFontWeight.bold
+                                    : AppFontWeight.bold,
+                                color: m.wWin
+                                    ? AppKendoColors.hansokuRed
+                                    : textColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 );
-              }
 
-              return rowContent;
-            },
-          ),
-        ],
+                if (m.onTap != null) {
+                  rowContent = InkWell(onTap: m.onTap, child: rowContent);
+                }
+
+                if (m.isSummary && !m.hasOwnTeam) {
+                  return Container(
+                    color: isDark
+                        ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
+                        : AppKendoColors.grey.withValues(alpha: 0.05),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Opacity(opacity: 0.2, child: rowContent),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1C1C1E)
+                                : const Color(0xFFFFFFFF),
+                            borderRadius: AppRadius.small,
+                            border: Border.all(
+                              color: context.appColors.separatorColor,
+                              width: 0.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppKendoColors.pureBlack.withValues(
+                                  alpha: 0.1,
+                                ),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            '※簡易入力された結果です\n（詳細スコアはありません）',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: isDark
+                                  ? const Color(0xFFFFFFFF)
+                                  : const Color(0xDE000000),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return rowContent;
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

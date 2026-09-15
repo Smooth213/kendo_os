@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全27大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全30大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全27大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全30大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 """
 
 
@@ -16,149 +16,159 @@ import time
 AUDIT_DEFINITIONS = [
     {
         "id": 1,
+        "name": "🌐 Web/Native クロスプラットフォーム完全同一動作保証規約",
+        "cmd": ["python3", "scripts/check_cross_platform_parity_governance.py"],
+    },
+    {
+        "id": 2,
         "name": "📏 コード行数・アーキテクチャ (Max 500 lines)",
         "cmd": ["python3", "scripts/check_file_lines.py"],
     },
     {
-        "id": 2,
+        "id": 3,
         "name": "🎨 デザインシステム トークン規約",
         "cmd": ["python3", "scripts/check_design_tokens.py", "--strict"],
     },
     {
-        "id": 3,
+        "id": 4,
         "name": "🥋 剣道公式スコア表示＆PDF描画規約",
         "cmd": ["python3", "scripts/check_kendo_score_governance.py"],
     },
     {
-        "id": 4,
+        "id": 5,
         "name": "📛 剣道メタデータ（シーン・選手名・結果タグ）規約",
         "cmd": ["python3", "scripts/check_kendo_metadata_governance.py"],
     },
     {
-        "id": 5,
+        "id": 6,
         "name": "⚔️ 試合シーン（本戦・錬成・申合せ）表記＆配色規約",
         "cmd": ["python3", "scripts/check_kendo_scene_governance.py"],
     },
     {
-        "id": 6,
+        "id": 7,
         "name": "🔒 セキュリティ＆ロール露出規制規約",
         "cmd": ["python3", "scripts/check_security_governance.py"],
     },
     {
-        "id": 7,
+        "id": 8,
         "name": "🏰 UIレイアウト 5段構造永続保持規約",
         "cmd": ["python3", "scripts/check_layout_5tier_governance.py"],
     },
     {
-        "id": 8,
+        "id": 9,
         "name": "🌓 テーマ視認性・白飛び黒潰れゼロ規約",
         "cmd": ["python3", "scripts/check_theme_contrast_governance.py"],
     },
     {
-        "id": 9,
+        "id": 10,
         "name": "🏗️ アーキテクチャ境界＆疎結合規約",
         "cmd": ["python3", "scripts/check_architecture_boundary_governance.py"],
     },
     {
-        "id": 10,
+        "id": 11,
         "name": "🌪️ 現場障害耐性・オフライン・耐久規約",
         "cmd": ["python3", "scripts/check_offline_resilience_governance.py"],
     },
     {
-        "id": 11,
+        "id": 12,
         "name": "🧪 新設ファイル・テストペア対生成規約",
         "cmd": ["python3", "scripts/check_test_pair_governance.py"],
     },
     {
-        "id": 12,
+        "id": 13,
         "name": "📄 PDF組版・長文字列あふれ・改ページ安全規約",
         "cmd": ["python3", "scripts/check_pdf_layout_safety_governance.py"],
     },
     {
-        "id": 13,
+        "id": 14,
         "name": "🌐 Web/PWA プラットフォーム境界＆安全規約",
         "cmd": ["python3", "scripts/check_web_platform_safety.py"],
     },
     {
-        "id": 14,
+        "id": 15,
         "name": "🏢 マルチテナント道場・大会空間 隔離規約",
         "cmd": ["python3", "scripts/check_tenant_isolation_governance.py"],
     },
     {
-        "id": 15,
+        "id": 16,
         "name": "🛡️ 全ページ UIゼロレンダリングエラー保証規約",
         "cmd": ["python3", "scripts/check_rendering_safety_governance.py"],
     },
     {
-        "id": 16,
+        "id": 17,
         "name": "📚 アプリ内マニュアル＆取説整合性規約",
         "cmd": ["python3", "scripts/check_manual_governance.py"],
     },
     {
-        "id": 17,
+        "id": 18,
         "name": "🗂️ 独立カテゴリ・ルール設定フォールバック安全規約",
         "cmd": ["python3", "scripts/check_category_rules_governance.py"],
     },
     {
-        "id": 18,
+        "id": 19,
         "name": "📌 ドック常設ミニパネル・オーバーレイ解放規約",
         "cmd": ["python3", "scripts/check_dock_lifecycle_governance.py"],
     },
     {
-        "id": 19,
+        "id": 20,
         "name": "📱 iOS PWA タッチ座標同期＆ロール選択画面規約",
         "cmd": ["python3", "scripts/check_ios_pwa_touch_sync_governance.py"],
     },
     {
-        "id": 20,
+        "id": 21,
         "name": "🔗 観客用共有URL・ルーティング・パラメータ整合性規約",
         "cmd": ["python3", "scripts/check_share_url_governance.py"],
     },
     {
-        "id": 21,
+        "id": 22,
         "name": "🛡️ BAND LIVE配信連携・外部直行遷移 ＆ 白紙ブラウザ残留ゼロ規約",
         "cmd": ["python3", "scripts/check_band_live_integration_governance.py"],
     },
     {
-        "id": 22,
+        "id": 23,
         "name": "🥋 団体戦スコア順序（先鋒〜大将・代表戦）剣道標準配列 永続保証規約",
         "cmd": ["python3", "scripts/check_team_match_order_governance.py"],
     },
     {
-        "id": 23,
+        "id": 24,
         "name": "🔋 端末サーマル冷却＆省電力モード管理（温度＞手動＞自動 ガバナンス永続保証規約）",
         "cmd": ["python3", "scripts/check_thermal_power_governance.py"],
     },
     {
-        "id": 24,
+        "id": 25,
         "name": "⚡ UIレスポンス高速化・局所再描画・非同期バックオフ 永続保証規約",
         "cmd": ["python3", "scripts/check_ui_performance_governance.py"],
     },
     {
-        "id": 25,
+        "id": 26,
         "name": "🔋 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護 永続保証規約",
         "cmd": ["python3", "scripts/check_low_load_governance.py"],
     },
     {
-        "id": 26,
+        "id": 27,
         "name": "🛡️ 堅牢性・同期整合性・データ完全性 永続保証規約",
         "cmd": ["python3", "scripts/check_robustness_governance.py"],
     },
     {
-        "id": 27,
+        "id": 28,
         "name": "⚡ UI極限軽快化・動的ProviderScope排除＆I/Oバッチ集約 永続保証規約",
         "cmd": ["python3", "scripts/check_extreme_responsiveness_governance.py"],
     },
     {
-        "id": 28,
+        "id": 29,
         "name": "🛡️ 絶対的安定性・同期無限ループ根絶＆データ消失ゼロ 永続保証規約",
         "cmd": ["python3", "scripts/check_stability_governance.py"],
+    },
+    {
+        "id": 30,
+        "name": "⚡ 極限高速化・UIスレッドIsolate完全分離＆ゼロ遅延即応 永続保証規約",
+        "cmd": ["python3", "scripts/check_speed_and_isolate_governance.py"],
     },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全28大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜28）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全30大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜30）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
@@ -170,7 +180,7 @@ def main():
             sys.exit(1)
 
     print("=" * 72)
-    print(" 🥋 Kendo OS - 全27大ガバナンス監査 統合ランナー (Unified Governance Runner)")
+    print(f" 🥋 Kendo OS - 全{len(AUDIT_DEFINITIONS)}大ガバナンス監査 統合ランナー (Unified Governance Runner)")
     print("=" * 72)
     print(f" 実行対象: {len(target_audits)} 項目")
     print("-" * 72)

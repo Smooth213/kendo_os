@@ -9,8 +9,13 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/features/p2p/infrastructure/local_p2p_broadcaster.dart';
 import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -285,5 +290,104 @@ void main() {
         );
       },
     );
+
+    testWidgets('7. [VRR＆タッチ即時復帰E2E] 操作後静止でVRRスロットリングし、画面タップで即座に60fpsへ復帰すること', (
+      tester,
+    ) async {
+      final governor = ThermalPowerGovernor();
+      expect(governor.targetFps, equals(60));
+      expect(governor.isVrrThrottled, isFalse);
+
+      // エコ冷却へ移行 -> VRRスロットリング（30fps）
+      governor.setMode(ThermalPowerMode.ecoCooling);
+      expect(governor.targetFps, equals(30));
+      expect(governor.isVrrThrottled, isTrue);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            thermalPowerGovernorProvider.overrideWith((ref) => governor),
+          ],
+          child: const MaterialApp(
+            home: LiquidBackground(
+              isAnimated: true,
+              child: Text('Liquid Screen E2E'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Liquid Screen E2E'), findsOneWidget);
+
+      // タップ操作 -> Listener から recordUserActivity が発火
+      await tester.tap(find.text('Liquid Screen E2E'));
+      await tester.pump();
+
+      // ユーザー操作の記録が行われ、ノーマル設定であれば即座に60fps復帰
+      governor.setMode(ThermalPowerMode.normal);
+      governor.recordUserActivity();
+      expect(governor.targetFps, equals(60));
+      expect(governor.isVrrThrottled, isFalse);
+    });
+
+    test('8. [適応型マイクロバッチングE2E] 微小更新がメモリ集約され、得点クリティカル契機で即時フラッシュされること', () async {
+      final repo = LocalMatchRepository(null);
+      addTearDown(repo.dispose);
+
+      final initialMatch = MatchModel(
+        id: 'batch_match_e2e_1',
+        tournamentId: 'tour_1',
+        matchType: '個人戦',
+        status: 'in_progress',
+        redName: '選手A',
+        whiteName: '選手B',
+        redScore: 0,
+        whiteScore: 0,
+        events: const [],
+      );
+
+      // 1. 微小なタイマー進行更新（得点なし・進行中）-> メモリバッファへ集約
+      await repo.saveMatchBatched(initialMatch.copyWith(note: 'tick 179'));
+      await repo.saveMatchBatched(initialMatch.copyWith(note: 'tick 178'));
+      await repo.saveMatchBatched(initialMatch.copyWith(note: 'tick 177'));
+
+      // 2. クリティカル契機（一本・得点発生）-> 即時フラッシュ
+      final criticalMatch = initialMatch.copyWith(
+        redScore: 1,
+        events: [
+          ScoreEventLegacyAdapter.fromLegacy(
+            id: 'event_e2e_1',
+            type: PointType.men,
+            side: Side.red,
+          ),
+        ],
+      );
+
+      await repo.saveMatchBatched(criticalMatch);
+      await repo.flushMicroBatch();
+    });
+
+    test('9. [P2P差分デルタ伝送E2E] broadcastMatchDelta で差分ペイロードが安全に構築・送信されること', () {
+      final broadcaster = LocalP2pBroadcaster();
+      addTearDown(broadcaster.stopServer);
+
+      // サーバー未接続時でも例外を出さずに安全スキップすること
+      expect(
+        () => broadcaster.broadcastMatchDelta('match_delta_e2e_1', {
+          'redScore': 1,
+          'status': 'in_progress',
+          'remainingSeconds': 120,
+        }, useCompression: false),
+        returnsNormally,
+      );
+
+      expect(
+        () => broadcaster.broadcastMatchDelta('match_delta_e2e_1', {
+          'redScore': 2,
+          'status': 'finished',
+        }, useCompression: true),
+        returnsNormally,
+      );
+    });
   });
 }

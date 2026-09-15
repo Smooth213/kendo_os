@@ -83,6 +83,7 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
           final totalCount = ProgramViewerPdfPageCache.shared.parseDocumentInfo(
             widget.program.fileUrl,
             bytes,
+            force: true,
           );
           widget.onPageCountLoaded?.call(totalCount);
           setState(() {});
@@ -145,6 +146,7 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
           child: FittedBox(
             fit: BoxFit.contain,
             child: SizedBox(
+              key: ValueKey('${widget.program.fileUrl}_canvas_p$pageIndex'),
               width: canvasSize.width,
               height: canvasSize.height,
               child: Stack(

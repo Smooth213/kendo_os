@@ -69,197 +69,209 @@ class LeagueGridCard extends StatelessWidget {
     final headerColor = themeColors.softAccent;
     final blankColor = themeColors.cardBackground;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-        elevation: 0,
-        color: cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.small,
-          side: BorderSide(color: borderColor),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Table(
-          border: TableBorder.all(color: borderColor, width: 1),
-          columnWidths: {
-            0: const FixedColumnWidth(100),
-            for (int i = 1; i <= teams.length; i++)
-              i: const FixedColumnWidth(65),
-            teams.length + 1: const FixedColumnWidth(45),
-            teams.length + 2: const FixedColumnWidth(45),
-            teams.length + 3: const FixedColumnWidth(45),
-            if (hasMatchPoints) teams.length + 4: const FixedColumnWidth(45),
-            teams.length + (hasMatchPoints ? 5 : 4): const FixedColumnWidth(45),
-          },
-          children: [
-            TableRow(
-              decoration: BoxDecoration(color: headerColor),
-              children: [
-                const SizedBox(height: 50),
-                ...teams.map(
-                  (t) => Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.xs),
-                      child: VerticalNameText(text: t.teamName, isDark: isDark),
-                    ),
-                  ),
-                ),
-                _buildHeaderCell(context, '勝数', isDark),
-                _buildHeaderCell(context, '勝者', isDark),
-                _buildHeaderCell(context, '本数', isDark),
-                if (hasMatchPoints) _buildHeaderCell(context, '勝点', isDark),
-                _buildHeaderCell(context, '順位', isDark),
-              ],
-            ),
-            ...teams.map((rowTeam) {
-              return TableRow(
+    // ⚡ 【Plan 1-3】RepaintBoundaryによるリーグ戦グリッドカードの描画分離
+    return RepaintBoundary(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          elevation: 0,
+          color: cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.small,
+            side: BorderSide(color: borderColor),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Table(
+            border: TableBorder.all(color: borderColor, width: 1),
+            columnWidths: {
+              0: const FixedColumnWidth(100),
+              for (int i = 1; i <= teams.length; i++)
+                i: const FixedColumnWidth(65),
+              teams.length + 1: const FixedColumnWidth(45),
+              teams.length + 2: const FixedColumnWidth(45),
+              teams.length + 3: const FixedColumnWidth(45),
+              if (hasMatchPoints) teams.length + 4: const FixedColumnWidth(45),
+              teams.length + (hasMatchPoints ? 5 : 4): const FixedColumnWidth(
+                45,
+              ),
+            },
+            children: [
+              TableRow(
+                decoration: BoxDecoration(color: headerColor),
                 children: [
-                  Container(
-                    height: 65,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: headerColor),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.xs),
-                      child: Text(
-                        rowTeam.teamName,
-                        style: TextStyle(
-                          fontWeight: AppFontWeight.bold,
-                          fontSize: AppFontSize.caption,
-                          color: themeColors.textColor,
+                  const SizedBox(height: 50),
+                  ...teams.map(
+                    (t) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xs),
+                        child: VerticalNameText(
+                          text: t.teamName,
+                          isDark: isDark,
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
                       ),
                     ),
                   ),
-                  ...teams.map((colTeam) {
-                    if (rowTeam.teamName == colTeam.teamName) {
-                      return Container(
-                        height: 65,
-                        color: blankColor,
-                        child: CustomPaint(
-                          painter: DiagonalLinePainter(color: borderColor),
-                        ),
-                      );
-                    }
-
-                    final cellData =
-                        matrix[rowTeam.teamName]?[colTeam.teamName];
-                    if (cellData == null) return const SizedBox(height: 65);
-
-                    Color symbolColor = isDark
-                        ? const Color(0xFFD4AF37)
-                        : const Color(0xFFD4AF37);
-                    if (cellData.result == 'win') {
-                      symbolColor = isDark
-                          ? const Color(0xFFE53935)
-                          : const Color(0xFFE53935);
-                    } else if (cellData.result == 'loss') {
-                      symbolColor = isDark
-                          ? const Color(0xFF2196F3)
-                          : const Color(0xFF3F51B5);
-                    }
-
-                    final textColor = themeColors.textColor;
-
-                    Widget cellContent = Container(
+                  _buildHeaderCell(context, '勝数', isDark),
+                  _buildHeaderCell(context, '勝者', isDark),
+                  _buildHeaderCell(context, '本数', isDark),
+                  if (hasMatchPoints) _buildHeaderCell(context, '勝点', isDark),
+                  _buildHeaderCell(context, '順位', isDark),
+                ],
+              ),
+              ...teams.map((rowTeam) {
+                return TableRow(
+                  children: [
+                    Container(
                       height: 65,
                       alignment: Alignment.center,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CustomPaint(
-                            size: const Size(45, 45),
-                            painter: ResultShapePainter(
-                              result: cellData.result,
-                              color: symbolColor,
-                            ),
+                      decoration: BoxDecoration(color: headerColor),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xs),
+                        child: Text(
+                          rowTeam.teamName,
+                          style: TextStyle(
+                            fontWeight: AppFontWeight.bold,
+                            fontSize: AppFontSize.caption,
+                            color: themeColors.textColor,
                           ),
-                          if (cellData.isIndiv)
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                cellData.techMarks.isNotEmpty
-                                    ? PointMarkBadge(
-                                        point: cellData.techMarks[0],
-                                        color: textColor,
-                                        isDark: isDark,
-                                      )
-                                    : const SizedBox(height: AppSpacing.md),
-                                Container(
-                                  height: 0.5,
-                                  width: 18,
-                                  color: textColor.withValues(alpha: 0.5),
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.xxs,
-                                  ),
-                                ),
-                                cellData.techMarks.length > 1
-                                    ? PointMarkBadge(
-                                        point: cellData.techMarks[1],
-                                        color: textColor,
-                                        isDark: isDark,
-                                      )
-                                    : const SizedBox(height: AppSpacing.md),
-                              ],
-                            )
-                          else
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${cellData.rPoints}',
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.small,
-                                    fontWeight: AppFontWeight.bold,
-                                    height: 1.1,
-                                    color: textColor,
-                                  ),
-                                ),
-                                Container(
-                                  height: 0.5,
-                                  width: 18,
-                                  color: textColor.withValues(alpha: 0.5),
-                                  margin: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.xxs,
-                                  ),
-                                ),
-                                Text(
-                                  '${cellData.rWinners}',
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.small,
-                                    fontWeight: AppFontWeight.bold,
-                                    height: 1.1,
-                                    color: textColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
                       ),
-                    );
+                    ),
+                    ...teams.map((colTeam) {
+                      if (rowTeam.teamName == colTeam.teamName) {
+                        return Container(
+                          height: 65,
+                          color: blankColor,
+                          child: CustomPaint(
+                            painter: DiagonalLinePainter(color: borderColor),
+                          ),
+                        );
+                      }
 
-                    if (cellData.onTap != null) {
-                      cellContent = GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: cellData.onTap,
-                        child: cellContent,
+                      final cellData =
+                          matrix[rowTeam.teamName]?[colTeam.teamName];
+                      if (cellData == null) return const SizedBox(height: 65);
+
+                      Color symbolColor = isDark
+                          ? const Color(0xFFD4AF37)
+                          : const Color(0xFFD4AF37);
+                      if (cellData.result == 'win') {
+                        symbolColor = isDark
+                            ? const Color(0xFFE53935)
+                            : const Color(0xFFE53935);
+                      } else if (cellData.result == 'loss') {
+                        symbolColor = isDark
+                            ? const Color(0xFF2196F3)
+                            : const Color(0xFF3F51B5);
+                      }
+
+                      final textColor = themeColors.textColor;
+
+                      Widget cellContent = Container(
+                        height: 65,
+                        alignment: Alignment.center,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CustomPaint(
+                              size: const Size(45, 45),
+                              painter: ResultShapePainter(
+                                result: cellData.result,
+                                color: symbolColor,
+                              ),
+                            ),
+                            if (cellData.isIndiv)
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  cellData.techMarks.isNotEmpty
+                                      ? PointMarkBadge(
+                                          point: cellData.techMarks[0],
+                                          color: textColor,
+                                          isDark: isDark,
+                                        )
+                                      : const SizedBox(height: AppSpacing.md),
+                                  Container(
+                                    height: 0.5,
+                                    width: 18,
+                                    color: textColor.withValues(alpha: 0.5),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.xxs,
+                                    ),
+                                  ),
+                                  cellData.techMarks.length > 1
+                                      ? PointMarkBadge(
+                                          point: cellData.techMarks[1],
+                                          color: textColor,
+                                          isDark: isDark,
+                                        )
+                                      : const SizedBox(height: AppSpacing.md),
+                                ],
+                              )
+                            else
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${cellData.rPoints}',
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.small,
+                                      fontWeight: AppFontWeight.bold,
+                                      height: 1.1,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 0.5,
+                                    width: 18,
+                                    color: textColor.withValues(alpha: 0.5),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.xxs,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${cellData.rWinners}',
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.small,
+                                      fontWeight: AppFontWeight.bold,
+                                      height: 1.1,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
                       );
-                    }
 
-                    return cellContent;
-                  }),
-                  _buildStatCell(context, rowTeam.matchWins, isDark),
-                  _buildStatCell(context, rowTeam.individualWinners, isDark),
-                  _buildStatCell(context, rowTeam.totalPoints, isDark),
-                  if (hasMatchPoints)
-                    _buildStatCell(context, rowTeam.customPoints ?? '', isDark),
-                  _buildStatCell(context, rowTeam.rank, isDark, isRank: true),
-                ],
-              );
-            }),
-          ],
+                      if (cellData.onTap != null) {
+                        cellContent = GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: cellData.onTap,
+                          child: cellContent,
+                        );
+                      }
+
+                      return cellContent;
+                    }),
+                    _buildStatCell(context, rowTeam.matchWins, isDark),
+                    _buildStatCell(context, rowTeam.individualWinners, isDark),
+                    _buildStatCell(context, rowTeam.totalPoints, isDark),
+                    if (hasMatchPoints)
+                      _buildStatCell(
+                        context,
+                        rowTeam.customPoints ?? '',
+                        isDark,
+                      ),
+                    _buildStatCell(context, rowTeam.rank, isDark, isRank: true),
+                  ],
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );

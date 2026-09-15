@@ -73,6 +73,34 @@ class ThermalPowerGovernor extends ChangeNotifier {
     }
   }
 
+  /// 🔋 【Plan 2-1】適応型可変リフレッシュレート（VRR）推奨FPS
+  /// 静止時（操作後3秒経過）または発熱・省電力モード時にフレームレートを動的引き下げ
+  int get targetFps {
+    if (_thermalStatus == ThermalSensorStatus.critical ||
+        _mode == ThermalPowerMode.ultraSave) {
+      return 15;
+    }
+    if (_thermalStatus == ThermalSensorStatus.serious ||
+        _mode == ThermalPowerMode.ecoCooling) {
+      return 30;
+    }
+    // 通常モード時：操作後3秒以上経過した静止状態は30fps、10秒以上は15fpsへ動的降下
+    final idleSeconds = DateTime.now().difference(_lastUserActivity).inSeconds;
+    if (idleSeconds >= 10) {
+      return 15;
+    } else if (idleSeconds >= 3) {
+      return 30;
+    }
+    return 60;
+  }
+
+  /// 🔋 【Plan 2-1】VRRによるフレームレート制限中かどうかの判定
+  bool get isVrrThrottled => targetFps < 60;
+
+  /// 🔋 【Plan 2-1】VRR推奨フレーム間隔
+  Duration get animationFrameDuration =>
+      Duration(milliseconds: (1000 / targetFps).round());
+
   /// 🔋 【Plan 2】試合タイマー用のアダプティブ更新間隔
   /// 通常の「分:秒」表示では1000ms（毎秒1回）に抑えてCPU起床を90%削減し、
   /// 代表戦・延長戦などの0.1秒精度要求時のみ高精度Tick（100ms）を動的適用する
@@ -138,6 +166,7 @@ class ThermalPowerGovernor extends ChangeNotifier {
   void setMode(ThermalPowerMode newMode) {
     if (_mode != newMode) {
       _mode = newMode;
+      enforceMemoryLimits();
       debugPrint(
         '🔋 [Thermal Governor] モード移行: $newMode (Tick間隔: ${recommendedTickInterval.inMilliseconds}ms)',
       );
@@ -280,11 +309,31 @@ class ThermalPowerGovernor extends ChangeNotifier {
 
     if (_mode != targetMode) {
       _mode = targetMode;
+      enforceMemoryLimits();
       debugPrint(
         '🔋 [Thermal Governor] モード移行: $targetMode (設定: $_preference, 温度: $_thermalStatus, 低電力: $_isOsLowPowerMode, Tick: ${recommendedTickInterval.inMilliseconds}ms)',
       );
       notifyListeners();
     }
+  }
+
+  /// 🔋 【Plan 2-4】サーマル状態に応じた画像キャッシュの動的適正化＆LRUメモリ保護
+  void enforceMemoryLimits() {
+    try {
+      if (_thermalStatus == ThermalSensorStatus.critical ||
+          _mode == ThermalPowerMode.ultraSave) {
+        PaintingBinding.instance.imageCache.maximumSizeBytes = 20 * 1024 * 1024;
+        PaintingBinding.instance.imageCache.maximumSize = 40;
+        PaintingBinding.instance.imageCache.clearLiveImages();
+      } else if (_thermalStatus == ThermalSensorStatus.serious ||
+          _mode == ThermalPowerMode.ecoCooling) {
+        PaintingBinding.instance.imageCache.maximumSizeBytes = 35 * 1024 * 1024;
+        PaintingBinding.instance.imageCache.maximumSize = 60;
+      } else {
+        PaintingBinding.instance.imageCache.maximumSizeBytes = 50 * 1024 * 1024;
+        PaintingBinding.instance.imageCache.maximumSize = 100;
+      }
+    } catch (_) {}
   }
 
   /// クールダウン機能付きトースト発行

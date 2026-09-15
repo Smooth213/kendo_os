@@ -266,7 +266,7 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
               child: Center(
                 child: ProgramViewerPdfBody(
                   program: program,
-                  pageCount: _pageCount > 0 ? _pageCount : 1,
+                  pageCount: _pageCount > 0 ? _pageCount : program.pageCount,
                   pdfViewerController: _pdfController,
                   sdkPdfBytesFuture: _getPdfBytes(program.fileUrl),
                   onPageCountLoaded: (count) {

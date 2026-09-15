@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:kendo_os/shared/utils/file_download_helper.dart'
@@ -154,6 +155,11 @@ class PdfService {
         ShareParams(files: outputFiles, text: '【$categoryName】の公式記録です。'),
       );
     }
+    // 🔋 【Plan 2-4】高DPIラスタライズ画像のメモリ蓄積を即時クリア＆LRUメモリ保護
+    try {
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+    } catch (_) {}
   }
 }
 

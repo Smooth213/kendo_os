@@ -318,13 +318,13 @@ void main() {
           }
           expect(hasThrown, true, reason: 'ローカルDBクローズのため例外がスローされること');
 
-          // documentsDir 内に緊急バックアップファイルが生成されているかチェック
+          // documentsDir 内に緊急バックアップファイル(twin_snapshot_*)が生成されているかチェック
+          // 実装は TwinMatchPersistenceHelper.saveSnapshot() により
+          // "twin_snapshot_{matchId}.json" または "twin_snapshot_{matchId}_{timestamp}.json" を生成する
           final files = documentsDir.listSync();
           final emergencyBackupFiles = files.where((file) {
             return file is File &&
-                file.path.contains(
-                  'emergency_backup_test_persistence_failure_1',
-                );
+                file.path.contains('twin_snapshot_test_persistence_failure_1');
           }).toList();
 
           expect(

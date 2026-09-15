@@ -4,6 +4,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math' as math;
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -53,60 +54,70 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
       if (_controller.isAnimating) {
         _controller.stop();
       }
-      return Stack(
-        children: [
-          Container(color: themeColors.scaffoldBackground),
-          widget.child,
-          // 🔋 エコモード表示インジケーター（タッチ操作を遮断しないように IgnorePointer で保護）
-          Positioned(
-            bottom: AppSpacing.lg,
-            left: AppSpacing.lg,
-            child: IgnorePointer(
-              child: SafeArea(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: themeColors.cardBackground.withValues(alpha: 0.85),
-                    borderRadius: AppRadius.medium,
-                    border: Border.all(
-                      color: AppKendoColors.green.withValues(alpha: 0.4),
-                      width: 1,
+      return Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) {
+          ref.read(thermalPowerGovernorProvider).recordUserActivity();
+        },
+        child: Stack(
+          children: [
+            Container(color: themeColors.scaffoldBackground),
+            widget.child,
+            // 🔋 エコモード表示インジケーター（タッチ操作を遮断しないように IgnorePointer で保護）
+            Positioned(
+              bottom: AppSpacing.lg,
+              left: AppSpacing.lg,
+              child: IgnorePointer(
+                child: SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppKendoColors.pureBlack.withValues(alpha: 0.15),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
+                    decoration: BoxDecoration(
+                      color: themeColors.cardBackground.withValues(alpha: 0.85),
+                      borderRadius: AppRadius.medium,
+                      border: Border.all(
+                        color: AppKendoColors.green.withValues(alpha: 0.4),
+                        width: 1,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.eco,
-                        color: AppKendoColors.green,
-                        size: 13,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'エコモード',
-                        style: TextStyle(
-                          color: themeColors.textColor.withValues(alpha: 0.87),
-                          fontSize: AppFontSize.badge,
-                          fontWeight: AppFontWeight.bold,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppKendoColors.pureBlack.withValues(
+                            alpha: 0.15,
+                          ),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.eco,
+                          color: AppKendoColors.green,
+                          size: 13,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'エコモード',
+                          style: TextStyle(
+                            color: themeColors.textColor.withValues(
+                              alpha: 0.87,
+                            ),
+                            fontSize: AppFontSize.badge,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
@@ -117,8 +128,14 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
           'TestWidgetsFlutterBinding',
         ));
 
-    // 🌟 通常モード時はアニメーションを再生（テスト環境または静止モードでは停止）
-    if (isTest || !widget.isAnimated) {
+    // 🔋 【Plan 2-1】適応型可変リフレッシュレート（VRR）連携
+    // 静止時（操作後3秒経過）または発熱・省電力時はTickerを停止・減速しGPU発熱を抑制
+    final isVrrThrottled = ref.watch(
+      thermalPowerGovernorProvider.select((g) => g.isVrrThrottled),
+    );
+
+    // 🌟 通常モード時はアニメーションを再生（テスト環境、静止モード、またはVRRスロットリング時は停止）
+    if (isTest || !widget.isAnimated || isVrrThrottled) {
       if (_controller.isAnimating) {
         _controller.stop();
       }
@@ -135,9 +152,10 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
         ? const Color(0xFF009688).withValues(alpha: 0.30)
         : const Color(0xFF009688).withValues(alpha: 0.16);
 
+    final Widget content;
     // 🔋 静止モード（試合画面・省負荷優先画面）: AnimatedBuilderを完全バイパスして毎フレームの再描画・GPU負荷をゼロ化
     if (!widget.isAnimated) {
-      return RepaintBoundary(
+      content = RepaintBoundary(
         child: Stack(
           children: [
             // ベース背景色
@@ -191,73 +209,81 @@ class _LiquidBackgroundState extends ConsumerState<LiquidBackground>
           ],
         ),
       );
+    } else {
+      content = RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _controller,
+          child: widget.child,
+          builder: (context, childWidget) {
+            final angle = _controller.value * 2 * math.pi;
+            final dx1 = 30 * math.sin(angle);
+            final dy1 = 30 * math.cos(angle);
+            final dx2 = 40 * math.cos(angle);
+            final dy2 = 40 * math.sin(angle);
+
+            return Stack(
+              children: [
+                // ベース背景色
+                Container(color: themeColors.scaffoldBackground),
+                // オーブ1: 左上 (テーマカラー: インディゴ、RadialGradientで境界をソフトにブレンド)
+                Positioned(
+                  top: -120 + dy1,
+                  left: -120 + dx1,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 450,
+                      height: 450,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            orb1Color,
+                            orb1Color.withValues(alpha: orb1Color.a * 0.5),
+                            orb1Color.withValues(alpha: 0.0),
+                          ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // オーブ2: 右下 (テーマカラー: ティール、RadialGradientで境界をソフトにブレンド)
+                Positioned(
+                  bottom: -180 + dy2,
+                  right: -80 + dx2,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 550,
+                      height: 550,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            orb2Color,
+                            orb2Color.withValues(alpha: orb2Color.a * 0.5),
+                            orb2Color.withValues(alpha: 0.0),
+                          ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // 前面の Scaffold 等
+                childWidget!,
+              ],
+            );
+          },
+        ),
+      );
     }
 
-    return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: _controller,
-        child: widget.child,
-        builder: (context, childWidget) {
-          final angle = _controller.value * 2 * math.pi;
-          final dx1 = 30 * math.sin(angle);
-          final dy1 = 30 * math.cos(angle);
-          final dx2 = 40 * math.cos(angle);
-          final dy2 = 40 * math.sin(angle);
-
-          return Stack(
-            children: [
-              // ベース背景色
-              Container(color: themeColors.scaffoldBackground),
-              // オーブ1: 左上 (テーマカラー: インディゴ、RadialGradientで境界をソフトにブレンド)
-              Positioned(
-                top: -120 + dy1,
-                left: -120 + dx1,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          orb1Color,
-                          orb1Color.withValues(alpha: orb1Color.a * 0.5),
-                          orb1Color.withValues(alpha: 0.0),
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // オーブ2: 右下 (テーマカラー: ティール、RadialGradientで境界をソフトにブレンド)
-              Positioned(
-                bottom: -180 + dy2,
-                right: -80 + dx2,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 550,
-                    height: 550,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          orb2Color,
-                          orb2Color.withValues(alpha: orb2Color.a * 0.5),
-                          orb2Color.withValues(alpha: 0.0),
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // 前面の Scaffold 等
-              childWidget!,
-            ],
-          );
-        },
-      ),
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) {
+        ref.read(thermalPowerGovernorProvider).recordUserActivity();
+      },
+      child: content,
     );
   }
 }

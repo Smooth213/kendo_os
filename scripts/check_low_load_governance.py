@@ -25,6 +25,11 @@ def run_low_load_governance():
         ("6. [試合画面静止化] match_screen.dart の LiquidBackground 静止モード・GPU毎フレーム再描画ゼロ規約", passed_all),
         ("7. [タイマーTick適正化] match_timer_provider.dart の 通常1000ms Tick間引き規約", passed_all),
         ("8. [同期統合＆Isar適正化] 二重Firestoreリスナー根絶 ＆ Isar 128MB MMAP ＆ 3世代緊急バックアップ規約", passed_all),
+        ("9. [Plan 2-1 VRR適応制御] ThermalPowerGovernor の targetFps / isVrrThrottled 規約", passed_all),
+        ("10. [Plan 2-2 コールドスリープ] match_timer_provider.dart の enterColdSleep / resumeFromColdSleep 規約", passed_all),
+        ("11. [Plan 2-3 マイクロバッチング] local_match_repository.dart の saveMatchBatched / flushMicroBatch 規約", passed_all),
+        ("12. [Plan 2-4 メモリ即時解放] program_viewer_screen.dart & pdf_service.dart のキャッシュ解放規約", passed_all),
+        ("13. [Plan 2-5 差分デルタ伝送] local_p2p_broadcaster.dart の broadcastMatchDelta 規約", passed_all),
     ]
 
     print("=" * 60)

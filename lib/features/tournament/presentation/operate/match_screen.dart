@@ -17,6 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/role
 import 'package:kendo_os/features/tournament/presentation/operate/providers/ui_message_provider.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -25,6 +26,7 @@ import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'components/match_screen/match_bottom_action_section.dart';
@@ -100,6 +102,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   @override
   void dispose() {
+    EmergencyCrashPreserver.unregisterActiveMatch(widget.matchId);
     final container = _container;
     final matchId = widget.matchId;
     final userId = _myUserId;
@@ -195,251 +198,284 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final validEvents = engine.filterActiveEvents(match.events);
     final canUndoReal = validEvents.isNotEmpty;
 
-    return LiquidBackground(
-      isAnimated: false, // 🔋 試合操作中の常時GPU再描画を根絶し発熱・バッテリー消費を完全抑制
-      child: Scaffold(
-        backgroundColor: AppKendoColors.transparent,
-        appBar: AppHeader(
-          centerTitle: true,
-          backgroundColor: context.appColors.primaryAccent,
-          foregroundColor: AppKendoColors.pureWhite,
-          titleWidget: MatchHeaderTitle(match: match),
-          actions: [MatchHeaderActions(match: match)],
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final double maxWidth = constraints.maxWidth;
-            final double maxHeight = constraints.maxHeight;
-            const double absoluteMinContentHeight = 665.0;
-            final bool needsScroll = maxHeight < absoluteMinContentHeight;
+    // 🛡️ 【Plan 3-3】アクティブ試合のCrash Preserverへの随時追跡登録
+    EmergencyCrashPreserver.registerActiveMatch(match);
 
-            Widget buildMatchLayout(double currentHeight) {
-              return SizedBox(
-                width: maxWidth,
-                height: currentHeight,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Column(
-                      children: [
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final isCorrupted =
-                                  match.status == 'corrupted' ||
-                                  MatchLifecycleStateLegacyExt.fromLegacyString(
-                                        match.status,
-                                      ) ==
-                                      MatchLifecycleState.corrupted;
-                              final corruptedBanner = isCorrupted
-                                  ? CorruptedMatchBanner(matchId: match.id)
-                                  : const SizedBox.shrink();
+    final bool isMatchFinished =
+        match.status == 'finished' || match.status == 'approved';
+    // 🛡️ 【Plan 3-4】ドック内ネスト遷移はユーザー意図的な制御遷移のため離脱ガード不要
+    final bool isInsideDock = DockSheetScope.of(context) != null;
 
-                              final viewOnlyBanner = MatchViewOnlyNoticeBanner(
-                                isSomeoneElseOperating: isSomeoneElseOperating,
-                                isApproved: isApproved,
-                                isReadOnly: permissions.isReadOnly,
-                                onClaimScorer: () async {
-                                  final confirmed =
-                                      await MatchDialogHelper.showConfirmDialog(
-                                        context,
-                                        "入力権限の奪取",
-                                        "他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？",
-                                      );
-                                  if (confirmed) {
-                                    await ref
+    return PopScope(
+      canPop: isMatchFinished || isInsideDock,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldLeave = await MatchDialogHelper.showConfirmDialog(
+          context,
+          '試合画面の離脱',
+          '試合がまだ終了していません。\n本当に試合操作画面から離脱しますか？',
+        );
+        if (shouldLeave && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: LiquidBackground(
+        isAnimated: false, // 🔋 試合操作中の常時GPU再描画を根絶し発熱・バッテリー消費を完全抑制
+        child: Scaffold(
+          backgroundColor: AppKendoColors.transparent,
+          appBar: AppHeader(
+            centerTitle: true,
+            backgroundColor: context.appColors.primaryAccent,
+            foregroundColor: AppKendoColors.pureWhite,
+            titleWidget: MatchHeaderTitle(match: match),
+            actions: [MatchHeaderActions(match: match)],
+          ),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxWidth = constraints.maxWidth;
+              final double maxHeight = constraints.maxHeight;
+              const double absoluteMinContentHeight = 665.0;
+              final bool needsScroll = maxHeight < absoluteMinContentHeight;
+
+              Widget buildMatchLayout(double currentHeight) {
+                return SizedBox(
+                  width: maxWidth,
+                  height: currentHeight,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Column(
+                        children: [
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isCorrupted =
+                                    match.status == 'corrupted' ||
+                                    MatchLifecycleStateLegacyExt.fromLegacyString(
+                                          match.status,
+                                        ) ==
+                                        MatchLifecycleState.corrupted;
+                                final corruptedBanner = isCorrupted
+                                    ? CorruptedMatchBanner(matchId: match.id)
+                                    : const SizedBox.shrink();
+
+                                final viewOnlyBanner = MatchViewOnlyNoticeBanner(
+                                  isSomeoneElseOperating:
+                                      isSomeoneElseOperating,
+                                  isApproved: isApproved,
+                                  isReadOnly: permissions.isReadOnly,
+                                  onClaimScorer: () async {
+                                    final confirmed =
+                                        await MatchDialogHelper.showConfirmDialog(
+                                          context,
+                                          "入力権限の奪取",
+                                          "他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？",
+                                        );
+                                    if (confirmed) {
+                                      await ref
+                                          .read(matchCommandProvider)
+                                          .forceClaimScorer(
+                                            match.id,
+                                            _myUserId!,
+                                          );
+                                    }
+                                  },
+                                );
+
+                                final undoArea = RepaintBoundary(
+                                  child: MatchMiniLogUndoSection(
+                                    validEvents: validEvents,
+                                    canUndo: canUndoReal,
+                                    isDark: isDark,
+                                    onUndo: () => ref
                                         .read(matchCommandProvider)
-                                        .forceClaimScorer(match.id, _myUserId!);
-                                  }
-                                },
-                              );
+                                        .undoLastEvent(match.id),
+                                  ),
+                                );
 
-                              final undoArea = RepaintBoundary(
-                                child: MatchMiniLogUndoSection(
-                                  validEvents: validEvents,
-                                  canUndo: canUndoReal,
-                                  isDark: isDark,
-                                  onUndo: () => ref
-                                      .read(matchCommandProvider)
-                                      .undoLastEvent(match.id),
-                                ),
-                              );
+                                final timerPart = RepaintBoundary(
+                                  child: MatchTimerSection(
+                                    match: match,
+                                    rule: rule,
+                                    isInputLocked: isInputLocked,
+                                  ),
+                                );
 
-                              final timerPart = RepaintBoundary(
-                                child: MatchTimerSection(
-                                  match: match,
-                                  rule: rule,
-                                  isInputLocked: isInputLocked,
-                                ),
-                              );
-
-                              final groupButtonPart = RepaintBoundary(
-                                child: MatchOperateActionButtonsGrid(
-                                  isViewOnly: isViewOnly,
-                                  isKachinuki: match.isKachinuki,
-                                  onShareUrl: () =>
-                                      MatchDialogHelper.showMatchShareOptionsSheet(
-                                        context,
-                                        match,
-                                      ),
-                                  onRestoreHistory: () =>
-                                      MatchDialogHelper.showSnapshotDialog(
-                                        context,
-                                        ref,
-                                        match,
-                                        validEvents,
-                                        isDark,
-                                      ),
-                                  onCheckScore: () => match.isKachinuki
-                                      ? context.push(
-                                          '/kachinuki-scoreboard/${match.groupName}',
-                                        )
-                                      : context.push(
-                                          '/team-scoreboard/${match.groupName}',
+                                final groupButtonPart = RepaintBoundary(
+                                  child: MatchOperateActionButtonsGrid(
+                                    isViewOnly: isViewOnly,
+                                    isKachinuki: match.isKachinuki,
+                                    onShareUrl: () =>
+                                        MatchDialogHelper.showMatchShareOptionsSheet(
+                                          context,
+                                          match,
                                         ),
-                                  onCheckRule: () =>
-                                      MatchDialogHelper.showRuleInfoSheet(
-                                        context,
-                                        match,
-                                      ),
-                                ),
-                              );
-
-                              final scoreboardPart = RepaintBoundary(
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    maxHeight: constraints.maxHeight * 0.28,
+                                    onRestoreHistory: () =>
+                                        MatchDialogHelper.showSnapshotDialog(
+                                          context,
+                                          ref,
+                                          match,
+                                          validEvents,
+                                          isDark,
+                                        ),
+                                    onCheckScore: () => match.isKachinuki
+                                        ? context.push(
+                                            '/kachinuki-scoreboard/${match.groupName}',
+                                          )
+                                        : context.push(
+                                            '/team-scoreboard/${match.groupName}',
+                                          ),
+                                    onCheckRule: () =>
+                                        MatchDialogHelper.showRuleInfoSheet(
+                                          context,
+                                          match,
+                                        ),
                                   ),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: SizedBox(
-                                      width: constraints.maxWidth,
-                                      child: MatchScoreboard(
-                                        matchId: match.id,
-                                        match: match,
-                                        onNameTap: (side) =>
-                                            MatchDialogHelper.showNameEditBottomSheet(
-                                              context: context,
-                                              match: match,
-                                              side: side,
-                                            ),
+                                );
+
+                                final scoreboardPart = RepaintBoundary(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxHeight: constraints.maxHeight * 0.28,
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: SizedBox(
+                                        width: constraints.maxWidth,
+                                        child: MatchScoreboard(
+                                          matchId: match.id,
+                                          match: match,
+                                          onNameTap: (side) =>
+                                              MatchDialogHelper.showNameEditBottomSheet(
+                                                context: context,
+                                                match: match,
+                                                side: side,
+                                              ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
+                                );
 
-                              final isAllDone = teamMatches.isNotEmpty
-                                  ? teamMatches.every(
-                                      (m) =>
-                                          m.status == 'finished' ||
-                                          m.status == 'approved' ||
-                                          m.id == match.id,
-                                    )
-                                  : true;
+                                final isAllDone = teamMatches.isNotEmpty
+                                    ? teamMatches.every(
+                                        (m) =>
+                                            m.status == 'finished' ||
+                                            m.status == 'approved' ||
+                                            m.id == match.id,
+                                      )
+                                    : true;
 
-                              final bottomButtonPart = MatchBottomActionSection(
-                                match: match,
-                                rule: rule,
-                                isApproved: isApproved,
-                                isViewOnly: isViewOnly,
-                                isTie: isTie,
-                                isAllDone: isAllDone,
-                                isDark: isDark,
-                                myUserId: _myUserId ?? '',
-                                teamMatches: teamMatches,
-                                onAddRenseikaiNext: () =>
-                                    MatchDialogHelper.showNextMatchDialog(
-                                      context,
-                                      match,
-                                    ),
-                                onShowConfirmDialog: (title, content) =>
-                                    MatchDialogHelper.showConfirmDialog(
-                                      context,
-                                      title,
-                                      content,
-                                    ),
-                                onShowMatchFinishedDialog: (ctx, m, nextM) =>
-                                    MatchDialogHelper.showMatchFinishedDialog(
-                                      context: ctx,
-                                      match: m,
-                                      nextMatch: nextM,
-                                      teamMatches: teamMatches,
-                                      isDark: isDark,
-                                    ),
-                                onShowHanteiDialog: (m) =>
-                                    MatchDialogHelper.showHanteiDialog(
-                                      context: context,
-                                      match: m,
-                                      isDark: isDark,
-                                    ),
-                              );
+                                final bottomButtonPart = RepaintBoundary(
+                                  child: MatchBottomActionSection(
+                                    match: match,
+                                    rule: rule,
+                                    isApproved: isApproved,
+                                    isViewOnly: isViewOnly,
+                                    isTie: isTie,
+                                    isAllDone: isAllDone,
+                                    isDark: isDark,
+                                    myUserId: _myUserId ?? '',
+                                    teamMatches: teamMatches,
+                                    onAddRenseikaiNext: () =>
+                                        MatchDialogHelper.showNextMatchDialog(
+                                          context,
+                                          match,
+                                        ),
+                                    onShowConfirmDialog: (title, content) =>
+                                        MatchDialogHelper.showConfirmDialog(
+                                          context,
+                                          title,
+                                          content,
+                                        ),
+                                    onShowMatchFinishedDialog: (ctx, m, nextM) =>
+                                        MatchDialogHelper.showMatchFinishedDialog(
+                                          context: ctx,
+                                          match: m,
+                                          nextMatch: nextM,
+                                          teamMatches: teamMatches,
+                                          isDark: isDark,
+                                        ),
+                                    onShowHanteiDialog: (m) =>
+                                        MatchDialogHelper.showHanteiDialog(
+                                          context: context,
+                                          match: m,
+                                          isDark: isDark,
+                                        ),
+                                  ),
+                                );
 
-                              final actionPanelPart = MatchScoreActionSection(
-                                matchId: match.id,
-                                isInputLocked: isInputLocked,
-                                isDark: isDark,
-                              );
+                                final actionPanelPart = RepaintBoundary(
+                                  child: MatchScoreActionSection(
+                                    matchId: match.id,
+                                    isInputLocked: isInputLocked,
+                                    isDark: isDark,
+                                  ),
+                                );
 
-                              return MatchContentLayoutBuilder(
-                                constraints: constraints,
-                                isDark: isDark,
-                                corruptedBanner: corruptedBanner,
-                                viewOnlyBanner: viewOnlyBanner,
-                                timerPart: timerPart,
-                                groupButtonPart: groupButtonPart,
-                                scoreboardPart: scoreboardPart,
-                                actionPanelPart: actionPanelPart,
-                                undoArea: undoArea,
-                                bottomButtonPart: bottomButtonPart,
-                              );
-                            },
+                                return MatchContentLayoutBuilder(
+                                  constraints: constraints,
+                                  isDark: isDark,
+                                  corruptedBanner: corruptedBanner,
+                                  viewOnlyBanner: viewOnlyBanner,
+                                  timerPart: timerPart,
+                                  groupButtonPart: groupButtonPart,
+                                  scoreboardPart: scoreboardPart,
+                                  actionPanelPart: actionPanelPart,
+                                  undoArea: undoArea,
+                                  bottomButtonPart: bottomButtonPart,
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                        if (showSyncBar) const SyncStatusBar(),
-                      ],
-                    ),
-                    if (match.matchType == '代表戦')
-                      MatchDaihyoOverlay(
-                        onSelectDaihyo: () {
-                          final rTeam = match.redName.split(':').first.trim();
-                          final wTeam = match.whiteName.split(':').first.trim();
-                          final redPlayers = teamMatches
-                              .map((m) => m.redName.split(':').last.trim())
-                              .toSet()
-                              .toList();
-                          final whitePlayers = teamMatches
-                              .map((m) => m.whiteName.split(':').last.trim())
-                              .toSet()
-                              .toList();
-                          MatchDialogHelper.showRepresentativeModal(
-                            context: context,
-                            match: match,
-                            rTeam: rTeam,
-                            wTeam: wTeam,
-                            redPlayers: redPlayers,
-                            whitePlayers: whitePlayers,
-                          );
-                        },
+                          if (showSyncBar) const SyncStatusBar(),
+                        ],
                       ),
-                    MatchFloatingDockEntry(
-                      tournamentId: match.tournamentId?.isNotEmpty == true
-                          ? match.tournamentId!
-                          : tournamentId,
-                      isViewOnly: isViewOnly,
-                    ),
-                  ],
-                ),
-              );
-            }
+                      if (match.matchType == '代表戦')
+                        MatchDaihyoOverlay(
+                          onSelectDaihyo: () {
+                            final rTeam = match.redName.split(':').first.trim();
+                            final wTeam = match.whiteName
+                                .split(':')
+                                .first
+                                .trim();
+                            final redPlayers = teamMatches
+                                .map((m) => m.redName.split(':').last.trim())
+                                .toSet()
+                                .toList();
+                            final whitePlayers = teamMatches
+                                .map((m) => m.whiteName.split(':').last.trim())
+                                .toSet()
+                                .toList();
+                            MatchDialogHelper.showRepresentativeModal(
+                              context: context,
+                              match: match,
+                              rTeam: rTeam,
+                              wTeam: wTeam,
+                              redPlayers: redPlayers,
+                              whitePlayers: whitePlayers,
+                            );
+                          },
+                        ),
+                      MatchFloatingDockEntry(
+                        tournamentId: match.tournamentId?.isNotEmpty == true
+                            ? match.tournamentId!
+                            : tournamentId,
+                        isViewOnly: isViewOnly,
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-            return needsScroll
-                ? SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: buildMatchLayout(absoluteMinContentHeight),
-                  )
-                : buildMatchLayout(maxHeight);
-          },
+              return needsScroll
+                  ? SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: buildMatchLayout(absoluteMinContentHeight),
+                    )
+                  : buildMatchLayout(maxHeight);
+            },
+          ),
         ),
       ),
     );

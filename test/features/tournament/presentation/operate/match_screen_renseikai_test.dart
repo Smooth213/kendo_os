@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -21,6 +23,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+
+class MockMatchApplicationService extends Mock
+    implements MatchApplicationService {}
 
 class MockMatchRuleNotifier extends MatchRuleNotifier {
   final MatchRule initialRule;
@@ -376,6 +381,11 @@ void main() {
               ),
             ),
             isarProvider.overrideWithValue(null),
+            matchApplicationServiceProvider.overrideWith((ref) {
+              final mock = MockMatchApplicationService();
+              when(() => mock.approveMatch(any())).thenAnswer((_) async {});
+              return mock;
+            }),
           ],
         );
 

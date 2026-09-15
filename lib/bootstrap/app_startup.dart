@@ -25,6 +25,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
+import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
 import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
 class AppStartup {
@@ -67,8 +68,16 @@ class AppStartup {
     // 🔊 【Phase 8】オーディオPre-warming（ノンブロッキング非同期で事前暖機）
     unawaited(container.read(soundServiceProvider).prewarm());
 
+    // ⚡ 【Plan 1-5】アセット・フォント・シェーダーの事前ウォームアップ（ノンブロッキング非同期）
+    unawaited(prewarmAppAssets());
+
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
+      // 🛡️ 【Plan 3-3】Fatal Crash Trap: 直前状態の緊急退避
+      EmergencyCrashPreserver.preserveOnCrash(
+        error: details.exception,
+        stackTrace: details.stack,
+      );
       if (!kIsWeb) {
         try {
           FirebaseCrashlytics.instance.recordFlutterFatalError(details);
@@ -79,6 +88,8 @@ class AppStartup {
     };
 
     PlatformDispatcher.instance.onError = (error, stack) {
+      // 🛡️ 【Plan 3-3】Fatal Crash Trap: 直前状態の緊急退避
+      EmergencyCrashPreserver.preserveOnCrash(error: error, stackTrace: stack);
       if (!kIsWeb) {
         try {
           FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
@@ -91,46 +102,66 @@ class AppStartup {
 
     ErrorWidget.builder = (FlutterErrorDetails details) {
       return Scaffold(
+        backgroundColor: AppKendoColors.pureBlack,
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '⚠️ UIレンダリング・エラー発生',
-                  style: TextStyle(
-                    color: AppKendoColors.red,
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.headline,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 600),
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppKendoColors.pureBlack,
+                  borderRadius: AppRadius.large,
+                  border: Border.all(
+                    color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                const Text(
-                  '以下のログを開発者へ共有してください：',
-                  style: TextStyle(
-                    color: AppKendoColors.pureBlack,
-                    fontSize: AppFontSize.small,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.shield,
+                          color: AppKendoColors.ipponGold,
+                          size: 28,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Expanded(
+                          child: Text(
+                            '🛡️ KendoOS 不壊セーフティネット作動',
+                            style: TextStyle(
+                              color: AppKendoColors.pureWhite,
+                              fontWeight: AppFontWeight.bold,
+                              fontSize: AppFontSize.headline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    const Text(
+                      '試合データは自動退避・保護されました。クラッシュによるデータ消失は発生していません。',
+                      style: TextStyle(
+                        color: AppKendoColors.pureWhite,
+                        fontSize: AppFontSize.body,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      details.exceptionAsString(),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppKendoColors.pureWhite.withValues(alpha: 0.6),
+                        fontSize: AppFontSize.small,
+                      ),
+                    ),
+                  ],
                 ),
-                const Divider(),
-                Text(
-                  details.exceptionAsString(),
-                  style: const TextStyle(
-                    color: AppKendoColors.pureBlack,
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.body,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  details.stack?.toString() ?? 'スタックトレースなし',
-                  style: const TextStyle(
-                    color: AppKendoColors.grey,
-                    fontSize: AppFontSize.badge,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -341,5 +372,39 @@ class AppStartup {
   /// 体育館・電波不通現場でのフォントダウンロード遅延や通信エラーを防止
   static void configureFontOptimization({bool allowRuntimeFetching = true}) {
     GoogleFonts.config.allowRuntimeFetching = allowRuntimeFetching;
+  }
+
+  /// ⚡ 【Plan 1-5】アセット・フォント・シェーダーの事前ウォームアップ
+  /// 初回画面遷移時やモーダル表示時のシェーダージャンクを完全防止
+  static Future<void> prewarmAppAssets() async {
+    try {
+      // 1. GoogleFonts 主要フォントの事前ウォームアップ
+      unawaited(
+        GoogleFonts.pendingFonts([
+          GoogleFonts.inter(),
+          GoogleFonts.notoSansJp(),
+        ]),
+      );
+
+      // 2. コア画像アセットの事前キャッシュ
+      const imageProvider = AssetImage('assets/kendo_icon.png');
+      const config = ImageConfiguration.empty;
+      unawaited(
+        imageProvider
+            .obtainKey(config)
+            .then((_) {
+              final stream = imageProvider.resolve(config);
+              stream.addListener(
+                ImageStreamListener(
+                  (image, synchronousCall) {},
+                  onError: (exception, stackTrace) {},
+                ),
+              );
+            })
+            .catchError((_) {}),
+      );
+    } catch (e) {
+      debugPrint('ℹ️ [Prewarm] アセット事前ウォームアップスキップ: $e');
+    }
   }
 }

@@ -202,5 +202,115 @@ void main() {
         );
       },
     );
+
+    test(
+      '6. [ツイン・エンジン永続化＆自己修復] LocalMatchRepositoryにTwinMatchPersistenceHelperが統合され自己修復が備わっていること',
+      () {
+        final repoFile = File(
+          'lib/shared/infrastructure/repository/local_match_repository.dart',
+        );
+        final content = repoFile.readAsStringSync();
+
+        expect(
+          content.contains('TwinMatchPersistenceHelper'),
+          isTrue,
+          reason:
+              'LocalMatchRepository は TwinMatchPersistenceHelper と連携していなければならない',
+        );
+        expect(
+          content.contains('Self-Healing'),
+          isTrue,
+          reason: 'getMatch でスナップショットからの自己修復（Self-Healing）が実装されていなければならない',
+        );
+      },
+    );
+
+    test(
+      '7. [Fatal Crash Trap] 未捕捉例外発生時に直前状態を退避する EmergencyCrashPreserver が配備されていること',
+      () {
+        final preserverFile = File(
+          'lib/shared/errors/emergency_crash_preserver.dart',
+        );
+        expect(
+          preserverFile.existsSync(),
+          isTrue,
+          reason: 'emergency_crash_preserver.dart が存在しなければならない',
+        );
+
+        final content = preserverFile.readAsStringSync();
+        expect(
+          content.contains('preserveOnCrash'),
+          isTrue,
+          reason: 'preserveOnCrash メソッドが配備されていなければならない',
+        );
+        expect(
+          content.contains('loadRecoverableCrashDump'),
+          isTrue,
+          reason: 'loadRecoverableCrashDump メソッドが配備されていなければならない',
+        );
+
+        final handlerFile = File('lib/shared/errors/global_error_handler.dart');
+        expect(
+          handlerFile.readAsStringSync().contains(
+            'EmergencyCrashPreserver.preserveOnCrash',
+          ),
+          isTrue,
+          reason: 'GlobalErrorHandler で緊急退避フックが実行されていなければならない',
+        );
+      },
+    );
+
+    test(
+      '8. [物理的誤操作ガード] match_screen.dart に PopScope が配備され、試合中の離脱ガードが行われること',
+      () {
+        final screenFile = File(
+          'lib/features/tournament/presentation/operate/match_screen.dart',
+        );
+        final content = screenFile.readAsStringSync();
+
+        expect(
+          content.contains('PopScope('),
+          isTrue,
+          reason:
+              'match_screen.dart に戻るボタン・スワイプをガードする PopScope が配備されていなければならない',
+        );
+        expect(
+          content.contains('canPop: isMatchFinished'),
+          isTrue,
+          reason: '未終了の試合中は即時離脱を禁止（canPop: false）しなければならない',
+        );
+        expect(
+          content.contains('EmergencyCrashPreserver.registerActiveMatch'),
+          isTrue,
+          reason: '試合操作中は EmergencyCrashPreserver にアクティブ試合が追跡登録されていなければならない',
+        );
+      },
+    );
+
+    test(
+      '9. [完全べき等キューイング] match_command_queue.dart に重複UUIDコマンドの排除および適応型指数バックオフが配備されていること',
+      () {
+        final queueFile = File(
+          'lib/features/tournament/presentation/operate/providers/match_command_queue.dart',
+        );
+        final content = queueFile.readAsStringSync();
+
+        expect(
+          content.contains('_processedCommandIds'),
+          isTrue,
+          reason: '重複コマンドの実行を防止する _processedCommandIds が配備されていなければならない',
+        );
+        expect(
+          content.contains('Idempotent'),
+          isTrue,
+          reason: '完全べき等キューイングの保証ロジックが備わっていなければならない',
+        );
+        expect(
+          content.contains('backoffMs'),
+          isTrue,
+          reason: '指数バックオフ計算処理が配備されていなければならない',
+        );
+      },
+    );
   });
 }

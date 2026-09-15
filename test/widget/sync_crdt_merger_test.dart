@@ -70,5 +70,53 @@ void main() {
       expect(merged.events.first.id, 'e1');
       expect(merged.events.last.id, 'e2');
     });
+
+    test(
+      '3. mergeAndRebuildAsync executes in worker and returns properly merged match',
+      () async {
+        final now = DateTime.now();
+        final remoteMatch = MatchModel(
+          id: 'm_async',
+          matchType: '個人戦',
+          redName: '山田',
+          whiteName: '佐藤',
+          events: [
+            ScoreEvent(
+              id: 'e_async_1',
+              timestamp: now,
+              logicalClock: 1,
+              side: Side.red,
+              strikeType: StrikeType.men,
+            ),
+          ],
+        );
+
+        final localMatch = MatchModel(
+          id: 'm_async',
+          matchType: '個人戦',
+          redName: '山田',
+          whiteName: '佐藤',
+          pendingEvents: [
+            ScoreEvent(
+              id: 'e_async_2',
+              timestamp: now.add(const Duration(seconds: 1)),
+              logicalClock: 2,
+              side: Side.white,
+              strikeType: StrikeType.kote,
+            ),
+          ],
+        );
+
+        final merged = await SyncCrdtMerger.mergeAndRebuildAsync(
+          remoteMatch: remoteMatch,
+          localMatch: localMatch,
+          rule: const MatchRule(),
+        );
+
+        expect(merged.events.length, 2);
+        expect(merged.events.first.id, 'e_async_1');
+        expect(merged.events.last.id, 'e_async_2');
+      },
+    );
   });
 }
