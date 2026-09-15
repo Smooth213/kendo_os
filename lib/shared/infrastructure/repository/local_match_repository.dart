@@ -69,7 +69,7 @@ class LocalMatchRepository {
             .filter()
             .firestoreIdEqualTo(matchId)
             .findFirst();
-        if (entity != null) return _loadModelWithArchivedEvents(entity);
+        if (entity != null) return await _loadModelWithArchivedEvents(entity);
       } catch (e, stack) {
         debugPrint('🔥 [Critical] ローカルDBからの読み込みに失敗しました: $e');
         FirebaseCrashlytics.instance
