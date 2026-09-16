@@ -182,17 +182,6 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (kIsWeb) return;
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。未送信キューの同期を試行します...');
-      ref.read(legacy_sync.syncEngineProvider).syncNow();
-    }
-  }
-
-  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -205,13 +194,15 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
     ref.watch(dojoRoomSyncProvider);
     ref.watch(routeObserverProvider);
 
-    final settings = ref.watch(settingsProvider);
+    // ⚡【Plan 最適化】themeModeのみを購読し、他の設定変更（バイブ・確認ダイアログ・スリープ等）による
+    // KendoOSApp（ルートMaterialApp全体）の不要な再ビルド（フレームドロップ・Jank）を完全排除
+    final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
 
-    final isSunshine = settings.themeMode == 'sunshine';
+    final isSunshine = themeMode == 'sunshine';
     ThemeMode currentThemeMode = ThemeMode.system;
-    if (settings.themeMode == 'light' || isSunshine) {
+    if (themeMode == 'light' || isSunshine) {
       currentThemeMode = ThemeMode.light;
-    } else if (settings.themeMode == 'dark') {
+    } else if (themeMode == 'dark') {
       currentThemeMode = ThemeMode.dark;
     }
 

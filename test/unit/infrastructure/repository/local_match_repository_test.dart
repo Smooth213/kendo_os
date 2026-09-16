@@ -27,7 +27,11 @@ void main() {
 
       tempDir = Directory.systemTemp.createTempSync('isar_repo_test_');
       isar = await Isar.open(
-        [MatchEntitySchema, MatchEventArchiveEntitySchema],
+        [
+          MatchEntitySchema,
+          MatchEventArchiveEntitySchema,
+          MatchCommandEntitySchema,
+        ],
         directory: tempDir.path,
         name: 'repo_test_db_${DateTime.now().microsecondsSinceEpoch}',
         inspector: false, // CI環境でのポート衝突を防ぐためインスペクターは無効化
@@ -143,5 +147,46 @@ void main() {
         orderedEquals(events.map((event) => event.id)),
       );
     });
+
+    test(
+      'deletePendingCommandsForMatches: 指定された試合IDの保留コマンドのみが正確に削除されること',
+      () async {
+        // Given: 保留コマンドをいくつか登録
+        final cmd1 = MatchCommandEntity()
+          ..commandId = 'cmd_1'
+          ..type = 'saveMatch'
+          ..payloadJson = '{"id":"match_target","redName":"赤"}'
+          ..createdAt = DateTime.now()
+          ..status = 'pending';
+
+        final cmd2 = MatchCommandEntity()
+          ..commandId = 'cmd_2'
+          ..type = 'saveMatch'
+          ..payloadJson = '{"id":"match_other","redName":"白"}'
+          ..createdAt = DateTime.now()
+          ..status = 'pending';
+
+        final cmd3 = MatchCommandEntity()
+          ..commandId = 'cmd_3'
+          ..type = 'saveMatch'
+          ..payloadJson = '{"id":"match_target","redName":"赤2"}'
+          ..createdAt = DateTime.now()
+          ..status = 'done'; // 既に完了しているもの
+
+        await isar.writeTxn(() async {
+          await isar.matchCommandEntitys.putAll([cmd1, cmd2, cmd3]);
+        });
+
+        // When: match_target の保留コマンドを削除
+        await repository.deletePendingCommandsForMatch('match_target');
+
+        // Then: match_targetの保留コマンドのみが削除され、他や完了済みは残る
+        final remaining = await isar.matchCommandEntitys.where().findAll();
+        expect(remaining.length, 2);
+        expect(remaining.any((c) => c.commandId == 'cmd_1'), isFalse);
+        expect(remaining.any((c) => c.commandId == 'cmd_2'), isTrue);
+        expect(remaining.any((c) => c.commandId == 'cmd_3'), isTrue);
+      },
+    );
   });
 }

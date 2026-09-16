@@ -9,6 +9,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/twin_match_persistence_helper.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_archive_helper.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_command_store.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_entity_mapper.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_micro_batch.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_signature_verifier.dart';
@@ -24,7 +26,6 @@ final localMatchRepositoryProvider = Provider<LocalMatchRepository>(
 );
 
 class LocalMatchRepository {
-  static const int _hotEventLimit = 200;
   final Isar? _isar;
   LocalMatchRepository(this._isar);
   final Set<String> _verifiedSignatureKeys = <String>{};
@@ -373,51 +374,14 @@ class LocalMatchRepository {
             .watch(fireImmediately: true)
             .map((e) => e.length);
 
-  Future<void> savePendingCommand(MatchCommandModel cmd) async {
-    if (_isar == null) return;
-    final entity = MatchCommandEntity()
-      ..commandId = cmd.id
-      ..type = cmd.type.name
-      ..payloadJson = jsonEncode(cmd.payload)
-      ..createdAt = cmd.createdAt
-      ..status = cmd.status.name;
+  Future<void> savePendingCommand(MatchCommandModel cmd) =>
+      LocalMatchCommandStore.savePendingCommand(_isar, cmd);
 
-    await _isar.writeTxn(() async {
-      final existing = await _isar.matchCommandEntitys
-          .filter()
-          .commandIdEqualTo(cmd.id)
-          .findFirst();
-      if (existing != null) entity.id = existing.id;
-      await _isar.matchCommandEntitys.put(entity);
-    });
-  }
+  Future<void> deleteCommand(String id) =>
+      LocalMatchCommandStore.deleteCommand(_isar, id);
 
-  Future<void> deleteCommand(String id) async {
-    if (_isar == null) return;
-    await _isar.writeTxn(
-      () => _isar.matchCommandEntitys.filter().commandIdEqualTo(id).deleteAll(),
-    );
-  }
-
-  Future<List<MatchCommandModel>> getPendingCommands() async {
-    if (_isar == null) return [];
-    final entities = await _isar.matchCommandEntitys
-        .filter()
-        .statusEqualTo(CommandStatus.pending.name)
-        .sortByCreatedAt()
-        .findAll();
-    return entities
-        .map(
-          (e) => MatchCommandModel(
-            id: e.commandId,
-            type: CommandType.values.byName(e.type),
-            payload: jsonDecode(e.payloadJson),
-            createdAt: e.createdAt,
-            status: CommandStatus.values.byName(e.status),
-          ),
-        )
-        .toList();
-  }
+  Future<List<MatchCommandModel>> getPendingCommands() =>
+      LocalMatchCommandStore.getPendingCommands(_isar);
 
   Stream<List<MatchModel>> watchLocalMatches(String tournamentId) =>
       _isar == null
@@ -439,61 +403,17 @@ class LocalMatchRepository {
 
   Future<List<MatchModel>> _loadModelsWithArchivedEvents(
     List<MatchEntity> entities,
-  ) async => Future.wait(entities.map(_loadModelWithArchivedEvents));
+  ) => LocalMatchArchiveHelper.loadModelsWithArchivedEvents(_isar, entities);
 
-  Future<MatchModel> _loadModelWithArchivedEvents(MatchEntity entity) async {
-    final model = LocalMatchEntityMapper.toModel(entity);
-    if (_isar == null) return model;
-    final archives = await _isar.matchEventArchiveEntitys
-        .filter()
-        .matchIdEqualTo(entity.firestoreId)
-        .sortByChunkIndex()
-        .findAll();
-    if (archives.isEmpty) return model;
-    final archivedEvents = archives
-        .expand((archive) => archive.events)
-        .map(LocalMatchEntityMapper.entityToEvent)
-        .toList();
-    return model.copyWith(events: [...archivedEvents, ...model.events]);
-  }
+  Future<MatchModel> _loadModelWithArchivedEvents(MatchEntity entity) =>
+      LocalMatchArchiveHelper.loadModelWithArchivedEvents(_isar, entity);
 
-  Future<MatchModel> _archiveAndTrimEvents(MatchModel match) async {
-    if (_isar == null) return match;
-    if (match.events.length <= _hotEventLimit) {
-      await _isar.writeTxn(
-        () => _isar.matchEventArchiveEntitys
-            .filter()
-            .matchIdEqualTo(match.id)
-            .deleteAll(),
-      );
-      return match;
-    }
-    final splitAt = match.events.length - _hotEventLimit;
-    final coldEvents = match.events.take(splitAt).toList();
-    final chunkSize = _hotEventLimit;
-    await _isar.writeTxn(() async {
-      for (var offset = 0; offset < coldEvents.length; offset += chunkSize) {
-        final chunk = coldEvents.skip(offset).take(chunkSize).toList();
-        final chunkIndex = offset ~/ chunkSize;
-        final archive = MatchEventArchiveEntity()
-          ..archiveKey = '${match.id}:$chunkIndex'
-          ..matchId = match.id
-          ..chunkIndex = chunkIndex
-          ..events = chunk.map(LocalMatchEntityMapper.eventToEntity).toList();
-        final existing = await _isar.matchEventArchiveEntitys
-            .filter()
-            .archiveKeyEqualTo(archive.archiveKey)
-            .findFirst();
-        if (existing != null) archive.id = existing.id;
-        await _isar.matchEventArchiveEntitys.put(archive);
-      }
-      final lastChunkIndex = (coldEvents.length - 1) ~/ chunkSize;
-      await _isar.matchEventArchiveEntitys
-          .filter()
-          .matchIdEqualTo(match.id)
-          .chunkIndexGreaterThan(lastChunkIndex)
-          .deleteAll();
-    });
-    return match.copyWith(events: match.events.skip(splitAt).toList());
-  }
+  Future<MatchModel> _archiveAndTrimEvents(MatchModel match) =>
+      LocalMatchArchiveHelper.archiveAndTrimEvents(_isar, match);
+
+  Future<void> deletePendingCommandsForMatches(Iterable<String> matchIds) =>
+      LocalMatchCommandStore.deletePendingCommandsForMatches(_isar, matchIds);
+
+  Future<void> deletePendingCommandsForMatch(String matchId) =>
+      LocalMatchCommandStore.deletePendingCommandsForMatch(_isar, matchId);
 }

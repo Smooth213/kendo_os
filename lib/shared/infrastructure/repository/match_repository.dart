@@ -58,6 +58,38 @@ class MatchRepository {
     return matches.whereType<MatchModel>().toList();
   }
 
+  // 1-D. 特定の1試合を1回だけ取得（Conflict解決・キャッシュ確認用）
+  Future<MatchModel?> getMatch(
+    String matchId, {
+    String? organizationId,
+    String? tournamentId,
+  }) async {
+    try {
+      final org =
+          (organizationId != null &&
+              organizationId.isNotEmpty &&
+              organizationId != 'default_org')
+          ? organizationId
+          : (_dojoId.isNotEmpty ? _dojoId : 'default_org');
+      final tour = (tournamentId != null && tournamentId.isNotEmpty)
+          ? tournamentId
+          : (_tournamentId.isNotEmpty ? _tournamentId : 'default_tournament');
+      final doc = await _firestore
+          .collection('organizations')
+          .doc(org)
+          .collection('tournaments')
+          .doc(tour)
+          .collection('matches')
+          .doc(matchId)
+          .get();
+      if (!doc.exists || doc.data() == null) return null;
+      return await _readMatch(doc);
+    } catch (e) {
+      debugPrint('🔥 [MatchRepository getMatch Error] 試合ID: $matchId: $e');
+      return null;
+    }
+  }
+
   // 2. 特定の1試合をリアルタイム監視（MatchProviderで使用）
   Stream<MatchModel> watchSingleMatch(String matchId) {
     return _collectionRef

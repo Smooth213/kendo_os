@@ -261,6 +261,32 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
   Battery? _battery;
   StreamSubscription? _subscription;
   Timer? _timer;
+  AppLifecycleListener? _lifecycleListener;
+
+  void _startPeriodicTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => _refreshBattery(),
+    );
+  }
+
+  void _stopPeriodicTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  Future<void> _refreshBattery() async {
+    final battery = _battery;
+    if (battery == null) return;
+    try {
+      final l = await battery.batteryLevel;
+      final p = await battery.isInBatterySaveMode;
+      state = AsyncValue.data(
+        BatteryStateData(batteryLevel: l, isInPowerSaveMode: p),
+      );
+    } catch (_) {}
+  }
 
   @override
   FutureOr<BatteryStateData> build() async {
@@ -278,7 +304,8 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
       _battery = Battery();
       ref.onDispose(() {
         _subscription?.cancel();
-        _timer?.cancel();
+        _stopPeriodicTimer();
+        _lifecycleListener?.dispose();
       });
 
       final level = await _battery!.batteryLevel.timeout(
@@ -292,26 +319,25 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
 
       // Listen to battery state changes
       _subscription = _battery!.onBatteryStateChanged.listen((_) async {
-        try {
-          final l = await _battery!.batteryLevel;
-          final p = await _battery!.isInBatterySaveMode;
-          state = AsyncValue.data(
-            BatteryStateData(batteryLevel: l, isInPowerSaveMode: p),
-          );
-        } catch (_) {}
+        await _refreshBattery();
       });
 
       // 🔋 【Plan 2】過剰な10秒固定ポーリングを撤廃し、OSバッテリー状態変更イベント（onBatteryStateChanged）を主軸化。
       // 残量追従用の定期ポーリングは60秒に緩和してアイドル時のCPU起床頻度を83%削減
-      _timer = Timer.periodic(const Duration(seconds: 60), (_) async {
-        try {
-          final l = await _battery!.batteryLevel;
-          final p = await _battery!.isInBatterySaveMode;
-          state = AsyncValue.data(
-            BatteryStateData(batteryLevel: l, isInPowerSaveMode: p),
-          );
-        } catch (_) {}
-      });
+      _startPeriodicTimer();
+
+      // 🌙 【Plan 3】アプリ待機時（バックグラウンド）はポーリングタイマーを完全停止（ディープスリープ維持・発熱ゼロ化）
+      _lifecycleListener = AppLifecycleListener(
+        onStateChange: (AppLifecycleState state) {
+          if (state == AppLifecycleState.paused ||
+              state == AppLifecycleState.inactive) {
+            _stopPeriodicTimer();
+          } else if (state == AppLifecycleState.resumed) {
+            _refreshBattery();
+            _startPeriodicTimer();
+          }
+        },
+      );
 
       return BatteryStateData(
         batteryLevel: level,

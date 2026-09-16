@@ -10,7 +10,6 @@ import 'package:kendo_os/features/match/presentation/providers/match_rule_provid
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_backup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
-import 'package:kendo_os/shared/infrastructure/repository/match_event_cloud_codec.dart';
 import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -82,34 +81,12 @@ class SyncEngine {
   Future<void> _performReconnectReplay() async {
     _isProcessing();
     try {
-      final localRepo = ref.read(localMatchRepositoryProvider);
-      final rule = ref.read(matchRuleProvider);
-      final rebuilder = ref.read(rebuildMatchFromEventsUseCaseProvider);
-      final matches = ref.read(matchListProvider);
-      int driftCount = 0;
-
-      for (final match in matches) {
-        if (match.events.isEmpty) continue;
-        MatchModel rebuiltMatch = rebuilder
-            .execute(match, rule)
-            .copyWith(status: match.status);
-        final hasDrift =
-            rebuiltMatch.redScore != match.redScore ||
-            rebuiltMatch.whiteScore != match.whiteScore;
-        if (hasDrift) {
-          driftCount++;
-          debugPrint('⚠️ [Drift Monitor] 試合 ${match.id} に矛盾検知。修復します。');
-          await localRepo.saveMatch(rebuiltMatch);
-        }
-      }
-
-      if (driftCount > 0) {
-        debugPrint('🛠️ [Self-Healing] $driftCount 件の試合を自動修復しました。');
-      } else {
-        debugPrint('✅ [Drift Monitor] すべての試合状態は歴史(Events)と完全に一致しています。');
-      }
-    } catch (e) {
-      debugPrint('🔥 [Reconnect Replay] 復旧・監査プロセス中にエラーが発生しました: $e');
+      await SyncBackupHelper.performReconnectReplay(
+        localRepo: ref.read(localMatchRepositoryProvider),
+        rule: ref.read(matchRuleProvider),
+        rebuilder: ref.read(rebuildMatchFromEventsUseCaseProvider),
+        matches: ref.read(matchListProvider),
+      );
     } finally {
       _isDone();
       syncNow();
@@ -313,11 +290,14 @@ class SyncEngine {
         }),
       );
 
-      // 3. ⚡【Plan 1 最適化】全試合を単一トランザクションでIsarに一括反映
+      // 3. ⚡【Plan 1 最適化】全試合を単一トランザクションでIsarに一括反映 ＆ 保留コマンドクリーンアップ
       if (syncedMatchesToSave.isNotEmpty) {
         await localRepo.saveMatchesBulk(syncedMatchesToSave, skipTwin: true);
+        await localRepo.deletePendingCommandsForMatches(
+          syncedMatchesToSave.map((m) => m.id),
+        );
         debugPrint(
-          '⚡ [Sync Engine] ${syncedMatchesToSave.length}件の同期完了試合を単一トランザクションでIsarに一括反映しました',
+          '⚡ [Sync Engine] ${syncedMatchesToSave.length}件の同期完了試合を単一トランザクションでIsarに一括反映＆保留コマンドをクリーンアップしました',
         );
       }
     } catch (e) {
@@ -369,56 +349,12 @@ class SyncEngine {
     DocumentReference<Map<String, dynamic>> docRef,
     Map<String, dynamic> data, {
     required int? expectedRemoteVersion,
-  }) async {
-    final firestore = ref.read(firestoreProvider);
-    await firestore.runTransaction((transaction) async {
-      final snapshot = await transaction.get(docRef);
-      final actualVersion = snapshot.exists
-          ? (snapshot.data()?['version'] as num?)?.toInt() ?? 1
-          : null;
-      if (actualVersion != expectedRemoteVersion) {
-        throw StateError(
-          'Remote version changed while syncing: '
-          'expected=$expectedRemoteVersion actual=$actualVersion',
-        );
-      }
-      final eventList = data['events'] is List
-          ? data['events'] as List
-          : const [];
-      final cloudData = Map<String, dynamic>.from(data);
-      if (eventList.length > MatchEventCloudCodec.hotEventLimit) {
-        cloudData['events'] = eventList
-            .skip(eventList.length - MatchEventCloudCodec.hotEventLimit)
-            .toList();
-        cloudData['eventArchiveVersion'] = eventList.length;
-        final coldEvents = eventList.take(
-          eventList.length - MatchEventCloudCodec.hotEventLimit,
-        );
-        for (
-          var offset = 0;
-          offset < coldEvents.length;
-          offset += MatchEventCloudCodec.archiveChunkSize
-        ) {
-          final events = coldEvents
-              .skip(offset)
-              .take(MatchEventCloudCodec.archiveChunkSize)
-              .toList();
-          transaction.set(
-            docRef
-                .collection('events')
-                .doc('${offset ~/ MatchEventCloudCodec.archiveChunkSize}'),
-            {
-              'matchId': docRef.id,
-              'chunkIndex': offset ~/ MatchEventCloudCodec.archiveChunkSize,
-              'version': offset + events.length,
-              'events': events,
-            },
-          );
-        }
-      }
-      transaction.set(docRef, cloudData);
-    });
-  }
+  }) => SyncBackupHelper.setWithVersionPrecondition(
+    firestore: ref.read(firestoreProvider),
+    docRef: docRef,
+    data: data,
+    expectedRemoteVersion: expectedRemoteVersion,
+  );
 
   void _isDone() {
     _isSyncing = false;
