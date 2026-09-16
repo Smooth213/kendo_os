@@ -1,0 +1,39 @@
+name: 🚀 Deploy Firestore Rules & Indexes
+
+on:
+  push:
+    branches:
+      - main
+      - stage2-beta
+    paths:
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - '.github/workflows/deploy-firestore-rules.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-rules:
+    name: 🛡️ Deploy Firestore Security Rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 リポジトリのチェックアウト
+        uses: actions/checkout@v4
+
+      - name: 🟢 Node.js セットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 🔐 Google Cloud サービスアカウント認証
+        if: env.HAS_SERVICE_ACCOUNT == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KENDO_OS_BETA }}
+        env:
+          HAS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KENDO_OS_BETA != '' }}
+
+      - name: 🚀 Firestore Rules & Indexes デプロイ
+        run: |
+          npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes --project kendo-os-beta
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
