@@ -24,16 +24,20 @@ jobs:
         with:
           node-version: 20
 
-      - name: 🔐 Google Cloud サービスアカウント認証
-        if: env.HAS_SERVICE_ACCOUNT == 'true'
+      - name: 🔐 Google Cloud サービスアカウント認証 (トークン未設定時)
+        if: env.USE_SA == 'true'
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KENDO_OS_BETA }}
         env:
-          HAS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KENDO_OS_BETA != '' }}
+          USE_SA: ${{ secrets.FIREBASE_TOKEN == '' && secrets.FIREBASE_SERVICE_ACCOUNT_KENDO_OS_BETA != '' }}
 
       - name: 🚀 Firestore Rules & Indexes デプロイ
         run: |
-          npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes --project kendo-os-beta
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes --project kendo-os-beta --token "$FIREBASE_TOKEN"
+          else
+            npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes --project kendo-os-beta
+          fi
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
