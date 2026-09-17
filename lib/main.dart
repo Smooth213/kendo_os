@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kendo_os/admin/providers/metrics_provider.dart';
+import 'package:kendo_os/bootstrap/app_startup.dart';
+import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
+import 'package:kendo_os/shared/application/services/sound_service.dart';
+import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
     as legacy_sync;
@@ -31,6 +36,15 @@ void main() {
     WidgetsFlutterBinding.ensureInitialized();
     usePathUrlStrategy();
 
+    // 🌐 【Phase 7】Safari & Chrome 2大ブラウザ極限最適化
+    WebPlatformOptimizer.applyOptimizations();
+
+    // 💾 【Phase 2】メモリ効率＆画像キャッシュ上限の自動制御
+    AppStartup.configureImageCache();
+
+    // 📦 【Phase 6】フォント・アセット最適化
+    AppStartup.configureFontOptimization();
+
     final initResult = await AppBootstrapHelper.initialize();
     final nonNullPrefs = initResult.prefs;
     final isar = initResult.isar;
@@ -48,6 +62,23 @@ void main() {
       } catch (e) {
         debugPrint('⚠️ [Notification] Startup initialization failed: $e');
       }
+
+      // ☁️ Google連携アカウント設定・履歴のクラウド自動同期マネージャー起動
+      try {
+        container.read(userDataCloudSyncManagerProvider).initialize();
+      } catch (e) {
+        debugPrint('⚠️ [UserDataCloudSync] Startup initialization failed: $e');
+      }
+
+      // 🔊 【Phase 8】オーディオPre-warming（ノンブロッキング非同期で事前暖機）
+      try {
+        unawaited(container.read(soundServiceProvider).prewarm());
+      } catch (e) {
+        debugPrint('⚠️ [SoundService] Prewarm failed: $e');
+      }
+
+      // ⚡ 【Plan 1-5】アセット・フォント・シェーダーの事前ウォームアップ（ノンブロッキング非同期）
+      unawaited(AppStartup.prewarmAppAssets());
 
       FlutterError.onError = (FlutterErrorDetails details) {
         FlutterError.presentError(details);

@@ -280,37 +280,48 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                   const SizedBox(height: AppSpacing.sm),
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.4, // リストの高さ
-                    child: ListView(
-                      children: [
-                        if (isNewName)
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: _accentColor.withAlpha(26),
-                              child: Icon(
-                                Icons.person_add,
-                                color: _accentColor,
-                                size: 20,
+                    child: ListView.builder(
+                      itemCount:
+                          (isNewName ? 1 : 0) +
+                          filteredGuest.length +
+                          filteredMaster.length,
+                      itemBuilder: (context, index) {
+                        var currentIndex = index;
+                        if (isNewName) {
+                          if (currentIndex == 0) {
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: _accentColor.withAlpha(26),
+                                child: Icon(
+                                  Icons.person_add,
+                                  color: _accentColor,
+                                  size: 20,
+                                ),
                               ),
-                            ),
-                            title: Text(
-                              '"${searchText.trim()}" をゲストとして追加',
-                              style: TextStyle(
-                                color: _accentColor,
-                                fontWeight: AppFontWeight.bold,
+                              title: Text(
+                                '"${searchText.trim()}" をゲストとして追加',
+                                style: TextStyle(
+                                  color: _accentColor,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
                               ),
-                            ),
-                            onTap: () {
-                              ref
-                                  .read(bunaiksenGuestProvider.notifier)
-                                  .update(
-                                    (state) => [...state, searchText.trim()],
-                                  );
-                              widget.controller.text = searchText.trim();
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ...filteredGuest.map(
-                          (name) => ListTile(
+                              onTap: () {
+                                ref
+                                    .read(bunaiksenGuestProvider.notifier)
+                                    .update(
+                                      (state) => [...state, searchText.trim()],
+                                    );
+                                widget.controller.text = searchText.trim();
+                                Navigator.pop(context);
+                              },
+                            );
+                          }
+                          currentIndex--;
+                        }
+
+                        if (currentIndex < filteredGuest.length) {
+                          final name = filteredGuest[currentIndex];
+                          return ListTile(
                             leading: CircleAvatar(
                               backgroundColor: AppKendoColors.grey.withAlpha(
                                 26,
@@ -333,33 +344,34 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                               widget.controller.text = name;
                               Navigator.pop(context);
                             },
-                          ),
-                        ),
-                        ...filteredMaster.map(
-                          (p) => ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: _accentColor.withAlpha(26),
-                              child: Icon(
-                                Icons.person,
-                                color: _accentColor,
-                                size: 20,
-                              ),
+                          );
+                        }
+                        currentIndex -= filteredGuest.length;
+
+                        final p = filteredMaster[currentIndex];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: _accentColor.withAlpha(26),
+                            child: Icon(
+                              Icons.person,
+                              color: _accentColor,
+                              size: 20,
                             ),
-                            title: Text(p.name),
-                            subtitle: Text(
-                              p.gradeName,
-                              style: const TextStyle(
-                                fontSize: AppFontSize.small,
-                                color: AppKendoColors.grey,
-                              ),
-                            ), // ★ 修正：マスタの学年を表示
-                            onTap: () {
-                              widget.controller.text = p.name;
-                              Navigator.pop(context);
-                            },
                           ),
-                        ),
-                      ],
+                          title: Text(p.name),
+                          subtitle: Text(
+                            p.gradeName,
+                            style: const TextStyle(
+                              fontSize: AppFontSize.small,
+                              color: AppKendoColors.grey,
+                            ),
+                          ), // ★ 修正：マスタの学年を表示
+                          onTap: () {
+                            widget.controller.text = p.name;
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],

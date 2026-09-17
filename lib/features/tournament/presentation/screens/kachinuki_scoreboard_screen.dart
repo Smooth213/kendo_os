@@ -52,7 +52,22 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         ? ref.watch(matchListByTournamentProvider(urlTournamentId))
         : null;
 
-    final allMatches = ref.watch(matchListProvider);
+    // 🛡️ 【Plan 5 最適化】勝ち抜き戦スコアボードの再描画局所化：対象グループの試合シグネチャのみを監視
+    ref.watch(
+      matchListProvider.select((list) {
+        if (decodedGroupName.isEmpty) return '';
+        final matched = list.where(
+          (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,
+        );
+        return matched
+            .map(
+              (m) =>
+                  '${m.id}_${m.version}_${m.status}_${m.redScore}_${m.whiteScore}_${m.events.length}_${m.note}',
+            )
+            .join(';');
+      }),
+    );
+    final allMatches = ref.read(matchListProvider);
     var teamMatchesModels = allMatches
         .where(
           (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,

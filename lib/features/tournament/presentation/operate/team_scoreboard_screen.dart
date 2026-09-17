@@ -56,7 +56,22 @@ class TeamScoreboardScreen extends ConsumerWidget {
       }
     }
 
-    final allMatches = ref.watch(matchListProvider);
+    // 🛡️ 【Plan 5 最適化】自グループ以外のコート（第2・第3コート等）のタイマー進行・得点入力による無駄な毎秒全画面再描画を100%遮断
+    ref.watch(
+      matchListProvider.select((list) {
+        if (decodedGroupName.isEmpty) return '';
+        final matched = list.where(
+          (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,
+        );
+        return matched
+            .map(
+              (m) =>
+                  '${m.id}_${m.version}_${m.status}_${m.redScore}_${m.whiteScore}_${m.events.length}_${m.note}',
+            )
+            .join(';');
+      }),
+    );
+    final allMatches = ref.read(matchListProvider);
     final asyncMatches = (urlTournamentId != null && urlTournamentId.isNotEmpty)
         ? ref.watch(matchListByTournamentProvider(urlTournamentId))
         : null;

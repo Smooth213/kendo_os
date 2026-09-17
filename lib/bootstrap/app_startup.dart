@@ -372,7 +372,22 @@ class AppStartup {
   /// 📦 【Phase 6】フォント・アセット最適化
   /// 体育館・電波不通現場でのフォントダウンロード遅延や通信エラーを防止
   static void configureFontOptimization({bool allowRuntimeFetching = true}) {
-    GoogleFonts.config.allowRuntimeFetching = allowRuntimeFetching;
+    try {
+      GoogleFonts.config.allowRuntimeFetching = allowRuntimeFetching;
+    } catch (e) {
+      debugPrint('⚠️ [FontOptimization] 設定エラー: $e');
+    }
+  }
+
+  /// 🌐 オフライン環境向けフォントセーフティ設定
+  /// 外部HTTPフォント取得を安全に遮断し、内蔵システムフォントへの即時フォールバックを強制
+  static void enforceOfflineFontFallback() {
+    try {
+      GoogleFonts.config.allowRuntimeFetching = false;
+      debugPrint('🛡️ [FontOptimization] オフライン向けシステムフォント即時フォールバックを有効化しました');
+    } catch (e) {
+      debugPrint('⚠️ [FontOptimization] フォールバック設定エラー: $e');
+    }
   }
 
   /// ⚡ 【Plan 1-5】アセット・フォント・シェーダーの事前ウォームアップ

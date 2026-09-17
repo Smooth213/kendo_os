@@ -45,7 +45,24 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
         ? const Color(0xFFFFFFFF)
         : const Color(0xFF1E293B);
 
-    final allMatches = ref.watch(matchListProvider);
+    // 🛡️ 【Plan 5 最適化】観戦端末の低負荷・バッテリー保護：対象グループの試合シグネチャのみを選択的購読
+    ref.watch(
+      matchListProvider.select((list) {
+        if (decodedGroupName.isEmpty) {
+          return list.firstOrNull?.tournamentId ?? '';
+        }
+        final matched = list.where(
+          (m) => m.groupName == decodedGroupName || m.id == decodedGroupName,
+        );
+        return matched
+            .map(
+              (m) =>
+                  '${m.id}_${m.version}_${m.status}_${m.redScore}_${m.whiteScore}_${m.events.length}',
+            )
+            .join(';');
+      }),
+    );
+    final allMatches = ref.read(matchListProvider);
 
     if (tournamentId == null && decodedGroupName.isNotEmpty) {
       final match = allMatches
@@ -120,7 +137,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
     bool isDark,
     Color headerColor,
   ) {
-    final allMatches = ref.watch(matchListProvider);
+    final allMatches = ref.read(matchListProvider);
 
     if (tournamentId == null && allMatches.isNotEmpty) {
       tournamentId = allMatches.first.tournamentId;

@@ -245,122 +245,137 @@ class _TeamRegistrationPlayerSelectBottomSheetState
             const SizedBox(height: AppSpacing.xl),
 
             Expanded(
-              child: ListView(
-                children: [
-                  if (helperEntries.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.sm,
-                      ),
-                      child: Text(
-                        '現在チームにいる手入力選手',
-                        style: TextStyle(
-                          fontSize: AppFontSize.small,
-                          fontWeight: AppFontWeight.bold,
-                          color: const Color(0xFFFF9800),
-                        ),
-                      ),
-                    ),
-                    ...helperEntries.map((entry) {
-                      if (entry.key == widget.index) {
-                        return const SizedBox.shrink();
-                      }
-                      return TeamRegistrationSelectionCard(
-                        name: entry.value,
-                        subtitle: '手入力選手',
-                        isUsed: true,
-                        usedPos: entry.key < widget.posNames.length
-                            ? widget.posNames[entry.key]
-                            : '補欠',
-                        isDark: isDark,
-                        isHelper: true,
-                        onTap: () => Navigator.pop(context, entry.value),
-                      );
-                    }),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Text(
-                      _showAllPlayers ? '名簿の全選手' : 'おすすめの選手',
-                      style: TextStyle(
-                        fontSize: AppFontSize.small,
-                        fontWeight: AppFontWeight.bold,
-                        color: widget.themeColors.primaryAccent,
-                      ),
-                    ),
-                  ),
-
-                  // 欠員・未定ボタン
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context, 'CLEAR_FLAG'),
-                          child: const Text('未定'),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context, '欠員'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppKendoColors.red,
-                          ),
-                          child: const Text('欠員'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  if (displayList.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(AppSpacing.xxl),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.person_search,
-                            size: 48,
-                            color: AppKendoColors.grey.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          Text(
-                            '該当する選手がいません',
-                            style: TextStyle(
-                              color: const Color(0x8A000000),
-                              fontSize: AppFontSize.bodySmall,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (helperEntries.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.sm,
+                            ),
+                            child: const Text(
+                              '現在チームにいる手入力選手',
+                              style: TextStyle(
+                                fontSize: AppFontSize.small,
+                                fontWeight: AppFontWeight.bold,
+                                color: Color(0xFFFF9800),
+                              ),
                             ),
                           ),
+                          ...helperEntries.map((entry) {
+                            if (entry.key == widget.index) {
+                              return const SizedBox.shrink();
+                            }
+                            return TeamRegistrationSelectionCard(
+                              name: entry.value,
+                              subtitle: '手入力選手',
+                              isUsed: true,
+                              usedPos: entry.key < widget.posNames.length
+                                  ? widget.posNames[entry.key]
+                                  : '補欠',
+                              isDark: isDark,
+                              isHelper: true,
+                              onTap: () => Navigator.pop(context, entry.value),
+                            );
+                          }),
+                          const SizedBox(height: AppSpacing.lg),
                         ],
-                      ),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.sm,
+                          ),
+                          child: Text(
+                            _showAllPlayers ? '名簿の全選手' : 'おすすめの選手',
+                            style: TextStyle(
+                              fontSize: AppFontSize.small,
+                              fontWeight: AppFontWeight.bold,
+                              color: widget.themeColors.primaryAccent,
+                            ),
+                          ),
+                        ),
+
+                        // 欠員・未定ボタン
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () =>
+                                    Navigator.pop(context, 'CLEAR_FLAG'),
+                                child: const Text('未定'),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(context, '欠員'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppKendoColors.red,
+                                ),
+                                child: const Text('欠員'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+
+                        if (displayList.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(AppSpacing.xxl),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.person_search,
+                                    size: 48,
+                                    color: AppKendoColors.grey.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.lg),
+                                  const Text(
+                                    '該当する選手がいません',
+                                    style: TextStyle(
+                                      color: Color(0x8A000000),
+                                      fontSize: AppFontSize.bodySmall,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
+                  SliverList.builder(
+                    itemCount: displayList.length,
+                    itemBuilder: (context, idx) {
+                      final p = displayList[idx];
+                      int? usedIdx;
+                      widget.tempSelectedPlayers.forEach((k, v) {
+                        if (v == p.name) usedIdx = k;
+                      });
+                      final isUsed = usedIdx != null && usedIdx != widget.index;
 
-                  ...displayList.map((p) {
-                    int? usedIdx;
-                    widget.tempSelectedPlayers.forEach((k, v) {
-                      if (v == p.name) usedIdx = k;
-                    });
-                    final isUsed = usedIdx != null && usedIdx != widget.index;
-
-                    return TeamRegistrationSelectionCard(
-                      name: p.name,
-                      subtitle:
-                          '${p.gradeName}${p.isBeginner ? " (🔰初心者)" : ""}',
-                      isUsed: isUsed,
-                      usedPos: usedIdx != null
-                          ? (usedIdx! < widget.posNames.length
-                                ? widget.posNames[usedIdx!]
-                                : '補欠')
-                          : '',
-                      isDark: isDark,
-                      isBeginner: p.isBeginner,
-                      onTap: () => Navigator.pop(context, p.name),
-                    );
-                  }),
+                      return TeamRegistrationSelectionCard(
+                        name: p.name,
+                        subtitle:
+                            '${p.gradeName}${p.isBeginner ? " (🔰初心者)" : ""}',
+                        isUsed: isUsed,
+                        usedPos: usedIdx != null
+                            ? (usedIdx! < widget.posNames.length
+                                  ? widget.posNames[usedIdx!]
+                                  : '補欠')
+                            : '',
+                        isDark: isDark,
+                        isBeginner: p.isBeginner,
+                        onTap: () => Navigator.pop(context, p.name),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

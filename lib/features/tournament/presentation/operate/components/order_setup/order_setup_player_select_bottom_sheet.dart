@@ -240,57 +240,57 @@ class _OrderSetupPlayerSelectBottomSheetState
             ),
             const SizedBox(height: AppSpacing.md),
             Expanded(
-              child: ListView(
-                children: [
-                  ...filteredMaster.map(
-                    (p) => Card(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      elevation: 0,
-                      color: widget.themeColors.softAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                        side: BorderSide(
-                          color: widget.isDark
-                              ? Colors.transparent
-                              : widget.themeColors.softAccent,
-                        ),
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: widget.isDark
-                              ? const Color(0xFF2C2C2E)
-                              : const Color(0xFFFFFFFF),
-                          child: Text(
-                            p.name.substring(0, 1),
-                            style: TextStyle(
-                              color: widget.themeColors.primaryAccent,
-                              fontWeight: AppFontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          p.name,
-                          style: TextStyle(
-                            fontWeight: AppFontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
-                        subtitle: Text(
-                          p.gradeName,
-                          style: TextStyle(
-                            color: widget.themeColors.primaryAccent,
-                            fontSize: AppFontSize.small,
-                          ),
-                        ),
-                        trailing: Icon(
-                          Icons.check_circle_outline,
-                          color: widget.themeColors.primaryAccent,
-                        ),
-                        onTap: () => Navigator.pop(context, p.name),
+              child: ListView.builder(
+                itemCount: filteredMaster.length,
+                itemBuilder: (context, idx) {
+                  final p = filteredMaster[idx];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    elevation: 0,
+                    color: widget.themeColors.softAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.medium,
+                      side: BorderSide(
+                        color: widget.isDark
+                            ? Colors.transparent
+                            : widget.themeColors.softAccent,
                       ),
                     ),
-                  ),
-                ],
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: widget.isDark
+                            ? const Color(0xFF2C2C2E)
+                            : const Color(0xFFFFFFFF),
+                        child: Text(
+                          p.name.substring(0, 1),
+                          style: TextStyle(
+                            color: widget.themeColors.primaryAccent,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        p.name,
+                        style: TextStyle(
+                          fontWeight: AppFontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                      subtitle: Text(
+                        p.gradeName,
+                        style: TextStyle(
+                          color: widget.themeColors.primaryAccent,
+                          fontSize: AppFontSize.small,
+                        ),
+                      ),
+                      trailing: Icon(
+                        Icons.check_circle_outline,
+                        color: widget.themeColors.primaryAccent,
+                      ),
+                      onTap: () => Navigator.pop(context, p.name),
+                    ),
+                  );
+                },
               ),
             ),
           ],
