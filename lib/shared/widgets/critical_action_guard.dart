@@ -19,106 +19,132 @@ class CriticalActionGuard {
     // そもそも Viewer は実行不可なので即時リターン
     if (currentRole == UserRole.viewer) return;
 
-    final pinController = TextEditingController();
-    String? errorMessage;
-
     showAppDialog(
       context: context,
       barrierDismissible: false, // 外部タップでの勝手なキャンセルを禁止
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AppDialog(
-              backgroundColor: const Color(0xFF161B26),
-              titleIcon: Icons.warning_amber_rounded,
-              iconColor: AppKendoColors.orangeAccent,
-              title: '⚠️ 危険操作の再認証',
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message,
-                    style: TextStyle(
-                      color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
-                      fontSize: AppFontSize.bodySmall,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  AppTextField(
-                    controller: pinController,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppKendoColors.pureWhite),
-                    decoration: InputDecoration(
-                      hintText: '再認証PINコード',
-                      hintStyle: TextStyle(
-                        color: AppKendoColors.pureWhite.withValues(alpha: 0.3),
-                      ),
-                      filled: true,
-                      fillColor: AppKendoColors.pureWhite.withValues(
-                        alpha: 0.05,
-                      ),
-                      errorText: errorMessage,
-                      errorStyle: const TextStyle(
-                        color: AppKendoColors.orangeAccent,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                        borderSide: BorderSide(
-                          color: AppKendoColors.pureWhite.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                        borderSide: BorderSide(color: AppKendoColors.teal),
-                      ),
-                    ),
-                  ),
-                ],
+      builder: (dialogCtx) => _CriticalActionGuardDialog(
+        currentRole: currentRole,
+        onVerified: onVerified,
+        message: message,
+      ),
+    );
+  }
+}
+
+class _CriticalActionGuardDialog extends StatefulWidget {
+  final UserRole currentRole;
+  final VoidCallback onVerified;
+  final String message;
+
+  const _CriticalActionGuardDialog({
+    required this.currentRole,
+    required this.onVerified,
+    required this.message,
+  });
+
+  @override
+  State<_CriticalActionGuardDialog> createState() =>
+      _CriticalActionGuardDialogState();
+}
+
+class _CriticalActionGuardDialogState
+    extends State<_CriticalActionGuardDialog> {
+  late final TextEditingController pinController;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    pinController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    pinController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDialog(
+      backgroundColor: const Color(0xFF161B26),
+      titleIcon: Icons.warning_amber_rounded,
+      iconColor: AppKendoColors.orangeAccent,
+      title: '⚠️ 危険操作の再認証',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.message,
+            style: TextStyle(
+              color: AppKendoColors.pureWhite.withValues(alpha: 0.7),
+              fontSize: AppFontSize.bodySmall,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppTextField(
+            controller: pinController,
+            obscureText: true,
+            keyboardType: TextInputType.number,
+            style: const TextStyle(color: AppKendoColors.pureWhite),
+            decoration: InputDecoration(
+              hintText: '再認証PINコード',
+              hintStyle: TextStyle(
+                color: AppKendoColors.pureWhite.withValues(alpha: 0.3),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text(
-                    'キャンセル',
-                    style: TextStyle(color: AppKendoColors.white60),
-                  ),
+              filled: true,
+              fillColor: AppKendoColors.pureWhite.withValues(alpha: 0.05),
+              errorText: errorMessage,
+              errorStyle: const TextStyle(color: AppKendoColors.orangeAccent),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: AppRadius.medium,
+                borderSide: BorderSide(
+                  color: AppKendoColors.pureWhite.withValues(alpha: 0.3),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppKendoColors.orange.withValues(
-                      alpha: 0.8,
-                    ),
-                  ),
-                  onPressed: () {
-                    // PinGuardへ現在のロールと再入力された値を渡して決定論的に直接検証
-                    final isValid = PinGuard.validate(
-                      currentRole,
-                      pinController.text,
-                    );
-                    if (isValid) {
-                      Navigator.of(context).pop();
-                      onVerified(); // 認証成功時のみ本番の処理をキック
-                    } else {
-                      setState(() => errorMessage = 'PINコードが一致しません');
-                    }
-                  },
-                  child: const Text(
-                    '認証して実行',
-                    style: TextStyle(
-                      color: AppKendoColors.pureWhite,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: AppRadius.medium,
+                borderSide: BorderSide(color: AppKendoColors.teal),
+              ),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(
+            'キャンセル',
+            style: TextStyle(color: AppKendoColors.white60),
+          ),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppKendoColors.orange.withValues(alpha: 0.8),
+          ),
+          onPressed: () {
+            // PinGuardへ現在のロールと再入力された値を渡して決定論的に直接検証
+            final isValid = PinGuard.validate(
+              widget.currentRole,
+              pinController.text,
             );
+            if (isValid) {
+              Navigator.of(context).pop();
+              widget.onVerified(); // 認証成功時のみ本番の処理をキック
+            } else {
+              setState(() => errorMessage = 'PINコードが一致しません');
+            }
           },
-        );
-      },
+          child: const Text(
+            '認証して実行',
+            style: TextStyle(
+              color: AppKendoColors.pureWhite,
+              fontWeight: AppFontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

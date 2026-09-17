@@ -55,89 +55,102 @@ Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
 // =========================================================================
 
 /// 1. 試合のプロジェクション（1試合単位）のリアルタイム監視
-final viewerMatchProjectionProvider = StreamProvider.family<MatchProjection?, String>((
-  ref,
-  matchId,
-) async* {
-  // =========================================================================
-  // 🛡️ Webアプリ表示不具合修正パッチ（ロードマップメソッド完全維持）
-  // Flutter Web環境では、正常稼働が証明されている matchStreamProvider から
-  // 直接最新状態を拾い上げ、即座にプロジェクションへ変換してUIを点火させます。
-  // =========================================================================
-  if (kIsWeb) {
-    debugPrint(
-      '🌐 [Viewer Web Bypass] Web環境のため、クラウドから対象の試合を直接監視してProjectionへ変換します: $matchId',
-    );
-    // 🌟 Webアプリ表示不具合修正パッチ（アーカイブ遅延対策）
-    // 全試合ストリーム(matchStreamProvider)の完了を await するとブラウザが数分間フリーズしてしまうため、
-    // 対象の1試合のみをFirestoreからピンポイントでリアルタイム監視して爆速化します。
-    final firestore = ref.watch(firestoreProvider);
-    final dojoId = ref.watch(currentDojoIdProvider);
-    final tournamentId = ref.watch(currentTournamentIdProvider);
-    final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
-    final tournament = tournamentId.isNotEmpty
-        ? tournamentId
-        : 'default_tournament';
-    final stream = firestore
-        .collection('organizations')
-        .doc(dojo)
-        .collection('tournaments')
-        .doc(tournament)
-        .collection('matches')
-        .doc(matchId)
-        .snapshots();
+final viewerMatchProjectionProvider = StreamProvider.family
+    .autoDispose<MatchProjection?, String>((ref, matchId) async* {
+      // 🔋 5分間のキャッシュ保持: 画面遷移時の瞬間的な切断・再接続チラつきを防ぎつつ、
+      // 閲覧終了後のFirestoreリスナーを確実にクリーンアップして通信・バッテリー浪費を根絶
+      final link = ref.keepAlive();
+      Timer? keepAliveTimer;
+      ref.onDispose(() => keepAliveTimer?.cancel());
+      ref.onCancel(() {
+        keepAliveTimer = Timer(const Duration(minutes: 5), () {
+          link.close();
+        });
+      });
+      ref.onResume(() {
+        keepAliveTimer?.cancel();
+      });
 
-    await for (final snapshot in stream) {
-      if (!snapshot.exists || snapshot.data() == null) {
-        yield null;
-        continue;
-      }
-      try {
-        final data = _sanitizeFirestoreData(snapshot.data()!);
-        final match = MatchModel.fromJson({...data, 'id': snapshot.id});
-        final engine = KendoRuleEngine();
-        final analysis = engine.analyzeHistory(match.events, match, match.rule);
-        yield MatchProjectionMapper.toProjection(match, analysis);
-      } catch (e) {
-        debugPrint('⚠️ [Viewer Web Bypass Error] Projection変換に失敗しました: $e');
-        yield null;
-      }
-    }
-    return;
-  }
+      // =========================================================================
+      // 🛡️ Webアプリ表示不具合修正パッチ（ロードマップメソッド完全維持）
+      // Flutter Web環境では、正常稼働が証明されている matchStreamProvider から
+      // 直接最新状態を拾い上げ、即座にプロジェクションへ変換してUIを点火させます。
+      // =========================================================================
+      if (kIsWeb) {
+        debugPrint(
+          '🌐 [Viewer Web Bypass] Web環境のため、クラウドから対象の試合を直接監視してProjectionへ変換します: $matchId',
+        );
+        // 🌟 Webアプリ表示不具合修正パッチ（アーカイブ遅延対策）
+        // 全試合ストリーム(matchStreamProvider)の完了を await するとブラウザが数分間フリーズしてしまうため、
+        // 対象の1試合のみをFirestoreからピンポイントでリアルタイム監視して爆速化します。
+        final firestore = ref.watch(firestoreProvider);
+        final dojoId = ref.watch(currentDojoIdProvider);
+        final tournamentId = ref.watch(currentTournamentIdProvider);
+        final dojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+        final tournament = tournamentId.isNotEmpty
+            ? tournamentId
+            : 'default_tournament';
+        final stream = firestore
+            .collection('organizations')
+            .doc(dojo)
+            .collection('tournaments')
+            .doc(tournament)
+            .collection('matches')
+            .doc(matchId)
+            .snapshots();
 
-  // 🍏 ネイティブ環境（シミュレータ・iPad実機アプリ）は最強ローカルファースト防衛線を100%維持
-  // バックグラウンド同期マネージャーを常時稼働（リッスン状態の維持）
-  ref.watch(dojoRoomSyncProvider);
-  yield* ref.watch(projectionStoreProvider).watch(matchId);
-});
+        await for (final snapshot in stream) {
+          if (!snapshot.exists || snapshot.data() == null) {
+            yield null;
+            continue;
+          }
+          try {
+            final data = _sanitizeFirestoreData(snapshot.data()!);
+            final match = MatchModel.fromJson({...data, 'id': snapshot.id});
+            final engine = KendoRuleEngine();
+            final analysis = engine.analyzeHistory(
+              match.events,
+              match,
+              match.rule,
+            );
+            yield MatchProjectionMapper.toProjection(match, analysis);
+          } catch (e) {
+            debugPrint('⚠️ [Viewer Web Bypass Error] Projection変換に失敗しました: $e');
+            yield null;
+          }
+        }
+        return;
+      }
+
+      // 🍏 ネイティブ環境（シミュレータ・iPad実機アプリ）は最強ローカルファースト防衛線を100%維持
+      // バックグラウンド同期マネージャーを常時稼働（リッスン状態の維持）
+      ref.watch(dojoRoomSyncProvider);
+      yield* ref.watch(projectionStoreProvider).watch(matchId);
+    });
 
 /// 試合の基本ステータスだけを監視する
-final viewerMatchStatusProvider = Provider.family<AsyncValue<String>, String>((
-  ref,
-  matchId,
-) {
-  return ref.watch(
-    viewerMatchProjectionProvider(
-      matchId,
-    ).select((async) => async.whenData((p) => p?.status ?? 'waiting')),
-  );
-});
+final viewerMatchStatusProvider = Provider.family
+    .autoDispose<AsyncValue<String>, String>((ref, matchId) {
+      return ref.watch(
+        viewerMatchProjectionProvider(
+          matchId,
+        ).select((async) => async.whenData((p) => p?.status ?? 'waiting')),
+      );
+    });
 
 /// モメンタム（勢い）だけを監視する
-final viewerMatchMomentumProvider = Provider.family<AsyncValue<double>, String>(
-  (ref, matchId) {
-    return ref.watch(
-      viewerMatchProjectionProvider(
-        matchId,
-      ).select((async) => async.whenData((p) => p?.momentum ?? 0.0)),
-    );
-  },
-);
+final viewerMatchMomentumProvider = Provider.family
+    .autoDispose<AsyncValue<double>, String>((ref, matchId) {
+      return ref.watch(
+        viewerMatchProjectionProvider(
+          matchId,
+        ).select((async) => async.whenData((p) => p?.momentum ?? 0.0)),
+      );
+    });
 
 /// タイムラインだけを監視する
-final viewerMatchTimelineProvider =
-    Provider.family<AsyncValue<List<TimelineEvent>>, String>((ref, matchId) {
+final viewerMatchTimelineProvider = Provider.family
+    .autoDispose<AsyncValue<List<TimelineEvent>>, String>((ref, matchId) {
       return ref.watch(
         viewerMatchProjectionProvider(
           matchId,

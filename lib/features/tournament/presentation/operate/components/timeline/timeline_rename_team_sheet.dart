@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// タイムライン画面用チーム名修正・統合ボトムシート
-class TimelineRenameTeamSheet extends StatelessWidget {
+class TimelineRenameTeamSheet extends StatefulWidget {
   final String tournamentId;
   final String oldName;
   final WidgetRef ref;
@@ -39,8 +39,27 @@ class TimelineRenameTeamSheet extends StatelessWidget {
   }
 
   @override
+  State<TimelineRenameTeamSheet> createState() =>
+      _TimelineRenameTeamSheetState();
+}
+
+class _TimelineRenameTeamSheetState extends State<TimelineRenameTeamSheet> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.oldName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = TextEditingController(text: oldName);
     final themeColors = context.appColors;
 
     return AppBottomSheetContent(
@@ -72,7 +91,7 @@ class TimelineRenameTeamSheet extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           AppTextField(
-            controller: controller,
+            controller: _controller,
             autofocus: true,
             decoration: InputDecoration(
               labelText: '新しいチーム名',
@@ -89,16 +108,16 @@ class TimelineRenameTeamSheet extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
-                final newName = controller.text.trim();
-                if (newName.isEmpty || newName == oldName) {
+                final newName = _controller.text.trim();
+                if (newName.isEmpty || newName == widget.oldName) {
                   Navigator.pop(context);
                   return;
                 }
-                await ref
+                await widget.ref
                     .read(matchCommandProvider)
                     .renameTeamBulk(
-                      tournamentId: tournamentId,
-                      oldTeamName: oldName,
+                      tournamentId: widget.tournamentId,
+                      oldTeamName: widget.oldName,
                       newTeamName: newName,
                     );
                 if (context.mounted) {

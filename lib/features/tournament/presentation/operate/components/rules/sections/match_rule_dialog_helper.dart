@@ -86,7 +86,10 @@ class MatchRuleDialogHelper {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      minCtrl.dispose();
+      secCtrl.dispose();
+    });
   }
 
   static void showCustomMinutesDialog(
@@ -130,7 +133,9 @@ class MatchRuleDialogHelper {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      ctrl.dispose();
+    });
   }
 
   static void showCustomPointDialog(
@@ -174,6 +179,8 @@ class MatchRuleDialogHelper {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      ctrl.dispose();
+    });
   }
 }

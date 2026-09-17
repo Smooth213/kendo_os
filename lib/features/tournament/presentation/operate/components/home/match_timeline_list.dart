@@ -163,20 +163,22 @@ class MatchTimelineList extends ConsumerWidget {
                 ),
 
                 ...sortedTeams.map((teamEntry) {
-                  return TimelineTeamCard(
-                    teamName: teamEntry.key,
-                    teamMatchesList: teamEntry.value,
-                    categoryName: categoryName,
-                    tournamentId: tournamentId,
-                    sanitizedQuery: sanitizedQuery,
-                    matchedMatchIds: matchedMatchIds,
-                    matchedGroupNames: matchedGroupNames,
-                    ownTeams: ownTeams,
-                    comments: comments,
-                    isReadOnlyUI: isReadOnlyUI,
-                    canManageTournamentUI: canManageTournamentUI,
-                    isDark: isDark,
-                    permissions: permissions,
+                  return RepaintBoundary(
+                    child: TimelineTeamCard(
+                      teamName: teamEntry.key,
+                      teamMatchesList: teamEntry.value,
+                      categoryName: categoryName,
+                      tournamentId: tournamentId,
+                      sanitizedQuery: sanitizedQuery,
+                      matchedMatchIds: matchedMatchIds,
+                      matchedGroupNames: matchedGroupNames,
+                      ownTeams: ownTeams,
+                      comments: comments,
+                      isReadOnlyUI: isReadOnlyUI,
+                      canManageTournamentUI: canManageTournamentUI,
+                      isDark: isDark,
+                      permissions: permissions,
+                    ),
                   );
                 }),
               ],

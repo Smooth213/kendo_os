@@ -239,9 +239,11 @@ class _DockDraggableSheetState extends State<DockDraggableSheet>
                   ),
                   // コンテンツエリア
                   Expanded(
-                    child: Builder(
-                      builder: (innerContext) =>
-                          widget.builder(innerContext, _scrollController),
+                    child: RepaintBoundary(
+                      child: Builder(
+                        builder: (innerContext) =>
+                            widget.builder(innerContext, _scrollController),
+                      ),
                     ),
                   ),
                 ],

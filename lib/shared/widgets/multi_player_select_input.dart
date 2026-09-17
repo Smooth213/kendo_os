@@ -292,10 +292,14 @@ class _MultiPlayerSelectInputState
                   // 選手リスト（チェックボックス式）
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.45,
-                    child: ListView(
-                      children: [
-                        if (isNewName)
-                          ListTile(
+                    child: ListView.builder(
+                      itemCount:
+                          (isNewName ? 1 : 0) +
+                          filteredGuest.length +
+                          filteredMaster.length,
+                      itemBuilder: (context, index) {
+                        if (isNewName && index == 0) {
+                          return ListTile(
                             leading: CircleAvatar(
                               backgroundColor: _accentColor.withAlpha(26),
                               child: Icon(
@@ -322,8 +326,12 @@ class _MultiPlayerSelectInputState
                                 searchText = '';
                               });
                             },
-                          ),
-                        ...filteredGuest.map((name) {
+                          );
+                        }
+
+                        final adjustedIndex = isNewName ? index - 1 : index;
+                        if (adjustedIndex < filteredGuest.length) {
+                          final name = filteredGuest[adjustedIndex];
                           final isSelected = tempSelected.contains(name);
                           return MultiPlayerCandidateTile(
                             name: name,
@@ -341,27 +349,29 @@ class _MultiPlayerSelectInputState
                               });
                             },
                           );
-                        }),
-                        ...filteredMaster.map((p) {
-                          final isSelected = tempSelected.contains(p.name);
-                          return MultiPlayerCandidateTile(
-                            name: p.name,
-                            subtitle: p.gradeName,
-                            isSelected: isSelected,
-                            accentColor: _accentColor,
-                            icon: Icons.person,
-                            onChanged: (bool? val) {
-                              setStateSheet(() {
-                                if (val == true) {
-                                  tempSelected.add(p.name);
-                                } else {
-                                  tempSelected.remove(p.name);
-                                }
-                              });
-                            },
-                          );
-                        }),
-                      ],
+                        }
+
+                        final masterIndex =
+                            adjustedIndex - filteredGuest.length;
+                        final p = filteredMaster[masterIndex];
+                        final isSelected = tempSelected.contains(p.name);
+                        return MultiPlayerCandidateTile(
+                          name: p.name,
+                          subtitle: p.gradeName,
+                          isSelected: isSelected,
+                          accentColor: _accentColor,
+                          icon: Icons.person,
+                          onChanged: (bool? val) {
+                            setStateSheet(() {
+                              if (val == true) {
+                                tempSelected.add(p.name);
+                              } else {
+                                tempSelected.remove(p.name);
+                              }
+                            });
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],

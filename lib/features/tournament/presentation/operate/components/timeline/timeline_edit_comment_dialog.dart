@@ -84,6 +84,6 @@ class TimelineEditCommentDialog {
           ),
         ],
       ),
-    );
+    ).then((_) => controller.dispose());
   }
 }

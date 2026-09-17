@@ -36,15 +36,32 @@ void registerMySentAnnounceId(String id) {
 /// 🛡️ テスト環境用の状態リセット関数
 @visibleForTesting
 void resetAnnouncePopupManager() {
-  for (final sub in _activeSubscriptions.values) {
-    sub.cancel();
-  }
-  _activeSubscriptions.clear();
+  cancelGlobalAnnouncements();
   _shownAnnounceIds.clear();
   _isAnnounceDialogShowing = false;
   _pendingAnnounce = null;
   _pendingTarget = null;
   _mySentAnnounceIds.clear();
+}
+
+/// 🛡️ 指定された大会、または全アクティブなアナウンス購読を安全に解除する公開API
+void cancelGlobalAnnouncements({String? tournamentId}) {
+  if (tournamentId != null) {
+    final keysToRemove = _activeSubscriptions.keys
+        .where((k) => k.startsWith('${tournamentId}_'))
+        .toList();
+    for (final key in keysToRemove) {
+      _activeSubscriptions[key]?.cancel();
+      _activeSubscriptions.remove(key);
+      debugPrint('🧹 [cancelGlobalAnnouncements] アナウンス購読を明示的に解除: $key');
+    }
+  } else {
+    for (final sub in _activeSubscriptions.values) {
+      sub.cancel();
+    }
+    _activeSubscriptions.clear();
+    debugPrint('🧹 [cancelGlobalAnnouncements] 全アナウンス購読を明示的に解除');
+  }
 }
 
 /// 🌟 ダイアログを安全に表示し、閉じられた後に保留中のアナウンスがあれば連鎖起動するヘルパー

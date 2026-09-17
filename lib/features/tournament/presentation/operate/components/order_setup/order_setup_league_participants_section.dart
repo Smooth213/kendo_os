@@ -138,62 +138,66 @@ class _OrderSetupLeagueParticipantsSectionState
     String teamName,
   ) async {
     final nameController = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    try {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return showAppBottomSheet<String>(
-      context: context,
-      builder: (ctx) => AppBottomSheetContent(
-        title: teamName.isNotEmpty ? '$teamName の選手名' : '選手名の登録',
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: AppSpacing.sm),
-              AppTextField(
-                controller: nameController,
-                autofocus: true,
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : context.appColors.cardBackground,
-                ),
-                decoration: InputDecoration(
-                  labelText: '選手名（例：田中太郎）',
-                  filled: true,
-                  fillColor: isDark
-                      ? const Color(0xFF2C2C2E)
-                      : const Color(0xFFF2F2F7),
-                  border: OutlineInputBorder(borderRadius: AppRadius.small),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(
-                    ctx,
-                    TextSanitizer.clean(nameController.text),
+      return await showAppBottomSheet<String>(
+        context: context,
+        builder: (ctx) => AppBottomSheetContent(
+          title: teamName.isNotEmpty ? '$teamName の選手名' : '選手名の登録',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(
+                  controller: nameController,
+                  autofocus: true,
+                  style: TextStyle(
+                    color: isDark
+                        ? const Color(0xFFFFFFFF)
+                        : context.appColors.cardBackground,
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.themeColors.primaryAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.lg,
+                  decoration: InputDecoration(
+                    labelText: '選手名（例：田中太郎）',
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFF2F2F7),
+                    border: OutlineInputBorder(borderRadius: AppRadius.small),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(
+                      ctx,
+                      TextSanitizer.clean(nameController.text),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.themeColors.primaryAccent,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.lg,
+                      ),
+                    ),
+                    child: const Text(
+                      '決定して追加',
+                      style: TextStyle(fontWeight: AppFontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    '決定して追加',
-                    style: TextStyle(fontWeight: AppFontWeight.bold),
-                  ),
                 ),
-              ),
-              const SizedBox(height: 48),
-            ],
+                const SizedBox(height: 48),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } finally {
+      nameController.dispose();
+    }
   }
 
   @override
