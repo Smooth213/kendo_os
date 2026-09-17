@@ -29,23 +29,8 @@ jobs:
       - name: 📦 依存パッケージの解決
         run: flutter pub get
 
-      - name: 🛡️ 全15大ガバナンス個別監査の完全実行 (1/15 〜 15/15)
-        run: |
-          python3 scripts/check_file_lines.py
-          python3 scripts/check_design_tokens.py --strict
-          python3 scripts/check_kendo_score_governance.py
-          python3 scripts/check_kendo_metadata_governance.py
-          python3 scripts/check_kendo_scene_governance.py
-          python3 scripts/check_security_governance.py
-          python3 scripts/check_layout_5tier_governance.py
-          python3 scripts/check_theme_contrast_governance.py
-          python3 scripts/check_architecture_boundary_governance.py
-          python3 scripts/check_offline_resilience_governance.py
-          python3 scripts/check_test_pair_governance.py
-          python3 scripts/check_pdf_layout_safety_governance.py
-          python3 scripts/check_web_platform_safety.py
-          python3 scripts/check_tenant_isolation_governance.py
-          python3 scripts/check_rendering_safety_governance.py
+      - name: 🛡️ 全17大ガバナンス監査の完全実行 (Unified Governance Runner 1/17 〜 17/17)
+        run: python3 scripts/run_all_governance.py
 
       - name: 🧹 Dartコード・警告の全自動修復 (自動フォーマット & リント修復)
         run: |
