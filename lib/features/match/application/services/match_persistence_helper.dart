@@ -249,16 +249,16 @@ class MatchPersistenceHelper {
       } catch (_) {}
 
       if (!isViewer) {
-        for (final m in preparedMatches) {
-          final action = MatchCommandModel(
+        final actions = preparedMatches.map((m) {
+          return MatchCommandModel(
             id: const Uuid().v4(),
             type: CommandType.updateMatch,
             payload: m.toJson(),
             createdAt: DateTime.now(),
             status: CommandStatus.pending,
           );
-          await localRepo.savePendingCommand(action);
-        }
+        }).toList();
+        await localRepo.savePendingCommandsBulk(actions);
       }
 
       _ref.read(syncEngineProvider).syncNow();

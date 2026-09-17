@@ -55,6 +55,38 @@ class LocalMatchCommandStore {
         .toList();
   }
 
+  static Future<void> savePendingCommandsBulk(
+    Isar? isar,
+    List<MatchCommandModel> cmds,
+  ) async {
+    if (isar == null || cmds.isEmpty) return;
+    final entities = cmds.map((cmd) {
+      return MatchCommandEntity()
+        ..commandId = cmd.id
+        ..type = cmd.type.name
+        ..payloadJson = jsonEncode(cmd.payload)
+        ..createdAt = cmd.createdAt
+        ..status = cmd.status.name;
+    }).toList();
+
+    await isar.writeTxn(() async {
+      final cmdIds = cmds.map((c) => c.id).toList();
+      final existingEntities = await isar.matchCommandEntitys
+          .filter()
+          .anyOf(cmdIds, (q, id) => q.commandIdEqualTo(id))
+          .findAll();
+      final existingMap = {for (final e in existingEntities) e.commandId: e.id};
+
+      for (final entity in entities) {
+        final existingId = existingMap[entity.commandId];
+        if (existingId != null) {
+          entity.id = existingId;
+        }
+      }
+      await isar.matchCommandEntitys.putAll(entities);
+    });
+  }
+
   static Future<void> deletePendingCommandsForMatches(
     Isar? isar,
     Iterable<String> matchIds,
@@ -68,13 +100,17 @@ class LocalMatchCommandStore {
             .filter()
             .statusEqualTo(CommandStatus.pending.name)
             .findAll();
+        final idsToDelete = <Id>[];
         for (final cmd in cmds) {
           try {
             final map = jsonDecode(cmd.payloadJson);
             if (map is Map && matchIdSet.contains(map['id'])) {
-              await isar.matchCommandEntitys.delete(cmd.id);
+              idsToDelete.add(cmd.id);
             }
           } catch (_) {}
+        }
+        if (idsToDelete.isNotEmpty) {
+          await isar.matchCommandEntitys.deleteAll(idsToDelete);
         }
       });
     } catch (e) {

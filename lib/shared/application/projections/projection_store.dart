@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
@@ -41,14 +42,19 @@ class ProjectionStore {
         .snapshots()
         .map((snapshot) {
           if (!snapshot.exists || snapshot.data() == null) return null;
-          final match = MatchModel.fromJson(snapshot.data()!);
-          final engine = KendoRuleEngine();
-          final analysis = engine.analyzeHistory(
-            match.events,
-            match,
-            match.rule,
-          );
-          return MatchProjectionMapper.toProjection(match, analysis);
+          try {
+            final match = MatchModel.fromJson(snapshot.data()!);
+            final engine = KendoRuleEngine();
+            final analysis = engine.analyzeHistory(
+              match.events,
+              match,
+              match.rule,
+            );
+            return MatchProjectionMapper.toProjection(match, analysis);
+          } catch (e) {
+            debugPrint('⚠️ [ProjectionStore] 試合($matchId)プロジェクション変換エラー: $e');
+            return null;
+          }
         });
   }
 
@@ -68,16 +74,24 @@ class ProjectionStore {
         .collection('matches')
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final match = MatchModel.fromJson(doc.data());
-            final engine = KendoRuleEngine();
-            final analysis = engine.analyzeHistory(
-              match.events,
-              match,
-              match.rule,
-            );
-            return MatchProjectionMapper.toListProjection(match, analysis);
-          }).toList();
+          final list = <MatchListProjection>[];
+          for (final doc in snapshot.docs) {
+            try {
+              final match = MatchModel.fromJson(doc.data());
+              final engine = KendoRuleEngine();
+              final analysis = engine.analyzeHistory(
+                match.events,
+                match,
+                match.rule,
+              );
+              list.add(MatchProjectionMapper.toListProjection(match, analysis));
+            } catch (e) {
+              debugPrint(
+                '⚠️ [ProjectionStore] 試合ドキュメント(${doc.id})パース失敗をスキップ: $e',
+              );
+            }
+          }
+          return list;
         });
   }
 }

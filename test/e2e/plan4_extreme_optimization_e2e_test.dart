@@ -12,6 +12,8 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_archive_he
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/match/presentation/providers/read_announcements_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/test_isar_helper.dart';
 
@@ -322,6 +324,93 @@ void main() {
         // Isarキューが完全に消化されて空になっていること（毒薬キューによる永久ブロックゼロ）
         final pendingAfter = await isar.matchCommandEntitys.where().findAll();
         expect(pendingAfter, isEmpty);
+      },
+    );
+
+    test(
+      'E2E-6: 【保留コマンドバルク保存＆バルクパージ実証】savePendingCommandsBulk による一括書き込みと deleteAll による一括パージがアトミックに動作すること',
+      () async {
+        // 1. 複数（10件）のコマンドを一括作成
+        final cmds = List.generate(
+          10,
+          (i) => MatchCommandModel(
+            id: 'bulk_cmd_$i',
+            type: CommandType.updateMatch,
+            payload: {'id': 'bulk_match_$i', 'name': '選手_$i'},
+            createdAt: DateTime.now(),
+            status: CommandStatus.pending,
+          ),
+        );
+
+        // 2. savePendingCommandsBulk で1トランザクション一括保存
+        await localRepo.savePendingCommandsBulk(cmds);
+
+        // 3. Isarに全10件が正しく保存されたことを検証
+        final savedEntities = await isar.matchCommandEntitys.where().findAll();
+        expect(savedEntities.length, 10);
+
+        // 4. 重複IDで再保存した場合のupsert動作検証
+        final updatedCmds = [
+          MatchCommandModel(
+            id: 'bulk_cmd_0',
+            type: CommandType.updateMatch,
+            payload: {'id': 'bulk_match_0', 'name': '選手_0_更新'},
+            createdAt: DateTime.now(),
+            status: CommandStatus.pending,
+          ),
+        ];
+        await localRepo.savePendingCommandsBulk(updatedCmds);
+        final afterUpsert = await isar.matchCommandEntitys.where().findAll();
+        expect(afterUpsert.length, 10, reason: '重複IDの場合は件数が増えず更新されること');
+
+        // 5. deletePendingCommandsForMatches による一括バルクパージ（前半5件）
+        final matchIdsToPurge = List.generate(5, (i) => 'bulk_match_$i');
+        await localRepo.deletePendingCommandsForMatches(matchIdsToPurge);
+
+        final remainingAfterPurge = await isar.matchCommandEntitys
+            .where()
+            .findAll();
+        expect(
+          remainingAfterPurge.length,
+          5,
+          reason: '指定された試合の保留コマンド5件が一括削除され、残り5件となること',
+        );
+      },
+    );
+
+    test(
+      'E2E-7: 【既読アナウンスID上限トリム実証】ReadAnnouncementsNotifier が200件を超過した古いIDを自動トリムし、メモリ肥大化を完全抑止すること',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        final notifier = ReadAnnouncementsNotifier(prefs);
+
+        // 1. 250件の既読IDを順次または一括追加
+        final testIds = List.generate(250, (i) => 'announce_id_$i');
+        await notifier.markAllAsRead(testIds);
+
+        // 2. 状態の件数が最大200件にトリムされていること
+        expect(notifier.state.length, 200);
+
+        // 3. FIFO/LRUにより、古い50件（0〜49）が切り捨てられ、最新200件（50〜249）が保持されていること
+        expect(notifier.state.contains('announce_id_0'), isFalse);
+        expect(notifier.state.contains('announce_id_49'), isFalse);
+        expect(notifier.state.contains('announce_id_50'), isTrue);
+        expect(notifier.state.contains('announce_id_249'), isTrue);
+
+        // 4. SharedPreferencesにも正確に200件で永続化されていること
+        final persisted = prefs.getStringList('kendo_os_read_announcements');
+        expect(persisted, isNotNull);
+        expect(persisted!.length, 200);
+        expect(persisted.first, 'announce_id_50');
+        expect(persisted.last, 'announce_id_249');
+
+        // 5. 単一追加（markAsRead）時にも上限200件が維持されること
+        await notifier.markAsRead('announce_id_250');
+        expect(notifier.state.length, 200);
+        expect(notifier.state.contains('announce_id_50'), isFalse);
+        expect(notifier.state.last, 'announce_id_250');
       },
     );
   });

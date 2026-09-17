@@ -377,6 +377,9 @@ class LocalMatchRepository {
   Future<void> savePendingCommand(MatchCommandModel cmd) =>
       LocalMatchCommandStore.savePendingCommand(_isar, cmd);
 
+  Future<void> savePendingCommandsBulk(List<MatchCommandModel> cmds) =>
+      LocalMatchCommandStore.savePendingCommandsBulk(_isar, cmds);
+
   Future<void> deleteCommand(String id) =>
       LocalMatchCommandStore.deleteCommand(_isar, id);
 

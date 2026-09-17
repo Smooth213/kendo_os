@@ -15,6 +15,14 @@ final readAnnouncementsProvider =
 class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
   final SharedPreferences _prefs;
   static const _key = 'kendo_os_read_announcements';
+  static const int maxReadCount = 200;
+
+  List<String> _trimIds(List<String> ids) {
+    if (ids.length > maxReadCount) {
+      return ids.sublist(ids.length - maxReadCount);
+    }
+    return ids;
+  }
 
   ReadAnnouncementsNotifier(this._prefs)
     : super(_prefs.getStringList(_key) ?? []) {
@@ -61,8 +69,9 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
         );
         if (cloudIds.isNotEmpty) {
           final merged = Set<String>.from(state)..addAll(cloudIds);
-          state = merged.toList();
-          await _prefs.setStringList(_key, state);
+          final trimmed = _trimIds(merged.toList());
+          state = trimmed;
+          await _prefs.setStringList(_key, trimmed);
         }
       }
     } catch (e) {
@@ -72,7 +81,7 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
 
   Future<void> markAsRead(String id) async {
     if (!state.contains(id)) {
-      final updated = [...state, id];
+      final updated = _trimIds([...state, id]);
       state = updated;
       await _prefs.setStringList(_key, updated);
       _syncToCloud([id]);
@@ -89,8 +98,9 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
       }
     }
     if (newlyAdded.isNotEmpty) {
-      state = updated;
-      await _prefs.setStringList(_key, updated);
+      final trimmed = _trimIds(updated);
+      state = trimmed;
+      await _prefs.setStringList(_key, trimmed);
       _syncToCloud(newlyAdded);
     }
   }

@@ -64,6 +64,9 @@ void main() {
         () => mockLocalRepo.savePendingCommand(any()),
       ).thenAnswer((_) async {});
       when(
+        () => mockLocalRepo.savePendingCommandsBulk(any()),
+      ).thenAnswer((_) async {});
+      when(
         () => mockLocalRepo.getPendingCommands(),
       ).thenAnswer((_) async => <MatchCommandModel>[]);
       when(

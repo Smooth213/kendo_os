@@ -40,10 +40,23 @@ class SyncEngine {
   // ダウンストリーム監視用のサブスクリプション
   StreamSubscription? _matchesSubscription;
   StreamSubscription? _bunaiksenSubscription;
+  AppLifecycleListener? _lifecycleListener;
 
   SyncEngine(this._ref) {
     // 🌟 Firestoreダウンストリーム監視の初期設定
     _setupFirestoreDownstream();
+    _setupLifecycleListener();
+  }
+
+  void _setupLifecycleListener() {
+    _lifecycleListener = AppLifecycleListener(
+      onPause: _stopSyncLoop,
+      onInactive: _stopSyncLoop,
+      onHide: _stopSyncLoop,
+      onResume: () {
+        syncNow();
+      },
+    );
   }
 
   void _startSyncLoop() {
@@ -207,6 +220,11 @@ class SyncEngine {
     processQueue();
   }
 
+  /// 即時同期のトリガー
+  Future<void> syncNow() async {
+    resetBackoffAndProcess();
+  }
+
   Future<void> processQueue() async {
     if (_isProcessing) return;
 
@@ -330,6 +348,7 @@ class SyncEngine {
   }
 
   void dispose() {
+    _lifecycleListener?.dispose();
     _debounceSyncTimer?.cancel();
     _syncTimer?.cancel();
     _matchesSubscription?.cancel();

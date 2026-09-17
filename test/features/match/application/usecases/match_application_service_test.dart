@@ -55,6 +55,9 @@ void main() {
     when(
       () => mockLocalRepo.savePendingCommand(any()),
     ).thenAnswer((_) async {});
+    when(
+      () => mockLocalRepo.savePendingCommandsBulk(any()),
+    ).thenAnswer((_) async {});
     when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
 
     // ProviderContainer で使用するプロバイダをモックに差し替え

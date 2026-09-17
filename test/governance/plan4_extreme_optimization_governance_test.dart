@@ -305,6 +305,151 @@ void main() {
           );
         },
       );
+
+      test(
+        '12. [SyncEngine待機コールドスリープ規約] SyncEngine に AppLifecycleListener が配備され、待機時にタイマーループが停止すること',
+        () {
+          final syncEngineFile = File(
+            'lib/shared/infrastructure/repository/sync_engine.dart',
+          );
+          expect(syncEngineFile.existsSync(), isTrue);
+          final content = syncEngineFile.readAsStringSync();
+
+          expect(
+            content.contains('AppLifecycleListener('),
+            isTrue,
+            reason: 'SyncEngine に AppLifecycleListener が配備されていなければならない',
+          );
+          expect(
+            content.contains('onPause: _stopSyncLoop'),
+            isTrue,
+            reason: 'paused時にタイマーループを停止しなければならない',
+          );
+          expect(
+            content.contains('_lifecycleListener?.dispose()'),
+            isTrue,
+            reason:
+                'SyncEngine の dispose() で _lifecycleListener が破棄されていなければならない',
+          );
+        },
+      );
+
+      test('13. [保留コマンド一括保存規約] savePendingCommandsBulk が配備され、単一トランザクションで一括保存されること', () {
+        final storeFile = File(
+          'lib/shared/infrastructure/repository/local_match_command_store.dart',
+        );
+        final repoFile = File(
+          'lib/shared/infrastructure/repository/local_match_repository.dart',
+        );
+        final helperFile = File(
+          'lib/features/match/application/services/match_persistence_helper.dart',
+        );
+
+        expect(storeFile.existsSync(), isTrue);
+        expect(repoFile.existsSync(), isTrue);
+        expect(helperFile.existsSync(), isTrue);
+
+        final storeContent = storeFile.readAsStringSync();
+        final repoContent = repoFile.readAsStringSync();
+        final helperContent = helperFile.readAsStringSync();
+
+        expect(
+          storeContent.contains('savePendingCommandsBulk'),
+          isTrue,
+          reason:
+              'LocalMatchCommandStore に savePendingCommandsBulk が配備されていなければならない',
+        );
+        expect(
+          storeContent.contains('matchCommandEntitys.putAll'),
+          isTrue,
+          reason: 'savePendingCommandsBulk 内で一括 putAll が使用されていなければならない',
+        );
+        expect(
+          repoContent.contains('savePendingCommandsBulk'),
+          isTrue,
+          reason:
+              'LocalMatchRepository に savePendingCommandsBulk が公開されていなければならない',
+        );
+        expect(
+          helperContent.contains('savePendingCommandsBulk'),
+          isTrue,
+          reason:
+              'MatchPersistenceHelper で一括 savePendingCommandsBulk が使用されていなければならない',
+        );
+      });
+
+      test(
+        '14. [TextEditingControllerインライン生成禁止規約] build() 内での直接生成が排除され、Stateで適切に管理されていること',
+        () {
+          final searchHeaderFile = File(
+            'lib/shared/widgets/app_search_header.dart',
+          );
+          final multiPlayerFile = File(
+            'lib/shared/widgets/multi_player_select_input.dart',
+          );
+
+          expect(searchHeaderFile.existsSync(), isTrue);
+          expect(multiPlayerFile.existsSync(), isTrue);
+
+          final searchContent = searchHeaderFile.readAsStringSync();
+          final multiContent = multiPlayerFile.readAsStringSync();
+
+          expect(
+            searchContent.contains('StatefulWidget'),
+            isTrue,
+            reason: 'AppSearchHeader はコントローラー保持のため StatefulWidget でなければならない',
+          );
+          expect(
+            searchContent.contains('_controller.dispose()'),
+            isTrue,
+            reason: 'AppSearchHeader は dispose() でコントローラーを解放しなければならない',
+          );
+          expect(
+            multiContent.contains('_displayController.dispose()'),
+            isTrue,
+            reason: 'MultiPlayerSelectInput は dispose() でコントローラーを解放しなければならない',
+          );
+        },
+      );
+
+      test(
+        '15. [SoundServiceライフサイクル解放規約] soundServiceProvider で ref.onDispose による解放が行われていること',
+        () {
+          final soundFile = File(
+            'lib/shared/application/services/sound_service.dart',
+          );
+          expect(soundFile.existsSync(), isTrue);
+          final content = soundFile.readAsStringSync();
+
+          expect(
+            content.contains('ref.onDispose(() => service.dispose())'),
+            isTrue,
+            reason: 'soundServiceProvider で ref.onDispose によるメモリ・リソース解放が必須である',
+          );
+        },
+      );
+
+      test(
+        '16. [既読ID上限トリム規約] ReadAnnouncementsNotifier で上限200件のトリムガードが存在すること',
+        () {
+          final readAnnounceFile = File(
+            'lib/features/match/presentation/providers/read_announcements_provider.dart',
+          );
+          expect(readAnnounceFile.existsSync(), isTrue);
+          final content = readAnnounceFile.readAsStringSync();
+
+          expect(
+            content.contains('maxReadCount') && content.contains('200'),
+            isTrue,
+            reason: 'ReadAnnouncementsNotifier には200件上限トリムが定義されていなければならない',
+          );
+          expect(
+            content.contains('_trimIds'),
+            isTrue,
+            reason: 'ReadAnnouncementsNotifier は _trimIds による件数制御を行わなければならない',
+          );
+        },
+      );
     },
   );
 }

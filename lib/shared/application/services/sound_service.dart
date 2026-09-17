@@ -4,9 +4,10 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
-final soundServiceProvider = Provider((ref) {
+final soundServiceProvider = Provider<SoundService>((ref) {
   final service = SoundService();
   service.configureAudio(ref.read(settingsProvider).ignoreMannerMode);
+  ref.onDispose(() => service.dispose());
   return service;
 });
 

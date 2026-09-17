@@ -156,6 +156,18 @@ void listenGlobalAnnouncements(
       return; // 🛡️ 防衛線：既にこの画面種別でストリーム購読済みの場合は即時リターン（重複を回避）
     }
 
+    // 🛡️ 自律クリーンアップ：現在の tournamentId と異なる過去の大会の監視ストリームを自動破棄
+    final staleKeys = _activeSubscriptions.keys
+        .where((k) => !k.startsWith('${tournamentId}_'))
+        .toList();
+    for (final staleKey in staleKeys) {
+      debugPrint(
+        '🧹 [listenGlobalAnnouncements] 過去の大会の監視ストリームを自律クリーンアップ: $staleKey',
+      );
+      _activeSubscriptions[staleKey]?.cancel();
+      _activeSubscriptions.remove(staleKey);
+    }
+
     // 🔔 プッシュ通知受信用にトピック購読（Native）またはFCMトークン保存（Web）を実行
     ref
         .read(notificationServiceProvider)

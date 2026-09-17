@@ -33,6 +33,37 @@ class MultiPlayerSelectInput extends ConsumerStatefulWidget {
 
 class _MultiPlayerSelectInputState
     extends ConsumerState<MultiPlayerSelectInput> {
+  late final TextEditingController _displayController;
+
+  String _getDisplayText(List<String> selected) {
+    return selected.isEmpty
+        ? ''
+        : '${selected.length}名選択中: ${selected.join(", ")}';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _displayController = TextEditingController(
+      text: _getDisplayText(widget.initialSelected),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant MultiPlayerSelectInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newText = _getDisplayText(widget.initialSelected);
+    if (_displayController.text != newText) {
+      _displayController.text = newText;
+    }
+  }
+
+  @override
+  void dispose() {
+    _displayController.dispose();
+    super.dispose();
+  }
+
   Color get _accentColor {
     final themeColors = Theme.of(context).extension<AppThemeColors>();
     if (widget.accentColor == const Color(0xFF8B0000) && themeColors != null) {
@@ -346,15 +377,10 @@ class _MultiPlayerSelectInputState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // 入力欄に「何人選択されているか」と「選択した名前」をサマリー表示する
-    final displayText = widget.initialSelected.isEmpty
-        ? ''
-        : '${widget.initialSelected.length}名選択中: ${widget.initialSelected.join(", ")}';
-
     return AppTextField(
       readOnly: true, // キーボードは出さずボトムシートを開く
       onTap: _showMultiSelectSheet,
-      controller: TextEditingController(text: displayText),
+      controller: _displayController,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: 'タップしてメンバーを選択...',

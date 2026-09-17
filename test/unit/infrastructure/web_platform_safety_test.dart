@@ -212,6 +212,9 @@ void main() {
       when(
         () => mockLocalRepo.savePendingCommand(any()),
       ).thenAnswer((_) async {});
+      when(
+        () => mockLocalRepo.savePendingCommandsBulk(any()),
+      ).thenAnswer((_) async {});
       when(() => mockSyncEngine.syncNow()).thenAnswer((_) async {});
       when(() => mockNewSyncEngine.processQueue()).thenAnswer((_) async {});
 
