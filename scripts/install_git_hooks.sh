@@ -29,7 +29,7 @@ dart format .
 
 git add -A
 
-echo "🚀 kendo OS 全29大ガバナンス個別監査を実行中..."
+echo "🚀 kendo OS 全17大ガバナンス個別監査を実行中..."
 
 python3 scripts/run_all_governance.py || exit 1
 
@@ -49,7 +49,7 @@ python3 scripts/run_flutter_tests.py --skip-governance || {
     exit 1
 }
 
-echo "✅ pre-commit 全29大ガバナンス監査・静的解析・全テスト・フォーマット完了"
+echo "✅ pre-commit 全17大ガバナンス監査・静的解析・全テスト・フォーマット完了"
 exit 0
 EOF
 
@@ -59,10 +59,10 @@ cat << 'EOF' > "$PRE_PUSH_FILE"
 # ==============================================================================
 # 🥋 Kendo OS - pre-push フック (重複テスト完全排除・高速プッシュ)
 # ==============================================================================
-# 💡 全29大ガバナンス監査・静的解析・全単体テストは pre-commit で100%保証済みのため、
+# 💡 全17大ガバナンス監査・静的解析・全単体テストは pre-commit で100%保証済みのため、
 #    プッシュ時の2重実行をスキップし、即座に安全にリモートへ送信します。
 
-echo "🚀 [pre-push] コミット時品質ゲート（29大監査＋全テスト100%PASS）確認済み ➔ 即時プッシュ実行"
+echo "🚀 [pre-push] コミット時品質ゲート（17大監査＋全テスト100%PASS）確認済み ➔ 即時プッシュ実行"
 exit 0
 EOF
 
@@ -70,4 +70,4 @@ chmod +x "$PRE_COMMIT_FILE"
 chmod +x "$PRE_PUSH_FILE"
 
 echo "✅ [PASS] Git フック (pre-commit & pre-push) のインストールが完了しました！"
-echo "💡 以降、git commit 時に全29大ガバナンス＋静的解析＋全テストが自動監査・完全保証されます。"
+echo "💡 以降、git commit 時に全17大ガバナンス＋静的解析＋全テストが自動監査・完全保証されます。"

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全34大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全17大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全34大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全17大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+- 第1部：ドメイン・プロダクト品質規約（第1条〜第8条）
+- 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条）
 """
-
 
 import argparse
 import os
@@ -14,181 +15,119 @@ import sys
 import time
 
 AUDIT_DEFINITIONS = [
+    # ==========================================================================
+    # 【第1部：ドメイン・プロダクト品質規約】（第1条〜第8条）
+    # ==========================================================================
     {
         "id": 1,
-        "name": "🌐 Web/Native クロスプラットフォーム完全同一動作保証規約",
-        "cmd": ["python3", "scripts/check_cross_platform_parity_governance.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "🥋 剣道公式ルール・スコア・表記・配列 永続保証規約",
+        "cmd": ["python3", "scripts/check_gov_01_kendo_core_rules.py"],
     },
     {
         "id": 2,
-        "name": "📏 コード行数・アーキテクチャ (Max 500 lines)",
-        "cmd": ["python3", "scripts/check_file_lines.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "📏 コード品質・行数制限 (Max 500 lines) ＆ アーキテクチャ境界規約",
+        "cmd": ["python3", "scripts/check_gov_02_code_quality_and_architecture.py"],
     },
     {
         "id": 3,
-        "name": "🎨 デザインシステム トークン規約",
-        "cmd": ["python3", "scripts/check_design_tokens.py", "--strict"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "🎨 デザインシステム・UIレイアウト 5段構造 ＆ テーマ視認性規約",
+        "cmd": ["python3", "scripts/check_gov_03_design_and_layout.py"],
     },
     {
         "id": 4,
-        "name": "🥋 剣道公式スコア表示＆PDF描画規約",
-        "cmd": ["python3", "scripts/check_kendo_score_governance.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "🔒 セキュリティ・権限ロール ＆ マルチテナント空間隔離規約",
+        "cmd": ["python3", "scripts/check_gov_04_security_and_tenancy.py"],
     },
     {
         "id": 5,
-        "name": "📛 剣道メタデータ（シーン・選手名・結果タグ）規約",
-        "cmd": ["python3", "scripts/check_kendo_metadata_governance.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "🌐 Web/PWA・クロスプラットフォーム同一動作 ＆ 入力同期規約",
+        "cmd": ["python3", "scripts/check_gov_05_web_cross_platform.py"],
     },
     {
         "id": 6,
-        "name": "⚔️ 試合シーン（本戦・錬成・申合せ）表記＆配色規約",
-        "cmd": ["python3", "scripts/check_kendo_scene_governance.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "📄 UIレンダリング安全・PDF組版 ＆ 常設ドック規約",
+        "cmd": ["python3", "scripts/check_gov_06_rendering_and_pdf.py"],
     },
     {
         "id": 7,
-        "name": "🔒 セキュリティ＆ロール露出規制規約",
-        "cmd": ["python3", "scripts/check_security_governance.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "📚 大会運用マニュアル ＆ 独立ルール安全フォールバック規約",
+        "cmd": ["python3", "scripts/check_gov_07_manual_and_rules.py"],
     },
     {
         "id": 8,
-        "name": "🏰 UIレイアウト 5段構造永続保持規約",
-        "cmd": ["python3", "scripts/check_layout_5tier_governance.py"],
+        "part": "第1部: ドメイン・プロダクト品質",
+        "name": "🔗 外部連携・観客用共有URL ＆ ライブ配信直行規約",
+        "cmd": ["python3", "scripts/check_gov_08_external_share_and_stream.py"],
     },
+    # ==========================================================================
+    # 【第2部：極限最適化・低負荷・絶対安定性規約】（第9条〜第17条）
+    # ==========================================================================
     {
         "id": 9,
-        "name": "🌓 テーマ視認性・白飛び黒潰れゼロ規約",
-        "cmd": ["python3", "scripts/check_theme_contrast_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "⚡ UI再描画局所化 ＆ Jank防止規約",
+        "cmd": ["python3", "scripts/check_gov_09_ui_rebuild.py"],
     },
     {
         "id": 10,
-        "name": "🏗️ アーキテクチャ境界＆疎結合規約",
-        "cmd": ["python3", "scripts/check_architecture_boundary_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "🎨 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約",
+        "cmd": ["python3", "scripts/check_gov_10_rendering_boundary.py"],
     },
     {
         "id": 11,
-        "name": "🌪️ 現場障害耐性・オフライン・耐久規約",
-        "cmd": ["python3", "scripts/check_offline_resilience_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "📜 リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約",
+        "cmd": ["python3", "scripts/check_gov_11_list_virtualization.py"],
     },
     {
         "id": 12,
-        "name": "🧪 新設ファイル・テストペア対生成規約",
-        "cmd": ["python3", "scripts/check_test_pair_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "🧵 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約",
+        "cmd": ["python3", "scripts/check_gov_12_isolate_and_concurrency.py"],
     },
     {
         "id": 13,
-        "name": "📄 PDF組版・長文字列あふれ・改ページ安全規約",
-        "cmd": ["python3", "scripts/check_pdf_layout_safety_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "🔋 端末低負荷・省電力・タイマー沈黙 ＆ サーマル適応制御規約",
+        "cmd": ["python3", "scripts/check_gov_13_low_load_and_timer.py"],
     },
     {
         "id": 14,
-        "name": "🌐 Web/PWA プラットフォーム境界＆安全規約",
-        "cmd": ["python3", "scripts/check_web_platform_safety.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "🧹 メモリ保護・LRU上限 ＆ リソース明示解放（リーク根絶）規約",
+        "cmd": ["python3", "scripts/check_gov_14_memory_and_lifecycle.py"],
     },
     {
         "id": 15,
-        "name": "🏢 マルチテナント道場・大会空間 隔離規約",
-        "cmd": ["python3", "scripts/check_tenant_isolation_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約",
+        "cmd": ["python3", "scripts/check_gov_15_io_batch_and_history.py"],
     },
     {
         "id": 16,
-        "name": "🛡️ 全ページ UIゼロレンダリングエラー保証規約",
-        "cmd": ["python3", "scripts/check_rendering_safety_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約",
+        "cmd": ["python3", "scripts/check_gov_16_sync_and_crdt.py"],
     },
     {
         "id": 17,
-        "name": "📚 アプリ内マニュアル＆取説整合性規約",
-        "cmd": ["python3", "scripts/check_manual_governance.py"],
-    },
-    {
-        "id": 18,
-        "name": "🗂️ 独立カテゴリ・ルール設定フォールバック安全規約",
-        "cmd": ["python3", "scripts/check_category_rules_governance.py"],
-    },
-    {
-        "id": 19,
-        "name": "📌 ドック常設ミニパネル・オーバーレイ解放規約",
-        "cmd": ["python3", "scripts/check_dock_lifecycle_governance.py"],
-    },
-    {
-        "id": 20,
-        "name": "📱 iOS PWA タッチ座標同期＆ロール選択画面規約",
-        "cmd": ["python3", "scripts/check_ios_pwa_touch_sync_governance.py"],
-    },
-    {
-        "id": 21,
-        "name": "🔗 観客用共有URL・ルーティング・パラメータ整合性規約",
-        "cmd": ["python3", "scripts/check_share_url_governance.py"],
-    },
-    {
-        "id": 22,
-        "name": "🛡️ BAND LIVE配信連携・外部直行遷移 ＆ 白紙ブラウザ残留ゼロ規約",
-        "cmd": ["python3", "scripts/check_band_live_integration_governance.py"],
-    },
-    {
-        "id": 23,
-        "name": "🥋 団体戦スコア順序（先鋒〜大将・代表戦）剣道標準配列 永続保証規約",
-        "cmd": ["python3", "scripts/check_team_match_order_governance.py"],
-    },
-    {
-        "id": 24,
-        "name": "🔋 端末サーマル冷却＆省電力モード管理（温度＞手動＞自動 ガバナンス永続保証規約）",
-        "cmd": ["python3", "scripts/check_thermal_power_governance.py"],
-    },
-    {
-        "id": 25,
-        "name": "⚡ UIレスポンス高速化・局所再描画・非同期バックオフ 永続保証規約",
-        "cmd": ["python3", "scripts/check_ui_performance_governance.py"],
-    },
-    {
-        "id": 26,
-        "name": "🔋 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護 永続保証規約",
-        "cmd": ["python3", "scripts/check_low_load_governance.py"],
-    },
-    {
-        "id": 27,
-        "name": "🛡️ 堅牢性・同期整合性・データ完全性 永続保証規約",
-        "cmd": ["python3", "scripts/check_robustness_governance.py"],
-    },
-    {
-        "id": 28,
-        "name": "⚡ UI極限軽快化・動的ProviderScope排除＆I/Oバッチ集約 永続保証規約",
-        "cmd": ["python3", "scripts/check_extreme_responsiveness_governance.py"],
-    },
-    {
-        "id": 29,
-        "name": "🛡️ 絶対的安定性・同期無限ループ根絶＆データ消失ゼロ 永続保証規約",
-        "cmd": ["python3", "scripts/check_stability_governance.py"],
-    },
-    {
-        "id": 30,
-        "name": "⚡ 極限高速化・UIスレッドIsolate完全分離＆ゼロ遅延即応 永続保証規約",
-        "cmd": ["python3", "scripts/check_speed_and_isolate_governance.py"],
-    },
-    {
-        "id": 31,
-        "name": "🗃️ 長期イベント履歴分割・全件復元・孤立チャンク防止規約",
-        "cmd": ["python3", "scripts/check_event_history_governance.py"],
-    },
-    {
-        "id": 32,
-        "name": "🛡️ 4大極限最適化・安定化（Staleパージ・ルート再描画防止・待機時タイマー沈黙）永続保証規約",
-        "cmd": ["python3", "scripts/check_extreme_optimization_governance.py"],
-    },
-    {
-        "id": 33,
-        "name": "🛡️ 極限最適化・低負荷・絶対安定性 完走永続保証規約",
-        "cmd": ["python3", "scripts/check_plan5_perfection_governance.py"],
-    },
-    {
-        "id": 34,
-        "name": "🛡️ Plan 7 極限最適化・低負荷・絶対安定性 完走永続保証規約",
-        "cmd": ["python3", "scripts/check_plan7_perfection_governance.py"],
+        "part": "第2部: 極限最適化・低負荷・絶対安定性",
+        "name": "🛡️ ツインエンジン自己修復・現場障害耐性 ＆ 完全耐障害性規約",
+        "cmd": ["python3", "scripts/check_gov_17_resilience_and_twin.py"],
     },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全34大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜34）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全17大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜17）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
@@ -199,19 +138,25 @@ def main():
             print(f"❌ 監査番号 {args.only} は存在しません。(1〜{len(AUDIT_DEFINITIONS)})")
             sys.exit(1)
 
-    print("=" * 72)
+    print("=" * 76)
     print(f" 🥋 Kendo OS - 全{len(AUDIT_DEFINITIONS)}大ガバナンス監査 統合ランナー (Unified Governance Runner)")
-    print("=" * 72)
+    print("=" * 76)
     print(f" 実行対象: {len(target_audits)} 項目")
-    print("-" * 72)
+    print("-" * 76)
 
     results = []
     total_start = time.time()
+    current_part = None
 
     for audit in target_audits:
         audit_id = audit["id"]
         audit_name = audit["name"]
+        audit_part = audit["part"]
         cmd = audit["cmd"]
+
+        if audit_part != current_part and not args.only:
+            current_part = audit_part
+            print(f"\n【{current_part}】")
 
         total_count = len(AUDIT_DEFINITIONS)
         if args.verbose:
@@ -228,7 +173,7 @@ def main():
                 text=True,
             )
             duration = time.time() - start_time
-            passed = res.returncode == 0
+            passed = (res.returncode == 0)
 
             if passed:
                 print(f"🟢 PASS ({duration:.1f}s)")
@@ -263,23 +208,23 @@ def main():
     total_duration = time.time() - total_start
     all_passed = all(r["passed"] for r in results)
 
-    print("-" * 72)
+    print("\n" + "=" * 76)
     print(f" 📊 【全{len(results)}大ガバナンス監査 総合サマリーレポート】")
-    print("-" * 72)
+    print("=" * 76)
 
     for r in results:
         badge = "🟢 PASS" if r["passed"] else "🔴 FAIL"
         print(f"  {badge} | 第{r['id']:2d}条 | {r['duration']:4.1f}s | {r['name']}")
 
-    print("=" * 72)
+    print("=" * 76)
     if all_passed:
         print(f" 🎉 祝！全{len(results)}項目 ガバナンス監査 100% 完全合格！ (総所要時間: {total_duration:.1f}s)")
-        print("=" * 72)
+        print("=" * 76)
         sys.exit(0)
     else:
         failed_count = sum(1 for r in results if not r["passed"])
         print(f" 🚨 警告: {failed_count} 件のガバナンス違反が検出されました。 (総所要時間: {total_duration:.1f}s)")
-        print("=" * 72)
+        print("=" * 76)
         sys.exit(1)
 
 if __name__ == "__main__":
