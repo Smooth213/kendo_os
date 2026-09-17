@@ -9,27 +9,22 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/twin_match_persistence_helper.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import '../../../helpers/test_isar_helper.dart';
 
 void main() {
+  late TestIsarContext isarContext;
   late Isar isar;
   late LocalMatchRepository repository;
-  late Directory isarDirectory;
   late Directory snapshotDirectory;
 
   setUpAll(() async {
-    try {
-      await Isar.initializeIsarCore(download: true);
-    } catch (_) {}
-
-    isarDirectory = Directory.systemTemp.createTempSync('isar_twin_repo_');
+    isarContext = await TestIsarHelper.openContext(
+      schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
+      prefix: 'isar_twin_repo',
+    );
+    isar = isarContext.isar;
     snapshotDirectory = Directory.systemTemp.createTempSync(
       'snapshot_twin_repo_',
-    );
-    isar = await Isar.open(
-      [MatchEntitySchema, MatchEventArchiveEntitySchema],
-      directory: isarDirectory.path,
-      name: 'twin_behavior_${DateTime.now().microsecondsSinceEpoch}',
-      inspector: false,
     );
     repository = LocalMatchRepository(isar);
     TwinMatchPersistenceHelper.customDirectory = snapshotDirectory;
@@ -39,17 +34,14 @@ void main() {
   tearDownAll(() async {
     TwinMatchPersistenceHelper.customDirectory = null;
     TwinMatchPersistenceHelper.isWebOverride = null;
-    if (isar.isOpen) await isar.close(deleteFromDisk: true);
-    if (isarDirectory.existsSync()) {
-      isarDirectory.deleteSync(recursive: true);
-    }
+    await isarContext.dispose();
     if (snapshotDirectory.existsSync()) {
       snapshotDirectory.deleteSync(recursive: true);
     }
   });
 
   setUp(() async {
-    await isar.writeTxn(() => isar.clear());
+    await isarContext.clear();
     for (final file in snapshotDirectory.listSync().whereType<File>()) {
       file.deleteSync();
     }

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
@@ -65,13 +65,61 @@ class DockTimerState {
 class DockTimerNotifier extends StateNotifier<DockTimerState> {
   final Ref _ref;
   Timer? _timer;
+  AppLifecycleListener? _lifecycleListener;
+  DateTime? _lastBackgroundTime;
 
-  DockTimerNotifier(this._ref) : super(const DockTimerState());
+  DockTimerNotifier(this._ref) : super(const DockTimerState()) {
+    try {
+      _lifecycleListener = AppLifecycleListener(
+        onStateChange: (lifecycleState) {
+          if (lifecycleState == AppLifecycleState.paused ||
+              lifecycleState == AppLifecycleState.inactive ||
+              lifecycleState == AppLifecycleState.hidden) {
+            _enterColdSleep();
+          } else if (lifecycleState == AppLifecycleState.resumed) {
+            _resumeFromColdSleep();
+          }
+        },
+      );
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
+    _lifecycleListener?.dispose();
     _timer?.cancel();
     super.dispose();
+  }
+
+  /// 🔋 【待機時CPU起床ゼロ】バックグラウンド待機時の完全コールドスリープ
+  void _enterColdSleep() {
+    if (state.isRunning) {
+      _lastBackgroundTime = DateTime.now();
+      _timer?.cancel();
+    }
+  }
+
+  /// 🔋 【絶対時刻同期補正】フォアグラウンド復帰時の実時間差分補正＆タイマー再開
+  void _resumeFromColdSleep() {
+    if (state.isRunning && _lastBackgroundTime != null) {
+      final elapsed = DateTime.now().difference(_lastBackgroundTime!).inSeconds;
+      _lastBackgroundTime = null;
+
+      if (state.mode == DockTimerMode.countdown) {
+        final newRemaining = state.remainingSeconds - elapsed;
+        if (newRemaining > 0) {
+          state = state.copyWith(remainingSeconds: newRemaining);
+          _startPeriodicTimer();
+        } else {
+          state = state.copyWith(remainingSeconds: 0);
+          _onCountdownFinished();
+        }
+      } else {
+        final newElapsed = state.elapsedSeconds + elapsed;
+        state = state.copyWith(elapsedSeconds: newElapsed);
+        _startPeriodicTimer();
+      }
+    }
   }
 
   /// クラウドから復元された初期タイマー秒数を反映（未実行時のみ）
@@ -136,6 +184,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
   void start() {
     if (state.isRunning) return;
     _timer?.cancel();
+    _lastBackgroundTime = null;
 
     // 終了状態からの再開ならリセット
     if (state.mode == DockTimerMode.countdown && state.remainingSeconds <= 0) {
@@ -148,6 +197,11 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
     state = state.copyWith(isRunning: true, isFinished: false);
     AppHaptics.medium();
 
+    _startPeriodicTimer();
+  }
+
+  void _startPeriodicTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (state.mode == DockTimerMode.countdown) {
         if (state.remainingSeconds > 1) {
@@ -164,6 +218,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
   /// 一時停止
   void pause() {
     _timer?.cancel();
+    _lastBackgroundTime = null;
     state = state.copyWith(isRunning: false);
     AppHaptics.light();
   }
@@ -171,6 +226,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
   /// リセット
   void reset() {
     _timer?.cancel();
+    _lastBackgroundTime = null;
     state = state.copyWith(
       remainingSeconds: state.initialSeconds,
       elapsedSeconds: 0,

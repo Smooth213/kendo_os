@@ -18,6 +18,7 @@ import 'package:kendo_os/main.dart' show globalConnectivityProvider;
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import '../helpers/test_isar_helper.dart';
 
 class FakePathProviderPlatform extends Fake
     with MockPlatformInterfaceMixin
@@ -205,9 +206,9 @@ void main() {
     // 2. Data Persistence Test: Isar保存確約と緊急バックアップ (通常のtestを使用しハングを根治)
     // ==========================================
     group('Data Persistence Tests', () {
+      late TestIsarContext isarContext;
       late Isar isar;
       late LocalMatchRepository repository;
-      late Directory tempDir;
       late Directory documentsDir;
 
       setUpAll(() async {
@@ -225,13 +226,6 @@ void main() {
       });
 
       setUp(() async {
-        try {
-          await Isar.initializeIsarCore(download: true);
-        } catch (_) {}
-
-        tempDir = Directory.systemTemp.createTempSync(
-          'isar_offline_persistence_test_',
-        );
         documentsDir = Directory.systemTemp.createTempSync('documents_mock_');
 
         // path_provider を FakePathProviderPlatform でモックする
@@ -239,23 +233,16 @@ void main() {
           documentsDir.path,
         );
 
-        isar = await Isar.open(
-          [MatchEntitySchema, MatchEventArchiveEntitySchema],
-          directory: tempDir.path,
-          name:
-              'offline_resilience_test_db_${DateTime.now().microsecondsSinceEpoch}',
-          inspector: false,
+        isarContext = await TestIsarHelper.openContext(
+          schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
+          prefix: 'isar_offline_persistence',
         );
+        isar = isarContext.isar;
         repository = LocalMatchRepository(isar);
       });
 
       tearDown(() async {
-        if (isar.isOpen) {
-          await isar.close(deleteFromDisk: true);
-        }
-        if (tempDir.existsSync()) {
-          tempDir.deleteSync(recursive: true);
-        }
+        await isarContext.dispose();
         if (documentsDir.existsSync()) {
           documentsDir.deleteSync(recursive: true);
         }

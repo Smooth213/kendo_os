@@ -3,58 +3,38 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'dart:io';
 
-// ※ プロジェクトの実際のパスに合わせてインポートを調整してください
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import '../../../helpers/test_isar_helper.dart';
 
 void main() {
   group('LocalMatchRepository (Isar Database) Tests', () {
+    late TestIsarContext isarContext;
     late Isar isar;
     late LocalMatchRepository repository;
-    late Directory tempDir;
 
-    // =========================================================================
-    // 【CI環境対応】Isarの安全な初期化（二重起動・衝突を完全防止）
-    // =========================================================================
     setUpAll(() async {
-      try {
-        await Isar.initializeIsarCore(download: true);
-      } catch (_) {}
-
-      tempDir = Directory.systemTemp.createTempSync('isar_repo_test_');
-      isar = await Isar.open(
-        [
+      isarContext = await TestIsarHelper.openContext(
+        schemas: [
           MatchEntitySchema,
           MatchEventArchiveEntitySchema,
           MatchCommandEntitySchema,
         ],
-        directory: tempDir.path,
-        name: 'repo_test_db_${DateTime.now().microsecondsSinceEpoch}',
-        inspector: false, // CI環境でのポート衝突を防ぐためインスペクターは無効化
+        prefix: 'isar_repo_test',
       );
-
-      // テスト対象のリポジトリをインスタンス化
+      isar = isarContext.isar;
       repository = LocalMatchRepository(isar);
     });
 
     tearDownAll(() async {
-      if (isar.isOpen) {
-        await isar.close(deleteFromDisk: true);
-      }
-      if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
-      }
+      await isarContext.dispose();
     });
 
     setUp(() async {
-      // 各テストの直前に、データベースの中身を空っぽにする（テストの独立性を担保）
-      await isar.writeTxn(() async {
-        await isar.clear();
-      });
+      await isarContext.clear();
     });
 
     // =========================================================================

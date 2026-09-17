@@ -59,7 +59,7 @@ class TwinMatchPersistenceHelper {
       );
       await rotFile.writeAsString(jsonStr, flush: true);
 
-      _rotateFiles(dir, match.id);
+      await _rotateFilesAsync(dir, match.id);
     } catch (e) {
       debugPrint('⚠️ [TwinEngine] スナップショット保存に失敗しました: $e');
     }
@@ -89,13 +89,14 @@ class TwinMatchPersistenceHelper {
       }
 
       // 世代バックアップから最新のものを探索
-      final files =
-          dir
-              .listSync()
-              .whereType<File>()
-              .where((f) => f.path.contains('twin_snapshot_${matchId}_'))
-              .toList()
-            ..sort((a, b) => b.path.compareTo(a.path));
+      final files = <File>[];
+      await for (final entity in dir.list()) {
+        if (entity is File &&
+            entity.path.contains('twin_snapshot_${matchId}_')) {
+          files.add(entity);
+        }
+      }
+      files.sort((a, b) => b.path.compareTo(a.path));
 
       if (files.isNotEmpty) {
         final content = await files.first.readAsString();
@@ -130,16 +131,19 @@ class TwinMatchPersistenceHelper {
       }
 
       final dir = await _getDirectory();
-      final files = dir.listSync().whereType<File>().where(
-        (f) =>
-            f.path.contains('twin_snapshot_') &&
-            !f.path.contains('_backup_') &&
-            !RegExp(r'_\d+\.json$').hasMatch(f.path),
-      );
+      final files = <File>[];
+      await for (final entity in dir.list()) {
+        if (entity is File &&
+            entity.path.contains('twin_snapshot_') &&
+            !entity.path.contains('_backup_') &&
+            !RegExp(r'_\d+\.json$').hasMatch(entity.path)) {
+          files.add(entity);
+        }
+      }
 
       for (final file in files) {
         try {
-          final content = file.readAsStringSync();
+          final content = await file.readAsString();
           if (content.isNotEmpty) {
             recovered.add(MatchModel.fromJson(jsonDecode(content)));
           }
@@ -151,21 +155,22 @@ class TwinMatchPersistenceHelper {
     return recovered;
   }
 
-  /// ファイルの世代管理（3世代より古いものを削除）
-  static void _rotateFiles(Directory dir, String matchId) {
+  /// ファイルの世代管理（3世代より古いものを非同期で削除）
+  static Future<void> _rotateFilesAsync(Directory dir, String matchId) async {
     try {
-      final backupFiles =
-          dir
-              .listSync()
-              .whereType<File>()
-              .where((f) => f.path.contains('twin_snapshot_${matchId}_'))
-              .toList()
-            ..sort((a, b) => b.path.compareTo(a.path));
+      final backupFiles = <File>[];
+      await for (final entity in dir.list()) {
+        if (entity is File &&
+            entity.path.contains('twin_snapshot_${matchId}_')) {
+          backupFiles.add(entity);
+        }
+      }
+      backupFiles.sort((a, b) => b.path.compareTo(a.path));
 
       if (backupFiles.length > 3) {
         for (final oldFile in backupFiles.sublist(3)) {
           try {
-            oldFile.deleteSync();
+            await oldFile.delete();
           } catch (_) {}
         }
       }

@@ -247,6 +247,16 @@ class SyncEngine {
         } else {
           // 劣悪ネットワーク環境下での指数バックオフ制御（最大5分まで段階的に遅延を算出）
           _retryCount++;
+          if (_retryCount >= 10) {
+            // 🛡️ 【Poison Pill防御】リトライ上限（10回）を超過した異常コマンドは自律パージし、後続キューの永久ブロックを防止
+            debugPrint(
+              '🛡️ [Sync Engine] コマンド ${action.id} のリトライが上限（10回）を超過しました。毒薬キュー化防止のため自律パージします。',
+            );
+            await localRepo.deleteCommand(action.id);
+            _retryCount = 0;
+            _nextAttemptAt = null;
+            continue;
+          }
           final backoffSeconds = min(pow(2, _retryCount).toInt(), 300);
           _nextAttemptAt = DateTime.now().add(
             Duration(seconds: backoffSeconds),
@@ -278,7 +288,15 @@ class SyncEngine {
       // ペイロード（Map形式）からドメインモデルへ完全復元
       // (※既存リポジトリが要求する型に合わせて安全にアップロードを試みます)
       if (action.payload.containsKey('id')) {
-        final match = MatchModel.fromJson(action.payload);
+        final MatchModel match;
+        try {
+          match = MatchModel.fromJson(action.payload);
+        } catch (e) {
+          debugPrint(
+            '🛡️ [Sync Engine] ペイロードの復元に失敗しました（破損データ）。毒薬キュー化防止のため自律パージします: $e',
+          );
+          return true;
+        }
         try {
           await remoteRepo.saveMatch(match);
           return true;
@@ -312,6 +330,7 @@ class SyncEngine {
   }
 
   void dispose() {
+    _debounceSyncTimer?.cancel();
     _syncTimer?.cancel();
     _matchesSubscription?.cancel();
     _bunaiksenSubscription?.cancel();

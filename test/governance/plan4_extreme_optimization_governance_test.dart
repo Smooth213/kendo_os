@@ -162,6 +162,149 @@ void main() {
           );
         },
       );
+
+      test(
+        '6. [空Txn根絶規約] LocalMatchArchiveHelper でアーカイブが存在しない場合に不要な writeTxn がスキップされること',
+        () {
+          final archiveHelperFile = File(
+            'lib/shared/infrastructure/repository/local_match_archive_helper.dart',
+          );
+          expect(archiveHelperFile.existsSync(), isTrue);
+          final content = archiveHelperFile.readAsStringSync();
+
+          // hotEventLimit以下の判定内で findFirst で存在チェックしていること
+          expect(
+            content.contains('hasArchive') && content.contains('findFirst()'),
+            isTrue,
+            reason:
+                'LocalMatchArchiveHelper は通常試合で空テーブルに対する不要な writeTxn を防ぐため、findFirst() による先行存在確認を行わなければならない',
+          );
+        },
+      );
+
+      test(
+        '7. [待機時タイマー完全沈黙規約] RenseikaiMasterTimerNotifier および DockTimerNotifier に AppLifecycleListener が配備されていること',
+        () {
+          final renseikaiTimerFile = File(
+            'lib/features/tournament/presentation/operate/providers/renseikai_master_timer_provider.dart',
+          );
+          final dockTimerFile = File(
+            'lib/features/tournament/presentation/providers/dock_timer_provider.dart',
+          );
+
+          expect(renseikaiTimerFile.existsSync(), isTrue);
+          expect(dockTimerFile.existsSync(), isTrue);
+
+          final renseikaiContent = renseikaiTimerFile.readAsStringSync();
+          final dockContent = dockTimerFile.readAsStringSync();
+
+          expect(
+            renseikaiContent.contains('AppLifecycleListener('),
+            isTrue,
+            reason:
+                'RenseikaiMasterTimerNotifier に AppLifecycleListener が配備されていなければならない',
+          );
+          expect(
+            dockContent.contains('AppLifecycleListener('),
+            isTrue,
+            reason: 'DockTimerNotifier に AppLifecycleListener が配備されていなければならない',
+          );
+        },
+      );
+
+      test(
+        '8. [タイマー破棄漏れ根絶規約] SyncEngine の dispose() で _debounceSyncTimer が確実に破棄されていること',
+        () {
+          final syncEngineFile = File(
+            'lib/shared/infrastructure/repository/sync_engine.dart',
+          );
+          expect(syncEngineFile.existsSync(), isTrue);
+          final content = syncEngineFile.readAsStringSync();
+
+          expect(
+            content.contains('_debounceSyncTimer?.cancel()'),
+            isTrue,
+            reason:
+                'SyncEngine の dispose() で _debounceSyncTimer?.cancel() を呼ばなければならない',
+          );
+        },
+      );
+
+      test(
+        '9. [Poison Pill防護規約] SyncEngine にリトライ回数上限超過による自律パージおよびペイロード破損保護が備わっていること',
+        () {
+          final syncEngineFile = File(
+            'lib/shared/infrastructure/repository/sync_engine.dart',
+          );
+          expect(syncEngineFile.existsSync(), isTrue);
+          final content = syncEngineFile.readAsStringSync();
+
+          expect(
+            content.contains('_retryCount >= 10'),
+            isTrue,
+            reason: 'SyncEngine は10回以上のリトライ失敗時に毒薬キュー化防止のため自律パージ機構を持たなければならない',
+          );
+
+          expect(
+            content.contains('毒薬キュー化防止のため自律パージします'),
+            isTrue,
+            reason: 'SyncEngine は不正ペイロード検知時にキューから自律パージしなければならない',
+          );
+        },
+      );
+
+      test(
+        '10. [ツイン永続化非同期I/O規約] TwinMatchPersistenceHelper で同期I/O（listSync, deleteSync, readAsStringSync）が存在しないこと',
+        () {
+          final twinFile = File(
+            'lib/shared/infrastructure/persistence/twin_match_persistence_helper.dart',
+          );
+          expect(twinFile.existsSync(), isTrue);
+          final content = twinFile.readAsStringSync();
+
+          expect(
+            content.contains('listSync('),
+            isFalse,
+            reason:
+                'TwinMatchPersistenceHelper に同期 listSync() が残存してはならない。非同期 list() を使用すること。',
+          );
+          expect(
+            content.contains('deleteSync('),
+            isFalse,
+            reason:
+                'TwinMatchPersistenceHelper に同期 deleteSync() が残存してはならない。非同期 delete() を使用すること。',
+          );
+          expect(
+            content.contains('readAsStringSync('),
+            isFalse,
+            reason:
+                'TwinMatchPersistenceHelper に同期 readAsStringSync() が残存してはならない。非同期 readAsString() を使用すること。',
+          );
+        },
+      );
+
+      test(
+        '11. [CQRS DI一貫性規約] ProjectionStore で FirebaseFirestore.instance 直接参照が存在せず、firestoreProvider 経由であること',
+        () {
+          final storeFile = File(
+            'lib/shared/application/projections/projection_store.dart',
+          );
+          expect(storeFile.existsSync(), isTrue);
+          final content = storeFile.readAsStringSync();
+
+          expect(
+            content.contains('FirebaseFirestore.instance'),
+            isFalse,
+            reason:
+                'ProjectionStore で FirebaseFirestore.instance を直接参照してはならない。ref.read(firestoreProvider) を使用すること。',
+          );
+          expect(
+            content.contains('firestoreProvider'),
+            isTrue,
+            reason: 'ProjectionStore は firestoreProvider を使用していなければならない',
+          );
+        },
+      );
     },
   );
 }

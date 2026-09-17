@@ -1,48 +1,36 @@
 @TestOn('vm')
 library;
 
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import '../helpers/test_isar_helper.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('🔋 [Phase 5 Performance Governance] DB・I/O バッチ最適化テスト', () {
+    late TestIsarContext isarContext;
     late Isar isar;
     late LocalMatchRepository repository;
-    late Directory tempDir;
 
     setUpAll(() async {
-      try {
-        await Isar.initializeIsarCore(download: true);
-      } catch (_) {}
-
-      tempDir = Directory.systemTemp.createTempSync('isar_batch_test_');
-      isar = await Isar.open(
-        [MatchEntitySchema, MatchEventArchiveEntitySchema],
-        directory: tempDir.path,
-        name: 'batch_test_db_${DateTime.now().microsecondsSinceEpoch}',
-        inspector: false,
+      isarContext = await TestIsarHelper.openContext(
+        schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
+        prefix: 'isar_batch_test',
       );
-
+      isar = isarContext.isar;
       repository = LocalMatchRepository(isar);
     });
 
     tearDownAll(() async {
-      if (isar.isOpen) {
-        await isar.close(deleteFromDisk: true);
-      }
-      if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
-      }
+      await isarContext.dispose();
     });
 
     setUp(() async {
-      await isar.writeTxn(() async {
-        await isar.clear();
-      });
+      await isarContext.clear();
     });
 
     test('1. saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること', () async {

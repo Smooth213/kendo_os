@@ -1,43 +1,31 @@
 @TestOn('vm')
 library;
 
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_comment_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_projection_entity.dart';
+import '../helpers/test_isar_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('🗄️ 【Phase 13: Isar メモリマップトI/O（MMAP）＆ ページサイズ最適化】ガバナンステスト', () {
+    late TestIsarContext isarContext;
     late Isar isar;
-    late Directory tempDir;
-
-    setUpAll(() async {
-      final previousOverrides = HttpOverrides.current;
-      HttpOverrides.global = null;
-      try {
-        await Isar.initializeIsarCore(download: true);
-      } catch (_) {
-      } finally {
-        HttpOverrides.global = previousOverrides;
-      }
-    });
 
     setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('isar_mmap_test_');
-      isar = await Isar.open(
-        [
+      isarContext = await TestIsarHelper.openContext(
+        schemas: [
           MatchEntitySchema,
           LocalStrokeModelSchema,
           MatchCommentEntitySchema,
           MatchProjectionEntitySchema,
           MatchCommandEntitySchema,
         ],
-        directory: tempDir.path,
+        prefix: 'isar_mmap_test',
         name: 'mmap_perf_db',
         maxSizeMiB: 1024,
         relaxedDurability: true,
@@ -46,13 +34,11 @@ void main() {
           minRatio: 2.0,
         ),
       );
+      isar = isarContext.isar;
     });
 
     tearDown(() async {
-      await isar.close(deleteFromDisk: true);
-      if (await tempDir.exists()) {
-        await tempDir.delete(recursive: true);
-      }
+      await isarContext.dispose();
     });
 
     test('MMAP 1024MiB 仮想メモリ空間上での 1,000 件一括書き込み＆RAM速度検索検証', () async {

@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 /// CQRSアーキテクチャの要となるプロジェクションストア。
 /// Firestoreの生データ（MatchModel）を監視し、ルールエンジンを通した安全なUI用プロジェクションに変換して提供します。
@@ -30,7 +30,8 @@ class ProjectionStore {
     final tournament = tournamentId.isNotEmpty
         ? tournamentId
         : 'default_tournament';
-    return FirebaseFirestore.instance
+    final firestore = ref.read(firestoreProvider);
+    return firestore
         .collection('organizations')
         .doc(dojo)
         .collection('tournaments')
@@ -58,7 +59,8 @@ class ProjectionStore {
     final tournament = tournamentId.isNotEmpty
         ? tournamentId
         : 'default_tournament';
-    return FirebaseFirestore.instance
+    final firestore = ref.read(firestoreProvider);
+    return firestore
         .collection('organizations')
         .doc(dojo)
         .collection('tournaments')

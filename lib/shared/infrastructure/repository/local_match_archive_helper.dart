@@ -38,12 +38,22 @@ class LocalMatchArchiveHelper {
   ) async {
     if (isar == null) return match;
     if (match.events.length <= hotEventLimit) {
-      await isar.writeTxn(
-        () => isar.matchEventArchiveEntitys
-            .filter()
-            .matchIdEqualTo(match.id)
-            .deleteAll(),
-      );
+      // 🚀 【極限最適化】アーカイブが存在しない通常の試合（99.9%）では
+      // 空テーブルに対する不要な writeTxn（ジャーナリングI/O・排他ロック）を完全スキップ
+      final hasArchive =
+          await isar.matchEventArchiveEntitys
+              .filter()
+              .matchIdEqualTo(match.id)
+              .findFirst() !=
+          null;
+      if (hasArchive) {
+        await isar.writeTxn(
+          () => isar.matchEventArchiveEntitys
+              .filter()
+              .matchIdEqualTo(match.id)
+              .deleteAll(),
+        );
+      }
       return match;
     }
     final splitAt = match.events.length - hotEventLimit;

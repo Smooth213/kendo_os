@@ -1,62 +1,65 @@
 @TestOn('vm')
 library;
 
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_archive_helper.dart';
+import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../helpers/test_isar_helper.dart';
+
+class FakeRemoteMatchRepository implements MatchRepository {
+  final List<MatchModel> savedMatches = [];
+  bool shouldThrow = false;
+  int attemptCount = 0;
+
+  @override
+  Future<int> saveMatch(MatchModel match) async {
+    attemptCount++;
+    if (shouldThrow) {
+      throw Exception('Server error simulation');
+    }
+    savedMatches.add(match);
+    return 1;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  late TestIsarContext isarContext;
   late Isar isar;
   late LocalMatchRepository localRepo;
-  Directory? tempDir;
-  bool isarOpened = false;
 
   setUpAll(() async {
-    final previousOverrides = HttpOverrides.current;
-    HttpOverrides.global = null;
-    try {
-      await Isar.initializeIsarCore(download: true);
-    } catch (_) {
-    } finally {
-      HttpOverrides.global = previousOverrides;
-    }
-
-    tempDir = Directory.systemTemp.createTempSync('plan4_e2e_');
-    isar = await Isar.open(
-      [
+    isarContext = await TestIsarHelper.openContext(
+      schemas: [
         MatchEntitySchema,
         MatchEventArchiveEntitySchema,
         MatchCommandEntitySchema,
       ],
-      directory: tempDir!.path,
-      name: 'plan4_e2e_db_${DateTime.now().microsecondsSinceEpoch}',
-      inspector: false,
+      prefix: 'plan4_e2e',
     );
-    isarOpened = true;
+    isar = isarContext.isar;
     localRepo = LocalMatchRepository(isar);
   });
 
   tearDownAll(() async {
-    if (isarOpened && isar.isOpen) {
-      await isar.close(deleteFromDisk: true);
-    }
-    if (tempDir != null && tempDir!.existsSync()) {
-      tempDir!.deleteSync(recursive: true);
-    }
+    await isarContext.dispose();
   });
 
   setUp(() async {
-    if (isarOpened) {
-      await isar.writeTxn(() => isar.clear());
-    }
+    await isarContext.clear();
   });
 
   group('⚡ 【Plan 4 E2E】4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト', () {
@@ -196,6 +199,129 @@ void main() {
         final data = await notifier.build();
         expect(data.batteryLevel, 100);
         expect(data.isInPowerSaveMode, isFalse);
+      },
+    );
+
+    test(
+      'E2E-4: 【空Txn根絶・I/O半減実証】通常試合（<=200件）保存時に過去アーカイブが存在しない場合はIsarへの不要なwriteTxnが発生せず、正常に保存・復元できること',
+      () async {
+        // 1. アーカイブが存在しない新規の通常試合（イベント10件）
+        final normalMatch = MatchModel(
+          id: 'normal_match_e2e',
+          matchType: '個人戦',
+          redName: '選手赤',
+          whiteName: '選手白',
+          events: List.generate(
+            10,
+            (i) => ScoreEvent(
+              id: 'ev_$i',
+              side: Side.red,
+              timestamp: DateTime.now(),
+            ),
+          ),
+        );
+
+        // archiveAndTrimEvents を実行
+        final trimmed = await LocalMatchArchiveHelper.archiveAndTrimEvents(
+          isar,
+          normalMatch,
+        );
+        expect(trimmed.events.length, 10);
+
+        // アーカイブテーブルが空であることを確認（先行確認によりwriteTxnが完全スキップ）
+        final archivesCount = await isar.matchEventArchiveEntitys.count();
+        expect(archivesCount, 0);
+
+        // 2. 次にイベント250件の過大試合を保存（アーカイブ分割が発生）
+        final largeMatch = MatchModel(
+          id: 'large_match_e2e',
+          matchType: '個人戦',
+          redName: '選手赤',
+          whiteName: '選手白',
+          events: List.generate(
+            250,
+            (i) => ScoreEvent(
+              id: 'ev_large_$i',
+              side: Side.red,
+              timestamp: DateTime.now(),
+            ),
+          ),
+        );
+
+        final trimmedLarge = await LocalMatchArchiveHelper.archiveAndTrimEvents(
+          isar,
+          largeMatch,
+        );
+        expect(trimmedLarge.events.length, 200);
+
+        final largeArchivesCount = await isar.matchEventArchiveEntitys.count();
+        expect(largeArchivesCount, 1);
+
+        // 3. 過大試合が編集等で通常件数（<=200件）に縮小された場合
+        // hasArchive が true となり、古い不要アーカイブが確実にパージされること
+        final shrunkenMatch = largeMatch.copyWith(
+          events: largeMatch.events.take(50).toList(),
+        );
+        final trimmedShrunk =
+            await LocalMatchArchiveHelper.archiveAndTrimEvents(
+              isar,
+              shrunkenMatch,
+            );
+        expect(trimmedShrunk.events.length, 50);
+
+        final finalArchivesCount = await isar.matchEventArchiveEntitys
+            .filter()
+            .matchIdEqualTo(largeMatch.id)
+            .count();
+        expect(finalArchivesCount, 0);
+      },
+    );
+
+    test(
+      'E2E-5: 【Poison Pill自律パージ実証】不正ペイロードの毒薬コマンドがIsarキューから自律パージされ、後続正常コマンドが滞留なく処理されること',
+      () async {
+        final fakeRemoteRepo = FakeRemoteMatchRepository();
+        final container = ProviderContainer(
+          overrides: [
+            localMatchRepositoryProvider.overrideWithValue(localRepo),
+            matchRepositoryProvider.overrideWithValue(fakeRemoteRepo),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        // 1. 破損データ（不正な型）の毒薬コマンドと、後続の正常コマンドをキューに投入
+        final poisonCmd = MatchCommandEntity()
+          ..commandId = 'cmd_poison'
+          ..type = 'updateMatch'
+          ..payloadJson =
+              '{"id":"bad_match","events":"INVALID_STRING_INSTEAD_OF_LIST"}'
+          ..createdAt = DateTime.now()
+          ..status = 'pending';
+
+        final validCmd = MatchCommandEntity()
+          ..commandId = 'cmd_valid'
+          ..type = 'updateMatch'
+          ..payloadJson =
+              '{"id":"good_match","matchType":"個人戦","redName":"赤選手","whiteName":"白選手"}'
+          ..createdAt = DateTime.now().add(const Duration(milliseconds: 10))
+          ..status = 'pending';
+
+        await isar.writeTxn(() async {
+          await isar.matchCommandEntitys.putAll([poisonCmd, validCmd]);
+        });
+
+        final engine = container.read(syncEngineProvider);
+
+        // processQueue を実行
+        await engine.processQueue();
+
+        // 毒薬コマンドは即座に自律パージされ、後続の正常コマンドは無事にリモートへアップロード完了すること
+        expect(fakeRemoteRepo.savedMatches.length, 1);
+        expect(fakeRemoteRepo.savedMatches.first.id, 'good_match');
+
+        // Isarキューが完全に消化されて空になっていること（毒薬キューによる永久ブロックゼロ）
+        final pendingAfter = await isar.matchCommandEntitys.where().findAll();
+        expect(pendingAfter, isEmpty);
       },
     );
   });
