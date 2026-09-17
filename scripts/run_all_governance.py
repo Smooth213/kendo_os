@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全17大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全18大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全17大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全18大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 - 第1部：ドメイン・プロダクト品質規約（第1条〜第8条）
 - 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条）
+- 第3部：大会運営支援・シミュレーション規約（第18条）
 """
 
 import argparse
@@ -123,11 +124,20 @@ AUDIT_DEFINITIONS = [
         "name": "🛡️ ツインエンジン自己修復・現場障害耐性 ＆ 完全耐障害性規約",
         "cmd": ["python3", "scripts/check_gov_17_resilience_and_twin.py"],
     },
+    # ==========================================================================
+    # 【第3部：大会運営支援・シミュレーション規約】（第18条）
+    # ==========================================================================
+    {
+        "id": 18,
+        "part": "第3部: 大会運営支援・シミュレーション",
+        "name": "🧮 試合数計算・コート配分シミュレーション ＆ 部内戦ドック品質規約",
+        "cmd": ["python3", "scripts/check_gov_18_match_calculator.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全17大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜17）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全18大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜18）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 

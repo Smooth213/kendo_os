@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 
@@ -63,12 +65,17 @@ class DockTimerState {
 
 /// 🥋 ドック独立型タイマーの操作・状態管理Notifier
 class DockTimerNotifier extends StateNotifier<DockTimerState> {
+  static const String prefKeyInitialSeconds =
+      'kendo_os_dock_timer_initial_seconds';
+
   final Ref _ref;
+  final SharedPreferences? _prefs;
   Timer? _timer;
   AppLifecycleListener? _lifecycleListener;
   DateTime? _lastBackgroundTime;
 
-  DockTimerNotifier(this._ref) : super(const DockTimerState()) {
+  DockTimerNotifier(this._ref, [this._prefs])
+    : super(_loadInitialState(_prefs)) {
     try {
       _lifecycleListener = AppLifecycleListener(
         onStateChange: (lifecycleState) {
@@ -82,6 +89,25 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
         },
       );
     } catch (_) {}
+  }
+
+  static DockTimerState _loadInitialState(SharedPreferences? prefs) {
+    int initial = 180;
+    if (prefs != null) {
+      final saved = prefs.getInt(prefKeyInitialSeconds);
+      if (saved != null && saved > 0 && saved < 3600) {
+        initial = saved;
+      }
+    }
+    return DockTimerState(initialSeconds: initial, remainingSeconds: initial);
+  }
+
+  void _saveToPrefs(int seconds) {
+    try {
+      _prefs?.setInt(prefKeyInitialSeconds, seconds);
+    } catch (e) {
+      debugPrint('⚠️ [DockTimer] SharedPreferences save error: $e');
+    }
   }
 
   @override
@@ -131,6 +157,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
       elapsedSeconds: 0,
       isFinished: false,
     );
+    _saveToPrefs(seconds);
   }
 
   /// プリセット時間（秒）をセット
@@ -144,6 +171,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
       isFinished: false,
     );
     AppHaptics.selection();
+    _saveToPrefs(seconds);
     _ref
         .read(userDataCloudSyncManagerProvider)
         .pushTimerPreferencesToCloud(seconds);
@@ -151,6 +179,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
 
   /// 任意カスタム時間（分・秒）を手入力・ダイヤルでセット
   void setCustomTime(int minutes, int seconds) {
+    if (state.isRunning) return;
     final total = (minutes * 60 + seconds).clamp(1, 3599);
     setPreset(total);
   }
@@ -273,5 +302,11 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
 /// 🥋 ドック独立型タイマーのグローバルプロバイダー
 final dockTimerProvider =
     StateNotifierProvider<DockTimerNotifier, DockTimerState>((ref) {
-      return DockTimerNotifier(ref);
+      SharedPreferences? prefs;
+      try {
+        prefs = ref.watch(sharedPreferencesProvider);
+      } catch (_) {
+        prefs = null;
+      }
+      return DockTimerNotifier(ref, prefs);
     });

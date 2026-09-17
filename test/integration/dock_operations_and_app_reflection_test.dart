@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/b
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_calendar_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_matches_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_standings_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/bunaiksen_dock_calculator_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_sub_item_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
@@ -358,6 +359,36 @@ void main() {
       await FloatingDockSheetManager.close(immediate: true);
       await tester.pumpAndSettle();
     });
+
+    testWidgets('4. 試合数計算タップでBunaiksenDockCalculatorSheetが展開されること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildAppWithDock(
+          dockWidget: const BunaiksenDockButton(
+            tournamentId: 'bunaiksen_test_1',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(DockParentButton));
+      await tester.pumpAndSettle();
+
+      final calcIcon = find.byIcon(Icons.calculate_rounded);
+      expect(calcIcon, findsOneWidget);
+      await tester.tap(calcIcon);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BunaiksenDockCalculatorSheet), findsOneWidget);
+
+      await FloatingDockSheetManager.close(immediate: true);
+      await tester.pumpAndSettle();
+    });
   });
 
   group('🥋 ドック並び替え: ドラッグスワップ＆アプリ即時反映 保証テスト', () {
@@ -407,7 +438,7 @@ void main() {
 
       // 初期順序の確認
       final initialOrder = capturedRef.read(dockItemsOrderProvider);
-      expect(initialOrder.isNotEmpty, isTrue);
+      expect(initialOrder.length, 9);
 
       // サブアイテム長押し ➔ 編集モード突入
       final firstItem = find.byType(DockSpeedDialItemWidget).first;
@@ -440,6 +471,10 @@ void main() {
             bunaiksenMatchesProvider(
               'bunaiksen_reorder_test',
             ).overrideWithValue([]),
+            unreadAnnouncementCountProvider((
+              tournamentId: 'bunaiksen_reorder_test',
+              isStaffRoom: true,
+            )).overrideWith((ref) => Stream.value(0)),
           ],
           child: MaterialApp(
             home: Scaffold(
@@ -465,7 +500,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final initialOrder = capturedRef.read(bunaiksenDockItemsOrderProvider);
-      expect(initialOrder.length, 6);
+      expect(initialOrder.length, 7);
 
       // サブアイテム長押し ➔ 編集モード突入
       final firstSub = find.byType(BunaiksenSubItemButton).first;

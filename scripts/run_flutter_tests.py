@@ -20,7 +20,7 @@ def run_governance_pre_check():
     
     checks = [
         ("📏 コード行数監査 (500行上限)", ["python3", "scripts/check_file_lines.py"]),
-        ("🎨 21大デザイントークン厳格監査", ["python3", "scripts/check_design_tokens.py", "--strict"]),
+        ("🎨 23大デザイントークン厳格監査", ["python3", "scripts/check_design_tokens.py", "--strict"]),
         ("🔍 Flutter 静的解析 (警告ゼロ確認)", ["flutter", "analyze"]),
     ]
     

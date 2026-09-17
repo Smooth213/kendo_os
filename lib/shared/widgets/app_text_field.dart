@@ -162,6 +162,17 @@ class AppTextField extends StatelessWidget {
               prefixIcon: decoration?.prefixIcon ?? prefixIcon,
               suffixIcon: decoration?.suffixIcon ?? suffixIcon,
               contentPadding: decoration?.contentPadding ?? contentPadding,
+              border: decoration?.border,
+              focusedBorder: decoration?.focusedBorder,
+              enabledBorder: decoration?.enabledBorder,
+              disabledBorder: decoration?.disabledBorder,
+              errorBorder: decoration?.errorBorder,
+              focusedErrorBorder: decoration?.focusedErrorBorder,
+              hintStyle: decoration?.hintStyle,
+              labelStyle: decoration?.labelStyle,
+              filled: decoration?.filled,
+              fillColor: decoration?.fillColor,
+              isDense: decoration?.isDense,
             )
           : defaultDecoration,
     );

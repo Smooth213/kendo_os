@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_calendar_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_matches_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_standings_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/bunaiksen_dock_calculator_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_animated_dock_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
@@ -189,6 +190,9 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
         break;
       case BunaiksenDockItemType.timer:
         DockTimerBottomSheet.show(context);
+        break;
+      case BunaiksenDockItemType.calculator:
+        BunaiksenDockCalculatorSheet.show(context);
         break;
       case BunaiksenDockItemType.settings:
         FloatingDockSheetManager.show(

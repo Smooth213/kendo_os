@@ -23,15 +23,16 @@ void main() {
       container.dispose();
     });
 
-    test('初期状態では部内戦専用の全6項目が登録されていること', () {
+    test('初期状態では部内戦専用の全7項目が登録されていること', () {
       final order = container.read(bunaiksenDockItemsOrderProvider);
-      expect(order.length, 6);
+      expect(order.length, 7);
       expect(order, BunaiksenDockItemsOrderNotifier.defaultOrder);
       expect(order.contains(BunaiksenDockItemType.matches), isTrue);
       expect(order.contains(BunaiksenDockItemType.standings), isTrue);
       expect(order.contains(BunaiksenDockItemType.calendar), isTrue);
       expect(order.contains(BunaiksenDockItemType.quickMemo), isTrue);
       expect(order.contains(BunaiksenDockItemType.timer), isTrue);
+      expect(order.contains(BunaiksenDockItemType.calculator), isTrue);
       expect(order.contains(BunaiksenDockItemType.settings), isTrue);
     });
 

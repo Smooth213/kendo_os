@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 
 void main() {
@@ -86,6 +88,38 @@ void main() {
       state = container.read(dockTimerProvider);
       expect(state.remainingSeconds, 180);
       expect(state.isRunning, isFalse);
+    });
+
+    test('SharedPreferencesに保存された初期時間が正しく復元されること', () async {
+      SharedPreferences.setMockInitialValues({
+        DockTimerNotifier.prefKeyInitialSeconds: 420, // 7分
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      final customContainer = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(customContainer.dispose);
+
+      final state = customContainer.read(dockTimerProvider);
+      expect(state.initialSeconds, 420);
+      expect(state.remainingSeconds, 420);
+      expect(state.formattedDisplay, '07:00');
+    });
+
+    test('setCustomTime実行時にSharedPreferencesへ秒数が永続化されること', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final customContainer = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(customContainer.dispose);
+
+      final notifier = customContainer.read(dockTimerProvider.notifier);
+      notifier.setCustomTime(4, 15); // 4分15秒 = 255秒
+
+      expect(prefs.getInt(DockTimerNotifier.prefKeyInitialSeconds), 255);
     });
   });
 }

@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全17大ガバナンス個別監査 (1/17 〜 17/17: 100% PASS)
+# 1. 全18大ガバナンス個別監査 (1/18 〜 18/18: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全17大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全17大ガバナンス個別監査を実行中..."
+# 1. 全18大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全18大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全17大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全18大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -40,6 +40,9 @@ flutter test test/governance/cross_platform_parity_governance_test.dart \
              test/governance/io_batch_and_history_governance_test.dart \
              test/governance/sync_and_crdt_governance_test.dart \
              test/governance/resilience_and_twin_governance_test.dart \
+             test/governance/match_calculator_governance_test.dart \
+             test/widget/match_calculator_display_and_layout_test.dart \
+             test/unit/match_allocation_engine_test.dart \
              test/widget/sync_crdt_merger_test.dart \
              test/widget/match_command_queue_test.dart \
              test/widget/match_data_sanitizer_test.dart \
@@ -58,7 +61,7 @@ echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全17大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全18大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

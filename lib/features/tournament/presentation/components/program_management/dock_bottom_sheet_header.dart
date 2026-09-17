@@ -66,7 +66,10 @@ class DockBottomSheetHeader extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onVerticalDragUpdate: sheetScope?.onDragUpdate,
                   onVerticalDragEnd: sheetScope?.onDragEnd,
-                  onTap: sheetScope?.toggle,
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    sheetScope?.toggle();
+                  },
                   child: Row(
                     children: [
                       Icon(icon, size: 20, color: effectiveIconColor),

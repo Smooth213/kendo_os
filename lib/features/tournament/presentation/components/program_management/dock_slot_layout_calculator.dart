@@ -62,15 +62,17 @@ class DockSlotLayoutCalculator {
       case 2:
         return Offset(0.0, dirY * step * 3.0);
       case 3:
-        return Offset(dirX * step * 1.0, 0.0);
+        return Offset(0.0, dirY * step * 4.0);
       case 4:
-        return Offset(dirX * step * 2.0, 0.0);
+        return Offset(dirX * step * 1.0, 0.0);
       case 5:
+        return Offset(dirX * step * 2.0, 0.0);
+      case 6:
         return Offset(dirX * step * 3.0, 0.0);
       default:
         return Offset(
-          dirX * step * ((index ~/ 3) + 1),
-          dirY * step * ((index % 3) + 1),
+          dirX * step * ((index ~/ 4) + 1),
+          dirY * step * ((index % 4) + 1),
         );
     }
   }
