@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -11,12 +14,18 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late Isar isar;
-  late Directory tempDir;
+  Directory? tempDir;
+  bool isarOpened = false;
 
   setUpAll(() async {
+    final previousOverrides = HttpOverrides.current;
+    HttpOverrides.global = null;
     try {
       await Isar.initializeIsarCore(download: true);
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      HttpOverrides.global = previousOverrides;
+    }
 
     tempDir = Directory.systemTemp.createTempSync('archive_helper_test_');
     isar = await Isar.open(
@@ -25,23 +34,26 @@ void main() {
         MatchEventArchiveEntitySchema,
         MatchCommandEntitySchema,
       ],
-      directory: tempDir.path,
+      directory: tempDir!.path,
       name: 'archive_helper_db_${DateTime.now().microsecondsSinceEpoch}',
       inspector: false,
     );
+    isarOpened = true;
   });
 
   tearDownAll(() async {
-    if (isar.isOpen) {
+    if (isarOpened && isar.isOpen) {
       await isar.close(deleteFromDisk: true);
     }
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
+    if (tempDir != null && tempDir!.existsSync()) {
+      tempDir!.deleteSync(recursive: true);
     }
   });
 
   setUp(() async {
-    await isar.writeTxn(() => isar.clear());
+    if (isarOpened) {
+      await isar.writeTxn(() => isar.clear());
+    }
   });
 
   group('LocalMatchArchiveHelper Tests', () {

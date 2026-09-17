@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,12 +16,18 @@ void main() {
 
   late Isar isar;
   late LocalMatchRepository localRepo;
-  late Directory tempDir;
+  Directory? tempDir;
+  bool isarOpened = false;
 
   setUpAll(() async {
+    final previousOverrides = HttpOverrides.current;
+    HttpOverrides.global = null;
     try {
       await Isar.initializeIsarCore(download: true);
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      HttpOverrides.global = previousOverrides;
+    }
 
     tempDir = Directory.systemTemp.createTempSync('plan4_e2e_');
     isar = await Isar.open(
@@ -27,24 +36,27 @@ void main() {
         MatchEventArchiveEntitySchema,
         MatchCommandEntitySchema,
       ],
-      directory: tempDir.path,
+      directory: tempDir!.path,
       name: 'plan4_e2e_db_${DateTime.now().microsecondsSinceEpoch}',
       inspector: false,
     );
+    isarOpened = true;
     localRepo = LocalMatchRepository(isar);
   });
 
   tearDownAll(() async {
-    if (isar.isOpen) {
+    if (isarOpened && isar.isOpen) {
       await isar.close(deleteFromDisk: true);
     }
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
+    if (tempDir != null && tempDir!.existsSync()) {
+      tempDir!.deleteSync(recursive: true);
     }
   });
 
   setUp(() async {
-    await isar.writeTxn(() => isar.clear());
+    if (isarOpened) {
+      await isar.writeTxn(() => isar.clear());
+    }
   });
 
   group('⚡ 【Plan 4 E2E】4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト', () {

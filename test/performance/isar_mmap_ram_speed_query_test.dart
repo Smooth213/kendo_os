@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -14,7 +17,14 @@ void main() {
     late Directory tempDir;
 
     setUpAll(() async {
-      await Isar.initializeIsarCore(download: true);
+      final previousOverrides = HttpOverrides.current;
+      HttpOverrides.global = null;
+      try {
+        await Isar.initializeIsarCore(download: true);
+      } catch (_) {
+      } finally {
+        HttpOverrides.global = previousOverrides;
+      }
     });
 
     setUp(() async {

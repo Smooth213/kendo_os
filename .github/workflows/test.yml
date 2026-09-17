@@ -78,6 +78,12 @@ jobs:
       - name: 📦 依存パッケージの解決
         run: flutter pub get
 
+      - name: 🗄️ Isar Core バイナリ事前配置 (Linux x64 CI安定化)
+        run: |
+          curl -fsSL https://binaries.isar-community.dev/3.3.2/libisar_linux_x64.so -o libisar_linux_x64.so
+          sudo cp libisar_linux_x64.so /usr/lib/libisar.so || true
+          sudo cp libisar_linux_x64.so /usr/lib/libisar_linux_x64.so || true
+
       - name: ⚡ Sharded Test Execution (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
         run: flutter test --total-shards ${{ matrix.total-shards }} --shard-index ${{ matrix.shard-index }}
 
