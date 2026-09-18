@@ -20,9 +20,8 @@ def parse_and_format_failures(output_text: str) -> str:
     in_error = False
     
     for i, line in enumerate(lines):
-        # テスト名の取得 (例: 00:05 +10 -1: test/widget/foo_test.dart: テスト名 [E])
-        match_test = re.search(r'\d+:\d+\s+\+\d+\s+-\d+:\s+(.*?):\s+(.*?)(?:\s+\[E\])?$', line)
-        if match_test:
+        # EXCEPTION CAUGHT が来たら新しいエラーブロックの開始
+        if "EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK" in line:
             if current_location or current_expected:
                 failures.append({
                     "test_name": current_test_name,
@@ -33,10 +32,33 @@ def parse_and_format_failures(output_text: str) -> str:
                 current_expected = []
                 current_actual = []
                 current_location = ""
-            
-            current_test_name = match_test.group(2).strip()
+                current_test_name = ""
             in_error = True
             continue
+
+        # [E] で終わる行はテスト失敗確定行 (例: 00:05 +1 -2: .../foo_test.dart: テスト名 [E])
+        match_test = re.search(r'\d+:\d+\s+\+\d+\s+-\d+:\s+(?:.*?:\s+)?(.*?)(?:\s+\[E\])$', line)
+        if match_test:
+            current_test_name = match_test.group(1).strip()
+            if current_location or current_expected:
+                failures.append({
+                    "test_name": current_test_name,
+                    "location": current_location,
+                    "expected": "\n".join(current_expected).strip(),
+                    "actual": "\n".join(current_actual).strip(),
+                })
+                current_expected = []
+                current_actual = []
+                current_location = ""
+                current_test_name = ""
+            in_error = False
+            continue
+
+        # "The test description was:" の次の行
+        if "The test description was:" in line and i + 1 < len(lines):
+            next_line = lines[i + 1].strip()
+            if next_line and not next_line.startswith("═"):
+                current_test_name = next_line
 
         if "Expected:" in line:
             current_expected.append(line.strip())
@@ -50,12 +72,19 @@ def parse_and_format_failures(output_text: str) -> str:
             current_actual.append(line.strip())
             continue
 
-        # ファイルと行番号の特定 (例: test/widget/foo_test.dart 123:45 ...)
-        match_loc = re.search(r'(test/[\w\./_-]+\.dart)\s+(\d+):(\d+)', line)
-        if match_loc and not current_location:
-            file_path = match_loc.group(1)
-            line_num = match_loc.group(2)
-            current_location = f"{file_path} ({line_num}行目)"
+        # ファイルと行番号の特定 (package:flutter_test 内部ファイルは除外)
+        if "package:flutter_test" not in line and "test/src/" not in line:
+            # パターン1: file:///.../(test/widget/foo_test.dart) line 72
+            match_caught = re.search(r'(test/[\w\./_-]+\.dart)\s+line\s+(\d+)', line)
+            if match_caught:
+                current_location = f"{match_caught.group(1)} ({match_caught.group(2)}行目)"
+            else:
+                # パターン2: (test/widget/foo_test.dart):(\d+):(\d+) または test/... 123:45
+                match_loc = re.search(r'(test/[\w\./_-]+\.dart)[:\s]+(\d+)', line)
+                if match_loc and not current_location:
+                    file_path = match_loc.group(1)
+                    line_num = match_loc.group(2)
+                    current_location = f"{file_path} ({line_num}行目)"
 
     # 最後の failure を追加
     if current_location or current_expected:

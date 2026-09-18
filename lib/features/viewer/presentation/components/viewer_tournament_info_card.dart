@@ -4,6 +4,7 @@ import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/expandable_notes_view.dart';
 
 /// 🥋 観客席用 大会情報カード（純粋UIコンポーネント）
 class ViewerTournamentInfoCard extends StatelessWidget {
@@ -117,20 +118,11 @@ class ViewerTournamentInfoCard extends StatelessWidget {
             ),
             if (tournament.notes.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.md),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: noteBgColor,
-                  borderRadius: AppRadius.small,
-                ),
-                child: Text(
-                  tournament.notes,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: AppFontSize.bodySmall,
-                  ),
-                ),
+              ExpandableNotesView(
+                notes: tournament.notes,
+                backgroundColor: noteBgColor,
+                textColor: textColor,
+                accentColor: context.appColors.primaryAccent,
               ),
             ],
           ],

@@ -6,7 +6,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/start_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/create_tournament_screen.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/screens/setup_match_format_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/setup_match_format_screen.dart'
+    show SetupMatchFormatScreen;
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart'
     show OrderSetupScreen, opponentTeamHistoryProvider;
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -23,6 +24,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show customTeamNamesProvider, tournamentProvider;
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/team_registration_screen.dart'
+    show playerListProvider;
 
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 
@@ -116,6 +119,7 @@ void main() {
             overrides: [
               sharedPreferencesProvider.overrideWithValue(prefs),
               isarProvider.overrideWithValue(null),
+              playerListProvider.overrideWith((ref) => Stream.value([])),
             ],
             child: const MaterialApp(home: CreateTournamentScreen()),
           ),

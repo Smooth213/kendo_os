@@ -29,7 +29,6 @@ class TeamRegistrationSelectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = context.appColors.textColor;
-    final warningColor = context.appColors.warningColor;
     final primaryAccent = context.appColors.primaryAccent;
     final softAccent = context.appColors.softAccent;
 
@@ -40,12 +39,12 @@ class TeamRegistrationSelectionCard extends StatelessWidget {
     final Color subtitleColor;
 
     if (isHelper || isUsed) {
-      cardColor = isDark
-          ? warningColor.withAlpha(77)
-          : warningColor.withAlpha(128);
-      borderColor = isDark ? AppKendoColors.transparent : warningColor;
+      cardColor = isDark ? const Color(0xFF2C2216) : const Color(0xFFFFF8E1);
+      borderColor = const Color(0xFFFF9800).withValues(alpha: 0.5);
       leadingTextColor = const Color(0xFFFF9800);
-      subtitleColor = warningColor;
+      subtitleColor = isDark
+          ? const Color(0xFFFFB74D)
+          : const Color(0xFFE65100);
     } else {
       cardColor = softAccent;
       borderColor = isDark
@@ -61,7 +60,7 @@ class TeamRegistrationSelectionCard extends StatelessWidget {
       color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.medium,
-        side: BorderSide(color: borderColor),
+        side: BorderSide(color: borderColor, width: 1.2),
       ),
       child: ListTile(
         onTap: onTap,
@@ -97,13 +96,12 @@ class TeamRegistrationSelectionCard extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF9800),
-                  borderRadius: AppRadius.small,
-                  border: Border.all(color: const Color(0xFFFF9800)),
+                  borderRadius: BorderRadius.circular(AppRadius.smallValue),
                 ),
                 child: Text(
                   '$usedPosと入替',
-                  style: TextStyle(
-                    color: const Color(0xFFFF9800),
+                  style: const TextStyle(
+                    color: AppKendoColors.pureWhite,
                     fontSize: AppFontSize.caption,
                     fontWeight: AppFontWeight.bold,
                   ),

@@ -6,6 +6,7 @@
 ① ファイル行数監査（450行警告 🟡 / 500行上限 🔴 アラート完全維持）
 ② アーキテクチャ境界＆疎結合規約
 ③ 新設ファイル・テストペア対生成規約
+④ 特定固有名詞(道上・道上剣友会)ハードコード完全禁止規約
 """
 
 import subprocess
@@ -59,6 +60,20 @@ def main():
     if not is_pair_ok:
         all_passed = False
         print(res_pair.stdout + res_pair.stderr)
+
+    # 4. 特定固有名詞ハードコード禁止規約
+    res_names = subprocess.run(
+        ["python3", "scripts/check_no_hardcoded_specific_names.py"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    is_names_ok = (res_names.returncode == 0)
+    names_status = "🟢 適合 (Passed)" if is_names_ok else "🔴 違反 (Failed)"
+    print(f" ④ 特定固有名詞ハードコード完全禁止規約: {names_status}")
+    if not is_names_ok:
+        all_passed = False
+        print(res_names.stdout + res_names.stderr)
 
     print("-" * 68)
     if all_passed:

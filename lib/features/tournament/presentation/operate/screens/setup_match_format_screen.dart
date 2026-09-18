@@ -288,7 +288,7 @@ class _SetupMatchFormatScreenState
                         onAdjustOrder: (team) =>
                             _showTeamDetailDialog(context, team),
                         onNavigateToTeamRegistration: () => context.push(
-                          '/team-registration/${widget.tournamentId}',
+                          '/team-registration/${widget.tournamentId}?initialPage=2',
                         ),
                         themeColors: _themeColors,
                         isDark: isDark,

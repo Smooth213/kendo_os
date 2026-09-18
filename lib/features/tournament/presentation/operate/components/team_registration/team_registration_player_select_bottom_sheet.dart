@@ -166,47 +166,35 @@ class _TeamRegistrationPlayerSelectBottomSheetState
 
     return AppBottomSheetContent(
       title: '選手の選択 ($currentPosName)',
+      titleTrailing: TextButton.icon(
+        onPressed: () => setState(() => _showAllPlayers = !_showAllPlayers),
+        icon: Icon(
+          _showAllPlayers ? Icons.filter_alt : Icons.filter_alt_off,
+          size: 14,
+        ),
+        label: Text(
+          _showAllPlayers ? 'フィルタ適用' : '全員表示',
+          style: const TextStyle(
+            fontSize: AppFontSize.caption,
+            fontWeight: AppFontWeight.bold,
+          ),
+        ),
+        style: TextButton.styleFrom(
+          foregroundColor: widget.themeColors.primaryAccent,
+          backgroundColor: widget.themeColors.softAccent,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Column(
           children: [
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    '選手の選択 ($currentPosName)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.headline,
-                      fontWeight: AppFontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
-                ),
-                // ★ フィルタ切り替えボタン
-                TextButton.icon(
-                  onPressed: () =>
-                      setState(() => _showAllPlayers = !_showAllPlayers),
-                  icon: Icon(
-                    _showAllPlayers ? Icons.filter_alt : Icons.filter_alt_off,
-                    size: 14,
-                  ),
-                  label: Text(
-                    _showAllPlayers ? 'フィルタ適用' : '全員表示',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.caption,
-                      fontWeight: AppFontWeight.bold,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: widget.themeColors.primaryAccent,
-                    backgroundColor: widget.themeColors.softAccent,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
 
             // 助っ人直接入力
             AppTextField(
@@ -305,7 +293,29 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                               child: OutlinedButton(
                                 onPressed: () =>
                                     Navigator.pop(context, 'CLEAR_FLAG'),
-                                child: const Text('未定'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: textColor,
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? const Color(0xFF545458)
+                                        : context.appColors.separatorColor,
+                                    width: 1.2,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.md,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.smallValue,
+                                    ),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '未定',
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.md),
@@ -313,9 +323,28 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                               child: OutlinedButton(
                                 onPressed: () => Navigator.pop(context, '欠員'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppKendoColors.red,
+                                  foregroundColor: AppKendoColors.redAccent,
+                                  side: BorderSide(
+                                    color: AppKendoColors.redAccent.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                    width: 1.2,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.md,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.smallValue,
+                                    ),
+                                  ),
                                 ),
-                                child: const Text('欠員'),
+                                child: const Text(
+                                  '欠員',
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -336,10 +365,10 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                                     ),
                                   ),
                                   const SizedBox(height: AppSpacing.lg),
-                                  const Text(
+                                  Text(
                                     '該当する選手がいません',
                                     style: TextStyle(
-                                      color: Color(0x8A000000),
+                                      color: context.appColors.subTextColor,
                                       fontSize: AppFontSize.bodySmall,
                                     ),
                                   ),

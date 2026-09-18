@@ -42,7 +42,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: const AppHeader(
           title: 'システム監査ログ',
           actions: [

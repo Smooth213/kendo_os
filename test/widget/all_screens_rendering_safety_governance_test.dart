@@ -29,11 +29,31 @@ import 'package:kendo_os/features/viewer/screens/viewer_kachinuki_scoreboard_scr
 import 'package:kendo_os/features/viewer/screens/viewer_official_record_screen.dart';
 import 'package:kendo_os/features/viewer/screens/viewer_team_scoreboard_screen.dart';
 import 'package:kendo_os/admin/presentation/screens/master_management_screen.dart';
+import 'package:kendo_os/admin/dashboard/observability_dashboard_screen.dart';
+import 'package:kendo_os/admin/presentation/screens/audit_log_screen.dart';
+import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/login_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/new_match_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/manual_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/tournament_quick_hub_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_matches_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_standings_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_calendar_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/bunaiksen_dock_calculator_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_team_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'helpers/rendering_safety_test_helper.dart';
@@ -54,7 +74,7 @@ void main() {
     // 1. 運営・管理系画面 (14画面)
     // -------------------------------------------------------------------------
     testWidgets(
-      '1. 運営・管理系画面（Start, RoleSelect, PinAuth, Settings, Master, TournamentList, ProgramManagement）',
+      '1. 運営・管理系画面（Start, RoleSelect, PinAuth, Settings, Master, TournamentList, ProgramManagement, Observability, AuditLog, EmbeddedManual, Login）',
       (tester) async {
         final screens = <Widget>[
           const StartScreen(),
@@ -65,6 +85,10 @@ void main() {
           const TournamentListScreen(),
           const ProgramManagementScreen(tournamentId: testTournamentId),
           const ProgramViewerScreen(programs: [], initialIndex: 0),
+          const ObservabilityDashboardScreen(),
+          const AuditLogScreen(),
+          const EmbeddedManualScreen(),
+          const LoginScreen(),
         ];
 
         for (final screen in screens) {
@@ -84,7 +108,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 運営試合・スコア系画面（HomeScreen, TeamMatchStatus, OfficialRecord, TeamScoreboard, KachinukiScoreboard）',
+      '2. 運営試合・スコア系画面（HomeScreen, TeamMatchStatus, OfficialRecord, TeamScoreboard, KachinukiScoreboard, NewMatchScreen, MatchScreen）',
       (tester) async {
         final screens = <Widget>[
           const HomeScreen(tournamentId: testTournamentId),
@@ -92,6 +116,11 @@ void main() {
           const OfficialRecordScreen(tournamentId: testTournamentId),
           const TeamScoreboardScreen(groupName: '道上剣友会A'),
           const KachinukiScoreboardScreen(groupName: '道上剣友会A'),
+          const NewMatchScreen(tournamentId: testTournamentId),
+          const MatchScreen(
+            tournamentId: testTournamentId,
+            matchId: 'm_edge_1',
+          ),
         ];
 
         for (final screen in screens) {
@@ -241,6 +270,43 @@ void main() {
             tournamentId: testTournamentId,
             isBottomSheet: true,
           ),
+          TournamentEditBottomSheet(
+            tournament: TournamentModel(
+              id: testTournamentId,
+              organizationId: 'org_1',
+              name: 'テスト大会',
+              date: DateTime(2026, 10, 1),
+              venue: '武道館',
+            ),
+          ),
+          const TournamentShareImportSheet(),
+          TeamEditBottomSheet(
+            team: TeamModel(
+              id: 'team_01',
+              tournamentId: testTournamentId,
+              teamName: '道上剣友会A',
+              category: '小学生の部',
+              playerNames: ['先鋒', '次鋒', '中堅', '副将', '大将'],
+            ),
+            players: const [],
+            onSave: (_) async {},
+          ),
+          TeamRegistrationPlayerSelectBottomSheet(
+            index: 0,
+            players: const [],
+            posNames: const ['先鋒', '次鋒', '中堅', '副将', '大将'],
+            tempSelectedPlayers: const {},
+            selectedMajorCategory: '小学生',
+            selectedMinorCategory: '高学年',
+            themeColors: AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+          ),
+          const TournamentQuickHubBottomSheet(tournamentId: testTournamentId),
+          const ViewerQrBottomSheet(tournamentId: testTournamentId),
+          const DockTimerBottomSheet(),
+          const BunaiksenDockMatchesSheet(tournamentId: 'bunaiksen_20260918'),
+          const BunaiksenDockStandingsSheet(tournamentId: 'bunaiksen_20260918'),
+          const BunaiksenDockCalendarSheet(),
+          const BunaiksenDockCalculatorSheet(),
         ];
 
         for (final sheet in sheets) {

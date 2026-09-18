@@ -16,15 +16,52 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 
+import 'package:kendo_os/features/tournament/application/clipboard_import_service.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/clipboard_import_button.dart';
+
 // ★ アーカイブ画面の即時反映用トリガー（下位互換性維持）
 final archiveRefreshProvider = StateProvider.autoDispose<int>((ref) => 0);
 
-class TournamentListScreen extends ConsumerWidget {
+class TournamentListScreen extends ConsumerStatefulWidget {
   final bool isArchive;
   const TournamentListScreen({super.key, this.isArchive = false});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TournamentListScreen> createState() =>
+      _TournamentListScreenState();
+}
+
+class _TournamentListScreenState extends ConsumerState<TournamentListScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !widget.isArchive) {
+        ref
+            .read(clipboardImportServiceProvider)
+            .checkClipboardOnResume(context);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted && !widget.isArchive) {
+      ref.read(clipboardImportServiceProvider).checkClipboardOnResume(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isArchive = widget.isArchive;
     if (isArchive) {
       ref.watch(archiveRefreshProvider);
     }
@@ -46,7 +83,7 @@ class TournamentListScreen extends ConsumerWidget {
     final Color subTextColor = themeColors.subTextColor;
     final Color separatorColor = themeColors.separatorColor;
 
-    final tournamentAsync = isArchive
+    final tournamentAsync = widget.isArchive
         ? ref.watch(archivedTournamentListProvider)
         : ref.watch(tournamentListProvider);
 
@@ -58,13 +95,14 @@ class TournamentListScreen extends ConsumerWidget {
             icon: Icon(Icons.arrow_back_ios_new, color: accentColor, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-          title: isArchive ? '過去の大会 (アーカイブ)' : '最近の大会',
+          title: widget.isArchive ? '過去の大会 (アーカイブ)' : '最近の大会',
           backgroundColor: enableLiquidGlass
               ? AppKendoColors.transparent
               : cardColor,
-          actions: const [
-            ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
-            SizedBox(width: AppSpacing.sm),
+          actions: [
+            if (!widget.isArchive && !isReadOnly) const ClipboardImportButton(),
+            const ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
+            const SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: tournamentAsync.when(

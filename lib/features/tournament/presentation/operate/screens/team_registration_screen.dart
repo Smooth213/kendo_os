@@ -4,9 +4,9 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
-import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
+    hide registeredTeamsProvider;
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
-import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_dynamic_header.dart';
@@ -18,30 +18,22 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_sticky_bottom_bar.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_save_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
-// ★ 安定したProvider定義
-final registeredTeamsProvider = StreamProvider.family
-    .autoDispose<List<TeamModel>, String>((ref, tournamentId) {
-      return ref
-          .watch(teamRepositoryProvider)
-          .watchTeamsByTournament(tournamentId);
-    });
-
-final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
-  return ref.watch(playerRepositoryProvider).getPlayers();
-});
-
-// ★ 追加：登録した「よく使う自チーム名」をマスタから取得するプロバイダー
-final customTeamNamesProvider = StreamProvider.autoDispose<List<String>>((ref) {
-  return ref.watch(playerRepositoryProvider).watchCustomTeamNames();
-});
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_providers.dart';
+export 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_providers.dart';
 
 class TeamRegistrationScreen extends ConsumerStatefulWidget {
   final String tournamentId;
-  const TeamRegistrationScreen({super.key, required this.tournamentId});
+  final int? initialPage;
+  const TeamRegistrationScreen({
+    super.key,
+    required this.tournamentId,
+    this.initialPage,
+  });
 
   @override
   ConsumerState<TeamRegistrationScreen> createState() =>
@@ -61,14 +53,6 @@ class _TeamRegistrationScreenState
         minorCategory: _selectedMinorCategory,
       );
 
-  void _parseCategoryToState(String categoryName) {
-    final res = TeamRegistrationCategoryParser.parseCategoryToState(
-      categoryName,
-    );
-    _selectedMajorCategory = res.majorCategory;
-    _selectedMinorCategory = res.minorCategory;
-  }
-
   bool _showExtraMajorCategories = false;
   bool _showExtraMatchTypes = false;
   String _matchType = '団体戦（5人制）';
@@ -81,8 +65,15 @@ class _TeamRegistrationScreenState
 
   final Map<int, String> _tempSelectedPlayers = {};
 
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialPage ?? 0;
+    _pageController = PageController(initialPage: _currentPage);
+  }
 
   @override
   void dispose() {
@@ -90,19 +81,6 @@ class _TeamRegistrationScreenState
     _teamNameFocusNode.dispose(); // ★ 追加：メモリリーク防止
     _pageController.dispose();
     super.dispose();
-  }
-
-  // ★ AppBar
-  Widget _buildImmersiveAppBar(BuildContext context) {
-    return TeamRegistrationAppBar(onBack: () => Navigator.pop(context));
-  }
-
-  // ★ Tealグラデーションヘッダー
-  Widget _buildDynamicHeader() {
-    return TeamRegistrationDynamicHeader(
-      currentPage: _currentPage,
-      themeColors: _themeColors,
-    );
   }
 
   // ★ 修正：カテゴリ連動フィルタリング ＋ よみがな順ソートを搭載した選択ダイアログ
@@ -155,24 +133,17 @@ class _TeamRegistrationScreenState
       registeredTeamsProvider(widget.tournamentId),
     );
 
-    int basePlayerCount = 5;
-    List<String> posNames = ['先鋒', '次鋒', '中堅', '副将', '大将'];
-    if (_matchType.contains('3人制')) {
-      basePlayerCount = 3;
-      posNames = ['先鋒', '中堅', '大将'];
-    } else if (_matchType.contains('個人戦')) {
-      basePlayerCount = 1;
-      posNames = ['選手'];
-    } else if (_matchType.contains('7人制')) {
-      basePlayerCount = 7;
-      posNames = ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'];
-    }
-
-    // ★ 新機能：ベースの人数に補欠の人数を足す
-    int totalPlayerCount = basePlayerCount + _substituteCount;
-    for (int i = 0; i < _substituteCount; i++) {
-      posNames.add('補欠'); // 役職名として「補欠」を追加
-    }
+    final (basePlayerCount, basePosNames) = switch (_matchType) {
+      final t when t.contains('3人制') => (3, ['先鋒', '中堅', '大将']),
+      final t when t.contains('個人戦') => (1, ['選手']),
+      final t when t.contains('7人制') => (
+        7,
+        ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
+      ),
+      _ => (5, ['先鋒', '次鋒', '中堅', '副将', '大将']),
+    };
+    final posNames = [...basePosNames, ...List.filled(_substituteCount, '補欠')];
+    final totalPlayerCount = basePlayerCount + _substituteCount;
 
     // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
@@ -196,8 +167,22 @@ class _TeamRegistrationScreenState
                         : Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              _buildImmersiveAppBar(context),
-                              _buildDynamicHeader(),
+                              TeamRegistrationAppBar(
+                                onBack: () => Navigator.pop(context),
+                                registeredTeamCount:
+                                    registeredTeamsAsync.value?.length ?? 0,
+                                editingTeamName: _editingTeamId != null
+                                    ? _teamNameController.text
+                                    : null,
+                                onViewRegisteredTeams: () {
+                                  setState(() => _currentPage = 2);
+                                  _pageController.jumpToPage(2);
+                                },
+                              ),
+                              TeamRegistrationDynamicHeader(
+                                currentPage: _currentPage,
+                                themeColors: _themeColors,
+                              ),
                             ],
                           ),
                   ),
@@ -325,37 +310,56 @@ class _TeamRegistrationScreenState
       tempSelectedPlayers: _tempSelectedPlayers,
       themeColors: _themeColors,
       onEditTeam: (t) {
+        final players = ref.read(playerListProvider).value ?? <PlayerModel>[];
+        TeamEditBottomSheet.show(
+          context: context,
+          team: t,
+          players: players,
+          onSave: (updatedTeam) async {
+            await ref.read(teamRepositoryProvider).saveTeam(updatedTeam);
+          },
+        );
+      },
+      onUpdateCategory: (team, newCategory) async {
+        try {
+          final updated = team.copyWith(category: newCategory);
+          await ref.read(teamRepositoryProvider).saveTeam(updated);
+          if (mounted) {
+            AppSnackBar.showSuccess(
+              context,
+              '「${team.teamName}」を「$newCategory」に変更しました',
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            AppSnackBar.showError(context, 'カテゴリ変更エラー: $e');
+          }
+        }
+      },
+      onDeleteTeam: (teamId) =>
+          ref.read(teamRepositoryProvider).deleteTeam(teamId),
+      onAddNewTeam: () {
         setState(() {
-          _editingTeamId = t.id;
-          _parseCategoryToState(t.category);
-          _matchType = t.matchType;
-          _teamNameController.text = t.teamName;
+          _editingTeamId = null;
+          _teamNameController.clear();
           _tempSelectedPlayers.clear();
-          for (int i = 0; i < t.playerNames.length; i++) {
-            _tempSelectedPlayers[i] = t.playerNames[i];
-          }
-          int baseLen = 5;
-          if (t.matchType.contains('3人制')) {
-            baseLen = 3;
-          } else if (t.matchType.contains('個人戦')) {
-            baseLen = 1;
-          } else if (t.matchType.contains('7人制')) {
-            baseLen = 7;
-          }
-          _substituteCount = (t.playerNames.length - baseLen).clamp(0, 4);
+          _substituteCount = 0;
           _currentPage = 0;
         });
         _pageController.jumpToPage(0);
       },
-      onDeleteTeam: (teamId) =>
-          ref.read(teamRepositoryProvider).deleteTeam(teamId),
     );
   }
 
   Widget _buildStickyBottomAction(int playerCount) {
+    final isInputting =
+        _teamNameController.text.trim().isNotEmpty ||
+        _tempSelectedPlayers.isNotEmpty;
+
     return TeamRegistrationStickyBottomBar(
       currentPage: _currentPage,
       editingTeamId: _editingTeamId,
+      isInputting: isInputting,
       themeColors: _themeColors,
       onPrevious: () => _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -363,6 +367,19 @@ class _TeamRegistrationScreenState
       ),
       onPrimaryAction: () async {
         if (_currentPage == 2) {
+          // 未入力かつ非編集状態なら「＋ 新しいチームを追加」として Page 0 に移動
+          if (!isInputting && _editingTeamId == null) {
+            setState(() {
+              _editingTeamId = null;
+              _teamNameController.clear();
+              _tempSelectedPlayers.clear();
+              _substituteCount = 0;
+              _currentPage = 0;
+            });
+            _pageController.jumpToPage(0);
+            return;
+          }
+
           if (_teamNameController.text.isEmpty) {
             AppSnackBar.showError(context, 'チーム名を入力してください');
             return;

@@ -18,7 +18,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
 
     return LiquidBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppKendoColors.transparent,
         appBar: AppHeader(
           title: '運用ダッシュボード (Observability)',
           actions: const [

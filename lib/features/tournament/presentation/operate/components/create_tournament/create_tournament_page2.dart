@@ -8,12 +8,14 @@ class CreateTournamentPage2 extends StatelessWidget {
   final TextEditingController venueController;
   final TextEditingController notesController;
   final VoidCallback onOpenMap;
+  final Widget? extraContent;
 
   const CreateTournamentPage2({
     super.key,
     required this.venueController,
     required this.notesController,
     required this.onOpenMap,
+    this.extraContent,
   });
 
   @override
@@ -115,6 +117,7 @@ class CreateTournamentPage2 extends StatelessWidget {
             fillColor: inputBgColor,
           ),
         ),
+        ?extraContent,
       ],
     );
   }

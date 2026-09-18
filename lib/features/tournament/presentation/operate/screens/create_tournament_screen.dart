@@ -18,8 +18,20 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cre
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page2.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_sticky_bottom_action.dart';
 
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_teams_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_name_history_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/team_registration_screen.dart'
+    show playerListProvider;
+import 'package:kendo_os/features/tournament/presentation/components/share_import/clipboard_import_button.dart';
+
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+
 class CreateTournamentScreen extends ConsumerStatefulWidget {
-  const CreateTournamentScreen({super.key});
+  final TournamentShareData? initialData;
+  const CreateTournamentScreen({super.key, this.initialData});
 
   @override
   ConsumerState<CreateTournamentScreen> createState() =>
@@ -29,10 +41,12 @@ class CreateTournamentScreen extends ConsumerStatefulWidget {
 class _CreateTournamentScreenState
     extends ConsumerState<CreateTournamentScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _venueController = TextEditingController();
-  final _notesController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  late final TextEditingController _nameController;
+  late final TextEditingController _venueController;
+  late final TextEditingController _notesController;
+  late DateTime _selectedDate;
+  bool _shouldAutoRegisterTeams = true;
+  List<ParsedTeamOrder> _teams = [];
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -41,6 +55,13 @@ class _CreateTournamentScreenState
   @override
   void initState() {
     super.initState();
+    final init = widget.initialData;
+    _nameController = TextEditingController(text: init?.tournamentName ?? '');
+    _venueController = TextEditingController(text: init?.venue ?? '');
+    _notesController = TextEditingController(text: init?.notes ?? '');
+    _selectedDate = init?.date ?? DateTime.now();
+    _teams = List.from(init?.teams ?? []);
+
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
@@ -116,13 +137,22 @@ class _CreateTournamentScreenState
           final uid = FirebaseAuth.instance.currentUser?.uid;
           debugPrint('🔥 [DEBUG] 現在のUID: "$uid"');
 
+          final hasTeams = _teams.isNotEmpty;
+          final roster = ref.read(playerListProvider).value ?? <PlayerModel>[];
+          final categories = (_shouldAutoRegisterTeams && hasTeams)
+              ? TournamentTeamAutoRegisterService.extractCategories(
+                  _teams,
+                  roster: roster,
+                )
+              : const <String>[];
+
           final newTournament = TournamentModel(
             id: '',
             organizationId: ref.read(settingsProvider).organizationId,
             name: _nameController.text,
             date: _selectedDate,
             venue: _venueController.text,
-            categories: const [],
+            categories: categories,
             notes: _notesController.text.trim(),
           );
 
@@ -130,10 +160,37 @@ class _CreateTournamentScreenState
               .read(tournamentRepositoryProvider)
               .saveTournament(newTournament);
 
+          int autoRegisteredCount = 0;
+          if (_shouldAutoRegisterTeams && hasTeams) {
+            final roster =
+                ref.read(playerListProvider).value ?? <PlayerModel>[];
+            autoRegisteredCount =
+                await TournamentTeamAutoRegisterService.registerTeams(
+                  teams: _teams,
+                  tournamentId: newId,
+                  roster: roster,
+                  teamRepository: ref.read(teamRepositoryProvider),
+                  teamNameHistoryNotifier: ref.read(
+                    teamNameHistoryProvider.notifier,
+                  ),
+                );
+          }
+
           if (!mounted) return;
 
-          AppSnackBar.showSuccess(context, '基本情報を保存しました！');
-          context.push('/team-registration/$newId');
+          if (autoRegisteredCount > 0) {
+            AppSnackBar.showSuccess(
+              context,
+              '基本情報と$autoRegisteredCountチームのオーダーを自動登録しました！',
+            );
+          } else {
+            AppSnackBar.showSuccess(context, '基本情報を保存しました！');
+          }
+
+          final targetRoute = autoRegisteredCount > 0
+              ? '/team-registration/$newId?initialPage=2'
+              : '/team-registration/$newId';
+          context.push(targetRoute);
         } catch (e) {
           debugPrint('🔥 [ERROR] 大会保存エラー: $e');
           if (mounted) {
@@ -146,17 +203,22 @@ class _CreateTournamentScreenState
 
   @override
   Widget build(BuildContext context) {
+    final playerListAsync = ref.watch(playerListProvider);
+    final roster = playerListAsync.value ?? <PlayerModel>[];
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return LiquidBackground(
       child: Scaffold(
         backgroundColor: AppKendoColors.transparent,
-        appBar: const AppHeader(
+        appBar: AppHeader(
           title: '大会の新規作成',
           backgroundColor: AppKendoColors.transparent,
           actions: [
-            ManualHelpButton(manualPath: 'docs/manuals/operator/settings.md'),
-            SizedBox(width: AppSpacing.sm),
+            const ClipboardImportButton(),
+            const ManualHelpButton(
+              manualPath: 'docs/manuals/operator/settings.md',
+            ),
+            const SizedBox(width: AppSpacing.sm),
           ],
         ),
         body: Stack(
@@ -190,6 +252,18 @@ class _CreateTournamentScreenState
                           venueController: _venueController,
                           notesController: _notesController,
                           onOpenMap: _openMap,
+                          extraContent: _teams.isNotEmpty
+                              ? CreateTournamentImportTeamsCard(
+                                  teams: _teams,
+                                  isEnabled: _shouldAutoRegisterTeams,
+                                  onToggle: (val) => setState(
+                                    () => _shouldAutoRegisterTeams = val,
+                                  ),
+                                  roster: roster,
+                                  onTeamsUpdated: (updated) =>
+                                      setState(() => _teams = updated),
+                                )
+                              : null,
                         ),
                       ],
                     ),

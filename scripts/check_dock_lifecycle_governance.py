@@ -12,6 +12,8 @@ def run_dock_lifecycle_governance():
         "test/widget/viewer_no_dock_governance_test.dart",
         "test/governance/bunaiksen_dock_isolation_governance_test.dart",
         "test/governance/dock_subsheet_and_navigation_governance_test.dart",
+        "test/governance/tournament_edit_sheet_governance_test.dart",
+        "test/governance/screens_and_bottom_sheets_governance_test.dart",
     ]
 
     cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
@@ -25,6 +27,8 @@ def run_dock_lifecycle_governance():
         ("4. 観客（Viewer）全7画面 ドック物理完全排除規約", passed_all),
         ("5. 部内戦ドック完全隔離・部内戦外残留ゼロ保証規約", passed_all),
         ("6. ドックボトムシート サブシート最前面表示＆ネスト遷移・アンマウント防止規約", passed_all),
+        ("7. 大会情報編集UI ドックシート統合＆旧ダイアログ完全排除規約", passed_all),
+        ("8. 全画面・全ドック・全ボトムシート 構造・メモリ解放・隔離 横断規約", passed_all),
     ]
 
     print("=" * 60)

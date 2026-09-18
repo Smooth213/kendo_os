@@ -125,4 +125,55 @@ class AppSnackBar {
       ),
     );
   }
+
+  /// アクションボタン付きSnackBar
+  static void showWithAction(
+    BuildContext context,
+    String message, {
+    required String actionLabel,
+    required VoidCallback onAction,
+    Duration duration = const Duration(seconds: 6),
+    IconData? icon,
+    Color? iconColor,
+  }) {
+    if (!context.mounted) return;
+    AppHaptics.light();
+    final themeColors = _colors(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                color: iconColor ?? themeColors.primaryAccent,
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+            ],
+            Expanded(
+              child: Text(
+                message,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: themeColors.textColor,
+                  fontWeight: AppFontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: themeColors.cardBackground,
+        behavior: SnackBarBehavior.floating,
+        shape: _getShape(themeColors),
+        margin: _margin,
+        duration: duration,
+        action: SnackBarAction(
+          label: actionLabel,
+          textColor: themeColors.primaryAccent,
+          onPressed: onAction,
+        ),
+      ),
+    );
+  }
 }

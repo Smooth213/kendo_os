@@ -32,9 +32,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('登録内容の確認と\n登録済みの一覧です'), findsOneWidget);
+    expect(find.text('登録済みチーム (0)'), findsOneWidget);
+    expect(find.text('カードタップで直接オーダーを編集できます'), findsOneWidget);
     expect(find.text('小学生高学年の部 : 赤心館A'), findsOneWidget);
-    expect(find.text('まだ登録されたチームはありません'), findsOneWidget);
+    expect(find.textContaining('まだ登録されたチームはありません'), findsOneWidget);
   });
 
   testWidgets('TeamRegistrationConfirmStep renders properly with teams', (
@@ -74,8 +75,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('小学生高学年の部 : 白龍会A'), findsOneWidget);
+    expect(find.text('登録済みチーム (1)'), findsOneWidget);
+    expect(find.text('小学生高学年の部'), findsWidgets);
+    expect(find.text('白龍会A'), findsOneWidget);
     expect(find.byIcon(Icons.edit), findsOneWidget);
-    expect(find.byIcon(Icons.delete), findsOneWidget);
+    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
   });
 }

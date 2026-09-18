@@ -1116,5 +1116,33 @@ void main() {
         );
       },
     );
+
+    test(
+      '35. [視認性保証] クリップボード取り込みボタンとして生の amber アイコンが直書きされず ClipboardImportButton に統一されていること',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('clipboard_import_button.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+          if (content.contains('Icons.content_paste_go') &&
+              content.contains('AppKendoColors.amber')) {
+            violations.add(file.path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '白背景で視認性が極めて低い生の黄色クリップボードアイコン (Icons.content_paste_go + AppKendoColors.amber) の直書きが検出されました。\n'
+              '高コントラストと境界線コンテナを保証する ClipboardImportButton を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }

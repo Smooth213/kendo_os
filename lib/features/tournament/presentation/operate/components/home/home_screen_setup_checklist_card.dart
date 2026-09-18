@@ -160,7 +160,11 @@ class HomeScreenSetupChecklistCard extends StatelessWidget {
           isCompleted: hasTeams,
           themeColors: themeColors,
           isDark: isDark,
-          onTap: () => context.push('/team-registration/$tournamentId'),
+          onTap: () => context.push(
+            hasTeams
+                ? '/team-registration/$tournamentId?initialPage=2'
+                : '/team-registration/$tournamentId',
+          ),
         ),
         _buildChecklistItem(
           title: '部門別ルールの設定',

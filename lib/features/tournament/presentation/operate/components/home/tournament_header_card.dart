@@ -11,7 +11,8 @@ import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_dialog.dart';
+import 'package:kendo_os/shared/widgets/expandable_notes_view.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_bottom_sheet.dart';
 
 class TournamentHeaderCard extends ConsumerWidget {
   final TournamentModel tournament;
@@ -134,20 +135,11 @@ class TournamentHeaderCard extends ConsumerWidget {
             ),
             if (tournament.notes.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.md),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: noteBgColor,
-                  borderRadius: AppRadius.small,
-                ),
-                child: Text(
-                  tournament.notes,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: AppFontSize.bodySmall,
-                  ),
-                ),
+              ExpandableNotesView(
+                notes: tournament.notes,
+                backgroundColor: noteBgColor,
+                textColor: textColor,
+                accentColor: context.appColors.primaryAccent,
               ),
             ],
           ],
@@ -169,79 +161,41 @@ class TournamentHeaderCard extends ConsumerWidget {
 
     showAppBottomSheet(
       context: context,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xlargeValue),
-          ),
+      builder: (ctx) => Material(
+        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
         ),
-        padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 56),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: const Color(0x8A000000),
-                  borderRadius: AppRadius.medium,
+        child: Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: 56),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0x8A000000),
+                    borderRadius: AppRadius.medium,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: AppKendoColors.indigo.withValues(alpha: 0.1),
-                child: const Icon(Icons.edit, color: AppKendoColors.indigo),
-              ),
-              title: Text(
-                '大会情報の編集',
-                style: TextStyle(
-                  fontWeight: AppFontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              subtitle: const Text(
-                '大会名や会場、日付を変更します',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  color: AppKendoColors.grey,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(ctx);
-                TournamentEditDialog.show(
-                  context: context,
-                  ref: ref,
-                  tournament: tournament,
-                  cardColor: cardColor,
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  borderColor: borderColor,
-                );
-              },
-            ),
-            if (ref.read(permissionProvider).canDeleteData) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Divider(height: 1, color: borderColor),
-              ),
+              const SizedBox(height: AppSpacing.lg),
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: AppKendoColors.red.withValues(alpha: 0.1),
-                  child: const Icon(Icons.delete, color: AppKendoColors.red),
+                  backgroundColor: AppKendoColors.indigo.withValues(alpha: 0.1),
+                  child: const Icon(Icons.edit, color: AppKendoColors.indigo),
                 ),
-                title: const Text(
-                  'この大会を削除',
+                title: Text(
+                  '大会情報の編集',
                   style: TextStyle(
-                    color: AppKendoColors.red,
                     fontWeight: AppFontWeight.bold,
+                    color: textColor,
                   ),
                 ),
                 subtitle: const Text(
-                  '関連するすべての試合も完全に削除されます',
+                  '大会名や会場、日付を変更します',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
                     color: AppKendoColors.grey,
@@ -249,17 +203,56 @@ class TournamentHeaderCard extends ConsumerWidget {
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _confirmDeleteTournament(
-                    context,
-                    ref,
-                    tournament,
-                    cardColor,
-                    textColor,
+                  TournamentEditBottomSheet.show(
+                    context: context,
+                    tournament: tournament,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                    borderColor: borderColor,
                   );
                 },
               ),
+              if (ref.read(permissionProvider).canDeleteData) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
+                  child: Divider(height: 1, color: borderColor),
+                ),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppKendoColors.red.withValues(alpha: 0.1),
+                    child: const Icon(Icons.delete, color: AppKendoColors.red),
+                  ),
+                  title: const Text(
+                    'この大会を削除',
+                    style: TextStyle(
+                      color: AppKendoColors.red,
+                      fontWeight: AppFontWeight.bold,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    '関連するすべての試合も完全に削除されます',
+                    style: TextStyle(
+                      fontSize: AppFontSize.small,
+                      color: AppKendoColors.grey,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _confirmDeleteTournament(
+                      context,
+                      ref,
+                      tournament,
+                      cardColor,
+                      textColor,
+                    );
+                  },
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

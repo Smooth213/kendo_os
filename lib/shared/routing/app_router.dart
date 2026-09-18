@@ -10,6 +10,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaik
 import 'package:kendo_os/features/tournament/presentation/operate/screens/bunaiksen_setup_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/category_rules_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/team_match_status_screen.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/create_tournament_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/order_setup_screen.dart';
@@ -258,7 +261,29 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/create-tournament',
-      builder: (context, state) => const CreateTournamentScreen(),
+      builder: (context, state) => CreateTournamentScreen(
+        initialData: state.extra as TournamentShareData?,
+      ),
+    ),
+    GoRoute(
+      path: '/import-share',
+      builder: (context, state) {
+        final text =
+            state.uri.queryParameters['text'] ??
+            state.uri.queryParameters['title'] ??
+            '';
+        final parsed = text.isNotEmpty
+            ? TournamentTextParser.parse(text)
+            : null;
+        return Scaffold(
+          body: Center(
+            child: TournamentShareImportSheet(
+              initialData: parsed,
+              rawText: text,
+            ),
+          ),
+        );
+      },
     ),
     GoRoute(
       path: '/setup-match/:id',
@@ -272,8 +297,16 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/team-registration/:id',
-      builder: (context, state) =>
-          TeamRegistrationScreen(tournamentId: state.pathParameters['id']!),
+      builder: (context, state) {
+        final initialPageStr = state.uri.queryParameters['initialPage'];
+        final initialPage = initialPageStr != null
+            ? int.tryParse(initialPageStr)
+            : null;
+        return TeamRegistrationScreen(
+          tournamentId: state.pathParameters['id']!,
+          initialPage: initialPage,
+        );
+      },
     ),
     GoRoute(
       path: '/standings/:id',

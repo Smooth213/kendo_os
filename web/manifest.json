@@ -8,6 +8,15 @@
     "description": "Kendo Match & Tournament OS - Persistent Engine",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "share_target": {
+        "action": "./#/import-share",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
     "icons": [
         {
             "src": "icons/Icon-192.png",

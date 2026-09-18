@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 class TeamRegistrationStickyBottomBar extends ConsumerWidget {
   final int currentPage;
   final String? editingTeamId;
+  final bool isInputting;
   final AppThemeColors themeColors;
   final VoidCallback onPrevious;
   final VoidCallback onPrimaryAction;
@@ -18,6 +19,7 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
     super.key,
     required this.currentPage,
     required this.editingTeamId,
+    this.isInputting = false,
     required this.themeColors,
     required this.onPrevious,
     required this.onPrimaryAction,
@@ -74,10 +76,14 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
                   color: themeColors.primaryAccent,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   label: currentPage == 2
-                      ? (editingTeamId != null ? '変更を保存' : '登録して続けて追加')
+                      ? (editingTeamId != null
+                            ? '変更を保存'
+                            : (isInputting ? '登録して続けて追加' : '＋ 新しいチームを追加'))
                       : '次へ進む',
                   icon: currentPage == 2
-                      ? (editingTeamId != null ? Icons.save : Icons.add_task)
+                      ? (editingTeamId != null
+                            ? Icons.save
+                            : (isInputting ? Icons.add_task : Icons.add))
                       : null,
                   expandContent: false,
                 ),

@@ -25,6 +25,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/auth
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
     show tournamentProvider;
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 
@@ -204,6 +205,7 @@ class RenderingSafetyTestHelper {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
     await ensureFirebaseInitialized();
+    await initializeDateFormatting('ja_JP', null);
   }
 
   /// 共通 ProviderScope ラッパー

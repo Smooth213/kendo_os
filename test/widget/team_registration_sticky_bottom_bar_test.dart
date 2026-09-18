@@ -42,35 +42,71 @@ void main() {
     expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
   });
 
-  testWidgets('TeamRegistrationStickyBottomBar renders properly on page 2', (
-    tester,
-  ) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+  testWidgets(
+    'TeamRegistrationStickyBottomBar renders properly on page 2 (inputting)',
+    (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            bottomNavigationBar: TeamRegistrationStickyBottomBar(
-              currentPage: 2,
-              editingTeamId: null,
-              themeColors: themeColors,
-              onPrevious: () {},
-              onPrimaryAction: () {},
-              onFinishToRules: () {},
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              bottomNavigationBar: TeamRegistrationStickyBottomBar(
+                currentPage: 2,
+                editingTeamId: null,
+                isInputting: true,
+                themeColors: themeColors,
+                onPrevious: () {},
+                onPrimaryAction: () {},
+                onFinishToRules: () {},
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    expect(find.text('登録して続けて追加'), findsOneWidget);
-    expect(find.text('登録を完了してルール設定へ'), findsOneWidget);
-    expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
-  });
+      expect(find.text('登録して続けて追加'), findsOneWidget);
+      expect(find.text('登録を完了してルール設定へ'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'TeamRegistrationStickyBottomBar renders properly on page 2 (not inputting)',
+    (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              bottomNavigationBar: TeamRegistrationStickyBottomBar(
+                currentPage: 2,
+                editingTeamId: null,
+                isInputting: false,
+                themeColors: themeColors,
+                onPrevious: () {},
+                onPrimaryAction: () {},
+                onFinishToRules: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('＋ 新しいチームを追加'), findsOneWidget);
+      expect(find.text('登録を完了してルール設定へ'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    },
+  );
 }

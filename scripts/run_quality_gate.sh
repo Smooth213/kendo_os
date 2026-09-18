@@ -41,8 +41,15 @@ flutter test test/governance/cross_platform_parity_governance_test.dart \
              test/governance/sync_and_crdt_governance_test.dart \
              test/governance/resilience_and_twin_governance_test.dart \
              test/governance/match_calculator_governance_test.dart \
+             test/governance/tournament_edit_sheet_governance_test.dart \
+             test/governance/screens_and_bottom_sheets_governance_test.dart \
+             test/widget/tournament_edit_dock_bottom_sheet_integration_test.dart \
+             test/widget/tournament_share_import_and_order_flow_test.dart \
+             test/widget/clipboard_import_button_and_service_test.dart \
+             test/widget/expandable_notes_view_test.dart \
              test/widget/match_calculator_display_and_layout_test.dart \
              test/unit/match_allocation_engine_test.dart \
+             test/unit/no_hardcoded_specific_names_test.dart \
              test/widget/sync_crdt_merger_test.dart \
              test/widget/match_command_queue_test.dart \
              test/widget/match_data_sanitizer_test.dart \
