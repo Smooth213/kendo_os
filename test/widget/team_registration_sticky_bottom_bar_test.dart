@@ -104,7 +104,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('＋ 新しいチームを追加'), findsOneWidget);
+      expect(find.text('新しいチームを追加'), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsOneWidget);
       expect(find.text('登録を完了してルール設定へ'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
     },

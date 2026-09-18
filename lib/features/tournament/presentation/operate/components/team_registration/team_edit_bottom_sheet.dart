@@ -52,17 +52,18 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
   late String _matchType;
   late final Map<int, String> _tempSelectedPlayers;
   late int _substituteCount;
+  late List<String> _slotIds;
   bool _isSaving = false;
 
   final List<String> _candidateCategories = [
-    '小学生低学年の部',
-    '小学生高学年の部',
-    '小学生の部',
-    '中学生の部',
-    '中学生男子の部',
-    '中学生女子の部',
-    '高校生の部',
-    '一般の部',
+    '小学生低学年',
+    '小学生高学年',
+    '小学生',
+    '中学生',
+    '中学生男子',
+    '中学生女子',
+    '高校生',
+    '一般',
   ];
 
   final List<String> _matchTypes = ['団体戦（3人制）', '団体戦（5人制）', '団体戦（7人制）', '個人戦'];
@@ -88,6 +89,11 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
 
     final baseLen = _getBasePlayerCount(_matchType);
     _substituteCount = (widget.team.playerNames.length - baseLen).clamp(0, 4);
+    final totalCount = baseLen + _substituteCount;
+    _slotIds = List.generate(
+      totalCount,
+      (i) => 'slot_${DateTime.now().microsecondsSinceEpoch}_$i',
+    );
   }
 
   @override
@@ -118,6 +124,40 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
       base.add('補欠');
     }
     return base;
+  }
+
+  void _handleReorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+      if (oldIndex == newIndex) return;
+
+      final baseLen = _getBasePlayerCount(_matchType);
+      final totalCount = baseLen + _substituteCount;
+
+      // slotIds の並び替え
+      if (oldIndex < _slotIds.length && newIndex < _slotIds.length) {
+        final movedSlotId = _slotIds.removeAt(oldIndex);
+        _slotIds.insert(newIndex, movedSlotId);
+      }
+
+      // 選手割り当ての並び替え
+      final currentPlayers = List<String?>.generate(
+        totalCount,
+        (i) => _tempSelectedPlayers[i],
+      );
+      final movedPlayer = currentPlayers.removeAt(oldIndex);
+      currentPlayers.insert(newIndex, movedPlayer);
+
+      _tempSelectedPlayers.clear();
+      for (int i = 0; i < currentPlayers.length; i++) {
+        final p = currentPlayers[i];
+        if (p != null && p.isNotEmpty) {
+          _tempSelectedPlayers[i] = p;
+        }
+      }
+    });
   }
 
   Future<void> _handleSelectPlayer(
@@ -246,6 +286,12 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                     setState(() {
                       _matchType = type;
                       _substituteCount = 0;
+                      final baseLen = _getBasePlayerCount(type);
+                      _slotIds = List.generate(
+                        baseLen,
+                        (i) =>
+                            'slot_${DateTime.now().microsecondsSinceEpoch}_$i',
+                      );
                     });
                   },
                 ),
@@ -256,17 +302,24 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'オーダー編成（タップして選手を選択）',
-                      style: TextStyle(
-                        fontSize: AppFontSize.subhead,
-                        fontWeight: AppFontWeight.bold,
-                        color: accentColor,
+                    Expanded(
+                      child: Text(
+                        'オーダー編成',
+                        style: TextStyle(
+                          fontSize: AppFontSize.subhead,
+                          fontWeight: AppFontWeight.bold,
+                          color: accentColor,
+                        ),
                       ),
                     ),
                     if (_substituteCount < 4)
                       TextButton.icon(
-                        onPressed: () => setState(() => _substituteCount++),
+                        onPressed: () => setState(() {
+                          _substituteCount++;
+                          _slotIds.add(
+                            'slot_${DateTime.now().microsecondsSinceEpoch}_${_slotIds.length}',
+                          );
+                        }),
                         icon: const Icon(Icons.add, size: 16),
                         label: const Text('補欠を追加'),
                         style: TextButton.styleFrom(
@@ -286,6 +339,7 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                   baseCount: baseCount,
                   posNames: posNames,
                   tempSelectedPlayers: _tempSelectedPlayers,
+                  slotKeys: _slotIds,
                   themeColors: themeColors,
                   borderColor: borderColor,
                   inputBgColor: inputBgColor,
@@ -304,9 +358,13 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                         }
                       }
                       _tempSelectedPlayers.remove(totalCount - 1);
+                      if (index < _slotIds.length) {
+                        _slotIds.removeAt(index);
+                      }
                       _substituteCount--;
                     });
                   },
+                  onReorder: _handleReorder,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
               ],

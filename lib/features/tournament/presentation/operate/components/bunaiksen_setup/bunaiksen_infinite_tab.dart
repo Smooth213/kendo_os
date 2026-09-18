@@ -95,7 +95,7 @@ class BunaiksenInfiniteTab extends ConsumerWidget {
                                 '${index + 1}',
                                 style: TextStyle(
                                   color: index < 2
-                                      ? AppKendoColors.hansokuRed
+                                      ? AppKendoColors.pureWhite
                                       : context.appColors.textColor,
                                   fontSize: AppFontSize.small,
                                   fontWeight: AppFontWeight.bold,

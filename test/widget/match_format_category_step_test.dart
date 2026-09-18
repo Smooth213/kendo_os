@@ -38,6 +38,8 @@ void main() {
               onCategoryChanged: (major, minor) {},
               onTeamSelected: (team) {},
               onAdjustOrder: (team) {},
+              onEditTeam: (team) {},
+              onDeleteTeam: (team) {},
               onNavigateToTeamRegistration: () {},
               themeColors: dummyThemeColors,
               isDark: false,

@@ -96,9 +96,10 @@ class TeamEditBasicFields extends StatelessWidget {
           spacing: AppSpacing.subValue,
           runSpacing: AppSpacing.subValue,
           children: candidateCategories.map((cat) {
-            final isSel = selectedCategory == cat;
+            final labelText = cat.replaceAll('の部', '');
+            final isSel = selectedCategory.replaceAll('の部', '') == labelText;
             return AppChoiceChip(
-              label: Text(cat),
+              label: Text(labelText),
               selected: isSel,
               selectedColor: accentColor.withValues(alpha: 0.2),
               onSelected: (_) => onCategoryChanged(cat),

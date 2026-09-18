@@ -1144,5 +1144,155 @@ void main() {
         );
       },
     );
+
+    test(
+      '36. [汎用視認性保証] ボタン (styleFrom / ButtonStyle) における背景色 (backgroundColor) と文字色 (foregroundColor) の同色・同一指定防止',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // styleFrom(...) の呼び出しブロックを抽出
+          final styleMatches = RegExp(
+            r'(?:ElevatedButton|TextButton|OutlinedButton|FilledButton)\.styleFrom\s*\(([\s\S]+?)\)\s*[,;]',
+          ).allMatches(content);
+
+          for (final match in styleMatches) {
+            final body = match.group(1) ?? '';
+            final bgMatch = RegExp(
+              r'backgroundColor\s*:\s*([\s\S]+?)(?=,\s*[a-zA-Z0-9_]+\s*:|\)\s*$|\n\s*[a-zA-Z0-9_]+\s*:|$)',
+            ).firstMatch(body);
+            final fgMatch = RegExp(
+              r'foregroundColor\s*:\s*([\s\S]+?)(?=,\s*[a-zA-Z0-9_]+\s*:|\)\s*$|\n\s*[a-zA-Z0-9_]+\s*:|$)',
+            ).firstMatch(body);
+
+            if (bgMatch != null && fgMatch != null) {
+              final bg = bgMatch
+                  .group(1)!
+                  .replaceAll(RegExp(r'\s+'), ' ')
+                  .trim();
+              final fg = fgMatch
+                  .group(1)!
+                  .replaceAll(RegExp(r'\s+'), ' ')
+                  .trim();
+
+              final bgBranches = _extractColorBranches(bg);
+              final fgBranches = _extractColorBranches(fg);
+
+              for (
+                var i = 0;
+                i < bgBranches.length && i < fgBranches.length;
+                i++
+              ) {
+                final b = bgBranches[i];
+                final f = fgBranches[i];
+                if (b == f && !b.contains('transparent')) {
+                  violations.add(
+                    '${file.path}: ボタンの backgroundColor と foregroundColor に同一の値 ($b) が指定されています',
+                  );
+                }
+              }
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'ボタンの styleFrom で backgroundColor と foregroundColor が同一指定され、文字が消失する視認性破壊が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '37. [汎用視認性保証] CircleAvatar における背景色 (backgroundColor) とアイコン・文字色 (color) の同色・同一指定防止',
+      () {
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          if (file.path.contains('lib/shared/theme/')) {
+            continue;
+          }
+          if (file.path.endsWith('.freezed.dart') ||
+              file.path.endsWith('.g.dart')) {
+            continue;
+          }
+
+          final content = file.readAsStringSync();
+
+          // CircleAvatar(...) のブロックを抽出
+          final avatarMatches = RegExp(
+            r'CircleAvatar\s*\(([\s\S]+?)\)\s*[,;]',
+          ).allMatches(content);
+
+          for (final match in avatarMatches) {
+            final body = match.group(1) ?? '';
+            final bgMatch = RegExp(
+              r'backgroundColor\s*:\s*([\s\S]+?)(?=,\s*[a-zA-Z0-9_]+\s*:|\)\s*$|\n\s*[a-zA-Z0-9_]+\s*:|$)',
+            ).firstMatch(body);
+            final childColorMatch = RegExp(
+              r'(?:Icon\s*\([^)]*color|TextStyle\s*\([^)]*color)\s*:\s*([\s\S]+?)(?=,\s*[a-zA-Z0-9_]+\s*:|\)\s*$|\n\s*[a-zA-Z0-9_]+\s*:|$)',
+            ).firstMatch(body);
+
+            if (bgMatch != null && childColorMatch != null) {
+              final bg = bgMatch
+                  .group(1)!
+                  .replaceAll(RegExp(r'\s+'), ' ')
+                  .trim();
+              final childColor = childColorMatch
+                  .group(1)!
+                  .replaceAll(RegExp(r'\s+'), ' ')
+                  .trim();
+
+              final bgBranches = _extractColorBranches(bg);
+              final childColorBranches = _extractColorBranches(childColor);
+
+              for (
+                var i = 0;
+                i < bgBranches.length && i < childColorBranches.length;
+                i++
+              ) {
+                final b = bgBranches[i];
+                final c = childColorBranches[i];
+                if (b == c && !b.contains('transparent')) {
+                  violations.add(
+                    '${file.path}: CircleAvatar の backgroundColor と アイコン/文字色に同一の値 ($b) が指定されています',
+                  );
+                }
+              }
+            }
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'CircleAvatar で backgroundColor と アイコン/文字色が同一指定され、中身が消失する視認性破壊が検出されました。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
+}
+
+List<String> _extractColorBranches(String expr) {
+  final ternaryMatch = RegExp(
+    r'^[^?]+\?\s*([^:]+)\s*:\s*(.+)$',
+  ).firstMatch(expr);
+  if (ternaryMatch != null) {
+    return [ternaryMatch.group(1)!.trim(), ternaryMatch.group(2)!.trim()];
+  }
+  return [expr.trim()];
 }

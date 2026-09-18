@@ -49,8 +49,8 @@ class MasterDataCleanupDialog extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF9C27B0),
-              child: const Icon(Icons.cached, color: Color(0xFF9C27B0)),
+              backgroundColor: AppKendoColors.purple,
+              child: const Icon(Icons.cached, color: AppKendoColors.pureWhite),
             ),
             title: const Text(
               '一時キャッシュをクリア',
@@ -70,7 +70,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.appColors.primaryAccent,
-                foregroundColor: context.appColors.primaryAccent,
+                foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
               ),
@@ -86,8 +86,11 @@ class MasterDataCleanupDialog extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF2196F3),
-              child: const Icon(Icons.download, color: Color(0xFF2196F3)),
+              backgroundColor: AppKendoColors.blue,
+              child: const Icon(
+                Icons.download,
+                color: AppKendoColors.pureWhite,
+              ),
             ),
             title: const Text(
               '全データをJSONでバックアップ',
@@ -140,7 +143,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.appColors.infoColor,
-                foregroundColor: context.appColors.infoColor,
+                foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
               ),
@@ -163,7 +166,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                 backgroundColor: AppKendoColors.hansokuRed,
                 child: const Icon(
                   Icons.delete_sweep,
-                  color: AppKendoColors.red,
+                  color: AppKendoColors.pureWhite,
                 ),
               ),
               title: const Text(
@@ -238,7 +241,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppKendoColors.hansokuRed,
-                  foregroundColor: AppKendoColors.hansokuRed,
+                  foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
                 ),

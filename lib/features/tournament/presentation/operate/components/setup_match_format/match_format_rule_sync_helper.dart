@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 /// 試合形式設定画面のカテゴリールール連動・シーン選択ヘルパー
@@ -62,5 +64,29 @@ class MatchFormatRuleSyncHelper {
       default:
         return ruleSet.normalRule;
     }
+  }
+
+  /// ルールシーンを適用し、状態とコントローラーを更新
+  static void applyCategoryRuleScene({
+    required String scene,
+    required CategoryRuleSet ruleSet,
+    required MatchFormatFormState state,
+    required TextEditingController overallTimeController,
+    required TextEditingController winPointController,
+    required TextEditingController lossPointController,
+    required TextEditingController drawPointController,
+  }) {
+    state.selectedRuleScene = scene;
+    final isRen = scene == 'renseikai' || scene == 'moushiawase';
+    final targetRule = getRuleForScene(scene: scene, ruleSet: ruleSet);
+    state.isRenseikai = isRen;
+    if (isRen) state.renseikaiType = targetRule.renseikaiType;
+    state.applyMatchRule(
+      targetRule,
+      overallTimeController: overallTimeController,
+      winPointController: winPointController,
+      lossPointController: lossPointController,
+      drawPointController: drawPointController,
+    );
   }
 }

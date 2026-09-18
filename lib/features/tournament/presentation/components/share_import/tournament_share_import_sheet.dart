@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/player_roster_matcher.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_basic_card.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_cards.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_raw_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/team_registration_screen.dart'
     show playerListProvider;
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -14,7 +16,6 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
-import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_cards.dart';
 
 class TournamentShareImportSheet extends ConsumerStatefulWidget {
   final TournamentShareData? initialData;
@@ -182,127 +183,26 @@ class _TournamentShareImportSheetState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_isEditingRaw) ...[
-                // 元テキスト直接編集モード
-                Text(
-                  'TimeTreeやLINE、メモ等のテキストを貼り付けて解析できます。',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    color: subTextColor,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                AppTextField(
-                  controller: _rawTextController,
-                  maxLines: 10,
-                  style: TextStyle(
-                    fontSize: AppFontSize.body,
-                    color: textColor,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '例:\n黒瀬杯争奪剣道大会\n日時: 令和8年9月20日\n場所: ...',
-                    hintStyle: TextStyle(
-                      color: subTextColor.withValues(alpha: 0.6),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppRadius.mediumValue,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF1C1C1E)
-                        : const Color(0xFFF2F2F7),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ElevatedButton.icon(
-                  onPressed: _reparse,
-                  icon: const Icon(Icons.psychology),
-                  label: const Text('テキストを再解析する'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppRadius.mediumValue,
-                      ),
-                    ),
-                  ),
-                ),
-              ] else ...[
+              if (_isEditingRaw)
+                TournamentShareImportRawView(
+                  rawTextController: _rawTextController,
+                  onReparse: _reparse,
+                  accentColor: accentColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  isDark: isDark,
+                )
+              else ...[
                 // 解析結果プレビュー & 微調整モード
-                ShareImportInfoCard(
-                  title: '大会基本情報',
-                  icon: Icons.emoji_events_outlined,
+                TournamentShareImportBasicCard(
+                  nameController: _nameController,
+                  venueController: _venueController,
+                  selectedDate: _selectedDate,
+                  onPickDate: _pickDate,
                   accentColor: accentColor,
                   cardColor: cardColor,
                   textColor: textColor,
                   subTextColor: subTextColor,
-                  children: [
-                    AppTextField(
-                      controller: _nameController,
-                      style: TextStyle(
-                        fontSize: AppFontSize.body,
-                        fontWeight: AppFontWeight.bold,
-                        color: textColor,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: '大会名',
-                        prefixIcon: Icon(Icons.title),
-                        isDense: true,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: _pickDate,
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.smallValue,
-                            ),
-                            child: InputDecorator(
-                              decoration: const InputDecoration(
-                                labelText: '開催日',
-                                prefixIcon: Icon(Icons.calendar_today),
-                                isDense: true,
-                              ),
-                              child: Text(
-                                _selectedDate != null
-                                    ? DateFormat(
-                                        'yyyy年M月d日 (E)',
-                                        'ja',
-                                      ).format(_selectedDate!)
-                                    : '未設定 (タップして選択)',
-                                style: TextStyle(
-                                  color: _selectedDate != null
-                                      ? textColor
-                                      : subTextColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    AppTextField(
-                      controller: _venueController,
-                      style: TextStyle(
-                        fontSize: AppFontSize.body,
-                        color: textColor,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: '会場',
-                        prefixIcon: Icon(Icons.place_outlined),
-                        isDense: true,
-                      ),
-                    ),
-                  ],
                 ),
                 const SizedBox(height: AppSpacing.md),
 

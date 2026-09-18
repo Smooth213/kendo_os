@@ -84,7 +84,6 @@ void main() {
         );
 
         bool tappedSelect = false;
-        bool tappedAdjust = false;
 
         await tester.pumpWidget(
           MaterialApp(
@@ -98,20 +97,14 @@ void main() {
                 onSelect: () {
                   tappedSelect = true;
                 },
-                onAdjustOrder: () {
-                  tappedAdjust = true;
-                },
+                onEdit: () {},
+                onDelete: () {},
               ),
             ),
           ),
         );
 
         expect(find.text('洗心道場 A'), findsOneWidget);
-        expect(find.text('オーダーを調整'), findsOneWidget);
-
-        await tester.tap(find.text('オーダーを調整'));
-        await tester.pump();
-        expect(tappedAdjust, isTrue);
 
         await tester.tap(find.text('洗心道場 A'));
         await tester.pump();

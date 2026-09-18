@@ -3,18 +3,20 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// チーム編集ボトムシート: オーダー一覧ウィジェット
+/// チーム編集ボトムシート: オーダー一覧ウィジェット（ドラッグ＆ドロップ並び替え対応）
 class TeamEditOrderList extends StatelessWidget {
   final int totalCount;
   final int baseCount;
   final List<String> posNames;
   final Map<int, String> tempSelectedPlayers;
+  final List<String> slotKeys;
   final AppThemeColors themeColors;
   final Color borderColor;
   final Color inputBgColor;
   final void Function(int index) onSelectPlayer;
-  final void Function(int index) onClearPlayer;
+  final void Function(int index)? onClearPlayer;
   final void Function(int index) onRemoveSubstitute;
+  final void Function(int oldIndex, int newIndex) onReorder;
 
   const TeamEditOrderList({
     super.key,
@@ -22,12 +24,14 @@ class TeamEditOrderList extends StatelessWidget {
     required this.baseCount,
     required this.posNames,
     required this.tempSelectedPlayers,
+    required this.slotKeys,
     required this.themeColors,
     required this.borderColor,
     required this.inputBgColor,
     required this.onSelectPlayer,
-    required this.onClearPlayer,
+    this.onClearPlayer,
     required this.onRemoveSubstitute,
+    required this.onReorder,
   });
 
   @override
@@ -46,13 +50,23 @@ class TeamEditOrderList extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.mediumValue),
           border: Border.all(color: borderColor, width: 1.2),
         ),
-        child: Column(
-          children: List.generate(totalCount, (index) {
+        child: ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: totalCount,
+          // ignore: deprecated_member_use
+          onReorder: onReorder,
+          itemBuilder: (context, index) {
             final bool isSubstitute = index >= baseCount;
             final playerName = tempSelectedPlayers[index];
             final pos = index < posNames.length ? posNames[index] : '選手';
+            final keyString = index < slotKeys.length
+                ? slotKeys[index]
+                : 'slot_fallback_$index';
 
             return Column(
+              key: ValueKey(keyString),
               children: [
                 ListTile(
                   onTap: () => onSelectPlayer(index),
@@ -105,16 +119,6 @@ class TeamEditOrderList extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (playerName != null)
-                        IconButton(
-                          icon: Icon(
-                            Icons.clear,
-                            size: 18,
-                            color: subTextColor,
-                          ),
-                          tooltip: '選手をクリア',
-                          onPressed: () => onClearPlayer(index),
-                        ),
                       if (isSubstitute)
                         IconButton(
                           icon: const Icon(
@@ -124,13 +128,25 @@ class TeamEditOrderList extends StatelessWidget {
                           ),
                           tooltip: '補欠枠を削除',
                           onPressed: () => onRemoveSubstitute(index),
-                        )
-                      else
-                        Icon(
-                          Icons.chevron_right,
-                          color: subTextColor,
-                          size: 20,
                         ),
+                      const SizedBox(width: AppSpacing.xs),
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: Tooltip(
+                          message: 'ドラッグして並び替え',
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xs,
+                              vertical: AppSpacing.sm,
+                            ),
+                            child: Icon(
+                              Icons.drag_handle,
+                              color: subTextColor,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -142,7 +158,7 @@ class TeamEditOrderList extends StatelessWidget {
                   ),
               ],
             );
-          }),
+          },
         ),
       ),
     );

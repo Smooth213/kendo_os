@@ -20,6 +20,8 @@ class MatchFormatCategoryStep extends ConsumerWidget {
   final void Function(String major, String minor) onCategoryChanged;
   final ValueChanged<TeamModel> onTeamSelected;
   final ValueChanged<TeamModel> onAdjustOrder;
+  final ValueChanged<TeamModel> onEditTeam;
+  final ValueChanged<TeamModel> onDeleteTeam;
   final VoidCallback onNavigateToTeamRegistration;
   final AppThemeColors themeColors;
   final bool isDark;
@@ -37,6 +39,8 @@ class MatchFormatCategoryStep extends ConsumerWidget {
     required this.onCategoryChanged,
     required this.onTeamSelected,
     required this.onAdjustOrder,
+    required this.onEditTeam,
+    required this.onDeleteTeam,
     required this.onNavigateToTeamRegistration,
     required this.themeColors,
     required this.isDark,
@@ -205,7 +209,9 @@ class MatchFormatCategoryStep extends ConsumerWidget {
                       textColor: textColor,
                       isDark: isDark,
                       onSelect: () => onTeamSelected(team),
-                      onAdjustOrder: () => onAdjustOrder(team),
+                      onAdjustOrder: () => onEditTeam(team),
+                      onEdit: () => onEditTeam(team),
+                      onDelete: () => onDeleteTeam(team),
                     );
                   }).toList(),
                 );

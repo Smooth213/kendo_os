@@ -15,6 +15,7 @@ SUB_AUDITS = [
     ("① デザインシステム トークン規約 (strict)", ["python3", "scripts/check_design_tokens.py", "--strict"]),
     ("② UIレイアウト 5段構造永続保持規約", ["python3", "scripts/check_layout_5tier_governance.py"]),
     ("③ テーマ視認性・白飛び黒潰れゼロ規約", ["python3", "scripts/check_theme_contrast_governance.py"]),
+    ("④ デザインシステム・視認性完全防護規約 (全37項目)", ["flutter", "test", "test/governance/design_system_governance_test.dart"]),
 ]
 
 def main():

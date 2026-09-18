@@ -29,6 +29,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_state_initializer.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_preset_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_action_helper.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return MatchFormatPresetHelper.defaultNoteHistory;
@@ -102,13 +103,35 @@ class _SetupMatchFormatScreenState
     });
   }
 
-  void _showTeamDetailDialog(BuildContext context, TeamModel team) {
-    MatchFormatPresetHelper.showTeamDetail(
+  Future<void> _handleEditTeam(TeamModel team) async {
+    final players = ref.read(playerListProvider).value ?? [];
+    await MatchFormatTeamActionHelper.handleEditTeam(
       context: context,
+      ref: ref,
       team: team,
-      themeColors: _themeColors,
-      players: ref.read(playerListProvider).value ?? [],
-      onTeamUpdated: () => setState(() {}),
+      players: players,
+      onSaved: (updatedTeam) {
+        if (mounted && _state.selectedTeamId == updatedTeam.id) {
+          setState(() {
+            _state.matchType = updatedTeam.matchType;
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> _handleDeleteTeam(TeamModel team) async {
+    await MatchFormatTeamActionHelper.handleDeleteTeam(
+      context: context,
+      ref: ref,
+      team: team,
+      onDeleted: () {
+        if (mounted && _state.selectedTeamId == team.id) {
+          setState(() {
+            _state.selectedTeamId = null;
+          });
+        }
+      },
     );
   }
 
@@ -179,15 +202,15 @@ class _SetupMatchFormatScreenState
 
   void _applyCategoryRuleScene(String scene, CategoryRuleSet ruleSet) {
     setState(() {
-      _state.selectedRuleScene = scene;
-      final isRen = scene == 'renseikai' || scene == 'moushiawase';
-      final targetRule = MatchFormatRuleSyncHelper.getRuleForScene(
+      MatchFormatRuleSyncHelper.applyCategoryRuleScene(
         scene: scene,
         ruleSet: ruleSet,
+        state: _state,
+        overallTimeController: _overallTimeController,
+        winPointController: _winPointController,
+        lossPointController: _lossPointController,
+        drawPointController: _drawPointController,
       );
-      _state.isRenseikai = isRen;
-      if (isRen) _state.renseikaiType = targetRule.renseikaiType;
-      _applyRule(targetRule);
     });
   }
 
@@ -285,8 +308,9 @@ class _SetupMatchFormatScreenState
                             _state.matchType = team.matchType;
                           });
                         },
-                        onAdjustOrder: (team) =>
-                            _showTeamDetailDialog(context, team),
+                        onAdjustOrder: (team) => _handleEditTeam(team),
+                        onEditTeam: (team) => _handleEditTeam(team),
+                        onDeleteTeam: (team) => _handleDeleteTeam(team),
                         onNavigateToTeamRegistration: () => context.push(
                           '/team-registration/${widget.tournamentId}?initialPage=2',
                         ),
@@ -350,10 +374,10 @@ class _SetupMatchFormatScreenState
                             setState(() => _courtController.clear()),
                         buildTextFieldDecoration:
                             ({
-                              required String labelText,
-                              String? hintText,
-                              Widget? prefixIcon,
-                              String? suffixText,
+                              required labelText,
+                              hintText,
+                              prefixIcon,
+                              suffixText,
                             }) =>
                                 MatchFormatSetupHelper.buildTextFieldDecoration(
                                   themeColors: _themeColors,

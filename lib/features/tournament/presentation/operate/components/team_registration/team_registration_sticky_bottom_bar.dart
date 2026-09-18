@@ -78,7 +78,7 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
                   label: currentPage == 2
                       ? (editingTeamId != null
                             ? '変更を保存'
-                            : (isInputting ? '登録して続けて追加' : '＋ 新しいチームを追加'))
+                            : (isInputting ? '登録して続けて追加' : '新しいチームを追加'))
                       : '次へ進む',
                   icon: currentPage == 2
                       ? (editingTeamId != null
