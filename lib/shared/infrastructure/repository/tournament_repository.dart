@@ -100,6 +100,23 @@ class TournamentRepository {
     await batch.commit();
   }
 
+  // ★ 1年以上前などの古い大会とその試合データを一括削除
+  Future<int> deleteOldTournaments({int days = 365}) async {
+    final threshold = Timestamp.fromDate(
+      DateTime.now().subtract(Duration(days: days)),
+    );
+    final snapshot = await _collection
+        .where('date', isLessThan: threshold)
+        .get();
+
+    int count = 0;
+    for (final doc in snapshot.docs) {
+      await deleteTournament(doc.id);
+      count++;
+    }
+    return count;
+  }
+
   // ★ 追加：大会情報をまるごと更新する
   Future<void> updateTournament(TournamentModel tournament) async {
     await _collection.doc(tournament.id).update(tournament.toJson());

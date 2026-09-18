@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/security/feature_gate.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
@@ -12,11 +14,18 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/utils/file_download_helper.dart'
+    if (dart.library.html) 'package:kendo_os/shared/utils/file_download_helper_web.dart'
+    as download_helper;
+import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 /// データとストレージ管理ダイアログ
 class MasterDataCleanupDialog extends ConsumerWidget {
   const MasterDataCleanupDialog({super.key});
+
+  @visibleForTesting
+  static Directory? customDirectory;
 
   static void show(BuildContext context, WidgetRef ref) {
     showAppDialog(
@@ -65,8 +74,14 @@ class MasterDataCleanupDialog extends ConsumerWidget {
             ),
             trailing: ElevatedButton(
               onPressed: () {
+                try {
+                  PaintingBinding.instance.imageCache.clear();
+                  PaintingBinding.instance.imageCache.clearLiveImages();
+                  AppSnackBar.showSuccess(context, 'キャッシュをクリアし、メモリを解放しました ✨');
+                } catch (e) {
+                  AppSnackBar.showError(context, 'キャッシュクリア失敗: $e');
+                }
                 Navigator.pop(context);
-                AppSnackBar.showSuccess(context, 'キャッシュをクリアし、メモリを解放しました ✨');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.appColors.primaryAccent,
@@ -105,7 +120,6 @@ class MasterDataCleanupDialog extends ConsumerWidget {
             ),
             trailing: ElevatedButton(
               onPressed: () async {
-                Navigator.pop(context);
                 try {
                   final matches = ref.read(matchListProvider);
                   final jsonStr = jsonEncode(
@@ -123,17 +137,60 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                     },
                   );
 
-                  final dir = await getApplicationDocumentsDirectory();
-                  final file = File(
-                    '${dir.path}/kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json',
-                  );
-                  await file.writeAsString(jsonStr);
+                  final fileName =
+                      'kendo_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+                  final bytes = Uint8List.fromList(utf8.encode(jsonStr));
+
+                  if (kIsWeb) {
+                    final shared = await download_helper.shareFilesWeb(
+                      [bytes],
+                      [fileName],
+                      'application/json',
+                      '剣道OS バックアップデータ',
+                    );
+                    if (!shared) {
+                      download_helper.downloadFileWeb(
+                        bytes,
+                        fileName,
+                        'application/json',
+                      );
+                    }
+                    if (context.mounted) {
+                      AppSnackBar.showSuccess(context, '✅ バックアップの書き出しが完了しました');
+                      Navigator.pop(context);
+                    }
+                    return;
+                  }
+
+                  final dir =
+                      customDirectory ??
+                      await getApplicationDocumentsDirectory();
+                  final file = File('${dir.path}/$fileName');
+                  file.writeAsStringSync(jsonStr);
 
                   if (context.mounted) {
                     AppSnackBar.showSuccess(
                       context,
                       '✅ バックアップ完了\n${file.path}',
                     );
+                    Navigator.pop(context);
+                  }
+
+                  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+                    try {
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          files: [
+                            XFile(
+                              file.path,
+                              mimeType: 'application/json',
+                              name: fileName,
+                            ),
+                          ],
+                          text: '剣道OS バックアップデータ',
+                        ),
+                      );
+                    } catch (_) {}
                   }
                 } catch (e) {
                   if (context.mounted) {
@@ -182,7 +239,6 @@ class MasterDataCleanupDialog extends ConsumerWidget {
               ),
               trailing: ElevatedButton(
                 onPressed: () async {
-                  Navigator.pop(context);
                   final confirm = await showAppDialog<bool>(
                     context: context,
                     builder: (c) => AppDialog(
@@ -222,21 +278,48 @@ class MasterDataCleanupDialog extends ConsumerWidget {
 
                   if (confirm == true) {
                     if (!context.mounted) return;
+                    BuildContext? progressContext;
                     showAppDialog(
                       context: context,
                       barrierDismissible: false,
-                      builder: (_) =>
-                          const Center(child: CircularProgressIndicator()),
+                      builder: (pCtx) {
+                        progressContext = pCtx;
+                        return const Center(child: CircularProgressIndicator());
+                      },
                     );
 
-                    await Future.delayed(const Duration(seconds: 2));
+                    try {
+                      final count = await ref
+                          .read(tournamentRepositoryProvider)
+                          .deleteOldTournaments();
 
-                    if (!context.mounted) return;
-                    Navigator.pop(context); // ぐるぐるを閉じる
-                    AppSnackBar.showSuccess(
-                      context,
-                      '古いデータを一括削除し、ストレージを最適化しました 🗑️',
-                    );
+                      if (progressContext != null && progressContext!.mounted) {
+                        Navigator.pop(progressContext!); // ぐるぐるを閉じる
+                      }
+                      await Future.delayed(Duration.zero);
+                      if (context.mounted) {
+                        if (count > 0) {
+                          AppSnackBar.showSuccess(
+                            context,
+                            '1年以上前の大会 $count 件とその全試合データを完全に削除しました 🗑️',
+                          );
+                        } else {
+                          AppSnackBar.show(
+                            context,
+                            '1年以上前の大会データは見つかりませんでした ℹ️',
+                          );
+                        }
+                        Navigator.pop(context); // ダイアログを閉じる
+                      }
+                    } catch (e) {
+                      if (progressContext != null && progressContext!.mounted) {
+                        Navigator.pop(progressContext!); // ぐるぐるを閉じる
+                      }
+                      await Future.delayed(Duration.zero);
+                      if (context.mounted) {
+                        AppSnackBar.showError(context, '削除処理に失敗しました: $e');
+                      }
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(

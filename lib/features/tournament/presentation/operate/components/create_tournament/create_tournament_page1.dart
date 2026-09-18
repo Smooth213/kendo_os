@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/clipboard_import_banner_card.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 /// 大会新規作成: ステップ1（大会名・日付入力）
-class CreateTournamentPage1 extends StatelessWidget {
+class CreateTournamentPage1 extends ConsumerWidget {
   final TextEditingController nameController;
   final DateTime selectedDate;
   final VoidCallback onPickDate;
@@ -18,7 +20,7 @@ class CreateTournamentPage1 extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color inputBgColor = isDark
         ? const Color(0xFF1C1C1E)
@@ -27,6 +29,9 @@ class CreateTournamentPage1 extends StatelessWidget {
     final Color hintColor = isDark
         ? const Color(0xFF8E8E93)
         : context.appColors.hintColor;
+    final Color dividerColor = isDark
+        ? const Color(0xFF38383A)
+        : const Color(0x22000000);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -115,6 +120,29 @@ class CreateTournamentPage1 extends StatelessWidget {
           ),
           onTap: onPickDate,
         ),
+        // 手動入力とクリップボード取り込みの分離線
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+          child: Row(
+            children: [
+              Expanded(child: Divider(color: dividerColor, thickness: 1.0)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Text(
+                  'または',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    fontWeight: AppFontWeight.medium,
+                    color: context.appColors.subTextColor,
+                  ),
+                ),
+              ),
+              Expanded(child: Divider(color: dividerColor, thickness: 1.0)),
+            ],
+          ),
+        ),
+        // クリップボードからの自動入力バナー
+        const ClipboardImportBannerCard(),
       ],
     );
   }
