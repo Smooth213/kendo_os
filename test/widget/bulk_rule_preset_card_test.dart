@@ -60,6 +60,46 @@ void main() {
       expect(selectedScene, 'renseikai');
     });
 
+    testWidgets('Renders category chips with subtitle and resolves (2)', (
+      WidgetTester tester,
+    ) async {
+      final categoryRules = {
+        '小学生の部': const CategoryRuleSet(
+          subtitle: '予選リーグ',
+          normalRule: MatchRule(matchTimeMinutes: 3.0),
+          useHonsenRule: true,
+        ),
+        '小学生の部 (2)': const CategoryRuleSet(
+          subtitle: '決勝トーナメント',
+          normalRule: MatchRule(matchTimeMinutes: 3.0),
+          useHonsenRule: true,
+        ),
+      };
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: [themeColors]),
+          home: Scaffold(
+            body: BulkRulePresetCard(
+              categoryRules: categoryRules,
+              selectedCategoryRuleName: '小学生の部 (2)',
+              selectedSceneType: 'normal',
+              primaryAccent: Colors.blue,
+              isDark: false,
+              textColor: Colors.black,
+              onSelectCategory: (cat, ruleSet) {},
+              onSelectScene: (scene, rule) {},
+            ),
+          ),
+        ),
+      );
+
+      // 小学生の部 (2) は見分けがつくため (2) が省略されて「小学生の部 (決勝トーナメント)」と表示される
+      expect(find.text('小学生の部 (決勝トーナメント)'), findsOneWidget);
+      expect(find.text('小学生の部 (予選リーグ)'), findsOneWidget);
+    });
+
     testWidgets('Renders empty widget when categoryRules is empty', (
       WidgetTester tester,
     ) async {

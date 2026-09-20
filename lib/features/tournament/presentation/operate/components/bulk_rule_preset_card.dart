@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 
@@ -95,10 +96,19 @@ class BulkRulePresetCard extends StatelessWidget {
                 final catName = entry.key;
                 final ruleSet = entry.value;
                 final isSel = selectedCategoryRuleName == catName;
+                final displayCategory =
+                    CategoryRuleMatchHelper.resolveDisplayCategory(
+                      category: catName,
+                      subtitle: ruleSet.subtitle,
+                      allCategoryRules: categoryRules,
+                    );
+                final displayLabel = ruleSet.subtitle.trim().isNotEmpty
+                    ? '$displayCategory (${ruleSet.subtitle.trim()})'
+                    : displayCategory;
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: AppChoiceChip(
-                    label: Text(catName),
+                    label: Text(displayLabel),
                     selected: isSel,
                     onSelected: (selected) {
                       if (selected) {

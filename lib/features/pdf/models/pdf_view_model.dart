@@ -40,12 +40,28 @@ class PdfViewModel {
       try {
         bool rIsFirst = (match.firstPointSide == 'red');
         bool wIsFirst = (match.firstPointSide == 'white');
-        for (int i = 0; i < (match.redPointMarks as List).length; i++) {
-          redPts.add(PdfPointData(match.redPointMarks[i], i == 0 && rIsFirst));
+        final redMarks = (match.redPointMarks as List);
+        final whiteMarks = (match.whitePointMarks as List);
+        final int firstRedValidIdx = redMarks.indexWhere(
+          (m) => m.toString() != '△' && m.toString() != '▲',
+        );
+        for (int i = 0; i < redMarks.length; i++) {
+          redPts.add(
+            PdfPointData(
+              redMarks[i].toString(),
+              rIsFirst && i == firstRedValidIdx,
+            ),
+          );
         }
-        for (int i = 0; i < (match.whitePointMarks as List).length; i++) {
+        final int firstWhiteValidIdx = whiteMarks.indexWhere(
+          (m) => m.toString() != '△' && m.toString() != '▲',
+        );
+        for (int i = 0; i < whiteMarks.length; i++) {
           whitePts.add(
-            PdfPointData(match.whitePointMarks[i], i == 0 && wIsFirst),
+            PdfPointData(
+              whiteMarks[i].toString(),
+              wIsFirst && i == firstWhiteValidIdx,
+            ),
           );
         }
       } catch (_) {}

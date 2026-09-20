@@ -8,6 +8,8 @@ part of 'category_rule_set.dart';
 
 _CategoryRuleSet _$CategoryRuleSetFromJson(Map<String, dynamic> json) =>
     _CategoryRuleSet(
+      subtitle: json['subtitle'] as String? ?? '',
+      comment: json['comment'] as String? ?? '',
       normalRule: json['normalRule'] == null
           ? const MatchRule()
           : MatchRule.fromJson(json['normalRule'] as Map<String, dynamic>),
@@ -51,6 +53,8 @@ _CategoryRuleSet _$CategoryRuleSetFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$CategoryRuleSetToJson(_CategoryRuleSet instance) =>
     <String, dynamic>{
+      'subtitle': instance.subtitle,
+      'comment': instance.comment,
       'normalRule': instance.normalRule.toJson(),
       'advancedRule': instance.advancedRule.toJson(),
       'useAdvancedRule': instance.useAdvancedRule,

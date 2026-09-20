@@ -136,26 +136,39 @@ class AppBootstrapHelper {
       try {
         final existingUser = FirebaseAuth.instance.currentUser;
         if (existingUser == null) {
+          final waitLimit = kIsWeb
+              ? const Duration(milliseconds: 800)
+              : const Duration(milliseconds: 300);
           final user = await FirebaseAuth.instance
               .authStateChanges()
               .first
-              .timeout(
-                const Duration(milliseconds: 300),
-                onTimeout: () => null,
-              );
+              .timeout(waitLimit, onTimeout: () => null);
           if (user == null) {
-            unawaited(
-              FirebaseAuth.instance
-                  .signInAnonymously()
-                  .then((cred) {
-                    debugPrint(
-                      '🛡️ [Auth] 匿名ゲスト認証をバックグラウンド確立しました: ${cred.user?.uid}',
-                    );
-                  })
-                  .catchError((e) {
-                    debugPrint('⚠️ [Auth] バックグラウンド匿名認証エラー: $e');
-                  }),
-            );
+            if (kIsWeb) {
+              // Web環境ではFirestoreルール (request.auth != null) があるため、
+              // 初回起動時の匿名認証を同期待機してトークンを確立する
+              try {
+                final cred = await FirebaseAuth.instance
+                    .signInAnonymously()
+                    .timeout(const Duration(seconds: 3));
+                debugPrint('🛡️ [Auth] Web匿名認証を同期確立しました: ${cred.user?.uid}');
+              } catch (e) {
+                debugPrint('⚠️ [Auth] Web同期匿名認証エラー: $e');
+              }
+            } else {
+              unawaited(
+                FirebaseAuth.instance
+                    .signInAnonymously()
+                    .then((cred) {
+                      debugPrint(
+                        '🛡️ [Auth] 匿名ゲスト認証をバックグラウンド確立しました: ${cred.user?.uid}',
+                      );
+                    })
+                    .catchError((e) {
+                      debugPrint('⚠️ [Auth] バックグラウンド匿名認証エラー: $e');
+                    }),
+              );
+            }
           } else {
             debugPrint('🛡️ [Auth] 既存の認証セッション(${user.uid})を再利用します');
           }
@@ -237,7 +250,7 @@ class AppBootstrapHelper {
     try {
       await Future.any([
         run().catchError((_) {}),
-        Future.delayed(const Duration(milliseconds: 3500)),
+        Future.delayed(Duration(milliseconds: kIsWeb ? 5000 : 3500)),
       ]);
     } catch (_) {}
 

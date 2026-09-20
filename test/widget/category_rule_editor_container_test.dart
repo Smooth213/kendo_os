@@ -30,6 +30,8 @@ void main() {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
       final formState = CategoryRulesFormState()..editingMatchType = '個人戦';
       final keywordsController = TextEditingController();
+      final subtitleController = TextEditingController();
+      final commentController = TextEditingController();
       bool canceled = false;
       bool saved = false;
 
@@ -55,6 +57,8 @@ void main() {
                 enableLiquidGlass: false,
                 formState: formState,
                 keywordsController: keywordsController,
+                subtitleController: subtitleController,
+                commentController: commentController,
                 onCancel: () => canceled = true,
                 onSave: () => saved = true,
                 setState: (fn) => fn(),

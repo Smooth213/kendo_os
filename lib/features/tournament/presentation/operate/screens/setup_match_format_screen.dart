@@ -110,11 +110,9 @@ class _SetupMatchFormatScreenState
       ref: ref,
       team: team,
       players: players,
-      onSaved: (updatedTeam) {
-        if (mounted && _state.selectedTeamId == updatedTeam.id) {
-          setState(() {
-            _state.matchType = updatedTeam.matchType;
-          });
+      onSaved: (updated) {
+        if (mounted && _state.selectedTeamId == updated.id) {
+          setState(() => _state.matchType = updated.matchType);
         }
       },
     );
@@ -127,9 +125,7 @@ class _SetupMatchFormatScreenState
       team: team,
       onDeleted: () {
         if (mounted && _state.selectedTeamId == team.id) {
-          setState(() {
-            _state.selectedTeamId = null;
-          });
+          setState(() => _state.selectedTeamId = null);
         }
       },
     );
@@ -364,12 +360,9 @@ class _SetupMatchFormatScreenState
                         courtController: _courtController,
                         noteController: _noteController,
                         themeColors: _themeColors,
-                        onRuleSceneSelected: (scene, ruleSet) =>
-                            _applyCategoryRuleScene(scene, ruleSet),
-                        onSetManualRoundType: (type) =>
-                            _setManualRoundType(type),
-                        onHeadingPresetToggled: (heading) =>
-                            _toggleHeadingPreset(heading),
+                        onRuleSceneSelected: _applyCategoryRuleScene,
+                        onSetManualRoundType: _setManualRoundType,
+                        onHeadingPresetToggled: _toggleHeadingPreset,
                         onClearCourt: () =>
                             setState(() => _courtController.clear()),
                         buildTextFieldDecoration:

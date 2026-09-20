@@ -29,7 +29,7 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen_viewer');
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     // 🛡️ QRアクセス防衛判定：外部のQRコード（直リンク）からスタックなしで直接ブラウザで開かれた場合のみ true と判定
-    final isQrAccess = !GoRouter.of(context).canPop();
+    final isQrAccess = !(GoRouter.maybeOf(context)?.canPop() ?? false);
 
     // tournamentId から日付をパース (例: bunaiksen_20241010)
     String dateDisplay = '部内戦';
@@ -42,7 +42,8 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     }
 
     final availableDates =
-        ref.watch(bunaiksenAvailableDatesProvider).value ?? const <String>{};
+        ref.watch(bunaiksenAvailableDatesProvider).valueOrNull ??
+        const <String>{};
 
     final matches = ref.watch(bunaiksenMatchesProvider(tournamentId));
     final dojoId = ref.watch(currentDojoIdProvider);

@@ -22,6 +22,8 @@ void main() {
 
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final keywordsController = TextEditingController();
+    final subtitleController = TextEditingController();
+    final commentController = TextEditingController();
 
     await tester.pumpWidget(
       ProviderScope(
@@ -113,6 +115,8 @@ void main() {
               advancedDaihyoEnchoCount: -2,
               advancedDaihyoHasHantei: false,
               keywordsController: keywordsController,
+              subtitleController: subtitleController,
+              commentController: commentController,
               onNormalMatchTimeChanged: (_) {},
               onNormalIsRunningTimeChanged: (_) {},
               onNormalRenseikaiTypeChanged: (_) {},

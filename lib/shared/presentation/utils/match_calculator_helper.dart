@@ -31,14 +31,26 @@ class MatchCalculatorHelper {
     final bool rIsFirst = (match.firstPointSide == 'red');
     final bool wIsFirst = (match.firstPointSide == 'white');
 
+    final int firstRedValidIdx = match.redPointMarks.indexWhere(
+      (m) => m != '△' && m != '▲',
+    );
     for (int i = 0; i < match.redPointMarks.length; i++) {
       redPts.add(
-        PointMark(mark: match.redPointMarks[i], isFirst: i == 0 && rIsFirst),
+        PointMark(
+          mark: match.redPointMarks[i],
+          isFirst: rIsFirst && i == firstRedValidIdx,
+        ),
       );
     }
+    final int firstWhiteValidIdx = match.whitePointMarks.indexWhere(
+      (m) => m != '△' && m != '▲',
+    );
     for (int i = 0; i < match.whitePointMarks.length; i++) {
       whitePts.add(
-        PointMark(mark: match.whitePointMarks[i], isFirst: i == 0 && wIsFirst),
+        PointMark(
+          mark: match.whitePointMarks[i],
+          isFirst: wIsFirst && i == firstWhiteValidIdx,
+        ),
       );
     }
 

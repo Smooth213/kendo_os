@@ -10,6 +10,8 @@ class AppTextField extends StatelessWidget {
   final String? hintText;
   final String? labelText;
   final String? errorText;
+  final String? helperText;
+  final TextStyle? helperStyle;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
@@ -39,6 +41,8 @@ class AppTextField extends StatelessWidget {
     this.hintText,
     this.labelText,
     this.errorText,
+    this.helperText,
+    this.helperStyle,
     this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
@@ -89,6 +93,8 @@ class AppTextField extends StatelessWidget {
       hintText: hintText,
       labelText: labelText,
       errorText: errorText,
+      helperText: helperText,
+      helperStyle: helperStyle,
       hintStyle: TextStyle(
         fontSize: AppFontSize.body,
         color: themeColors.hintColor,
@@ -159,6 +165,8 @@ class AppTextField extends StatelessWidget {
               hintText: decoration?.hintText ?? hintText,
               labelText: decoration?.labelText ?? labelText,
               errorText: decoration?.errorText ?? errorText,
+              helperText: decoration?.helperText ?? helperText,
+              helperStyle: decoration?.helperStyle ?? helperStyle,
               prefixIcon: decoration?.prefixIcon ?? prefixIcon,
               suffixIcon: decoration?.suffixIcon ?? suffixIcon,
               contentPadding: decoration?.contentPadding ?? contentPadding,

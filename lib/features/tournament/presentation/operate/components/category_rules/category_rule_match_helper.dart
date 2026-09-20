@@ -23,66 +23,52 @@ class CategoryRuleMatchHelper {
     if (minutes <= 0) return '0分';
     final mins = minutes.floor();
     final secs = ((minutes - mins) * 60).round();
-    if (mins == 0) {
-      return '$secs秒';
-    }
-    if (secs == 0) {
-      return '$mins分';
-    }
+    if (mins == 0) return '$secs秒';
+    if (secs == 0) return '$mins分';
     return '$mins分$secs秒';
   }
 
   /// 上位戦（準決勝・決勝等）判定
   static bool isAdvancedMatchName(String note, {List<String>? customKeywords}) {
     final cleanNote = note.toLowerCase().trim();
-    final List<String> keywords;
-    if (customKeywords != null && customKeywords.isNotEmpty) {
-      keywords = customKeywords.map((kw) => kw.toLowerCase().trim()).toList();
-    } else {
-      keywords = [
-        '準決勝',
-        '準決',
-        'じゅんけつ',
-        'ベスト4',
-        'b4',
-        'sf',
-        'semifinal',
-        '准決',
-        '順決',
-        '決勝',
-        'けっしょう',
-        'ファイナル',
-        'final',
-        '結勝',
-        '決勝戦',
-        '3位決定',
-        '3決',
-        '三決',
-      ];
-    }
+    final List<String> keywords =
+        (customKeywords != null && customKeywords.isNotEmpty)
+        ? customKeywords.map((kw) => kw.toLowerCase().trim()).toList()
+        : const [
+            '準決勝',
+            '準決',
+            'じゅんけつ',
+            'ベスト4',
+            'b4',
+            'sf',
+            'semifinal',
+            '准決',
+            '順決',
+            '決勝',
+            'けっしょう',
+            'ファイナル',
+            'final',
+            '結勝',
+            '決勝戦',
+            '3位決定',
+            '3決',
+            '三決',
+          ];
 
     String testNote = cleanNote;
-    final hasSemisKeyword = keywords.any(
+    final hasSemis = keywords.any(
       (kw) =>
           kw.contains('準決') ||
           kw.contains('準決勝') ||
           kw.contains('ベスト4') ||
           kw.contains('sf'),
     );
-    if (!hasSemisKeyword) {
-      testNote = testNote
-          .replaceAll('準決勝', '')
-          .replaceAll('準決', '')
-          .replaceAll('准決', '')
-          .replaceAll('順決', '')
-          .replaceAll('じゅんけつ', '')
-          .replaceAll('semifinal', '')
-          .replaceAll('sf', '')
-          .replaceAll('3位決定', '')
-          .replaceAll('3決', '')
-          .replaceAll('三決', '');
+    if (!hasSemis) {
+      testNote = testNote.replaceAll(
+        RegExp(r'準決勝|準決|准決|順決|じゅんけつ|semifinal|sf|3位決定|3決|三決'),
+        '',
+      );
     }
-
     return keywords.any((kw) => kw.isNotEmpty && testNote.contains(kw));
   }
 
@@ -101,6 +87,7 @@ class CategoryRuleMatchHelper {
     required double enchoTime,
     required int enchoCount,
     required String kachinukiUnlimitedType,
+    bool hasRepresentativeMatch = true,
     required bool isDaihyoIpponShobu,
     required double winPoint,
     required double lossPoint,
@@ -114,9 +101,13 @@ class CategoryRuleMatchHelper {
     required int daihyoEnchoCount,
     required bool daihyoHasHantei,
   }) {
+    final isIndividual =
+        matchType == '個人戦' || matchType == 'リーグ個人戦' || matchType.contains('個人');
     final isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
     final isKachinuki = matchType == '勝ち抜き戦';
-    final hasLeagueDaihyo = matchType == '団体戦' || matchType == 'リーグ団体戦';
+    final effectiveHasExtension = (isIndividual || isKachinuki)
+        ? hasExtension
+        : false;
 
     return MatchRule(
       category: category,
@@ -126,12 +117,15 @@ class CategoryRuleMatchHelper {
       ipponLimit: isIpponShobu ? 1 : ipponLimit,
       hansokuLimit: hansokuLimit,
       hasHantei: hasHantei,
-      isEnchoUnlimited: hasExtension && isEnchoUnlimited,
+      isEnchoUnlimited: effectiveHasExtension && isEnchoUnlimited,
       enchoTimeMinutes: enchoTime,
-      enchoCount: hasExtension ? (isEnchoUnlimited ? 0 : enchoCount) : 0,
+      enchoCount: effectiveHasExtension
+          ? (isEnchoUnlimited ? 0 : enchoCount)
+          : 0,
       isKachinuki: isKachinuki,
       kachinukiUnlimitedType: kachinukiUnlimitedType,
-      hasLeagueDaihyo: hasLeagueDaihyo,
+      hasRepresentativeMatch: hasRepresentativeMatch,
+      hasLeagueDaihyo: hasRepresentativeMatch,
       isDaihyoIpponShobu: isDaihyoIpponShobu,
       winPoint: winPoint,
       lossPoint: lossPoint,
@@ -148,8 +142,59 @@ class CategoryRuleMatchHelper {
     );
   }
 
+  /// 部門名とサブタイトルを整形（例:「小学生の部 決勝トーナメント」）
+  static String formatRuleTitle(String category, String subtitle) {
+    final cleanSub = subtitle.trim();
+    return cleanSub.isEmpty ? category : '$category $cleanSub';
+  }
+
+  /// 部門名から番号サフィックス（例: " (2)", " (3)", "（2）" など）を除去
+  static String stripNumberSuffix(String category) {
+    return category.replaceAll(RegExp(r'[\s\u3000]*[\(（]\d+[\)）]$'), '').trim();
+  }
+
+  /// 連番サフィックス（(2)等）を持つ部門名について、
+  /// サブタイトルによって他のルールと区別できる場合は連番を除去した表示用部門名を返す。
+  static String resolveDisplayCategory({
+    required String category,
+    required String subtitle,
+    required Map<String, CategoryRuleSet> allCategoryRules,
+  }) {
+    final cleanSub = subtitle.trim();
+    if (cleanSub.isEmpty) return category;
+
+    final baseCategory = stripNumberSuffix(category);
+    if (baseCategory == category.trim()) return category;
+
+    final isDuplicate = allCategoryRules.entries.any((entry) {
+      if (entry.key == category) return false;
+      return stripNumberSuffix(entry.key) == baseCategory &&
+          entry.value.subtitle.trim() == cleanSub;
+    });
+
+    return isDuplicate ? category : baseCategory;
+  }
+
+  /// ルールセット情報と既存ルールマップを元に、最適なタイトル表示を生成
+  static String formatDisplayTitle({
+    required String category,
+    required String subtitle,
+    Map<String, CategoryRuleSet>? allCategoryRules,
+  }) {
+    final effectiveCategory = allCategoryRules != null
+        ? resolveDisplayCategory(
+            category: category,
+            subtitle: subtitle,
+            allCategoryRules: allCategoryRules,
+          )
+        : category;
+    return formatRuleTitle(effectiveCategory, subtitle);
+  }
+
   /// CategoryRuleSet インスタンスの組み立てヘルパー
   static CategoryRuleSet createCategoryRuleSet({
+    String subtitle = '',
+    String comment = '',
     required MatchRule normalRule,
     required MatchRule advancedRule,
     required bool useAdvancedRule,
@@ -171,29 +216,9 @@ class CategoryRuleMatchHelper {
     required String moushiawaseType,
     required int moushiawaseOverallTime,
   }) {
-    final renseikaiRule = MatchRule(
-      matchTimeMinutes: renseikaiTime,
-      isRunningTime: renseikaiIsRunningTime,
-      hasHantei: renseikaiHasHantei,
-      enchoCount: 0,
-      isEnchoUnlimited: false,
-      isRenseikai: true,
-      renseikaiType: renseikaiType,
-      overallTimeMinutes: renseikaiOverallTime,
-    );
-
-    final moushiawaseRule = MatchRule(
-      matchTimeMinutes: moushiawaseTime,
-      isRunningTime: moushiawaseIsRunningTime,
-      hasHantei: moushiawaseHasHantei,
-      enchoCount: 0,
-      isEnchoUnlimited: false,
-      isRenseikai: true,
-      renseikaiType: moushiawaseType,
-      overallTimeMinutes: moushiawaseOverallTime,
-    );
-
     return CategoryRuleSet(
+      subtitle: subtitle,
+      comment: comment,
       normalRule: normalRule,
       advancedRule: advancedRule,
       useAdvancedRule: useAdvancedRule,
@@ -203,16 +228,33 @@ class CategoryRuleMatchHelper {
       useHonsenRule: useHonsenRule,
       useRenseikaiRule: useRenseikaiRule,
       useMoushiawaseRule: useMoushiawaseRule,
-      renseikaiRule: renseikaiRule,
-      moushiawaseRule: moushiawaseRule,
+      renseikaiRule: MatchRule(
+        matchTimeMinutes: renseikaiTime,
+        isRunningTime: renseikaiIsRunningTime,
+        hasHantei: renseikaiHasHantei,
+        enchoCount: 0,
+        isEnchoUnlimited: false,
+        isRenseikai: true,
+        renseikaiType: renseikaiType,
+        overallTimeMinutes: renseikaiOverallTime,
+      ),
+      moushiawaseRule: MatchRule(
+        matchTimeMinutes: moushiawaseTime,
+        isRunningTime: moushiawaseIsRunningTime,
+        hasHantei: moushiawaseHasHantei,
+        enchoCount: 0,
+        isEnchoUnlimited: false,
+        isRenseikai: true,
+        renseikaiType: moushiawaseType,
+        overallTimeMinutes: moushiawaseOverallTime,
+      ),
     );
   }
 
   /// ルールキーから部門の基底名（「（個人戦）」などのサフィックスを除いた名称）を取得
   static String cleanCategoryBaseName(String ruleKey) {
-    var base = ruleKey.trim();
-    // （個人戦）、（団体戦）、(個人戦)、(団体戦)、(2) などのサフィックスを除去
-    base = base
+    final base = ruleKey
+        .trim()
         .replaceAll(RegExp(r'[\(（](個人戦|団体戦|錬成会|申合せ|申し合わせ|\d+)[\)）]$'), '')
         .trim();
     return base.isEmpty ? ruleKey.trim() : base;
@@ -225,19 +267,13 @@ class CategoryRuleMatchHelper {
     String? matchType,
   }) {
     final cleanBase = baseName.trim();
-    if (!existingRules.containsKey(cleanBase)) {
-      return cleanBase;
-    }
+    if (!existingRules.containsKey(cleanBase)) return cleanBase;
 
-    // 種別サフィックス付きキーの検証
     if (matchType != null && matchType.isNotEmpty) {
       final typeKey = '$cleanBase（$matchType）';
-      if (!existingRules.containsKey(typeKey)) {
-        return typeKey;
-      }
+      if (!existingRules.containsKey(typeKey)) return typeKey;
     }
 
-    // 番号サフィックスによる一意キー生成
     int count = 2;
     while (existingRules.containsKey('$cleanBase ($count)')) {
       count++;
@@ -250,16 +286,10 @@ class CategoryRuleMatchHelper {
     TournamentModel tournament,
     String category,
   ) {
-    final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
-      tournament.categoryRules,
-    )..remove(category);
-
-    final updatedCategories = List<String>.from(tournament.categories)
-      ..remove(category);
-
     return tournament.copyWith(
-      categories: updatedCategories,
-      categoryRules: updatedCategoryRules,
+      categories: List<String>.from(tournament.categories)..remove(category),
+      categoryRules: Map<String, CategoryRuleSet>.from(tournament.categoryRules)
+        ..remove(category),
     );
   }
 
@@ -275,12 +305,21 @@ class CategoryRuleMatchHelper {
       cleanName,
       matchType: matchType,
     );
-
+    final effectiveMatchType = matchType ?? '団体戦';
+    final isIndiv = effectiveMatchType.contains('個人');
     final newRuleSet = CategoryRuleSet(
-      normalRule: const MatchRule(matchTimeMinutes: 3.0),
-      advancedRule: const MatchRule(matchTimeMinutes: 3.0),
+      normalRule: MatchRule(
+        matchTimeMinutes: 3.0,
+        enchoCount: isIndiv ? 1 : 0,
+        isEnchoUnlimited: false,
+      ),
+      advancedRule: MatchRule(
+        matchTimeMinutes: 3.0,
+        enchoCount: isIndiv ? 1 : 0,
+        isEnchoUnlimited: false,
+      ),
       useAdvancedRule: false,
-      matchType: matchType ?? '団体戦',
+      matchType: effectiveMatchType,
     );
 
     final updatedCategoryRules = Map<String, CategoryRuleSet>.from(
@@ -296,7 +335,6 @@ class CategoryRuleMatchHelper {
       categories: updatedCategories,
       categoryRules: updatedCategoryRules,
     );
-
     return (updatedTournament, ruleKey, newRuleSet);
   }
 
@@ -308,20 +346,17 @@ class CategoryRuleMatchHelper {
     String note = '',
   }) {
     if (categoryRules.isEmpty) return null;
-
     final isIndividual =
         matchType == '個人戦' ||
         matchType == '選手' ||
         matchType.contains('個人') ||
         category.contains('個人');
-
     final cleanCat = category.trim();
 
     // 1. 完全一致するキーが存在する場合
     if (categoryRules.containsKey(cleanCat)) {
       final directRule = categoryRules[cleanCat]!;
-      final bool ruleIsIndiv = directRule.matchType.contains('個人');
-      if (isIndividual == ruleIsIndiv) {
+      if (isIndividual == directRule.matchType.contains('個人')) {
         return directRule;
       }
     }
@@ -345,7 +380,6 @@ class CategoryRuleMatchHelper {
         }
       }
     }
-
     return matchedTypeRule ?? fallbackRule ?? categoryRules[cleanCat];
   }
 
@@ -377,7 +411,6 @@ class CategoryRuleMatchHelper {
     if (!updatedCategories.contains(category)) {
       updatedCategories.add(category);
     }
-
     return tournament.copyWith(
       categories: updatedCategories,
       categoryRules: updatedCategoryRules,
@@ -391,14 +424,12 @@ class CategoryRuleMatchHelper {
     required bool useAdvancedRule,
     required List<String> advancedKeywords,
   }) {
-    List<MatchModel> matchesToSave = [];
-    for (var match in targetMatches) {
+    return targetMatches.map((match) {
       final isAdvanced =
           useAdvancedRule &&
           isAdvancedMatchName(match.note, customKeywords: advancedKeywords);
       final activeRule = isAdvanced ? ruleSet.advancedRule : ruleSet.normalRule;
-
-      final updatedMatch = match.copyWith(
+      return match.copyWith(
         matchTimeMinutes: activeRule.matchTimeMinutes,
         isRunningTime: activeRule.isRunningTime,
         hasExtension: activeRule.enchoCount > 0 || activeRule.isEnchoUnlimited,
@@ -408,8 +439,6 @@ class CategoryRuleMatchHelper {
         isKachinuki: activeRule.isKachinuki,
         rule: activeRule,
       );
-      matchesToSave.add(updatedMatch);
-    }
-    return matchesToSave;
+    }).toList();
   }
 }

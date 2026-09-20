@@ -12,6 +12,8 @@ class CategoryRuleEditorContainer extends StatelessWidget {
   final bool enableLiquidGlass;
   final CategoryRulesFormState formState;
   final TextEditingController keywordsController;
+  final TextEditingController subtitleController;
+  final TextEditingController commentController;
   final VoidCallback onCancel;
   final VoidCallback onSave;
   final void Function(void Function()) setState;
@@ -24,6 +26,8 @@ class CategoryRuleEditorContainer extends StatelessWidget {
     required this.enableLiquidGlass,
     required this.formState,
     required this.keywordsController,
+    required this.subtitleController,
+    required this.commentController,
     required this.onCancel,
     required this.onSave,
     required this.setState,
@@ -129,6 +133,12 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       advancedDaihyoEnchoCount: formState.advancedDaihyoEnchoCount,
       advancedDaihyoHasHantei: formState.advancedDaihyoHasHantei,
       keywordsController: keywordsController,
+      subtitleController: subtitleController,
+      commentController: commentController,
+      allCategoryRules: tournament.categoryRules,
+      onSubtitleChanged: (val) =>
+          setState(() => formState.editingSubtitle = val),
+      onCommentChanged: (val) => setState(() => formState.editingComment = val),
       onNormalMatchTimeChanged: (val) =>
           setState(() => formState.normalTime = val),
       onNormalIsRunningTimeChanged: (val) =>

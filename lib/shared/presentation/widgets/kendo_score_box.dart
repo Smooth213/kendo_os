@@ -23,7 +23,13 @@ class KendoPointMark {
 
   /// 特殊記号（先取丸囲み対象外）判定
   bool get isSpecialNonCircle =>
-      mark == '◯' || mark == '◎' || mark == '反' || mark == '×' || mark == '✕';
+      mark == '◯' ||
+      mark == '◎' ||
+      mark == '反' ||
+      mark == '×' ||
+      mark == '✕' ||
+      mark == '△' ||
+      mark == '▲';
 
   /// 表示用クリーンマーク（「判定」➔「判」、「✕」➔「×」）
   String get displayMark {

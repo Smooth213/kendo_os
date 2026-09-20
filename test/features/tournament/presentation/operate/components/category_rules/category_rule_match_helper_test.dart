@@ -165,5 +165,85 @@ void main() {
         expect(t4.categoryRules.containsKey('小学生の部'), isFalse);
       },
     );
+
+    test('6. stripNumberSuffix: 番号サフィックスが正しく除去されること', () {
+      expect(CategoryRuleMatchHelper.stripNumberSuffix('小学生の部 (2)'), '小学生の部');
+      expect(CategoryRuleMatchHelper.stripNumberSuffix('小学生の部（3）'), '小学生の部');
+      expect(CategoryRuleMatchHelper.stripNumberSuffix('小学生の部'), '小学生の部');
+      expect(
+        CategoryRuleMatchHelper.stripNumberSuffix('中学生男子の部 (10)'),
+        '中学生男子の部',
+      );
+    });
+
+    test(
+      '7. resolveDisplayCategory & formatDisplayTitle: サブタイトルで見分けがつけば連番削除、重複時は維持されること',
+      () {
+        final rules = <String, CategoryRuleSet>{
+          '小学生の部': const CategoryRuleSet(subtitle: '予選リーグ', matchType: '団体戦'),
+          '小学生の部 (2)': const CategoryRuleSet(
+            subtitle: '決勝トーナメント',
+            matchType: '団体戦',
+          ),
+          '小学生の部 (3)': const CategoryRuleSet(subtitle: '', matchType: '団体戦'),
+          '中学生の部': const CategoryRuleSet(
+            subtitle: '決勝トーナメント',
+            matchType: '団体戦',
+          ),
+          '中学生の部 (2)': const CategoryRuleSet(
+            subtitle: '決勝トーナメント',
+            matchType: '団体戦',
+          ),
+        };
+
+        // ① サブタイトルがあり他と重複しない場合 -> (2) を削除して「小学生の部」を返す
+        final res1 = CategoryRuleMatchHelper.resolveDisplayCategory(
+          category: '小学生の部 (2)',
+          subtitle: '決勝トーナメント',
+          allCategoryRules: rules,
+        );
+        expect(res1, '小学生の部');
+        expect(
+          CategoryRuleMatchHelper.formatDisplayTitle(
+            category: '小学生の部 (2)',
+            subtitle: '決勝トーナメント',
+            allCategoryRules: rules,
+          ),
+          '小学生の部 決勝トーナメント',
+        );
+
+        // ② サブタイトルが空の場合 -> 見分けがつかないため (3) を維持する
+        final res2 = CategoryRuleMatchHelper.resolveDisplayCategory(
+          category: '小学生の部 (3)',
+          subtitle: '',
+          allCategoryRules: rules,
+        );
+        expect(res2, '小学生の部 (3)');
+        expect(
+          CategoryRuleMatchHelper.formatDisplayTitle(
+            category: '小学生の部 (3)',
+            subtitle: '',
+            allCategoryRules: rules,
+          ),
+          '小学生の部 (3)',
+        );
+
+        // ③ タイトル＋サブタイトルが他と同じ場合（中学生の部 決勝トーナメント） -> 見分けがつかないため (2) を維持する
+        final res3 = CategoryRuleMatchHelper.resolveDisplayCategory(
+          category: '中学生の部 (2)',
+          subtitle: '決勝トーナメント',
+          allCategoryRules: rules,
+        );
+        expect(res3, '中学生の部 (2)');
+        expect(
+          CategoryRuleMatchHelper.formatDisplayTitle(
+            category: '中学生の部 (2)',
+            subtitle: '決勝トーナメント',
+            allCategoryRules: rules,
+          ),
+          '中学生の部 (2) 決勝トーナメント',
+        );
+      },
+    );
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_chips.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -10,6 +11,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 class CategoryRuleCategoryTile extends StatelessWidget {
   final String category;
   final CategoryRuleSet ruleSet;
+  final Map<String, CategoryRuleSet>? allCategoryRules;
   final bool isDark;
   final bool enableLiquidGlass;
   final VoidCallback onStartEditing;
@@ -20,6 +22,7 @@ class CategoryRuleCategoryTile extends StatelessWidget {
     super.key,
     required this.category,
     required this.ruleSet,
+    this.allCategoryRules,
     required this.isDark,
     required this.enableLiquidGlass,
     required this.onStartEditing,
@@ -87,13 +90,46 @@ class CategoryRuleCategoryTile extends StatelessWidget {
               vertical: AppSpacing.md,
             ),
             title: Text(
-              category,
+              CategoryRuleMatchHelper.formatDisplayTitle(
+                category: category,
+                subtitle: ruleSet.subtitle,
+                allCategoryRules: allCategoryRules,
+              ),
               style: const TextStyle(
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.subhead,
               ),
             ),
-            subtitle: CategoryRuleChips(ruleSet: ruleSet, isDark: isDark),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CategoryRuleChips(ruleSet: ruleSet, isDark: isDark),
+                if (ruleSet.comment.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.subValue),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.comment_outlined,
+                        size: 13,
+                        color: context.appColors.subTextColor,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: Text(
+                          ruleSet.comment.trim(),
+                          style: TextStyle(
+                            fontSize: AppFontSize.small,
+                            color: context.appColors.subTextColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

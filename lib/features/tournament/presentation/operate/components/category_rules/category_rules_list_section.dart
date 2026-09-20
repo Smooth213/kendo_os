@@ -180,6 +180,7 @@ class CategoryRulesListSection extends StatelessWidget {
                     return CategoryRuleCategoryTile(
                       category: cat,
                       ruleSet: ruleSet,
+                      allCategoryRules: tournament.categoryRules,
                       isDark: isDark,
                       enableLiquidGlass: enableLiquidGlass,
                       onStartEditing: () => onStartEditing(cat, ruleSet),

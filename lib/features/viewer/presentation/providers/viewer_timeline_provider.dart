@@ -34,7 +34,7 @@ final safeViewerTimelineProvider = Provider.family
         debugPrint('🚨 [safeViewerTimelineProvider] エラーを検知しました: $errorMessage');
       }
 
-      final matches = List<MatchModel>.from(asyncMatches.value ?? [])
+      final matches = List<MatchModel>.from(asyncMatches.valueOrNull ?? [])
         ..sort((a, b) => a.order.compareTo(b.order));
 
       final searchQuery = ref

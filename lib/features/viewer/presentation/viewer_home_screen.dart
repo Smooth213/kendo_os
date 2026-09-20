@@ -68,8 +68,9 @@ class ViewerHomeScreen extends ConsumerWidget {
       final asyncMatches = ref.watch(
         matchListByTournamentProvider(tournamentId),
       );
-      final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
-        ..sort((a, b) => a.order.compareTo(b.order));
+      final allMatchesList = List<MatchModel>.from(
+        asyncMatches.valueOrNull ?? [],
+      )..sort((a, b) => a.order.compareTo(b.order));
 
       final (uniqueInProgress, uniqueWaiting) =
           ViewerMatchFilterHelper.extractActiveMatches(allMatchesList);
@@ -83,7 +84,7 @@ class ViewerHomeScreen extends ConsumerWidget {
       );
       final matchedGroupNames = timelineResult.matchedGroupNames;
       final matchedMatchIds = timelineResult.matchedMatchIds;
-      final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+      final ownTeams = ref.watch(customTeamNamesProvider).valueOrNull ?? [];
       final isSearchVisible = ref.watch(isSearchVisibleProvider);
       final searchQuery = ref.watch(searchQueryProvider);
 
@@ -104,7 +105,7 @@ class ViewerHomeScreen extends ConsumerWidget {
                     },
                   )
                 : AppHeader(
-                    leading: GoRouter.of(context).canPop()
+                    leading: (GoRouter.maybeOf(context)?.canPop() ?? false)
                         ? IconButton(
                             icon: const Icon(
                               Icons.exit_to_app,
@@ -359,12 +360,57 @@ class ViewerHomeScreen extends ConsumerWidget {
         ),
       );
     } catch (e, stack) {
+      debugPrint('🚨 [ViewerHomeScreen] UI例外を捕捉: $e\n$stack');
       return Scaffold(
         backgroundColor: bgColor,
         body: Center(
-          child: Text(
-            '致命的なUIエラー: $e\n$stack',
-            style: const TextStyle(color: AppKendoColors.red),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.wifi_tethering_error_rounded_outlined,
+                  color: AppKendoColors.deepOrange,
+                  size: 64,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                const Text(
+                  '大会情報の読み込みを準備しています',
+                  style: TextStyle(
+                    fontSize: AppFontSize.title,
+                    fontWeight: AppFontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                const Text(
+                  '認証またはデータ同期の初期化中です。\nしばらくお待ちいただくか、下のボタンを押してください。',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppKendoColors.grey,
+                    fontSize: AppFontSize.small,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    ref.invalidate(matchListByTournamentProvider(tournamentId));
+                    ref.invalidate(viewerTournamentProvider(tournamentId));
+                    ref.invalidate(customTeamNamesProvider);
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('再読み込み'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppKendoColors.deepOrange,
+                    foregroundColor: AppKendoColors.pureWhite,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xl,
+                      vertical: AppSpacing.md,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

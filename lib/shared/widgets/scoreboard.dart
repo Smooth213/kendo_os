@@ -199,7 +199,7 @@ class MatchScoreboard extends ConsumerWidget {
     void Function(String)? onNameTap,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final pts = allPts[side] ?? [];
+    final pts = (allPts[side] ?? []).where((p) => p.mark != '△').toList();
     final isWinner = viewState.winner == side.name;
     final isFinished = match.status == 'approved' || match.status == 'finished';
     final nameColor = side == Side.red

@@ -6,16 +6,20 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_summary_card.dart';
 
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
+
 /// 部門別詳細ルール確認ボトムシート（純粋UIコンポーネント）
 class CategoryRuleDetailBottomSheet extends StatelessWidget {
   final String categoryName;
   final CategoryRuleSet ruleSet;
+  final Map<String, CategoryRuleSet>? allCategoryRules;
   final bool isDark;
 
   const CategoryRuleDetailBottomSheet({
     super.key,
     required this.categoryName,
     required this.ruleSet,
+    this.allCategoryRules,
     required this.isDark,
   });
 
@@ -23,6 +27,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
     BuildContext context, {
     required String categoryName,
     required CategoryRuleSet ruleSet,
+    Map<String, CategoryRuleSet>? allCategoryRules,
     required bool isDark,
   }) {
     return showAppBottomSheet(
@@ -31,6 +36,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
       builder: (ctx) => CategoryRuleDetailBottomSheet(
         categoryName: categoryName,
         ruleSet: ruleSet,
+        allCategoryRules: allCategoryRules,
         isDark: isDark,
       ),
     );
@@ -172,7 +178,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      '$categoryName のルール設定',
+                      '${CategoryRuleMatchHelper.formatDisplayTitle(category: categoryName, subtitle: ruleSet.subtitle, allCategoryRules: allCategoryRules)} のルール設定',
                       style: TextStyle(
                         fontSize: AppFontSize.headline,
                         fontWeight: AppFontWeight.bold,
@@ -182,6 +188,58 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                   ),
                 ],
               ),
+              if (ruleSet.comment.trim().isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFF2F2F7),
+                    borderRadius: AppRadius.medium,
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF38383A)
+                          : const Color(0xFFE5E5EA),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.comment_outlined,
+                        size: 16,
+                        color: themeColors.primaryAccent,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'コメント・特記事項',
+                              style: TextStyle(
+                                fontSize: AppFontSize.caption,
+                                fontWeight: AppFontWeight.bold,
+                                color: themeColors.subTextColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              ruleSet.comment.trim(),
+                              style: TextStyle(
+                                fontSize: AppFontSize.body,
+                                color: themeColors.textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Divider(height: 32),
 
               ...sections,

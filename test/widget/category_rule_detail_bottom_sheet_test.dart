@@ -68,5 +68,31 @@ void main() {
         expect(find.text('代表戦時間'), findsOneWidget);
       },
     );
+
+    testWidgets('Renders subtitle and comment when provided', (
+      WidgetTester tester,
+    ) async {
+      final ruleSet = const CategoryRuleSet(
+        subtitle: '決勝トーナメント',
+        comment: '3人制・代表戦あり',
+        normalRule: MatchRule(matchTimeMinutes: 3.0),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleDetailBottomSheet(
+              categoryName: '小学生の部',
+              ruleSet: ruleSet,
+              isDark: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('小学生の部 決勝トーナメント のルール設定'), findsOneWidget);
+      expect(find.text('コメント・特記事項'), findsOneWidget);
+      expect(find.text('3人制・代表戦あり'), findsOneWidget);
+    });
   });
 }

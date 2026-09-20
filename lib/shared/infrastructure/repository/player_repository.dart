@@ -92,7 +92,11 @@ class PlayerRepository {
           (snapshot) =>
               snapshot.docs.map((doc) => doc.data()['name'] as String).toList()
                 ..sort(),
-        );
+        )
+        .handleError((error, stackTrace) {
+          // 権限エラーやネットワーク遮断時でも例外をスローせず安全に空リストへフォールバック
+          return <String>[];
+        });
   }
 
   /// 新しいカスタムチーム名を追加する

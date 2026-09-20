@@ -57,7 +57,7 @@ class NewMatchSceneRuleSelectorSection extends StatelessWidget {
                   border: Border.all(color: context.appColors.primaryAccent),
                 ),
                 child: Text(
-                  '部門ルール適用中: $cleanCategory',
+                  '部門ルール適用中: ${CategoryRuleMatchHelper.formatDisplayTitle(category: cleanCategory, subtitle: ruleSet.subtitle, allCategoryRules: categoryRules)}',
                   style: TextStyle(
                     fontSize: AppFontSize.caption,
                     color: context.appColors.primaryAccent,

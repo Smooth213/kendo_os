@@ -44,11 +44,15 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
 
   final _newCategoryController = TextEditingController();
   final _keywordsController = TextEditingController();
+  final _subtitleController = TextEditingController();
+  final _commentController = TextEditingController();
 
   @override
   void dispose() {
     _newCategoryController.dispose();
     _keywordsController.dispose();
+    _subtitleController.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -56,6 +60,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     setState(() {
       _formState.populateFromRuleSet(category, rules);
       _keywordsController.text = _formState.editingAdvancedKeywords.join(', ');
+      _subtitleController.text = _formState.editingSubtitle;
+      _commentController.text = _formState.editingComment;
     });
   }
 
@@ -238,7 +244,12 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   onStartEditing: (cat, ruleSet) => _startEditing(cat, ruleSet),
                   onDeleteCategory: (cat) => _deleteCategory(tournament, cat),
                   onShowRuleDetail: (cat, ruleSet) =>
-                      _showRuleDetailBottomSheet(context, cat, ruleSet),
+                      _showRuleDetailBottomSheet(
+                        context,
+                        cat,
+                        ruleSet,
+                        tournament.categoryRules,
+                      ),
                   onCompleteSetup: () =>
                       context.go('/home/${widget.tournamentId}'),
                 );
@@ -269,6 +280,8 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
       enableLiquidGlass: enableLiquidGlass,
       formState: _formState,
       keywordsController: _keywordsController,
+      subtitleController: _subtitleController,
+      commentController: _commentController,
       onCancel: () => setState(() => _formState.editingCategory = null),
       onSave: () => _saveCategoryRules(tournament),
       setState: setState,
@@ -279,12 +292,14 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
     BuildContext context,
     String categoryName,
     CategoryRuleSet ruleSet,
+    Map<String, CategoryRuleSet> allCategoryRules,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     CategoryRuleDetailBottomSheet.show(
       context,
       categoryName: categoryName,
       ruleSet: ruleSet,
+      allCategoryRules: allCategoryRules,
       isDark: isDark,
     );
   }

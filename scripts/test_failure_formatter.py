@@ -19,39 +19,33 @@ def parse_and_format_failures(output_text: str) -> str:
     current_location = ""
     in_error = False
     
+    def add_failure_if_valid():
+        nonlocal current_test_name, current_location, current_expected, current_actual, in_error
+        if current_expected or current_test_name or (in_error and current_location):
+            failures.append({
+                "test_name": current_test_name,
+                "location": current_location,
+                "expected": "\n".join(current_expected).strip(),
+                "actual": "\n".join(current_actual).strip(),
+            })
+        current_expected = []
+        current_actual = []
+        current_location = ""
+        current_test_name = ""
+        in_error = False
+
     for i, line in enumerate(lines):
         # EXCEPTION CAUGHT が来たら新しいエラーブロックの開始
         if "EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK" in line:
-            if current_location or current_expected:
-                failures.append({
-                    "test_name": current_test_name,
-                    "location": current_location,
-                    "expected": "\n".join(current_expected).strip(),
-                    "actual": "\n".join(current_actual).strip(),
-                })
-                current_expected = []
-                current_actual = []
-                current_location = ""
-                current_test_name = ""
+            add_failure_if_valid()
             in_error = True
             continue
 
         # [E] で終わる行はテスト失敗確定行 (例: 00:05 +1 -2: .../foo_test.dart: テスト名 [E])
         match_test = re.search(r'\d+:\d+\s+\+\d+\s+-\d+:\s+(?:.*?:\s+)?(.*?)(?:\s+\[E\])$', line)
         if match_test:
+            add_failure_if_valid()
             current_test_name = match_test.group(1).strip()
-            if current_location or current_expected:
-                failures.append({
-                    "test_name": current_test_name,
-                    "location": current_location,
-                    "expected": "\n".join(current_expected).strip(),
-                    "actual": "\n".join(current_actual).strip(),
-                })
-                current_expected = []
-                current_actual = []
-                current_location = ""
-                current_test_name = ""
-            in_error = False
             continue
 
         # "The test description was:" の次の行
@@ -72,6 +66,10 @@ def parse_and_format_failures(output_text: str) -> str:
             current_actual.append(line.strip())
             continue
 
+        # プログレス行 (例: 00:00 +0: ... 00:01 +0:) はスタックトレースではないため除外
+        if re.search(r'^\d+:\d+\s+\+\d+', line.strip()):
+            continue
+
         # ファイルと行番号の特定 (package:flutter_test 内部ファイルは除外)
         if "package:flutter_test" not in line and "test/src/" not in line:
             # パターン1: file:///.../(test/widget/foo_test.dart) line 72
@@ -79,21 +77,18 @@ def parse_and_format_failures(output_text: str) -> str:
             if match_caught:
                 current_location = f"{match_caught.group(1)} ({match_caught.group(2)}行目)"
             else:
-                # パターン2: (test/widget/foo_test.dart):(\d+):(\d+) または test/... 123:45
-                match_loc = re.search(r'(test/[\w\./_-]+\.dart)[:\s]+(\d+)', line)
+                # パターン2: (test/widget/foo_test.dart):(\d+)
+                match_loc = re.search(r'(test/[\w\./_-]+\.dart):(\d+)', line)
+                if not match_loc:
+                    # スタックトレース形式: test/unit/foo_test.dart 25:7
+                    match_loc = re.search(r'(test/[\w\./_-]+\.dart)\s+(\d+):\d+', line)
                 if match_loc and not current_location:
                     file_path = match_loc.group(1)
                     line_num = match_loc.group(2)
                     current_location = f"{file_path} ({line_num}行目)"
 
     # 最後の failure を追加
-    if current_location or current_expected:
-        failures.append({
-            "test_name": current_test_name,
-            "location": current_location,
-            "expected": "\n".join(current_expected).strip(),
-            "actual": "\n".join(current_actual).strip(),
-        })
+    add_failure_if_valid()
 
     if not failures:
         # パースできなかった場合の汎用抽出

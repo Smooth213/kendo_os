@@ -7,6 +7,8 @@ part 'category_rule_set.g.dart';
 @freezed
 abstract class CategoryRuleSet with _$CategoryRuleSet {
   const factory CategoryRuleSet({
+    @Default('') String subtitle,
+    @Default('') String comment,
     @Default(MatchRule()) MatchRule normalRule,
     @Default(MatchRule()) MatchRule advancedRule,
     @Default(false) bool useAdvancedRule,

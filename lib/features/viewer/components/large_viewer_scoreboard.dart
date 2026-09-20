@@ -276,7 +276,11 @@ class LargeViewerScoreboard extends StatelessWidget {
               maxLines: 1,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildLargePointBox(displays, isWinner, side),
+            _buildLargePointBox(
+              displays.where((d) => d.mark != '△').toList(),
+              isWinner,
+              side,
+            ),
             const SizedBox(height: AppSpacing.md),
             if (foulCount > 0)
               Text(
@@ -342,7 +346,16 @@ class LargeViewerScoreboard extends StatelessWidget {
     const double fs = 24;
     const double badgeSize = 42;
 
-    if (pd.isFirstMatchPoint) {
+    final bool isSpecialNonCircle =
+        pd.mark == '◯' ||
+        pd.mark == '◎' ||
+        pd.mark == '反' ||
+        pd.mark == '×' ||
+        pd.mark == '✕' ||
+        pd.mark == '△' ||
+        pd.mark == '▲';
+
+    if (pd.isFirstMatchPoint && !isSpecialNonCircle) {
       return Container(
         width: badgeSize,
         height: badgeSize,

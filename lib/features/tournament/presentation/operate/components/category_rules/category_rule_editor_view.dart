@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_advanced_tabs_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_bottom_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart';
@@ -99,6 +100,11 @@ class CategoryRuleEditorView extends StatelessWidget {
   final int advancedDaihyoEnchoCount;
   final bool advancedDaihyoHasHantei;
   final TextEditingController keywordsController;
+  final TextEditingController subtitleController;
+  final TextEditingController commentController;
+  final Map<String, CategoryRuleSet>? allCategoryRules;
+  final ValueChanged<String>? onSubtitleChanged;
+  final ValueChanged<String>? onCommentChanged;
 
   // ルール変更コールバック (通常戦)
   final ValueChanged<double> onNormalMatchTimeChanged;
@@ -235,6 +241,11 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.advancedDaihyoEnchoCount,
     required this.advancedDaihyoHasHantei,
     required this.keywordsController,
+    required this.subtitleController,
+    required this.commentController,
+    this.allCategoryRules,
+    this.onSubtitleChanged,
+    this.onCommentChanged,
     required this.onNormalMatchTimeChanged,
     required this.onNormalIsRunningTimeChanged,
     required this.onNormalRenseikaiTypeChanged,
@@ -306,6 +317,11 @@ class CategoryRuleEditorView extends StatelessWidget {
                 matchType: editingMatchType,
                 isMultiScene: isMultiScene,
                 useAdvancedRule: useAdvancedRule,
+                subtitleController: subtitleController,
+                commentController: commentController,
+                allCategoryRules: allCategoryRules,
+                onSubtitleChanged: onSubtitleChanged,
+                onCommentChanged: onCommentChanged,
                 onMatchTypeChanged: onMatchTypeChanged,
                 onMultiSceneChanged: onMultiSceneChanged,
                 onUseAdvancedRuleChanged: onUseAdvancedRuleChanged,

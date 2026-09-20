@@ -35,8 +35,14 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
         ? (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000))
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000));
 
-    // 完全無得点の場合（待機中は「ー」、試合終了時は引き分け「✕」）
-    if (match.redScore == 0 && match.whiteScore == 0) {
+    final engine = KendoRuleEngine();
+    final analysis = engine.analyzeHistory(match.events, match, match.rule);
+
+    final rDisplays = analysis.displays[Side.red] ?? [];
+    final wDisplays = analysis.displays[Side.white] ?? [];
+
+    // 完全無得点かつ反則等の表示もない場合（待機中は「ー」、試合終了時は引き分け「✕」）
+    if (rDisplays.isEmpty && wDisplays.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: Icon(
@@ -46,12 +52,6 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
         ),
       );
     }
-
-    final engine = KendoRuleEngine();
-    final analysis = engine.analyzeHistory(match.events, match, match.rule);
-
-    final rDisplays = analysis.displays[Side.red] ?? [];
-    final wDisplays = analysis.displays[Side.white] ?? [];
 
     String rMarksStr = rDisplays
         .map((d) {

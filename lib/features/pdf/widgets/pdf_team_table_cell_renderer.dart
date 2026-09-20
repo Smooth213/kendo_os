@@ -336,7 +336,12 @@ class PdfTeamTableCellRenderer {
     pw.Font fontBold,
   ) {
     final bool isSpecialFusenOrDraw =
-        p.mark == '◯' || p.mark == '✕' || p.mark == '×' || p.mark == '反';
+        p.mark == '◯' ||
+        p.mark == '✕' ||
+        p.mark == '×' ||
+        p.mark == '反' ||
+        p.mark == '△' ||
+        p.mark == '▲';
     return p.isFirstOverall && !isSpecialFusenOrDraw
         ? pw.Container(
             width: 10,

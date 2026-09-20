@@ -24,7 +24,7 @@ class MatchAnalysis {
 class PointDisplay {
   final String mark;
   final bool isFirstMatchPoint;
-  PointDisplay(this.mark, this.isFirstMatchPoint);
+  const PointDisplay(this.mark, this.isFirstMatchPoint);
 }
 
 // ★ Phase 1: ドメイン例外
@@ -301,19 +301,34 @@ class KendoRuleEngine {
     int rHansoku = 0, wHansoku = 0;
 
     for (var e in activeEvents) {
-      if (e.isHansoku) {
+      if (e.isHansoku || e.type == PointType.hansoku) {
         if (e.side == Side.red) {
           rHansoku++;
           if (isHansokuIppon(rHansoku)) {
-            // ※本当はruleを渡したいがUI表示上の互換維持のため一旦そのまま
+            final lastTriangleIdx = redDisplays.lastIndexWhere(
+              (d) => d.mark == '△',
+            );
+            if (lastTriangleIdx != -1) {
+              redDisplays.removeAt(lastTriangleIdx);
+            }
             whiteDisplays.add(PointDisplay('反', isFirstOfMatch));
             isFirstOfMatch = false;
+          } else {
+            redDisplays.add(const PointDisplay('△', false));
           }
         } else if (e.side == Side.white) {
           wHansoku++;
           if (isHansokuIppon(wHansoku)) {
+            final lastTriangleIdx = whiteDisplays.lastIndexWhere(
+              (d) => d.mark == '△',
+            );
+            if (lastTriangleIdx != -1) {
+              whiteDisplays.removeAt(lastTriangleIdx);
+            }
             redDisplays.add(PointDisplay('反', isFirstOfMatch));
             isFirstOfMatch = false;
+          } else {
+            whiteDisplays.add(const PointDisplay('△', false));
           }
         }
       } else if (e.isFusen) {

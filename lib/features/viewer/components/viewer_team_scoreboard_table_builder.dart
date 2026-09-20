@@ -13,22 +13,15 @@ class ViewerTeamScoreboardTableBuilder {
     final textColor = isDark
         ? const Color(0xFFFFFFFF)
         : const Color(0xFF1E293B);
+    final redColor = isDark
+        ? const Color(0xFFFF6B6B)
+        : AppKendoColors.hansokuRed;
     return TableRow(
       decoration: BoxDecoration(color: headerBg),
       children: [
         _cell('', isH: true, color: textColor, fs: 12),
-        _cell(
-          r,
-          isH: true,
-          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
-          fs: 16,
-        ),
-        _cell(
-          '赤',
-          isH: true,
-          color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
-          fs: 14,
-        ),
+        _cell(r, isH: true, color: redColor, fs: 16),
+        _cell('赤', isH: true, color: redColor, fs: 14),
         _cell(
           '白',
           isH: true,
@@ -282,6 +275,7 @@ class ViewerTeamScoreboardTableBuilder {
 
     final isFusen = pts.contains('◯');
     final isThisSideFirst = firstSide == (isRed ? 'red' : 'white');
+    final firstValidIdx = pts.indexWhere((m) => m != '△' && m != '▲');
 
     return SizedBox(
       height: 84,
@@ -327,7 +321,7 @@ class ViewerTeamScoreboardTableBuilder {
                           left: 2,
                           child: _ptMark(
                             pts[0],
-                            isThisSideFirst,
+                            isThisSideFirst && firstValidIdx == 0,
                             color,
                             isDark,
                           ),
@@ -336,7 +330,12 @@ class ViewerTeamScoreboardTableBuilder {
                         Positioned(
                           bottom: 2,
                           right: 2,
-                          child: _ptMark(pts[1], false, color, isDark),
+                          child: _ptMark(
+                            pts[1],
+                            isThisSideFirst && firstValidIdx == 1,
+                            color,
+                            isDark,
+                          ),
                         ),
                     ],
                   ),
@@ -377,7 +376,15 @@ class ViewerTeamScoreboardTableBuilder {
     Color color,
     bool isDark,
   ) {
-    if (isFirstOverall && mark != '◯') {
+    final bool isSpecial =
+        mark == '◯' ||
+        mark == '◎' ||
+        mark == '反' ||
+        mark == '×' ||
+        mark == '✕' ||
+        mark == '△' ||
+        mark == '▲';
+    if (isFirstOverall && !isSpecial) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
         padding: const EdgeInsets.all(AppSpacing.xxs),

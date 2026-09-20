@@ -7,13 +7,19 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   group('CategoryRuleFormSectionBuilder テスト', () {
     late TextEditingController keywordsController;
+    late TextEditingController subtitleController;
+    late TextEditingController commentController;
 
     setUp(() {
       keywordsController = TextEditingController();
+      subtitleController = TextEditingController();
+      commentController = TextEditingController();
     });
 
     tearDown(() {
       keywordsController.dispose();
+      subtitleController.dispose();
+      commentController.dispose();
     });
 
     CategoryRuleEditorView createSampleView() {
@@ -99,6 +105,8 @@ void main() {
         advancedDaihyoEnchoCount: -2,
         advancedDaihyoHasHantei: false,
         keywordsController: keywordsController,
+        subtitleController: subtitleController,
+        commentController: commentController,
         onNormalMatchTimeChanged: (_) {},
         onNormalIsRunningTimeChanged: (_) {},
         onNormalRenseikaiTypeChanged: (_) {},

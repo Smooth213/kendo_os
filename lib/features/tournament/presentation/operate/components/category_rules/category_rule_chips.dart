@@ -131,6 +131,7 @@ class CategoryRuleChips extends StatelessWidget {
 
       // 2. 🏆 本戦
       if (ruleSet.useHonsenRule) {
+        final bool isHonsenIndividual = ruleSet.matchType.contains('個人');
         if (sceneChips.isNotEmpty) {
           sceneChips.add(const SizedBox(height: 2));
         }
@@ -147,7 +148,8 @@ class CategoryRuleChips extends StatelessWidget {
                 label:
                     '⏱️ ${formatMinutes(ruleSet.normalRule.matchTimeMinutes)}',
               ),
-              if (ruleSet.normalRule.hasRepresentativeMatch)
+              if (ruleSet.normalRule.hasRepresentativeMatch &&
+                  !isHonsenIndividual)
                 _buildDetailBadge(context: context, label: '🥋 代表戦有'),
               if (ruleSet.normalRule.isEnchoUnlimited ||
                   ruleSet.normalRule.enchoCount > 0)
@@ -229,8 +231,9 @@ class CategoryRuleChips extends StatelessWidget {
               _buildDetailBadge(context: context, label: '🔄 通し'),
             if (ruleSet.normalRule.hasRepresentativeMatch && !isIndividual)
               _buildDetailBadge(context: context, label: '🥋 代表戦有'),
-            if (ruleSet.normalRule.isEnchoUnlimited ||
-                ruleSet.normalRule.enchoCount > 0)
+            if (isIndividual &&
+                (ruleSet.normalRule.isEnchoUnlimited ||
+                    ruleSet.normalRule.enchoCount > 0))
               _buildDetailBadge(
                 context: context,
                 label: ruleSet.normalRule.isEnchoUnlimited
@@ -253,8 +256,9 @@ class CategoryRuleChips extends StatelessWidget {
                   label:
                       '⏱️ ${formatMinutes(ruleSet.advancedRule.matchTimeMinutes)}',
                 ),
-                if (ruleSet.advancedRule.isEnchoUnlimited ||
-                    ruleSet.advancedRule.enchoCount > 0)
+                if (isIndividual &&
+                    (ruleSet.advancedRule.isEnchoUnlimited ||
+                        ruleSet.advancedRule.enchoCount > 0))
                   _buildDetailBadge(
                     context: context,
                     label: ruleSet.advancedRule.isEnchoUnlimited

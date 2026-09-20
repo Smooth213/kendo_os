@@ -5,6 +5,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 /// 大会カテゴリ詳細ルール設定用フォーム状態ホルダークラス
 class CategoryRulesFormState {
   String? editingCategory;
+  String editingSubtitle = '';
+  String editingComment = '';
 
   // 編集中のルールセット状態
   bool useAdvancedRule = false;
@@ -47,9 +49,9 @@ class CategoryRulesFormState {
   bool normalHasExtension = false;
   bool normalIsEnchoUnlimited = false;
   double normalEnchoTime = 2.0;
-  int normalEnchoCount = 1;
+  int normalEnchoCount = 0;
   String normalKachinukiUnlimitedType = '大将対大将';
-  bool normalHasLeagueDaihyo = false;
+  bool normalHasLeagueDaihyo = true;
   bool normalIsDaihyoIpponShobu = true;
   double normalWinPoint = 0.0;
   double normalLossPoint = 0.0;
@@ -69,7 +71,7 @@ class CategoryRulesFormState {
   double advancedEnchoTime = 3.0;
   int advancedEnchoCount = 0;
   String advancedKachinukiUnlimitedType = '大将対大将';
-  bool advancedHasLeagueDaihyo = false;
+  bool advancedHasLeagueDaihyo = true;
   bool advancedIsDaihyoIpponShobu = true;
   double advancedWinPoint = 0.0;
   double advancedLossPoint = 0.0;
@@ -94,6 +96,8 @@ class CategoryRulesFormState {
   /// ルールセットから状態を展開
   void populateFromRuleSet(String category, CategoryRuleSet rules) {
     editingCategory = category;
+    editingSubtitle = rules.subtitle;
+    editingComment = rules.comment;
     useAdvancedRule = rules.useAdvancedRule;
 
     isMultiScene = rules.isMultiScene;
@@ -125,7 +129,10 @@ class CategoryRulesFormState {
     normalEnchoTime = rules.normalRule.enchoTimeMinutes;
     normalEnchoCount = rules.normalRule.enchoCount;
     normalKachinukiUnlimitedType = rules.normalRule.kachinukiUnlimitedType;
-    normalHasLeagueDaihyo = rules.normalRule.hasLeagueDaihyo;
+    normalHasLeagueDaihyo =
+        (rules.matchType.contains('リーグ') || rules.normalRule.isLeague)
+        ? rules.normalRule.hasLeagueDaihyo
+        : rules.normalRule.hasRepresentativeMatch;
     normalIsDaihyoIpponShobu = rules.normalRule.isDaihyoIpponShobu;
     normalWinPoint = rules.normalRule.winPoint;
     normalLossPoint = rules.normalRule.lossPoint;
@@ -147,7 +154,10 @@ class CategoryRulesFormState {
     advancedEnchoTime = rules.advancedRule.enchoTimeMinutes;
     advancedEnchoCount = rules.advancedRule.enchoCount;
     advancedKachinukiUnlimitedType = rules.advancedRule.kachinukiUnlimitedType;
-    advancedHasLeagueDaihyo = rules.advancedRule.hasLeagueDaihyo;
+    advancedHasLeagueDaihyo =
+        (rules.matchType.contains('リーグ') || rules.advancedRule.isLeague)
+        ? rules.advancedRule.hasLeagueDaihyo
+        : rules.advancedRule.hasRepresentativeMatch;
     advancedIsDaihyoIpponShobu = rules.advancedRule.isDaihyoIpponShobu;
     advancedWinPoint = rules.advancedRule.winPoint;
     advancedLossPoint = rules.advancedRule.lossPoint;
@@ -169,16 +179,17 @@ class CategoryRulesFormState {
     advancedDaihyoHasHantei = rules.advancedRule.daihyoHasHantei;
 
     editingIsRenseikai = rules.normalRule.isRenseikai;
-    if (rules.normalRule.isRenseikai) {
+    if (rules.matchType.isNotEmpty) {
+      editingMatchType = rules.matchType;
+    } else if (rules.normalRule.isRenseikai) {
       editingMatchType = '錬成会';
     } else if (rules.normalRule.isKachinuki) {
       editingMatchType = '勝ち抜き戦';
     } else if (rules.normalRule.isLeague) {
       editingMatchType = rules.normalRule.hasLeagueDaihyo ? 'リーグ団体戦' : 'リーグ個人戦';
-    } else if (rules.normalRule.hasLeagueDaihyo) {
+    } else if (rules.normalRule.hasRepresentativeMatch ||
+        rules.normalRule.hasLeagueDaihyo) {
       editingMatchType = '団体戦';
-    } else if (rules.matchType.isNotEmpty) {
-      editingMatchType = rules.matchType;
     } else {
       editingMatchType = category.contains('団体') ? '団体戦' : '個人戦';
     }
@@ -189,6 +200,9 @@ class CategoryRulesFormState {
     return CategoryRuleMatchHelper.buildMatchRule(
       category: category,
       matchType: editingMatchType,
+      hasRepresentativeMatch: isNormal
+          ? normalHasLeagueDaihyo
+          : advancedHasLeagueDaihyo,
       matchTime: isNormal ? normalTime : advancedTime,
       isRunningTime: isNormal ? normalIsRunningTime : advancedIsRunningTime,
       isIpponShobu: isNormal ? normalIsIpponShobu : advancedIsIpponShobu,
@@ -237,6 +251,8 @@ class CategoryRulesFormState {
     final advancedRule = buildRuleForCategory(category, isNormal: false);
 
     return CategoryRuleMatchHelper.createCategoryRuleSet(
+      subtitle: editingSubtitle,
+      comment: editingComment,
       normalRule: normalRule,
       advancedRule: advancedRule,
       useAdvancedRule: useAdvancedRule,

@@ -265,7 +265,15 @@ class TeamScoreboardTableBuilder {
   }
 
   static Widget ptMark(TeamPointDisplay p, Color color, bool isDark) {
-    if (p.isFirstMatchPoint && p.mark != '◯') {
+    final bool isSpecial =
+        p.mark == '◯' ||
+        p.mark == '◎' ||
+        p.mark == '反' ||
+        p.mark == '×' ||
+        p.mark == '✕' ||
+        p.mark == '△' ||
+        p.mark == '▲';
+    if (p.isFirstMatchPoint && !isSpecial) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
         padding: const EdgeInsets.all(AppSpacing.xxs),
