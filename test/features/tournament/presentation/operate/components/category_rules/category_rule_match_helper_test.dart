@@ -245,5 +245,72 @@ void main() {
         );
       },
     );
+
+    test('8. findAllRuleSetsForCategory: 同一部門の複数ルールを漏れなく収集できること', () {
+      final rules = <String, CategoryRuleSet>{
+        '小学生の部': const CategoryRuleSet(
+          subtitle: '予選リーグ',
+          matchType: '団体戦',
+          normalRule: MatchRule(matchTimeMinutes: 2.0),
+        ),
+        '小学生の部 (2)': const CategoryRuleSet(
+          subtitle: '決勝トーナメント',
+          matchType: '団体戦',
+          normalRule: MatchRule(matchTimeMinutes: 3.0),
+        ),
+        '中学生の部': const CategoryRuleSet(subtitle: '', matchType: '団体戦'),
+      };
+
+      final results = CategoryRuleMatchHelper.findAllRuleSetsForCategory(
+        rules,
+        '小学生の部',
+        matchType: '団体戦',
+      );
+
+      expect(results.length, 2);
+      expect(results[0].key, '小学生の部');
+      expect(results[0].value.subtitle, '予選リーグ');
+      expect(results[1].key, '小学生の部 (2)');
+      expect(results[1].value.subtitle, '決勝トーナメント');
+    });
+
+    test('9. findRuleEntryForMatch: 試合メモ(note)のキーワードに応じて最適なルールが優先選択されること', () {
+      final rules = <String, CategoryRuleSet>{
+        '小学生低学年の部': const CategoryRuleSet(
+          subtitle: '予選リーグ',
+          matchType: '団体戦',
+          normalRule: MatchRule(matchTimeMinutes: 2.0),
+        ),
+        '小学生低学年の部 (2)': const CategoryRuleSet(
+          subtitle: '決勝トーナメント',
+          matchType: '団体戦',
+          normalRule: MatchRule(matchTimeMinutes: 3.0),
+        ),
+      };
+
+      // note に「予選」が含まれる場合 -> 予選リーグ
+      final yosenEntry = CategoryRuleMatchHelper.findRuleEntryForMatch(
+        rules,
+        category: '小学生低学年の部',
+        matchType: '団体戦',
+        note: '第1試合 予選Aリーグ',
+      );
+      expect(yosenEntry, isNotNull);
+      expect(yosenEntry?.key, '小学生低学年の部');
+      expect(yosenEntry?.value.subtitle, '予選リーグ');
+      expect(yosenEntry?.value.normalRule.matchTimeMinutes, 2.0);
+
+      // note に「決勝」が含まれる場合 -> 決勝トーナメント
+      final kesshoEntry = CategoryRuleMatchHelper.findRuleEntryForMatch(
+        rules,
+        category: '小学生低学年の部',
+        matchType: '団体戦',
+        note: '決勝戦 第1試合',
+      );
+      expect(kesshoEntry, isNotNull);
+      expect(kesshoEntry?.key, '小学生低学年の部 (2)');
+      expect(kesshoEntry?.value.subtitle, '決勝トーナメント');
+      expect(kesshoEntry?.value.normalRule.matchTimeMinutes, 3.0);
+    });
   });
 }

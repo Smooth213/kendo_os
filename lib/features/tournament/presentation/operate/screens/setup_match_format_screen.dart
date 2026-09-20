@@ -179,25 +179,31 @@ class _SetupMatchFormatScreenState
         .read(tournamentProvider(widget.tournamentId))
         .valueOrNull;
     if (tourney != null) {
-      final ruleSet = CategoryRuleMatchHelper.findRuleSetForMatch(
+      final entry = CategoryRuleMatchHelper.findRuleEntryForMatch(
         tourney.categoryRules,
         category: _category,
         matchType: _state.matchType,
         note: _noteController.text,
       );
-      if (ruleSet != null) {
+      if (entry != null) {
+        final ruleSet = entry.value;
         final targetScene = MatchFormatRuleSyncHelper.determineInitialScene(
           ruleSet: ruleSet,
           currentScene: _state.selectedRuleScene,
           isAdvanced: _isCurrentMatchAdvanced,
         );
-        _applyCategoryRuleScene(targetScene, ruleSet);
+        _applyCategoryRuleSelection(entry.key, targetScene, ruleSet);
       }
     }
   }
 
-  void _applyCategoryRuleScene(String scene, CategoryRuleSet ruleSet) {
+  void _applyCategoryRuleSelection(
+    String ruleKey,
+    String scene,
+    CategoryRuleSet ruleSet,
+  ) {
     setState(() {
+      _state.selectedRuleKey = ruleKey;
       MatchFormatRuleSyncHelper.applyCategoryRuleScene(
         scene: scene,
         ruleSet: ruleSet,
@@ -208,6 +214,22 @@ class _SetupMatchFormatScreenState
         drawPointController: _drawPointController,
       );
     });
+  }
+
+  void _applyCategoryRuleScene(String scene, CategoryRuleSet ruleSet) {
+    final tourney = ref
+        .read(tournamentProvider(widget.tournamentId))
+        .valueOrNull;
+    final ruleKey =
+        _state.selectedRuleKey ??
+        CategoryRuleMatchHelper.findRuleEntryForMatch(
+          tourney?.categoryRules ?? {},
+          category: _category,
+          matchType: _state.matchType,
+          note: _noteController.text,
+        )?.key ??
+        _category;
+    _applyCategoryRuleSelection(ruleKey, scene, ruleSet);
   }
 
   void _applyRule(MatchRule rule) {
@@ -328,6 +350,7 @@ class _SetupMatchFormatScreenState
                         tournamentId: widget.tournamentId,
                         category: _category,
                         selectedRuleScene: _state.selectedRuleScene,
+                        selectedRuleKey: _state.selectedRuleKey,
                         isCurrentMatchAdvanced: _isCurrentMatchAdvanced,
                         hasExtension: _state.hasExtension,
                         extTime: _state.extTime,
@@ -360,6 +383,7 @@ class _SetupMatchFormatScreenState
                         courtController: _courtController,
                         noteController: _noteController,
                         themeColors: _themeColors,
+                        onRuleSelected: _applyCategoryRuleSelection,
                         onRuleSceneSelected: _applyCategoryRuleScene,
                         onSetManualRoundType: _setManualRoundType,
                         onHeadingPresetToggled: _toggleHeadingPreset,

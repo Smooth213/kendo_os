@@ -33,6 +33,7 @@ class MatchFormatFormState {
   String selectedMajorCategory;
   String selectedMinorCategory;
   String selectedRuleScene;
+  String? selectedRuleKey;
   String? manualRoundTypeOverride;
 
   MatchFormatFormState({
@@ -60,6 +61,7 @@ class MatchFormatFormState {
     this.selectedMajorCategory = '一般・一般',
     this.selectedMinorCategory = '男子',
     this.selectedRuleScene = 'honsen',
+    this.selectedRuleKey,
     this.manualRoundTypeOverride,
   });
 

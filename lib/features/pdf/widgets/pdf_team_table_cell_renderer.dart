@@ -262,9 +262,15 @@ class PdfTeamTableCellRenderer {
     bool isRed,
     pw.Font fontBold,
   ) {
-    if (pts.isEmpty) return pw.SizedBox(width: 26, height: 26);
+    final actualPts = pts.where((p) => p.mark != '△' && p.mark != '▲').toList();
+    final hasHansoku = pts.any((p) => p.mark == '△' || p.mark == '▲');
+
+    if (actualPts.isEmpty && !hasHansoku) {
+      return pw.SizedBox(width: 26, height: 26);
+    }
     final color = isRed ? PdfColors.red700 : PdfColors.black;
-    if (pts.length == 1 && (pts[0].mark == '✕' || pts[0].mark == '×')) {
+    if (actualPts.length == 1 &&
+        (actualPts[0].mark == '✕' || actualPts[0].mark == '×')) {
       return pw.Container(
         width: 26,
         height: 26,
@@ -289,6 +295,19 @@ class PdfTeamTableCellRenderer {
                 color: color,
               ),
             ),
+            if (hasHansoku)
+              pw.Positioned(
+                bottom: 0.5,
+                left: 0.5,
+                child: pw.Text(
+                  '△',
+                  style: pw.TextStyle(
+                    font: fontBold,
+                    fontSize: 5.5,
+                    color: color,
+                  ),
+                ),
+              ),
           ],
         ),
       );
@@ -311,20 +330,33 @@ class PdfTeamTableCellRenderer {
             ),
           pw.Stack(
             children: [
-              if (pts.isNotEmpty)
+              if (actualPts.isNotEmpty)
                 pw.Positioned(
                   top: 3.5,
                   left: 4.5,
-                  child: _pdfSingleMark(pts[0], color, fontBold),
+                  child: _pdfSingleMark(actualPts[0], color, fontBold),
                 ),
-              if (pts.length > 1)
+              if (actualPts.length > 1)
                 pw.Positioned(
                   bottom: 3.5,
                   right: 4.5,
-                  child: _pdfSingleMark(pts[1], color, fontBold),
+                  child: _pdfSingleMark(actualPts[1], color, fontBold),
                 ),
             ],
           ),
+          if (hasHansoku)
+            pw.Positioned(
+              bottom: 0.5,
+              left: 0.5,
+              child: pw.Text(
+                '△',
+                style: pw.TextStyle(
+                  font: fontBold,
+                  fontSize: 5.5,
+                  color: color,
+                ),
+              ),
+            ),
         ],
       ),
     );

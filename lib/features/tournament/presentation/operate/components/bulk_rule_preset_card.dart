@@ -151,7 +151,8 @@ class BulkRulePresetCard extends StatelessWidget {
                     ),
 
                   // 2) 錬成 (練習試合)
-                  if (selectedRuleSet.useRenseikaiRule) ...[
+                  if (selectedRuleSet.isMultiScene &&
+                      selectedRuleSet.useRenseikaiRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
                       sceneKey: 'renseikai',
@@ -162,7 +163,8 @@ class BulkRulePresetCard extends StatelessWidget {
                   ],
 
                   // 3) 申合せ
-                  if (selectedRuleSet.useMoushiawaseRule) ...[
+                  if (selectedRuleSet.isMultiScene &&
+                      selectedRuleSet.useMoushiawaseRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
                       sceneKey: 'moushiawase',

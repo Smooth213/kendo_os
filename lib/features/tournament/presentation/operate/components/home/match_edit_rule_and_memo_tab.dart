@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rules/match_rule_setting_form.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -148,79 +150,136 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
     final asyncTourney = ref.watch(tournamentProvider(tourneyId));
     final categoryRules = asyncTourney.valueOrNull?.categoryRules ?? {};
 
-    final matchCategory = match.category;
+    final rawMatchCategory = match.category?.trim();
+
+    // 該当試合の部門（match.category）に適合するルールセットを抽出
+    final Map<String, CategoryRuleSet> matchedCategoryRules = {};
+    if (rawMatchCategory != null && rawMatchCategory.isNotEmpty) {
+      final cleanMatchCat = CategoryRuleMatchHelper.cleanCategoryBaseName(
+        rawMatchCategory,
+      );
+      for (final entry in categoryRules.entries) {
+        final catName = entry.key;
+        final cleanCatName = CategoryRuleMatchHelper.cleanCategoryBaseName(
+          catName,
+        );
+        if (catName == rawMatchCategory || cleanCatName == cleanMatchCat) {
+          matchedCategoryRules[catName] = entry.value;
+        }
+      }
+      // 完全一致や基底名一致で見つからない場合は部分一致で探す
+      if (matchedCategoryRules.isEmpty) {
+        for (final entry in categoryRules.entries) {
+          final catName = entry.key;
+          if (catName.contains(rawMatchCategory) ||
+              rawMatchCategory.contains(catName)) {
+            matchedCategoryRules[catName] = entry.value;
+          }
+        }
+      }
+    }
+
+    final targetRules = matchedCategoryRules.isNotEmpty
+        ? matchedCategoryRules
+        : categoryRules;
+    final bool showCategoryPrefix = targetRules.length > 1;
 
     final List<Widget> presetChips = [];
-    categoryRules.forEach((catName, ruleSet) {
-      if (matchCategory != null &&
-          matchCategory.isNotEmpty &&
-          catName != matchCategory &&
-          !catName.contains(matchCategory) &&
-          !matchCategory.contains(catName)) {
-        return;
-      }
+    targetRules.forEach((catName, ruleSet) {
+      final displayName = CategoryRuleMatchHelper.formatDisplayTitle(
+        category: catName,
+        subtitle: ruleSet.subtitle,
+        allCategoryRules: categoryRules,
+      );
+      final prefix = showCategoryPrefix ? '$displayName: ' : '';
 
-      // 設定が存在・有効化されているルールのみチップとして表示
+      // 🏆 1. 本戦ルール（通常戦）
       final bool hasValidHonsen =
           ruleSet.useHonsenRule && ruleSet.normalRule.matchTimeMinutes > 0;
       if (hasValidHonsen) {
-        final isSelected = selectedPresetKey == 'honsen';
+        final key = '${catName}_honsen';
+        final isSelected =
+            selectedPresetKey == key ||
+            (selectedPresetKey == 'honsen' && targetRules.length == 1);
         presetChips.add(
           AppChoiceChip(
             selected: isSelected,
             icon: Icons.account_balance,
             label: Text(
-              '本戦ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.normalRule.matchTimeMinutes)})',
+              '$prefix本戦ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.normalRule.matchTimeMinutes)})',
             ),
-            onSelected: (selected) {
-              if (selected) {
-                onPresetSelected(ruleSet.normalRule, 'honsen');
-              }
+            onSelected: (_) {
+              onPresetSelected(ruleSet.normalRule, key);
             },
           ),
         );
       }
 
-      final bool hasValidRenseikai =
-          ruleSet.useRenseikaiRule &&
-          ruleSet.renseikaiRule.matchTimeMinutes > 0;
-      if (hasValidRenseikai) {
-        final isSelected = selectedPresetKey == 'renseikai';
+      // 🔥 2. 上位戦ルール（準決勝・決勝）
+      final bool hasValidAdvanced =
+          ruleSet.useAdvancedRule && ruleSet.advancedRule.matchTimeMinutes > 0;
+      if (hasValidAdvanced) {
+        final key = '${catName}_advanced';
+        final isSelected = selectedPresetKey == key;
         presetChips.add(
           AppChoiceChip(
             selected: isSelected,
-            icon: Icons.flash_on,
+            icon: Icons.military_tech,
             label: Text(
-              '錬成ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes)})',
+              '$prefix上位戦ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.advancedRule.matchTimeMinutes)})',
             ),
-            onSelected: (selected) {
-              if (selected) {
-                onPresetSelected(ruleSet.renseikaiRule, 'renseikai');
-              }
+            onSelected: (_) {
+              onPresetSelected(ruleSet.advancedRule, key);
             },
           ),
         );
       }
 
-      final bool hasValidMoushiawase =
-          ruleSet.useMoushiawaseRule &&
-          ruleSet.moushiawaseRule.matchTimeMinutes > 0;
-      if (hasValidMoushiawase) {
-        final isSelected = selectedPresetKey == 'moushiawase';
-        presetChips.add(
-          AppChoiceChip(
-            selected: isSelected,
-            icon: Icons.handshake,
-            label: Text(
-              '申合せルール (${MatchRuleSettingForm.formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes)})',
+      // ⚔️ 3. 錬成ルール & 🤝 4. 申合せルール（★ isMultiScene が true の場合のみ表示）
+      if (ruleSet.isMultiScene) {
+        final bool hasValidRenseikai =
+            ruleSet.useRenseikaiRule &&
+            ruleSet.renseikaiRule.matchTimeMinutes > 0;
+        if (hasValidRenseikai) {
+          final key = '${catName}_renseikai';
+          final isSelected =
+              selectedPresetKey == key ||
+              (selectedPresetKey == 'renseikai' && targetRules.length == 1);
+          presetChips.add(
+            AppChoiceChip(
+              selected: isSelected,
+              icon: Icons.flash_on,
+              label: Text(
+                '$prefix錬成ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes)})',
+              ),
+              onSelected: (_) {
+                onPresetSelected(ruleSet.renseikaiRule, key);
+              },
             ),
-            onSelected: (selected) {
-              if (selected) {
-                onPresetSelected(ruleSet.moushiawaseRule, 'moushiawase');
-              }
-            },
-          ),
-        );
+          );
+        }
+
+        final bool hasValidMoushiawase =
+            ruleSet.useMoushiawaseRule &&
+            ruleSet.moushiawaseRule.matchTimeMinutes > 0;
+        if (hasValidMoushiawase) {
+          final key = '${catName}_moushiawase';
+          final isSelected =
+              selectedPresetKey == key ||
+              (selectedPresetKey == 'moushiawase' && targetRules.length == 1);
+          presetChips.add(
+            AppChoiceChip(
+              selected: isSelected,
+              icon: Icons.handshake,
+              label: Text(
+                '$prefix申合せルール (${MatchRuleSettingForm.formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes)})',
+              ),
+              onSelected: (_) {
+                onPresetSelected(ruleSet.moushiawaseRule, key);
+              },
+            ),
+          );
+        }
       }
     });
 
@@ -233,30 +292,28 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           label: Text(
             '本戦ルール (${MatchRuleSettingForm.formatMinutes(matchTime)})',
           ),
-          onSelected: (selected) {
-            if (selected) {
-              onPresetSelected(
-                MatchRule(
-                  matchScene: 'honsen',
-                  matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
-                  isRunningTime: false,
-                  isIpponShobu: false,
-                  hasHantei: true,
-                  enchoTimeMinutes: 2.0,
-                  enchoCount: 1,
-                  isEnchoUnlimited: false,
-                  hasRepresentativeMatch: true,
-                  isDaihyoIpponShobu: true,
-                  daihyoMatchTimeMinutes: 0.0,
-                  daihyoHasExtension: true,
-                  daihyoEnchoTimeMinutes: 3.0,
-                  daihyoEnchoCount: -2,
-                  daihyoHasHantei: false,
-                  renseikaiType: '一試合制',
-                ),
-                'honsen',
-              );
-            }
+          onSelected: (_) {
+            onPresetSelected(
+              MatchRule(
+                matchScene: 'honsen',
+                matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
+                isRunningTime: false,
+                isIpponShobu: false,
+                hasHantei: true,
+                enchoTimeMinutes: 2.0,
+                enchoCount: isDantai ? 0 : 1,
+                isEnchoUnlimited: false,
+                hasRepresentativeMatch: isDantai,
+                isDaihyoIpponShobu: true,
+                daihyoMatchTimeMinutes: 0.0,
+                daihyoHasExtension: isDantai,
+                daihyoEnchoTimeMinutes: 3.0,
+                daihyoEnchoCount: -2,
+                daihyoHasHantei: false,
+                renseikaiType: '一試合制',
+              ),
+              'honsen',
+            );
           },
         ),
         AppChoiceChip(
@@ -265,31 +322,29 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           label: Text(
             '錬成会ルール (${MatchRuleSettingForm.formatMinutes(matchTime)})',
           ),
-          onSelected: (selected) {
-            if (selected) {
-              onPresetSelected(
-                MatchRule(
-                  matchScene: 'renseikai',
-                  isRenseikai: true,
-                  matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
-                  isRunningTime: true,
-                  isIpponShobu: false,
-                  hasHantei: false,
-                  enchoTimeMinutes: 0.0,
-                  enchoCount: 0,
-                  isEnchoUnlimited: false,
-                  hasRepresentativeMatch: false,
-                  isDaihyoIpponShobu: false,
-                  daihyoMatchTimeMinutes: 0.0,
-                  daihyoHasExtension: false,
-                  daihyoEnchoTimeMinutes: 0.0,
-                  daihyoEnchoCount: 0,
-                  daihyoHasHantei: false,
-                  renseikaiType: '一試合制',
-                ),
-                'renseikai',
-              );
-            }
+          onSelected: (_) {
+            onPresetSelected(
+              MatchRule(
+                matchScene: 'renseikai',
+                isRenseikai: true,
+                matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
+                isRunningTime: true,
+                isIpponShobu: false,
+                hasHantei: false,
+                enchoTimeMinutes: 0.0,
+                enchoCount: 0,
+                isEnchoUnlimited: false,
+                hasRepresentativeMatch: false,
+                isDaihyoIpponShobu: false,
+                daihyoMatchTimeMinutes: 0.0,
+                daihyoHasExtension: false,
+                daihyoEnchoTimeMinutes: 0.0,
+                daihyoEnchoCount: 0,
+                daihyoHasHantei: false,
+                renseikaiType: '一試合制',
+              ),
+              'renseikai',
+            );
           },
         ),
         AppChoiceChip(
@@ -298,30 +353,28 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           label: Text(
             '申合せルール (${MatchRuleSettingForm.formatMinutes(matchTime)})',
           ),
-          onSelected: (selected) {
-            if (selected) {
-              onPresetSelected(
-                MatchRule(
-                  matchScene: 'moushiawase',
-                  matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
-                  isRunningTime: true,
-                  isIpponShobu: false,
-                  hasHantei: false,
-                  enchoTimeMinutes: 0.0,
-                  enchoCount: 0,
-                  isEnchoUnlimited: false,
-                  hasRepresentativeMatch: false,
-                  isDaihyoIpponShobu: false,
-                  daihyoMatchTimeMinutes: 0.0,
-                  daihyoHasExtension: false,
-                  daihyoEnchoTimeMinutes: 0.0,
-                  daihyoEnchoCount: 0,
-                  daihyoHasHantei: false,
-                  renseikaiType: '一試合制',
-                ),
-                'moushiawase',
-              );
-            }
+          onSelected: (_) {
+            onPresetSelected(
+              MatchRule(
+                matchScene: 'moushiawase',
+                matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
+                isRunningTime: true,
+                isIpponShobu: false,
+                hasHantei: false,
+                enchoTimeMinutes: 0.0,
+                enchoCount: 0,
+                isEnchoUnlimited: false,
+                hasRepresentativeMatch: false,
+                isDaihyoIpponShobu: false,
+                daihyoMatchTimeMinutes: 0.0,
+                daihyoHasExtension: false,
+                daihyoEnchoTimeMinutes: 0.0,
+                daihyoEnchoCount: 0,
+                daihyoHasHantei: false,
+                renseikaiType: '一試合制',
+              ),
+              'moushiawase',
+            );
           },
         ),
       ]);

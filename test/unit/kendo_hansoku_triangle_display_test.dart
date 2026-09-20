@@ -1,12 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
+import 'package:kendo_os/features/pdf/models/pdf_point_data.dart';
+import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_table_builder.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/presentation/widgets/kendo_score_box.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 void main() {
   group('🥋 反則マーク「△」の表示および先取丸囲み除外テスト', () {
@@ -226,5 +231,111 @@ void main() {
       expect(redPts[1].mark, 'メ');
       expect(redPts[1].isFirstOverall, isTrue);
     });
+
+    testWidgets('8. KendoScoreBox(table): △はスコアの左下に小さく表示され、大丸の中に入らないこと', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: KendoScoreBox(
+              points: [
+                KendoPointMark(mark: '△'),
+                KendoPointMark(mark: 'メ', isFirst: true),
+              ],
+              isWinner: true,
+              isRed: true,
+              variant: ScoreDisplayVariant.table,
+            ),
+          ),
+        ),
+      );
+
+      // 'メ' は1つ表示される
+      expect(find.text('メ'), findsOneWidget);
+      // '△' も1つ表示される
+      expect(find.text('△'), findsOneWidget);
+
+      // △ の Positioned を確認
+      final triangleWidget = tester.widget<Positioned>(
+        find.ancestor(of: find.text('△'), matching: find.byType(Positioned)),
+      );
+      expect(triangleWidget.bottom, 0);
+      expect(triangleWidget.left, 1);
+
+      // メ の Positioned を確認（1本目左上）
+      final menWidget = tester.widget<Positioned>(
+        find.ancestor(of: find.text('メ'), matching: find.byType(Positioned)),
+      );
+      expect(menWidget.top, isNotNull);
+      expect(menWidget.left, 6);
+    });
+
+    testWidgets(
+      '9. TeamScoreboardTableBuilder.buildMatchScoreBox: △はスコアの左下に小さく表示され、大丸の中に入らないこと',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: TeamScoreboardTableBuilder.buildMatchScoreBox(
+                [
+                  const TeamPointDisplay('△', false),
+                  const TeamPointDisplay('メ', false),
+                ],
+                true, // isWinner
+                false, // isDraw
+                true, // isRed
+                false, // isDark
+              ),
+            ),
+          ),
+        );
+
+        // 'メ' は1つ表示される
+        expect(find.text('メ'), findsOneWidget);
+        // '△' も1つ表示される
+        expect(find.text('△'), findsOneWidget);
+
+        // △ の Positioned を確認（左下: bottom 8, left 2）
+        final triangleWidget = tester.widget<Positioned>(
+          find.ancestor(of: find.text('△'), matching: find.byType(Positioned)),
+        );
+        expect(triangleWidget.bottom, 8);
+        expect(triangleWidget.left, 2);
+
+        // メ の Positioned を確認（1本目スロット: top 2, left 2）
+        final menWidget = tester.widget<Positioned>(
+          find.ancestor(of: find.text('メ'), matching: find.byType(Positioned)),
+        );
+        expect(menWidget.top, 2);
+        expect(menWidget.left, 2);
+      },
+    );
+
+    test(
+      '10. PdfTeamTableCellRenderer.buildPointBox: △が含まれていても正しく描画ウィジェットが構築されること',
+      () {
+        final font = pw.Font.helvetica();
+        final widget = PdfTeamTableCellRenderer.buildPointBox(
+          [const PdfPointData('△', false), const PdfPointData('メ', true)],
+          true, // isWinner
+          true, // isRed
+          font,
+        );
+
+        expect(widget, isA<pw.Container>());
+        final container = widget as pw.Container;
+        expect(container.child, isA<pw.Stack>());
+        final stack = container.child as pw.Stack;
+
+        // children に大丸(pw.Container)、打突技Stack、そして左下の反則Positionedが含まれる
+        expect(stack.children.length, 3);
+        final trianglePos = stack.children[2] as pw.Positioned;
+        expect(trianglePos.bottom, 0.5);
+        expect(trianglePos.left, 0.5);
+        expect(trianglePos.child, isA<pw.Text>());
+        expect((trianglePos.child as pw.Text).text.toPlainText(), '△');
+      },
+    );
   });
 }

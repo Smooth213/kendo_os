@@ -140,13 +140,19 @@ class KendoScoreBox extends StatelessWidget {
     }
   }
 
-  /// ① テーブル形式: 2段斜め配置（1本目左上、2本目右下、勝者丸）
+  /// ① テーブル形式: 2段斜め配置（1本目左上、2本目右下、勝者丸、左下に反則△）
   Widget _buildTableVariant(BuildContext context, Color color) {
+    final actualPoints = points
+        .where((p) => p.mark != '△' && p.mark != '▲')
+        .toList();
+    final hasHansoku = points.any((p) => p.mark == '△' || p.mark == '▲');
+
     return SizedBox(
       width: 36,
       height: 36,
       child: Stack(
         alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
           if (isWinner)
             Container(
@@ -160,24 +166,38 @@ class KendoScoreBox extends StatelessWidget {
                 ),
               ),
             ),
-          if (points.isNotEmpty)
+          if (actualPoints.isNotEmpty)
             Positioned(
               top: AppSpacing.xs,
               left: 6,
               child: KendoTechMarkBadge(
-                point: points[0],
+                point: actualPoints[0],
                 color: color,
                 isDark: isDark,
               ),
             ),
-          if (points.length > 1)
+          if (actualPoints.length > 1)
             Positioned(
               bottom: AppSpacing.xs,
               right: 6,
               child: KendoTechMarkBadge(
-                point: points[1],
+                point: actualPoints[1],
                 color: color,
                 isDark: isDark,
+              ),
+            ),
+          if (hasHansoku)
+            Positioned(
+              bottom: 0,
+              left: 1,
+              child: Text(
+                '△',
+                style: TextStyle(
+                  fontSize: AppFontSize.nano,
+                  color: color,
+                  fontWeight: AppFontWeight.bold,
+                  height: 1.0,
+                ),
               ),
             ),
         ],

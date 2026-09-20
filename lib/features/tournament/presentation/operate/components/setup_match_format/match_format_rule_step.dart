@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_heading_and_note_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_summary_card.dart';
@@ -14,6 +15,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
   final String tournamentId;
   final String category;
   final String selectedRuleScene;
+  final String? selectedRuleKey;
   final bool isCurrentMatchAdvanced;
   final bool hasExtension;
   final double extTime;
@@ -42,8 +44,10 @@ class MatchFormatRuleStep extends ConsumerWidget {
   final TextEditingController courtController;
   final TextEditingController noteController;
   final AppThemeColors themeColors;
-  final void Function(String scene, CategoryRuleSet ruleSet)
+  final void Function(String scene, CategoryRuleSet ruleSet)?
   onRuleSceneSelected;
+  final void Function(String ruleKey, String scene, CategoryRuleSet ruleSet)?
+  onRuleSelected;
   final void Function(String type) onSetManualRoundType;
   final void Function(String heading) onHeadingPresetToggled;
   final VoidCallback onClearCourt;
@@ -62,6 +66,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
     required this.tournamentId,
     required this.category,
     required this.selectedRuleScene,
+    this.selectedRuleKey,
     required this.isCurrentMatchAdvanced,
     required this.hasExtension,
     required this.extTime,
@@ -90,7 +95,8 @@ class MatchFormatRuleStep extends ConsumerWidget {
     required this.courtController,
     required this.noteController,
     required this.themeColors,
-    required this.onRuleSceneSelected,
+    this.onRuleSceneSelected,
+    this.onRuleSelected,
     required this.onSetManualRoundType,
     required this.onHeadingPresetToggled,
     required this.onClearCourt,
@@ -98,6 +104,19 @@ class MatchFormatRuleStep extends ConsumerWidget {
     required this.buildSectionHeader,
     required this.formatMinutesText,
   });
+
+  void _triggerRuleSelection(
+    String ruleKey,
+    String scene,
+    CategoryRuleSet ruleSet,
+  ) {
+    if (onRuleSelected != null) {
+      onRuleSelected!(ruleKey, scene, ruleSet);
+    }
+    if (onRuleSceneSelected != null) {
+      onRuleSceneSelected!(scene, ruleSet);
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -107,19 +126,64 @@ class MatchFormatRuleStep extends ConsumerWidget {
     final categoryName = category;
     final asyncTourney = ref.watch(tournamentProvider(tournamentId));
     final tournament = asyncTourney.valueOrNull;
-    final ruleSet = CategoryRuleMatchHelper.findRuleSetForCategoryAndType(
-      tournament?.categoryRules ?? {},
+    final allCategoryRules = tournament?.categoryRules ?? {};
+    final ruleEntries = CategoryRuleMatchHelper.findAllRuleSetsForCategory(
+      allCategoryRules,
       categoryName,
       matchType: matchType,
     );
 
-    final displayRuleName = selectedRuleScene == 'renseikai'
-        ? '⚔️ 錬成ルール'
-        : (selectedRuleScene == 'moushiawase'
-              ? '🤝 申合せルール'
-              : (selectedRuleScene == 'advanced'
-                    ? '⭐ 上位戦ルール'
-                    : '🏆 本戦（通常戦）ルール'));
+    final effectiveRuleKey =
+        (selectedRuleKey != null &&
+            ruleEntries.any((e) => e.key == selectedRuleKey))
+        ? selectedRuleKey!
+        : (ruleEntries.isNotEmpty ? ruleEntries.first.key : null);
+
+    final currentRuleEntry = ruleEntries.firstWhere(
+      (e) => e.key == effectiveRuleKey,
+      orElse: () => ruleEntries.isNotEmpty
+          ? ruleEntries.first
+          : MapEntry(
+              categoryName,
+              CategoryRuleSet(
+                normalRule: MatchRule(),
+                advancedRule: MatchRule(),
+              ),
+            ),
+    );
+
+    final isMultipleRules = ruleEntries.length > 1;
+
+    String displayRuleName;
+    if (ruleEntries.isEmpty) {
+      displayRuleName = selectedRuleScene == 'renseikai'
+          ? '⚔️ 錬成ルール'
+          : (selectedRuleScene == 'moushiawase'
+                ? '🤝 申合せルール'
+                : (selectedRuleScene == 'advanced' ? '⭐ 上位戦ルール' : '🏆 通常戦ルール'));
+    } else {
+      final curRule = currentRuleEntry.value;
+      final sceneLabel = selectedRuleScene == 'renseikai'
+          ? '⚔️ 錬成ルール'
+          : (selectedRuleScene == 'moushiawase'
+                ? '🤝 申合せルール'
+                : (selectedRuleScene == 'advanced'
+                      ? '⭐ 上位戦ルール'
+                      : (curRule.isMultiScene ? '🏆 本戦ルール' : '🏆 通常戦ルール')));
+      final sub = curRule.subtitle.trim();
+      if (sub.isNotEmpty) {
+        displayRuleName = '$sceneLabel（$sub）';
+      } else if (isMultipleRules) {
+        final displayCat = CategoryRuleMatchHelper.resolveDisplayCategory(
+          category: currentRuleEntry.key,
+          subtitle: '',
+          allCategoryRules: allCategoryRules,
+        );
+        displayRuleName = '$sceneLabel（$displayCat）';
+      } else {
+        displayRuleName = sceneLabel;
+      }
+    }
 
     final isAdvanced =
         selectedRuleScene == 'advanced' || isCurrentMatchAdvanced;
@@ -129,6 +193,118 @@ class MatchFormatRuleStep extends ConsumerWidget {
       final extTimeStr = extTime == -2.0 ? '時間無制限' : formatMinutesText(extTime);
       final extCountStr = extCount == -2 ? '回数無制限' : '最大$extCount回';
       return 'あり ($extTimeStr / $extCountStr)';
+    }
+
+    final List<Widget> ruleChips = [];
+    for (final entry in ruleEntries) {
+      final ruleKey = entry.key;
+      final rSet = entry.value;
+
+      String titlePrefix;
+      if (isMultipleRules) {
+        if (rSet.subtitle.trim().isNotEmpty) {
+          titlePrefix = rSet.subtitle.trim();
+        } else {
+          titlePrefix = CategoryRuleMatchHelper.resolveDisplayCategory(
+            category: ruleKey,
+            subtitle: '',
+            allCategoryRules: allCategoryRules,
+          );
+        }
+      } else {
+        titlePrefix = '';
+      }
+
+      if (rSet.isMultiScene) {
+        if (rSet.useRenseikaiRule) {
+          final label = titlePrefix.isNotEmpty
+              ? '⚔️ $titlePrefix（錬成）'
+              : '⚔️ 錬成ルール';
+          final isSelected =
+              effectiveRuleKey == ruleKey && selectedRuleScene == 'renseikai';
+          ruleChips.add(
+            AppChoiceChip(
+              label: Text(label),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  _triggerRuleSelection(ruleKey, 'renseikai', rSet);
+                }
+              },
+            ),
+          );
+        }
+        if (rSet.useHonsenRule) {
+          final label = titlePrefix.isNotEmpty
+              ? '🏆 $titlePrefix（本戦）'
+              : '🏆 本戦ルール';
+          final isSelected =
+              effectiveRuleKey == ruleKey && selectedRuleScene == 'honsen';
+          ruleChips.add(
+            AppChoiceChip(
+              label: Text(label),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  _triggerRuleSelection(ruleKey, 'honsen', rSet);
+                }
+              },
+            ),
+          );
+        }
+        if (rSet.useMoushiawaseRule) {
+          final label = titlePrefix.isNotEmpty
+              ? '🤝 $titlePrefix（申合せ）'
+              : '🤝 申合せルール';
+          final isSelected =
+              effectiveRuleKey == ruleKey && selectedRuleScene == 'moushiawase';
+          ruleChips.add(
+            AppChoiceChip(
+              label: Text(label),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  _triggerRuleSelection(ruleKey, 'moushiawase', rSet);
+                }
+              },
+            ),
+          );
+        }
+      } else if (rSet.useHonsenRule) {
+        final label = titlePrefix.isNotEmpty ? '🏆 $titlePrefix' : '🏆 通常戦ルール';
+        final isSelected =
+            effectiveRuleKey == ruleKey && selectedRuleScene == 'honsen';
+        ruleChips.add(
+          AppChoiceChip(
+            label: Text(label),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (selected) {
+                _triggerRuleSelection(ruleKey, 'honsen', rSet);
+              }
+            },
+          ),
+        );
+      }
+
+      if (rSet.useAdvancedRule) {
+        final label = titlePrefix.isNotEmpty
+            ? '⭐ $titlePrefix（上位戦）'
+            : '⭐ 上位戦ルール';
+        final isSelected =
+            effectiveRuleKey == ruleKey && selectedRuleScene == 'advanced';
+        ruleChips.add(
+          AppChoiceChip(
+            label: Text(label),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (selected) {
+                _triggerRuleSelection(ruleKey, 'advanced', rSet);
+              }
+            },
+          ),
+        );
+      }
     }
 
     return ListView(
@@ -145,11 +321,13 @@ class MatchFormatRuleStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.lg),
 
-        if (ruleSet != null) ...[
+        if (ruleChips.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.subValue),
             child: Text(
-              'この部門（$categoryName）に設定されているルールを選択:',
+              isMultipleRules
+                  ? 'この部門（$categoryName）に登録されているルールを選択:'
+                  : 'この部門（$categoryName）に設定されているルールを選択:',
               style: const TextStyle(
                 fontWeight: AppFontWeight.bold,
                 fontSize: AppFontSize.bodySmall,
@@ -157,62 +335,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
               ),
             ),
           ),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (ruleSet.isMultiScene) ...[
-                if (ruleSet.useRenseikaiRule)
-                  AppChoiceChip(
-                    label: const Text('⚔️ 錬成ルール'),
-                    selected: selectedRuleScene == 'renseikai',
-                    onSelected: (selected) {
-                      if (selected) {
-                        onRuleSceneSelected('renseikai', ruleSet);
-                      }
-                    },
-                  ),
-                if (ruleSet.useHonsenRule)
-                  AppChoiceChip(
-                    label: const Text('🏆 本戦ルール'),
-                    selected: selectedRuleScene == 'honsen',
-                    onSelected: (selected) {
-                      if (selected) {
-                        onRuleSceneSelected('honsen', ruleSet);
-                      }
-                    },
-                  ),
-                if (ruleSet.useMoushiawaseRule)
-                  AppChoiceChip(
-                    label: const Text('🤝 申合せルール'),
-                    selected: selectedRuleScene == 'moushiawase',
-                    onSelected: (selected) {
-                      if (selected) {
-                        onRuleSceneSelected('moushiawase', ruleSet);
-                      }
-                    },
-                  ),
-              ] else if (ruleSet.useHonsenRule) ...[
-                AppChoiceChip(
-                  label: const Text('🏆 通常戦ルール'),
-                  selected: selectedRuleScene == 'honsen',
-                  onSelected: (selected) {
-                    if (selected) {
-                      onRuleSceneSelected('honsen', ruleSet);
-                    }
-                  },
-                ),
-              ],
-              if (ruleSet.useAdvancedRule)
-                AppChoiceChip(
-                  label: const Text('⭐ 上位戦ルール'),
-                  selected: selectedRuleScene == 'advanced',
-                  onSelected: (selected) {
-                    if (selected) onRuleSceneSelected('advanced', ruleSet);
-                  },
-                ),
-            ],
-          ),
+          Wrap(spacing: 8, runSpacing: 8, children: ruleChips),
           const SizedBox(height: AppSpacing.lg),
         ],
 

@@ -8,5 +8,5 @@ class PdfPlayerSpan {
 class PdfPointData {
   final String mark;
   final bool isFirstOverall;
-  PdfPointData(this.mark, this.isFirstOverall);
+  const PdfPointData(this.mark, this.isFirstOverall);
 }

@@ -144,5 +144,106 @@ void main() {
 
       holder.dispose();
     });
+
+    test('団体戦の初期化時に設定にない延長戦が勝手にONにならないこと（引き分けあり・代表戦決着）', () {
+      final teamMatches = <MatchModel>[
+        const MatchModel(
+          id: 'tm_1',
+          tournamentId: 't1',
+          matchType: '団体戦',
+          status: 'pending',
+          redName: '赤チーム',
+          whiteName: '白チーム',
+          hasExtension: false,
+          extensionTimeMinutes: null,
+          extensionCount: null,
+          rule: null, // ルール未設定
+        ),
+      ];
+
+      final holder = MatchEditStateHolder(teamMatches);
+
+      // 団体戦では通常試合の延長はOFFであること
+      expect(holder.isDantai, true);
+      expect(holder.hasExtension, false, reason: '団体戦通常戦で延長戦が勝手にONになってはならない');
+      expect(holder.enchoCount, 0, reason: '延長戦がOFFの場合enchoCountは0であること');
+      expect(
+        holder.selectedPresetKey,
+        isNull,
+        reason: 'ルール未設定時はプリセットが誤選択されてはならない',
+      );
+
+      holder.dispose();
+    });
+
+    test('プリセット適用時に設定されたルール通りの延長有無（OFF/ON）が正確に反映されること', () {
+      final teamMatches = <MatchModel>[
+        const MatchModel(
+          id: 'tm_1',
+          tournamentId: 't1',
+          matchType: '団体戦',
+          status: 'pending',
+          redName: '赤チーム',
+          whiteName: '白チーム',
+          hasExtension: false,
+        ),
+      ];
+
+      final holder = MatchEditStateHolder(teamMatches);
+
+      // 1. 延長なしの本戦ルールを適用 -> hasExtension は false
+      const honsenRule = MatchRule(
+        matchTimeMinutes: 2.5,
+        isRunningTime: false,
+        isIpponShobu: false,
+        enchoTimeMinutes: 0.0,
+        enchoCount: 0,
+        isEnchoUnlimited: false,
+        hasRepresentativeMatch: true,
+      );
+
+      holder.applyTargetPresetRule(honsenRule, 'honsen');
+      expect(holder.matchTime, 2.5);
+      expect(
+        holder.hasExtension,
+        false,
+        reason: '延長なしのルール適用時はhasExtensionがfalseであること',
+      );
+      expect(holder.enchoCount, 0);
+      expect(holder.hasRepresentativeMatch, true);
+
+      // 2. 個人戦で延長ありルールを適用した場合の検証
+      final individualMatches = <MatchModel>[
+        const MatchModel(
+          id: 'indiv_1',
+          tournamentId: 't1',
+          matchType: '個人戦',
+          status: 'pending',
+          redName: '選手A',
+          whiteName: '選手B',
+          hasExtension: false,
+        ),
+      ];
+      final indivHolder = MatchEditStateHolder(individualMatches);
+      expect(indivHolder.isDantai, false);
+
+      const indivEnchoRule = MatchRule(
+        matchTimeMinutes: 3.0,
+        enchoTimeMinutes: 2.0,
+        enchoCount: 1,
+        isEnchoUnlimited: false,
+      );
+      indivHolder.applyTargetPresetRule(indivEnchoRule, 'honsen');
+      expect(
+        indivHolder.hasExtension,
+        true,
+        reason: '個人戦で延長ありルール適用時はhasExtensionがtrueであること',
+      );
+      expect(indivHolder.enchoTime, 2.0);
+      expect(indivHolder.enchoCount, 1);
+
+      holder.dispose();
+      indivHolder.dispose();
+    });
   });
 }

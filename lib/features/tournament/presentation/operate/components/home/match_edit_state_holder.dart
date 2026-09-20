@@ -32,7 +32,7 @@ class MatchEditStateHolder {
   late bool isRunningTime;
   late bool isIpponShobu;
   late int ipponLimit;
-  late int hansokuLimit;
+  int hansokuLimit = 2;
   late bool hasExtension;
   late double enchoTime;
   late int enchoCount;
@@ -67,7 +67,7 @@ class MatchEditStateHolder {
 
     final r = first.rule ?? const MatchRule();
 
-    String detectedKey;
+    String? detectedKey;
     if (r.isRenseikai ||
         r.matchScene == 'renseikai' ||
         first.matchScene == 'renseikai') {
@@ -75,15 +75,19 @@ class MatchEditStateHolder {
     } else if (r.matchScene == 'moushiawase' ||
         first.matchScene == 'moushiawase') {
       detectedKey = 'moushiawase';
-    } else {
+    } else if (first.rule != null && r.matchScene == 'honsen') {
       detectedKey = 'honsen';
+    } else {
+      detectedKey = null;
     }
 
     selectedPresetKey = detectedKey;
-    selectedPresetRule = r.copyWith(
-      matchScene: detectedKey,
-      isRenseikai: detectedKey == 'renseikai',
-    );
+    selectedPresetRule = detectedKey != null
+        ? r.copyWith(
+            matchScene: detectedKey,
+            isRenseikai: detectedKey == 'renseikai',
+          )
+        : null;
 
     final fallbackRed = isDantai
         ? (r.teamName.isNotEmpty ? r.teamName : '赤チーム')
@@ -184,14 +188,29 @@ class MatchEditStateHolder {
     isIpponShobu = r.isIpponShobu;
     ipponLimit = r.ipponLimit;
     hansokuLimit = r.hansokuLimit;
-    hasExtension =
-        (r.isEnchoUnlimited || r.enchoCount > 0) || first.hasExtension;
+    if (isDantai) {
+      // 団体戦の各試合（先鋒〜大将）は原則引き分けありのため延長なし（代表戦で決着）
+      // first.hasExtension が明示的に true の場合、または勝ち抜き戦などでルールに延長がある場合のみ有効
+      hasExtension =
+          first.hasExtension &&
+          (r.isEnchoUnlimited || r.enchoCount > 0 || r.isKachinuki);
+    } else {
+      if (first.rule != null) {
+        hasExtension =
+            r.isEnchoUnlimited || r.enchoCount > 0 || first.hasExtension;
+      } else {
+        hasExtension = first.hasExtension;
+      }
+    }
     enchoTime = r.enchoTimeMinutes > 0
         ? r.enchoTimeMinutes
         : (first.extensionTimeMinutes?.toDouble() ?? 2.0);
-    enchoCount = r.enchoCount > 0 ? r.enchoCount : 1;
-    isEnchoUnlimited = r.isEnchoUnlimited || (first.extensionCount == -2);
-    hasHantei = r.hasHantei || first.hasHantei;
+    enchoCount = (hasExtension && r.enchoCount > 0)
+        ? r.enchoCount
+        : (hasExtension ? 1 : 0);
+    isEnchoUnlimited =
+        hasExtension && (r.isEnchoUnlimited || (first.extensionCount == -2));
+    hasHantei = first.rule != null ? r.hasHantei : first.hasHantei;
 
     hasRepresentativeMatch = r.hasRepresentativeMatch || r.hasLeagueDaihyo;
     isDaihyoIpponShobu = r.isDaihyoIpponShobu;
@@ -262,18 +281,25 @@ class MatchEditStateHolder {
     selectedPresetKey = key;
     selectedPresetRule = rule.copyWith(
       matchScene: key,
-      isRenseikai: key == 'renseikai',
+      isRenseikai: key.contains('renseikai'),
     );
     matchTime = rule.matchTimeMinutes;
     isRunningTime = rule.isRunningTime;
     isIpponShobu = rule.isIpponShobu;
     ipponLimit = rule.ipponLimit;
     hansokuLimit = rule.hansokuLimit;
-    hasExtension =
+
+    // 団体戦の通常試合（先鋒〜大将）は原則延長なし（代表戦で決着）
+    final ruleHasExtension =
         rule.isEnchoUnlimited || rule.enchoCount > 0 || rule.enchoCount == -2;
+    hasExtension = isDantai
+        ? (rule.isKachinuki && ruleHasExtension)
+        : ruleHasExtension;
+
     enchoTime = rule.enchoTimeMinutes > 0 ? rule.enchoTimeMinutes : 2.0;
-    enchoCount = rule.enchoCount > 0 ? rule.enchoCount : 1;
-    isEnchoUnlimited = rule.isEnchoUnlimited || rule.enchoCount == -2;
+    enchoCount = hasExtension ? (rule.enchoCount > 0 ? rule.enchoCount : 1) : 0;
+    isEnchoUnlimited =
+        hasExtension && (rule.isEnchoUnlimited || rule.enchoCount == -2);
     hasHantei = rule.hasHantei;
     hasRepresentativeMatch = isDantai
         ? (rule.hasRepresentativeMatch || rule.hasLeagueDaihyo)
@@ -290,7 +316,7 @@ class MatchEditStateHolder {
     daihyoHasHantei = rule.daihyoHasHantei;
     renseikaiType = rule.renseikaiType.isNotEmpty
         ? rule.renseikaiType
-        : (key == 'renseikai' ? '時間制' : '一試合制');
+        : (key.contains('renseikai') ? '時間制' : '一試合制');
     overallTimeController.text =
         (rule.overallTimeMinutes > 0 ? rule.overallTimeMinutes : 30).toString();
     isKachinuki = rule.isKachinuki;

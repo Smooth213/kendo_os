@@ -83,7 +83,7 @@ class ViewerTeamScoreboardTableBuilder {
         _clickableCell(
           ctx,
           m.id,
-          _buildMatchScoreBox(
+          buildMatchScoreBox(
             rPts,
             isDone && rS > wS,
             isDraw,
@@ -95,7 +95,7 @@ class ViewerTeamScoreboardTableBuilder {
         _clickableCell(
           ctx,
           m.id,
-          _buildMatchScoreBox(
+          buildMatchScoreBox(
             wPts,
             isDone && wS > rS,
             false,
@@ -261,7 +261,8 @@ class ViewerTeamScoreboardTableBuilder {
     );
   }
 
-  static Widget _buildMatchScoreBox(
+  @visibleForTesting
+  static Widget buildMatchScoreBox(
     List<String> pts,
     bool isWinner,
     bool isDraw,
@@ -273,11 +274,14 @@ class ViewerTeamScoreboardTableBuilder {
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
-    final isFusen = pts.contains('◯');
+    final actualPts = pts.where((m) => m != '△' && m != '▲').toList();
+    final hasHansoku = pts.any((m) => m == '△' || m == '▲');
+
+    final isFusen = actualPts.contains('◯');
     final isThisSideFirst = firstSide == (isRed ? 'red' : 'white');
-    final firstValidIdx = pts.indexWhere((m) => m != '△' && m != '▲');
 
     return SizedBox(
+      width: 64,
       height: 84,
       child: Stack(
         alignment: Alignment.center,
@@ -315,31 +319,40 @@ class ViewerTeamScoreboardTableBuilder {
                   )
                 : Stack(
                     children: [
-                      if (pts.isNotEmpty)
+                      if (actualPts.isNotEmpty)
                         Positioned(
                           top: 2,
                           left: 2,
                           child: _ptMark(
-                            pts[0],
-                            isThisSideFirst && firstValidIdx == 0,
+                            actualPts[0],
+                            isThisSideFirst,
                             color,
                             isDark,
                           ),
                         ),
-                      if (pts.length > 1)
+                      if (actualPts.length > 1)
                         Positioned(
                           bottom: 2,
                           right: 2,
-                          child: _ptMark(
-                            pts[1],
-                            isThisSideFirst && firstValidIdx == 1,
-                            color,
-                            isDark,
-                          ),
+                          child: _ptMark(actualPts[1], false, color, isDark),
                         ),
                     ],
                   ),
           ),
+          if (hasHansoku)
+            Positioned(
+              bottom: 8,
+              left: 2,
+              child: Text(
+                '△',
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  color: color,
+                  fontWeight: AppFontWeight.bold,
+                  height: 1.0,
+                ),
+              ),
+            ),
           if (isRed && isDraw)
             Positioned(
               right: -14,

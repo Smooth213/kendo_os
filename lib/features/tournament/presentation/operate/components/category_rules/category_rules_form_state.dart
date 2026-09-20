@@ -102,8 +102,8 @@ class CategoryRulesFormState {
 
     isMultiScene = rules.isMultiScene;
     useHonsenRule = rules.useHonsenRule;
-    useRenseikaiRule = rules.useRenseikaiRule;
-    useMoushiawaseRule = rules.useMoushiawaseRule;
+    useRenseikaiRule = rules.isMultiScene && rules.useRenseikaiRule;
+    useMoushiawaseRule = rules.isMultiScene && rules.useMoushiawaseRule;
     renseikaiTime = rules.renseikaiRule.matchTimeMinutes;
     renseikaiIsRunningTime = rules.renseikaiRule.isRunningTime;
     renseikaiHasHantei = rules.renseikaiRule.hasHantei;
@@ -123,8 +123,12 @@ class CategoryRulesFormState {
     normalIpponLimit = rules.normalRule.ipponLimit;
     normalHansokuLimit = rules.normalRule.hansokuLimit;
     normalHasHantei = rules.normalRule.hasHantei;
-    normalHasExtension =
-        rules.normalRule.enchoCount > 0 || rules.normalRule.isEnchoUnlimited;
+    final isDantaiRule =
+        rules.matchType.contains('団体') && !rules.matchType.contains('個人');
+    normalHasExtension = isDantaiRule
+        ? false
+        : (rules.normalRule.enchoCount > 0 ||
+              rules.normalRule.isEnchoUnlimited);
     normalIsEnchoUnlimited = rules.normalRule.isEnchoUnlimited;
     normalEnchoTime = rules.normalRule.enchoTimeMinutes;
     normalEnchoCount = rules.normalRule.enchoCount;
@@ -261,8 +265,8 @@ class CategoryRulesFormState {
       isRenseikai: editingIsRenseikai,
       isMultiScene: isMultiScene,
       useHonsenRule: useHonsenRule,
-      useRenseikaiRule: useRenseikaiRule,
-      useMoushiawaseRule: useMoushiawaseRule,
+      useRenseikaiRule: isMultiScene && useRenseikaiRule,
+      useMoushiawaseRule: isMultiScene && useMoushiawaseRule,
       renseikaiTime: renseikaiTime,
       renseikaiIsRunningTime: renseikaiIsRunningTime,
       renseikaiHasHantei: renseikaiHasHantei,

@@ -13,7 +13,7 @@ import 'package:kendo_os/shared/utils/name_formatter.dart';
 class TeamPointDisplay {
   final String mark;
   final bool isFirstMatchPoint;
-  TeamPointDisplay(this.mark, this.isFirstMatchPoint);
+  const TeamPointDisplay(this.mark, this.isFirstMatchPoint);
 }
 
 class TeamScoreboardTableBuilder {
@@ -183,7 +183,11 @@ class TeamScoreboardTableBuilder {
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
 
+    final actualPts = pts.where((p) => p.mark != '△' && p.mark != '▲').toList();
+    final hasHansoku = pts.any((p) => p.mark == '△' || p.mark == '▲');
+
     return SizedBox(
+      width: 64,
       height: 84,
       child: Stack(
         alignment: Alignment.center,
@@ -206,21 +210,35 @@ class TeamScoreboardTableBuilder {
             height: 48,
             child: Stack(
               children: [
-                if (pts.isNotEmpty)
+                if (actualPts.isNotEmpty)
                   Positioned(
                     top: 2,
                     left: 2,
-                    child: ptMark(pts[0], color, isDark),
+                    child: ptMark(actualPts[0], color, isDark),
                   ),
-                if (pts.length > 1)
+                if (actualPts.length > 1)
                   Positioned(
                     bottom: 2,
                     right: 2,
-                    child: ptMark(pts[1], color, isDark),
+                    child: ptMark(actualPts[1], color, isDark),
                   ),
               ],
             ),
           ),
+          if (hasHansoku)
+            Positioned(
+              bottom: 8,
+              left: 2,
+              child: Text(
+                '△',
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  color: color,
+                  fontWeight: AppFontWeight.bold,
+                  height: 1.0,
+                ),
+              ),
+            ),
           if (isRed && isDraw)
             Positioned(
               right: -14,

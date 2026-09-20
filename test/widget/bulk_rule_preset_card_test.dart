@@ -17,6 +17,7 @@ void main() {
         '一般の部': const CategoryRuleSet(
           normalRule: MatchRule(matchTimeMinutes: 3.0, isIpponShobu: false),
           renseikaiRule: MatchRule(matchTimeMinutes: 2.0, isIpponShobu: true),
+          isMultiScene: true,
           useHonsenRule: true,
           useRenseikaiRule: true,
         ),
