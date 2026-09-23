@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:isar_community/isar.dart';
 
@@ -48,18 +49,72 @@ class TestIsarHelper {
   static bool _isCoreInitialized = false;
 
   /// IsarCoreバイナリのロードを確実に保証します。
-  /// TestWidgetsFlutterBinding 有効化環境でも HttpOverrides を一時解除し、
-  /// CI Linux 環境でのバイナリ自動ダウンロード (400 Bad Request) を回避します。
+  /// Linux CI（GitHub Actions）やローカルテスト環境におけるバイナリDL問題、
+  /// 動的リンク探索パス不一致、LateInitializationError を根絶します。
   static Future<void> ensureInitialized() async {
     if (_isCoreInitialized) return;
 
     final previousOverrides = HttpOverrides.current;
     HttpOverrides.global = null;
     try {
+      if (Platform.isLinux) {
+        final currentDir = Directory.current.path;
+        final candidatePaths = [
+          '$currentDir/libisar.so',
+          '$currentDir/libisar_linux_x64.so',
+          '/usr/lib/x86_64-linux-gnu/libisar.so',
+          '/usr/lib/x86_64-linux-gnu/libisar_linux_x64.so',
+          '/usr/lib/libisar.so',
+          '/usr/lib/libisar_linux_x64.so',
+          '/usr/local/lib/libisar.so',
+        ];
+
+        String? validPath;
+        for (final p in candidatePaths) {
+          if (File(p).existsSync()) {
+            validPath = p;
+            break;
+          }
+        }
+
+        if (validPath != null) {
+          await Isar.initializeIsarCore(
+            libraries: {Abi.linuxX64: validPath},
+            download: false,
+          );
+          _isCoreInitialized = true;
+          return;
+        }
+
+        // バイナリがローカルにない場合、カレントディレクトリへ直接DLを試行
+        try {
+          final fallbackFile = File('$currentDir/libisar.so');
+          final client = HttpClient();
+          final request = await client.getUrl(
+            Uri.parse(
+              'https://binaries.isar-community.dev/3.3.2/libisar_linux_x64.so',
+            ),
+          );
+          final response = await request.close();
+          if (response.statusCode == 200) {
+            await response.pipe(fallbackFile.openWrite());
+            await Isar.initializeIsarCore(
+              libraries: {Abi.linuxX64: fallbackFile.path},
+              download: false,
+            );
+            _isCoreInitialized = true;
+            return;
+          }
+        } catch (_) {
+          // 直接DL失敗時は標準初期化へフォールバック
+        }
+      }
+
       await Isar.initializeIsarCore(download: true);
       _isCoreInitialized = true;
-    } catch (_) {
-      // 既にバイナリが存在する場合やロード失敗は安全に吸収
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ [TestIsarHelper] initializeIsarCore warning: $e');
     } finally {
       HttpOverrides.global = previousOverrides;
     }

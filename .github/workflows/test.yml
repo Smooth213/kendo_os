@@ -65,11 +65,18 @@ jobs:
 
       - name: 🗄️ Isar Core バイナリ事前配置 (Linux x64 CI安定化)
         run: |
-          curl -fsSL https://binaries.isar-community.dev/3.3.2/libisar_linux_x64.so -o libisar_linux_x64.so
-          sudo cp libisar_linux_x64.so /usr/lib/libisar.so || true
-          sudo cp libisar_linux_x64.so /usr/lib/libisar_linux_x64.so || true
+          curl -fsSL https://binaries.isar-community.dev/3.3.2/libisar_linux_x64.so -o libisar.so
+          cp libisar.so libisar_linux_x64.so
+          sudo cp libisar.so /usr/lib/libisar.so || true
+          sudo cp libisar.so /usr/lib/libisar_linux_x64.so || true
+          sudo cp libisar.so /usr/lib/x86_64-linux-gnu/libisar.so || true
+          sudo cp libisar.so /usr/lib/x86_64-linux-gnu/libisar_linux_x64.so || true
+          sudo cp libisar.so /usr/local/lib/libisar.so || true
+          sudo ldconfig || true
 
       - name: ⚡ Sharded Test Execution (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
+        env:
+          LD_LIBRARY_PATH: .:${{ github.workspace }}:/usr/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib
         run: flutter test --total-shards ${{ matrix.total-shards }} --shard-index ${{ matrix.shard-index }}
 
   # ⚙️ STEP 3: Cloud Functions 自動テスト

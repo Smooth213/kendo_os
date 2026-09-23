@@ -39,12 +39,12 @@ class FakeRemoteMatchRepository implements MatchRepository {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late TestIsarContext isarContext;
+  TestIsarContext? isarContext;
   late Isar isar;
   late LocalMatchRepository localRepo;
 
   setUpAll(() async {
-    isarContext = await TestIsarHelper.openContext(
+    final ctx = await TestIsarHelper.openContext(
       schemas: [
         MatchEntitySchema,
         MatchEventArchiveEntitySchema,
@@ -52,16 +52,17 @@ void main() {
       ],
       prefix: 'plan4_e2e',
     );
-    isar = isarContext.isar;
+    isarContext = ctx;
+    isar = ctx.isar;
     localRepo = LocalMatchRepository(isar);
   });
 
   tearDownAll(() async {
-    await isarContext.dispose();
+    await isarContext?.dispose();
   });
 
   setUp(() async {
-    await isarContext.clear();
+    await isarContext?.clear();
   });
 
   group('⚡ 【Plan 4 E2E】4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト', () {

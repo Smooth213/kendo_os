@@ -12,38 +12,40 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 import '../../../helpers/test_isar_helper.dart';
 
 void main() {
-  late TestIsarContext isarContext;
+  TestIsarContext? isarContext;
   late Isar isar;
   late LocalMatchRepository repository;
-  late Directory snapshotDirectory;
+  Directory? snapshotDirectory;
 
   setUpAll(() async {
-    isarContext = await TestIsarHelper.openContext(
+    final ctx = await TestIsarHelper.openContext(
       schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
       prefix: 'isar_twin_repo',
     );
-    isar = isarContext.isar;
-    snapshotDirectory = Directory.systemTemp.createTempSync(
-      'snapshot_twin_repo_',
-    );
+    isarContext = ctx;
+    isar = ctx.isar;
+    final dir = Directory.systemTemp.createTempSync('snapshot_twin_repo_');
+    snapshotDirectory = dir;
     repository = LocalMatchRepository(isar);
-    TwinMatchPersistenceHelper.customDirectory = snapshotDirectory;
+    TwinMatchPersistenceHelper.customDirectory = dir;
     TwinMatchPersistenceHelper.isWebOverride = false;
   });
 
   tearDownAll(() async {
     TwinMatchPersistenceHelper.customDirectory = null;
     TwinMatchPersistenceHelper.isWebOverride = null;
-    await isarContext.dispose();
-    if (snapshotDirectory.existsSync()) {
-      snapshotDirectory.deleteSync(recursive: true);
+    await isarContext?.dispose();
+    if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
+      snapshotDirectory!.deleteSync(recursive: true);
     }
   });
 
   setUp(() async {
-    await isarContext.clear();
-    for (final file in snapshotDirectory.listSync().whereType<File>()) {
-      file.deleteSync();
+    await isarContext?.clear();
+    if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
+      for (final file in snapshotDirectory!.listSync().whereType<File>()) {
+        file.deleteSync();
+      }
     }
   });
 
@@ -59,7 +61,7 @@ void main() {
     await repository.saveMatchesBulk([match]);
 
     expect(await isar.matchEntitys.count(), 1);
-    await _waitForSnapshot(snapshotDirectory, match.id);
+    await _waitForSnapshot(snapshotDirectory!, match.id);
     final recovered = await TwinMatchPersistenceHelper.recoverMatch(match.id);
     expect(recovered?.id, match.id);
   });
@@ -76,7 +78,7 @@ void main() {
     await repository.saveMatchesBulk([match], skipTwin: true);
 
     expect(await isar.matchEntitys.count(), 1);
-    final snapshotFiles = snapshotDirectory
+    final snapshotFiles = snapshotDirectory!
         .listSync()
         .whereType<File>()
         .where((file) => file.path.contains(match.id))

@@ -13,11 +13,11 @@ import '../../../helpers/test_isar_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late TestIsarContext isarContext;
+  TestIsarContext? isarContext;
   late Isar isar;
 
   setUpAll(() async {
-    isarContext = await TestIsarHelper.openContext(
+    final ctx = await TestIsarHelper.openContext(
       schemas: [
         MatchEntitySchema,
         MatchEventArchiveEntitySchema,
@@ -25,15 +25,16 @@ void main() {
       ],
       prefix: 'archive_helper_test',
     );
-    isar = isarContext.isar;
+    isarContext = ctx;
+    isar = ctx.isar;
   });
 
   tearDownAll(() async {
-    await isarContext.dispose();
+    await isarContext?.dispose();
   });
 
   setUp(() async {
-    await isarContext.clear();
+    await isarContext?.clear();
   });
 
   group('LocalMatchArchiveHelper Tests', () {

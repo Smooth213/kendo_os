@@ -12,38 +12,40 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 import '../helpers/test_isar_helper.dart';
 
 void main() {
-  late TestIsarContext isarContext;
+  TestIsarContext? isarContext;
   late Isar isar;
   late LocalMatchRepository repository;
-  late Directory snapshotDirectory;
+  Directory? snapshotDirectory;
 
   setUpAll(() async {
-    isarContext = await TestIsarHelper.openContext(
+    final ctx = await TestIsarHelper.openContext(
       schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
       prefix: 'isar_twin_e2e',
     );
-    isar = isarContext.isar;
-    snapshotDirectory = Directory.systemTemp.createTempSync(
-      'snapshot_twin_e2e_',
-    );
+    isarContext = ctx;
+    isar = ctx.isar;
+    final dir = Directory.systemTemp.createTempSync('snapshot_twin_e2e_');
+    snapshotDirectory = dir;
     repository = LocalMatchRepository(isar);
-    TwinMatchPersistenceHelper.customDirectory = snapshotDirectory;
+    TwinMatchPersistenceHelper.customDirectory = dir;
     TwinMatchPersistenceHelper.isWebOverride = false;
   });
 
   tearDownAll(() async {
     TwinMatchPersistenceHelper.customDirectory = null;
     TwinMatchPersistenceHelper.isWebOverride = null;
-    await isarContext.dispose();
-    if (snapshotDirectory.existsSync()) {
-      snapshotDirectory.deleteSync(recursive: true);
+    await isarContext?.dispose();
+    if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
+      snapshotDirectory!.deleteSync(recursive: true);
     }
   });
 
   setUp(() async {
-    await isarContext.clear();
-    for (final file in snapshotDirectory.listSync().whereType<File>()) {
-      file.deleteSync();
+    await isarContext?.clear();
+    if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
+      for (final file in snapshotDirectory!.listSync().whereType<File>()) {
+        file.deleteSync();
+      }
     }
   });
 
@@ -60,7 +62,7 @@ void main() {
     );
 
     await repository.saveMatchesBulk([match]);
-    await _waitForSnapshot(snapshotDirectory, match.id);
+    await _waitForSnapshot(snapshotDirectory!, match.id);
 
     await isar.writeTxn(
       () => isar.matchEntitys.filter().firestoreIdEqualTo(match.id).deleteAll(),

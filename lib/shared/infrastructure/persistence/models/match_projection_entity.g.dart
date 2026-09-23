@@ -16,7 +16,7 @@ extension GetMatchProjectionEntityCollection on Isar {
 
 const MatchProjectionEntitySchema = CollectionSchema(
   name: r'MatchProjectionEntity',
-  id: 114,
+  id: -4754560425679175056,
   properties: {
     r'category': PropertySchema(
       id: 0,
@@ -82,7 +82,7 @@ const MatchProjectionEntitySchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'matchId': IndexSchema(
-      id: 115,
+      id: -6517933327003962923,
       name: r'matchId',
       unique: true,
       replace: true,

@@ -12,25 +12,26 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('🔋 [Phase 5 Performance Governance] DB・I/O バッチ最適化テスト', () {
-    late TestIsarContext isarContext;
+    TestIsarContext? isarContext;
     late Isar isar;
     late LocalMatchRepository repository;
 
     setUpAll(() async {
-      isarContext = await TestIsarHelper.openContext(
+      final ctx = await TestIsarHelper.openContext(
         schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
         prefix: 'isar_batch_test',
       );
-      isar = isarContext.isar;
+      isarContext = ctx;
+      isar = ctx.isar;
       repository = LocalMatchRepository(isar);
     });
 
     tearDownAll(() async {
-      await isarContext.dispose();
+      await isarContext?.dispose();
     });
 
     setUp(() async {
-      await isarContext.clear();
+      await isarContext?.clear();
     });
 
     test('1. saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること', () async {

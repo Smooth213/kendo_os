@@ -206,10 +206,10 @@ void main() {
     // 2. Data Persistence Test: Isar保存確約と緊急バックアップ (通常のtestを使用しハングを根治)
     // ==========================================
     group('Data Persistence Tests', () {
-      late TestIsarContext isarContext;
+      TestIsarContext? isarContext;
       late Isar isar;
       late LocalMatchRepository repository;
-      late Directory documentsDir;
+      Directory? documentsDir;
 
       setUpAll(() async {
         // ネットワーク通信をシミュレートする場合、HttpOverridesをnullにするか、
@@ -226,25 +226,25 @@ void main() {
       });
 
       setUp(() async {
-        documentsDir = Directory.systemTemp.createTempSync('documents_mock_');
+        final dir = Directory.systemTemp.createTempSync('documents_mock_');
+        documentsDir = dir;
 
         // path_provider を FakePathProviderPlatform でモックする
-        PathProviderPlatform.instance = FakePathProviderPlatform(
-          documentsDir.path,
-        );
+        PathProviderPlatform.instance = FakePathProviderPlatform(dir.path);
 
-        isarContext = await TestIsarHelper.openContext(
+        final ctx = await TestIsarHelper.openContext(
           schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
           prefix: 'isar_offline_persistence',
         );
-        isar = isarContext.isar;
+        isarContext = ctx;
+        isar = ctx.isar;
         repository = LocalMatchRepository(isar);
       });
 
       tearDown(() async {
-        await isarContext.dispose();
-        if (documentsDir.existsSync()) {
-          documentsDir.deleteSync(recursive: true);
+        await isarContext?.dispose();
+        if (documentsDir != null && documentsDir!.existsSync()) {
+          documentsDir!.deleteSync(recursive: true);
         }
       });
 
@@ -308,7 +308,7 @@ void main() {
           // documentsDir 内に緊急バックアップファイル(twin_snapshot_*)が生成されているかチェック
           // 実装は TwinMatchPersistenceHelper.saveSnapshot() により
           // "twin_snapshot_{matchId}.json" または "twin_snapshot_{matchId}_{timestamp}.json" を生成する
-          final files = documentsDir.listSync();
+          final files = documentsDir!.listSync();
           final emergencyBackupFiles = files.where((file) {
             return file is File &&
                 file.path.contains('twin_snapshot_test_persistence_failure_1');

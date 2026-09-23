@@ -13,11 +13,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('🗄️ 【Phase 13: Isar メモリマップトI/O（MMAP）＆ ページサイズ最適化】ガバナンステスト', () {
-    late TestIsarContext isarContext;
+    TestIsarContext? isarContext;
     late Isar isar;
 
     setUp(() async {
-      isarContext = await TestIsarHelper.openContext(
+      final ctx = await TestIsarHelper.openContext(
         schemas: [
           MatchEntitySchema,
           LocalStrokeModelSchema,
@@ -34,11 +34,12 @@ void main() {
           minRatio: 2.0,
         ),
       );
-      isar = isarContext.isar;
+      isarContext = ctx;
+      isar = ctx.isar;
     });
 
     tearDown(() async {
-      await isarContext.dispose();
+      await isarContext?.dispose();
     });
 
     test('MMAP 1024MiB 仮想メモリ空間上での 1,000 件一括書き込み＆RAM速度検索検証', () async {

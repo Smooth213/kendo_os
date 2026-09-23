@@ -12,12 +12,12 @@ import '../../../helpers/test_isar_helper.dart';
 
 void main() {
   group('LocalMatchRepository (Isar Database) Tests', () {
-    late TestIsarContext isarContext;
+    TestIsarContext? isarContext;
     late Isar isar;
     late LocalMatchRepository repository;
 
     setUpAll(() async {
-      isarContext = await TestIsarHelper.openContext(
+      final ctx = await TestIsarHelper.openContext(
         schemas: [
           MatchEntitySchema,
           MatchEventArchiveEntitySchema,
@@ -25,16 +25,17 @@ void main() {
         ],
         prefix: 'isar_repo_test',
       );
-      isar = isarContext.isar;
+      isarContext = ctx;
+      isar = ctx.isar;
       repository = LocalMatchRepository(isar);
     });
 
     tearDownAll(() async {
-      await isarContext.dispose();
+      await isarContext?.dispose();
     });
 
     setUp(() async {
-      await isarContext.clear();
+      await isarContext?.clear();
     });
 
     // =========================================================================
