@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/player_roster_matcher.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_basic_card.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_cards.dart';
@@ -67,7 +68,9 @@ class _TournamentShareImportSheetState
     _venueController = TextEditingController(text: data?.venue ?? '');
     _notesController = TextEditingController(text: data?.notes ?? '');
     _selectedDate = data?.date;
-    _teams = List.from(data?.teams ?? []);
+    _teams = TournamentTeamAutoRegisterService.normalizeIndividualTeams(
+      List.from(data?.teams ?? []),
+    );
 
     if (data == null || data.tournamentName.isEmpty) {
       _isEditingRaw = true;
@@ -96,7 +99,9 @@ class _TournamentShareImportSheetState
       _venueController.text = parsed.venue;
       _notesController.text = parsed.notes;
       _selectedDate = parsed.date;
-      _teams = List.from(parsed.teams);
+      _teams = TournamentTeamAutoRegisterService.normalizeIndividualTeams(
+        List.from(parsed.teams),
+      );
       _isEditingRaw = false;
     });
     AppSnackBar.showSuccess(context, 'テキストを解析しました');
@@ -113,6 +118,8 @@ class _TournamentShareImportSheetState
         );
         return ParsedTeamOrder(
           teamName: team.teamName,
+          category: team.category,
+          matchType: team.matchType,
           members: matchedMembers.map((m) {
             return ParsedTeamMember(position: m.position, name: m.displayName);
           }).toList(),
@@ -249,6 +256,13 @@ class _TournamentShareImportSheetState
                             setState(() {
                               _teams[teamIndex] = team.copyWith(
                                 category: newCat,
+                              );
+                            });
+                          },
+                          onMatchTypeUpdated: (newType) {
+                            setState(() {
+                              _teams[teamIndex] = team.copyWith(
+                                matchType: newType,
                               );
                             });
                           },

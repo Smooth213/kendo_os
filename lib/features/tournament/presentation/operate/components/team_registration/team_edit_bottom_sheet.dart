@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -31,10 +32,13 @@ class TeamEditBottomSheet extends ConsumerStatefulWidget {
     required List<PlayerModel> players,
     required Future<void> Function(TeamModel updatedTeam) onSave,
   }) {
+    final height = MediaQuery.of(context).size.height;
     return showAppBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
+        maxHeight: height * 0.9,
+        minHeight: height * 0.6,
       ),
       builder: (ctx) =>
           TeamEditBottomSheet(team: team, players: players, onSave: onSave),
@@ -66,7 +70,8 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
     '一般',
   ];
 
-  final List<String> _matchTypes = ['団体戦（3人制）', '団体戦（5人制）', '団体戦（7人制）', '個人戦'];
+  final List<String> _matchTypes =
+      TournamentTeamAutoRegisterService.candidateMatchTypes;
 
   @override
   void initState() {

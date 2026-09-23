@@ -8,27 +8,76 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 /// 🥋 取り込みデータからチーム＆オーダーモデルへの変換・自動登録サービス
 class TournamentTeamAutoRegisterService {
-  /// チームのメンバー構成やポジション名から試合形式を自動判定
+  /// 選択可能な試合形式の候補定数リスト
+  static const List<String> candidateMatchTypes = [
+    '団体戦（5人制）',
+    '団体戦（3人制）',
+    '団体戦（7人制）',
+    '勝ち抜き戦',
+    'リーグ団体戦',
+    'リーグ個人戦',
+    '個人戦',
+    '団体戦（それ以上）',
+  ];
+
+  /// チームの指定形式、メンバー構成やチーム名から試合形式を自動判定
   static String determineMatchType(ParsedTeamOrder team) {
+    // 1. 指定済みの形式があれば最優先
+    if (team.matchType.trim().isNotEmpty) {
+      return team.matchType.trim();
+    }
+
+    final teamName = team.teamName;
     final positions = team.members.map((m) => m.position).toSet();
     final count = team.members.length;
 
-    // 7人制の判定
+    // 2. 勝ち抜き戦の判定（チーム名やカテゴリに含まれる場合）
+    if (teamName.contains('勝ち抜き') || team.category.contains('勝ち抜き')) {
+      return '勝ち抜き戦';
+    }
+
+    // 3. リーグ戦の判定
+    if (teamName.contains('リーグ') || team.category.contains('リーグ')) {
+      if (count == 1 ||
+          positions.contains('個人戦') ||
+          positions.contains('選手') ||
+          positions.contains('個人')) {
+        return 'リーグ個人戦';
+      }
+      return 'リーグ団体戦';
+    }
+
+    // 4. 個人戦の明示判定（チーム名やカテゴリに含まれる場合）
+    if (teamName.contains('個人戦') ||
+        team.category.contains('個人戦') ||
+        teamName.contains('個人') ||
+        team.category.contains('個人')) {
+      return '個人戦';
+    }
+
+    // 5. ポジションに個人戦特有の表記がある場合
+    if (positions.contains('個人戦') ||
+        positions.contains('選手') ||
+        positions.contains('個人')) {
+      return '個人戦';
+    }
+
+    // 6. 7人制の判定
     if (positions.contains('五将') || positions.contains('三将') || count >= 7) {
       return '団体戦（7人制）';
     }
 
-    // 5人制の判定（次鋒または副将を含む、または5名以上）
+    // 7. 5人制の判定（次鋒または副将を含む、または5名以上）
     if (positions.contains('次鋒') || positions.contains('副将') || count >= 4) {
       return '団体戦（5人制）';
     }
 
-    // 1名のみでポジションが個人戦または選手
-    if (count == 1 && (positions.contains('個人戦') || positions.contains('選手'))) {
+    // 8. 1名のみの場合（個人戦と判定）
+    if (count == 1) {
       return '個人戦';
     }
 
-    // 3名以下、または先鋒・中堅・大将構成
+    // 9. 3名以下、または先鋒・中堅・大将構成
     if (count <= 3) {
       return '団体戦（3人制）';
     }
@@ -96,6 +145,38 @@ class TournamentTeamAutoRegisterService {
     return '一般の部';
   }
 
+  /// 選択可能な大会カテゴリ（部門）の候補定数リスト
+  static const List<String> candidateCategories = [
+    '小学生低学年の部',
+    '小学生高学年の部',
+    '小学生の部',
+    '中学生の部',
+    '高校生の部',
+    '一般の部',
+  ];
+
+  /// チームのカテゴリまたはチーム名から公式な部門名を決定論的に解決
+  static String resolveCategory(
+    ParsedTeamOrder team, {
+    List<PlayerModel>? roster,
+  }) {
+    final cat = team.category.trim();
+    if (cat.isNotEmpty) {
+      if (candidateCategories.contains(cat)) return cat;
+      final resolved = determineCategory(
+        cat,
+        members: team.members,
+        roster: roster,
+      );
+      if (candidateCategories.contains(resolved)) return resolved;
+    }
+    return determineCategory(
+      team.teamName,
+      members: team.members,
+      roster: roster,
+    );
+  }
+
   /// 取り込みチーム一覧から、大会に登録すべきカテゴリ一覧（重複なし・整列）を抽出
   static List<String> extractCategories(
     List<ParsedTeamOrder> teams, {
@@ -103,13 +184,7 @@ class TournamentTeamAutoRegisterService {
   }) {
     final categories = <String>{};
     for (final team in teams) {
-      final cat = team.category.trim().isNotEmpty
-          ? team.category.trim()
-          : determineCategory(
-              team.teamName,
-              members: team.members,
-              roster: roster,
-            );
+      final cat = resolveCategory(team, roster: roster);
       categories.add(cat);
     }
     return categories.toList();
@@ -195,23 +270,49 @@ class TournamentTeamAutoRegisterService {
     return [...assignedSlots, ...unassignedOrSubs];
   }
 
+  /// 個人戦チームに複数選手が含まれている場合、各選手を独立した個人戦エントリーに展開・正規化
+  static List<ParsedTeamOrder> normalizeIndividualTeams(
+    List<ParsedTeamOrder> teams, {
+    List<PlayerModel>? roster,
+  }) {
+    final result = <ParsedTeamOrder>[];
+    for (final team in teams) {
+      final matchType = determineMatchType(team);
+      if ((matchType == '個人戦' || matchType == 'リーグ個人戦') &&
+          team.members.length > 1) {
+        final cat = resolveCategory(team, roster: roster);
+        for (final m in team.members) {
+          final entryName = team.teamName.contains('個人')
+              ? m.name
+              : '${team.teamName} ${m.name}';
+          result.add(
+            ParsedTeamOrder(
+              teamName: entryName,
+              category: cat,
+              matchType: matchType,
+              members: [ParsedTeamMember(position: '選手', name: m.name)],
+            ),
+          );
+        }
+      } else {
+        result.add(team);
+      }
+    }
+    return result;
+  }
+
   /// ParsedTeamOrder のリストから Firestore 登録用の TeamModel リストを生成
   static List<TeamModel> buildTeamModels({
     required List<ParsedTeamOrder> teams,
     required String tournamentId,
     required List<PlayerModel> roster,
   }) {
-    return teams.map((team) {
+    final normalizedTeams = normalizeIndividualTeams(teams, roster: roster);
+    return normalizedTeams.map((team) {
       final matchType = determineMatchType(team);
-      final category = team.category.trim().isNotEmpty
-          ? team.category.trim()
-          : determineCategory(
-              team.teamName,
-              members: team.members,
-              roster: roster,
-            );
+      final category = resolveCategory(team, roster: roster);
       final playerNames = buildPlayerNames(
-        team: team.copyWith(category: category),
+        team: team.copyWith(category: category, matchType: matchType),
         matchType: matchType,
         roster: roster,
       );

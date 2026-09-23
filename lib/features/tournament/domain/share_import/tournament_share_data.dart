@@ -30,17 +30,20 @@ class ParsedTeamMember {
 class ParsedTeamOrder {
   final String teamName; // 例: 〇〇剣友会, 低学年, 中学生A
   final String category; // 例: 小学生低学年の部, 中学生の部, 一般の部
+  final String matchType; // 例: 団体戦（5人制）, 勝ち抜き戦, リーグ団体戦 等
   final List<ParsedTeamMember> members;
 
   const ParsedTeamOrder({
     required this.teamName,
     this.category = '',
+    this.matchType = '',
     required this.members,
   });
 
   Map<String, dynamic> toMap() => {
     'teamName': teamName,
     'category': category,
+    'matchType': matchType,
     'members': members.map((m) => m.toMap()).toList(),
   };
 
@@ -48,6 +51,7 @@ class ParsedTeamOrder {
     return ParsedTeamOrder(
       teamName: map['teamName'] as String? ?? '',
       category: map['category'] as String? ?? '',
+      matchType: map['matchType'] as String? ?? '',
       members: (map['members'] as List<dynamic>? ?? [])
           .map((m) => ParsedTeamMember.fromMap(m as Map<String, dynamic>))
           .toList(),
@@ -57,11 +61,13 @@ class ParsedTeamOrder {
   ParsedTeamOrder copyWith({
     String? teamName,
     String? category,
+    String? matchType,
     List<ParsedTeamMember>? members,
   }) {
     return ParsedTeamOrder(
       teamName: teamName ?? this.teamName,
       category: category ?? this.category,
+      matchType: matchType ?? this.matchType,
       members: members ?? this.members,
     );
   }

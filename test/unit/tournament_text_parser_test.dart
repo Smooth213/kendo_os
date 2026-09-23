@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
 
 void main() {
@@ -183,6 +184,168 @@ git push origin stage2-beta
 
       final parsedIjiri = TournamentTextParser.parse(ijiriSampleText);
       expect(parsedIjiri.hasEffectiveContent, isTrue);
+    });
+
+    test('個人戦実例（選手ラベル指定）: 正確にパースされ個人戦エントリーとして認識されること', () {
+      const individualSample = '''
+第10回 広島市少年剣道個人選手権大会
+日時: 令和8年10月10日
+会場: 広島県立武道館
+【小学生低学年個人戦】
+選手: 皿田 脩人
+選手: 塚本 大道
+【中学生男子個人戦】
+選手: 皿田 唯人
+''';
+
+      expect(TournamentTextParser.isCandidate(individualSample), isTrue);
+
+      final parsed = TournamentTextParser.parse(individualSample);
+      expect(parsed.tournamentName, contains('広島市少年剣道個人選手権大会'));
+      expect(parsed.date!.year, equals(2026));
+      expect(parsed.date!.month, equals(10));
+      expect(parsed.date!.day, equals(10));
+      expect(parsed.venue, contains('広島県立武道館'));
+
+      // 3名の選手がそれぞれ個人戦エントリーとして展開されていること
+      expect(parsed.teams.length, equals(3));
+
+      expect(parsed.teams[0].teamName, contains('皿田 脩人'));
+      expect(parsed.teams[0].matchType, equals('個人戦'));
+      expect(parsed.teams[0].members.length, equals(1));
+      expect(parsed.teams[0].members[0].position, equals('選手'));
+      expect(parsed.teams[0].members[0].name, equals('皿田 脩人'));
+
+      expect(parsed.teams[1].teamName, contains('塚本 大道'));
+      expect(parsed.teams[1].matchType, equals('個人戦'));
+
+      expect(parsed.teams[2].teamName, contains('皿田 唯人'));
+      expect(parsed.teams[2].matchType, equals('個人戦'));
+    });
+
+    test('個人戦実例（見出し＋名前リスト）: 番号や箇条書き付きの名前が選手として個人戦認識されること', () {
+      const individualListSample = '''
+第5回 親善少年剣道錬成大会
+日時: 2026年11月15日
+会場: 市民武道館
+【個人戦】
+1. 皿田 脩人
+2. 塚本 大道
+3. 久安 智也★
+''';
+
+      expect(TournamentTextParser.isCandidate(individualListSample), isTrue);
+
+      final parsed = TournamentTextParser.parse(individualListSample);
+      expect(parsed.teams.length, equals(3));
+      for (final team in parsed.teams) {
+        expect(team.matchType, equals('個人戦'));
+        expect(team.members.length, equals(1));
+        expect(team.members[0].position, equals('選手'));
+      }
+      expect(parsed.teams[0].members[0].name, equals('皿田 脩人'));
+      expect(parsed.teams[1].members[0].name, equals('塚本 大道'));
+      expect(parsed.teams[2].members[0].name, equals('久安 智也'));
+    });
+
+    test('ユーザー指定形式（個人戦 ＞ 中学生 ＞ 複数選手）: 正確に個人戦・中学生の部として抽出・展開されること', () {
+      const userSample = '''
+第3回 錬成大会
+日時: 2026年12月1日
+場所: 道場
+
+個人戦
+中学生
+皿田 唯人
+皿田 梓人
+橋本 璃久
+''';
+
+      expect(TournamentTextParser.isCandidate(userSample), isTrue);
+
+      final parsed = TournamentTextParser.parse(userSample);
+      expect(parsed.teams.length, equals(3));
+
+      final names = ['皿田 唯人', '皿田 梓人', '橋本 璃久'];
+      for (int i = 0; i < 3; i++) {
+        final team = parsed.teams[i];
+        expect(team.teamName, equals(names[i]));
+        expect(team.matchType, equals('個人戦'));
+        expect(team.category, equals('中学生'));
+        expect(team.members.length, equals(1));
+        expect(team.members[0].position, equals('選手'));
+        expect(team.members[0].name, equals(names[i]));
+
+        // 自動判別で「中学生の部」に解決されること
+        final resolvedCat = TournamentTeamAutoRegisterService.resolveCategory(
+          team,
+        );
+        expect(resolvedCat, equals('中学生の部'));
+      }
+    });
+
+    test('全カテゴリ判別実証: 個人戦で低学年・高学年・小学生・中学生・高校生・一般が全て正確に判別されること', () {
+      const multiCategorySample = '''
+第50回 記念剣道選手権大会
+2026年10月10日
+会場: 広島県立武道館
+
+個人戦
+小学生低学年
+皿田 脩人
+
+小学生高学年
+久安 智也
+
+小学生
+佐藤 健
+
+中学生
+皿田 唯人
+
+高校生
+鈴木 一郎
+
+一般
+高橋 翔
+''';
+
+      final parsed = TournamentTextParser.parse(multiCategorySample);
+      expect(parsed.teams.length, equals(6));
+
+      final expectedCategories = [
+        '小学生低学年の部',
+        '小学生高学年の部',
+        '小学生の部',
+        '中学生の部',
+        '高校生の部',
+        '一般の部',
+      ];
+
+      for (int i = 0; i < 6; i++) {
+        final team = parsed.teams[i];
+        expect(team.matchType, equals('個人戦'));
+        final resolvedCat = TournamentTeamAutoRegisterService.resolveCategory(
+          team,
+        );
+        expect(
+          resolvedCat,
+          equals(expectedCategories[i]),
+          reason:
+              '${team.teamName} (${team.category}) が ${expectedCategories[i]} に解決されること',
+        );
+      }
+
+      // 大会カテゴリ一覧の抽出も全カテゴリ網羅されること
+      final extractedCategories =
+          TournamentTeamAutoRegisterService.extractCategories(parsed.teams);
+      for (final exp in expectedCategories) {
+        expect(
+          extractedCategories.contains(exp),
+          isTrue,
+          reason: '$exp が抽出されること',
+        );
+      }
     });
   });
 }

@@ -143,13 +143,10 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
 
   Future<void> _editCategory(BuildContext context, int teamIndex) async {
     final team = teams[teamIndex];
-    final currentCat = team.category.isNotEmpty
-        ? team.category
-        : TournamentTeamAutoRegisterService.determineCategory(
-            team.teamName,
-            members: team.members,
-            roster: roster,
-          );
+    final currentCat = TournamentTeamAutoRegisterService.resolveCategory(
+      team,
+      roster: roster,
+    );
 
     final candidateCategories = [
       '小学生低学年の部',
@@ -213,6 +210,69 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
     if (newCat != null && onTeamsUpdated != null) {
       final updatedTeams = List<ParsedTeamOrder>.from(teams);
       updatedTeams[teamIndex] = team.copyWith(category: newCat);
+      onTeamsUpdated!(updatedTeams);
+    }
+  }
+
+  Future<void> _editMatchType(BuildContext context, int teamIndex) async {
+    final team = teams[teamIndex];
+    final currentType = TournamentTeamAutoRegisterService.determineMatchType(
+      team,
+    );
+    final candidateMatchTypes =
+        TournamentTeamAutoRegisterService.candidateMatchTypes;
+
+    final accentColor =
+        Theme.of(context).extension<AppThemeColors>()?.primaryAccent ??
+        AppKendoColors.blue;
+    final subTextColor = context.appColors.subTextColor;
+
+    final newType = await showAppBottomSheet<String>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) {
+        return AppBottomSheetContent(
+          title: '「${team.teamName}」の試合形式',
+          titleIcon: Icons.sports_kabaddi,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  '試合形式を選択してください：',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: subTextColor,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: candidateMatchTypes.map((type) {
+                    final isSel = currentType == type;
+                    return AppChoiceChip(
+                      label: Text(type),
+                      selected: isSel,
+                      selectedColor: accentColor.withValues(alpha: 0.2),
+                      onSelected: (_) => Navigator.of(ctx).pop(type),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (newType != null && onTeamsUpdated != null) {
+      final updatedTeams = List<ParsedTeamOrder>.from(teams);
+      updatedTeams[teamIndex] = team.copyWith(matchType: newType);
       onTeamsUpdated!(updatedTeams);
     }
   }
@@ -317,13 +377,11 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, teamIndex) {
                 final team = teams[teamIndex];
-                final category = team.category.isNotEmpty
-                    ? team.category
-                    : TournamentTeamAutoRegisterService.determineCategory(
-                        team.teamName,
-                        members: team.members,
-                        roster: roster,
-                      );
+                final category =
+                    TournamentTeamAutoRegisterService.resolveCategory(
+                      team,
+                      roster: roster,
+                    );
                 final matchType =
                     TournamentTeamAutoRegisterService.determineMatchType(team);
                 final matchedMembers = PlayerRosterMatcher.matchTeamMembers(
@@ -346,6 +404,9 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
                       : null,
                   onEditCategory: onTeamsUpdated != null
                       ? () => _editCategory(context, teamIndex)
+                      : null,
+                  onEditMatchType: onTeamsUpdated != null
+                      ? () => _editMatchType(context, teamIndex)
                       : null,
                   onEditMember: onTeamsUpdated != null
                       ? (memberIndex) =>

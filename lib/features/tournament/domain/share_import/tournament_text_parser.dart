@@ -1,3 +1,4 @@
+import 'tournament_date_parser.dart';
 import 'tournament_share_data.dart';
 
 /// 外部テキスト（TimeTree, LINE, メモ等）から大会・オーダー情報を抽出するパーサー
@@ -13,6 +14,9 @@ class TournamentTextParser {
     '大将',
     '補欠',
     '補',
+    '選手',
+    '個人',
+    '個人戦',
   ];
 
   /// 大会識別のキーワード
@@ -22,6 +26,8 @@ class TournamentTextParser {
     '選手権',
     '錬成会',
     '杯',
+    '個人戦',
+    '個人',
   ];
 
   /// 会場識別のキーワード
@@ -34,9 +40,6 @@ class TournamentTextParser {
     'アリーナ',
   ];
 
-  /// 日時識別のキーワード
-  static const List<String> _dateKeywords = ['日時', '令和', '202', '平成'];
-
   /// 3重の安全フィルター: テキストが大会・オーダー情報の解析候補かを判定
   static bool isCandidate(String text) {
     final trimmed = text.trim();
@@ -48,7 +51,7 @@ class TournamentTextParser {
         .toList();
     if (lines.length < 3) return false;
 
-    // フィルター① 条件A（即判定）: 剣道特有のポジションが含まれている
+    // フィルター① 条件A（即判定）: 剣道特有のポジションや個人戦表記が含まれている
     final hasPosition = _positionKeywords.any((pos) => trimmed.contains(pos));
     if (hasPosition) return true;
 
@@ -56,7 +59,9 @@ class TournamentTextParser {
     final hasTournament = _tournamentKeywords.any(
       (keyword) => trimmed.contains(keyword),
     );
-    final hasDate = _dateKeywords.any((keyword) => trimmed.contains(keyword));
+    final hasDate = TournamentDateParser.dateKeywords.any(
+      (keyword) => trimmed.contains(keyword),
+    );
     final hasVenue = _venueKeywords.any((keyword) => trimmed.contains(keyword));
 
     return hasTournament && hasDate && hasVenue;
@@ -74,22 +79,72 @@ class TournamentTextParser {
     final List<String> noteLines = [];
 
     // 一時変数
+    String? currentSectionMatchType;
     String? currentTeamName;
     List<ParsedTeamMember> currentTeamMembers = [];
     final List<String> candidateNames = [];
+
+    void saveCurrentTeam() {
+      final teamName = currentTeamName;
+      if (teamName != null && currentTeamMembers.isNotEmpty) {
+        final initialMatchType =
+            currentSectionMatchType ??
+            _detectInitialMatchType(
+              teamName: teamName,
+              rawText: rawText,
+              memberCount: currentTeamMembers.length,
+            );
+        if (initialMatchType == '個人戦' || initialMatchType == 'リーグ個人戦') {
+          for (final m in currentTeamMembers) {
+            final isCategoryOnly =
+                teamName.contains('個人') ||
+                teamName == '中学生' ||
+                teamName == '小学生' ||
+                teamName == '低学年' ||
+                teamName == '高学年' ||
+                teamName == '高校生' ||
+                teamName == '一般';
+            final entryName = isCategoryOnly ? m.name : '$teamName ${m.name}';
+            teams.add(
+              ParsedTeamOrder(
+                teamName: entryName,
+                category: teamName,
+                matchType: initialMatchType,
+                members: [m],
+              ),
+            );
+          }
+        } else {
+          teams.add(
+            ParsedTeamOrder(
+              teamName: teamName,
+              matchType: initialMatchType,
+              members: List.from(currentTeamMembers),
+            ),
+          );
+        }
+        currentTeamMembers.clear();
+      }
+    }
 
     // 行ごとに走査
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
 
-      // TimeTree等のフッターURLや共有メッセージを除外
-      if (_isIgnoredFooter(line)) {
+      if (_isIgnoredFooter(line)) continue;
+
+      // 0. 試合形式セクション大見出し（個人戦、団体戦等）の検出
+      final sectionType = _detectSectionMatchType(line);
+      if (sectionType != null) {
+        saveCurrentTeam();
+        currentSectionMatchType = sectionType;
+        currentTeamName = _cleanTeamHeader(line);
         continue;
       }
 
       // 1. 日時の検出
-      final parsedDate = _extractDate(line);
+      final parsedDate = TournamentDateParser.extractDate(line);
       if (parsedDate != null && date == null) {
         date = parsedDate;
         continue;
@@ -98,20 +153,14 @@ class TournamentTextParser {
       // 2. 会場・場所の検出
       if (_isVenueLine(line)) {
         final extractedVenue = _cleanVenue(line);
-        if (venue.isEmpty) {
-          venue = extractedVenue;
-        } else {
-          venue = '$venue $extractedVenue';
-        }
+        venue = venue.isEmpty ? extractedVenue : '$venue $extractedVenue';
         continue;
       }
 
       // 3. 住所の検出
       if (_isAddressLine(line)) {
         final extractedAddress = _cleanAddress(line);
-        if (address.isEmpty) {
-          address = extractedAddress;
-        }
+        if (address.isEmpty) address = extractedAddress;
         continue;
       }
 
@@ -123,20 +172,24 @@ class TournamentTextParser {
         continue;
       }
 
-      // 5. チーム名見出しの検出判定
+      // 5. チーム名・部門見出しの検出判定
       if (_isPossibleTeamHeader(line, lines, i)) {
-        // 前のチームがあれば保存
-        if (currentTeamName != null && currentTeamMembers.isNotEmpty) {
-          teams.add(
-            ParsedTeamOrder(
-              teamName: currentTeamName,
-              members: List.from(currentTeamMembers),
-            ),
-          );
-          currentTeamMembers.clear();
-        }
+        saveCurrentTeam();
         currentTeamName = _cleanTeamHeader(line);
         continue;
+      }
+
+      // 5-b. 個人戦ヘッダー配下の選手名（ポジション接頭辞なし）の検出
+      if (currentTeamName != null &&
+          (currentSectionMatchType == '個人戦' ||
+              currentSectionMatchType == 'リーグ個人戦' ||
+              currentTeamName.contains('個人') ||
+              currentTeamName.contains('選手'))) {
+        final individualMember = _extractIndividualMember(line);
+        if (individualMember != null) {
+          currentTeamMembers.add(individualMember);
+          continue;
+        }
       }
 
       // 6. 大会名の候補抽出（ヘッダー部にある大会キーワード行）
@@ -148,29 +201,20 @@ class TournamentTextParser {
         continue;
       }
 
-      // それ以外はメモ候補
-      // ただしチームブロック内の行でない場合
+      // それ以外はメモ候補（チームブロック外の行）
       if (currentTeamMembers.isEmpty) {
         noteLines.add(line);
       }
     }
 
     // 最後のチームを保存
-    if (currentTeamName != null && currentTeamMembers.isNotEmpty) {
-      teams.add(
-        ParsedTeamOrder(
-          teamName: currentTeamName,
-          members: List.from(currentTeamMembers),
-        ),
-      );
-    }
+    saveCurrentTeam();
 
-    // 大会名の決定: 最も具体的（長さが長く、第○回や選抜などの修飾があるもの優先）
+    // 大会名の決定
     if (candidateNames.isNotEmpty) {
       candidateNames.sort((a, b) => b.length.compareTo(a.length));
       tournamentName = candidateNames.first;
     } else if (teams.isNotEmpty && (date != null || venue.isNotEmpty)) {
-      // チームと日程/会場が存在し確実に大会テキストである場合のみ、先頭の有効行を大会名候補として推測
       for (final l in lines) {
         final trimmed = l.trim();
         if (trimmed.isNotEmpty &&
@@ -184,7 +228,6 @@ class TournamentTextParser {
       }
     }
 
-    // メモの整形
     final notes = noteLines.join('\n').trim();
 
     return TournamentShareData(
@@ -214,58 +257,6 @@ class TournamentTextParser {
   static bool _isTournamentNameCandidate(String line) {
     if (line.length > 60) return false;
     return _tournamentKeywords.any((kw) => line.contains(kw));
-  }
-
-  /// 日時行のパース
-  static DateTime? _extractDate(String line) {
-    final normalized = _normalizeNumbers(line);
-
-    // 和暦: 令和X年 / 平成X年
-    final reiwaMatch = RegExp(
-      r'令和\s*([0-9]+|元)\s*年\s*([0-9]{1,2})\s*月\s*([0-9]{1,2})\s*日',
-    ).firstMatch(normalized);
-    if (reiwaMatch != null) {
-      final yearStr = reiwaMatch.group(1)!;
-      final int year = yearStr == '元' ? 2019 : 2018 + int.parse(yearStr);
-      final month = int.parse(reiwaMatch.group(2)!);
-      final day = int.parse(reiwaMatch.group(3)!);
-      return DateTime(year, month, day);
-    }
-
-    final heiseiMatch = RegExp(
-      r'平成\s*([0-9]+|元)\s*年\s*([0-9]{1,2})\s*月\s*([0-9]{1,2})\s*日',
-    ).firstMatch(normalized);
-    if (heiseiMatch != null) {
-      final yearStr = heiseiMatch.group(1)!;
-      final int year = yearStr == '元' ? 1989 : 1988 + int.parse(yearStr);
-      final month = int.parse(heiseiMatch.group(2)!);
-      final day = int.parse(heiseiMatch.group(3)!);
-      return DateTime(year, month, day);
-    }
-
-    // 西暦: 202X年X月X日
-    final seirekiMatch = RegExp(
-      r'(20[2-3][0-9])\s*年\s*([0-9]{1,2})\s*月\s*([0-9]{1,2})\s*日',
-    ).firstMatch(normalized);
-    if (seirekiMatch != null) {
-      final year = int.parse(seirekiMatch.group(1)!);
-      final month = int.parse(seirekiMatch.group(2)!);
-      final day = int.parse(seirekiMatch.group(3)!);
-      return DateTime(year, month, day);
-    }
-
-    // スラッシュ/ハイフン形式: 2026/09/20, 2026-9-20
-    final slashMatch = RegExp(
-      r'(20[2-3][0-9])[\/\-\.]([0-9]{1,2})[\/\-\.]([0-9]{1,2})',
-    ).firstMatch(normalized);
-    if (slashMatch != null) {
-      final year = int.parse(slashMatch.group(1)!);
-      final month = int.parse(slashMatch.group(2)!);
-      final day = int.parse(slashMatch.group(3)!);
-      return DateTime(year, month, day);
-    }
-
-    return null;
   }
 
   /// 会場・場所行か判定
@@ -307,11 +298,15 @@ class TournamentTextParser {
 
   /// ポジション & 選手名の抽出
   static ParsedTeamMember? _extractMember(String line) {
-    // 例: "先鋒　皿田 脩人", "中堅 : 塚本 大道", "大将　久安 智也⭐️"
-    final pattern = RegExp(r'^(先鋒|次鋒|五将|中堅|三将|副将|大将|補欠|補)[　\s:：]+(.+)$');
+    final pattern = RegExp(
+      r'^(先鋒|次鋒|五将|中堅|三将|副将|大将|補欠|補|選手|個人|個人戦|氏名)[　\s:：]+(.+)$',
+    );
     final match = pattern.firstMatch(line.trim());
     if (match != null) {
-      final position = match.group(1)!;
+      final rawPos = match.group(1)!;
+      final position = (rawPos == '氏名' || rawPos == '個人' || rawPos == '個人戦')
+          ? '選手'
+          : rawPos;
       final rawName = match.group(2)!;
       final cleanName = _cleanPlayerName(rawName);
       if (cleanName.isNotEmpty) {
@@ -321,12 +316,53 @@ class TournamentTextParser {
     return null;
   }
 
+  /// 個人戦ヘッダー配下の選手名（ポジション接頭辞なし、番号/箇条書き付き等）を抽出
+  static ParsedTeamMember? _extractIndividualMember(String line) {
+    var trimmed = line.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.startsWith('【') ||
+        trimmed.startsWith('[') ||
+        trimmed.startsWith('［') ||
+        trimmed.endsWith('】') ||
+        trimmed.endsWith(']') ||
+        trimmed.endsWith('］')) {
+      return null;
+    }
+    if (_isIgnoredFooter(trimmed) ||
+        _isVenueLine(trimmed) ||
+        _isAddressLine(trimmed)) {
+      return null;
+    }
+    if (TournamentDateParser.extractDate(trimmed) != null) return null;
+    if (trimmed.startsWith('開館') ||
+        trimmed.startsWith('開会') ||
+        trimmed.startsWith('集合') ||
+        trimmed.startsWith('責任者') ||
+        trimmed.startsWith('連絡') ||
+        trimmed.startsWith('注意') ||
+        trimmed.startsWith('※')) {
+      return null;
+    }
+    trimmed = trimmed.replaceFirst(
+      RegExp(
+        r'^(?:[0-9]{1,2}[\.\)）:：\s]|[\(（][0-9]{1,2}[\)）]|[①-⑳・\-\*])[　\s]*',
+      ),
+      '',
+    );
+    final cleanName = _cleanPlayerName(trimmed);
+    if (cleanName.length >= 2 &&
+        cleanName.length <= 12 &&
+        !cleanName.contains(':') &&
+        !cleanName.contains('：')) {
+      return ParsedTeamMember(position: '選手', name: cleanName);
+    }
+    return null;
+  }
+
   /// 選手名から星印や絵文字、不要な記号をクレンジング
   static String _cleanPlayerName(String raw) {
     var name = raw;
-    // 絵文字や記号を削除（⭐️, ⭐, ★, ☆, 🌟, ✨, 👑, etc.）
     name = name.replaceAll(RegExp(r'[⭐️⭐★☆🌟✨👑🔥🎌]'), '');
-    // 全角英数記号の正規化
     name = name.trim();
     return name;
   }
@@ -339,12 +375,11 @@ class TournamentTextParser {
   ) {
     final trimmed = line.trim();
     if (trimmed.isEmpty) return false;
-    // ポジション行、日時、会場、住所はチーム名ではない
     if (_extractMember(trimmed) != null) return false;
     if (_isVenueLine(trimmed) || _isAddressLine(trimmed)) return false;
-    if (_extractDate(trimmed) != null) return false;
+    if (TournamentDateParser.extractDate(trimmed) != null) return false;
 
-    // 次の行（あるいは2行以内）にポジション行が続くかチェック
+    // 次の行にポジション行または個人戦選手行が続くかチェック
     for (
       int next = index + 1;
       next < lines.length && next <= index + 3;
@@ -352,15 +387,15 @@ class TournamentTextParser {
     ) {
       final nextLine = lines[next].trim();
       if (nextLine.isEmpty) continue;
-      if (_extractMember(nextLine) != null) {
-        // 次にポジション行が来るなら、この行はチーム名ヘッダーの可能性が極めて高い
+      if (_extractMember(nextLine) != null) return true;
+      if (trimmed.contains('個人') &&
+          _extractIndividualMember(nextLine) != null) {
         return true;
       }
       break;
     }
 
-    // 代表的なチーム・カテゴリ名パターン
-    final teamKeywords = [
+    const teamKeywords = [
       '低学年',
       '高学年',
       '小学生',
@@ -371,13 +406,64 @@ class TournamentTextParser {
       '女子',
       'チーム',
       '部',
+      '勝ち抜き',
+      'リーグ',
+      '個人戦',
+      '個人',
     ];
-    if (teamKeywords.any((kw) => trimmed.contains(kw)) &&
-        trimmed.length <= 15) {
-      return true;
-    }
+    return teamKeywords.any((kw) => trimmed.contains(kw)) &&
+        trimmed.length <= 20;
+  }
 
-    return false;
+  /// 単独のセクション見出しから試合形式を検出
+  static String? _detectSectionMatchType(String line) {
+    final c = _cleanTeamHeader(line);
+    if (c == '個人戦' || c == '個人' || c == '個人戦の部' || c == '個人の部') {
+      return '個人戦';
+    }
+    if (c == '勝ち抜き戦' || c == '勝ち抜き' || c == '勝ち抜き戦の部') {
+      return '勝ち抜き戦';
+    }
+    if (c == 'リーグ個人戦') {
+      return 'リーグ個人戦';
+    }
+    if (c == 'リーグ戦' || c == 'リーグ' || c == 'リーグ団体戦' || c == 'リーグの部') {
+      return 'リーグ団体戦';
+    }
+    if (c == '団体戦' || c == '団体戦の部' || c == '団体の部') {
+      return '団体戦（5人制）';
+    }
+    return null;
+  }
+
+  /// チーム名や全体テキストから初期の試合形式を検出
+  static String _detectInitialMatchType({
+    required String teamName,
+    required String rawText,
+    required int memberCount,
+  }) {
+    if (teamName.contains('勝ち抜き')) return '勝ち抜き戦';
+    if (teamName.contains('リーグ')) {
+      return (memberCount == 1 || teamName.contains('個人'))
+          ? 'リーグ個人戦'
+          : 'リーグ団体戦';
+    }
+    if (teamName.contains('個人戦') || teamName.contains('個人')) {
+      return '個人戦';
+    }
+    if (rawText.contains('勝ち抜き戦') || rawText.contains('勝ち抜き')) {
+      return '勝ち抜き戦';
+    }
+    if (rawText.contains('リーグ戦') || rawText.contains('リーグ')) {
+      return (memberCount == 1 || rawText.contains('個人')) ? 'リーグ個人戦' : 'リーグ団体戦';
+    }
+    if (rawText.contains('個人戦') || rawText.contains('個人選手権')) {
+      return '個人戦';
+    }
+    if (memberCount == 1) {
+      return '個人戦';
+    }
+    return '';
   }
 
   /// チームヘッダーのクレンジング
@@ -398,16 +484,5 @@ class TournamentTextParser {
       }
     }
     return null;
-  }
-
-  /// 全角数字を半角数字に正規化
-  static String _normalizeNumbers(String input) {
-    const fullWidth = '０１２３４５６７８９';
-    const halfWidth = '0123456789';
-    var result = input;
-    for (int i = 0; i < fullWidth.length; i++) {
-      result = result.replaceAll(fullWidth[i], halfWidth[i]);
-    }
-    return result;
   }
 }

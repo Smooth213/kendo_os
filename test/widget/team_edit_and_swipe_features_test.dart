@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_selection_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_basic_fields.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_order_list.dart';
@@ -240,5 +241,51 @@ void main() {
         expect(selectedResult, equals('助っ人 太郎'));
       },
     );
+
+    // 5. TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能であること
+    testWidgets('TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能であること', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: '道上剣友会A');
+      String selectedType = '団体戦（3人制）';
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TeamEditBasicFields(
+              teamNameController: controller,
+              selectedCategory: '小学生',
+              matchType: selectedType,
+              candidateCategories: const ['小学生'],
+              matchTypes: TournamentTeamAutoRegisterService.candidateMatchTypes,
+              themeColors: themeColors,
+              borderColor: Colors.grey,
+              onCategoryChanged: (_) {},
+              onMatchTypeChanged: (type) => selectedType = type,
+            ),
+          ),
+        ),
+      );
+
+      // 試合形式チップの確認
+      expect(find.text('勝ち抜き戦'), findsOneWidget);
+      expect(find.text('リーグ団体戦'), findsOneWidget);
+      expect(find.text('リーグ個人戦'), findsOneWidget);
+      expect(find.text('団体戦（5人制）'), findsOneWidget);
+      expect(find.text('団体戦（3人制）'), findsOneWidget);
+      expect(find.text('団体戦（7人制）'), findsOneWidget);
+      expect(find.text('個人戦'), findsOneWidget);
+      expect(find.text('団体戦（それ以上）'), findsOneWidget);
+
+      // 「勝ち抜き戦」をタップ
+      await tester.tap(find.text('勝ち抜き戦'));
+      await tester.pump();
+      expect(selectedType, equals('勝ち抜き戦'));
+
+      // 「リーグ団体戦」をタップ
+      await tester.tap(find.text('リーグ団体戦'));
+      await tester.pump();
+      expect(selectedType, equals('リーグ団体戦'));
+    });
   });
 }

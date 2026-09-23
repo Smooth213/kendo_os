@@ -3,68 +3,13 @@ import 'package:kendo_os/features/tournament/domain/share_import/player_roster_m
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/edit_parsed_member_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/share_import_edit_sheets.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 
-/// 🥋 共有インポート用：情報カード共通ウィジェット
-class ShareImportInfoCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color accentColor;
-  final Color cardColor;
-  final Color textColor;
-  final Color subTextColor;
-  final List<Widget> children;
-
-  const ShareImportInfoCard({
-    super.key,
-    required this.title,
-    required this.icon,
-    required this.accentColor,
-    required this.cardColor,
-    required this.textColor,
-    required this.subTextColor,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(AppRadius.largeValue),
-        border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: accentColor, size: 20),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: AppFontSize.headline,
-                  fontWeight: AppFontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 16),
-          ...children,
-        ],
-      ),
-    );
-  }
-}
+export 'share_import_edit_sheets.dart';
+export 'share_import_info_card.dart';
 
 /// 🥋 共有インポート用：チームオーダー表示カードウィジェット
 class ShareImportTeamSection extends StatelessWidget {
@@ -78,6 +23,7 @@ class ShareImportTeamSection extends StatelessWidget {
   onMemberUpdated;
   final void Function(String newName)? onTeamNameUpdated;
   final void Function(String newCategory)? onCategoryUpdated;
+  final void Function(String newMatchType)? onMatchTypeUpdated;
 
   const ShareImportTeamSection({
     super.key,
@@ -90,61 +36,33 @@ class ShareImportTeamSection extends StatelessWidget {
     this.onMemberUpdated,
     this.onTeamNameUpdated,
     this.onCategoryUpdated,
+    this.onMatchTypeUpdated,
   });
 
-  Future<void> _editCategory(BuildContext context, String currentCat) async {
-    final candidateCategories = [
-      '小学生低学年の部',
-      '小学生高学年の部',
-      '小学生の部',
-      '中学生の部',
-      '中学生男子の部',
-      '中学生女子の部',
-      '高校生の部',
-      '一般の部',
-    ];
-
-    final newCat = await showAppBottomSheet<String>(
+  Future<void> _editMatchType(
+    BuildContext context,
+    String currentMatchType,
+  ) async {
+    final newType = await ShareImportEditSheets.showMatchTypeSheet(
       context: context,
-      useRootNavigator: true,
-      builder: (ctx) {
-        return AppBottomSheetContent(
-          title: '「${team.teamName}」のカテゴリ（部門）',
-          titleIcon: Icons.category,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '所属する部門を選択してください：',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    color: subTextColor,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: candidateCategories.map((cat) {
-                    final isSel = currentCat == cat;
-                    return AppChoiceChip(
-                      label: Text(cat),
-                      selected: isSel,
-                      selectedColor: accentColor.withValues(alpha: 0.2),
-                      onSelected: (_) => Navigator.of(ctx).pop(cat),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        );
-      },
+      teamName: team.teamName,
+      currentMatchType: currentMatchType,
+      accentColor: accentColor,
+      subTextColor: subTextColor,
+    );
+
+    if (newType != null && newType.isNotEmpty) {
+      onMatchTypeUpdated?.call(newType);
+    }
+  }
+
+  Future<void> _editCategory(BuildContext context, String currentCat) async {
+    final newCat = await ShareImportEditSheets.showCategorySheet(
+      context: context,
+      teamName: team.teamName,
+      currentCategory: currentCat,
+      accentColor: accentColor,
+      subTextColor: subTextColor,
     );
 
     if (newCat != null && newCat.isNotEmpty) {
@@ -153,64 +71,14 @@ class ShareImportTeamSection extends StatelessWidget {
   }
 
   Future<void> _editTeamName(BuildContext context) async {
-    final controller = TextEditingController(text: team.teamName);
-    final newName = await showAppBottomSheet<String>(
+    final newName = await ShareImportEditSheets.showTeamNameSheet(
       context: context,
-      useRootNavigator: true,
-      builder: (ctx) => AppBottomSheetContent(
-        title: 'チーム名の変更',
-        titleIcon: Icons.edit,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '新しいチーム名を入力してください',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  color: subTextColor,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              AppTextField(
-                controller: controller,
-                autofocus: true,
-                style: TextStyle(
-                  fontSize: AppFontSize.body,
-                  fontWeight: AppFontWeight.bold,
-                  color: textColor,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'チーム名',
-                  hintText: '例: 低学年A, 中学生男子',
-                  prefixIcon: Icon(Icons.groups),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              SizedBox(
-                width: double.infinity,
-                child: GlassButton(
-                  onPressed: () {
-                    final val = controller.text.trim();
-                    if (val.isNotEmpty) Navigator.of(ctx).pop(val);
-                  },
-                  color: accentColor,
-                  icon: Icons.check,
-                  label: '変更を保存',
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
-          ),
-        ),
-      ),
+      currentTeamName: team.teamName,
+      accentColor: accentColor,
+      textColor: textColor,
+      subTextColor: subTextColor,
     );
+
     if (newName != null && newName.isNotEmpty) {
       onTeamNameUpdated?.call(newName);
     }
@@ -218,13 +86,12 @@ class ShareImportTeamSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentCat = team.category.isNotEmpty
-        ? team.category
-        : TournamentTeamAutoRegisterService.determineCategory(
-            team.teamName,
-            members: team.members,
-            roster: roster,
-          );
+    final currentCat = TournamentTeamAutoRegisterService.resolveCategory(
+      team,
+      roster: roster,
+    );
+    final currentMatchType =
+        TournamentTeamAutoRegisterService.determineMatchType(team);
 
     final matchedMembers = roster != null
         ? PlayerRosterMatcher.matchTeamMembers(
@@ -239,85 +106,133 @@ class ShareImportTeamSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.smallValue),
-                onTap: onTeamNameUpdated != null
-                    ? () => _editTeamName(context)
-                    : null,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppRadius.smallValue),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        team.teamName,
-                        style: TextStyle(
-                          fontSize: AppFontSize.body,
-                          fontWeight: AppFontWeight.bold,
-                          color: accentColor,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.smallValue),
+                  onTap: onTeamNameUpdated != null
+                      ? () => _editTeamName(context)
+                      : null,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppRadius.smallValue),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          team.teamName,
+                          style: TextStyle(
+                            fontSize: AppFontSize.body,
+                            fontWeight: AppFontWeight.bold,
+                            color: accentColor,
+                          ),
                         ),
-                      ),
-                      if (onTeamNameUpdated != null) ...[
-                        const SizedBox(width: AppSpacing.xs),
-                        Icon(Icons.edit, size: 12, color: accentColor),
+                        if (onTeamNameUpdated != null) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          Icon(Icons.edit, size: 12, color: accentColor),
+                        ],
                       ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.subValue),
-              InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.tinyValue),
-                onTap: () => _editCategory(context, currentCat),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.subValue,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.tinyValue),
-                    border: Border.all(
-                      color: accentColor.withValues(alpha: 0.25),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        currentCat,
-                        style: TextStyle(
-                          fontSize: AppFontSize.caption,
-                          fontWeight: AppFontWeight.bold,
+                ),
+                const SizedBox(width: AppSpacing.subValue),
+                InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                  onTap: () => _editCategory(context, currentCat),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.subValue,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentCat,
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: accentColor,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.xxs),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          size: 14,
                           color: accentColor,
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.subValue),
+                InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                  onTap: onMatchTypeUpdated != null
+                      ? () => _editMatchType(context, currentMatchType)
+                      : null,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.subValue,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.2),
                       ),
-                      const SizedBox(width: AppSpacing.xxs),
-                      Icon(Icons.arrow_drop_down, size: 14, color: accentColor),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentMatchType,
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: accentColor,
+                          ),
+                        ),
+                        if (onMatchTypeUpdated != null) ...[
+                          const SizedBox(width: AppSpacing.xxs),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            size: 14,
+                            color: accentColor,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if (onMemberUpdated != null) ...[
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  '(タップで編集)',
-                  style: TextStyle(
-                    fontSize: AppFontSize.caption,
-                    color: subTextColor,
+                if (onMemberUpdated != null) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    '(タップで編集)',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      color: subTextColor,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
           const SizedBox(height: AppSpacing.subValue),
           Wrap(

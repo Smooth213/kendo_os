@@ -60,7 +60,9 @@ class _CreateTournamentScreenState
     _venueController = TextEditingController(text: init?.venue ?? '');
     _notesController = TextEditingController(text: init?.notes ?? '');
     _selectedDate = init?.date ?? DateTime.now();
-    _teams = List.from(init?.teams ?? []);
+    _teams = TournamentTeamAutoRegisterService.normalizeIndividualTeams(
+      List.from(init?.teams ?? []),
+    );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {

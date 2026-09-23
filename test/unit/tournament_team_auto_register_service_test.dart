@@ -161,5 +161,81 @@ void main() {
       );
       expect(category, '小学生の部');
     });
+
+    test('勝ち抜き戦・リーグ戦の自動判定および明示指定テスト', () {
+      // 1. チーム名に「勝ち抜き」が含まれる場合 -> 勝ち抜き戦
+      final kachinukiTeam = const ParsedTeamOrder(
+        teamName: '小学生勝ち抜き選抜',
+        members: [
+          ParsedTeamMember(position: '先鋒', name: '選手1'),
+          ParsedTeamMember(position: '次鋒', name: '選手2'),
+          ParsedTeamMember(position: '中堅', name: '選手3'),
+          ParsedTeamMember(position: '副将', name: '選手4'),
+          ParsedTeamMember(position: '大将', name: '選手5'),
+        ],
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(kachinukiTeam),
+        '勝ち抜き戦',
+      );
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦'), [
+        '先鋒',
+        '次鋒',
+        '中堅',
+        '副将',
+        '大将',
+      ]);
+
+      // 2. チーム名に「リーグ」が含まれ、複数人の場合 -> リーグ団体戦
+      final leagueTeam = const ParsedTeamOrder(
+        teamName: 'Aブロックリーグ',
+        members: [
+          ParsedTeamMember(position: '先鋒', name: '選手1'),
+          ParsedTeamMember(position: '次鋒', name: '選手2'),
+          ParsedTeamMember(position: '中堅', name: '選手3'),
+          ParsedTeamMember(position: '副将', name: '選手4'),
+          ParsedTeamMember(position: '大将', name: '選手5'),
+        ],
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(leagueTeam),
+        'リーグ団体戦',
+      );
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('リーグ団体戦'), [
+        '先鋒',
+        '次鋒',
+        '中堅',
+        '副将',
+        '大将',
+      ]);
+
+      // 3. チーム名に「リーグ」が含まれ、1人の場合 -> リーグ個人戦
+      final leagueIndividualTeam = const ParsedTeamOrder(
+        teamName: '予選リーグ',
+        members: [ParsedTeamMember(position: '選手', name: '個人選手A')],
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(
+          leagueIndividualTeam,
+        ),
+        'リーグ個人戦',
+      );
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('リーグ個人戦'), ['選手']);
+
+      // 4. 明示的に matchType が指定されている場合はそれを最優先
+      final manualTeam = const ParsedTeamOrder(
+        teamName: '低学年チーム',
+        matchType: '勝ち抜き戦',
+        members: [
+          ParsedTeamMember(position: '先鋒', name: '選手1'),
+          ParsedTeamMember(position: '中堅', name: '選手2'),
+          ParsedTeamMember(position: '大将', name: '選手3'),
+        ],
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(manualTeam),
+        '勝ち抜き戦',
+      );
+    });
   });
 }

@@ -16,6 +16,7 @@ class CreateTournamentImportTeamTile extends StatelessWidget {
   final bool isDark;
   final VoidCallback? onEditTeamName;
   final VoidCallback? onEditCategory;
+  final VoidCallback? onEditMatchType;
   final void Function(int memberIndex)? onEditMember;
 
   const CreateTournamentImportTeamTile({
@@ -30,6 +31,7 @@ class CreateTournamentImportTeamTile extends StatelessWidget {
     required this.isDark,
     this.onEditTeamName,
     this.onEditCategory,
+    this.onEditMatchType,
     this.onEditMember,
   });
 
@@ -47,28 +49,34 @@ class CreateTournamentImportTeamTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.tinyValue),
-                onTap: onEditTeamName,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xs,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        team.teamName,
-                        style: TextStyle(
-                          fontSize: AppFontSize.body,
-                          fontWeight: AppFontWeight.bold,
-                          color: textColor,
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                  onTap: onEditTeamName,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            team.teamName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: AppFontSize.body,
+                              fontWeight: AppFontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Icon(Icons.edit, size: 13, color: subTextColor),
-                    ],
+                        const SizedBox(width: AppSpacing.xs),
+                        Icon(Icons.edit, size: 13, color: subTextColor),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -106,11 +114,44 @@ class CreateTournamentImportTeamTile extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                matchType,
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  color: subTextColor,
+              InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                onTap: onEditMatchType,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.subValue,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF33333E)
+                        : const Color(0xFFE8E8EE),
+                    borderRadius: BorderRadius.circular(AppRadius.tinyValue),
+                    border: Border.all(
+                      color: subTextColor.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        matchType,
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          color: textColor,
+                          fontWeight: AppFontWeight.bold,
+                        ),
+                      ),
+                      if (onEditMatchType != null) ...[
+                        const SizedBox(width: AppSpacing.xxs),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          size: 14,
+                          color: subTextColor,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ],

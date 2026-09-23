@@ -22,7 +22,7 @@ AUDIT_DEFINITIONS = [
     {
         "id": 1,
         "part": "第1部: ドメイン・プロダクト品質",
-        "name": "🥋 剣道公式ルール・スコア・表記・配列 永続保証規約",
+        "name": "🥋 剣道公式ルール・スコア・試合形式・表記・配列 永続保証規約",
         "cmd": ["python3", "scripts/check_gov_01_kendo_core_rules.py"],
     },
     {
