@@ -314,12 +314,15 @@ class LeagueGridCard extends StatelessWidget {
                 ? context.appColors.warningColor.withValues(alpha: 0.2)
                 : context.appColors.warningColor)
           : null,
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: AppFontWeight.bold,
-          fontSize: isRank ? 16 : 13,
-          color: isRank ? const Color(0xFFFF9800) : themeColors.textColor,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          text,
+          style: TextStyle(
+            fontWeight: AppFontWeight.bold,
+            fontSize: isRank ? 16 : 13,
+            color: isRank ? const Color(0xFFFF9800) : themeColors.textColor,
+          ),
         ),
       ),
     );

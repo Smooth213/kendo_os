@@ -99,6 +99,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     bool? leftHanded,
     bool? showConfirmDialog,
     String? themeMode,
+    String? textSizeMode,
     bool? enableLiquidGlass,
     String? thermalPowerPreference, // ★ サーマル・省電力設定
     bool? experimentalFeatures, // ★ 修正: この1行を引数に追加
@@ -121,6 +122,7 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       leftHanded: leftHanded ?? state.leftHanded,
       showConfirmDialog: showConfirmDialog ?? state.showConfirmDialog,
       themeMode: themeMode ?? state.themeMode,
+      textSizeMode: textSizeMode ?? state.textSizeMode,
       enableLiquidGlass: enableLiquidGlass ?? state.enableLiquidGlass,
       thermalPowerPreference:
           thermalPowerPreference ?? state.thermalPowerPreference,

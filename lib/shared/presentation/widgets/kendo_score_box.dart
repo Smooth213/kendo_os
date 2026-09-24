@@ -76,15 +76,18 @@ class KendoTechMarkBadge extends StatelessWidget {
             width: size > 30 ? 3.0 : 1.0,
           ),
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: fs,
-            color: color,
-            fontWeight: AppFontWeight.bold,
-            height: 1.0,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: fs,
+              color: color,
+              fontWeight: AppFontWeight.bold,
+              height: 1.0,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       );
     }

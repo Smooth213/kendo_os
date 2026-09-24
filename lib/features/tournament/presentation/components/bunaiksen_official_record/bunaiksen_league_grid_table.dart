@@ -208,14 +208,17 @@ class BunaiksenLeagueGridTable extends ConsumerWidget {
                 ? const Color(0xFFFF9800).withValues(alpha: 0.2)
                 : const Color(0xFFFF9800))
           : null,
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: AppFontWeight.bold,
-          fontSize: isRank ? 16 : 13,
-          color: isRank
-              ? const Color(0xFFFF9800)
-              : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000)),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          text,
+          style: TextStyle(
+            fontWeight: AppFontWeight.bold,
+            fontSize: isRank ? 16 : 13,
+            color: isRank
+                ? const Color(0xFFFF9800)
+                : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000)),
+          ),
         ),
       ),
     );

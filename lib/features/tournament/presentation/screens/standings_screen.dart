@@ -274,7 +274,6 @@ class StandingsScreen extends ConsumerWidget {
                       child: ListView.builder(
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         itemCount: sortedStats.length,
-                        itemExtent: 92.0,
                         itemBuilder: (context, index) {
                           final stat = sortedStats[index];
                           final winRate = stat.matches > 0

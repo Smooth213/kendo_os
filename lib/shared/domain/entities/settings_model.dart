@@ -24,6 +24,8 @@ abstract class SettingsModel with _$SettingsModel {
     @Default(false) bool leftHanded, // 左利きモード（赤白反転）
     @Default('system')
     String themeMode, // ★ ダークモード対応 ('system', 'light', 'dark')
+    @Default('normal')
+    String textSizeMode, // ★ 年長者・弱視向け文字サイズ ('normal', 'large', 'extraLarge')
     @Default(true)
     bool enableLiquidGlass, // ★ iOS風すりガラス効果 (Liquid Glass) のON/OFF
     @Default('auto')

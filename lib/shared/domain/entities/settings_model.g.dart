@@ -19,6 +19,7 @@ _SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) =>
       sleepPrevent: json['sleepPrevent'] as bool? ?? true,
       leftHanded: json['leftHanded'] as bool? ?? false,
       themeMode: json['themeMode'] as String? ?? 'system',
+      textSizeMode: json['textSizeMode'] as String? ?? 'normal',
       enableLiquidGlass: json['enableLiquidGlass'] as bool? ?? true,
       thermalPowerPreference:
           json['thermalPowerPreference'] as String? ?? 'auto',
@@ -44,6 +45,7 @@ Map<String, dynamic> _$SettingsModelToJson(_SettingsModel instance) =>
       'sleepPrevent': instance.sleepPrevent,
       'leftHanded': instance.leftHanded,
       'themeMode': instance.themeMode,
+      'textSizeMode': instance.textSizeMode,
       'enableLiquidGlass': instance.enableLiquidGlass,
       'thermalPowerPreference': instance.thermalPowerPreference,
       'notifyOnEmergency': instance.notifyOnEmergency,

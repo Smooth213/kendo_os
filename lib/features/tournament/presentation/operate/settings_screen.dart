@@ -95,6 +95,20 @@ class SettingsScreen extends ConsumerWidget {
                 ref.read(settingsProvider.notifier).updateField(themeMode: val);
               },
             ),
+            SettingsAccordionSelector<String>(
+              title: '文字サイズ',
+              icon: Icons.format_size,
+              iconBgColor: AppKendoColors.purple,
+              selectedValue: settings.textSizeMode,
+              items: const [
+                SettingsAccordionItem(value: 'normal', label: '標準'),
+                SettingsAccordionItem(value: 'large', label: '大'),
+                SettingsAccordionItem(value: 'extraLarge', label: '特大'),
+              ],
+              onSelected: (val) {
+                notifier.updateField(textSizeMode: val);
+              },
+            ),
             SettingsSwitchTile(
               title: 'スリープ(画面消灯)防止',
               value: settings.sleepPrevent,
@@ -125,7 +139,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         const SettingsSectionFooter(
           text:
-              '☀️ サンシャインモードは直射日光や反射光に負けない最高コントラストを提供します。\nスリープ防止をオンにすると長時間の試合記録中に画面が暗くなるのを防ぎます。\nサーマル冷却制御は端末の熱暴走とバッテリー急減を完全自動で防止しています（時間精度100%保証）。',
+              '☀️ サンシャインモードは直射日光や反射光に負けない最高コントラストを提供します。\n文字サイズは体育館での遠距離視認や年長者・弱視の先生方の操作性を高めます。\nスリープ防止をオンにすると長時間の試合記録中に画面が暗くなるのを防ぎます。\nサーマル冷却制御は端末の熱暴走とバッテリー急減を完全自動で防止しています（時間精度100%保証）。',
         ),
         const SizedBox(height: AppSpacing.xl),
 

@@ -254,6 +254,7 @@ class TimerWidget extends ConsumerWidget {
                 );
                 return Text(
                   _formatTime(seconds),
+                  textScaler: TextScaler.noScaling,
                   style: TextStyle(
                     fontSize: AppFontSize.scoreboardLarge,
                     fontWeight: AppFontWeight.bold,

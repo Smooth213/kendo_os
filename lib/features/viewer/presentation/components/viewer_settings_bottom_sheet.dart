@@ -86,6 +86,39 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
                       },
                     ),
                   ),
+                  SettingsListTile(
+                    title: '文字サイズ',
+                    icon: Icons.format_size,
+                    iconBgColor: AppKendoColors.purpleAccent,
+                    trailing: DropdownButton<String>(
+                      value: settings.textSizeMode,
+                      isDense: true,
+                      underline: const SizedBox(),
+                      borderRadius: AppRadius.medium,
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: dynamicTextColor,
+                      ),
+                      style: TextStyle(
+                        color: dynamicTextColor,
+                        fontWeight: AppFontWeight.bold,
+                        fontSize: AppFontSize.body,
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'normal', child: Text('標準')),
+                        DropdownMenuItem(value: 'large', child: Text('大')),
+                        DropdownMenuItem(
+                          value: 'extraLarge',
+                          child: Text('特大'),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          notifier.updateField(textSizeMode: val);
+                        }
+                      },
+                    ),
+                  ),
                   SettingsSwitchTile(
                     title: '省エネモード（背景アニメーション停止）',
                     value: !settings.enableLiquidGlass,

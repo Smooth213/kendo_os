@@ -225,9 +225,12 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
     ref.watch(dojoRoomSyncProvider);
     ref.watch(routeObserverProvider);
 
-    // ⚡【Plan 最適化】themeModeのみを購読し、他の設定変更（バイブ・確認ダイアログ・スリープ等）による
+    // ⚡【Plan 最適化】themeMode/textSizeModeをピンポイント購読し、他の設定変更（バイブ・確認ダイアログ・スリープ等）による
     // KendoOSApp（ルートMaterialApp全体）の不要な再ビルド（フレームドロップ・Jank）を完全排除
     final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
+    final textSizeMode = ref.watch(
+      settingsProvider.select((s) => s.textSizeMode),
+    );
 
     final isSunshine = themeMode == 'sunshine';
     ThemeMode currentThemeMode = ThemeMode.system;
@@ -293,6 +296,36 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       builder: (context, child) {
         if (child == null) return const SizedBox.shrink();
 
+        // 🛡️ 第1防壁: 年長者・弱視向け文字拡大スケーラー & 上限クランプリミッター
+        final baseScaler = MediaQuery.of(context).textScaler;
+        final TextScaler effectiveScaler;
+        switch (textSizeMode) {
+          case 'large':
+            effectiveScaler = baseScaler.clamp(
+              minScaleFactor: 1.15,
+              maxScaleFactor: 1.25,
+            );
+            break;
+          case 'extraLarge':
+            effectiveScaler = baseScaler.clamp(
+              minScaleFactor: 1.30,
+              maxScaleFactor: 1.40,
+            );
+            break;
+          case 'normal':
+          default:
+            effectiveScaler = baseScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.15,
+            );
+            break;
+        }
+
+        final scaledChild = MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: effectiveScaler),
+          child: child,
+        );
+
         return Consumer(
           builder: (context, ref, _) {
             final isOffline =
@@ -342,7 +375,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
                           ],
                         ),
                       ),
-                    Expanded(child: child),
+                    Expanded(child: scaledChild),
                   ],
                 ),
               ),

@@ -198,33 +198,35 @@ void main() {
       // Player C: 1 draw, 1 loss -> custom points = 1 + 0 = 1
 
       final tableWidget = tester.widget<Table>(find.byType(Table).first);
+      Text extractCellText(Widget cell) {
+        final container = cell as Container;
+        if (container.child is FittedBox) {
+          return (container.child as FittedBox).child as Text;
+        }
+        return container.child as Text;
+      }
+
       final playerARowWidget = tableWidget.children[1];
       expect(
-        ((playerARowWidget.children[playerARowWidget.children.length - 2]
-                        as Container)
-                    .child
-                as Text)
-            .data,
+        extractCellText(
+          playerARowWidget.children[playerARowWidget.children.length - 2],
+        ).data,
         '4',
       );
 
       final playerBRowWidget = tableWidget.children[2];
       expect(
-        ((playerBRowWidget.children[playerBRowWidget.children.length - 2]
-                        as Container)
-                    .child
-                as Text)
-            .data,
+        extractCellText(
+          playerBRowWidget.children[playerBRowWidget.children.length - 2],
+        ).data,
         '3',
       );
 
       final playerCRowWidget = tableWidget.children[3];
       expect(
-        ((playerCRowWidget.children[playerCRowWidget.children.length - 2]
-                        as Container)
-                    .child
-                as Text)
-            .data,
+        extractCellText(
+          playerCRowWidget.children[playerCRowWidget.children.length - 2],
+        ).data,
         '1',
       );
     },
