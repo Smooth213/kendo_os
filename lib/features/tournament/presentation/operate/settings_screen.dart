@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_google_auth_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/web_app_qr_dialog.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_notification_helper.dart';
@@ -303,9 +304,34 @@ class SettingsScreen extends ConsumerWidget {
         const SettingsSectionFooter(
           text: '記録をロックすると後からスコアを修正できなくなり、ローカル保存されたデータの安全性を高めます。',
         ),
+        const SizedBox(height: AppSpacing.xl),
 
         // ==========================================
-        // 4. アカウント管理
+        // 4. Webアプリ版 (他端末連携・QRコード)
+        // ==========================================
+        const SettingsSectionHeader(title: 'Webアプリ版（他端末アクセス）'),
+        SettingsBlock(
+          enableLiquidGlass: enableLiquidGlass,
+          themeColors: themeColors,
+          children: [
+            SettingsListTile(
+              title: 'Webアプリ版 QRコード',
+              subtitle: '他端末のブラウザでkendo_os本体を開く',
+              icon: Icons.qr_code_2_rounded,
+              iconBgColor: AppKendoColors.blue,
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => WebAppQrDialog.show(sheetContext),
+            ),
+          ],
+        ),
+        const SettingsSectionFooter(
+          text:
+              '※ 閲覧専用モードではなく、アプリ本体（https://kendo-os-beta.web.app）を開きます。他のスマホやiPad、PC等のブラウザからアクセスして操作・利用できます。',
+        ),
+        const SizedBox(height: AppSpacing.xl),
+
+        // ==========================================
+        // 5. アカウント管理
         // ==========================================
         const SettingsSectionHeader(title: 'アカウント管理'),
         SettingsBlock(

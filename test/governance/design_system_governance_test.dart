@@ -1284,6 +1284,41 @@ void main() {
         );
       },
     );
+
+    test(
+      '38. [QRコード共有統一] 生の QrImageView 直接配置が 0 件であり QrShareDialog または ViewerQrBottomSheet に統一されていること',
+      () {
+        final allowedFiles = {
+          'lib/shared/widgets/qr_share_dialog.dart',
+          'lib/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart',
+          'lib/features/p2p/presentation/components/p2p_broadcast_dialog.dart',
+        };
+
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          final normalizedPath = file.path.replaceAll('\\', '/');
+          final isAllowed = allowedFiles.any(
+            (allowed) => normalizedPath.endsWith(allowed),
+          );
+          if (isAllowed) continue;
+
+          final content = file.readAsStringSync();
+          if (content.contains('QrImageView(')) {
+            violations.add(file.path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '許可されていない画面で生の QrImageView の直接配置が検出されました。\n'
+              'QRコード共有は統一コンポーネント QrShareDialog または ViewerQrBottomSheet を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }
 

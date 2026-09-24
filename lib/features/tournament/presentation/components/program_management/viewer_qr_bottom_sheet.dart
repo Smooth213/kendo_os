@@ -173,7 +173,58 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
+
+            // URL表示 ＆ コピーフィールド（ダイアログと統一）
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: themeColors.inputBackground,
+                borderRadius: AppRadius.medium,
+                border: Border.all(
+                  color: themeColors.separatorColor.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link, size: 18, color: AppKendoColors.teal),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: SelectableText(
+                      shareUrl,
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.semiBold,
+                        color: themeColors.textColor,
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _isCopied
+                          ? Icons.check_circle_rounded
+                          : Icons.copy_rounded,
+                      size: 18,
+                      color: _isCopied
+                          ? AppKendoColors.teal
+                          : themeColors.textColor,
+                    ),
+                    tooltip: 'URLをコピー',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    onPressed: () => _copyUrl(shareUrl),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
 
             // ワンタップ共有ボタン（LINE・SNS）
             ElevatedButton.icon(
@@ -190,6 +241,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               icon: const Icon(
                 Icons.ios_share,
                 color: AppKendoColors.pureWhite,
+                size: 18,
               ),
               label: const Text(
                 'LINEやSNSで観戦URLを送る',
@@ -204,6 +256,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                 shape: const RoundedRectangleBorder(
                   borderRadius: AppRadius.medium,
                 ),
+                elevation: 0,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),

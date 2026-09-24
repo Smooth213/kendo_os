@@ -14,13 +14,10 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
-
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/qr_share_dialog.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 
 export '../components/large_viewer_scoreboard.dart' show LargeViewerScoreboard;
 
@@ -261,58 +258,21 @@ class ViewerMatchScreen extends ConsumerWidget {
         ? 'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo'
         : 'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo';
 
-    showAppDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク',
-        content: SizedBox(
-          width: 300,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'このリンクを共有すると、\nリアルタイムで観戦できます。',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: AppFontSize.bodySmall),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                color: AppKendoColors.pureWhite,
-                child: QrImageView(
-                  data: shareUrl,
-                  version: QrVersions.auto,
-                  size: 200.0,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton.icon(
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(
-                    text:
-                        '【剣道リアルタイムViewer共有】この試合（コート）のリアルタイム打突一本速報・タイマー状態をその場で確認できます！\n'
-                        'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
-                        '試合速報リンク: $shareUrl',
-                  ),
-                ),
-                icon: const Icon(Icons.ios_share),
-                label: const Text('LINEやSNSでURLを送る'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.blueGrey,
-                  foregroundColor: AppKendoColors.pureWhite,
-                  elevation: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('閉じる'),
-          ),
-        ],
-      ),
+    QrShareDialog.show(
+      context,
+      title: isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク',
+      themeColor: AppKendoColors.teal,
+      description: 'このリンクを共有すると、\nリアルタイムで観戦できます。',
+      shareUrl: shareUrl,
+      subtitleBadge: isBunaiksen
+          ? '部内戦ID: $tournamentId'
+          : '大会ID: $tournamentId',
+      shareText:
+          '【剣道リアルタイムViewer共有】この試合（コート）のリアルタイム打突一本速報・タイマー状態をその場で確認できます！\n'
+          'アプリ名: 剣道リアルタイムViewer共有＋スコア記録 (kendo_os)\n'
+          '試合速報リンク: $shareUrl',
+      shareButtonLabel: 'LINEやSNSでURLを送る',
+      copySuccessMessage: '観戦用URLをクリップボードにコピーしました',
     );
   }
 }

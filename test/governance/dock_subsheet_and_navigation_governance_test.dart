@@ -291,6 +291,12 @@ void main() {
 
       // (C) Google解除
       final unlinkButton = find.text('解除');
+      await tester.scrollUntilVisible(
+        unlinkButton,
+        150,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       expect(unlinkButton, findsOneWidget);
       await tester.tap(unlinkButton);
       await tester.pumpAndSettle();

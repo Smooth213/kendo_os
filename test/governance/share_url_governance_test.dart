@@ -230,6 +230,8 @@ void main() {
               file.path.contains('viewer_qr_bottom_sheet.dart') ||
               file.path.contains('viewer_match_screen.dart') ||
               file.path.contains('p2p_broadcast_dialog.dart') ||
+              file.path.contains('web_app_qr_dialog.dart') ||
+              file.path.contains('settings_screen.dart') ||
               file.path.contains('home_screen.dart');
 
           expect(
