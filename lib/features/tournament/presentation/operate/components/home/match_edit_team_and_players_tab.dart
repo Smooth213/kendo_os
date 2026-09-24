@@ -70,7 +70,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                     child: _buildTextField(
                       controller: redTeamController,
                       label: isDantai ? '赤（RED）チーム名' : '赤（RED）所属・道場名',
-                      hint: isDantai ? '赤チーム名を入力' : '所属名（任意）を入力',
+                      hint: isDantai ? '赤チーム名' : '所属名',
                       isDark: isDark,
                       textColor: AppKendoColors.red,
                     ),
@@ -80,7 +80,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                     child: _buildTextField(
                       controller: whiteTeamController,
                       label: isDantai ? '白（WHITE）チーム名' : '白（WHITE）所属・道場名',
-                      hint: isDantai ? '白チーム名を入力' : '所属名（任意）を入力',
+                      hint: isDantai ? '白チーム名' : '所属名',
                       isDark: isDark,
                       textColor: context.appColors.textColor,
                     ),
@@ -204,6 +204,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
             textColor: textColor,
           );
         }),
+        const SizedBox(height: 80),
       ],
     );
   }
@@ -219,12 +220,17 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: AppFontSize.small,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: AppFontSize.small,
+              fontWeight: AppFontWeight.bold,
+              color: textColor,
+            ),
+            maxLines: 1,
           ),
         ),
         const SizedBox(height: 6),
@@ -236,6 +242,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
             hintText: hint,
             hintStyle: TextStyle(
               color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
+              fontSize: AppFontSize.caption,
             ),
             filled: true,
             fillColor: isDark

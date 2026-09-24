@@ -6,6 +6,8 @@
 ① デザインシステム トークン規約（Hardcoded Color/Spacing排除）
 ② UIレイアウト 5段構造永続保持規約
 ③ テーマ視認性・白飛び黒潰れゼロ規約（コントラスト保証）
+④ デザインシステム・視認性完全防護規約 (全37項目)
+⑤ 文字拡大（標準・大・特大）文字切れ・省略（...）完全防止規約
 """
 
 import subprocess
@@ -16,6 +18,7 @@ SUB_AUDITS = [
     ("② UIレイアウト 5段構造永続保持規約", ["python3", "scripts/check_layout_5tier_governance.py"]),
     ("③ テーマ視認性・白飛び黒潰れゼロ規約", ["python3", "scripts/check_theme_contrast_governance.py"]),
     ("④ デザインシステム・視認性完全防護規約 (全37項目)", ["flutter", "test", "test/governance/design_system_governance_test.dart"]),
+    ("⑤ 文字拡大（標準・大・特大）文字切れ・省略（...）完全防止規約", ["python3", "scripts/check_text_overflow_governance.py"]),
 ]
 
 def main():

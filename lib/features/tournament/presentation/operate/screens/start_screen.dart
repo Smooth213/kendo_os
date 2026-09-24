@@ -55,24 +55,30 @@ class StartScreen extends ConsumerWidget {
               child: Icon(icon, size: 36, color: color),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: AppFontSize.bodyMedium,
-                fontWeight: AppFontWeight.bold,
-                color: textColor,
-                height: 1.3,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppFontSize.bodyMedium,
+                  fontWeight: AppFontWeight.bold,
+                  color: textColor,
+                  height: 1.3,
+                ),
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: AppFontSize.caption,
-                color: subTextColor,
-                fontWeight: AppFontWeight.bold,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  color: subTextColor,
+                  fontWeight: AppFontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -143,13 +149,19 @@ class StartScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Kendo Sync',
-                        style: TextStyle(
-                          fontSize: AppFontSize.heroXxl,
-                          fontWeight: AppFontWeight.bold,
-                          color: AppKendoColors.pureWhite,
-                          letterSpacing: 1.0,
+                      const Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Kendo Sync',
+                            style: TextStyle(
+                              fontSize: AppFontSize.heroXxl,
+                              fontWeight: AppFontWeight.bold,
+                              color: AppKendoColors.pureWhite,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
                         ),
                       ),
                       Row(

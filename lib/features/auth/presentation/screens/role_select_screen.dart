@@ -191,22 +191,27 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
                                                 ),
                                               ),
                                               const SizedBox(height: 2),
-                                              Text(
-                                                displayDojoId,
-                                                style: TextStyle(
-                                                  fontSize: AppFontSize.subhead,
-                                                  fontWeight:
-                                                      AppFontWeight.bold,
-                                                  color: isDark
-                                                      ? context
-                                                            .appColors
-                                                            .textColor
-                                                      : AppKendoColors
-                                                            .indigo
-                                                            .shade900,
-                                                  letterSpacing: 0.8,
+                                              FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  displayDojoId,
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        AppFontSize.subhead,
+                                                    fontWeight:
+                                                        AppFontWeight.bold,
+                                                    color: isDark
+                                                        ? context
+                                                              .appColors
+                                                              .textColor
+                                                        : AppKendoColors
+                                                              .indigo
+                                                              .shade900,
+                                                    letterSpacing: 0.8,
+                                                  ),
+                                                  maxLines: 1,
                                                 ),
-                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
                                           ),
@@ -404,15 +409,18 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
             const SizedBox(width: AppSpacing.sm),
             // 先頭揃えテキスト
             Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppKendoColors.pureWhite,
-                  fontWeight: AppFontWeight.bold,
-                  fontSize: AppFontSize.body,
-                  letterSpacing: 0.2,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: AppKendoColors.pureWhite,
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: AppFontSize.body,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ),

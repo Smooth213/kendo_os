@@ -61,25 +61,31 @@ class ExpeditionCardResultList extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      res.cardTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: AppFontSize.caption,
-                        color: AppKendoColors.grey,
-                        fontWeight: AppFontWeight.bold,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        res.cardTitle,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: AppFontSize.caption,
+                          color: AppKendoColors.grey,
+                          fontWeight: AppFontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      'vs ${res.opponentTeamName}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: AppFontSize.body,
-                        fontWeight: AppFontWeight.bold,
-                        color: context.appColors.textColor,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'vs ${res.opponentTeamName}',
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: AppFontSize.body,
+                          fontWeight: AppFontWeight.bold,
+                          color: context.appColors.textColor,
+                        ),
                       ),
                     ),
                   ],

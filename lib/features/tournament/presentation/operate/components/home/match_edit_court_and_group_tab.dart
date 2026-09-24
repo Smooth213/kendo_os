@@ -219,6 +219,7 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
             onPressed: () => TextInputHelper.insertComma(noteController),
           ),
         ),
+        const SizedBox(height: 80),
       ],
     );
   }

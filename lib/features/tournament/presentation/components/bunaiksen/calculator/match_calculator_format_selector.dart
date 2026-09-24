@@ -67,16 +67,20 @@ class MatchCalculatorFormatSelector extends StatelessWidget {
                             : themeColors.subTextColor,
                       ),
                       const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        format.label,
-                        style: TextStyle(
-                          fontSize: AppFontSize.bodySmall,
-                          fontWeight: isSelected
-                              ? AppFontWeight.bold
-                              : AppFontWeight.medium,
-                          color: isSelected
-                              ? themeColors.onPrimaryAccent
-                              : themeColors.subTextColor,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          format.label,
+                          style: TextStyle(
+                            fontSize: AppFontSize.bodySmall,
+                            fontWeight: isSelected
+                                ? AppFontWeight.bold
+                                : AppFontWeight.medium,
+                            color: isSelected
+                                ? themeColors.onPrimaryAccent
+                                : themeColors.subTextColor,
+                          ),
+                          maxLines: 1,
                         ),
                       ),
                     ],

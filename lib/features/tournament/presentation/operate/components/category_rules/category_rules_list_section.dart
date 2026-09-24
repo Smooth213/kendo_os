@@ -54,7 +54,7 @@ class CategoryRulesListSection extends StatelessWidget {
                 child: AppTextField(
                   controller: newCategoryController,
                   decoration: InputDecoration(
-                    hintText: '部門名を入力（例：小学生低学年の部）',
+                    hintText: '部門名を入力',
                     hintStyle: TextStyle(
                       color: isDark
                           ? AppKendoColors.grey

@@ -35,15 +35,18 @@ class MatchPlayersScoreRow extends StatelessWidget {
       children: [
         // 赤側選手名（100%の横幅を活用して文字切れを完全に防御）
         Expanded(
-          child: Text(
-            redName,
-            style: TextStyle(
-              fontSize: AppFontSize.body,
-              fontWeight: isRedOwn ? AppFontWeight.black : AppFontWeight.bold,
-              color: isRedOwn ? const Color(0xFFD97706) : textColor,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              redName,
+              style: TextStyle(
+                fontSize: AppFontSize.body,
+                fontWeight: isRedOwn ? AppFontWeight.black : AppFontWeight.bold,
+                color: isRedOwn ? const Color(0xFFD97706) : textColor,
+              ),
+              maxLines: 1,
             ),
-            textAlign: TextAlign.start,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
         // 中央スコアマーク（スコアなし時は完全空欄）
@@ -57,15 +60,20 @@ class MatchPlayersScoreRow extends StatelessWidget {
         ),
         // 白側選手名
         Expanded(
-          child: Text(
-            whiteName,
-            style: TextStyle(
-              fontSize: AppFontSize.body,
-              fontWeight: isWhiteOwn ? AppFontWeight.black : AppFontWeight.bold,
-              color: isWhiteOwn ? const Color(0xFFD97706) : textColor,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              whiteName,
+              style: TextStyle(
+                fontSize: AppFontSize.body,
+                fontWeight: isWhiteOwn
+                    ? AppFontWeight.black
+                    : AppFontWeight.bold,
+                color: isWhiteOwn ? const Color(0xFFD97706) : textColor,
+              ),
+              maxLines: 1,
             ),
-            textAlign: TextAlign.end,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

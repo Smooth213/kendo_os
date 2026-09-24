@@ -167,14 +167,17 @@ class SettingsListTile extends StatelessWidget {
         ),
         child: Icon(icon, color: AppKendoColors.pureWhite, size: 20),
       ),
-      title: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: dynamicTextColor,
-          fontSize: AppFontSize.bodyMedium,
-          fontWeight: AppFontWeight.medium,
+      title: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          maxLines: 2,
+          style: TextStyle(
+            color: dynamicTextColor,
+            fontSize: AppFontSize.bodyMedium,
+            fontWeight: AppFontWeight.medium,
+          ),
         ),
       ),
       subtitle: subtitle != null

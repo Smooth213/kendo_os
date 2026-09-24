@@ -110,7 +110,7 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
             ),
             decoration: buildTextFieldDecoration(
               labelText: '試合場・進行の見出し',
-              hintText: '例: 準決勝, 第1試合場, 23試合目',
+              hintText: '例: 準決勝, 第1試合場',
               prefixIcon: Icon(
                 Icons.edit_location_alt,
                 color: themeColors.primaryAccent,

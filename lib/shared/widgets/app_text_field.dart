@@ -9,6 +9,7 @@ class AppTextField extends StatelessWidget {
   final String? initialValue;
   final String? hintText;
   final String? labelText;
+  final Widget? label;
   final String? errorText;
   final String? helperText;
   final TextStyle? helperStyle;
@@ -40,6 +41,7 @@ class AppTextField extends StatelessWidget {
     this.initialValue,
     this.hintText,
     this.labelText,
+    this.label,
     this.errorText,
     this.helperText,
     this.helperStyle,
@@ -92,6 +94,7 @@ class AppTextField extends StatelessWidget {
     final defaultDecoration = InputDecoration(
       hintText: hintText,
       labelText: labelText,
+      label: label,
       errorText: errorText,
       helperText: helperText,
       helperStyle: helperStyle,
@@ -164,11 +167,14 @@ class AppTextField extends StatelessWidget {
           ? defaultDecoration.copyWith(
               hintText: decoration?.hintText ?? hintText,
               labelText: decoration?.labelText ?? labelText,
+              label: decoration?.label ?? label,
               errorText: decoration?.errorText ?? errorText,
               helperText: decoration?.helperText ?? helperText,
               helperStyle: decoration?.helperStyle ?? helperStyle,
               prefixIcon: decoration?.prefixIcon ?? prefixIcon,
               suffixIcon: decoration?.suffixIcon ?? suffixIcon,
+              prefix: decoration?.prefix,
+              suffix: decoration?.suffix,
               contentPadding: decoration?.contentPadding ?? contentPadding,
               border: decoration?.border,
               focusedBorder: decoration?.focusedBorder,
@@ -178,6 +184,8 @@ class AppTextField extends StatelessWidget {
               focusedErrorBorder: decoration?.focusedErrorBorder,
               hintStyle: decoration?.hintStyle,
               labelStyle: decoration?.labelStyle,
+              floatingLabelStyle: decoration?.floatingLabelStyle,
+              floatingLabelBehavior: decoration?.floatingLabelBehavior,
               filled: decoration?.filled,
               fillColor: decoration?.fillColor,
               isDense: decoration?.isDense,

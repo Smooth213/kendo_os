@@ -122,13 +122,17 @@ class TournamentHeaderCard extends ConsumerWidget {
                 Icon(Icons.location_on, color: subTextColor, size: 16),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text(
-                    tournament.venue,
-                    style: TextStyle(
-                      color: subTextColor,
-                      fontSize: AppFontSize.bodySmall,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      tournament.venue,
+                      style: TextStyle(
+                        color: subTextColor,
+                        fontSize: AppFontSize.bodySmall,
+                      ),
+                      maxLines: 1,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

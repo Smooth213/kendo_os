@@ -44,11 +44,15 @@ class HomeScreenCallBanner extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (match.note.isNotEmpty)
-          Text(
-            match.note,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: textColor.withValues(alpha: 0.7),
-              fontWeight: AppFontWeight.bold,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              match.note,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: textColor.withValues(alpha: 0.7),
+                fontWeight: AppFontWeight.bold,
+              ),
+              maxLines: 1,
             ),
           ),
         Row(
@@ -63,13 +67,17 @@ class HomeScreenCallBanner extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.md),
             Flexible(
-              child: Text(
-                _getMatchTitle(match),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: textColor,
-                  fontWeight: AppFontWeight.bold,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _getMatchTitle(match),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: textColor,
+                    fontWeight: AppFontWeight.bold,
+                  ),
+                  maxLines: 1,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

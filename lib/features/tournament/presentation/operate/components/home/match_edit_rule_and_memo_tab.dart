@@ -486,6 +486,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           onLossPointChanged: onLossPointChanged,
           onDrawPointChanged: onDrawPointChanged,
         ),
+        const SizedBox(height: 80),
       ],
     );
   }

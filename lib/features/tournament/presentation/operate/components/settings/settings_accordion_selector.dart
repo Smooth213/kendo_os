@@ -70,7 +70,7 @@ class _SettingsAccordionSelectorState<T>
           ),
           title: Text(
             widget.title,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: AppFontSize.bodyMedium,
@@ -95,12 +95,17 @@ class _SettingsAccordionSelectorState<T>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    currentItem.label,
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      fontWeight: AppFontWeight.bold,
-                      color: themeColors.textColor,
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        currentItem.label,
+                        style: TextStyle(
+                          fontSize: AppFontSize.bodySmall,
+                          fontWeight: AppFontWeight.bold,
+                          color: themeColors.textColor,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),

@@ -76,15 +76,20 @@ class NewMatchHeadingNotesCard extends StatelessWidget {
                     ? AppKendoColors.cyanAccent
                     : const Color(0xFF3F51B5),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                '試合場・進行見出しの設定',
-                style: TextStyle(
-                  fontWeight: AppFontWeight.bold,
-                  color: context.appColors.textColor,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '試合場・進行見出しの設定',
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      color: context.appColors.textColor,
+                    ),
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: AppSpacing.sm),
               if (courtController.text.isNotEmpty)
                 TextButton.icon(
                   icon: const Icon(Icons.clear, size: 14),
@@ -113,7 +118,7 @@ class NewMatchHeadingNotesCard extends StatelessWidget {
             ),
             decoration: InputDecoration(
               labelText: '試合場・進行の見出し',
-              hintText: '例: 準決勝, 第1試合場, 23試合目',
+              hintText: '例: 準決勝, 第1試合場',
               hintStyle: const TextStyle(fontSize: AppFontSize.bodyMedium),
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
@@ -229,16 +234,23 @@ class NewMatchHeadingNotesCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '📝 試合のメモ・詳細コメント',
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  fontWeight: AppFontWeight.bold,
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xDE000000),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '📝 試合のメモ・詳細コメント',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      fontWeight: AppFontWeight.bold,
+                      color: isDark
+                          ? const Color(0xFFFFFFFF)
+                          : const Color(0xDE000000),
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(width: AppSpacing.xs),
               TextButton.icon(
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(

@@ -75,7 +75,11 @@ class _NewMatchSmartAutocompleteState extends State<NewMatchSmartAutocomplete> {
               },
               style: TextStyle(color: context.appColors.textColor),
               decoration: InputDecoration(
-                labelText: widget.labelText,
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(widget.labelText),
+                ),
                 prefixIcon: const Icon(
                   Icons.person,
                   color: AppKendoColors.blueGrey,

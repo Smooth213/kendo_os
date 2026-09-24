@@ -31,6 +31,8 @@ echo ""
 # 3. 単体・E2Eテスト
 echo "🧪 [Step 3/3] 単体・結合・E2Eテストを実行中..."
 flutter test test/governance/design_system_governance_test.dart \
+             test/governance/text_scale_overflow_governance_test.dart \
+             test/widget/all_screens_text_scale_no_overflow_test.dart \
              test/governance/cross_platform_parity_governance_test.dart \
              test/governance/ui_rebuild_governance_test.dart \
              test/governance/rendering_boundary_governance_test.dart \

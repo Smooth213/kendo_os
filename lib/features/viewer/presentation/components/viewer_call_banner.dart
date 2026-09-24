@@ -46,12 +46,16 @@ class ViewerCallBanner extends StatelessWidget {
     return Column(
       children: [
         if (match.note.isNotEmpty)
-          Text(
-            match.note,
-            style: TextStyle(
-              color: textColor.withValues(alpha: 0.7),
-              fontSize: AppFontSize.small,
-              fontWeight: AppFontWeight.bold,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              match.note,
+              style: TextStyle(
+                color: textColor.withValues(alpha: 0.7),
+                fontSize: AppFontSize.small,
+                fontWeight: AppFontWeight.bold,
+              ),
+              maxLines: 1,
             ),
           ),
         Row(
@@ -66,14 +70,17 @@ class ViewerCallBanner extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.md),
             Flexible(
-              child: Text(
-                _getMatchTitle(match),
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: AppFontSize.headline,
-                  fontWeight: AppFontWeight.bold,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _getMatchTitle(match),
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: AppFontSize.headline,
+                    fontWeight: AppFontWeight.bold,
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

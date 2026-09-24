@@ -208,14 +208,18 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                '🔴 試合中: vs $opponent',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: AppKendoColors.hansokuRed,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '🔴 試合中: vs $opponent',
+                  style: TextStyle(
+                    fontSize: AppFontSize.bodySmall,
+                    fontWeight: AppFontWeight.bold,
+                    color: AppKendoColors.hansokuRed,
+                  ),
+                  maxLines: 1,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
@@ -252,14 +256,18 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                '⏳ 次の出番: vs $opponent',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: context.appColors.warningColor,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '⏳ 次の出番: vs $opponent',
+                  style: TextStyle(
+                    fontSize: AppFontSize.bodySmall,
+                    fontWeight: AppFontWeight.bold,
+                    color: context.appColors.warningColor,
+                  ),
+                  maxLines: 1,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

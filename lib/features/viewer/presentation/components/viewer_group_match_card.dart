@@ -206,19 +206,23 @@ class ViewerGroupMatchCard extends ConsumerWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                matchLabel.contains('リーグ戦')
-                                    ? generateDescriptiveLeagueTitle(
-                                        groupList,
-                                        ownTeams,
-                                      )
-                                    : '$rTeam vs $wTeam',
-                                style: TextStyle(
-                                  fontSize: AppFontSize.subhead,
-                                  fontWeight: AppFontWeight.bold,
-                                  color: titleColor,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  matchLabel.contains('リーグ戦')
+                                      ? generateDescriptiveLeagueTitle(
+                                          groupList,
+                                          ownTeams,
+                                        )
+                                      : '$rTeam vs $wTeam',
+                                  style: TextStyle(
+                                    fontSize: AppFontSize.subhead,
+                                    fontWeight: AppFontWeight.bold,
+                                    color: titleColor,
+                                  ),
+                                  maxLines: 1,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -231,12 +235,17 @@ class ViewerGroupMatchCard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.xxs,
                           ),
-                          child: Text(
-                            firstMatch.note,
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              color: subTitleColor,
-                              fontWeight: AppFontWeight.medium,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              firstMatch.note,
+                              style: TextStyle(
+                                fontSize: AppFontSize.caption,
+                                color: subTitleColor,
+                                fontWeight: AppFontWeight.medium,
+                              ),
+                              maxLines: 1,
                             ),
                           ),
                         ),

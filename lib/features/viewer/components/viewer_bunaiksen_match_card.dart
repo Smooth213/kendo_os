@@ -171,14 +171,18 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
                 Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        match.note.isNotEmpty ? match.note : '部内稽古',
-                        style: TextStyle(
-                          fontSize: AppFontSize.caption,
-                          color: noteC,
-                          fontWeight: AppFontWeight.bold,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          match.note.isNotEmpty ? match.note : '部内稽古',
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            color: noteC,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                          maxLines: 1,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const Spacer(),
@@ -203,15 +207,18 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        match.redName,
-                        style: TextStyle(
-                          fontSize: AppFontSize.subhead,
-                          fontWeight: AppFontWeight.bold,
-                          color: textC,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          match.redName,
+                          style: TextStyle(
+                            fontSize: AppFontSize.subhead,
+                            fontWeight: AppFontWeight.bold,
+                            color: textC,
+                          ),
+                          textAlign: TextAlign.right,
                         ),
-                        textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Padding(
@@ -234,15 +241,18 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
                             ),
                     ),
                     Expanded(
-                      child: Text(
-                        match.whiteName,
-                        style: TextStyle(
-                          fontSize: AppFontSize.subhead,
-                          fontWeight: AppFontWeight.bold,
-                          color: textC,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          match.whiteName,
+                          style: TextStyle(
+                            fontSize: AppFontSize.subhead,
+                            fontWeight: AppFontWeight.bold,
+                            color: textC,
+                          ),
+                          textAlign: TextAlign.left,
                         ),
-                        textAlign: TextAlign.left,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

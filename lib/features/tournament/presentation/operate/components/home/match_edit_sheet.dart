@@ -134,9 +134,18 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
             labelColor: themeColors.primaryAccent,
             unselectedLabelColor: context.appColors.subTextColor,
             tabs: const [
-              Tab(icon: Icon(Icons.people_outline), text: '対戦・選手'),
-              Tab(icon: Icon(Icons.location_on_outlined), text: 'コート・メモ'),
-              Tab(icon: Icon(Icons.tune), text: '一括ルール'),
+              Tab(
+                icon: Icon(Icons.people_outline),
+                child: FittedBox(fit: BoxFit.scaleDown, child: Text('対戦・選手')),
+              ),
+              Tab(
+                icon: Icon(Icons.location_on_outlined),
+                child: FittedBox(fit: BoxFit.scaleDown, child: Text('コート・メモ')),
+              ),
+              Tab(
+                icon: Icon(Icons.tune),
+                child: FittedBox(fit: BoxFit.scaleDown, child: Text('一括ルール')),
+              ),
             ],
           ),
 

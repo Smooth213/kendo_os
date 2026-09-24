@@ -27,31 +27,39 @@ class MatchTeamHeaderRow extends StatelessWidget {
       children: [
         // 赤側チーム名
         Expanded(
-          child: Text(
-            rDisplay,
-            style: TextStyle(
-              fontSize: AppFontSize.badge,
-              color: isRedOwn ? const Color(0xFFD97706) : textColor,
-              fontWeight: isRedOwn ? AppFontWeight.bold : AppFontWeight.medium,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              rDisplay,
+              style: TextStyle(
+                fontSize: AppFontSize.badge,
+                color: isRedOwn ? const Color(0xFFD97706) : textColor,
+                fontWeight: isRedOwn
+                    ? AppFontWeight.bold
+                    : AppFontWeight.medium,
+              ),
+              maxLines: 1,
             ),
-            textAlign: TextAlign.start,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(width: AppSpacing.xxl),
         // 白側チーム名
         Expanded(
-          child: Text(
-            wDisplay,
-            style: TextStyle(
-              fontSize: AppFontSize.badge,
-              color: isWhiteOwn ? const Color(0xFFD97706) : textColor,
-              fontWeight: isWhiteOwn
-                  ? AppFontWeight.bold
-                  : AppFontWeight.medium,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              wDisplay,
+              style: TextStyle(
+                fontSize: AppFontSize.badge,
+                color: isWhiteOwn ? const Color(0xFFD97706) : textColor,
+                fontWeight: isWhiteOwn
+                    ? AppFontWeight.bold
+                    : AppFontWeight.medium,
+              ),
+              maxLines: 1,
             ),
-            textAlign: TextAlign.end,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

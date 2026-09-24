@@ -75,14 +75,18 @@ class DockBottomSheetHeader extends StatelessWidget {
                       Icon(icon, size: 20, color: effectiveIconColor),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
-                        child: Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: AppFontSize.subhead,
-                            fontWeight: AppFontWeight.bold,
-                            color: themeColors.textColor,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: AppFontSize.subhead,
+                              fontWeight: AppFontWeight.bold,
+                              color: themeColors.textColor,
+                            ),
+                            maxLines: 1,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
