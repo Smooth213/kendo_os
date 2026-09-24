@@ -105,6 +105,9 @@ class TimelineGroupChildrenBuilder {
     }
 
     if (label.contains('リーグ戦') && label.contains('個人戦')) {
+      final sortedNormalItems = normalItems.cast<TimelineItem>().toList()
+        ..sort((a, b) => b.timelineOrder.compareTo(a.timelineOrder));
+
       childrenWidgets.add(
         ReorderableListView(
           shrinkWrap: true,
@@ -112,13 +115,16 @@ class TimelineGroupChildrenBuilder {
           buildDefaultDragHandles: !isReadOnlyUI,
           onReorderItem: (oldIndex, newIndex) =>
               TimelineReorderHelper.onReorderInnerTimeline(
-                normalItems.cast<TimelineItem>(),
+                sortedNormalItems,
                 oldIndex,
                 newIndex,
                 ref,
               ),
-          children: normalItems
-              .map<Widget?>((i) {
+          children: sortedNormalItems
+              .asMap()
+              .entries
+              .map<Widget?>((entry) {
+                final i = entry.value;
                 if (i is MatchModel) {
                   return Container(
                     key: ValueKey(i.id),
@@ -135,6 +141,7 @@ class TimelineGroupChildrenBuilder {
                       permissions: permissions,
                       isDark: isDark,
                       ref: ref,
+                      index: entry.key,
                     ),
                   );
                 }

@@ -203,109 +203,62 @@ class MatchFormatRuleStep extends ConsumerWidget {
       final ruleKey = entry.key;
       final rSet = entry.value;
 
-      String titlePrefix;
-      if (isMultipleRules) {
-        if (rSet.subtitle.trim().isNotEmpty) {
-          titlePrefix = rSet.subtitle.trim();
-        } else {
-          titlePrefix = CategoryRuleMatchHelper.resolveDisplayCategory(
-            category: ruleKey,
-            subtitle: '',
-            allCategoryRules: allCategoryRules,
-          );
-        }
-      } else {
-        titlePrefix = '';
-      }
+      final titlePrefix = isMultipleRules
+          ? (rSet.subtitle.trim().isNotEmpty
+                ? rSet.subtitle.trim()
+                : CategoryRuleMatchHelper.resolveDisplayCategory(
+                    category: ruleKey,
+                    subtitle: '',
+                    allCategoryRules: allCategoryRules,
+                  ))
+          : '';
 
-      if (rSet.isMultiScene) {
-        if (rSet.useRenseikaiRule) {
-          final label = titlePrefix.isNotEmpty
-              ? '⚔️ $titlePrefix（錬成）'
-              : '⚔️ 錬成ルール';
-          final isSelected =
-              effectiveRuleKey == ruleKey && selectedRuleScene == 'renseikai';
-          ruleChips.add(
-            AppChoiceChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  _triggerRuleSelection(ruleKey, 'renseikai', rSet);
-                }
-              },
-            ),
-          );
-        }
-        if (rSet.useHonsenRule) {
-          final label = titlePrefix.isNotEmpty
-              ? '🏆 $titlePrefix（本戦）'
-              : '🏆 本戦ルール';
-          final isSelected =
-              effectiveRuleKey == ruleKey && selectedRuleScene == 'honsen';
-          ruleChips.add(
-            AppChoiceChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  _triggerRuleSelection(ruleKey, 'honsen', rSet);
-                }
-              },
-            ),
-          );
-        }
-        if (rSet.useMoushiawaseRule) {
-          final label = titlePrefix.isNotEmpty
-              ? '🤝 $titlePrefix（申合せ）'
-              : '🤝 申合せルール';
-          final isSelected =
-              effectiveRuleKey == ruleKey && selectedRuleScene == 'moushiawase';
-          ruleChips.add(
-            AppChoiceChip(
-              label: Text(label),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  _triggerRuleSelection(ruleKey, 'moushiawase', rSet);
-                }
-              },
-            ),
-          );
-        }
-      } else if (rSet.useHonsenRule) {
-        final label = titlePrefix.isNotEmpty ? '🏆 $titlePrefix' : '🏆 通常戦ルール';
+      void addChip({required String scene, required String label}) {
         final isSelected =
-            effectiveRuleKey == ruleKey && selectedRuleScene == 'honsen';
+            effectiveRuleKey == ruleKey && selectedRuleScene == scene;
         ruleChips.add(
           AppChoiceChip(
             label: Text(label),
             selected: isSelected,
             onSelected: (selected) {
-              if (selected) {
-                _triggerRuleSelection(ruleKey, 'honsen', rSet);
-              }
+              if (selected) _triggerRuleSelection(ruleKey, scene, rSet);
             },
           ),
         );
       }
 
+      if (rSet.isMultiScene) {
+        if (rSet.useRenseikaiRule) {
+          addChip(
+            scene: 'renseikai',
+            label: titlePrefix.isNotEmpty ? '⚔️ $titlePrefix（錬成）' : '⚔️ 錬成ルール',
+          );
+        }
+        if (rSet.useHonsenRule) {
+          addChip(
+            scene: 'honsen',
+            label: titlePrefix.isNotEmpty ? '🏆 $titlePrefix（本戦）' : '🏆 本戦ルール',
+          );
+        }
+        if (rSet.useMoushiawaseRule) {
+          addChip(
+            scene: 'moushiawase',
+            label: titlePrefix.isNotEmpty
+                ? '🤝 $titlePrefix（申合せ）'
+                : '🤝 申合せルール',
+          );
+        }
+      } else if (rSet.useHonsenRule) {
+        addChip(
+          scene: 'honsen',
+          label: titlePrefix.isNotEmpty ? '🏆 $titlePrefix' : '🏆 通常戦ルール',
+        );
+      }
+
       if (rSet.useAdvancedRule) {
-        final label = titlePrefix.isNotEmpty
-            ? '⭐ $titlePrefix（上位戦）'
-            : '⭐ 上位戦ルール';
-        final isSelected =
-            effectiveRuleKey == ruleKey && selectedRuleScene == 'advanced';
-        ruleChips.add(
-          AppChoiceChip(
-            label: Text(label),
-            selected: isSelected,
-            onSelected: (selected) {
-              if (selected) {
-                _triggerRuleSelection(ruleKey, 'advanced', rSet);
-              }
-            },
-          ),
+        addChip(
+          scene: 'advanced',
+          label: titlePrefix.isNotEmpty ? '⭐ $titlePrefix（上位戦）' : '⭐ 上位戦ルール',
         );
       }
     }

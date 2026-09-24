@@ -120,6 +120,8 @@ class CategoryRuleChips extends StatelessWidget {
                 label:
                     '⏱️ ${formatMinutes(ruleSet.renseikaiRule.matchTimeMinutes)}',
               ),
+              if (ruleSet.renseikaiRule.isIpponShobu)
+                _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
               if (ruleSet.renseikaiRule.isRunningTime)
                 _buildDetailBadge(context: context, label: '🔄 通し'),
               if (ruleSet.renseikaiRule.hasHantei)
@@ -148,6 +150,10 @@ class CategoryRuleChips extends StatelessWidget {
                 label:
                     '⏱️ ${formatMinutes(ruleSet.normalRule.matchTimeMinutes)}',
               ),
+              if (ruleSet.normalRule.isIpponShobu)
+                _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
+              if (ruleSet.normalRule.isRunningTime)
+                _buildDetailBadge(context: context, label: '🔄 通し'),
               if (ruleSet.normalRule.hasRepresentativeMatch &&
                   !isHonsenIndividual)
                 _buildDetailBadge(context: context, label: '🥋 代表戦有'),
@@ -186,6 +192,8 @@ class CategoryRuleChips extends StatelessWidget {
                 label:
                     '⏱️ ${formatMinutes(ruleSet.moushiawaseRule.matchTimeMinutes)}',
               ),
+              if (ruleSet.moushiawaseRule.isIpponShobu)
+                _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
               if (ruleSet.moushiawaseRule.isRunningTime)
                 _buildDetailBadge(context: context, label: '🔄 通し'),
               if (ruleSet.moushiawaseRule.hasHantei)
@@ -256,6 +264,13 @@ class CategoryRuleChips extends StatelessWidget {
                   label:
                       '⏱️ ${formatMinutes(ruleSet.advancedRule.matchTimeMinutes)}',
                 ),
+                if (ruleSet.advancedRule.isIpponShobu)
+                  _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
+                if (ruleSet.advancedRule.isRunningTime)
+                  _buildDetailBadge(context: context, label: '🔄 通し'),
+                if (ruleSet.advancedRule.hasRepresentativeMatch &&
+                    !isIndividual)
+                  _buildDetailBadge(context: context, label: '🥋 代表戦有'),
                 if (isIndividual &&
                     (ruleSet.advancedRule.isEnchoUnlimited ||
                         ruleSet.advancedRule.enchoCount > 0))

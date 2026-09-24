@@ -100,6 +100,7 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       normalKachinukiUnlimitedType: formState.normalKachinukiUnlimitedType,
       normalHasLeagueDaihyo: formState.normalHasLeagueDaihyo,
       normalIsDaihyoIpponShobu: formState.normalIsDaihyoIpponShobu,
+      normalIsIpponShobu: formState.normalIsIpponShobu,
       normalWinPoint: formState.normalWinPoint,
       normalLossPoint: formState.normalLossPoint,
       normalDrawPoint: formState.normalDrawPoint,
@@ -112,6 +113,7 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       normalDaihyoHasHantei: formState.normalDaihyoHasHantei,
       advancedTime: formState.advancedTime,
       advancedIsRunningTime: formState.advancedIsRunningTime,
+      advancedIsIpponShobu: formState.advancedIsIpponShobu,
       advancedIpponLimit: formState.advancedIpponLimit,
       advancedHansokuLimit: formState.advancedHansokuLimit,
       advancedHasHantei: formState.advancedHasHantei,
@@ -183,6 +185,10 @@ class CategoryRuleEditorContainer extends StatelessWidget {
         formState.normalIpponLimit = val;
         formState.normalIsIpponShobu = (val == 1);
       }),
+      onNormalIsIpponShobuChanged: (val) => setState(() {
+        formState.normalIsIpponShobu = val;
+        formState.normalIpponLimit = val ? 1 : 2;
+      }),
       onNormalHansokuLimitChanged: (val) =>
           setState(() => formState.normalHansokuLimit = val),
       onAdvancedMatchTimeChanged: (val) =>
@@ -228,6 +234,10 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       onAdvancedIpponLimitChanged: (val) => setState(() {
         formState.advancedIpponLimit = val;
         formState.advancedIsIpponShobu = (val == 1);
+      }),
+      onAdvancedIsIpponShobuChanged: (val) => setState(() {
+        formState.advancedIsIpponShobu = val;
+        formState.advancedIpponLimit = val ? 1 : 2;
       }),
       onAdvancedHansokuLimitChanged: (val) =>
           setState(() => formState.advancedHansokuLimit = val),

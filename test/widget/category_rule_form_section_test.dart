@@ -65,6 +65,8 @@ void main() {
               onDrawPointChanged: (_) {},
               onIpponLimitChanged: (_) {},
               onHansokuLimitChanged: (_) {},
+              isIpponShobu: false,
+              onIsIpponShobuChanged: (_) {},
               onKeywordsChanged: (_) {},
             ),
           ),

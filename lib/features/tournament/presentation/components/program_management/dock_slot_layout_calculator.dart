@@ -69,6 +69,8 @@ class DockSlotLayoutCalculator {
         return Offset(dirX * step * 2.0, 0.0);
       case 6:
         return Offset(dirX * step * 3.0, 0.0);
+      case 7:
+        return Offset(dirX * step * 4.0, 0.0);
       default:
         return Offset(
           dirX * step * ((index ~/ 4) + 1),

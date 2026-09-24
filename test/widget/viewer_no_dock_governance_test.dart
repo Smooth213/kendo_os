@@ -138,7 +138,8 @@ void main() {
         // テーマの切り替えタイル
         expect(find.text('テーマの切り替え'), findsOneWidget);
         // 省エネモード（背景アニメーション停止）
-        expect(find.text('省エネモード（背景アニメーション停止）'), findsOneWidget);
+        expect(find.text('省エネモード'), findsOneWidget);
+        expect(find.text('背景アニメーション停止'), findsOneWidget);
         expect(find.byIcon(Icons.eco), findsOneWidget);
         // サーマル冷却・省電力制御
         expect(find.text('サーマル冷却・省電力制御'), findsOneWidget);

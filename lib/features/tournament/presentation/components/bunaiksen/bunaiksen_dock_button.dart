@@ -13,6 +13,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_dock_items_order_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
@@ -193,6 +194,13 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
         break;
       case BunaiksenDockItemType.calculator:
         BunaiksenDockCalculatorSheet.show(context);
+        break;
+      case BunaiksenDockItemType.viewerQr:
+        ViewerQrBottomSheet.show(
+          context,
+          tournamentId: widget.tournamentId,
+          isViewerMode: widget.isViewerMode,
+        );
         break;
       case BunaiksenDockItemType.settings:
         FloatingDockSheetManager.show(

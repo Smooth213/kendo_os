@@ -87,6 +87,20 @@ class TimelineTeamCard extends ConsumerWidget {
       );
     }
 
+    for (var entry in sortedPlayers) {
+      final playerComments = comments
+          .where(
+            (c) =>
+                c.category == categoryName &&
+                c.groupName == teamName &&
+                c.matchGroupId == entry.key,
+          )
+          .toList();
+      timelineItems.add(
+        IndividualPlayerTimelineItem(entry.key, entry.value, playerComments),
+      );
+    }
+
     final teamComments = comments
         .where(
           (c) =>
@@ -231,8 +245,14 @@ class TimelineTeamCard extends ConsumerWidget {
                 ),
             children: (() {
               String lastGroupLabel = '';
+              bool playerHeaderShown = false;
               return timelineItems
-                  .map<Widget?>((item) {
+                  .asMap()
+                  .entries
+                  .map<Widget?>((itemEntry) {
+                    final index = itemEntry.key;
+                    final item = itemEntry.value;
+
                     if (item is CommentTimelineItem) {
                       return TimelineCommentSlidableTile(
                         key: ValueKey('comment_${item.comment.id}'),
@@ -240,6 +260,7 @@ class TimelineTeamCard extends ConsumerWidget {
                         tournamentId: tournamentId,
                         isDark: isDark,
                         ref: ref,
+                        index: index,
                       );
                     } else if (item is MatchGroupTimelineItem) {
                       final entry = MapEntry(item.groupId, item.matches);
@@ -292,6 +313,52 @@ class TimelineTeamCard extends ConsumerWidget {
                         tournamentId: tournamentId,
                         ownTeams: ownTeams,
                       );
+                    } else if (item is IndividualPlayerTimelineItem) {
+                      Widget? headerWidget;
+                      if (!playerHeaderShown) {
+                        headerWidget = Padding(
+                          padding: const EdgeInsets.only(
+                            left: AppSpacing.lg,
+                            top: AppSpacing.md,
+                            bottom: AppSpacing.xs,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                sanitizedQuery.isNotEmpty
+                                    ? Icons.manage_search
+                                    : Icons.person,
+                                color: const Color(0xFFFF9800),
+                                size: 16,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                sanitizedQuery.isNotEmpty ? '抽出された個別試合' : '個人戦',
+                                style: const TextStyle(
+                                  fontSize: AppFontSize.bodySmall,
+                                  fontWeight: AppFontWeight.bold,
+                                  color: Color(0xFFFF9800),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        playerHeaderShown = true;
+                      }
+
+                      return TimelineIndividualPlayerCard(
+                        key: ValueKey('player_card_${item.playerName}'),
+                        playerName: item.playerName,
+                        playerMatches: item.matches,
+                        playerComments: item.comments,
+                        categoryName: categoryName,
+                        teamName: teamName,
+                        headerWidget: headerWidget,
+                        tournamentId: tournamentId,
+                        isReadOnlyUI: isReadOnlyUI,
+                        isDark: isDark,
+                        permissions: permissions,
+                      );
                     }
                     return null;
                   })
@@ -299,58 +366,6 @@ class TimelineTeamCard extends ConsumerWidget {
                   .toList();
             })(),
           ),
-          if (sortedPlayers.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.lg,
-                top: AppSpacing.xs,
-                bottom: AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    sanitizedQuery.isNotEmpty
-                        ? Icons.manage_search
-                        : Icons.person,
-                    color: const Color(0xFFFF9800),
-                    size: 16,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    sanitizedQuery.isNotEmpty ? '抽出された個別試合' : '個人戦',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      fontWeight: AppFontWeight.bold,
-                      color: Color(0xFFFF9800),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ...sortedPlayers.map((playerEntry) {
-              final playerName = playerEntry.key;
-              final playerMatches = playerEntry.value;
-              final playerComments = comments
-                  .where(
-                    (c) =>
-                        c.category == categoryName &&
-                        c.groupName == teamName &&
-                        c.matchGroupId == playerName,
-                  )
-                  .toList();
-
-              return TimelineIndividualPlayerCard(
-                playerName: playerName,
-                playerMatches: playerMatches,
-                playerComments: playerComments,
-                categoryName: categoryName,
-                teamName: teamName,
-                isReadOnlyUI: isReadOnlyUI,
-                isDark: isDark,
-                permissions: permissions,
-              );
-            }),
-          ],
           const SizedBox(height: AppSpacing.sm),
         ],
       ),

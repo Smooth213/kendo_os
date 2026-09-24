@@ -240,8 +240,8 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.id, 'm1');
       expect(
         fakeMatchAppService.savedMatches!.first.order,
-        30.0 - 100.0,
-      ); // newOrderBase: list.first(m3: 30.0) - 100.0
+        30.0 + 100.0,
+      ); // 降順ソートのため先頭への移動は remaining.first (m3: 30.0) + 100.0
     });
 
     testWidgets('2. 団体戦の並び替え (_onReorderTimeline)', (
@@ -320,8 +320,8 @@ void main() {
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
       expect(fakeMatchAppService.savedMatches!.first.id, 'm3_1');
-      // newOrder = 10.0 + 100 = 110.0
-      expect(fakeMatchAppService.savedMatches!.first.order, 110.0);
+      // 降順ソートのため末尾への移動は remaining.last.order (group1: 10.0) - 100.0 = -90.0
+      expect(fakeMatchAppService.savedMatches!.first.order, -90.0);
     });
 
     testWidgets('3. リーグ個人戦の並び替え (_onReorderInnerTimeline)', (
@@ -385,7 +385,8 @@ void main() {
 
       expect(fakeMatchAppService.savedMatches, isNotNull);
       expect(fakeMatchAppService.savedMatches!.first.id, 'm2');
-      expect(fakeMatchAppService.savedMatches!.first.order, 10.0 - 100.0);
+      // 降順ソートのため先頭への移動は remaining.first.timelineOrder (m3: 30.0) + 100.0 = 130.0
+      expect(fakeMatchAppService.savedMatches!.first.order, 130.0);
     });
 
     testWidgets('4. リーグ団体戦の並び替え不可仕様の確認 (Column固定)', (

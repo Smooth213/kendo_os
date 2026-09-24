@@ -24,7 +24,8 @@ void main() {
 
       expect(find.text('表示設定'), findsOneWidget);
       expect(find.text('テーマの切り替え'), findsOneWidget);
-      expect(find.text('省エネモード（背景アニメーション停止）'), findsOneWidget);
+      expect(find.text('省エネモード'), findsOneWidget);
+      expect(find.text('背景アニメーション停止'), findsOneWidget);
       expect(find.text('サーマル冷却・省電力制御'), findsOneWidget);
     });
   });

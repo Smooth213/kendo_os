@@ -265,11 +265,12 @@ void main() {
         await tester.pump();
 
         // Verify settings screen is rendered and has the correct title
-        expect(find.text('省エネモード（背景アニメーション停止）'), findsOneWidget);
+        expect(find.text('省エネモード'), findsOneWidget);
+        expect(find.text('背景アニメーション停止'), findsOneWidget);
 
         // Find the specific switch tile by using descendant finders
         final ecoModeTileFinder = find.ancestor(
-          of: find.text('省エネモード（背景アニメーション停止）'),
+          of: find.text('省エネモード'),
           matching: find.byType(ListTile),
         );
         final switchInTileFinder = find.descendant(

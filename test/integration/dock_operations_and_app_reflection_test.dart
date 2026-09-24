@@ -389,6 +389,34 @@ void main() {
       await FloatingDockSheetManager.close(immediate: true);
       await tester.pumpAndSettle();
     });
+
+    testWidgets('5. 観戦QRタップでViewerQrBottomSheetが展開されること', (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        buildAppWithDock(
+          dockWidget: const BunaiksenDockButton(
+            tournamentId: 'bunaiksen_test_1',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(DockParentButton));
+      await tester.pumpAndSettle();
+
+      final qrIcon = find.byIcon(Icons.qr_code_2_rounded);
+      expect(qrIcon, findsOneWidget);
+      await tester.tap(qrIcon);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ViewerQrBottomSheet), findsOneWidget);
+
+      await FloatingDockSheetManager.close(immediate: true);
+      await tester.pumpAndSettle();
+    });
   });
 
   group('🥋 ドック並び替え: ドラッグスワップ＆アプリ即時反映 保証テスト', () {
@@ -500,7 +528,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final initialOrder = capturedRef.read(bunaiksenDockItemsOrderProvider);
-      expect(initialOrder.length, 7);
+      expect(initialOrder.length, 8);
 
       // サブアイテム長押し ➔ 編集モード突入
       final firstSub = find.byType(BunaiksenSubItemButton).first;

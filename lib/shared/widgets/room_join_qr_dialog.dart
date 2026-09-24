@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +10,7 @@ import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/room_join_validator.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog_actions.dart';
 import 'package:kendo_os/shared/widgets/room_join_duplicate_warning_dialog.dart';
@@ -21,14 +21,19 @@ final roomFirestoreProvider = Provider<FirebaseFirestore>(
 );
 
 /// 保護者端末や会場配置モニターを、特定の道場同期空間（organizationId）へ
-/// 最速かつ迷わせずに直結させるための、QR・手動入力統合ダイアログ。
+/// 最速かつ迷わせずに直結させるための、QR・手動入力統合シート。
+/// （※ 選手マスタ登録シートと同様に、キーボード追従型ボトムシートとして堅牢に稼働）
 class RoomJoinQrDialog extends ConsumerStatefulWidget {
   const RoomJoinQrDialog({super.key});
 
   static void show(BuildContext context) {
-    showAppDialog(
+    showAppBottomSheet(
       context: context,
-      barrierDismissible: true,
+      isScrollControlled: true,
+      enableDrag: false,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.90,
+      ),
       builder: (context) => const RoomJoinQrDialog(),
     );
   }
@@ -44,7 +49,24 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (_focusNode.hasFocus) {
+      _codeController.value = TextEditingValue(
+        text: _codeController.text,
+        selection: _codeController.selection,
+      );
+    }
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
     _codeController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -134,8 +156,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBgColor = isDark
-        ? const Color(0xFF1E293B).withValues(alpha: 0.95)
-        : const Color(0xFFFFFFFF).withValues(alpha: 0.95);
+        ? const Color(0xFF1E293B)
+        : const Color(0xFFFFFFFF);
     final textColor = context.appColors.textColor;
     final subTextColor = context.appColors.subTextColor;
     final borderColor = isDark
@@ -145,207 +167,214 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         ? const Color(0xFF0F172A)
         : const Color(0xFFF8FAFC);
 
-    return Dialog(
-      backgroundColor: AppKendoColors.transparent,
-      elevation: 0,
-      child: ClipRRect(
-        borderRadius: AppRadius.xlarge,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl,
-              vertical: 18,
-            ),
-            decoration: BoxDecoration(
-              color: cardBgColor,
-              borderRadius: AppRadius.xlarge,
-              border: Border.all(color: borderColor, width: 1.5),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '道場ルームへの参加',
-                    style: TextStyle(
-                      fontSize: AppFontSize.header,
-                      fontWeight: AppFontWeight.bold,
-                      color: textColor,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Container(
-                    width: 130,
-                    height: 130,
-                    decoration: const BoxDecoration(
-                      color: AppKendoColors.pureWhite,
-                      borderRadius: AppRadius.large,
-                    ),
-                    child: const Icon(
-                      Icons.qr_code_2,
-                      size: 110,
-                      color: Color(0xFF161B26),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      color: subTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return RawAutocomplete<String>(
-                        textEditingController: _codeController,
-                        focusNode: _focusNode,
-                        optionsBuilder: (TextEditingValue textEditingValue) {
-                          final text = textEditingValue.text.toLowerCase();
-                          final history = ref.read(dojoRoomHistoryProvider);
-                          if (text.isEmpty) return history;
-                          return history.where(
-                            (option) => option.toLowerCase().contains(text),
-                          );
-                        },
-                        fieldViewBuilder:
-                            (
-                              context,
-                              fieldController,
-                              focusNode,
-                              onFieldSubmitted,
-                            ) {
-                              return AppTextField(
-                                controller: fieldController,
-                                focusNode: focusNode,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontWeight: AppFontWeight.bold,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: '例: tokyo_dojo_2026',
-                                  hintStyle: TextStyle(color: subTextColor),
-                                  filled: true,
-                                  fillColor: inputBgColor,
-                                  errorText: _errorMessage,
-                                  errorStyle: const TextStyle(
-                                    color: AppKendoColors.orangeAccent,
-                                    fontWeight: AppFontWeight.bold,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.meeting_room,
-                                    color: subTextColor,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: AppRadius.medium,
-                                    borderSide: BorderSide(color: borderColor),
-                                  ),
-                                  focusedBorder: const OutlineInputBorder(
-                                    borderRadius: AppRadius.medium,
-                                    borderSide: BorderSide(
-                                      color: AppKendoColors.teal,
-                                    ),
-                                  ),
-                                ),
-                                onSubmitted: _handleJoin,
-                              );
-                            },
-                        optionsViewBuilder: (context, onSelected, options) {
-                          return Align(
-                            alignment: Alignment.topLeft,
-                            child: Material(
-                              elevation: 8.0,
-                              color: isDark
-                                  ? const Color(0xFF2C2C2E)
-                                  : context.appColors.cardBackground,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppRadius.medium,
-                                side: BorderSide(
-                                  color: context.appColors.separatorColor
-                                      .withValues(alpha: 0.5),
-                                  width: 1,
-                                ),
-                              ),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: 200,
-                                  maxWidth: constraints.maxWidth,
-                                ),
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  shrinkWrap: true,
-                                  itemCount: options.length,
-                                  itemBuilder: (context, index) {
-                                    final option = options.elementAt(index);
-                                    return ListTile(
-                                      leading: Icon(
-                                        Icons.history,
-                                        color: subTextColor,
-                                        size: 20,
-                                      ),
-                                      title: Text(
-                                        option,
-                                        style: TextStyle(
-                                          color: textColor,
-                                          fontWeight: AppFontWeight.bold,
-                                        ),
-                                      ),
-                                      trailing: IconButton(
-                                        icon: const Icon(
-                                          Icons.close,
-                                          color: AppKendoColors.grey,
-                                          size: 18,
-                                        ),
-                                        onPressed: () {
-                                          ref
-                                              .read(
-                                                dojoRoomHistoryProvider
-                                                    .notifier,
-                                              )
-                                              .removeHistory(option);
-                                          final selection =
-                                              _codeController.selection;
-                                          _codeController.text =
-                                              _codeController.text;
-                                          _codeController.selection = selection;
-                                        },
-                                      ),
-                                      onTap: () {
-                                        onSelected(option);
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      color: subTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  RoomJoinQrDialogActions(
-                    isLoading: _isLoading,
-                    isDark: isDark,
-                    onCancel: () => Navigator.of(context).pop(),
-                    onJoin: () => _handleJoin(_codeController.text),
-                  ),
-                ],
+    final keyboardHeight = kIsWeb
+        ? 0.0
+        : MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardVisible =
+        _focusNode.hasFocus ||
+        keyboardHeight > 0 ||
+        MediaQuery.viewInsetsOf(context).bottom > 50;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxSheetHeight = screenHeight * 0.90;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxSheetHeight),
+      decoration: BoxDecoration(
+        color: cardBgColor,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
+        ),
+      ),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.md,
+        left: AppSpacing.xl,
+        right: AppSpacing.xl,
+        bottom: AppSpacing.xl,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ドラッグハンドルバー
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
+                      : const Color(0x33000000),
+                  borderRadius: AppRadius.medium,
+                ),
               ),
             ),
-          ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              '道場ルームへの参加',
+              style: TextStyle(
+                fontSize: AppFontSize.header,
+                fontWeight: AppFontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            if (!isKeyboardVisible) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: AppKendoColors.pureWhite,
+                  borderRadius: AppRadius.large,
+                ),
+                child: const Icon(
+                  Icons.qr_code_2,
+                  size: 64,
+                  color: Color(0xFF161B26),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '会場のQRコードをスキャンするか\n「道場ルームコード」を入力してください',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppFontSize.small,
+                  color: subTextColor,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(
+              controller: _codeController,
+              focusNode: _focusNode,
+              scrollPadding: EdgeInsets.zero,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: AppFontWeight.bold,
+              ),
+              decoration: InputDecoration(
+                hintText: '例: tokyo_dojo_2026',
+                hintStyle: TextStyle(color: subTextColor),
+                filled: true,
+                fillColor: inputBgColor,
+                errorText: _errorMessage,
+                errorStyle: const TextStyle(
+                  color: AppKendoColors.orangeAccent,
+                  fontWeight: AppFontWeight.bold,
+                ),
+                prefixIcon: Icon(Icons.meeting_room, color: subTextColor),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.medium,
+                  borderSide: BorderSide(color: borderColor),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: AppRadius.medium,
+                  borderSide: BorderSide(color: AppKendoColors.teal),
+                ),
+              ),
+              onSubmitted: _handleJoin,
+            ),
+            // 履歴サジェスト（インラインチップ形式でOverlayPortalのWeb跳ね上がり・表示崩れを完全根絶）
+            Consumer(
+              builder: (context, ref, _) {
+                final history = ref.watch(dojoRoomHistoryProvider);
+                if (history.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.sm),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: history.map((roomCode) {
+                        return Material(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFF1F5F9),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppRadius.capsule,
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFCBD5E1),
+                            ),
+                          ),
+                          child: InkWell(
+                            borderRadius: AppRadius.capsule,
+                            onTap: () {
+                              _codeController.text = roomCode;
+                              _codeController.selection =
+                                  TextSelection.fromPosition(
+                                    TextPosition(offset: roomCode.length),
+                                  );
+                              setState(() {});
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.compact,
+                                vertical: AppSpacing.subValue,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.history,
+                                    size: 16,
+                                    color: subTextColor,
+                                  ),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    roomCode,
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontWeight: AppFontWeight.bold,
+                                      fontSize: AppFontSize.caption,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.subValue),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      ref
+                                          .read(
+                                            dojoRoomHistoryProvider.notifier,
+                                          )
+                                          .removeHistory(roomCode);
+                                    },
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: subTextColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.subValue),
+            Text(
+              '※ 使用可能な文字: 半角英数字、ハイフン(-)、アンダーバー(_)',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                color: subTextColor,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            RoomJoinQrDialogActions(
+              isLoading: _isLoading,
+              isDark: isDark,
+              onCancel: () => Navigator.of(context).pop(),
+              onJoin: () => _handleJoin(_codeController.text),
+            ),
+            if (!kIsWeb && isKeyboardVisible) SizedBox(height: keyboardHeight),
+          ],
         ),
       ),
     );

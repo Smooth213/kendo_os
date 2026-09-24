@@ -16,6 +16,7 @@ class TimelineInnerCommentWidget extends StatelessWidget {
   final AppPermissions permissions;
   final bool isDark;
   final WidgetRef ref;
+  final int? index;
 
   const TimelineInnerCommentWidget({
     super.key,
@@ -23,6 +24,7 @@ class TimelineInnerCommentWidget extends StatelessWidget {
     required this.permissions,
     required this.isDark,
     required this.ref,
+    this.index,
   });
 
   @override
@@ -59,6 +61,20 @@ class TimelineInnerCommentWidget extends StatelessWidget {
               ),
             ),
           ),
+          if (index != null)
+            ReorderableDragStartListener(
+              index: index!,
+              child: Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Icon(
+                  Icons.drag_indicator,
+                  color: isDark
+                      ? const Color(0xFF9E9E9E)
+                      : const Color(0xFF757575),
+                  size: 20,
+                ),
+              ),
+            ),
         ],
       ),
     );

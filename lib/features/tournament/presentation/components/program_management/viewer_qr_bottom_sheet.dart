@@ -79,6 +79,9 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
     final syncContext = ref.watch(currentSyncContextProvider);
     final dojoId = syncContext.organizationId;
     final isBunaiksen = widget.tournamentId.startsWith('bunaiksen_');
+    final accentColor = isBunaiksen
+        ? (isDark ? const Color(0xFFC084FC) : AppKendoColors.purple)
+        : (isDark ? const Color(0xFF2DD4BF) : AppKendoColors.teal);
 
     final path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
     final shareUrl =
@@ -97,9 +100,9 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
           ),
           children: [
             DockBottomSheetHeader(
-              title: '観戦用QRコード ＆ 速報共有',
+              title: isBunaiksen ? '部内戦 観戦用QR ＆ 速報共有' : '観戦用QRコード ＆ 速報共有',
               icon: Icons.qr_code_2_rounded,
-              iconColor: AppKendoColors.teal,
+              iconColor: accentColor,
             ),
             const SizedBox(height: AppSpacing.sm),
 
@@ -115,15 +118,17 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.remove_red_eye_rounded,
-                    color: AppKendoColors.teal,
+                    color: accentColor,
                     size: 20,
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
-                      'カメラで読み取ると、ログイン不要・編集権限なしの「観戦専用ビュアー」が直接開きます。',
+                      isBunaiksen
+                          ? 'カメラで読み取ると、ログイン不要・編集権限なしの「部内戦 観戦専用ビュアー」が直接開きます。'
+                          : 'カメラで読み取ると、ログイン不要・編集権限なしの「観戦専用ビュアー」が直接開きます。',
                       style: TextStyle(
                         fontSize: AppFontSize.bodySmall,
                         color: themeColors.subTextColor,
@@ -162,7 +167,9 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '大会ID: ${widget.tournamentId}',
+                      isBunaiksen
+                          ? '部内戦ID: ${widget.tournamentId}'
+                          : '大会ID: ${widget.tournamentId}',
                       style: const TextStyle(
                         fontSize: AppFontSize.badge,
                         color: AppKendoColors.grey,
@@ -190,7 +197,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.link, size: 18, color: AppKendoColors.teal),
+                  Icon(Icons.link, size: 18, color: accentColor),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: SelectableText(
@@ -209,9 +216,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                           ? Icons.check_circle_rounded
                           : Icons.copy_rounded,
                       size: 18,
-                      color: _isCopied
-                          ? AppKendoColors.teal
-                          : themeColors.textColor,
+                      color: _isCopied ? accentColor : themeColors.textColor,
                     ),
                     tooltip: 'URLをコピー',
                     padding: EdgeInsets.zero,
@@ -232,9 +237,10 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                 AppHaptics.medium();
                 SharePlus.instance.share(
                   ShareParams(
-                    text:
-                        '【剣道リアルタイム観戦】今日の試合結果・速報をその場でリアルタイムに観戦できます！\n'
-                        '▼ 観戦専用URL:\n$shareUrl',
+                    text: isBunaiksen
+                        ? '【部内戦 リアルタイム速報】\n$shareUrl\nスマホやタブレットでスコアをLIVE観戦できます。'
+                        : '【剣道リアルタイム観戦】今日の試合結果・速報をその場でリアルタイムに観戦できます！\n'
+                              '▼ 観戦専用URL:\n$shareUrl',
                   ),
                 );
               },
@@ -251,7 +257,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppKendoColors.teal,
+                backgroundColor: accentColor,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 shape: const RoundedRectangleBorder(
                   borderRadius: AppRadius.medium,
@@ -283,11 +289,11 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                         vertical: AppSpacing.xs,
                       ),
                       decoration: BoxDecoration(
-                        color: AppKendoColors.teal,
+                        color: accentColor,
                         borderRadius: AppRadius.medium,
                         boxShadow: [
                           BoxShadow(
-                            color: AppKendoColors.teal.withValues(alpha: 0.3),
+                            color: accentColor.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -321,26 +327,22 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               onPressed: () => _copyUrl(shareUrl),
               icon: Icon(
                 _isCopied ? Icons.check_circle_rounded : Icons.copy_rounded,
-                color: _isCopied ? AppKendoColors.teal : themeColors.textColor,
+                color: _isCopied ? accentColor : themeColors.textColor,
               ),
               label: Text(
                 _isCopied ? 'コピーしました！' : '観戦URLをコピー',
                 style: TextStyle(
-                  color: _isCopied
-                      ? AppKendoColors.teal
-                      : themeColors.textColor,
+                  color: _isCopied ? accentColor : themeColors.textColor,
                   fontWeight: AppFontWeight.bold,
                 ),
               ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 backgroundColor: _isCopied
-                    ? AppKendoColors.teal.withValues(alpha: 0.12)
+                    ? accentColor.withValues(alpha: 0.12)
                     : null,
                 side: BorderSide(
-                  color: _isCopied
-                      ? AppKendoColors.teal
-                      : themeColors.separatorColor,
+                  color: _isCopied ? accentColor : themeColors.separatorColor,
                   width: _isCopied ? 1.5 : 1.0,
                 ),
                 shape: const RoundedRectangleBorder(

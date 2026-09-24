@@ -20,6 +20,7 @@ class CategoryRuleFormSection extends StatelessWidget {
 
   final double matchTime;
   final bool isRunningTime;
+  final bool isIpponShobu;
   final int ipponLimit;
   final int hansokuLimit;
   final bool hasHantei;
@@ -47,6 +48,7 @@ class CategoryRuleFormSection extends StatelessWidget {
 
   final ValueChanged<double> onMatchTimeChanged;
   final ValueChanged<bool> onIsRunningTimeChanged;
+  final ValueChanged<bool> onIsIpponShobuChanged;
   final ValueChanged<String> onRenseikaiTypeChanged;
   final ValueChanged<int> onOverallTimeChanged;
   final ValueChanged<String> onKachinukiUnlimitedTypeChanged;
@@ -83,6 +85,7 @@ class CategoryRuleFormSection extends StatelessWidget {
     required this.categoryKey,
     required this.matchTime,
     required this.isRunningTime,
+    required this.isIpponShobu,
     required this.ipponLimit,
     required this.hansokuLimit,
     required this.hasHantei,
@@ -107,6 +110,7 @@ class CategoryRuleFormSection extends StatelessWidget {
     required this.formatMinutes,
     required this.onMatchTimeChanged,
     required this.onIsRunningTimeChanged,
+    required this.onIsIpponShobuChanged,
     required this.onRenseikaiTypeChanged,
     required this.onOverallTimeChanged,
     required this.onKachinukiUnlimitedTypeChanged,
@@ -200,6 +204,45 @@ class CategoryRuleFormSection extends StatelessWidget {
               },
             );
           }).toList(),
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // 勝負形式 (3本勝負 / 1本勝負)
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.xs),
+          child: Text(
+            '勝負形式',
+            style: TextStyle(
+              fontSize: AppFontSize.caption,
+              fontWeight: AppFontWeight.bold,
+              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            AppChoiceChip(
+              label: const Text('３本勝負 (２本先取)'),
+              selected: !isIpponShobu,
+              onSelected: (selected) {
+                if (selected) {
+                  onIsIpponShobuChanged(false);
+                }
+              },
+            ),
+            AppChoiceChip(
+              label: const Text('１本勝負'),
+              selected: isIpponShobu,
+              onSelected: (selected) {
+                if (selected) {
+                  onIsIpponShobuChanged(true);
+                }
+              },
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.lg),
 

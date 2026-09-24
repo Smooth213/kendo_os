@@ -285,99 +285,65 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
 
     // 試合ルール設定に登録がない場合のフォールバックチップ
     if (presetChips.isEmpty) {
-      presetChips.addAll([
-        AppChoiceChip(
-          selected: selectedPresetKey == 'honsen',
-          icon: Icons.account_balance,
-          label: Text(
-            '本戦ルール (${MatchRuleSettingForm.formatMinutes(matchTime)})',
+      final formattedTime = MatchRuleSettingForm.formatMinutes(matchTime);
+      MatchRule buildFallbackRule(String scene) {
+        final t = matchTime > 0 ? matchTime : 3.0;
+        if (scene == 'honsen') {
+          return MatchRule(
+            matchScene: 'honsen',
+            matchTimeMinutes: t,
+            isRunningTime: false,
+            isIpponShobu: false,
+            hasHantei: true,
+            enchoTimeMinutes: 2.0,
+            enchoCount: isDantai ? 0 : 1,
+            isEnchoUnlimited: false,
+            hasRepresentativeMatch: isDantai,
+            isDaihyoIpponShobu: true,
+            daihyoMatchTimeMinutes: 0.0,
+            daihyoHasExtension: isDantai,
+            daihyoEnchoTimeMinutes: 3.0,
+            daihyoEnchoCount: -2,
+            daihyoHasHantei: false,
+            renseikaiType: '一試合制',
+          );
+        }
+        return MatchRule(
+          matchScene: scene,
+          isRenseikai: scene == 'renseikai',
+          matchTimeMinutes: t,
+          isRunningTime: true,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoTimeMinutes: 0.0,
+          enchoCount: 0,
+          isEnchoUnlimited: false,
+          hasRepresentativeMatch: false,
+          isDaihyoIpponShobu: false,
+          daihyoMatchTimeMinutes: 0.0,
+          daihyoHasExtension: false,
+          daihyoEnchoTimeMinutes: 0.0,
+          daihyoEnchoCount: 0,
+          daihyoHasHantei: false,
+          renseikaiType: '一試合制',
+        );
+      }
+
+      for (final (scene, title, icon) in [
+        ('honsen', '本戦ルール', Icons.account_balance),
+        ('renseikai', '錬成会ルール', Icons.flash_on),
+        ('moushiawase', '申合せルール', Icons.handshake),
+      ]) {
+        presetChips.add(
+          AppChoiceChip(
+            selected: selectedPresetKey == scene,
+            icon: icon,
+            label: Text('$title ($formattedTime)'),
+            onSelected: (_) =>
+                onPresetSelected(buildFallbackRule(scene), scene),
           ),
-          onSelected: (_) {
-            onPresetSelected(
-              MatchRule(
-                matchScene: 'honsen',
-                matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
-                isRunningTime: false,
-                isIpponShobu: false,
-                hasHantei: true,
-                enchoTimeMinutes: 2.0,
-                enchoCount: isDantai ? 0 : 1,
-                isEnchoUnlimited: false,
-                hasRepresentativeMatch: isDantai,
-                isDaihyoIpponShobu: true,
-                daihyoMatchTimeMinutes: 0.0,
-                daihyoHasExtension: isDantai,
-                daihyoEnchoTimeMinutes: 3.0,
-                daihyoEnchoCount: -2,
-                daihyoHasHantei: false,
-                renseikaiType: '一試合制',
-              ),
-              'honsen',
-            );
-          },
-        ),
-        AppChoiceChip(
-          selected: selectedPresetKey == 'renseikai',
-          icon: Icons.flash_on,
-          label: Text(
-            '錬成会ルール (${MatchRuleSettingForm.formatMinutes(matchTime)})',
-          ),
-          onSelected: (_) {
-            onPresetSelected(
-              MatchRule(
-                matchScene: 'renseikai',
-                isRenseikai: true,
-                matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
-                isRunningTime: true,
-                isIpponShobu: false,
-                hasHantei: false,
-                enchoTimeMinutes: 0.0,
-                enchoCount: 0,
-                isEnchoUnlimited: false,
-                hasRepresentativeMatch: false,
-                isDaihyoIpponShobu: false,
-                daihyoMatchTimeMinutes: 0.0,
-                daihyoHasExtension: false,
-                daihyoEnchoTimeMinutes: 0.0,
-                daihyoEnchoCount: 0,
-                daihyoHasHantei: false,
-                renseikaiType: '一試合制',
-              ),
-              'renseikai',
-            );
-          },
-        ),
-        AppChoiceChip(
-          selected: selectedPresetKey == 'moushiawase',
-          icon: Icons.handshake,
-          label: Text(
-            '申合せルール (${MatchRuleSettingForm.formatMinutes(matchTime)})',
-          ),
-          onSelected: (_) {
-            onPresetSelected(
-              MatchRule(
-                matchScene: 'moushiawase',
-                matchTimeMinutes: matchTime > 0 ? matchTime : 3.0,
-                isRunningTime: true,
-                isIpponShobu: false,
-                hasHantei: false,
-                enchoTimeMinutes: 0.0,
-                enchoCount: 0,
-                isEnchoUnlimited: false,
-                hasRepresentativeMatch: false,
-                isDaihyoIpponShobu: false,
-                daihyoMatchTimeMinutes: 0.0,
-                daihyoHasExtension: false,
-                daihyoEnchoTimeMinutes: 0.0,
-                daihyoEnchoCount: 0,
-                daihyoHasHantei: false,
-                renseikaiType: '一試合制',
-              ),
-              'moushiawase',
-            );
-          },
-        ),
-      ]);
+        );
+      }
     }
 
     final cardBgColor = isDark

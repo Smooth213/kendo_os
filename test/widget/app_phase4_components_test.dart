@@ -88,7 +88,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('表示設定'), findsOneWidget);
-      expect(find.text('省エネモード（背景アニメーション停止）'), findsOneWidget);
+      expect(find.text('省エネモード'), findsOneWidget);
+      expect(find.text('背景アニメーション停止'), findsOneWidget);
       expect(find.byType(AppSwitch), findsOneWidget);
     });
   });

@@ -120,7 +120,8 @@ class ViewerSettingsBottomSheet extends ConsumerWidget {
                     ),
                   ),
                   SettingsSwitchTile(
-                    title: '省エネモード（背景アニメーション停止）',
+                    title: '省エネモード',
+                    subtitle: '背景アニメーション停止',
                     value: !settings.enableLiquidGlass,
                     onChanged: (val) =>
                         notifier.updateField(enableLiquidGlass: !val),

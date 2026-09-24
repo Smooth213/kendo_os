@@ -46,8 +46,11 @@ abstract class MatchStrategy {
 class IndividualMatchStrategy implements MatchStrategy {
   @override
   int getTargetIppon(MatchModel match, MatchRule? rule) {
+    if (rule != null && (rule.isIpponShobu || rule.ipponLimit == 1)) {
+      return 1;
+    }
     if (match.note.contains('延長')) return 1;
-    return 2;
+    return (rule != null && rule.ipponLimit > 0) ? rule.ipponLimit : 2;
   }
 
   @override
@@ -110,6 +113,9 @@ class IndividualMatchStrategy implements MatchStrategy {
 class TeamMatchStrategy implements MatchStrategy {
   @override
   int getTargetIppon(MatchModel match, MatchRule? rule) {
+    if (rule != null && (rule.isIpponShobu || rule.ipponLimit == 1)) {
+      return 1;
+    }
     bool isDaihyoIppon = rule?.isDaihyoIpponShobu ?? false;
 
     if (match.matchType == '代表戦' && isDaihyoIppon) {
@@ -118,7 +124,7 @@ class TeamMatchStrategy implements MatchStrategy {
     if (match.matchType == '代表戦' || match.matchType == '大将延長戦') {
       return 1;
     }
-    return 2;
+    return (rule != null && rule.ipponLimit > 0) ? rule.ipponLimit : 2;
   }
 
   @override

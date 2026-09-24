@@ -43,7 +43,6 @@ class TournamentTextParser {
   /// 3重の安全フィルター: テキストが大会・オーダー情報の解析候補かを判定
   static bool isCandidate(String text) {
     final trimmed = text.trim();
-    // フィルター②: 文字数制約（40文字以上）& 行数制約（3行以上）
     if (trimmed.length < 40) return false;
     final lines = trimmed
         .split(RegExp(r'\r?\n'))
@@ -51,18 +50,13 @@ class TournamentTextParser {
         .toList();
     if (lines.length < 3) return false;
 
-    // フィルター① 条件A（即判定）: 剣道特有のポジションや個人戦表記が含まれている
-    final hasPosition = _positionKeywords.any((pos) => trimmed.contains(pos));
-    if (hasPosition) return true;
+    if (_positionKeywords.any((pos) => trimmed.contains(pos))) return true;
 
-    // フィルター① 条件B（大会イベント判定）: 3要素がすべて揃っていること
-    final hasTournament = _tournamentKeywords.any(
-      (keyword) => trimmed.contains(keyword),
-    );
+    final hasTournament = _tournamentKeywords.any((kw) => trimmed.contains(kw));
     final hasDate = TournamentDateParser.dateKeywords.any(
-      (keyword) => trimmed.contains(keyword),
+      (kw) => trimmed.contains(kw),
     );
-    final hasVenue = _venueKeywords.any((keyword) => trimmed.contains(keyword));
+    final hasVenue = _venueKeywords.any((kw) => trimmed.contains(kw));
 
     return hasTournament && hasDate && hasVenue;
   }
@@ -261,15 +255,8 @@ class TournamentTextParser {
 
   /// 会場・場所行か判定
   static bool _isVenueLine(String line) {
-    final lower = line.replaceAll(' ', '').replaceAll('　', '');
-    return lower.startsWith('場所:') ||
-        lower.startsWith('場所：') ||
-        lower.startsWith('会場:') ||
-        lower.startsWith('会場：') ||
-        lower.startsWith('試合会場:') ||
-        lower.startsWith('試合会場：') ||
-        lower.startsWith('【大会会場】') ||
-        lower.startsWith('【会場】');
+    final lower = line.replaceAll(RegExp(r'[ 　]'), '');
+    return RegExp(r'^(?:場所|会場|試合会場)[：:]|^【(?:大会会場|会場|試合会場)】').hasMatch(lower);
   }
 
   /// 会場文字列のクレンジング
@@ -282,13 +269,10 @@ class TournamentTextParser {
 
   /// 住所行か判定
   static bool _isAddressLine(String line) {
-    final lower = line.replaceAll(' ', '').replaceAll('　', '');
-    return lower.startsWith('住所:') ||
-        lower.startsWith('住所：') ||
-        lower.startsWith('所在地:') ||
-        lower.startsWith('所在地：') ||
-        line.startsWith('〒') ||
-        RegExp(r'^(東京都|北海道|(?:京都|大阪)府|.{2,3}県)').hasMatch(line);
+    final lower = line.replaceAll(RegExp(r'[ 　]'), '');
+    return RegExp(
+      r'^(?:住所|所在地)[：:]|^〒|^(?:東京都|北海道|(?:京都|大阪)府|.{2,3}県)',
+    ).hasMatch(lower);
   }
 
   /// 住所文字列のクレンジング

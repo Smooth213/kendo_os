@@ -434,15 +434,7 @@ class TeamScoreboardTableBuilder {
     final engine = KendoRuleEngine();
     final analysis = engine.analyzeHistory(m.events, m, m.rule);
 
-    final redPts = (analysis.displays[Side.red] ?? [])
-        .map(
-          (d) => TeamPointDisplay(
-            d.mark == '判定' ? '判' : d.mark,
-            d.isFirstMatchPoint,
-          ),
-        )
-        .toList();
-    final whitePts = (analysis.displays[Side.white] ?? [])
+    List<TeamPointDisplay> toPts(Side side) => (analysis.displays[side] ?? [])
         .map(
           (d) => TeamPointDisplay(
             d.mark == '判定' ? '判' : d.mark,
@@ -451,6 +443,6 @@ class TeamScoreboardTableBuilder {
         )
         .toList();
 
-    return {'red': redPts, 'white': whitePts};
+    return {'red': toPts(Side.red), 'white': toPts(Side.white)};
   }
 }

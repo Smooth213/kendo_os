@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_dock_items_order_provider.dart';
@@ -23,9 +24,9 @@ void main() {
       container.dispose();
     });
 
-    test('初期状態では部内戦専用の全7項目が登録されていること', () {
+    test('初期状態では部内戦専用の全8項目が登録されていること', () {
       final order = container.read(bunaiksenDockItemsOrderProvider);
-      expect(order.length, 7);
+      expect(order.length, 8);
       expect(order, BunaiksenDockItemsOrderNotifier.defaultOrder);
       expect(order.contains(BunaiksenDockItemType.matches), isTrue);
       expect(order.contains(BunaiksenDockItemType.standings), isTrue);
@@ -33,7 +34,11 @@ void main() {
       expect(order.contains(BunaiksenDockItemType.quickMemo), isTrue);
       expect(order.contains(BunaiksenDockItemType.timer), isTrue);
       expect(order.contains(BunaiksenDockItemType.calculator), isTrue);
+      expect(order.contains(BunaiksenDockItemType.viewerQr), isTrue);
       expect(order.contains(BunaiksenDockItemType.settings), isTrue);
+
+      expect(BunaiksenDockItemType.viewerQr.label, '観戦QR');
+      expect(BunaiksenDockItemType.viewerQr.icon, Icons.qr_code_2_rounded);
     });
 
     test('reorder 操作により項目が移動しSharedPreferencesに保存されること', () async {

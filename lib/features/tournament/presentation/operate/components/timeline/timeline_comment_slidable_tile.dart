@@ -14,6 +14,7 @@ class TimelineCommentSlidableTile extends StatelessWidget {
   final String tournamentId;
   final bool isDark;
   final WidgetRef ref;
+  final int? index;
 
   const TimelineCommentSlidableTile({
     super.key,
@@ -21,6 +22,7 @@ class TimelineCommentSlidableTile extends StatelessWidget {
     required this.tournamentId,
     required this.isDark,
     required this.ref,
+    this.index,
   });
 
   @override
@@ -57,6 +59,20 @@ class TimelineCommentSlidableTile extends StatelessWidget {
               ),
             ),
           ),
+          if (index != null)
+            ReorderableDragStartListener(
+              index: index!,
+              child: Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Icon(
+                  Icons.drag_indicator,
+                  color: isDark
+                      ? const Color(0xFF9E9E9E)
+                      : const Color(0xFF757575),
+                  size: 20,
+                ),
+              ),
+            ),
         ],
       ),
     );

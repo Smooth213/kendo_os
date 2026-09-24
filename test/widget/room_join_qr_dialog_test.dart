@@ -307,11 +307,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // 入力欄にフォーカスを当ててサジェストを表示
-      await tester.tap(find.byType(TextField));
-      await tester.pumpAndSettle();
-
-      // 履歴「tokyo_dojo_2026」が表示されていること
+      // 履歴チップ「tokyo_dojo_2026」が表示されていること
       final historyFinder = find.text('tokyo_dojo_2026');
       expect(historyFinder, findsOneWidget);
 
@@ -319,15 +315,302 @@ void main() {
       final textWidget = tester.widget<Text>(historyFinder);
       expect(textWidget.style?.color, isNot(equals(Colors.transparent)));
 
-      // サジェストのMaterial背景色が黒（0xFF000000）ではなく、カード背景（白系）であること
-      final materialWidgets = tester.widgetList<Material>(
-        find.byType(Material),
+      // サジェストのMaterial背景色が黒（0xFF000000）ではなく、高コントラストな見やすい色であること
+      final materialFinder = find.ancestor(
+        of: historyFinder,
+        matching: find.byType(Material),
       );
-      final dropdownMaterial = materialWidgets.firstWhere(
-        (m) => m.elevation == 8.0,
+      final chipMaterial = tester.widget<Material>(materialFinder.first);
+      expect(chipMaterial.color, isNot(equals(const Color(0xFF000000))));
+      expect(chipMaterial.color, isNot(equals(Colors.black)));
+
+      // 履歴チップをタップするとTextFieldに入力されること
+      await tester.tap(historyFinder);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, 'tokyo_dojo_2026'), findsOneWidget);
+
+      container.dispose();
+    });
+
+    testWidgets('【Web描画消失防止テスト】BackdropFilter が使用されず、安全な不透明背景コンテナで描画されること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
       );
-      expect(dropdownMaterial.color, isNot(equals(const Color(0xFF000000))));
-      expect(dropdownMaterial.color, isNot(equals(Colors.black)));
+
+      await tester.pumpWidget(createTestTarget(container));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // iOS Safari / Web での描画消失（グレーアウト）原因となる BackdropFilter が存在しないことを検証
+      expect(find.byType(BackdropFilter), findsNothing);
+
+      // シート本体が確実に表示されていること
+      expect(find.byType(RoomJoinQrDialog), findsOneWidget);
+      expect(find.text('道場ルームへの参加'), findsOneWidget);
+
+      container.dispose();
+    });
+
+    testWidgets('【キーボード跳ね上がり防止テスト】カーソルフォーカス時、ダイアログが画面外に跳ね上がらず安定して表示されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      addTearDown(() => tester.view.resetViewInsets());
+
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+      );
+
+      await tester.pumpWidget(createTestTarget(container));
+
+      // ダイアログを開く
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // 初期状態ではQRアイコンが表示されていること
+      expect(find.byIcon(Icons.qr_code_2), findsOneWidget);
+
+      // 入力欄にフォーカス＆キーボードを出現させる
+      await tester.tap(find.byType(TextField));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 336);
+      await tester.pumpAndSettle();
+
+      // キーボード表示時はQRアイコンが非表示になりコンパクト化されること
+      expect(find.byIcon(Icons.qr_code_2), findsNothing);
+
+      // ダイアログタイトル、TextField、ボタンが画面内に表示されていること
+      expect(find.text('道場ルームへの参加'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('接続開始'), findsOneWidget);
+
+      // シートのY座標が画面内（上端がステータスバー下に安定配置され、画面外に跳ね上がらないこと）
+      final containerBox = tester.renderObject<RenderBox>(
+        find
+            .descendant(
+              of: find.byType(RoomJoinQrDialog),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final offset = containerBox.localToGlobal(Offset.zero);
+      expect(offset.dy, greaterThanOrEqualTo(0.0)); // 画面内に安全配置
+      expect(offset.dy, lessThan(844 - 336)); // キーボード上端未満に確実に留まること
+
+      // TextFieldのY座標も画面内にあり、キーボードより上にあること
+      final textFieldBox = tester.renderObject<RenderBox>(
+        find.byType(TextField),
+      );
+      final textFieldOffset = textFieldBox.localToGlobal(Offset.zero);
+      expect(textFieldOffset.dy, greaterThan(offset.dy));
+      expect(
+        textFieldOffset.dy + textFieldBox.size.height,
+        lessThan(844 - 336),
+      ); // キーボード上端未満
+
+      container.dispose();
+    });
+
+    testWidgets(
+      '【小型画面（iPhone SE等）保証テスト】極小ビューポート＋キーボード出現時でも跳ね上がらず正常入力＆接続できること',
+      (WidgetTester tester) async {
+        // iPhone SE等の小型画面サイズ（375 x 667）
+        tester.view.physicalSize = const Size(375, 667);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+        addTearDown(() => tester.view.resetViewInsets());
+
+        final container = ProviderContainer(
+          overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+        );
+
+        await tester.pumpWidget(createTestTarget(container));
+
+        // 1. 開く
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        // 2. 入力欄にフォーカス＆キーボード（高さ300px）出現
+        await tester.tap(find.byType(TextField));
+        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+        await tester.pumpAndSettle();
+
+        // 🚨 跳ね上がり絶対防止アサーション：シート上端が画面外（Y < 0）に突き抜けていないこと
+        final containerBox = tester.renderObject<RenderBox>(
+          find
+              .descendant(
+                of: find.byType(RoomJoinQrDialog),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        final offset = containerBox.localToGlobal(Offset.zero);
+        expect(
+          offset.dy,
+          greaterThanOrEqualTo(0.0),
+          reason: 'シート上端が画面外上空に突き抜けてはいけない',
+        );
+        expect(
+          offset.dy,
+          lessThan(667 - 300),
+          reason: 'シート上端はキーボード上端より手前に存在すること',
+        );
+
+        // 3. テキストが正常に入力・反映されること
+        await tester.enterText(find.byType(TextField), 'chiba_dojo');
+        await tester.pumpAndSettle();
+        expect(find.widgetWithText(TextField, 'chiba_dojo'), findsOneWidget);
+
+        // 4. キーボード出現下の小型画面でも「接続開始」ボタンをタップして正常接続できること
+        await tester.runAsync(() async {
+          await tester.tap(find.text('接続開始'));
+          await Future.delayed(const Duration(milliseconds: 100));
+        });
+        await tester.pumpAndSettle();
+
+        // 接続完了確認
+        expect(container.read(currentDojoIdProvider), equals('chiba_dojo'));
+        expect(find.byType(RoomJoinQrDialog), findsNothing);
+
+        container.dispose();
+      },
+    );
+
+    testWidgets('【反復フォーカス開閉テスト】キーボードの開閉を連続で繰り返しても位置ズレ・跳ね上がりが累積しないこと', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+      addTearDown(() => tester.view.resetViewInsets());
+
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+      );
+
+      await tester.pumpWidget(createTestTarget(container));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      final containerFinder = find
+          .descendant(
+            of: find.byType(RoomJoinQrDialog),
+            matching: find.byType(Container),
+          )
+          .first;
+
+      // 3回の連続フォーカス開閉サイクルを実行
+      for (int cycle = 1; cycle <= 3; cycle++) {
+        // キーボード開
+        tester.view.viewInsets = const FakeViewPadding(bottom: 336);
+        await tester.pumpAndSettle();
+
+        final offsetOpen = tester.getTopLeft(containerFinder);
+        expect(
+          offsetOpen.dy,
+          greaterThanOrEqualTo(0.0),
+          reason: 'サイクル $cycle (開): シート上端が画面外に突き抜けていないこと',
+        );
+
+        // キーボード閉
+        tester.view.viewInsets = FakeViewPadding.zero;
+        await tester.pumpAndSettle();
+
+        final offsetClosed = tester.getTopLeft(containerFinder);
+        expect(
+          offsetClosed.dy,
+          greaterThanOrEqualTo(0.0),
+          reason: 'サイクル $cycle (閉): シート上端が画面内に留まること',
+        );
+      }
+
+      container.dispose();
+    });
+
+    testWidgets(
+      '【構造的跳ね上がり防止テスト】Dialogではなく画面下部アンカーのBottomSheetとして稼働し、OverlayPortalが存在しないこと',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
+        );
+
+        await tester.pumpWidget(createTestTarget(container));
+
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
+
+        // 1. 中央配置Dialog（跳ね上がりの主因）が使用されていないこと
+        expect(find.byType(Dialog), findsNothing);
+        expect(find.byType(AlertDialog), findsNothing);
+
+        // 2. モーダルボトムシートとしてマウントされていること
+        expect(
+          find.byType(ModalBottomSheetRoute),
+          findsNothing,
+        ); // ルート自体はWidgetツリー上直接出ないが
+        expect(find.byType(RoomJoinQrDialog), findsOneWidget);
+
+        // 3. Webで跳ね上がり・消失を起こす OverlayPortal（RawAutocomplete）がツリーに存在しないこと
+        expect(find.byType(RawAutocomplete), findsNothing);
+
+        container.dispose();
+      },
+    );
+
+    testWidgets('【履歴チップからの安全上書き入力テスト】履歴タップで即座に正確入力され接続できること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'kendo_os_dojo_room_history': ['kyoto_dojo', 'osaka_dojo'],
+      });
+
+      final notifier = DojoRoomHistoryNotifier();
+      await notifier.addHistory('osaka_dojo');
+      await notifier.addHistory('kyoto_dojo');
+
+      final container = ProviderContainer(
+        overrides: [
+          roomFirestoreProvider.overrideWithValue(fakeFirestore),
+          dojoRoomHistoryProvider.overrideWith((ref) => notifier),
+        ],
+      );
+
+      await tester.pumpWidget(createTestTarget(container));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // 履歴チップが表示されていること
+      expect(find.text('kyoto_dojo'), findsOneWidget);
+      expect(find.text('osaka_dojo'), findsOneWidget);
+
+      // 途中までユーザーが文字を入力
+      await tester.enterText(find.byType(TextField), 'wrong_code');
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextField, 'wrong_code'), findsOneWidget);
+
+      // 履歴「kyoto_dojo」チップをタップ
+      await tester.tap(find.text('kyoto_dojo'));
+      await tester.pumpAndSettle();
+
+      // 入力欄が「kyoto_dojo」に正しく上書きされていること
+      expect(find.widgetWithText(TextField, 'kyoto_dojo'), findsOneWidget);
+
+      // 接続開始を実行
+      await tester.runAsync(() async {
+        await tester.tap(find.text('接続開始'));
+        await Future.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+
+      // 正常に「kyoto_dojo」に直結されたこと
+      expect(container.read(currentDojoIdProvider), equals('kyoto_dojo'));
+      expect(find.byType(RoomJoinQrDialog), findsNothing);
 
       container.dispose();
     });

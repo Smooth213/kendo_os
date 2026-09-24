@@ -20,6 +20,8 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
   final List<MatchCommentModel> playerComments;
   final String categoryName;
   final String teamName;
+  final Widget? headerWidget;
+  final String? tournamentId;
   final bool isReadOnlyUI;
   final bool isDark;
   final PermissionState permissions;
@@ -31,6 +33,8 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
     required this.playerComments,
     required this.categoryName,
     required this.teamName,
+    this.headerWidget,
+    this.tournamentId,
     required this.isReadOnlyUI,
     required this.isDark,
     required this.permissions,
@@ -62,103 +66,113 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
         ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
         : (isDark ? context.appColors.cardBackground : const Color(0xFFFAFAFC));
 
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: AppRadius.medium,
-        border: Border.all(
-          color: pInProgress
-              ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
-              : (isDark
-                    ? const Color(0xFF2C2C2E)
-                    : context.appColors.separatorColor),
-          width: pInProgress ? 1.5 : 1.0,
-        ),
-        boxShadow: pInProgress
-            ? [
-                BoxShadow(
-                  color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ]
-            : [],
-      ),
-      child: ClipRRect(
-        borderRadius: AppRadius.smooth,
-        child: ExpansionTileTheme(
-          data: ExpansionTileThemeData(
-            backgroundColor: cardBg,
-            collapsedBackgroundColor: collapsedCardBg,
-            iconColor: context.appColors.primaryAccent,
-            collapsedIconColor: context.appColors.subTextColor,
-            textColor: context.appColors.textColor,
-            collapsedTextColor: isDark
-                ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
-                : AppKendoColors.pureBlack.withValues(alpha: 0.54),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ?headerWidget,
+        Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
           ),
-          child: ExpansionTile(
-            key: ValueKey('player_$playerName'),
-            shape: const Border(),
-            collapsedShape: const Border(),
-            childrenPadding: EdgeInsets.zero,
-            tilePadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.xs,
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: AppRadius.medium,
+            border: Border.all(
+              color: pInProgress
+                  ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+                  : (isDark
+                        ? const Color(0xFF2C2C2E)
+                        : context.appColors.separatorColor),
+              width: pInProgress ? 1.5 : 1.0,
             ),
-            title: TimelineIndividualPlayerHeader(
-              playerName: playerName,
-              playerMatches: playerMatches,
-              isDark: isDark,
-              isReadOnlyUI: isReadOnlyUI,
-              titleColor: pTitleColor,
-            ),
-            children: [
-              ReorderableListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                buildDefaultDragHandles: !isReadOnlyUI,
-                onReorderItem: (oldIndex, newIndex) =>
-                    TimelineReorderHelper.onReorderInnerTimeline(
-                      playerMixedItems,
-                      oldIndex,
-                      newIndex,
-                      ref,
+            boxShadow: pInProgress
+                ? [
+                    BoxShadow(
+                      color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
-                children: playerMixedItems
-                    .map<Widget?>((i) {
-                      if (i is MatchModel) {
-                        return Container(
-                          key: ValueKey(i.id),
-                          child: MatchListTileCard(
-                            initialMatch: i,
-                            isDeletable: true,
-                          ),
-                        );
-                      } else if (i is MatchCommentModel) {
-                        return Container(
-                          key: ValueKey('inner_comment_${i.id}'),
-                          child: TimelineInnerCommentWidget(
-                            comment: i,
-                            permissions: permissions,
-                            isDark: isDark,
-                            ref: ref,
-                          ),
-                        );
-                      }
-                      return null;
-                    })
-                    .whereType<Widget>()
-                    .toList(),
+                  ]
+                : [],
+          ),
+          child: ClipRRect(
+            borderRadius: AppRadius.smooth,
+            child: ExpansionTileTheme(
+              data: ExpansionTileThemeData(
+                backgroundColor: cardBg,
+                collapsedBackgroundColor: collapsedCardBg,
+                iconColor: context.appColors.primaryAccent,
+                collapsedIconColor: context.appColors.subTextColor,
+                textColor: context.appColors.textColor,
+                collapsedTextColor: isDark
+                    ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
+                    : AppKendoColors.pureBlack.withValues(alpha: 0.54),
               ),
-            ],
+              child: ExpansionTile(
+                key: ValueKey('player_$playerName'),
+                shape: const Border(),
+                collapsedShape: const Border(),
+                childrenPadding: EdgeInsets.zero,
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.xs,
+                ),
+                title: TimelineIndividualPlayerHeader(
+                  playerName: playerName,
+                  playerMatches: playerMatches,
+                  isDark: isDark,
+                  isReadOnlyUI: isReadOnlyUI,
+                  titleColor: pTitleColor,
+                ),
+                children: [
+                  ReorderableListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    buildDefaultDragHandles: !isReadOnlyUI,
+                    onReorderItem: (oldIndex, newIndex) =>
+                        TimelineReorderHelper.onReorderInnerTimeline(
+                          playerMixedItems,
+                          oldIndex,
+                          newIndex,
+                          ref,
+                        ),
+                    children: playerMixedItems
+                        .asMap()
+                        .entries
+                        .map<Widget?>((entry) {
+                          final i = entry.value;
+                          if (i is MatchModel) {
+                            return Container(
+                              key: ValueKey(i.id),
+                              child: MatchListTileCard(
+                                initialMatch: i,
+                                isDeletable: true,
+                              ),
+                            );
+                          } else if (i is MatchCommentModel) {
+                            return Container(
+                              key: ValueKey('inner_comment_${i.id}'),
+                              child: TimelineInnerCommentWidget(
+                                comment: i,
+                                permissions: permissions,
+                                isDark: isDark,
+                                ref: ref,
+                                index: entry.key,
+                              ),
+                            );
+                          }
+                          return null;
+                        })
+                        .whereType<Widget>()
+                        .toList(),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

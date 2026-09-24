@@ -139,43 +139,47 @@ class CommentCommandService {
     MatchCommentModel comment,
     double newOrder,
   ) async {
+    final now = _timeSource.now();
     final event = CommentEvent(
       id: const Uuid().v4(),
       commentId: comment.id,
       type: CommentEventType.updated,
       order: newOrder,
-      timestamp: _timeSource.now(),
+      timestamp: now,
       userId: 'system',
-      logicalClock: _timeSource.now().millisecondsSinceEpoch,
+      logicalClock: now.millisecondsSinceEpoch,
     );
 
     _eventStore.add(event);
-    final updated = _rebuildSingle(comment.id);
-    if (updated != null) {
-      final withSync = updated.copyWith(syncState: SyncState.localOnly);
-      await _repo.saveComment(withSync);
-      await _remoteRepo.saveComment(withSync);
-    }
+    final updated = (_rebuildSingle(comment.id) ?? comment).copyWith(
+      order: newOrder,
+      lastUpdatedAt: now,
+      syncState: SyncState.localOnly,
+    );
+    await _repo.saveComment(updated);
+    await _remoteRepo.saveComment(updated);
   }
 
   Future<void> updateComment(MatchCommentModel comment) async {
+    final now = _timeSource.now();
     final event = CommentEvent(
       id: const Uuid().v4(),
       commentId: comment.id,
       type: CommentEventType.updated,
       text: comment.text,
-      timestamp: _timeSource.now(),
+      timestamp: now,
       userId: 'system',
-      logicalClock: _timeSource.now().millisecondsSinceEpoch,
+      logicalClock: now.millisecondsSinceEpoch,
     );
 
     _eventStore.add(event);
-    final updated = _rebuildSingle(comment.id);
-    if (updated != null) {
-      final withSync = updated.copyWith(syncState: SyncState.localOnly);
-      await _repo.saveComment(withSync);
-      await _remoteRepo.saveComment(withSync);
-    }
+    final updated = (_rebuildSingle(comment.id) ?? comment).copyWith(
+      text: comment.text,
+      lastUpdatedAt: now,
+      syncState: SyncState.localOnly,
+    );
+    await _repo.saveComment(updated);
+    await _remoteRepo.saveComment(updated);
   }
 
   Future<void> deleteComment(String id, String tournamentId) async {
@@ -196,6 +200,7 @@ class CommentCommandService {
   // ★ Phase 4: timeline replay rebuild
   MatchCommentModel? _rebuildSingle(String commentId) {
     final events = _eventStore.where((e) => e.commentId == commentId).toList();
+    if (events.isEmpty) return null;
     events.sort((a, b) => a.compareTo(b));
 
     MatchCommentModel? state;
@@ -327,4 +332,54 @@ class CommentTimelineItem implements ReorderableTimelineItem {
 
   @override
   String get rebuildHash => comment.rebuildHash;
+}
+
+class IndividualPlayerTimelineItem implements ReorderableTimelineItem {
+  final String playerName;
+  final List<MatchModel> matches;
+  final List<MatchCommentModel> comments;
+
+  IndividualPlayerTimelineItem(
+    this.playerName,
+    this.matches, [
+    this.comments = const [],
+  ]);
+
+  @override
+  String get id => 'player_$playerName';
+
+  @override
+  double get order {
+    if (matches.isEmpty && comments.isEmpty) {
+      return 0.0;
+    }
+
+    final mOrder = matches.isEmpty
+        ? double.maxFinite
+        : matches.fold<double>(
+            double.maxFinite,
+            (min, m) => m.order < min ? m.order : min,
+          );
+
+    final cOrder = comments.isEmpty
+        ? double.maxFinite
+        : comments.fold<double>(
+            double.maxFinite,
+            (min, c) => c.order < min ? c.order : min,
+          );
+
+    final minVal = mOrder < cOrder ? mOrder : cOrder;
+
+    if (minVal >= double.maxFinite || minVal.isInfinite || minVal.isNaN) {
+      return 0.0;
+    }
+    return minVal;
+  }
+
+  @override
+  String get rebuildHash {
+    final mHash = matches.map((m) => m.rebuildHash).join(',');
+    final cHash = comments.map((c) => c.rebuildHash).join(',');
+    return 'player|$playerName|$mHash|$cHash';
+  }
 }

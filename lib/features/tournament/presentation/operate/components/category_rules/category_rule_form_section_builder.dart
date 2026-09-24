@@ -23,6 +23,9 @@ class CategoryRuleFormSectionBuilder {
       isRunningTime: isNormal
           ? view.normalIsRunningTime
           : view.advancedIsRunningTime,
+      isIpponShobu: isNormal
+          ? view.normalIsIpponShobu
+          : view.advancedIsIpponShobu,
       ipponLimit: isNormal ? view.normalIpponLimit : view.advancedIpponLimit,
       hansokuLimit: isNormal
           ? view.normalHansokuLimit
@@ -75,6 +78,9 @@ class CategoryRuleFormSectionBuilder {
       onIsRunningTimeChanged: isNormal
           ? view.onNormalIsRunningTimeChanged
           : view.onAdvancedIsRunningTimeChanged,
+      onIsIpponShobuChanged: isNormal
+          ? view.onNormalIsIpponShobuChanged
+          : view.onAdvancedIsIpponShobuChanged,
       onRenseikaiTypeChanged: isNormal
           ? view.onNormalRenseikaiTypeChanged
           : view.onAdvancedRenseikaiTypeChanged,

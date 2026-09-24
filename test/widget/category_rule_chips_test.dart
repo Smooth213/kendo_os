@@ -60,5 +60,34 @@ void main() {
       expect(find.text('⏱️ 4分'), findsOneWidget);
       expect(find.text('🤝 申合せ'), findsOneWidget);
     });
+
+    testWidgets('Renders advancedRule chips with 1本勝負 badge', (
+      WidgetTester tester,
+    ) async {
+      final ruleSet = const CategoryRuleSet(
+        useAdvancedRule: true,
+        normalRule: MatchRule(matchTimeMinutes: 3.0, isIpponShobu: false),
+        advancedRule: MatchRule(
+          matchTimeMinutes: 2.5,
+          isIpponShobu: true,
+          isEnchoUnlimited: true,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleChips(ruleSet: ruleSet, isDark: false),
+          ),
+        ),
+      );
+
+      expect(find.text('🥋 個人戦'), findsOneWidget);
+      expect(find.text('⏱️ 3分'), findsOneWidget);
+      expect(find.text('🔥 上位戦'), findsOneWidget);
+      expect(find.text('⏱️ 2分30秒'), findsOneWidget);
+      expect(find.text('⚡ 1本勝負'), findsOneWidget);
+      expect(find.text('⏳ 延長無制限'), findsOneWidget);
+    });
   });
 }

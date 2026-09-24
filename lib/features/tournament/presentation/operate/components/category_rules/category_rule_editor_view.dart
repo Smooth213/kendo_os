@@ -55,6 +55,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   // 通常戦ルールパラメータ
   final double normalTime;
   final bool normalIsRunningTime;
+  final bool normalIsIpponShobu;
   final int normalIpponLimit;
   final int normalHansokuLimit;
   final bool normalHasHantei;
@@ -79,6 +80,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   // 上位戦ルールパラメータ
   final double advancedTime;
   final bool advancedIsRunningTime;
+  final bool advancedIsIpponShobu;
   final int advancedIpponLimit;
   final int advancedHansokuLimit;
   final bool advancedHasHantei;
@@ -128,6 +130,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final ValueChanged<double> onNormalLossPointChanged;
   final ValueChanged<double> onNormalDrawPointChanged;
   final ValueChanged<int> onNormalIpponLimitChanged;
+  final ValueChanged<bool> onNormalIsIpponShobuChanged;
   final ValueChanged<int> onNormalHansokuLimitChanged;
 
   // ルール変更コールバック (上位戦)
@@ -152,6 +155,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final ValueChanged<double> onAdvancedLossPointChanged;
   final ValueChanged<double> onAdvancedDrawPointChanged;
   final ValueChanged<int> onAdvancedIpponLimitChanged;
+  final ValueChanged<bool> onAdvancedIsIpponShobuChanged;
   final ValueChanged<int> onAdvancedHansokuLimitChanged;
   final ValueChanged<List<String>> onKeywordsChanged;
 
@@ -208,6 +212,7 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.normalKachinukiUnlimitedType,
     required this.normalHasLeagueDaihyo,
     required this.normalIsDaihyoIpponShobu,
+    required this.normalIsIpponShobu,
     required this.normalWinPoint,
     required this.normalLossPoint,
     required this.normalDrawPoint,
@@ -220,6 +225,7 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.normalDaihyoHasHantei,
     required this.advancedTime,
     required this.advancedIsRunningTime,
+    required this.advancedIsIpponShobu,
     required this.advancedIpponLimit,
     required this.advancedHansokuLimit,
     required this.advancedHasHantei,
@@ -267,6 +273,7 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.onNormalLossPointChanged,
     required this.onNormalDrawPointChanged,
     required this.onNormalIpponLimitChanged,
+    required this.onNormalIsIpponShobuChanged,
     required this.onNormalHansokuLimitChanged,
     required this.onAdvancedMatchTimeChanged,
     required this.onAdvancedIsRunningTimeChanged,
@@ -289,6 +296,7 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.onAdvancedLossPointChanged,
     required this.onAdvancedDrawPointChanged,
     required this.onAdvancedIpponLimitChanged,
+    required this.onAdvancedIsIpponShobuChanged,
     required this.onAdvancedHansokuLimitChanged,
     required this.onKeywordsChanged,
     required this.onCancel,

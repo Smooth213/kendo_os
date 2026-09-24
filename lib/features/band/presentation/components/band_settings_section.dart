@@ -25,9 +25,13 @@ class BandSettingsTile extends ConsumerWidget {
           fit: BoxFit.cover,
         ),
       ),
-      title: const Text(
+      title: Text(
         'BAND連携・LIVE配信設定',
-        style: TextStyle(fontWeight: AppFontWeight.bold),
+        style: TextStyle(
+          color: context.appColors.textColor,
+          fontSize: AppFontSize.bodyMedium,
+          fontWeight: AppFontWeight.medium,
+        ),
       ),
       subtitle: Text(
         count > 0

@@ -92,9 +92,7 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsAccordionItem(value: 'dark', label: 'ダーク'),
                 SettingsAccordionItem(value: 'sunshine', label: '☀️ サンシャイン'),
               ],
-              onSelected: (val) {
-                ref.read(settingsProvider.notifier).updateField(themeMode: val);
-              },
+              onSelected: (val) => notifier.updateField(themeMode: val),
             ),
             SettingsAccordionSelector<String>(
               title: '文字サイズ',
@@ -106,9 +104,7 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsAccordionItem(value: 'large', label: '大'),
                 SettingsAccordionItem(value: 'extraLarge', label: '特大'),
               ],
-              onSelected: (val) {
-                notifier.updateField(textSizeMode: val);
-              },
+              onSelected: (val) => notifier.updateField(textSizeMode: val),
             ),
             SettingsSwitchTile(
               title: 'スリープ(画面消灯)防止',
@@ -118,7 +114,8 @@ class SettingsScreen extends ConsumerWidget {
               iconBgColor: AppKendoColors.orange,
             ),
             SettingsSwitchTile(
-              title: '省エネモード（背景アニメーション停止）',
+              title: '省エネモード',
+              subtitle: '背景アニメーション停止',
               value: !settings.enableLiquidGlass,
               onChanged: (val) => notifier.updateField(enableLiquidGlass: !val),
               icon: Icons.eco,
@@ -140,7 +137,10 @@ class SettingsScreen extends ConsumerWidget {
         ),
         const SettingsSectionFooter(
           text:
-              '☀️ サンシャインモードは直射日光や反射光に負けない最高コントラストを提供します。\n文字サイズは体育館での遠距離視認や年長者・弱視の先生方の操作性を高めます。\nスリープ防止をオンにすると長時間の試合記録中に画面が暗くなるのを防ぎます。\nサーマル冷却制御は端末の熱暴走とバッテリー急減を完全自動で防止しています（時間精度100%保証）。',
+              '☀️ サンシャインモードは直射日光や反射光に負けない最高コントラストを提供します。\n'
+              '文字サイズは体育館での遠距離視認や年長者・弱視の先生方の操作性を高めます。\n'
+              'スリープ防止をオンにすると長時間の試合記録中に画面が暗くなるのを防ぎます。\n'
+              'サーマル冷却制御は端末の熱暴走とバッテリー急減を完全自動で防止しています（時間精度100%保証）。',
         ),
         const SizedBox(height: AppSpacing.xl),
 
@@ -162,9 +162,7 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsAccordionItem(value: 'effect', label: '効果音'),
                 SettingsAccordionItem(value: 'voice', label: '音声読み上げ'),
               ],
-              onSelected: (val) {
-                notifier.updateField(audioFeedbackMode: val);
-              },
+              onSelected: (val) => notifier.updateField(audioFeedbackMode: val),
             ),
             if (settings.audioFeedbackMode != 'off')
               SettingsSwitchTile(
@@ -175,14 +173,12 @@ class SettingsScreen extends ConsumerWidget {
                 iconBgColor: AppKendoColors.pink,
               ),
             SettingsSwitchTile(
-              title: '触覚フィードバック (階層化ハプティクス)',
+              title: '触覚フィードバック\n(階層化ハプティクス)',
               subtitle: 'タイマー(軽)、一本(強)、反則(2連)、取消(長)など、操作に応じた振動で通知します',
               value: settings.haptic,
               onChanged: (val) {
                 notifier.updateField(haptic: val, strikeVib: val);
-                if (val) {
-                  KendoHaptics.viewFlip();
-                }
+                if (val) KendoHaptics.viewFlip();
               },
               icon: Icons.vibration,
               iconBgColor: AppKendoColors.purpleAccent,
@@ -191,7 +187,8 @@ class SettingsScreen extends ConsumerWidget {
         ),
         const SettingsSectionFooter(
           text:
-              '※ 体育館の寒さや騒音の中でも、指先の触覚と音で操作結果を確実に把握できます。\n※ 触覚バイブレーションはiOS/Androidアプリ版で動作します。Webブラウザ（Safari等）やPC環境では端末・ブラウザの仕様により振動が制限されます。',
+              '※ 体育館の寒さや騒音の中でも、指先の触覚と音で操作結果を確実に把握できます。\n'
+              '※ 触覚バイブレーションはiOS/Androidアプリ版で動作します。Webブラウザ（Safari等）やPC環境では端末・ブラウザの仕様により振動が制限されます。',
         ),
         const SizedBox(height: AppSpacing.xl),
 
@@ -206,60 +203,44 @@ class SettingsScreen extends ConsumerWidget {
             SettingsSwitchTile(
               title: '緊急連絡・本部アナウンスの通知',
               value: settings.notifyOnEmergency,
-              onChanged: (val) {
-                if (val) triggerWebNotificationPermission();
-                notifier.updateField(notifyOnEmergency: val);
-                if (val) {
-                  ref
-                      .read(notificationServiceProvider)
-                      .initializeNotification();
-                }
-              },
+              onChanged: (val) => _handleNotificationToggle(
+                ref: ref,
+                val: val,
+                update: () => notifier.updateField(notifyOnEmergency: val),
+              ),
               icon: Icons.emergency_share,
               iconBgColor: AppKendoColors.red,
             ),
             SettingsSwitchTile(
               title: '新着試合追加の通知',
               value: settings.notifyOnMatchAdded,
-              onChanged: (val) {
-                if (val) triggerWebNotificationPermission();
-                notifier.updateField(notifyOnMatchAdded: val);
-                if (val) {
-                  ref
-                      .read(notificationServiceProvider)
-                      .initializeNotification();
-                }
-              },
+              onChanged: (val) => _handleNotificationToggle(
+                ref: ref,
+                val: val,
+                update: () => notifier.updateField(notifyOnMatchAdded: val),
+              ),
               icon: Icons.add_alert,
               iconBgColor: AppKendoColors.indigo,
             ),
             SettingsSwitchTile(
               title: '試合開始の通知',
               value: settings.notifyOnMatchStarted,
-              onChanged: (val) {
-                if (val) triggerWebNotificationPermission();
-                notifier.updateField(notifyOnMatchStarted: val);
-                if (val) {
-                  ref
-                      .read(notificationServiceProvider)
-                      .initializeNotification();
-                }
-              },
+              onChanged: (val) => _handleNotificationToggle(
+                ref: ref,
+                val: val,
+                update: () => notifier.updateField(notifyOnMatchStarted: val),
+              ),
               icon: Icons.play_circle_outline,
               iconBgColor: AppKendoColors.green,
             ),
             SettingsSwitchTile(
               title: '試合結果・終了の通知',
               value: settings.notifyOnResult,
-              onChanged: (val) {
-                if (val) triggerWebNotificationPermission();
-                notifier.updateField(notifyOnResult: val);
-                if (val) {
-                  ref
-                      .read(notificationServiceProvider)
-                      .initializeNotification();
-                }
-              },
+              onChanged: (val) => _handleNotificationToggle(
+                ref: ref,
+                val: val,
+                update: () => notifier.updateField(notifyOnResult: val),
+              ),
               icon: Icons.emoji_events,
               iconBgColor: AppKendoColors.ipponGold,
             ),
@@ -350,7 +331,9 @@ class SettingsScreen extends ConsumerWidget {
         ),
         const SettingsSectionFooter(
           text:
-              '※ Googleアカウントと連携すると、PCやiPadなどの異なる端末間でもクイックメモや通知既読が自動同期されます。\n※ ログイン画面が開かない場合は、ブラウザ（SafariやChrome）の「ポップアップブロック」を解除（許可）してください。（iPad/iPhoneの場合は「設定」アプリ→「Safari」→「ポップアップブロック」をオフ）\n※ ログアウトすると現在のセッションが終了し、次回利用時に再ログインが必要になります。',
+              '※ Googleアカウントと連携すると、PCやiPadなどの異なる端末間でもクイックメモや通知既読が自動同期されます。\n'
+              '※ ログイン画面が開かない場合は、ブラウザ（SafariやChrome）の「ポップアップブロック」を解除（許可）してください。（iPad/iPhoneの場合は「設定」アプリ→「Safari」→「ポップアップブロック」をオフ）\n'
+              '※ ログアウトすると現在のセッションが終了し、次回利用時に再ログインが必要になります。',
         ),
         const SizedBox(height: AppSpacing.xl),
         if (isBottomSheet)
@@ -406,12 +389,10 @@ class SettingsScreen extends ConsumerWidget {
             },
             child: Navigator(
               key: navKey,
-              onGenerateRoute: (settings) {
-                return MaterialPageRoute(
-                  builder: (innerNavContext) =>
-                      buildBodyContent(innerNavContext, scrollController),
-                );
-              },
+              onGenerateRoute: (settings) => MaterialPageRoute(
+                builder: (innerNavContext) =>
+                    buildBodyContent(innerNavContext, scrollController),
+              ),
             ),
           );
         },
@@ -463,5 +444,17 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  void _handleNotificationToggle({
+    required WidgetRef ref,
+    required bool val,
+    required VoidCallback update,
+  }) {
+    if (val) triggerWebNotificationPermission();
+    update();
+    if (val) {
+      ref.read(notificationServiceProvider).initializeNotification();
+    }
   }
 }

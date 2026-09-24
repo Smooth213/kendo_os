@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
-/// 🥋 部内戦ドックに配置可能な全7機能の識別Enum
+/// 🥋 部内戦ドックに配置可能な全8機能の識別Enum
 enum BunaiksenDockItemType {
   matches, // 対戦ホーム一覧（次試合・全カード確認）
   standings, // 部内戦成績一覧（星取表・連勝リーダーボード）
@@ -13,6 +13,7 @@ enum BunaiksenDockItemType {
   quickMemo, // クイックメモ（手書き・テキスト）
   timer, // ドックタイマー
   calculator, // 試合数・コート配分計算機
+  viewerQr, // 観戦用QRコード ＆ 速報共有
   settings, // 設定
 }
 
@@ -34,6 +35,8 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
         return 'タイマー';
       case BunaiksenDockItemType.calculator:
         return '試合数計算';
+      case BunaiksenDockItemType.viewerQr:
+        return '観戦QR';
       case BunaiksenDockItemType.settings:
         return '設定';
     }
@@ -53,6 +56,8 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
         return Icons.timer_outlined;
       case BunaiksenDockItemType.calculator:
         return Icons.calculate_rounded;
+      case BunaiksenDockItemType.viewerQr:
+        return Icons.qr_code_2_rounded;
       case BunaiksenDockItemType.settings:
         return Icons.settings_rounded;
     }
@@ -72,6 +77,8 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
         return AppKendoColors.orangeAccent;
       case BunaiksenDockItemType.calculator:
         return AppKendoColors.cyan;
+      case BunaiksenDockItemType.viewerQr:
+        return AppKendoColors.purple;
       case BunaiksenDockItemType.settings:
         return AppKendoColors.grey;
     }
@@ -92,6 +99,8 @@ extension BunaiksenDockItemTypeExtension on BunaiksenDockItemType {
         return const Color(0xFFFB923C); // Orange 400
       case BunaiksenDockItemType.calculator:
         return const Color(0xFF22D3EE); // Cyan 400
+      case BunaiksenDockItemType.viewerQr:
+        return const Color(0xFFC084FC); // Purple 400 (部内戦パープル・高コントラスト)
       case BunaiksenDockItemType.settings:
         return const Color(0xFFCBD5E1); // Slate 200 (高視認性シルバーホワイト)
     }
@@ -140,6 +149,7 @@ class BunaiksenDockItemsOrderNotifier
     BunaiksenDockItemType.quickMemo,
     BunaiksenDockItemType.timer,
     BunaiksenDockItemType.calculator,
+    BunaiksenDockItemType.viewerQr,
     BunaiksenDockItemType.settings,
   ];
 

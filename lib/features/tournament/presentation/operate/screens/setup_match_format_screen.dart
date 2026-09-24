@@ -84,12 +84,16 @@ class _SetupMatchFormatScreenState
   @override
   void dispose() {
     _noteController.removeListener(_onNoteChanged);
-    _noteController.dispose();
-    _courtController.dispose();
-    _overallTimeController.dispose();
-    _winPointController.dispose();
-    _lossPointController.dispose();
-    _drawPointController.dispose();
+    for (final c in [
+      _noteController,
+      _courtController,
+      _overallTimeController,
+      _winPointController,
+      _lossPointController,
+      _drawPointController,
+    ]) {
+      c.dispose();
+    }
     _pageController.dispose();
     super.dispose();
   }
@@ -253,11 +257,23 @@ class _SetupMatchFormatScreenState
     setState(() {
       _state.manualRoundTypeOverride = type;
       ref.read(tournamentProvider(widget.tournamentId)).whenData((tourney) {
-        if (tourney != null && tourney.categoryRules.containsKey(_category)) {
-          final ruleSet = tourney.categoryRules[_category]!;
-          _applyRule(
-            type == 'advanced' ? ruleSet.advancedRule : ruleSet.normalRule,
-          );
+        if (tourney != null) {
+          final ruleSet =
+              (_state.selectedRuleKey != null
+                  ? tourney.categoryRules[_state.selectedRuleKey]
+                  : null) ??
+              CategoryRuleMatchHelper.findRuleSetForMatch(
+                tourney.categoryRules,
+                category: _category,
+                matchType: _state.matchType,
+                note: _noteController.text,
+              ) ??
+              tourney.categoryRules[_category];
+          if (ruleSet != null) {
+            _applyRule(
+              type == 'advanced' ? ruleSet.advancedRule : ruleSet.normalRule,
+            );
+          }
         }
       });
     });
@@ -332,9 +348,9 @@ class _SetupMatchFormatScreenState
                             _loadCategoryRules();
                           });
                         },
-                        onAdjustOrder: (team) => _handleEditTeam(team),
-                        onEditTeam: (team) => _handleEditTeam(team),
-                        onDeleteTeam: (team) => _handleDeleteTeam(team),
+                        onAdjustOrder: _handleEditTeam,
+                        onEditTeam: _handleEditTeam,
+                        onDeleteTeam: _handleDeleteTeam,
                         onNavigateToTeamRegistration: () => context.push(
                           '/team-registration/${widget.tournamentId}?initialPage=2',
                         ),

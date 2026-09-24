@@ -17,25 +17,31 @@ class TimelineReorderHelper {
     WidgetRef ref,
   ) async {
     final permissions = ref.read(permissionProvider);
-    if (permissions.isReadOnly || oldIndex == newIndex) {
-      return;
-    }
+    if (permissions.isReadOnly) return;
+
+    final targetIndex = newIndex;
+    if (oldIndex == targetIndex) return;
 
     final item = list[oldIndex];
+    final remaining = List<TimelineItem>.of(list)..removeAt(oldIndex);
+    if (remaining.isEmpty) return;
+
+    // リストは timelineOrder 降順 (大きい順) にソートされている
     double newOrder;
-    if (newIndex == 0) {
-      newOrder = list.first.timelineOrder - 100.0;
-    } else if (newIndex == list.length - 1) {
-      newOrder = list.last.timelineOrder + 100.0;
+    if (targetIndex <= 0) {
+      // 先頭に配置: 最上位のアイテムよりさらに大きくする
+      newOrder = remaining.first.timelineOrder + 100.0;
+    } else if (targetIndex >= remaining.length) {
+      // 末尾に配置: 最下位のアイテムよりさらに小さくする
+      newOrder = remaining.last.timelineOrder - 100.0;
     } else {
-      final prevOrder =
-          list[newIndex > oldIndex ? newIndex : newIndex - 1].timelineOrder;
-      final nextOrder =
-          list[newIndex > oldIndex ? newIndex + 1 : newIndex].timelineOrder;
-      newOrder = (prevOrder + nextOrder) / 2.0;
-    }
-    if (newOrder == list[newIndex].timelineOrder) {
-      newOrder += 0.001;
+      // remaining[targetIndex - 1] と remaining[targetIndex] の間に挿入
+      final upperOrder = remaining[targetIndex - 1].timelineOrder;
+      final lowerOrder = remaining[targetIndex].timelineOrder;
+      newOrder = (upperOrder + lowerOrder) / 2.0;
+      if (newOrder == upperOrder || newOrder == lowerOrder) {
+        newOrder = upperOrder - 0.001;
+      }
     }
 
     if (item is MatchCommentModel) {
@@ -65,23 +71,46 @@ class TimelineReorderHelper {
     WidgetRef ref,
   ) async {
     final permissions = ref.read(permissionProvider);
-    if (permissions.isReadOnly || oldIndex == newIndex) return;
+    if (permissions.isReadOnly) return;
+
+    final targetIndex = newIndex;
+    if (oldIndex == targetIndex) return;
 
     final item = list[oldIndex];
+    final remaining = List<MatchModel>.of(list)..removeAt(oldIndex);
+    if (remaining.isEmpty) return;
+
+    // 試合一覧のソート順判定 (先頭が末尾より小さい場合は昇順)
+    final isAscending =
+        remaining.length >= 2 && remaining.first.order < remaining.last.order;
+
     double newOrder;
-    if (newIndex == 0) {
-      newOrder = list.first.order - 100.0;
-    } else if (newIndex == list.length - 1) {
-      newOrder = list.last.order + 100.0;
+    if (isAscending) {
+      if (targetIndex <= 0) {
+        newOrder = remaining.first.order - 100.0;
+      } else if (targetIndex >= remaining.length) {
+        newOrder = remaining.last.order + 100.0;
+      } else {
+        final prevOrder = remaining[targetIndex - 1].order;
+        final nextOrder = remaining[targetIndex].order;
+        newOrder = (prevOrder + nextOrder) / 2.0;
+        if (newOrder == prevOrder || newOrder == nextOrder) {
+          newOrder = prevOrder + 0.001;
+        }
+      }
     } else {
-      final prevOrder =
-          list[newIndex > oldIndex ? newIndex : newIndex - 1].order;
-      final nextOrder =
-          list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
-      newOrder = (prevOrder + nextOrder) / 2.0;
-    }
-    if (newOrder == list[newIndex].order) {
-      newOrder += 0.001;
+      if (targetIndex <= 0) {
+        newOrder = remaining.first.order + 100.0;
+      } else if (targetIndex >= remaining.length) {
+        newOrder = remaining.last.order - 100.0;
+      } else {
+        final upperOrder = remaining[targetIndex - 1].order;
+        final lowerOrder = remaining[targetIndex].order;
+        newOrder = (upperOrder + lowerOrder) / 2.0;
+        if (newOrder == upperOrder || newOrder == lowerOrder) {
+          newOrder = upperOrder - 0.001;
+        }
+      }
     }
 
     try {
@@ -93,7 +122,7 @@ class TimelineReorderHelper {
     }
   }
 
-  /// トップレベルタイムライン（コメント/試合グループ）の並び替え
+  /// トップレベルタイムライン（コメント/試合グループ/個人戦選手）の並び替え
   static Future<void> onReorderTimeline(
     List<ReorderableTimelineItem> list,
     int oldIndex,
@@ -101,23 +130,32 @@ class TimelineReorderHelper {
     WidgetRef ref,
   ) async {
     final permissions = ref.read(permissionProvider);
-    if (permissions.isReadOnly || oldIndex == newIndex) return;
+    if (permissions.isReadOnly) return;
+
+    final targetIndex = newIndex;
+    if (oldIndex == targetIndex) return;
 
     final item = list[oldIndex];
+    final remaining = List<ReorderableTimelineItem>.of(list)
+      ..removeAt(oldIndex);
+    if (remaining.isEmpty) return;
+
+    // リストは order 降順 (大きい順) にソートされている
     double newOrder;
-    if (newIndex == 0) {
-      newOrder = list.first.order - 100.0;
-    } else if (newIndex == list.length - 1) {
-      newOrder = list.last.order + 100.0;
+    if (targetIndex <= 0) {
+      // 先頭に配置: 最上位のアイテムよりさらに大きくする
+      newOrder = remaining.first.order + 100.0;
+    } else if (targetIndex >= remaining.length) {
+      // 末尾に配置: 最下位のアイテムよりさらに小さくする
+      newOrder = remaining.last.order - 100.0;
     } else {
-      final prevOrder =
-          list[newIndex > oldIndex ? newIndex : newIndex - 1].order;
-      final nextOrder =
-          list[newIndex > oldIndex ? newIndex + 1 : newIndex].order;
-      newOrder = (prevOrder + nextOrder) / 2.0;
-    }
-    if (newOrder == list[newIndex].order) {
-      newOrder += 0.001;
+      // remaining[targetIndex - 1] と remaining[targetIndex] の間に挿入
+      final upperOrder = remaining[targetIndex - 1].order;
+      final lowerOrder = remaining[targetIndex].order;
+      newOrder = (upperOrder + lowerOrder) / 2.0;
+      if (newOrder == upperOrder || newOrder == lowerOrder) {
+        newOrder = upperOrder - 0.001;
+      }
     }
 
     if (item is CommentTimelineItem) {
@@ -139,6 +177,18 @@ class TimelineReorderHelper {
             .saveMatchesBulk(updatedMatches);
       } catch (e) {
         debugPrint('グループ並び替え保存エラー: $e');
+      }
+    } else if (item is IndividualPlayerTimelineItem) {
+      final offsetOrder = newOrder - item.order;
+      final updatedMatches = item.matches
+          .map((m) => m.copyWith(order: m.order + offsetOrder))
+          .toList();
+      try {
+        await ref
+            .read(matchApplicationServiceProvider)
+            .saveMatchesBulk(updatedMatches);
+      } catch (e) {
+        debugPrint('個人戦選手並び替え保存エラー: $e');
       }
     }
   }
