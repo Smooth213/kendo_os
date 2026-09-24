@@ -112,7 +112,10 @@ class _SetupMatchFormatScreenState
       players: players,
       onSaved: (updated) {
         if (mounted && _state.selectedTeamId == updated.id) {
-          setState(() => _state.matchType = updated.matchType);
+          setState(() {
+            _state.matchType = updated.matchType;
+            _loadCategoryRules();
+          });
         }
       },
     );
@@ -142,6 +145,7 @@ class _SetupMatchFormatScreenState
       note: _noteController.text,
       categoryName: _category,
       tournament: tourney,
+      matchType: _state.matchType,
     );
   }
 
@@ -168,6 +172,7 @@ class _SetupMatchFormatScreenState
           note: cur,
           categoryName: _category,
           tournament: tourney,
+          matchType: _state.matchType,
         );
         _applyRule(isAdv ? ruleSet.advancedRule : ruleSet.normalRule);
       }
@@ -324,6 +329,7 @@ class _SetupMatchFormatScreenState
                           setState(() {
                             _state.selectedTeamId = team.id;
                             _state.matchType = team.matchType;
+                            _loadCategoryRules();
                           });
                         },
                         onAdjustOrder: (team) => _handleEditTeam(team),

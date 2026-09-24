@@ -6,9 +6,44 @@ class CategoryRuleLookupHelper {
   static String cleanCategoryBaseName(String ruleKey) {
     final base = ruleKey
         .trim()
-        .replaceAll(RegExp(r'[\(（](個人戦|団体戦|錬成会|申合せ|申し合わせ|\d+)[\)）]$'), '')
+        .replaceAll(RegExp(r'[\(（](個人戦|団体戦|勝ち抜き戦|勝抜|錬成会|申合せ|\d+)[\)）]$'), '')
         .trim();
     return base.isEmpty ? ruleKey.trim() : base;
+  }
+
+  /// 試合形式文字列（またはカテゴリ名・メモ等）から正規化された種別（勝ち抜き戦 / 個人戦 / 団体戦 / 錬成会）を判定
+  static String normalizeMatchType(String type, {String text = ''}) {
+    final combined = '$type $text';
+    if (combined.contains('勝ち抜き') || combined.contains('勝抜')) {
+      return '勝ち抜き戦';
+    }
+    if (combined.contains('個人') || type == '選手') {
+      return '個人戦';
+    }
+    if (combined.contains('錬成') || combined.contains('申合')) {
+      return '錬成会';
+    }
+    return '団体戦';
+  }
+
+  /// ルールセットエントリから種別（勝ち抜き戦 / 個人戦 / 団体戦 / 錬成会）を判定
+  static String getRuleEntryMatchType(MapEntry<String, CategoryRuleSet> entry) {
+    if (entry.value.normalRule.isKachinuki ||
+        entry.value.matchType.contains('勝ち抜き') ||
+        entry.value.matchType.contains('勝抜') ||
+        entry.key.contains('勝ち抜き') ||
+        entry.key.contains('勝抜')) {
+      return '勝ち抜き戦';
+    }
+    if (entry.value.matchType.contains('個人') || entry.key.contains('個人')) {
+      return '個人戦';
+    }
+    if (entry.value.normalRule.isRenseikai ||
+        entry.value.matchType.contains('錬成') ||
+        entry.key.contains('錬成')) {
+      return '錬成会';
+    }
+    return '団体戦';
   }
 
   /// 指定された部門名（および種別）に合致するすべてのルールセットエントリを取得
@@ -20,12 +55,6 @@ class CategoryRuleLookupHelper {
     if (categoryRules.isEmpty) return const [];
     final cleanCat = category.trim();
     final baseCat = cleanCategoryBaseName(cleanCat);
-    final bool? isIndividual = matchType != null
-        ? (matchType == '個人戦' ||
-              matchType == '選手' ||
-              matchType.contains('個人') ||
-              cleanCat.contains('個人'))
-        : null;
 
     final exactMatches = <MapEntry<String, CategoryRuleSet>>[];
     final baseMatches = <MapEntry<String, CategoryRuleSet>>[];
@@ -45,11 +74,11 @@ class CategoryRuleLookupHelper {
     }
 
     final allMatches = [...exactMatches, ...baseMatches, ...partialMatches];
-    if (isIndividual != null) {
+    if (matchType != null && matchType.isNotEmpty) {
+      final targetType = normalizeMatchType(matchType, text: cleanCat);
       final typeMatches = allMatches.where((entry) {
-        final ruleIsIndiv =
-            entry.value.matchType.contains('個人') || entry.key.contains('個人');
-        return ruleIsIndiv == isIndividual;
+        final entryType = getRuleEntryMatchType(entry);
+        return entryType == targetType;
       }).toList();
       if (typeMatches.isNotEmpty) return typeMatches;
     }
@@ -113,9 +142,24 @@ class CategoryRuleLookupHelper {
       }
     }
 
-    return candidates.firstWhere(
+    final targetType = normalizeMatchType(
+      matchType,
+      text: '$category $cleanNote',
+    );
+
+    // 種別が完全に一致するものを最優先
+    final typeMatchedCandidates = candidates.where((entry) {
+      return getRuleEntryMatchType(entry) == targetType;
+    }).toList();
+
+    final searchPool = typeMatchedCandidates.isNotEmpty
+        ? typeMatchedCandidates
+        : candidates;
+
+    // キー完全一致があれば選択
+    return searchPool.firstWhere(
       (entry) => entry.key == category.trim(),
-      orElse: () => candidates.first,
+      orElse: () => searchPool.first,
     );
   }
 

@@ -115,7 +115,11 @@ class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
                                   : null,
                             ),
                             Text(
-                              '$ipponLimit本',
+                              ipponLimit == 1
+                                  ? '1本 (1本勝負)'
+                                  : (ipponLimit == 2
+                                        ? '2本 (3本勝負)'
+                                        : '$ipponLimit本'),
                               style: const TextStyle(
                                 fontWeight: AppFontWeight.bold,
                                 fontSize: AppFontSize.body,

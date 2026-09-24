@@ -33,9 +33,9 @@ class ViewerMatchListSearchBar extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
+        AppSpacing.lg,
         AppSpacing.sm,
-        AppSpacing.xl,
+        AppSpacing.lg,
         AppSpacing.xs,
       ),
       child: Column(
@@ -121,6 +121,7 @@ class ViewerMatchListSearchBar extends StatelessWidget {
           // 2段目: ソート・全開閉ボタン
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
             child: Row(
               children: [
                 OutlinedButton.icon(
@@ -143,8 +144,9 @@ class ViewerMatchListSearchBar extends StatelessWidget {
                           ? const Color(0xFF38383A)
                           : context.appColors.primaryAccent,
                     ),
+                    visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.compact,
+                      horizontal: AppSpacing.sm,
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),
@@ -174,8 +176,9 @@ class ViewerMatchListSearchBar extends StatelessWidget {
                           ? const Color(0xFF38383A)
                           : context.appColors.primaryAccent,
                     ),
+                    visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.compact,
+                      horizontal: AppSpacing.sm,
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),

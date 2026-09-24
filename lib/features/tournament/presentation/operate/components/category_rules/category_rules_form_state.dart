@@ -119,8 +119,11 @@ class CategoryRulesFormState {
     // 通常戦設定
     normalTime = rules.normalRule.matchTimeMinutes;
     normalIsRunningTime = rules.normalRule.isRunningTime;
-    normalIsIpponShobu = rules.normalRule.isIpponShobu;
-    normalIpponLimit = rules.normalRule.ipponLimit;
+    normalIsIpponShobu =
+        rules.normalRule.isIpponShobu || rules.normalRule.ipponLimit == 1;
+    normalIpponLimit = rules.normalRule.isIpponShobu
+        ? 1
+        : rules.normalRule.ipponLimit;
     normalHansokuLimit = rules.normalRule.hansokuLimit;
     normalHasHantei = rules.normalRule.hasHantei;
     final isDantaiRule =
@@ -147,8 +150,11 @@ class CategoryRulesFormState {
     // 上位戦設定
     advancedTime = rules.advancedRule.matchTimeMinutes;
     advancedIsRunningTime = rules.advancedRule.isRunningTime;
-    advancedIsIpponShobu = rules.advancedRule.isIpponShobu;
-    advancedIpponLimit = rules.advancedRule.ipponLimit;
+    advancedIsIpponShobu =
+        rules.advancedRule.isIpponShobu || rules.advancedRule.ipponLimit == 1;
+    advancedIpponLimit = rules.advancedRule.isIpponShobu
+        ? 1
+        : rules.advancedRule.ipponLimit;
     advancedHansokuLimit = rules.advancedRule.hansokuLimit;
     advancedHasHantei = rules.advancedRule.hasHantei;
     advancedHasExtension =
@@ -209,8 +215,16 @@ class CategoryRulesFormState {
           : advancedHasLeagueDaihyo,
       matchTime: isNormal ? normalTime : advancedTime,
       isRunningTime: isNormal ? normalIsRunningTime : advancedIsRunningTime,
-      isIpponShobu: isNormal ? normalIsIpponShobu : advancedIsIpponShobu,
-      ipponLimit: isNormal ? normalIpponLimit : advancedIpponLimit,
+      isIpponShobu: isNormal
+          ? (normalIsIpponShobu || normalIpponLimit == 1)
+          : (advancedIsIpponShobu || advancedIpponLimit == 1),
+      ipponLimit: isNormal
+          ? ((normalIsIpponShobu || normalIpponLimit == 1)
+                ? 1
+                : normalIpponLimit)
+          : ((advancedIsIpponShobu || advancedIpponLimit == 1)
+                ? 1
+                : advancedIpponLimit),
       hansokuLimit: isNormal ? normalHansokuLimit : advancedHansokuLimit,
       hasHantei: isNormal ? normalHasHantei : advancedHasHantei,
       hasExtension: isNormal ? normalHasExtension : advancedHasExtension,

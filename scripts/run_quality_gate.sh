@@ -45,6 +45,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/governance/tournament_edit_sheet_governance_test.dart \
              test/governance/screens_and_bottom_sheets_governance_test.dart \
              test/governance/match_type_selection_governance_test.dart \
+             test/governance/category_rules_fallback_governance_test.dart \
              test/widget/tournament_edit_dock_bottom_sheet_integration_test.dart \
              test/widget/tournament_share_import_and_order_flow_test.dart \
              test/widget/clipboard_import_button_and_service_test.dart \

@@ -179,8 +179,10 @@ class CategoryRuleEditorContainer extends StatelessWidget {
           setState(() => formState.normalLossPoint = val),
       onNormalDrawPointChanged: (val) =>
           setState(() => formState.normalDrawPoint = val),
-      onNormalIpponLimitChanged: (val) =>
-          setState(() => formState.normalIpponLimit = val),
+      onNormalIpponLimitChanged: (val) => setState(() {
+        formState.normalIpponLimit = val;
+        formState.normalIsIpponShobu = (val == 1);
+      }),
       onNormalHansokuLimitChanged: (val) =>
           setState(() => formState.normalHansokuLimit = val),
       onAdvancedMatchTimeChanged: (val) =>
@@ -223,8 +225,10 @@ class CategoryRuleEditorContainer extends StatelessWidget {
           setState(() => formState.advancedLossPoint = val),
       onAdvancedDrawPointChanged: (val) =>
           setState(() => formState.advancedDrawPoint = val),
-      onAdvancedIpponLimitChanged: (val) =>
-          setState(() => formState.advancedIpponLimit = val),
+      onAdvancedIpponLimitChanged: (val) => setState(() {
+        formState.advancedIpponLimit = val;
+        formState.advancedIsIpponShobu = (val == 1);
+      }),
       onAdvancedHansokuLimitChanged: (val) =>
           setState(() => formState.advancedHansokuLimit = val),
       onKeywordsChanged: (kws) =>

@@ -38,9 +38,9 @@ class MatchTimelineControlBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
+        AppSpacing.lg,
         AppSpacing.sm,
-        AppSpacing.xl,
+        AppSpacing.lg,
         AppSpacing.xs,
       ),
       child: Column(
@@ -129,6 +129,7 @@ class MatchTimelineControlBar extends StatelessWidget {
           // 2段目: 横スクロール可能なアクションボタン群 (ルール変更・ソート・全開閉)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
             child: Row(
               children: [
                 if (!isReadOnlyUI && allMatches.isNotEmpty) ...[
@@ -154,8 +155,9 @@ class MatchTimelineControlBar extends StatelessWidget {
                             ? const Color(0xFF38383A)
                             : context.appColors.primaryAccent,
                       ),
+                      visualDensity: VisualDensity.compact,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.compact,
+                        horizontal: AppSpacing.sm,
                         vertical: 0,
                       ),
                       minimumSize: const Size(0, 30),
@@ -186,8 +188,9 @@ class MatchTimelineControlBar extends StatelessWidget {
                           ? const Color(0xFF38383A)
                           : context.appColors.primaryAccent,
                     ),
+                    visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.compact,
+                      horizontal: AppSpacing.sm,
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),
@@ -217,8 +220,9 @@ class MatchTimelineControlBar extends StatelessWidget {
                           ? const Color(0xFF38383A)
                           : context.appColors.primaryAccent,
                     ),
+                    visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.compact,
+                      horizontal: AppSpacing.sm,
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),

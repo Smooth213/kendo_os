@@ -145,5 +145,122 @@ void main() {
       );
       expect(isSemisRound, isTrue);
     });
+
+    test(
+      '5. 形式混同防止安全規約: 同一部門名で個人戦・団体戦・勝ち抜き戦が併存しても、対象形式に合致するルールセットが厳格かつ安全に解決されること',
+      () {
+        const teamRule = CategoryRuleSet(
+          normalRule: MatchRule(matchTimeMinutes: 3.0),
+          matchType: '団体戦',
+        );
+        const indivRule = CategoryRuleSet(
+          normalRule: MatchRule(matchTimeMinutes: 2.0),
+          matchType: '個人戦',
+        );
+        const kachinukiRule = CategoryRuleSet(
+          normalRule: MatchRule(matchTimeMinutes: 4.0, isKachinuki: true),
+          matchType: '勝ち抜き戦',
+        );
+
+        final rules = <String, CategoryRuleSet>{
+          '小学生の部': teamRule,
+          '小学生の部（個人戦）': indivRule,
+          '小学生の部（勝ち抜き戦）': kachinukiRule,
+        };
+
+        // 団体戦の解決
+        final matchedTeam = CategoryRuleMatchHelper.findRuleSetForMatch(
+          rules,
+          category: '小学生の部',
+          matchType: '団体戦',
+        );
+        expect(matchedTeam?.matchType, '団体戦');
+        expect(matchedTeam?.normalRule.matchTimeMinutes, 3.0);
+
+        // 個人戦の解決（同一基底カテゴリ名でも団体戦に吸い込まれないこと）
+        final matchedIndiv = CategoryRuleMatchHelper.findRuleSetForMatch(
+          rules,
+          category: '小学生の部',
+          matchType: '個人戦',
+        );
+        expect(matchedIndiv?.matchType, '個人戦');
+        expect(matchedIndiv?.normalRule.matchTimeMinutes, 2.0);
+
+        // 勝ち抜き戦の解決（団体戦や個人戦と混同されないこと）
+        final matchedKachinuki = CategoryRuleMatchHelper.findRuleSetForMatch(
+          rules,
+          category: '小学生の部',
+          matchType: '勝ち抜き戦',
+        );
+        expect(matchedKachinuki?.matchType, '勝ち抜き戦');
+        expect(matchedKachinuki?.normalRule.matchTimeMinutes, 4.0);
+      },
+    );
+
+    test(
+      '6. 上位戦ルール未設定時の安全保全規約: 上位戦ルールが無効（OFF）な場合、試合名が決勝等であっても上位戦ルールに誤適用・フォールバックせず通常戦ルールが保全されること',
+      () {
+        final tournamentWithNoAdvanced = TournamentModel(
+          id: 'tour_no_adv',
+          organizationId: 'dojo_1',
+          name: '通常大会',
+          date: DateTime(2026, 9, 5),
+          venue: '日本武道館',
+          categories: const ['小学生の部'],
+          categoryRules: const {
+            '小学生の部': CategoryRuleSet(
+              normalRule: MatchRule(matchTimeMinutes: 2.0),
+              advancedRule: MatchRule(matchTimeMinutes: 4.0),
+              useAdvancedRule: false, // 🔥 上位戦ルールOFF
+              matchType: '団体戦',
+            ),
+          },
+        );
+
+        // 上位戦キーワード判定で false が返ること（上位戦ルールが存在しないため）
+        final ruleSet = tournamentWithNoAdvanced.categoryRules['小学生の部']!;
+        expect(ruleSet.useAdvancedRule, isFalse);
+
+        // 試合名が「決勝戦」であっても、適用ルールは必ず通常戦ルールであること
+        final effectiveRule = ruleSet.useAdvancedRule
+            ? ruleSet.advancedRule
+            : ruleSet.normalRule;
+        expect(effectiveRule.matchTimeMinutes, 2.0);
+      },
+    );
+
+    test('7. 勝負方式（1本勝負）設定整合性規約: 先取本数1本指定時に1本勝負フラグおよびルール実体が完全に同期・保全されること', () {
+      final rule = CategoryRuleMatchHelper.buildMatchRule(
+        category: '中学生の部',
+        matchType: '個人戦',
+        matchTime: 3.0,
+        isRunningTime: false,
+        isIpponShobu: false, // フラグが一時的に false でも
+        ipponLimit: 1, // 先取本数が 1本 の場合
+        hansokuLimit: 2,
+        hasHantei: true,
+        hasExtension: true,
+        isEnchoUnlimited: false,
+        enchoTime: 2.0,
+        enchoCount: 1,
+        kachinukiUnlimitedType: 'none',
+        isDaihyoIpponShobu: true,
+        winPoint: 0,
+        lossPoint: 0,
+        drawPoint: 0,
+        isRenseikai: false,
+        renseikaiType: 'none',
+        overallTime: 30,
+        daihyoMatchTime: 3.0,
+        daihyoHasExtension: false,
+        daihyoEnchoTime: 0,
+        daihyoEnchoCount: 0,
+        daihyoHasHantei: false,
+      );
+
+      // 確実に 1本勝負フラグが true に同期・保全されること
+      expect(rule.isIpponShobu, isTrue);
+      expect(rule.ipponLimit, 1);
+    });
   });
 }

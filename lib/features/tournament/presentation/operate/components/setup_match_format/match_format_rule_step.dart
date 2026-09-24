@@ -154,20 +154,26 @@ class MatchFormatRuleStep extends ConsumerWidget {
 
     final isMultipleRules = ruleEntries.length > 1;
 
+    final curRule = currentRuleEntry.value;
+    final isAdvanced =
+        (selectedRuleScene == 'advanced' || isCurrentMatchAdvanced) &&
+        curRule.useAdvancedRule;
+
     String displayRuleName;
     if (ruleEntries.isEmpty) {
       displayRuleName = selectedRuleScene == 'renseikai'
           ? '⚔️ 錬成ルール'
           : (selectedRuleScene == 'moushiawase'
                 ? '🤝 申合せルール'
-                : (selectedRuleScene == 'advanced' ? '⭐ 上位戦ルール' : '🏆 通常戦ルール'));
+                : ((selectedRuleScene == 'advanced' && isAdvanced)
+                      ? '⭐ 上位戦ルール'
+                      : '🏆 通常戦ルール'));
     } else {
-      final curRule = currentRuleEntry.value;
       final sceneLabel = selectedRuleScene == 'renseikai'
           ? '⚔️ 錬成ルール'
           : (selectedRuleScene == 'moushiawase'
                 ? '🤝 申合せルール'
-                : (selectedRuleScene == 'advanced'
+                : ((selectedRuleScene == 'advanced' && curRule.useAdvancedRule)
                       ? '⭐ 上位戦ルール'
                       : (curRule.isMultiScene ? '🏆 本戦ルール' : '🏆 通常戦ルール')));
       final sub = curRule.subtitle.trim();
@@ -184,9 +190,6 @@ class MatchFormatRuleStep extends ConsumerWidget {
         displayRuleName = sceneLabel;
       }
     }
-
-    final isAdvanced =
-        selectedRuleScene == 'advanced' || isCurrentMatchAdvanced;
 
     String getExtensionText() {
       if (!hasExtension) return 'なし';
@@ -374,107 +377,97 @@ class MatchFormatRuleStep extends ConsumerWidget {
         // 適用ルールの手動切替トグル (useAdvancedRule が有効な場合のみ)
         Builder(
           builder: (context) {
-            final asyncTourney = ref.watch(tournamentProvider(tournamentId));
-            return asyncTourney.maybeWhen(
-              data: (tournament) {
-                if (tournament == null) return const SizedBox.shrink();
-                final ruleSet = tournament.categoryRules[categoryName];
-                if (ruleSet == null || !ruleSet.useAdvancedRule) {
-                  return const SizedBox.shrink();
-                }
+            final curRuleSet = currentRuleEntry.value;
+            if (!curRuleSet.useAdvancedRule) {
+              return const SizedBox.shrink();
+            }
 
-                final isAdvancedToggle = isCurrentMatchAdvanced;
+            final isAdvancedToggle =
+                isCurrentMatchAdvanced && curRuleSet.useAdvancedRule;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '適用ルール（自動判別・手動切替）',
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: AppFontSize.bodySmall,
+                    color: AppKendoColors.grey,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
                   children: [
-                    const Text(
-                      '適用ルール（自動判別・手動切替）',
-                      style: TextStyle(
-                        fontWeight: AppFontWeight.bold,
-                        fontSize: AppFontSize.bodySmall,
-                        color: AppKendoColors.grey,
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => onSetManualRoundType('normal'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: !isAdvancedToggle
+                              ? themeColors.primaryAccent
+                              : (isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : const Color(0xFFF2F2F7)),
+                          foregroundColor: !isAdvancedToggle
+                              ? const Color(0xFFFFFFFF)
+                              : (isDark
+                                    ? AppKendoColors.white60
+                                    : const Color(0xFF000000)),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppRadius.medium,
+                            side: BorderSide(
+                              color: !isAdvancedToggle
+                                  ? AppKendoColors.transparent
+                                  : (isDark
+                                        ? const Color(0xFF38383A)
+                                        : const Color(0x33000000)),
+                            ),
+                          ),
+                        ),
+                        child: const Text(
+                          '通常戦のルール',
+                          style: TextStyle(fontWeight: AppFontWeight.semiBold),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => onSetManualRoundType('normal'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: !isAdvancedToggle
-                                  ? themeColors.primaryAccent
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => onSetManualRoundType('advanced'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isAdvancedToggle
+                              ? AppKendoColors.teal
+                              : (isDark
+                                    ? const Color(0xFF2C2C2E)
+                                    : const Color(0xFFF2F2F7)),
+                          foregroundColor: isAdvancedToggle
+                              ? const Color(0xFFFFFFFF)
+                              : (isDark
+                                    ? AppKendoColors.white60
+                                    : const Color(0xFF000000)),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppRadius.medium,
+                            side: BorderSide(
+                              color: isAdvancedToggle
+                                  ? AppKendoColors.transparent
                                   : (isDark
-                                        ? const Color(0xFF2C2C2E)
-                                        : const Color(0xFFF2F2F7)),
-                              foregroundColor: !isAdvancedToggle
-                                  ? const Color(0xFFFFFFFF)
-                                  : (isDark
-                                        ? AppKendoColors.white60
-                                        : const Color(0xFF000000)),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppRadius.medium,
-                                side: BorderSide(
-                                  color: !isAdvancedToggle
-                                      ? AppKendoColors.transparent
-                                      : (isDark
-                                            ? const Color(0xFF38383A)
-                                            : const Color(0x33000000)),
-                                ),
-                              ),
-                            ),
-                            child: const Text(
-                              '通常戦のルール',
-                              style: TextStyle(
-                                fontWeight: AppFontWeight.semiBold,
-                              ),
+                                        ? const Color(0xFF38383A)
+                                        : const Color(0x33000000)),
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => onSetManualRoundType('advanced'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isAdvancedToggle
-                                  ? AppKendoColors.teal
-                                  : (isDark
-                                        ? const Color(0xFF2C2C2E)
-                                        : const Color(0xFFF2F2F7)),
-                              foregroundColor: isAdvancedToggle
-                                  ? const Color(0xFFFFFFFF)
-                                  : (isDark
-                                        ? AppKendoColors.white60
-                                        : const Color(0xFF000000)),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppRadius.medium,
-                                side: BorderSide(
-                                  color: isAdvancedToggle
-                                      ? AppKendoColors.transparent
-                                      : (isDark
-                                            ? const Color(0xFF38383A)
-                                            : const Color(0x33000000)),
-                                ),
-                              ),
-                            ),
-                            child: const Text(
-                              '上位戦のルール',
-                              style: TextStyle(
-                                fontWeight: AppFontWeight.semiBold,
-                              ),
-                            ),
-                          ),
+                        child: const Text(
+                          '上位戦のルール',
+                          style: TextStyle(fontWeight: AppFontWeight.semiBold),
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.xl),
                   ],
-                );
-              },
-              orElse: () => const SizedBox.shrink(),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
             );
           },
         ),

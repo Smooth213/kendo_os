@@ -106,13 +106,14 @@ class CategoryRuleMatchHelper {
     final isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
     final isKachinuki = matchType == '勝ち抜き戦';
     final effectiveHasExt = (isIndiv || isKachinuki) ? hasExtension : false;
+    final effectiveIsIpponShobu = isIpponShobu || ipponLimit == 1;
 
     return MatchRule(
       category: category,
       matchTimeMinutes: matchTime,
       isRunningTime: isRunningTime,
-      isIpponShobu: isIpponShobu,
-      ipponLimit: isIpponShobu ? 1 : ipponLimit,
+      isIpponShobu: effectiveIsIpponShobu,
+      ipponLimit: effectiveIsIpponShobu ? 1 : ipponLimit,
       hansokuLimit: hansokuLimit,
       hasHantei: hasHantei,
       isEnchoUnlimited: effectiveHasExt && isEnchoUnlimited,

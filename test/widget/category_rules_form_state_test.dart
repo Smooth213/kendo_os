@@ -373,5 +373,25 @@ void main() {
         expect(find.textContaining('延長1回'), findsOneWidget);
       },
     );
+
+    test('ipponLimit = 1 correctly synchronizes isIpponShobu to true', () {
+      final formState = CategoryRulesFormState();
+      formState.normalIpponLimit = 1;
+      formState.advancedIpponLimit = 1;
+
+      final ruleSet = formState.buildCategoryRuleSet('小学生の部');
+      expect(ruleSet.normalRule.isIpponShobu, isTrue);
+      expect(ruleSet.normalRule.ipponLimit, 1);
+      expect(ruleSet.advancedRule.isIpponShobu, isTrue);
+      expect(ruleSet.advancedRule.ipponLimit, 1);
+
+      // 再度復元した場合も isIpponShobu が true のまま維持されること
+      final restored = CategoryRulesFormState();
+      restored.populateFromRuleSet('小学生の部', ruleSet);
+      expect(restored.normalIsIpponShobu, isTrue);
+      expect(restored.normalIpponLimit, 1);
+      expect(restored.advancedIsIpponShobu, isTrue);
+      expect(restored.advancedIpponLimit, 1);
+    });
   });
 }

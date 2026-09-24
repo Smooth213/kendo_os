@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_match_count_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -24,9 +25,9 @@ class TimelineCategoryFilterChipsBar extends ConsumerWidget {
     }
 
     final selectedCategory = ref.watch(selectedCategoryFilterProvider);
-    final int totalAllMatches = categoryEntries.fold(
+    final int totalAllMatches = categoryEntries.fold<int>(
       0,
-      (sum, e) => sum + e.value.length,
+      (sum, e) => sum + TimelineMatchCountHelper.countMatches(e.value),
     );
 
     return SingleChildScrollView(
@@ -50,7 +51,9 @@ class TimelineCategoryFilterChipsBar extends ConsumerWidget {
           // 各カテゴリーのチップ
           ...categoryEntries.map((entry) {
             final categoryName = entry.key;
-            final matchCount = entry.value.length;
+            final matchCount = TimelineMatchCountHelper.countMatches(
+              entry.value,
+            );
             final isSelected = selectedCategory == categoryName;
 
             return Padding(

@@ -12,13 +12,20 @@ class MatchFormatRuleSyncHelper {
     required String note,
     required String categoryName,
     required TournamentModel? tournament,
+    String? matchType,
   }) {
     List<String>? customKeywords;
     if (tournament != null) {
-      final ruleSet = CategoryRuleMatchHelper.findRuleSetForCategoryAndType(
+      final ruleSet = CategoryRuleMatchHelper.findRuleSetForMatch(
         tournament.categoryRules,
-        categoryName,
+        category: categoryName,
+        matchType: matchType ?? '団体戦',
+        note: note,
       );
+      // 🔥 上位戦ルールが無効（設定されていない）場合は常に通常戦扱いとする
+      if (ruleSet != null && !ruleSet.useAdvancedRule) {
+        return false;
+      }
       if (ruleSet != null && ruleSet.advancedKeywords.isNotEmpty) {
         customKeywords = ruleSet.advancedKeywords;
       }
@@ -42,6 +49,10 @@ class MatchFormatRuleSyncHelper {
           ? 'renseikai'
           : (ruleSet.useMoushiawaseRule ? 'moushiawase' : 'honsen');
     }
+    // 上位戦ルールが無効な場合は通常戦にフォールバック
+    if (targetScene == 'advanced' && !ruleSet.useAdvancedRule) {
+      targetScene = 'honsen';
+    }
     if (targetScene == 'honsen' && isAdvanced && ruleSet.useAdvancedRule) {
       targetScene = 'advanced';
     }
@@ -59,7 +70,9 @@ class MatchFormatRuleSyncHelper {
       case 'moushiawase':
         return ruleSet.moushiawaseRule;
       case 'advanced':
-        return ruleSet.advancedRule;
+        return ruleSet.useAdvancedRule
+            ? ruleSet.advancedRule
+            : ruleSet.normalRule;
       case 'honsen':
       default:
         return ruleSet.normalRule;
@@ -81,6 +94,9 @@ class MatchFormatRuleSyncHelper {
     final targetRule = getRuleForScene(scene: scene, ruleSet: ruleSet);
     state.isRenseikai = isRen;
     if (isRen) state.renseikaiType = targetRule.renseikaiType;
+    if (ruleSet.matchType.isNotEmpty) {
+      state.matchType = ruleSet.matchType;
+    }
     state.applyMatchRule(
       targetRule,
       overallTimeController: overallTimeController,
