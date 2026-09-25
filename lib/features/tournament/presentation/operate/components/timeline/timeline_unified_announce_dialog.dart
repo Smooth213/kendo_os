@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
@@ -9,10 +10,10 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
-import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
-/// タイムライン用 公式アナウンス・コメントの一斉発信ダイアログ
+/// タイムライン用 公式アナウンス・コメントの一斉発信シート
 class TimelineUnifiedAnnounceDialog {
   static void show(
     BuildContext context,
@@ -23,8 +24,13 @@ class TimelineUnifiedAnnounceDialog {
     double order, {
     String? matchGroupId,
   }) {
-    showAppDialog(
+    showAppBottomSheet(
       context: context,
+      isScrollControlled: true,
+      enableDrag: false,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.90,
+      ),
       builder: (dialogCtx) => _UnifiedAnnounceDialog(
         parentContext: context,
         ref: ref,
@@ -64,6 +70,8 @@ class _UnifiedAnnounceDialog extends StatefulWidget {
 class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
   late final TextEditingController titleController;
   late final TextEditingController bodyController;
+  final FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _bodyFocusNode = FocusNode();
   String selectedTarget = 'all';
 
   @override
@@ -71,10 +79,20 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
     super.initState();
     titleController = TextEditingController();
     bodyController = TextEditingController();
+    _titleFocusNode.addListener(_onFocusChange);
+    _bodyFocusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    _titleFocusNode.removeListener(_onFocusChange);
+    _bodyFocusNode.removeListener(_onFocusChange);
+    _titleFocusNode.dispose();
+    _bodyFocusNode.dispose();
     titleController.dispose();
     bodyController.dispose();
     super.dispose();
@@ -88,34 +106,80 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
       isDark: isDark,
       mode: isBunaiksen ? 'bunaiksen' : 'normal',
     );
+    final cardBgColor = isDark
+        ? const Color(0xFF1C1C1E)
+        : context.appColors.cardBackground;
 
-    return AppDialog(
-      backgroundColor: isDark
-          ? const Color(0xFF1C1C1E)
-          : context.appColors.inputBackground,
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-      titleWidget: Row(
-        children: [
-          const Icon(Icons.add_alert, color: Color(0xFFFF69B4)),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              '公式アナウンス・コメントの一斉発信',
-              style: TextStyle(
-                fontSize: AppFontSize.subhead,
-                fontWeight: AppFontWeight.bold,
-                color: context.appColors.textColor,
-              ),
-            ),
-          ),
-        ],
+    final keyboardHeight = kIsWeb
+        ? 0.0
+        : MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardVisible =
+        _titleFocusNode.hasFocus ||
+        _bodyFocusNode.hasFocus ||
+        keyboardHeight > 0 ||
+        MediaQuery.viewInsetsOf(context).bottom > 50;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxSheetHeight = screenHeight * 0.90;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxSheetHeight),
+      decoration: BoxDecoration(
+        color: cardBgColor,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xlargeValue),
+        ),
       ),
-      content: SingleChildScrollView(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.md,
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        bottom: AppSpacing.lg,
+      ),
+      child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // ドラッグハンドルバー
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
+                      : const Color(0x33000000),
+                  borderRadius: AppRadius.medium,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // ヘッダー行
+            Row(
+              children: [
+                const Icon(Icons.add_alert, color: Color(0xFFFF69B4)),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    '公式アナウンス・コメントの一斉発信',
+                    style: TextStyle(
+                      fontSize: AppFontSize.subhead,
+                      fontWeight: AppFontWeight.bold,
+                      color: context.appColors.textColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // タイトル入力欄
             AppTextField(
               controller: titleController,
+              focusNode: _titleFocusNode,
+              scrollPadding: EdgeInsets.zero,
               style: TextStyle(color: context.appColors.textColor),
               decoration: const InputDecoration(
                 labelText: 'タイトル（例：【緊急】会場変更）',
@@ -123,8 +187,12 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
+
+            // 本文入力欄
             AppTextField(
               controller: bodyController,
+              focusNode: _bodyFocusNode,
+              scrollPadding: EdgeInsets.zero,
               maxLines: 3,
               style: TextStyle(color: context.appColors.textColor),
               decoration: const InputDecoration(
@@ -132,7 +200,9 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
                 hintText: '例：3会場へ移動になりました。選手は速やかに移動してください。',
               ),
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
+
+            // 通知範囲選択チップ
             Container(
               padding: const EdgeInsets.all(AppSpacing.xs),
               decoration: BoxDecoration(
@@ -175,37 +245,53 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
                 ],
               ),
             ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // アクションボタン（キャンセル / 保存ボタン）
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'キャンセル',
+                    style: TextStyle(color: AppKendoColors.grey),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  key: const Key('timeline_submit_announce_button'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: themeColors.primaryAccent,
+                    foregroundColor: AppKendoColors.pureWhite,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.small,
+                    ),
+                  ),
+                  onPressed: _onSubmit,
+                  icon: Icon(
+                    selectedTarget == 'none'
+                        ? Icons.chat_bubble_outline
+                        : Icons.campaign,
+                    size: 18,
+                  ),
+                  label: Text(
+                    selectedTarget == 'none' ? 'コメントを保存' : '一斉発信して保存',
+                    style: const TextStyle(fontWeight: AppFontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            if (!kIsWeb && isKeyboardVisible) SizedBox(height: keyboardHeight),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'キャンセル',
-            style: TextStyle(color: AppKendoColors.grey),
-          ),
-        ),
-        ElevatedButton.icon(
-          key: const Key('timeline_submit_announce_button'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: themeColors.primaryAccent,
-            foregroundColor: AppKendoColors.pureWhite,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
-          ),
-          onPressed: _onSubmit,
-          icon: Icon(
-            selectedTarget == 'none'
-                ? Icons.chat_bubble_outline
-                : Icons.campaign,
-            size: 18,
-          ),
-          label: Text(
-            selectedTarget == 'none' ? 'コメントを保存' : '一斉発信して保存',
-            style: const TextStyle(fontWeight: AppFontWeight.bold),
-          ),
-        ),
-      ],
     );
   }
 

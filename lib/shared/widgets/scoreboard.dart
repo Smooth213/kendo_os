@@ -171,7 +171,15 @@ class MatchScoreboard extends ConsumerWidget {
       ),
     );
 
-    final showResult = viewState.winner != null || viewState.isTie;
+    // 🛡️ 勝敗表示の安全判定: viewState だけでなく targetMatch の実データからもフォールバック判定
+    final bool matchIsFinished =
+        targetMatch.status == 'finished' || targetMatch.status == 'approved';
+    final showResult =
+        viewState.winner != null ||
+        viewState.isTie ||
+        (matchIsFinished &&
+            (targetMatch.redScore != targetMatch.whiteScore ||
+                (targetMatch.events.any((e) => e.type == PointType.hantei))));
 
     return RepaintBoundary(
       child: FittedBox(
@@ -180,7 +188,7 @@ class MatchScoreboard extends ConsumerWidget {
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildResultOverlay(context, viewState),
+                  _buildResultOverlay(context, viewState, targetMatch),
                   const SizedBox(height: AppSpacing.lg),
                   scoreboardRow,
                 ],
@@ -188,6 +196,12 @@ class MatchScoreboard extends ConsumerWidget {
             : scoreboardRow,
       ),
     );
+  }
+
+  static String _cleanPlayerName(String name) {
+    if (name.contains('欠員')) return '(欠員)';
+    if (!name.contains(':')) return name.trim();
+    return name.split(':').last.replaceAll(')', '').trim();
   }
 
   Widget _buildScoreColumn(
@@ -200,11 +214,24 @@ class MatchScoreboard extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pts = (allPts[side] ?? []).where((p) => p.mark != '△').toList();
-    final isWinner = viewState.winner == side.name;
+    final isWinner = viewState.winner != null
+        ? viewState.winner == side.name
+        : (match.status == 'approved' || match.status == 'finished') &&
+              ((side == Side.red && match.redScore > match.whiteScore) ||
+                  (side == Side.white && match.whiteScore > match.redScore));
     final isFinished = match.status == 'approved' || match.status == 'finished';
     final nameColor = side == Side.red
         ? context.appColors.errorColor
         : context.appColors.textColor;
+
+    // 🛡️ 選手名取得の二重安全フォールバック: viewStateが空文字の場合でもmatchデータから100%確実に復元
+    final String cleanPlayerName = side == Side.red
+        ? (viewState.redCleanName.isNotEmpty
+              ? viewState.redCleanName
+              : _cleanPlayerName(match.redName))
+        : (viewState.whiteCleanName.isNotEmpty
+              ? viewState.whiteCleanName
+              : _cleanPlayerName(match.whiteName));
 
     return SizedBox(
       width: 380,
@@ -225,8 +252,25 @@ class MatchScoreboard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: isDark
                     ? const Color(0xFF1C1C1E)
-                    : const Color(0xFFF2F2F7),
+                    : const Color(0xFFFFFFFF),
                 borderRadius: AppRadius.small,
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.12)
+                      : AppKendoColors.pureBlack.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppKendoColors.pureBlack.withValues(
+                            alpha: 0.04,
+                          ),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
               ),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
@@ -234,9 +278,7 @@ class MatchScoreboard extends ConsumerWidget {
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
                 child: Text(
-                  side == Side.red
-                      ? viewState.redCleanName
-                      : viewState.whiteCleanName,
+                  cleanPlayerName,
                   style: TextStyle(
                     fontSize: AppFontSize.scoreboardMedium,
                     fontWeight: AppFontWeight.bold,
@@ -245,7 +287,6 @@ class MatchScoreboard extends ConsumerWidget {
                     letterSpacing: 1.2,
                   ),
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   textAlign: side == Side.red
                       ? TextAlign.right
                       : TextAlign.left,
@@ -404,11 +445,20 @@ class MatchScoreboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildResultOverlay(BuildContext context, MatchViewState viewState) {
+  Widget _buildResultOverlay(
+    BuildContext context,
+    MatchViewState viewState,
+    MatchModel match,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     String resultText = '引き分け';
-    if (viewState.winner == 'red') resultText = '赤 の勝ち';
-    if (viewState.winner == 'white') resultText = '白 の勝ち';
+    final winner =
+        viewState.winner ??
+        (match.redScore > match.whiteScore
+            ? 'red'
+            : (match.whiteScore > match.redScore ? 'white' : 'draw'));
+    if (winner == 'red') resultText = '赤 の勝ち';
+    if (winner == 'white') resultText = '白 の勝ち';
 
     return Container(
       height: 60,

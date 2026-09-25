@@ -43,6 +43,7 @@ class CategoryLeaguePointsSection extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('win_pt_$keyPrefix'),
                 initialValue: winPoint.toString(),
+                scrollPadding: EdgeInsets.zero,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -62,6 +63,7 @@ class CategoryLeaguePointsSection extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('loss_pt_$keyPrefix'),
                 initialValue: lossPoint.toString(),
+                scrollPadding: EdgeInsets.zero,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -81,6 +83,7 @@ class CategoryLeaguePointsSection extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('draw_pt_$keyPrefix'),
                 initialValue: drawPoint.toString(),
+                scrollPadding: EdgeInsets.zero,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),

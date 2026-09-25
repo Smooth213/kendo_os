@@ -74,14 +74,17 @@ class ClipboardImportBannerCard extends ConsumerWidget {
             onImportCompleted?.call();
           },
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.compact,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // アイコンバッジ
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
                     color: iconBadgeBg,
                     borderRadius: AppRadius.medium,
@@ -93,10 +96,10 @@ class ClipboardImportBannerCard extends ConsumerWidget {
                   child: Icon(
                     Icons.content_paste_go_rounded,
                     color: accentColor,
-                    size: 22,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.compact),
 
                 // タイトルと解説
                 Expanded(
@@ -110,7 +113,7 @@ class ClipboardImportBannerCard extends ConsumerWidget {
                             child: Text(
                               'クリップボードから自動入力',
                               style: TextStyle(
-                                fontSize: AppFontSize.body,
+                                fontSize: AppFontSize.bodySmall,
                                 fontWeight: AppFontWeight.bold,
                                 color: appColors.textColor,
                               ),
@@ -120,7 +123,7 @@ class ClipboardImportBannerCard extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.xs,
-                              vertical: 2.0,
+                              vertical: 1.5,
                             ),
                             decoration: BoxDecoration(
                               color: accentColor.withValues(alpha: 0.15),
@@ -137,24 +140,26 @@ class ClipboardImportBannerCard extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.xxs),
+                      const SizedBox(height: 2.0),
                       Text(
-                        '共有された大会テキストをコピーしていれば、大会名・日程・チーム情報をワンタップで反映できます',
+                        'コピーしたテキストから大会名・日程をワンタップで自動入力',
                         style: TextStyle(
-                          fontSize: AppFontSize.small,
+                          fontSize: AppFontSize.caption,
                           color: descTextColor,
-                          height: 1.35,
+                          height: 1.3,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.xs),
 
                 // 矢印インジケーター
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  size: 14,
+                  size: 13,
                   color: accentColor.withValues(alpha: 0.7),
                 ),
               ],

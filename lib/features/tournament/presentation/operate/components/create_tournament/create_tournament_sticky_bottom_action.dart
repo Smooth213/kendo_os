@@ -34,8 +34,8 @@ class CreateTournamentStickyBottomAction extends ConsumerWidget {
       padding: EdgeInsets.only(
         left: AppSpacing.xl,
         right: AppSpacing.xl,
-        top: AppSpacing.xl,
-        bottom: MediaQuery.of(context).padding.bottom + 24,
+        top: AppSpacing.md,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
         color: bottomBarColor,

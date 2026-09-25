@@ -15,6 +15,7 @@ SUB_AUDITS = [
     ("① Web/Native クロスプラットフォーム完全同一動作保証規約", ["python3", "scripts/check_cross_platform_parity_governance.py"]),
     ("② Web/PWA プラットフォーム境界＆安全規約", ["python3", "scripts/check_web_platform_safety.py"]),
     ("③ iOS PWA タッチ座標同期＆ロール選択画面規約", ["python3", "scripts/check_ios_pwa_touch_sync_governance.py"]),
+    ("④ 入力フォーカス時ビューポート安定性・跳ね上がり防止保証規約", ["python3", "scripts/check_input_viewport_stability_governance.py"]),
 ]
 
 def main():

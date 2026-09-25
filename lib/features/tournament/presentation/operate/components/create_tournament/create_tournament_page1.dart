@@ -34,20 +34,26 @@ class CreateTournamentPage1 extends ConsumerWidget {
         : const Color(0x22000000);
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.sm,
+      ),
       children: [
         Text(
           '大会の名前と日付を\n教えてください',
           style: TextStyle(
             fontSize: AppFontSize.display,
             fontWeight: AppFontWeight.bold,
-            height: 1.4,
+            height: 1.35,
             color: textColor,
           ),
         ),
-        const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.lg),
         TextFormField(
           controller: nameController,
+          scrollPadding: EdgeInsets.zero,
           style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '大会名',
@@ -82,7 +88,7 @@ class CreateTournamentPage1 extends ConsumerWidget {
           ),
           validator: (v) => v == null || v.isEmpty ? '大会名を入力してください' : null,
         ),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.md),
         ListTile(
           title: const Text(
             '開催年月日',
@@ -116,13 +122,13 @@ class CreateTournamentPage1 extends ConsumerWidget {
           tileColor: inputBgColor,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
+            vertical: AppSpacing.xs,
           ),
           onTap: onPickDate,
         ),
         // 手動入力とクリップボード取り込みの分離線
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           child: Row(
             children: [
               Expanded(child: Divider(color: dividerColor, thickness: 1.0)),

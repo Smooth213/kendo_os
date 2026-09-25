@@ -35,6 +35,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/governance/text_scale_overflow_governance_test.dart \
              test/widget/all_screens_text_scale_no_overflow_test.dart \
              test/governance/cross_platform_parity_governance_test.dart \
+             test/governance/input_viewport_stability_governance_test.dart \
              test/governance/ui_rebuild_governance_test.dart \
              test/governance/rendering_boundary_governance_test.dart \
              test/governance/list_virtualization_governance_test.dart \

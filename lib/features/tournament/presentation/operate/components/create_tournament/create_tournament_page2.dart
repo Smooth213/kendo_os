@@ -44,6 +44,7 @@ class CreateTournamentPage2 extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
         TextFormField(
           controller: venueController,
+          scrollPadding: EdgeInsets.zero,
           style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '会場・住所',
@@ -86,6 +87,7 @@ class CreateTournamentPage2 extends StatelessWidget {
         const SizedBox(height: AppSpacing.xl),
         TextFormField(
           controller: notesController,
+          scrollPadding: EdgeInsets.zero,
           maxLines: 4,
           style: TextStyle(color: textColor),
           decoration: InputDecoration(

@@ -11,6 +11,7 @@ import 'package:kendo_os/bootstrap/app_startup.dart';
 import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.dart';
+import 'package:kendo_os/shared/infrastructure/services/web_theme_syncer.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
     as legacy_sync;
@@ -321,21 +322,36 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
             break;
         }
 
-        final scaledChild = MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: effectiveScaler),
-          child: child,
-        );
+        // 🛡️ iOS Web/PWA 安全防御：ブラウザから safe area が渡されない場合でもステータスバー被りを防ぐ
+        var mediaQueryData = MediaQuery.of(
+          context,
+        ).copyWith(textScaler: effectiveScaler);
+        if (kIsWeb &&
+            defaultTargetPlatform == TargetPlatform.iOS &&
+            mediaQueryData.padding.top == 0.0) {
+          // iOS PWA が全画面透過モードで起動された際、AppBar がステータスバー（時計・ノッチ）と衝突するのを自動防衛
+          mediaQueryData = mediaQueryData.copyWith(
+            padding: mediaQueryData.padding.copyWith(top: 48.0),
+            viewPadding: mediaQueryData.viewPadding.copyWith(top: 48.0),
+          );
+        }
+
+        final scaledChild = MediaQuery(data: mediaQueryData, child: child);
 
         return Consumer(
           builder: (context, ref, _) {
             final isOffline =
                 ref.watch(globalConnectivityProvider).value ?? false;
             final isDark = Theme.of(context).brightness == Brightness.dark;
+            final scaffoldBg = isDark
+                ? AppKendoColors.pureBlack
+                : const Color(0xFFF2F2F7);
+            if (kIsWeb) {
+              applyWebThemeColor(scaffoldBg);
+            }
 
             return Scaffold(
-              backgroundColor: isDark
-                  ? AppKendoColors.pureBlack
-                  : const Color(0xFFF2F2F7),
+              backgroundColor: scaffoldBg,
               body: ThermalToastListener(
                 child: Column(
                   children: [

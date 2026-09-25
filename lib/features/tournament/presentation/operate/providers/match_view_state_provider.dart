@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'match_list_provider.dart';
 import 'sync_provider.dart';
@@ -61,10 +63,15 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((
   ref,
   matchId,
 ) {
-  final match = ref
+  MatchModel? match = ref
       .watch(matchListProvider)
       .where((m) => m.id == matchId)
       .firstOrNull;
+
+  if (match == null && kIsWeb) {
+    final allMatches = ref.watch(webCurrentTournamentMatchesProvider);
+    match = allMatches.where((m) => m.id == matchId).firstOrNull;
+  }
   final syncStatus = ref.watch(syncStatusProvider);
   final isProcessing = ref.watch(isMatchCommandProcessingProvider);
   final settings = ref.watch(settingsProvider);

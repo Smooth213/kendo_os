@@ -77,6 +77,7 @@ class CategorySimpleSceneRuleForm extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           TextFormField(
             initialValue: overallTime.toString(),
+            scrollPadding: EdgeInsets.zero,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: '全体の制限時間（分）',

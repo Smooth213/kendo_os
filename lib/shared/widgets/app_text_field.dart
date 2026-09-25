@@ -65,7 +65,7 @@ class AppTextField extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.style,
     this.decoration,
-    this.scrollPadding = const EdgeInsets.all(AppSpacing.xxl),
+    this.scrollPadding = EdgeInsets.zero,
   });
 
   @override

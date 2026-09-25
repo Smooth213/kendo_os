@@ -160,6 +160,7 @@ class ProgramTitlePreviewDialog {
                           const SizedBox(height: AppSpacing.sm),
                           TextFormField(
                             initialValue: title,
+                            scrollPadding: EdgeInsets.zero,
                             autofocus: false,
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,

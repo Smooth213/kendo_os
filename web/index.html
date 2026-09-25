@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -19,37 +20,63 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Kendo OS - 次世代武道大会運営システム">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
   <script src="https://unpkg.com/isar@3.0.0-dev.14/dist/index.js"></script>
 
-  <!-- 🌐 iOS PWA 最適化スタイル -->
+  <!-- 🌐 iOS PWA 最適化スタイル：物理固定・エッジ・トゥ・エッジ（chin gap根絶）およびスクロールの絶対封殺 -->
   <style>
-    html, body {
-      height: 100%;
-      height: 100dvh; /* Mobile Safari / Chrome アドレスバー伸縮対応 */
-      width: 100%;
+    html,
+    body,
+    flutter-view,
+    flt-glass-pane {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      /* 🛡️ WebKit black-translucent chin gap (~59px) 物理根絶処方: 100%を完全排除し100vhで物理拘束 */
+      height: 100vh !important;
+      min-height: 100vh !important;
+      height: 100dvh;
+      height: -webkit-fill-available;
       margin: 0;
       padding: 0;
       overflow: hidden;
-      overscroll-behavior-y: none; /* Safari オーバースクロールバウンス完全防止 */
-      touch-action: manipulation; /* 連打操作時の誤ズームを完全遮断 */
+      overscroll-behavior: none;
+      overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: auto;
+      touch-action: manipulation;
+      /* 連打操作時の誤ズームを完全遮断 */
       -webkit-tap-highlight-color: transparent;
       -webkit-user-select: none;
       user-select: none;
-      background-color: #000000;
+      background-color: #F2F2F7;
+    }
+    @media (prefers-color-scheme: dark) {
+      html,
+      body,
+      flutter-view,
+      flt-glass-pane {
+        background-color: #000000;
+      }
     }
   </style>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <!-- 🛡️ iOS PWA フルスクリーン最適化（TouchSyncステルス補正併用） -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- 🛡️ iOS PWA エッジ・トゥ・エッジ全画面モード：下部黒バーを撤廃し、Safe Area は Flutter 側で自動制御 -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-title" content="Kendo OS">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>Kendo OS</title>
   <link rel="manifest" href="manifest.json">
@@ -72,120 +99,105 @@
         console.log('🔄 [BFCache] ページキャッシュから瞬時復帰しました。');
       }
     });
-  </script>
 
-  <script>
     // =========================================================================
-    // 🛡️ Kendo OS: iOS PWA WebKit 起動直後タッチ座標56pxズレ 完全物理根絶システム (v3.0 Stealth)
+    // 🛡️ Kendo OS: iOS PWA WebKit 起動直後タッチ座標ズレ 完全物理根絶システム (v4.0 Perfect Snap / v4.1 ScrollLock)
     //
     // 【真因と解決メカニズム】
-    // 1. iOS PWA / Safari 起動時、WebKit 内部の UIScrollView がステータスバー分（54px/47px）
-    //    インセットされたまま初期化がフリーズし、未同期の間すべてのタッチイベントの clientY に誤加算される。
-    // 2. WebKit の元の MouseEvent.prototype.clientY getter から直接生の値（rawY）を抽出し、
-    //    多重減算を物理的に防ぎながら fixedY = rawY - statusBarHeight を厳密に適用。
-    // 3. ユーザーの実際の指スワイプ（移動量 > 10px）のみで正規化完了（isSynced = true）と判定。
-    //    （※ 起動時の resize や初期 scroll による誤解除を完全排除）
-    // 4. UIデザインを一切汚さない完全ステルス動作（HUD非表示）。
+    // 1. WebKit PWA起動時、内部で window.scrollY=54px スクロールが発生し、画面全体が上に跳ね上がり
+    //    最上部がステータスバーに潜り込み、最下部に黒い帯が露出する。
+    // 2. CSSの position: fixed と resetScroll() により window.scrollTo(0, 0) を常時強制同期し、
+    //    画面の物理位置を原点(0, 0)に完全ロックする。
+    // 3. 同時に、イベントの offsetX / offsetY を真の物理要素内座標（clientX - rect.left）に完全スナップする。
     // =========================================================================
     (function () {
       var isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (!isIos) return; // iOS 以外は完全バイパス
-
-      // 1. ステータスバー高さの正確な計測
-      function getStatusBarHeight() {
-        try {
-          var probe = document.createElement('div');
-          probe.style.cssText = 'position:fixed;top:0;left:0;height:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none;z-index:-1;';
-          document.documentElement.appendChild(probe);
-          var h = probe.offsetHeight;
-          probe.remove();
-          if (h > 0) return h;
-        } catch (_) {}
-
-        if (window.visualViewport && window.visualViewport.offsetTop > 0) {
-          return window.visualViewport.offsetTop;
+      // 🛡️ 1. WebKit による勝手なスクロール（scrollY > 0）を物理封殺
+      function resetScroll() {
+        if (typeof window.scrollTo === 'function' && (window.scrollY !== 0 || window.scrollX !== 0)) {
+          window.scrollTo(0, 0);
         }
-
-        var screenH = Math.max(window.screen.width || 0, window.screen.height || 0);
-        if (screenH >= 852) return 54; // Dynamic Island (iPhone 14 Pro / 15 / 16)
-        if (screenH >= 812) return 47; // Notch (iPhone X / 11 / 12 / 13 / 14)
-        return 20; // Home button
-      }
-
-      var statusBarHeight = getStatusBarHeight();
-      var isSynced = false;
-
-      // 2. スワイプ（指移動 > 10px）のみで正規化完了と判定
-      function markSynced() {
-        if (!isSynced) {
-          isSynced = true;
-          console.log('✅ [Kendo OS Touch Sync] ユーザーのスワイプを検知。WebKitネイティブ座標系が正規化されたため補正を解除しました。');
+        if (document.documentElement && document.documentElement.scrollTop !== 0) {
+          document.documentElement.scrollTop = 0;
+        }
+        if (document.body && document.body.scrollTop !== 0) {
+          document.body.scrollTop = 0;
         }
       }
 
-      var touchStartX = null;
-      var touchStartY = null;
-
-      window.addEventListener('touchstart', function (e) {
-        if (e.touches && e.touches.length > 0) {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
+      // 🛡️ 2. セーフエリアとアプリ背景色の完全一体化（カラー動的注入 & meta theme-color 同期）
+      window.setThemeColor = function (colorHex) {
+        if (!colorHex) return;
+        if (document.documentElement) document.documentElement.style.backgroundColor = colorHex;
+        if (document.body) document.body.style.backgroundColor = colorHex;
+        var views = document.querySelectorAll('flutter-view, flt-glass-pane');
+        for (var vi = 0; vi < views.length; vi++) {
+          views[vi].style.backgroundColor = colorHex;
         }
-      }, { capture: true, passive: true });
-
-      window.addEventListener('touchmove', function (e) {
-        if (touchStartY !== null && e.touches && e.touches.length > 0) {
-          var dy = Math.abs(e.touches[0].clientY - touchStartY);
-          var dx = Math.abs(e.touches[0].clientX - touchStartX);
-          if (dy > 10 || dx > 10) {
-            markSynced();
-          }
+        var metas = document.querySelectorAll('meta[name="theme-color"]');
+        for (var mi = 0; mi < metas.length; mi++) {
+          metas[mi].setAttribute('content', colorHex);
         }
-      }, { capture: true, passive: true });
+      };
 
-      // 3. ネイティブプロトタイプgetterを退避（多重減算の完全防止）
-      var nativeClientY = MouseEvent.prototype ? 
-                          Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'clientY').get : null;
-      var nativePageY = MouseEvent.prototype ? 
-                        Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'pageY').get : null;
+      window.setThemeMode = function (isDark) {
+        window.setThemeColor(isDark ? '#000000' : '#F2F2F7');
+      };
+
+      window.addEventListener('scroll', resetScroll, { passive: true });
+      window.addEventListener('resize', resetScroll, { passive: true });
+      window.addEventListener('orientationchange', resetScroll, { passive: true });
+      for (var t = 0; t <= 3000; t += 100) {
+        setTimeout(resetScroll, t);
+      }
+      setInterval(resetScroll, 500);
+
+      if (!isIos) return; // 以下iOS固有のタッチスナップ処理
 
       var pointerEvents = [
-        'pointerdown', 'pointerup', 'pointermove',
-        'touchstart', 'touchend', 'touchmove',
+        'pointerdown', 'pointerup', 'pointermove', 'pointercancel',
+        'touchstart', 'touchend', 'touchmove', 'touchcancel',
         'mousedown', 'mouseup', 'click'
       ];
 
       function patchEvent(e) {
+        resetScroll();
         if (!e) return;
-        if (isSynced || statusBarHeight <= 0) return;
+        var clientX = (e.clientX !== undefined && e.clientX !== null)
+          ? e.clientX
+          : (e.touches && e.touches[0] ? e.touches[0].clientX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : null));
+        var clientY = (e.clientY !== undefined && e.clientY !== null)
+          ? e.clientY
+          : (e.touches && e.touches[0] ? e.touches[0].clientY : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : null));
+        if (clientX === null || clientY === null) return;
 
-        // WebKit ネイティブの真の raw 値を取得
-        var rawY = nativeClientY ? nativeClientY.call(e) : e.clientY;
-        var fixedY = rawY - statusBarHeight;
+        var target = e.target || document.documentElement;
+        var rect = (target && typeof target.getBoundingClientRect === 'function')
+          ? target.getBoundingClientRect()
+          : { left: 0, top: 0 };
+
+        var expectedX = clientX - rect.left;
+        var expectedY = clientY - rect.top;
 
         try {
-          Object.defineProperty(e, 'clientY', {
-            get: function () { return isSynced ? rawY : fixedY; },
-            configurable: true
-          });
-          Object.defineProperty(e, 'pageY', {
-            get: function () { return isSynced ? (nativePageY ? nativePageY.call(e) : e.pageY) : fixedY; },
+          Object.defineProperty(e, 'offsetX', {
+            get: function () { return expectedX; },
             configurable: true
           });
           Object.defineProperty(e, 'offsetY', {
-            get: function () { return isSynced ? e.offsetY : fixedY; },
+            get: function () { return expectedY; },
             configurable: true
           });
-        } catch (_) {}
+        } catch (_) { }
       }
 
       for (var i = 0; i < pointerEvents.length; i++) {
         window.addEventListener(pointerEvents[i], patchEvent, { capture: true, passive: true });
       }
 
-      // 4. 🛡️ Flutter Web の FullPageEmbeddingStrategy が viewport-fit=cover を剥奪するのを常時阻止
+      // 🛡️ Flutter Web の FullPageEmbeddingStrategy が viewport-fit=cover を剥奪するのを常時阻止
       function restoreViewportFit() {
         var metas = document.querySelectorAll('meta[name="viewport"]');
         for (var i = 0; i < metas.length; i++) {
@@ -201,10 +213,11 @@
         });
         observer.observe(document.head, { childList: true, subtree: true, attributes: true });
         restoreViewportFit();
-      } catch (_) {}
+      } catch (_) { }
     })();
   </script>
 </head>
+
 <body>
   <!--
     You can customize the "flutter_bootstrap.js" script.
@@ -236,7 +249,7 @@
     // =========================================================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('flutter_service_worker.js?v=5', {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=13', {
           scope: '.'
         }).then(function (reg) {
           console.log('🛡️ [PWA ServiceWorker] 体育館オフライン防衛アセットキャッシュが有効です。');
@@ -252,7 +265,7 @@
     if ('caches' in window) {
       caches.keys().then(function (names) {
         for (var i = 0; i < names.length; i++) {
-          if (names[i].indexOf('v5') === -1) {
+          if (names[i].indexOf('v13') === -1) {
             caches.delete(names[i]);
           }
         }
@@ -268,4 +281,5 @@
   <!-- ★ 修正: 絶対パスに変更し、深いURLからでも確実にロードできるようにする（ホワイトアウト対策4） -->
   <script src="/flutter_bootstrap.js" async></script>
 </body>
+
 </html>

@@ -51,10 +51,7 @@ void main() {
       expect(find.text('便利'), findsOneWidget);
 
       // 説明テキスト
-      expect(
-        find.text('共有された大会テキストをコピーしていれば、大会名・日程・チーム情報をワンタップで反映できます'),
-        findsOneWidget,
-      );
+      expect(find.text('コピーしたテキストから大会名・日程をワンタップで自動入力'), findsOneWidget);
 
       // アイコン
       expect(find.byIcon(Icons.content_paste_go_rounded), findsOneWidget);

@@ -164,6 +164,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('opp_${index}_$opponentPlayerName'),
                 initialValue: opponentPlayerName,
+                scrollPadding: EdgeInsets.zero,
                 onChanged: onOpponentChanged,
                 style: TextStyle(color: textColor),
                 decoration: InputDecoration(

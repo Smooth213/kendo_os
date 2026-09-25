@@ -226,6 +226,7 @@ class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
           TextFormField(
             key: ValueKey('advanced_keywords_field_$categoryKey'),
             controller: keywordsController,
+            scrollPadding: EdgeInsets.zero,
             decoration: const InputDecoration(
               labelText: '自動判定キーワード（カンマ「,」区切り）',
               hintText: '例: 準決勝, 決勝, 3位決定',

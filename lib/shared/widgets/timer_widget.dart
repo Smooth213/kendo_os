@@ -55,6 +55,7 @@ class TimerWidget extends ConsumerWidget {
             Expanded(
               child: TextFormField(
                 initialValue: '$m',
+                scrollPadding: EdgeInsets.zero,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -94,6 +95,7 @@ class TimerWidget extends ConsumerWidget {
             Expanded(
               child: TextFormField(
                 initialValue: '$s',
+                scrollPadding: EdgeInsets.zero,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 style: TextStyle(

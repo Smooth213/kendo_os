@@ -78,6 +78,7 @@ class CategoryRuleRenseikaiSection extends StatelessWidget {
             TextFormField(
               key: ValueKey('renseikai_time_${isNormal}_$categoryKey'),
               initialValue: overallTime.toString(),
+              scrollPadding: EdgeInsets.zero,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: '全体の制限時間（分）',
