@@ -219,7 +219,6 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       ),
                       Expanded(
                         child: ListView.builder(
-                          shrinkWrap: true,
                           physics: const ClampingScrollPhysics(),
                           padding: const EdgeInsets.all(AppSpacing.sm),
                           itemCount: sortedGroupKeys.length,

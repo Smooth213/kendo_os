@@ -85,12 +85,14 @@ class QuickMemoDrawingCanvas extends StatelessWidget {
                     children: [
                       // 用紙内方眼グリッド
                       Positioned.fill(
-                        child: CustomPaint(
-                          painter: MemoGridBackgroundPainter(
-                            isDark: isDark,
-                            gridColor: isDark
-                                ? const Color(0xFF243247)
-                                : const Color(0xFFF1F5F9),
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            painter: MemoGridBackgroundPainter(
+                              isDark: isDark,
+                              gridColor: isDark
+                                  ? const Color(0xFF243247)
+                                  : const Color(0xFFF1F5F9),
+                            ),
                           ),
                         ),
                       ),

@@ -1,0 +1,1 @@
+void setWebBeforeUnloadActive(bool active) {}

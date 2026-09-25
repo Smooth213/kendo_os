@@ -37,6 +37,64 @@ final tournamentProvider = StreamProvider.family<TournamentModel?, String>((
   return repo.getTournamentStream(id);
 });
 
+class HomeScreenMatchGroups {
+  final List<MatchModel> allMatches;
+  final List<MatchModel> uniqueInProgress;
+  final List<MatchModel> uniqueWaiting;
+
+  const HomeScreenMatchGroups({
+    required this.allMatches,
+    required this.uniqueInProgress,
+    required this.uniqueWaiting,
+  });
+}
+
+final homeScreenMatchGroupsProvider = Provider.autoDispose
+    .family<HomeScreenMatchGroups, String>((ref, tournamentId) {
+      final asyncMatches = ref.watch(
+        matchListByTournamentProvider(tournamentId),
+      );
+      final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
+        ..sort((a, b) => a.order.compareTo(b.order));
+
+      final uniqueInProgress = <MatchModel>[];
+      final uniqueWaiting = <MatchModel>[];
+      final seenMatchups = <String>{};
+
+      for (var match in allMatchesList) {
+        if (match.status == 'finished' || match.status == 'approved') continue;
+
+        String key;
+        if (match.note.contains('[リーグ戦]')) {
+          final t1 = match.redName.split(':').first.trim();
+          final t2 = match.whiteName.split(':').first.trim();
+          final sortedTeams = [t1, t2]..sort();
+          key = 'league_${match.groupName}_${sortedTeams.join("_")}';
+        } else if (match.isKachinuki) {
+          key = 'kachinuki_${match.groupName}';
+        } else if (match.groupName != null && match.groupName!.isNotEmpty) {
+          key = 'group_${match.groupName}';
+        } else {
+          key = 'match_${match.id}';
+        }
+
+        if (!seenMatchups.contains(key)) {
+          seenMatchups.add(key);
+          if (match.status == 'in_progress') {
+            uniqueInProgress.add(match);
+          } else if (match.status == 'waiting') {
+            uniqueWaiting.add(match);
+          }
+        }
+      }
+
+      return HomeScreenMatchGroups(
+        allMatches: allMatchesList,
+        uniqueInProgress: uniqueInProgress,
+        uniqueWaiting: uniqueWaiting,
+      );
+    });
+
 class HomeScreen extends ConsumerWidget {
   final String tournamentId;
   const HomeScreen({super.key, required this.tournamentId});
@@ -71,39 +129,10 @@ class HomeScreen extends ConsumerWidget {
 
     final isPhysicalOffline = ref.watch(isOfflineStreamProvider).value ?? false;
 
-    final allMatchesList = List<MatchModel>.from(asyncMatches.value ?? [])
-      ..sort((a, b) => a.order.compareTo(b.order));
-
-    final uniqueInProgress = <MatchModel>[];
-    final uniqueWaiting = <MatchModel>[];
-    final seenMatchups = <String>{};
-
-    for (var match in allMatchesList) {
-      if (match.status == 'finished' || match.status == 'approved') continue;
-
-      String key;
-      if (match.note.contains('[リーグ戦]')) {
-        final t1 = match.redName.split(':').first.trim();
-        final t2 = match.whiteName.split(':').first.trim();
-        final sortedTeams = [t1, t2]..sort();
-        key = 'league_${match.groupName}_${sortedTeams.join("_")}';
-      } else if (match.isKachinuki) {
-        key = 'kachinuki_${match.groupName}';
-      } else if (match.groupName != null && match.groupName!.isNotEmpty) {
-        key = 'group_${match.groupName}';
-      } else {
-        key = 'match_${match.id}';
-      }
-
-      if (!seenMatchups.contains(key)) {
-        seenMatchups.add(key);
-        if (match.status == 'in_progress') {
-          uniqueInProgress.add(match);
-        } else if (match.status == 'waiting') {
-          uniqueWaiting.add(match);
-        }
-      }
-    }
+    final matchGroups = ref.watch(homeScreenMatchGroupsProvider(tournamentId));
+    final allMatchesList = matchGroups.allMatches;
+    final uniqueInProgress = matchGroups.uniqueInProgress;
+    final uniqueWaiting = matchGroups.uniqueWaiting;
 
     final isSearchVisible = ref.watch(isSearchVisibleProvider);
     final searchQuery = ref.watch(searchQueryProvider);

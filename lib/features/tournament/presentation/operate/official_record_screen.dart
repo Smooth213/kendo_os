@@ -118,11 +118,15 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         .where((p) => p.isNotEmpty)
         .toSet();
 
-    final matchesForThisTournament = ref.watch(
-      matchListProvider.select(
-        (list) => list.where((m) => m.tournamentId == tournamentId).toList(),
-      ),
-    );
+    final matchesForThisTournament = ref
+        .watch(
+          matchListProvider.select(
+            (list) => ListEqualityWrapper<MatchModel>(
+              list.where((m) => m.tournamentId == tournamentId).toList(),
+            ),
+          ),
+        )
+        .list;
 
     final categoryGroups = OfficialRecordGroupHelper.groupMatchesByCategory(
       matchesForThisTournament,
@@ -276,7 +280,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              shrinkWrap: true,
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.all(AppSpacing.sm),
               itemCount: sortedGroupKeys.length,

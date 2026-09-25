@@ -39,6 +39,7 @@ import 'components/match_screen/match_operate_action_buttons_grid.dart';
 import 'components/match_screen/match_score_action_section.dart';
 import 'components/match_screen/match_timer_section.dart';
 import 'components/match_screen/match_view_only_notice_banner.dart';
+import '../../../../shared/infrastructure/services/web_navigation_guard.dart';
 export 'providers/match_screen_providers.dart';
 
 class MatchScreen extends ConsumerStatefulWidget {
@@ -55,6 +56,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
   @override
   void initState() {
     super.initState();
+    setWebBeforeUnloadActive(true);
     try {
       _myUserId = FirebaseAuth.instance.currentUser?.uid ?? 'local_user';
     } catch (_) {
@@ -91,6 +93,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
   @override
   void dispose() {
+    setWebBeforeUnloadActive(false);
     EmergencyCrashPreserver.unregisterActiveMatch(widget.matchId);
     final container = _container;
     final matchId = widget.matchId;

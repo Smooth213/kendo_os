@@ -81,6 +81,7 @@
   <title>Kendo OS</title>
   <link rel="manifest" href="manifest.json">
   <!-- Syncfusion Flutter PDF Viewer for Web (Updated to 3.11.174 to match plugin v28) -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" as="script">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
     var pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -149,10 +150,26 @@
       window.addEventListener('scroll', resetScroll, { passive: true });
       window.addEventListener('resize', resetScroll, { passive: true });
       window.addEventListener('orientationchange', resetScroll, { passive: true });
+      window.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') resetScroll();
+      }, { passive: true });
+      window.addEventListener('pageshow', resetScroll, { passive: true });
       for (var t = 0; t <= 3000; t += 100) {
         setTimeout(resetScroll, t);
       }
-      setInterval(resetScroll, 500);
+
+      // 🛡️ 体育館誤操作防止：誤リロード・誤スワイプ離脱防止ガード
+      var _beforeUnloadActive = false;
+      window.setBeforeUnloadActive = function (active) {
+        _beforeUnloadActive = !!active;
+      };
+      window.addEventListener('beforeunload', function (e) {
+        if (_beforeUnloadActive) {
+          e.preventDefault();
+          e.returnValue = '';
+          return '';
+        }
+      });
 
       if (!isIos) return; // 以下iOS固有のタッチスナップ処理
 
@@ -163,7 +180,10 @@
       ];
 
       function patchEvent(e) {
-        resetScroll();
+        // pointermove / touchmove は毎フレーム高頻度で発火するため DOM強制レイアウト(resetScroll)をスキップ
+        if (e && e.type !== 'pointermove' && e.type !== 'touchmove') {
+          resetScroll();
+        }
         if (!e) return;
         var clientX = (e.clientX !== undefined && e.clientX !== null)
           ? e.clientX

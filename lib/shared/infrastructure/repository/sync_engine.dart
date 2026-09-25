@@ -53,6 +53,12 @@ class SyncEngine {
       onPause: _stopSyncLoop,
       onInactive: _stopSyncLoop,
       onHide: _stopSyncLoop,
+      onDetach: () {
+        _stopSyncLoop();
+        try {
+          _ref.read(localMatchRepositoryProvider).flushMicroBatch();
+        } catch (_) {}
+      },
       onResume: () {
         syncNow();
       },
