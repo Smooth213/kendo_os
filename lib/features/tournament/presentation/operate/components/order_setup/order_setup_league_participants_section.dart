@@ -61,76 +61,84 @@ class _OrderSetupLeagueParticipantsSectionState
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return showAppBottomSheet<List<String>>(
-      context: context,
-      builder: (ctx) => AppBottomSheetContent(
-        title: '$teamName のオーダー',
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: AppSpacing.sm),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
-                ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: positions.length,
-                  itemBuilder: (context, i) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                    child: AppTextField(
-                      controller: controllers[i],
-                      autofocus: i == 0,
-                      style: TextStyle(
-                        color: isDark
-                            ? const Color(0xFFFFFFFF)
-                            : context.appColors.cardBackground,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: positions[i],
-                        filled: true,
-                        fillColor: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : context.appColors.cardBackground,
-                        border: OutlineInputBorder(
-                          borderRadius: AppRadius.small,
+    try {
+      return await showAppBottomSheet<List<String>>(
+        context: context,
+        builder: (ctx) => AppBottomSheetContent(
+          title: '$teamName のオーダー',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: AppSpacing.sm),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: positions.length,
+                    itemBuilder: (context, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: AppTextField(
+                        controller: controllers[i],
+                        autofocus: i == 0,
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFFFFFFFF)
+                              : context.appColors.cardBackground,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: positions[i],
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : context.appColors.cardBackground,
+                          border: OutlineInputBorder(
+                            borderRadius: AppRadius.small,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(
-                    ctx,
-                    controllers
-                        .map((c) => TextSanitizer.clean(c.text))
-                        .toList(),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.themeColors.primaryAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.lg,
+                const SizedBox(height: AppSpacing.lg),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(
+                      ctx,
+                      controllers
+                          .map((c) => TextSanitizer.clean(c.text))
+                          .toList(),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.themeColors.primaryAccent,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.lg,
+                      ),
+                    ),
+                    child: const Text(
+                      '決定して追加',
+                      style: TextStyle(fontWeight: AppFontWeight.bold),
                     ),
                   ),
-                  child: const Text(
-                    '決定して追加',
-                    style: TextStyle(fontWeight: AppFontWeight.bold),
-                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-            ],
+                const SizedBox(height: AppSpacing.xl),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } finally {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final c in controllers) {
+          c.dispose();
+        }
+      });
+    }
   }
 
   Future<String?> _showIndividualNameInputSheet(

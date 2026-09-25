@@ -229,5 +229,50 @@ void main() {
         );
       },
     );
+
+    test(
+      'Rule 10: [Web未送信コマンド永続化フォールバック] local_match_command_store.dart で SharedPreferences によるオフラインキュー永続化が実装されていること',
+      () {
+        final storeFile = File(
+          'lib/shared/infrastructure/repository/local_match_command_store.dart',
+        );
+        expect(storeFile.existsSync(), isTrue);
+        final content = storeFile.readAsStringSync();
+
+        expect(
+          content.contains('kendo_os_pending_commands_queue'),
+          isTrue,
+          reason: 'Webキュー永続化キー kendo_os_pending_commands_queue が定義されていること',
+        );
+        expect(
+          content.contains('SharedPreferences.getInstance()'),
+          isTrue,
+          reason:
+              'Web環境 (isar == null) の際に SharedPreferences によるフォールバックが実装されていること',
+        );
+      },
+    );
+
+    test(
+      'Rule 11: [タスクキル直前同期フラッシュ] sync_engine.dart の AppLifecycleListener に onDetach フックが存在し flushMicroBatch が実行されること',
+      () {
+        final syncEngineFile = File(
+          'lib/shared/infrastructure/repository/sync_engine.dart',
+        );
+        expect(syncEngineFile.existsSync(), isTrue);
+        final content = syncEngineFile.readAsStringSync();
+
+        expect(
+          content.contains('onDetach:'),
+          isTrue,
+          reason: 'AppLifecycleListener に onDetach フックが登録されていること',
+        );
+        expect(
+          content.contains('flushMicroBatch()'),
+          isTrue,
+          reason: 'プロセス破棄直前に保留中のマイクロバッチがフラッシュされること',
+        );
+      },
+    );
   });
 }

@@ -53,6 +53,7 @@ class MatchScreen extends ConsumerStatefulWidget {
 class _MatchScreenState extends ConsumerState<MatchScreen> {
   String? _myUserId;
   ProviderContainer? _container;
+
   @override
   void initState() {
     super.initState();
@@ -70,15 +71,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           final currentMatch = matches
               .where((m) => m.id == widget.matchId)
               .firstOrNull;
-          if (currentMatch != null) {
-            final isDone =
-                currentMatch.status == 'finished' ||
-                currentMatch.status == 'approved';
-            if (!isDone) {
-              ref
-                  .read(matchCommandProvider)
-                  .claimScorer(widget.matchId, _myUserId!);
-            }
+          if (currentMatch != null &&
+              currentMatch.status != 'finished' &&
+              currentMatch.status != 'approved') {
+            ref
+                .read(matchCommandProvider)
+                .claimScorer(widget.matchId, _myUserId!);
           }
         } catch (_) {}
       }
@@ -115,8 +113,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     String? tournamentId = widget.tournamentId;
     if (tournamentId == null || tournamentId.isEmpty) {
       try {
-        final uri = GoRouterState.of(context).uri;
-        tournamentId = uri.queryParameters['tournamentId'];
+        tournamentId = GoRouterState.of(
+          context,
+        ).uri.queryParameters['tournamentId'];
       } catch (_) {}
     }
     if (tournamentId == null || tournamentId.isEmpty) {
@@ -167,7 +166,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     );
     final isApproved = match.status == 'approved';
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    ref.listen<UiMessage?>(uiMessageProvider, (previous, next) {
+
+    ref.listen<UiMessage?>(uiMessageProvider, (_, next) {
       if (next != null) {
         if (next.isError) {
           AppSnackBar.showError(context, next.text);
@@ -176,6 +176,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
         }
       }
     });
+
     final activeRole = ref.watch(activeRoleProvider);
     final showSyncBar = activeRole != Role.viewer;
     final engine = KendoRuleEngine();
@@ -185,18 +186,17 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final bool isMatchFinished =
         match.status == 'finished' || match.status == 'approved';
     final bool isInsideDock = DockSheetScope.of(context) != null;
+
     return PopScope(
       canPop: isMatchFinished || isInsideDock,
-      onPopInvokedWithResult: (didPop, result) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        final shouldLeave = await MatchDialogHelper.showConfirmDialog(
+        final leave = await MatchDialogHelper.showConfirmDialog(
           context,
           '試合画面の離脱',
           '試合がまだ終了していません。\n本当に試合操作画面から離脱しますか？',
         );
-        if (shouldLeave && context.mounted) {
-          Navigator.of(context).pop();
-        }
+        if (leave && context.mounted) Navigator.of(context).pop();
       },
       child: LiquidBackground(
         isAnimated: false, // 🔋 試合操作中の常時GPU再描画を根絶し発熱・バッテリー消費を完全抑制
@@ -211,13 +211,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
-              final double maxWidth = constraints.maxWidth;
-              final double maxHeight = constraints.maxHeight;
               const double absoluteMinContentHeight = 665.0;
-              final bool needsScroll = maxHeight < absoluteMinContentHeight;
+              final bool needsScroll =
+                  constraints.maxHeight < absoluteMinContentHeight;
+
               Widget buildMatchLayout(double currentHeight) {
                 return SizedBox(
-                  width: maxWidth,
+                  width: constraints.maxWidth,
                   height: currentHeight,
                   child: Stack(
                     fit: StackFit.expand,
@@ -242,13 +242,13 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                   isApproved: isApproved,
                                   isReadOnly: permissions.isReadOnly,
                                   onClaimScorer: () async {
-                                    final confirmed =
+                                    final ok =
                                         await MatchDialogHelper.showConfirmDialog(
                                           context,
                                           "入力権限の奪取",
                                           "他の端末の入力を強制中断し、\nこの端末で入力を開始しますか？",
                                         );
-                                    if (confirmed) {
+                                    if (ok) {
                                       await ref
                                           .read(matchCommandProvider)
                                           .forceClaimScorer(
@@ -353,11 +353,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                                           context,
                                           match,
                                         ),
-                                    onShowConfirmDialog: (title, content) =>
+                                    onShowConfirmDialog: (t, c) =>
                                         MatchDialogHelper.showConfirmDialog(
                                           context,
-                                          title,
-                                          content,
+                                          t,
+                                          c,
                                         ),
                                     onShowMatchFinishedDialog: (ctx, m, nextM) =>
                                         MatchDialogHelper.showMatchFinishedDialog(
@@ -402,29 +402,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       ),
                       if (match.matchType == '代表戦')
                         MatchDaihyoOverlay(
-                          onSelectDaihyo: () {
-                            final rTeam = match.redName.split(':').first.trim();
-                            final wTeam = match.whiteName
-                                .split(':')
-                                .first
-                                .trim();
-                            final redPlayers = teamMatches
-                                .map((m) => m.redName.split(':').last.trim())
-                                .toSet()
-                                .toList();
-                            final whitePlayers = teamMatches
-                                .map((m) => m.whiteName.split(':').last.trim())
-                                .toSet()
-                                .toList();
-                            MatchDialogHelper.showRepresentativeModal(
-                              context: context,
-                              match: match,
-                              rTeam: rTeam,
-                              wTeam: wTeam,
-                              redPlayers: redPlayers,
-                              whitePlayers: whitePlayers,
-                            );
-                          },
+                          onSelectDaihyo: () => _showRepresentativeModal(
+                            context,
+                            match,
+                            teamMatches,
+                          ),
                         ),
                       MatchFloatingDockEntry(
                         tournamentId: match.tournamentId?.isNotEmpty == true
@@ -442,11 +424,36 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                       physics: const ClampingScrollPhysics(),
                       child: buildMatchLayout(absoluteMinContentHeight),
                     )
-                  : buildMatchLayout(maxHeight);
+                  : buildMatchLayout(constraints.maxHeight);
             },
           ),
         ),
       ),
+    );
+  }
+
+  void _showRepresentativeModal(
+    BuildContext context,
+    MatchModel match,
+    List<MatchModel> teamMatches,
+  ) {
+    final rTeam = match.redName.split(':').first.trim();
+    final wTeam = match.whiteName.split(':').first.trim();
+    final redPlayers = teamMatches
+        .map((m) => m.redName.split(':').last.trim())
+        .toSet()
+        .toList();
+    final whitePlayers = teamMatches
+        .map((m) => m.whiteName.split(':').last.trim())
+        .toSet()
+        .toList();
+    MatchDialogHelper.showRepresentativeModal(
+      context: context,
+      match: match,
+      rTeam: rTeam,
+      wTeam: wTeam,
+      redPlayers: redPlayers,
+      whitePlayers: whitePlayers,
     );
   }
 }

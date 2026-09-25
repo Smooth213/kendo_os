@@ -13,6 +13,7 @@ import sys
 SUB_AUDITS = [
     ("① セキュリティ＆ロール露出規制規約", ["python3", "scripts/check_security_governance.py"]),
     ("② マルチテナント道場・大会空間 隔離規約", ["python3", "scripts/check_tenant_isolation_governance.py"]),
+    ("③ Firestore セキュリティルール＆ロール権限規約", ["python3", "scripts/check_firestore_rules_governance.py"]),
 ]
 
 def main():

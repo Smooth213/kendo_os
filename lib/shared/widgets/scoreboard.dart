@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/scoreboard_components.dart';
 
 final scoreboardMatchIdProvider = Provider<String>(
   (ref) => throw UnimplementedError(),
@@ -171,7 +172,6 @@ class MatchScoreboard extends ConsumerWidget {
       ),
     );
 
-    // 🛡️ 勝敗表示の安全判定: viewState だけでなく targetMatch の実データからもフォールバック判定
     final bool matchIsFinished =
         targetMatch.status == 'finished' || targetMatch.status == 'approved';
     final showResult =
@@ -188,7 +188,11 @@ class MatchScoreboard extends ConsumerWidget {
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildResultOverlay(context, viewState, targetMatch),
+                  ScoreboardComponents.buildResultOverlay(
+                    context,
+                    viewState,
+                    targetMatch,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
                   scoreboardRow,
                 ],
@@ -224,7 +228,6 @@ class MatchScoreboard extends ConsumerWidget {
         ? context.appColors.errorColor
         : context.appColors.textColor;
 
-    // 🛡️ 選手名取得の二重安全フォールバック: viewStateが空文字の場合でもmatchデータから100%確実に復元
     final String cleanPlayerName = side == Side.red
         ? (viewState.redCleanName.isNotEmpty
               ? viewState.redCleanName
@@ -322,7 +325,7 @@ class MatchScoreboard extends ConsumerWidget {
                         Positioned(
                           top: 6,
                           left: 6,
-                          child: _buildPoint(
+                          child: ScoreboardComponents.buildPoint(
                             context,
                             pts[0],
                             isDark,
@@ -333,7 +336,7 @@ class MatchScoreboard extends ConsumerWidget {
                         Positioned(
                           bottom: 6,
                           right: 6,
-                          child: _buildPoint(
+                          child: ScoreboardComponents.buildPoint(
                             context,
                             pts[1],
                             isDark,
@@ -344,7 +347,7 @@ class MatchScoreboard extends ConsumerWidget {
                         Positioned(
                           top: 35,
                           left: 35,
-                          child: _buildPoint(
+                          child: ScoreboardComponents.buildPoint(
                             context,
                             pts[2],
                             isDark,
@@ -384,110 +387,6 @@ class MatchScoreboard extends ConsumerWidget {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPoint(
-    BuildContext context,
-    PointDisplay pd,
-    bool isDark,
-    Color color,
-  ) {
-    const double fs = 38;
-    final pointWidget = pd.isFirstMatchPoint
-        ? Container(
-            width: 60,
-            height: 60,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: color.withValues(alpha: isDark ? 0.7 : 1.0),
-                width: 3.5,
-              ),
-            ),
-            child: Text(
-              pd.mark,
-              style: TextStyle(
-                fontSize: fs,
-                fontWeight: AppFontWeight.bold,
-                color: color,
-                height: 1.0,
-              ),
-            ),
-          )
-        : SizedBox(
-            width: 60,
-            height: 60,
-            child: Center(
-              child: Text(
-                pd.mark,
-                style: TextStyle(
-                  fontSize: fs,
-                  fontWeight: AppFontWeight.bold,
-                  color: color,
-                  height: 1.0,
-                ),
-              ),
-            ),
-          );
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0.1, end: 1.0),
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-      builder: (context, scale, child) => Transform.scale(
-        scale: scale,
-        child: Opacity(opacity: scale.clamp(0.0, 1.0), child: child),
-      ),
-      child: pointWidget,
-    );
-  }
-
-  Widget _buildResultOverlay(
-    BuildContext context,
-    MatchViewState viewState,
-    MatchModel match,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    String resultText = '引き分け';
-    final winner =
-        viewState.winner ??
-        (match.redScore > match.whiteScore
-            ? 'red'
-            : (match.whiteScore > match.redScore ? 'white' : 'draw'));
-    if (winner == 'red') resultText = '赤 の勝ち';
-    if (winner == 'white') resultText = '白 の勝ち';
-
-    return Container(
-      height: 60,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.giant),
-      decoration: BoxDecoration(
-        color: context.appColors.primaryAccent,
-        borderRadius: AppRadius.full,
-        border: isDark
-            ? Border.all(color: const Color(0xFF3F51B5), width: 1.5)
-            : null,
-        boxShadow: [
-          BoxShadow(
-            color: AppKendoColors.pureBlack.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: FittedBox(
-        child: Text(
-          resultText,
-          style: const TextStyle(
-            color: AppKendoColors.pureWhite,
-            fontWeight: AppFontWeight.bold,
-            fontSize: AppFontSize.hero,
-            letterSpacing: 1.5,
-          ),
-        ),
       ),
     );
   }

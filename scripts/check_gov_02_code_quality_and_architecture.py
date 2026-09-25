@@ -75,6 +75,20 @@ def main():
         all_passed = False
         print(res_names.stdout + res_names.stderr)
 
+    # 5. BuildContext Mounted Safety (非同期安全) 規約
+    res_mounted = subprocess.run(
+        ["python3", "scripts/check_mounted_safety_governance.py"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    is_mounted_ok = (res_mounted.returncode == 0)
+    mounted_status = "🟢 適合 (Passed)" if is_mounted_ok else "🔴 違反 (Failed)"
+    print(f" ⑤ BuildContext Mounted Safety (非同期安全) 規約: {mounted_status}")
+    if not is_mounted_ok:
+        all_passed = False
+        print(res_mounted.stdout + res_mounted.stderr)
+
     print("-" * 68)
     if all_passed:
         print(" 🟢 監査結果: 合格 (コード品質・行数制限 ＆ アーキテクチャ境界規約に完全適合！)")

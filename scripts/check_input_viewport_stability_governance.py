@@ -69,6 +69,8 @@ def check_all_text_fields_scroll_padding_zero():
     }
 
     errors = []
+    total_files = 0
+    total_fields = 0
     for root, _, files in os.walk("lib"):
         for file in files:
             if not file.endswith(".dart"):
@@ -86,6 +88,9 @@ def check_all_text_fields_scroll_padding_zero():
             if not matches:
                 continue
 
+            total_files += 1
+            total_fields += len(matches)
+
             # 各マッチの後に scrollPadding: EdgeInsets.zero が存在するかスコープ検査
             for m in matches:
                 start_idx = m.start()
@@ -100,7 +105,22 @@ def check_all_text_fields_scroll_padding_zero():
 
     if errors:
         return False, "\n".join(errors)
-    return True, "🟢 lib/ 配下の全入力フィールドで scrollPadding: EdgeInsets.zero または AppTextField が100%保証されています"
+    return True, f"🟢 lib/ 配下の全入力フィールド（走査: {total_fields} 箇所 / {total_files} ファイル）で scrollPadding: EdgeInsets.zero または AppTextField が100%保証されています"
+
+def check_main_base_scaffold_resize_disabled():
+    """lib/main.dart の MaterialApp.router builder 内の外側ベース Scaffold が resizeToAvoidBottomInset: false であることを検証"""
+    target = "lib/main.dart"
+    if not os.path.exists(target):
+        return False, f"❌ {target} が存在しません"
+
+    with open(target, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # MaterialApp.router の builder 内の Scaffold で resizeToAvoidBottomInset: false が明示されているか
+    if not re.search(r'resizeToAvoidBottomInset:\s*false', content):
+        return False, "❌ lib/main.dart のベース Scaffold に resizeToAvoidBottomInset: false が設定されていません。二重リサイズ（跳ね上がり）を防ぐため必須です。"
+
+    return True, "🟢 lib/main.dart のベース Scaffold に resizeToAvoidBottomInset: false が設定され、二重リサイズが完全防止されています"
 
 def main():
     print("=" * 72)
@@ -111,6 +131,7 @@ def main():
         ("1. AppTextField scrollPadding ゼロ設定検証", check_app_text_field_scroll_padding),
         ("2. 全入力フィールド scrollPadding ゼロ保証検証", check_all_text_fields_scroll_padding_zero),
         ("3. 主要入力モーダルのボトムシート＆キーボード追従構造検証", check_modal_input_bottom_sheet),
+        ("4. 基盤Scaffold二重リサイズ（跳ね上がり）防止設定検証", check_main_base_scaffold_resize_disabled),
     ]
 
     all_passed = True

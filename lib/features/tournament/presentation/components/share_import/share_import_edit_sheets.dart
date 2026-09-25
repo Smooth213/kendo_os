@@ -135,62 +135,70 @@ abstract final class ShareImportEditSheets {
     required Color subTextColor,
   }) async {
     final controller = TextEditingController(text: currentTeamName);
-    return showAppBottomSheet<String>(
-      context: context,
-      useRootNavigator: true,
-      builder: (ctx) => AppBottomSheetContent(
-        title: 'チーム名の変更',
-        titleIcon: Icons.edit,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '新しいチーム名を入力してください',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  color: subTextColor,
+    try {
+      return await showAppBottomSheet<String>(
+        context: context,
+        useRootNavigator: true,
+        builder: (ctx) => AppBottomSheetContent(
+          title: 'チーム名の変更',
+          titleIcon: Icons.edit,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '新しいチーム名を入力してください',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: subTextColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              AppTextField(
-                controller: controller,
-                autofocus: true,
-                style: TextStyle(
-                  fontSize: AppFontSize.body,
-                  fontWeight: AppFontWeight.bold,
-                  color: textColor,
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(
+                  controller: controller,
+                  autofocus: true,
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    fontWeight: AppFontWeight.bold,
+                    color: textColor,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'チーム名',
+                    hintText: '例: 低学年A, 中学生男子',
+                    prefixIcon: Icon(Icons.groups),
+                  ),
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'チーム名',
-                  hintText: '例: 低学年A, 中学生男子',
-                  prefixIcon: Icon(Icons.groups),
+                const SizedBox(height: AppSpacing.xl),
+                SizedBox(
+                  width: double.infinity,
+                  child: GlassButton(
+                    onPressed: () {
+                      final val = controller.text.trim();
+                      if (val.isNotEmpty) Navigator.of(ctx).pop(val);
+                    },
+                    color: accentColor,
+                    icon: Icons.check,
+                    label: '変更を保存',
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              SizedBox(
-                width: double.infinity,
-                child: GlassButton(
-                  onPressed: () {
-                    final val = controller.text.trim();
-                    if (val.isNotEmpty) Navigator.of(ctx).pop(val);
-                  },
-                  color: accentColor,
-                  icon: Icons.check,
-                  label: '変更を保存',
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
+                const SizedBox(height: AppSpacing.lg),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } finally {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.dispose();
+      });
+    }
   }
 }

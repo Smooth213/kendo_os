@@ -17,13 +17,10 @@ import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import '../providers/last_used_settings_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_category_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_dynamic_header.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_section_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_sticky_bottom_action.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_step.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_page_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_sync_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_state_initializer.dart';
@@ -317,123 +314,46 @@ class _SetupMatchFormatScreenState
                         ),
                 ),
                 Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
+                  child: MatchFormatPageView(
+                    pageController: _pageController,
                     onPageChanged: (index) =>
                         setState(() => _currentPage = index),
-                    children: [
-                      MatchFormatCategoryStep(
-                        tournamentId: widget.tournamentId,
-                        category: _category,
-                        selectedMajorCategory: _state.selectedMajorCategory,
-                        selectedMinorCategory: _state.selectedMinorCategory,
-                        selectedTeamId: _state.selectedTeamId,
-                        majorCategories: MatchFormatSetupHelper.majorCategories,
-                        getMinorCategories:
-                            MatchFormatSetupHelper.getMinorCategories,
-                        onCategoryChanged: (major, minor) {
-                          setState(() {
-                            _state.selectedMajorCategory = major;
-                            _state.selectedMinorCategory = minor;
-                            _state.selectedTeamId = null;
-                            _state.manualRoundTypeOverride = null;
-                            _loadCategoryRules();
-                          });
-                        },
-                        onTeamSelected: (team) {
-                          setState(() {
-                            _state.selectedTeamId = team.id;
-                            _state.matchType = team.matchType;
-                            _loadCategoryRules();
-                          });
-                        },
-                        onAdjustOrder: _handleEditTeam,
-                        onEditTeam: _handleEditTeam,
-                        onDeleteTeam: _handleDeleteTeam,
-                        onNavigateToTeamRegistration: () => context.push(
-                          '/team-registration/${widget.tournamentId}?initialPage=2',
-                        ),
-                        themeColors: _themeColors,
-                        isDark: isDark,
-                        buildSectionTitle: (t) => Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: Text(
-                            t,
-                            style: TextStyle(
-                              fontSize: AppFontSize.subhead,
-                              fontWeight: AppFontWeight.bold,
-                              color: _themeColors.primaryAccent,
-                            ),
-                          ),
-                        ),
-                      ),
-                      MatchFormatRuleStep(
-                        tournamentId: widget.tournamentId,
-                        category: _category,
-                        selectedRuleScene: _state.selectedRuleScene,
-                        selectedRuleKey: _state.selectedRuleKey,
-                        isCurrentMatchAdvanced: _isCurrentMatchAdvanced,
-                        hasExtension: _state.hasExtension,
-                        extTime: _state.extTime,
-                        extCount: _state.extCount,
-                        matchTime: _state.matchTime,
-                        isRunningTime: _state.isRunningTime,
-                        isRenseikai: _state.isRenseikai,
-                        renseikaiType: _state.renseikaiType,
-                        matchType: _state.matchType,
-                        isIpponShobu: _state.isIpponShobu,
-                        ipponLimit: _state.ipponLimit,
-                        hansokuLimit: _state.hansokuLimit,
-                        hasHantei: _state.hasHantei,
-                        kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
-                        hasLeagueDaihyo: _state.hasLeagueDaihyo,
-                        isDaihyoIpponShobu: _state.isDaihyoIpponShobu,
-                        daihyoMatchTime: _state.daihyoMatchTime,
-                        daihyoHasExtension: _state.daihyoHasExtension,
-                        daihyoEnchoCount: _state.daihyoEnchoCount,
-                        daihyoEnchoTime: _state.daihyoEnchoTime,
-                        daihyoHasHantei: _state.daihyoHasHantei,
-                        winPoint:
-                            double.tryParse(_winPointController.text) ?? 0,
-                        lossPoint:
-                            double.tryParse(_lossPointController.text) ?? 0,
-                        drawPoint:
-                            double.tryParse(_drawPointController.text) ?? 0,
-                        overallTimeMinutes:
-                            int.tryParse(_overallTimeController.text) ?? 30,
-                        courtController: _courtController,
-                        noteController: _noteController,
-                        themeColors: _themeColors,
-                        onRuleSelected: _applyCategoryRuleSelection,
-                        onRuleSceneSelected: _applyCategoryRuleScene,
-                        onSetManualRoundType: _setManualRoundType,
-                        onHeadingPresetToggled: _toggleHeadingPreset,
-                        onClearCourt: () =>
-                            setState(() => _courtController.clear()),
-                        buildTextFieldDecoration:
-                            ({
-                              required labelText,
-                              hintText,
-                              prefixIcon,
-                              suffixText,
-                            }) =>
-                                MatchFormatSetupHelper.buildTextFieldDecoration(
-                                  themeColors: _themeColors,
-                                  labelText: labelText,
-                                  hintText: hintText,
-                                  prefixIcon: prefixIcon,
-                                  suffixText: suffixText,
-                                ),
-                        buildSectionHeader: (title, accent) =>
-                            MatchFormatSectionHeader(
-                              title: title,
-                              accentColor: accent,
-                            ),
-                        formatMinutesText:
-                            CategoryRuleMatchHelper.formatMinutes,
-                      ),
-                    ],
+                    tournamentId: widget.tournamentId,
+                    category: _category,
+                    state: _state,
+                    themeColors: _themeColors,
+                    isDark: isDark,
+                    isCurrentMatchAdvanced: _isCurrentMatchAdvanced,
+                    courtController: _courtController,
+                    noteController: _noteController,
+                    winPointController: _winPointController,
+                    lossPointController: _lossPointController,
+                    drawPointController: _drawPointController,
+                    overallTimeController: _overallTimeController,
+                    onCategoryChanged: (major, minor) {
+                      setState(() {
+                        _state.selectedMajorCategory = major;
+                        _state.selectedMinorCategory = minor;
+                        _state.selectedTeamId = null;
+                        _state.manualRoundTypeOverride = null;
+                        _loadCategoryRules();
+                      });
+                    },
+                    onTeamSelected: (team) {
+                      setState(() {
+                        _state.selectedTeamId = team.id;
+                        _state.matchType = team.matchType;
+                        _loadCategoryRules();
+                      });
+                    },
+                    onEditTeam: _handleEditTeam,
+                    onDeleteTeam: _handleDeleteTeam,
+                    onRuleSelected: _applyCategoryRuleSelection,
+                    onRuleSceneSelected: _applyCategoryRuleScene,
+                    onSetManualRoundType: _setManualRoundType,
+                    onHeadingPresetToggled: _toggleHeadingPreset,
+                    onClearCourt: () =>
+                        setState(() => _courtController.clear()),
                   ),
                 ),
                 AnimatedSize(

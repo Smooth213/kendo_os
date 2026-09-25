@@ -129,6 +129,48 @@ void main() {
         ruleHelperFile.readAsStringSync().contains('minCtrl.dispose()'),
         isTrue,
       );
+
+      // 5. 今回最適化したシート・カード群
+      expect(
+        orderSetupFile.readAsStringSync().contains('c.dispose();'),
+        isTrue,
+        reason:
+            'order_setup_league_participants_section.dart で controllers が一括破棄されていること',
+      );
+
+      final masterOrgFile = File(
+        'lib/admin/presentation/components/master_register_organization_bottom_sheet.dart',
+      );
+      expect(masterOrgFile.existsSync(), isTrue);
+      expect(
+        masterOrgFile.readAsStringSync().contains('controller.dispose();'),
+        isTrue,
+        reason:
+            'master_register_organization_bottom_sheet.dart で controller が破棄されていること',
+      );
+
+      final shareImportFile = File(
+        'lib/features/tournament/presentation/components/share_import/share_import_edit_sheets.dart',
+      );
+      expect(shareImportFile.existsSync(), isTrue);
+      expect(
+        shareImportFile.readAsStringSync().contains('controller.dispose();'),
+        isTrue,
+        reason: 'share_import_edit_sheets.dart で controller が破棄されていること',
+      );
+
+      final createTournamentFile = File(
+        'lib/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_teams_card.dart',
+      );
+      expect(createTournamentFile.existsSync(), isTrue);
+      expect(
+        createTournamentFile.readAsStringSync().contains(
+          'controller.dispose();',
+        ),
+        isTrue,
+        reason:
+            'create_tournament_import_teams_card.dart で controller が破棄されていること',
+      );
     });
 
     test(

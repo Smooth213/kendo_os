@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_form_fields.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -101,20 +101,6 @@ class _TournamentEditBottomSheetState
       setState(() => _selectedDate = picked);
     }
   }
-
-  InputDecoration _buildInputDecoration({
-    required String labelText,
-    required IconData icon,
-    required Color borderColor,
-    required Color labelColor,
-  }) => InputDecoration(
-    labelText: labelText,
-    labelStyle: TextStyle(color: labelColor),
-    prefixIcon: Icon(icon, size: 20),
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: borderColor),
-    ),
-  );
 
   Future<void> _save() async {
     if (_isSaving) return;
@@ -301,65 +287,19 @@ class _TournamentEditBottomSheetState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // 大会名入力
-                          AppTextField(
-                            controller: _nameController,
-                            style: TextStyle(color: effectiveTextColor),
-                            decoration: _buildInputDecoration(
-                              labelText: '大会名',
-                              icon: Icons.emoji_events_outlined,
-                              borderColor: effectiveBorderColor,
-                              labelColor: effectiveSubTextColor,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // 開催年月日選択
-                          InkWell(
-                            onTap: () => _pickDate(
+                          TournamentEditBasicFields(
+                            nameController: _nameController,
+                            venueController: _venueController,
+                            selectedDate: _selectedDate,
+                            effectiveTextColor: effectiveTextColor,
+                            effectiveSubTextColor: effectiveSubTextColor,
+                            effectiveBorderColor: effectiveBorderColor,
+                            onPickDate: () => _pickDate(
                               context,
                               effectiveTextColor,
                               effectiveCardColor,
                             ),
-                            child: InputDecorator(
-                              decoration: _buildInputDecoration(
-                                labelText: '開催年月日',
-                                icon: Icons.calendar_today_outlined,
-                                borderColor: effectiveBorderColor,
-                                labelColor: effectiveSubTextColor,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    DateFormat(
-                                      'yyyy年MM月dd日',
-                                    ).format(_selectedDate),
-                                    style: TextStyle(color: effectiveTextColor),
-                                  ),
-                                  const Icon(
-                                    Icons.arrow_drop_down,
-                                    color: AppKendoColors.indigo,
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // 会場・住所入力
-                          AppTextField(
-                            controller: _venueController,
-                            style: TextStyle(color: effectiveTextColor),
-                            decoration: _buildInputDecoration(
-                              labelText: '会場・住所',
-                              icon: Icons.location_on_outlined,
-                              borderColor: effectiveBorderColor,
-                              labelColor: effectiveSubTextColor,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
 
                           // 大会メモ入力（可変長・複数行対応）
                           Row(

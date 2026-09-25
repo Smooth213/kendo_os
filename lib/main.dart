@@ -352,6 +352,8 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
 
             return Scaffold(
               backgroundColor: scaffoldBg,
+              // 🛡️ 外側ベースScaffoldでの二重リサイズ（入力時の跳ね上がり・ダイアログ突き抜け）を完全防止
+              resizeToAvoidBottomInset: false,
               body: ThermalToastListener(
                 child: Column(
                   children: [

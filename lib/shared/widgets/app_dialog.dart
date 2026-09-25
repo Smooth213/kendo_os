@@ -46,6 +46,7 @@ class AppDialog extends StatelessWidget {
   final double radius;
   final Color? backgroundColor;
   final ShapeBorder? shape;
+  final bool scrollable;
 
   const AppDialog({
     super.key,
@@ -61,6 +62,7 @@ class AppDialog extends StatelessWidget {
     this.radius = AppRadius.largeValue,
     this.backgroundColor,
     this.shape,
+    this.scrollable = false,
   });
 
   @override
@@ -135,6 +137,7 @@ class AppDialog extends StatelessWidget {
       title: effectiveTitle,
       content: content,
       actions: actions,
+      scrollable: scrollable,
     );
   }
 }

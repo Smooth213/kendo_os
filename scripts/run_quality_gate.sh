@@ -50,6 +50,13 @@ flutter test test/governance/design_system_governance_test.dart \
              test/governance/screens_and_bottom_sheets_governance_test.dart \
              test/governance/match_type_selection_governance_test.dart \
              test/governance/category_rules_fallback_governance_test.dart \
+             test/security/firestore_rules_governance_test.dart \
+             test/governance/mounted_safety_governance_test.dart \
+             test/governance/web_native_isolation_governance_test.dart \
+             test/governance/design_token_compliance_governance_test.dart \
+             test/unit/fusensho_two_points_scoring_test.dart \
+             test/unit/hansoku_accumulation_and_undo_test.dart \
+             test/unit/official_record_pdf_font_embedding_test.dart \
              test/widget/tournament_edit_dock_bottom_sheet_integration_test.dart \
              test/widget/tournament_share_import_and_order_flow_test.dart \
              test/widget/clipboard_import_button_and_service_test.dart \
@@ -59,6 +66,8 @@ flutter test test/governance/design_system_governance_test.dart \
              test/unit/no_hardcoded_specific_names_test.dart \
              test/widget/sync_crdt_merger_test.dart \
              test/widget/match_command_queue_test.dart \
+             test/unit/local_match_command_store_web_fallback_test.dart \
+             test/unit/web_navigation_guard_test.dart \
              test/widget/match_data_sanitizer_test.dart \
              test/widget/match_rewind_service_test.dart \
              test/widget/app_router_test.dart \
@@ -70,7 +79,16 @@ flutter test test/governance/design_system_governance_test.dart \
              test/e2e/plan3_stability_resilience_e2e_test.dart \
              test/e2e/event_history_partition_e2e_test.dart \
              test/e2e/plan4_extreme_optimization_e2e_test.dart \
-             test/e2e/plan7_perfection_e2e_test.dart
+             test/e2e/plan7_perfection_e2e_test.dart \
+             test/golden/pixel_match_scoreboard_golden_test.dart \
+             test/golden/pixel_league_matrix_grid_golden_test.dart \
+             test/golden/pixel_tournament_bracket_tree_golden_test.dart \
+             test/golden/pixel_large_text_accessibility_golden_test.dart \
+             test/golden/pixel_tablet_landscape_scoreboard_golden_test.dart \
+             test/e2e/team_match_representative_decision_e2e_test.dart \
+             test/e2e/tournament_full_lifecycle_journey_e2e_test.dart \
+             test/e2e/web_pwa_browser_navigation_resilience_e2e_test.dart \
+             test/e2e/operator_to_viewer_realtime_sync_e2e_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 

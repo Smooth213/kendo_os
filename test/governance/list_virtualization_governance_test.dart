@@ -113,5 +113,34 @@ void main() {
         );
       },
     );
+
+    test(
+      'Rule 5: [公式記録スクロール仮想化復権] official_record_screen.dart & viewer_official_record_screen.dart の Expanded 下で不要な shrinkWrap: true が排除されていること',
+      () {
+        final officialFile = File(
+          'lib/features/tournament/presentation/operate/official_record_screen.dart',
+        );
+        expect(officialFile.existsSync(), isTrue);
+        final officialContent = officialFile.readAsStringSync();
+        expect(
+          officialContent.contains('shrinkWrap: true'),
+          isFalse,
+          reason:
+              'official_record_screen.dart の ListView.builder に shrinkWrap: true が混入してはなりません',
+        );
+
+        final viewerFile = File(
+          'lib/features/viewer/screens/viewer_official_record_screen.dart',
+        );
+        expect(viewerFile.existsSync(), isTrue);
+        final viewerContent = viewerFile.readAsStringSync();
+        expect(
+          viewerContent.contains('shrinkWrap: true'),
+          isFalse,
+          reason:
+              'viewer_official_record_screen.dart の ListView.builder に shrinkWrap: true が混入してはなりません',
+        );
+      },
+    );
   });
 }

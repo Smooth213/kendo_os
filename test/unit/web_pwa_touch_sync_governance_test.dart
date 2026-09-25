@@ -100,5 +100,52 @@ void main() {
         );
       },
     );
+
+    test('5. 待機時タイマー沈黙＆イベント駆動化規約 (setInterval禁止＆preload保証)', () {
+      expect(
+        indexHtmlContent.contains('setInterval(resetScroll'),
+        isFalse,
+        reason: '待機時のCPU負荷をゼロにするため、ポーリングsetInterval(resetScroll)は禁止です',
+      );
+      expect(
+        indexHtmlContent.contains('visibilitychange'),
+        isTrue,
+        reason: '画面復帰時のイベント駆動スクロールリセットが必須です',
+      );
+      expect(
+        indexHtmlContent.contains('rel="preload"'),
+        isTrue,
+        reason: '電波圏外起動時の初期遅延をゼロ化するためのCDNスクリプトpreloadが必須です',
+      );
+    });
+
+    test('6. 体育館誤リロード・誤離脱防止 beforeunload ガード規約', () {
+      expect(
+        indexHtmlContent.contains('window.setBeforeUnloadActive'),
+        isTrue,
+        reason: 'web/index.html に setBeforeUnloadActive 定義が必須です',
+      );
+      expect(
+        indexHtmlContent.contains('beforeunload'),
+        isTrue,
+        reason: '誤スワイプ離脱を防止する beforeunload リスナーが必須です',
+      );
+
+      final matchScreenFile = File(
+        'lib/features/tournament/presentation/operate/match_screen.dart',
+      );
+      expect(matchScreenFile.existsSync(), isTrue);
+      final matchScreenContent = matchScreenFile.readAsStringSync();
+      expect(
+        matchScreenContent.contains('setWebBeforeUnloadActive(true)'),
+        isTrue,
+        reason: 'MatchScreen initState で離脱ガードが有効化される必要があります',
+      );
+      expect(
+        matchScreenContent.contains('setWebBeforeUnloadActive(false)'),
+        isTrue,
+        reason: 'MatchScreen dispose で離脱ガードが解除される必要があります',
+      );
+    });
   });
 }
