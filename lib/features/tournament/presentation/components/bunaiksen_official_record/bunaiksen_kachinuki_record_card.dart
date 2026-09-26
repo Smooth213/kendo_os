@@ -4,7 +4,9 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 /// 🥋 部内戦公式記録画面 勝ち抜き戦対戦カード
 class BunaiksenKachinukiRecordCard extends StatelessWidget {
@@ -34,19 +36,22 @@ class BunaiksenKachinukiRecordCard extends StatelessWidget {
       return MatchProjectionMapper.toProjection(m, analysis);
     }).toList();
 
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final cardColor = themeColors.cardBackground;
+
     return Card(
       margin: const EdgeInsets.symmetric(
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.xs,
       ),
+      elevation: 0,
+      color: cardColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
-        side: BorderSide(
-          color: isDark
-              ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
-              : const Color(0x33000000),
-        ),
+        side: BorderSide(color: themeColors.separatorColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,11 +64,9 @@ class BunaiksenKachinukiRecordCard extends StatelessWidget {
             width: double.infinity,
             child: Text(
               '勝ち抜き戦：$rTeam vs $wTeam',
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: AppFontWeight.bold,
-                color: isDark
-                    ? const Color(0xFF3F51B5)
-                    : const Color(0xFF3F51B5),
+                color: AppKendoColors.pureWhite,
               ),
             ),
           ),
@@ -71,6 +74,7 @@ class BunaiksenKachinukiRecordCard extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
+              color: cardColor,
               width: canvasWidth,
               height: 480,
               child: CustomPaint(

@@ -75,7 +75,7 @@ class MatchFormatSaveHelper {
     );
 
     final isLeague = matchType.contains('リーグ');
-    final isKachinuki = matchType == '勝ち抜き戦';
+    final isKachinuki = matchType.contains('勝ち抜き');
     final generatedPositions = MatchFormatSetupHelper.generatePositions(
       teamSize,
     );

@@ -35,9 +35,9 @@ class MatchRuleSummaryCard extends StatelessWidget {
     // category_rule_detail_bottom_sheet と同じ判定ロジック
     final bool isTeam =
         isTeamOverride ??
-        (matchType == '団体戦' || matchType == '勝ち抜き戦' || matchType == 'リーグ団体戦');
+        (matchType.contains('団体') || matchType.contains('勝ち抜き'));
     final bool isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
-    final bool isKachinuki = matchType == '勝ち抜き戦';
+    final bool isKachinuki = matchType.contains('勝ち抜き');
     final bool isRenseikaiMode =
         currentRule.isRenseikai ||
         currentRule.matchScene == 'renseikai' ||

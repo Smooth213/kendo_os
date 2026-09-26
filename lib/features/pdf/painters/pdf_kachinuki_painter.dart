@@ -185,45 +185,61 @@ class PdfKachinukiPainter {
       PdfColor color = PdfColors.black,
     }) {
       final chars = text.split('');
+      if (chars.isEmpty) return pw.SizedBox();
+
+      // 上下パディング（計4pt）を考慮した有効描画高さ
+      final double availableH = (h - (AppSpacing.xxs * 2)).clamp(10.0, h);
+      // 日本語フォントの行高（約1.45倍）を考慮して文字数に応じたフォントサイズを動的計算
+      final double calculatedFSize = availableH / (chars.length * 1.45);
+      final double dynamicFSize = calculatedFSize < fSize
+          ? calculatedFSize.clamp(4.0, fSize)
+          : fSize;
+
       return pw.Positioned(
         left: x,
         top: y,
         child: pw.Container(
           width: w,
           height: h,
+          padding: const pw.EdgeInsets.all(AppSpacing.xxs),
           child: pw.Center(
-            child: pw.Column(
-              mainAxisAlignment: pw.MainAxisAlignment.center,
-              children: chars.map((c) {
-                if (c == 'ー' || c == '-') {
-                  return pw.Container(
-                    width: 1,
-                    height: fSize * 0.8,
-                    color: color,
-                    margin: const pw.EdgeInsets.symmetric(vertical: 1),
-                  );
-                }
-                if (c == '(' || c == ')' || c == '（' || c == '）') {
+            child: pw.FittedBox(
+              fit: pw.BoxFit.scaleDown,
+              alignment: pw.Alignment.center,
+              child: pw.Column(
+                mainAxisSize: pw.MainAxisSize.min,
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: chars.map((c) {
+                  if (c == 'ー' || c == '-') {
+                    return pw.Container(
+                      width: 1,
+                      height: dynamicFSize * 0.8,
+                      color: color,
+                      margin: const pw.EdgeInsets.symmetric(vertical: 1),
+                    );
+                  }
+                  if (c == '(' || c == ')' || c == '（' || c == '）') {
+                    return pw.Text(
+                      c,
+                      style: pw.TextStyle(
+                        font: font,
+                        fontSize: dynamicFSize * 0.8,
+                        fontWeight: isBold ? pw.FontWeight.bold : null,
+                        color: color,
+                      ),
+                    );
+                  }
                   return pw.Text(
                     c,
                     style: pw.TextStyle(
                       font: font,
-                      fontSize: fSize * 0.8,
+                      fontSize: dynamicFSize,
                       fontWeight: isBold ? pw.FontWeight.bold : null,
                       color: color,
                     ),
                   );
-                }
-                return pw.Text(
-                  c,
-                  style: pw.TextStyle(
-                    font: font,
-                    fontSize: fSize,
-                    fontWeight: isBold ? pw.FontWeight.bold : null,
-                    color: color,
-                  ),
-                );
-              }).toList(),
+                }).toList(),
+              ),
             ),
           ),
         ),

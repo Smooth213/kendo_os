@@ -22,6 +22,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
   final VoidCallback onSwapTeamsAndPlayers;
   final MatchEditOwnTeamChoice ownTeamChoice;
   final ValueChanged<MatchEditOwnTeamChoice>? onOwnTeamChoiceChanged;
+  final List<String>? positionLabels;
 
   const MatchEditTeamAndPlayersTab({
     super.key,
@@ -36,6 +37,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
     required this.onSwapTeamsAndPlayers,
     this.ownTeamChoice = MatchEditOwnTeamChoice.none,
     this.onOwnTeamChoiceChanged,
+    this.positionLabels,
   });
 
   @override
@@ -191,10 +193,13 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         ...List.generate(redPlayerControllers.length, (index) {
-          final posLabel = MatchEditDataHelper.getPositionLabel(
-            index,
-            redPlayerControllers.length,
-          );
+          final posLabel =
+              (positionLabels != null && index < positionLabels!.length)
+              ? positionLabels![index]
+              : MatchEditDataHelper.getPositionLabel(
+                  index,
+                  redPlayerControllers.length,
+                );
           return MatchEditPlayerSlotTile(
             posLabel: posLabel,
             redController: redPlayerControllers[index],

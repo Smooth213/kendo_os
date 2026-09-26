@@ -135,7 +135,7 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
           ],
 
           // ─── 勝ち抜き戦設定 ───
-          if (matchType == '勝ち抜き戦') ...[
+          if (matchType.contains('勝ち抜き')) ...[
             buildSectionHeader('勝ち抜き戦設定', headerColor),
             SetupReadOnlyRuleRow(
               label: '大将VS大将',

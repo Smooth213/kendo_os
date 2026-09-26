@@ -24,10 +24,12 @@ class TeamRegistrationCategoryStep extends StatelessWidget {
   static const List<String> mainMatchTypes = [
     '団体戦（5人制）',
     '団体戦（3人制）',
-    '勝ち抜き戦',
+    '勝ち抜き戦（5人制）',
+    '勝ち抜き戦（3人制）',
     '個人戦',
   ];
   static const List<String> extraMatchTypes = [
+    '勝ち抜き戦',
     'リーグ団体戦',
     'リーグ個人戦',
     '団体戦（7人制）',

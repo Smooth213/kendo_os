@@ -104,7 +104,7 @@ class CategoryRuleMatchHelper {
     final isIndiv =
         matchType == '個人戦' || matchType == 'リーグ個人戦' || matchType.contains('個人');
     final isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
-    final isKachinuki = matchType == '勝ち抜き戦';
+    final isKachinuki = matchType.contains('勝ち抜き');
     final effectiveHasExt = (isIndiv || isKachinuki) ? hasExtension : false;
     final effectiveIsIpponShobu = isIpponShobu || ipponLimit == 1;
 

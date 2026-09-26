@@ -52,7 +52,7 @@ void main() {
     // Rule 2: [UI監査] 共有インポートシート (ShareImportTeamSection) の試合形式編集検証
     // =========================================================================
     testWidgets(
-      'Rule 2: [UI監査] ShareImportTeamSection で全8形式がボトムシートに表示され、タップで選択更新されること',
+      'Rule 2: [UI監査] ShareImportTeamSection で全10形式がボトムシートに表示され、タップで選択更新されること',
       (tester) async {
         final team = const ParsedTeamOrder(
           teamName: '道上剣友会',
@@ -109,7 +109,7 @@ void main() {
     // Rule 3: [UI監査] 大会作成プレビュー (CreateTournamentImportTeamsCard) の試合形式編集検証
     // =========================================================================
     testWidgets(
-      'Rule 3: [UI監査] CreateTournamentImportTeamsCard で全8形式が表示され、タップで更新されること',
+      'Rule 3: [UI監査] CreateTournamentImportTeamsCard で全10形式が表示され、タップで更新されること',
       (tester) async {
         final teams = [
           const ParsedTeamOrder(
@@ -173,7 +173,7 @@ void main() {
     // Rule 4: [UI監査] チーム編集基本フィールド (TeamEditBasicFields) の全形式表示と切り替え
     // =========================================================================
     testWidgets(
-      'Rule 4: [UI監査] TeamEditBasicFields において全8形式が描画され、タップ切り替えが動作すること',
+      'Rule 4: [UI監査] TeamEditBasicFields において全10形式が描画され、タップ切り替えが動作すること',
       (tester) async {
         final controller = TextEditingController(text: '道上剣友会B');
         String selectedType = '個人戦';
@@ -196,7 +196,7 @@ void main() {
           ),
         );
 
-        // 全8形式が描画されていること
+        // 全10形式が描画されていること
         for (final type in allCandidateTypes) {
           expect(
             find.text(type),
@@ -221,7 +221,7 @@ void main() {
     // Rule 5: [UI監査] チーム新規登録ウィザード (TeamRegistrationCategoryStep) の全形式網羅検証
     // =========================================================================
     test(
-      'Rule 5: [UI監査] TeamRegistrationCategoryStep の main + extra で全8形式が完全に網羅されていること',
+      'Rule 5: [UI監査] TeamRegistrationCategoryStep の main + extra で全10形式が完全に網羅されていること',
       () {
         final combined = [
           ...TeamRegistrationCategoryStep.mainMatchTypes,
@@ -241,7 +241,7 @@ void main() {
     // =========================================================================
     // Rule 6: [ドメイン整合性監査] 全形式に対するスロット数と自動判定の整合性検証
     // =========================================================================
-    test('Rule 6: [ドメイン整合性] 全8形式それぞれに対して基準スロットおよび自動判定が決定論的に動作すること', () {
+    test('Rule 6: [ドメイン整合性] 全10形式それぞれに対して基準スロットおよび自動判定が決定論的に動作すること', () {
       // 1. 各試合形式の基準スロット定義の検証
       expect(TournamentTeamAutoRegisterService.getBaseSlots('個人戦'), ['選手']);
       expect(TournamentTeamAutoRegisterService.getBaseSlots('リーグ個人戦'), ['選手']);
@@ -255,6 +255,18 @@ void main() {
         '次鋒',
         '中堅',
         '副将',
+        '大将',
+      ]);
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（5人制）'), [
+        '先鋒',
+        '次鋒',
+        '中堅',
+        '副将',
+        '大将',
+      ]);
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（3人制）'), [
+        '先鋒',
+        '中堅',
         '大将',
       ]);
       expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦'), [

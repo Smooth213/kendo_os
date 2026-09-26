@@ -43,14 +43,12 @@ class ViewerKachinukiRecordCard extends StatelessWidget {
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.xs,
       ),
+      elevation: 0,
+      color: themeColors.cardBackground,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
-        side: BorderSide(
-          color: isDark
-              ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
-              : const Color(0x33000000),
-        ),
+        side: BorderSide(color: themeColors.separatorColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,6 +69,7 @@ class ViewerKachinukiRecordCard extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
+              color: themeColors.cardBackground,
               width: canvasWidth,
               height: 480,
               child: CustomPaint(

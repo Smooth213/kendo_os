@@ -49,6 +49,8 @@ flutter test test/governance/design_system_governance_test.dart \
              test/governance/tournament_edit_sheet_governance_test.dart \
              test/governance/screens_and_bottom_sheets_governance_test.dart \
              test/governance/match_type_selection_governance_test.dart \
+             test/governance/kachinuki_selection_and_execution_governance_test.dart \
+             test/unit/kachinuki_three_players_test.dart \
              test/governance/category_rules_fallback_governance_test.dart \
              test/security/firestore_rules_governance_test.dart \
              test/governance/mounted_safety_governance_test.dart \

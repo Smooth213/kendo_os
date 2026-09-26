@@ -35,7 +35,9 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
 
   String formatText = isIndividual ? '個人戦' : '団体戦';
   if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
-    formatText = '勝ち抜き戦';
+    formatText = (match.matchType.contains('勝ち抜き') && match.matchType != '勝ち抜き')
+        ? match.matchType
+        : '勝ち抜き戦';
   } else if (isLeague) {
     formatText = isIndividual ? 'リーグ個人戦' : 'リーグ団体戦';
   }

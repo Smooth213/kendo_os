@@ -64,8 +64,17 @@ void main() {
             final posContainer = pos.child as pw.Container;
             if (posContainer.child is pw.Center) {
               final center = posContainer.child as pw.Center;
+              pw.Column? textColumn;
               if (center.child is pw.Column) {
-                final textColumn = center.child as pw.Column;
+                textColumn = center.child as pw.Column;
+              } else if (center.child is pw.FittedBox) {
+                final fb = center.child as pw.FittedBox;
+                if (fb.child is pw.Column) {
+                  textColumn = fb.child as pw.Column;
+                }
+              }
+
+              if (textColumn != null) {
                 for (var child in textColumn.children) {
                   if (child is pw.Text) {
                     final text = child;
@@ -122,5 +131,95 @@ void main() {
         );
       },
     );
+
+    test('2. 長いチーム名（昇龍館一福道場A）でも全文字が生成されFittedBoxで枠内に収まる', () async {
+      final ttf = pw.Font.helvetica();
+      final ttfBold = pw.Font.helveticaBold();
+
+      const longRedTeam = '昇龍館一福道場A';
+      const longWhiteTeam = '道上剣友会A';
+
+      final mockMatches = [
+        const MatchModel(
+          id: 'match_long_1',
+          matchType: 'individual',
+          redName: '$longRedTeam:新山',
+          whiteName: '$longWhiteTeam:恵木',
+          status: 'finished',
+          redScore: 1,
+          whiteScore: 0,
+        ),
+      ];
+
+      final widget = PdfKachinukiPainter.build(
+        '中学生の部',
+        mockMatches,
+        ttf,
+        ttfBold,
+      );
+
+      expect(widget, isA<pw.Column>());
+      final column = widget as pw.Column;
+      final fittedBox = column.children[2] as pw.FittedBox;
+      final container = fittedBox.child as pw.Container;
+      final stack = container.child as pw.Stack;
+
+      final positionedWidgets = stack.children
+          .whereType<pw.Positioned>()
+          .toList();
+
+      // チーム名セルの全文字が生成されているか確認
+      final List<String> redTeamChars = [];
+      final List<String> whiteTeamChars = [];
+
+      for (var pos in positionedWidgets) {
+        if (pos.child is pw.Container) {
+          final posContainer = pos.child as pw.Container;
+          if (posContainer.child is pw.Center) {
+            final center = posContainer.child as pw.Center;
+            if (center.child is pw.FittedBox) {
+              final fb = center.child as pw.FittedBox;
+              expect(fb.fit, equals(pw.BoxFit.scaleDown));
+              if (fb.child is pw.Column) {
+                final textColumn = fb.child as pw.Column;
+                final chars = <String>[];
+                for (var child in textColumn.children) {
+                  if (child is pw.Text) {
+                    final span = child.text as pw.TextSpan;
+                    chars.add(span.text ?? '');
+                  }
+                }
+                final joined = chars.join('');
+                if (joined == longRedTeam) {
+                  redTeamChars.addAll(chars);
+                } else if (joined == longWhiteTeam) {
+                  whiteTeamChars.addAll(chars);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 8文字すべてが欠落せず含まれていること
+      expect(
+        redTeamChars.join(''),
+        equals('昇龍館一福道場A'),
+        reason: '「道場A」まで欠落せず全文字が含まれていること',
+      );
+      expect(
+        whiteTeamChars.join(''),
+        equals('道上剣友会A'),
+        reason: '「A」まで欠落せず全文字が含まれていること',
+      );
+
+      // PDF文書に組み込んで正常にバイト列が生成されること
+      final pdf = pw.Document();
+      pdf.addPage(
+        pw.Page(pageFormat: PdfPageFormat.a4, build: (context) => widget),
+      );
+      final bytes = await pdf.save();
+      expect(bytes, isNotEmpty);
+    });
   });
 }

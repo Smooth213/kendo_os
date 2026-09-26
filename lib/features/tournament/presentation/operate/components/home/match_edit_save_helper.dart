@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_data_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_state_holder.dart'
     show MatchEditOwnTeamChoice;
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
@@ -53,6 +54,8 @@ class MatchEditSaveHelper {
     required String status,
     required List<TextEditingController> redPlayerControllers,
     required List<TextEditingController> whitePlayerControllers,
+    List<String>? initialRedPlayers,
+    List<String>? initialWhitePlayers,
   }) async {
     final firstMatch = matches.first;
     final rawGroup = firstMatch.groupName ?? '';
@@ -104,6 +107,42 @@ class MatchEditSaveHelper {
 
     final updatedMatches = <MatchModel>[];
 
+    // 勝ち抜き戦用の選手名置換設定
+    final oldRedPlayers = initialRedPlayers ?? [];
+    final oldWhitePlayers = initialWhitePlayers ?? [];
+    final newRedPlayers = redPlayerControllers
+        .map((c) => c.text.trim())
+        .toList();
+    final newWhitePlayers = whitePlayerControllers
+        .map((c) => c.text.trim())
+        .toList();
+    final redTeam = redTeamInput.trim();
+    final whiteTeam = whiteTeamInput.trim();
+
+    String resolveRedPlayer(String oldRawName, int fallbackIndex) {
+      final extracted = MatchEditDataHelper.extractPlayerName(oldRawName);
+      final idx = oldRedPlayers.indexOf(extracted);
+      final targetIdx = idx >= 0 ? idx : fallbackIndex;
+      final newPlayer = (targetIdx >= 0 && targetIdx < newRedPlayers.length)
+          ? newRedPlayers[targetIdx]
+          : extracted;
+      return redTeam.isNotEmpty
+          ? (newPlayer.isNotEmpty ? '$redTeam: $newPlayer' : redTeam)
+          : newPlayer;
+    }
+
+    String resolveWhitePlayer(String oldRawName, int fallbackIndex) {
+      final extracted = MatchEditDataHelper.extractPlayerName(oldRawName);
+      final idx = oldWhitePlayers.indexOf(extracted);
+      final targetIdx = idx >= 0 ? idx : fallbackIndex;
+      final newPlayer = (targetIdx >= 0 && targetIdx < newWhitePlayers.length)
+          ? newWhitePlayers[targetIdx]
+          : extracted;
+      return whiteTeam.isNotEmpty
+          ? (newPlayer.isNotEmpty ? '$whiteTeam: $newPlayer' : whiteTeam)
+          : newPlayer;
+    }
+
     for (int i = 0; i < matches.length; i++) {
       final m = matches[i];
       final baseRule = selectedPresetRule ?? m.rule ?? const MatchRule();
@@ -144,18 +183,84 @@ class MatchEditSaveHelper {
                   : baseRule.teamName),
       );
 
-      final redPlayer = redPlayerControllers[i].text.trim();
-      final whitePlayer = whitePlayerControllers[i].text.trim();
-      final redTeam = redTeamInput.trim();
-      final whiteTeam = whiteTeamInput.trim();
+      final String finalRedName;
+      final String finalWhiteName;
+      final List<String> finalRedRemaining;
+      final List<String> finalWhiteRemaining;
 
-      final finalRedName = redTeam.isNotEmpty
-          ? (redPlayer.isNotEmpty ? '$redTeam: $redPlayer' : redTeam)
-          : redPlayer;
+      if (isKachinuki) {
+        // 🏆 勝ち抜き戦の選手名・待機リスト連動更新
+        final isOnlyWaitingFirstMatch =
+            matches.length == 1 && m.status == 'waiting';
 
-      final finalWhiteName = whiteTeam.isNotEmpty
-          ? (whitePlayer.isNotEmpty ? '$whiteTeam: $whitePlayer' : whiteTeam)
-          : whitePlayer;
+        if (isOnlyWaitingFirstMatch) {
+          finalRedName = newRedPlayers.isNotEmpty
+              ? (redTeam.isNotEmpty
+                    ? (newRedPlayers[0].isNotEmpty
+                          ? '$redTeam: ${newRedPlayers[0]}'
+                          : redTeam)
+                    : newRedPlayers[0])
+              : redTeam;
+          finalWhiteName = newWhitePlayers.isNotEmpty
+              ? (whiteTeam.isNotEmpty
+                    ? (newWhitePlayers[0].isNotEmpty
+                          ? '$whiteTeam: ${newWhitePlayers[0]}'
+                          : whiteTeam)
+                    : newWhitePlayers[0])
+              : whiteTeam;
+
+          finalRedRemaining = newRedPlayers.length > 1
+              ? newRedPlayers
+                    .sublist(1)
+                    .map(
+                      (p) => redTeam.isNotEmpty
+                          ? (p.isNotEmpty ? '$redTeam: $p' : redTeam)
+                          : p,
+                    )
+                    .toList()
+              : [];
+          finalWhiteRemaining = newWhitePlayers.length > 1
+              ? newWhitePlayers
+                    .sublist(1)
+                    .map(
+                      (p) => whiteTeam.isNotEmpty
+                          ? (p.isNotEmpty ? '$whiteTeam: $p' : whiteTeam)
+                          : p,
+                    )
+                    .toList()
+              : [];
+        } else {
+          // 進行中・終了後を含む全試合:
+          // 該当選手が出場している全試合（勝ち抜いて複数回登場含む）で連動して新名前に置換
+          finalRedName = resolveRedPlayer(m.redName, i == 0 ? 0 : -1);
+          finalWhiteName = resolveWhitePlayer(m.whiteName, i == 0 ? 0 : -1);
+          finalRedRemaining = m.redRemaining
+              .map((rem) => resolveRedPlayer(rem, -1))
+              .toList();
+          finalWhiteRemaining = m.whiteRemaining
+              .map((rem) => resolveWhitePlayer(rem, -1))
+              .toList();
+        }
+      } else {
+        // 通常の団体戦・個人戦
+        final redPlayer = i < redPlayerControllers.length
+            ? redPlayerControllers[i].text.trim()
+            : '';
+        final whitePlayer = i < whitePlayerControllers.length
+            ? whitePlayerControllers[i].text.trim()
+            : '';
+
+        finalRedName = redTeam.isNotEmpty
+            ? (redPlayer.isNotEmpty ? '$redTeam: $redPlayer' : redTeam)
+            : redPlayer;
+
+        finalWhiteName = whiteTeam.isNotEmpty
+            ? (whitePlayer.isNotEmpty ? '$whiteTeam: $whitePlayer' : whiteTeam)
+            : whitePlayer;
+
+        finalRedRemaining = m.redRemaining;
+        finalWhiteRemaining = m.whiteRemaining;
+      }
 
       final prefixParts = <String>[];
       if (courtInput.isNotEmpty) prefixParts.add(courtInput);
@@ -169,11 +274,13 @@ class MatchEditSaveHelper {
       final updatedMatch = m.copyWith(
         redName: finalRedName,
         whiteName: finalWhiteName,
+        redRemaining: finalRedRemaining,
+        whiteRemaining: finalWhiteRemaining,
         groupName: finalGroupName,
         note: noteCombined,
         rule: updatedRule,
         matchScene: sceneKey,
-        status: status,
+        status: m.status,
         matchTimeMinutes: matchTime,
         hasExtension: hasExtension,
         extensionTimeMinutes: hasExtension ? enchoTime : null,

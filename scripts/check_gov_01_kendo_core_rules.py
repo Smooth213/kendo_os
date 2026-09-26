@@ -19,6 +19,7 @@ SUB_AUDITS = [
     ("③ 試合シーン（本戦・錬成・申合せ）表記＆配色規約", ["python3", "scripts/check_kendo_scene_governance.py"]),
     ("④ 団体戦スコア順序（先鋒〜大将・代表戦）剣道標準配列規約", ["python3", "scripts/check_team_match_order_governance.py"]),
     ("⑤ 全試合形式（勝ち抜き・リーグ含む）編集選択＆完全整合性保証規約", ["python3", "scripts/check_match_type_selection_governance.py"]),
+    ("⑥ 勝ち抜き戦（5人制 / 3人制）選択・適応・実行 総合保証規約", ["python3", "scripts/check_kachinuki_governance.py"]),
 ]
 
 def main():

@@ -20,6 +20,9 @@ class MatchEditStateHolder {
   late TextEditingController whiteTeamController;
   late List<TextEditingController> redPlayerControllers;
   late List<TextEditingController> whitePlayerControllers;
+  late List<String> initialRedPlayers;
+  late List<String> initialWhitePlayers;
+  late List<String> positionLabels;
 
   // 2. コート・グループ情報
   late TextEditingController courtController;
@@ -62,10 +65,13 @@ class MatchEditStateHolder {
   late String status;
 
   MatchEditStateHolder(this.matches, {TournamentOwnInfo? ownInfo}) {
-    final first = matches.first;
-    isDantai = matches.length > 1 || first.matchType == '団体戦';
+    final sortedMatches = List<MatchModel>.from(matches)
+      ..sort((a, b) => a.order.compareTo(b.order));
+    final first = sortedMatches.first;
 
     final r = first.rule ?? const MatchRule();
+    isKachinuki = r.isKachinuki || first.isKachinuki;
+    isDantai = matches.length > 1 || first.matchType == '団体戦' || isKachinuki;
 
     String? detectedKey;
     if (r.isRenseikai ||
@@ -161,19 +167,58 @@ class MatchEditStateHolder {
     redTeamController = TextEditingController(text: extractedRedTeam);
     whiteTeamController = TextEditingController(text: extractedWhiteTeam);
 
-    redPlayerControllers = matches
-        .map(
-          (m) => TextEditingController(
-            text: MatchEditDataHelper.extractPlayerName(m.redName),
-          ),
-        )
+    if (isKachinuki) {
+      // 勝ち抜き戦の場合: 第1試合の出場者 + 待機選手リストから全体のオーダーを復元
+      final rawRedList = [first.redName, ...first.redRemaining];
+      final rawWhiteList = [first.whiteName, ...first.whiteRemaining];
+
+      initialRedPlayers = rawRedList
+          .map((n) => MatchEditDataHelper.extractPlayerName(n))
+          .toList();
+      initialWhitePlayers = rawWhiteList
+          .map((n) => MatchEditDataHelper.extractPlayerName(n))
+          .toList();
+
+      final rulePositions = r.positions;
+      final targetLength = rulePositions.isNotEmpty
+          ? rulePositions.length
+          : (initialRedPlayers.length > initialWhitePlayers.length
+                ? initialRedPlayers.length
+                : (initialWhitePlayers.isNotEmpty
+                      ? initialWhitePlayers.length
+                      : 5));
+
+      while (initialRedPlayers.length < targetLength) {
+        initialRedPlayers.add('');
+      }
+      while (initialWhitePlayers.length < targetLength) {
+        initialWhitePlayers.add('');
+      }
+
+      positionLabels = List.generate(targetLength, (i) {
+        if (rulePositions.isNotEmpty && i < rulePositions.length) {
+          return rulePositions[i];
+        }
+        return MatchEditDataHelper.getPositionLabel(i, targetLength);
+      });
+    } else {
+      initialRedPlayers = matches
+          .map((m) => MatchEditDataHelper.extractPlayerName(m.redName))
+          .toList();
+      initialWhitePlayers = matches
+          .map((m) => MatchEditDataHelper.extractPlayerName(m.whiteName))
+          .toList();
+      positionLabels = List.generate(
+        matches.length,
+        (i) => MatchEditDataHelper.getPositionLabel(i, matches.length),
+      );
+    }
+
+    redPlayerControllers = initialRedPlayers
+        .map((p) => TextEditingController(text: p))
         .toList();
-    whitePlayerControllers = matches
-        .map(
-          (m) => TextEditingController(
-            text: MatchEditDataHelper.extractPlayerName(m.whiteName),
-          ),
-        )
+    whitePlayerControllers = initialWhitePlayers
+        .map((p) => TextEditingController(text: p))
         .toList();
 
     courtController = TextEditingController(
@@ -269,6 +314,10 @@ class MatchEditStateHolder {
       redPlayerControllers[i].text = whitePlayerControllers[i].text;
       whitePlayerControllers[i].text = tempPlayer;
     }
+
+    final tempInitial = initialRedPlayers;
+    initialRedPlayers = initialWhitePlayers;
+    initialWhitePlayers = tempInitial;
 
     if (ownTeamChoice == MatchEditOwnTeamChoice.red) {
       ownTeamChoice = MatchEditOwnTeamChoice.white;

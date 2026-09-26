@@ -113,6 +113,7 @@ class KachinukiBracketPainter extends CustomPainter {
       const Offset(startX / 2, (y2 + y3) / 2),
       true,
       isDark,
+      customColor: whiteWinColor,
     );
 
     for (var span in redSpans) {

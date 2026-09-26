@@ -56,17 +56,21 @@ class OfficialRecordKachinukiCard extends StatelessWidget {
 
     final scenePrefix = TeamProgressHelper.getScenePrefix(firstMatch);
 
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final cardColor = themeColors.cardBackground;
+
     return Card(
       margin: const EdgeInsets.symmetric(
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.xs,
       ),
       elevation: 0,
+      color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.large,
-        side: BorderSide(
-          color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
-        ),
+        side: BorderSide(color: themeColors.separatorColor),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -130,9 +134,7 @@ class OfficialRecordKachinukiCard extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              color: isDark
-                  ? context.appColors.cardBackground
-                  : context.appColors.textColor,
+              color: cardColor,
               width: canvasWidth < MediaQuery.of(context).size.width
                   ? MediaQuery.of(context).size.width
                   : canvasWidth,

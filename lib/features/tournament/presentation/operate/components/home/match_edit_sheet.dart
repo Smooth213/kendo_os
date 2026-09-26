@@ -169,6 +169,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                       setState(() => _state.ownTeamChoice = choice),
                   onSwapTeamsAndPlayers: () =>
                       setState(() => _state.swapTeamsAndPlayers()),
+                  positionLabels: _state.positionLabels,
                 ),
 
                 // TAB 2: コート・グループ情報
@@ -328,6 +329,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               status: _state.status,
               redPlayerControllers: _state.redPlayerControllers,
               whitePlayerControllers: _state.whitePlayerControllers,
+              initialRedPlayers: _state.initialRedPlayers,
+              initialWhitePlayers: _state.initialWhitePlayers,
             ),
           ),
         ],

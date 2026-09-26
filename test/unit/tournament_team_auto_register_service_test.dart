@@ -163,7 +163,7 @@ void main() {
     });
 
     test('勝ち抜き戦・リーグ戦の自動判定および明示指定テスト', () {
-      // 1. チーム名に「勝ち抜き」が含まれる場合 -> 勝ち抜き戦
+      // 1. チーム名に「勝ち抜き」が含まれる場合 -> 勝ち抜き戦（5人制 / 3人制）
       final kachinukiTeam = const ParsedTeamOrder(
         teamName: '小学生勝ち抜き選抜',
         members: [
@@ -176,13 +176,39 @@ void main() {
       );
       expect(
         TournamentTeamAutoRegisterService.determineMatchType(kachinukiTeam),
-        '勝ち抜き戦',
+        '勝ち抜き戦（5人制）',
       );
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（5人制）'), [
+        '先鋒',
+        '次鋒',
+        '中堅',
+        '副将',
+        '大将',
+      ]);
+      // 後方互換性: '勝ち抜き戦' でも5人制スロットが取得できること
       expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦'), [
         '先鋒',
         '次鋒',
         '中堅',
         '副将',
+        '大将',
+      ]);
+
+      final kachinuki3Team = const ParsedTeamOrder(
+        teamName: '小学生勝ち抜き選抜（3人制）',
+        members: [
+          ParsedTeamMember(position: '先鋒', name: '選手1'),
+          ParsedTeamMember(position: '中堅', name: '選手2'),
+          ParsedTeamMember(position: '大将', name: '選手3'),
+        ],
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(kachinuki3Team),
+        '勝ち抜き戦（3人制）',
+      );
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（3人制）'), [
+        '先鋒',
+        '中堅',
         '大将',
       ]);
 

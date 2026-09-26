@@ -247,10 +247,10 @@ class CategoryRuleFormSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
 
         // === 形式別表示 ===
-        if (isRenseikai || matchType == '勝ち抜き戦')
+        if (isRenseikai || matchType.contains('勝ち抜き'))
           CategoryRuleRenseikaiSection(
             isRenseikai: isRenseikai,
-            isKachinuki: matchType == '勝ち抜き戦',
+            isKachinuki: matchType.contains('勝ち抜き'),
             isNormal: isNormal,
             categoryKey: categoryKey,
             isRunningTime: isRunningTime,

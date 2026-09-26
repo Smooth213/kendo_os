@@ -182,28 +182,55 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        DropdownButtonFormField<String>(
-          initialValue: matchType,
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            fillColor: isDark
-                ? const Color(0xFF1C1C1E)
-                : const Color(0xFFFFFFFF),
-            filled: true,
-          ),
-          items: const [
-            DropdownMenuItem(value: '個人戦', child: Text('個人戦')),
-            DropdownMenuItem(value: '団体戦', child: Text('団体戦 (トーナメント)')),
-            DropdownMenuItem(value: 'リーグ個人戦', child: Text('リーグ個人戦')),
-            DropdownMenuItem(value: 'リーグ団体戦', child: Text('リーグ団体戦')),
-            DropdownMenuItem(value: '勝ち抜き戦', child: Text('勝ち抜き戦 (団体戦)')),
-          ],
-          onChanged: (val) {
-            if (val != null) onMatchTypeChanged(val);
+        Builder(
+          builder: (context) {
+            const availableTypes = [
+              '個人戦',
+              '団体戦',
+              'リーグ個人戦',
+              'リーグ団体戦',
+              '勝ち抜き戦（5人制）',
+              '勝ち抜き戦（3人制）',
+              '勝ち抜き戦',
+            ];
+            final effectiveMatchType = availableTypes.contains(matchType)
+                ? matchType
+                : (matchType.contains('3人制') && matchType.contains('勝ち抜き')
+                      ? '勝ち抜き戦（3人制）'
+                      : (matchType.contains('勝ち抜き') ? '勝ち抜き戦（5人制）' : '団体戦'));
+
+            return DropdownButtonFormField<String>(
+              initialValue: effectiveMatchType,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                fillColor: isDark
+                    ? const Color(0xFF1C1C1E)
+                    : const Color(0xFFFFFFFF),
+                filled: true,
+              ),
+              items: const [
+                DropdownMenuItem(value: '個人戦', child: Text('個人戦')),
+                DropdownMenuItem(value: '団体戦', child: Text('団体戦 (トーナメント)')),
+                DropdownMenuItem(value: 'リーグ個人戦', child: Text('リーグ個人戦')),
+                DropdownMenuItem(value: 'リーグ団体戦', child: Text('リーグ団体戦')),
+                DropdownMenuItem(
+                  value: '勝ち抜き戦（5人制）',
+                  child: Text('勝ち抜き戦（5人制）'),
+                ),
+                DropdownMenuItem(
+                  value: '勝ち抜き戦（3人制）',
+                  child: Text('勝ち抜き戦（3人制）'),
+                ),
+                DropdownMenuItem(value: '勝ち抜き戦', child: Text('勝ち抜き戦 (団体戦)')),
+              ],
+              onChanged: (val) {
+                if (val != null) onMatchTypeChanged(val);
+              },
+            );
           },
         ),
         const SizedBox(height: AppSpacing.md),

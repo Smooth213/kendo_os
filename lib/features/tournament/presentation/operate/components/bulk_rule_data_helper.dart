@@ -5,7 +5,15 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bul
 /// 一括ルール編集用のデータ解析・グループ化ヘルパー
 class BulkRuleDataHelper {
   static String getResolvedType(MatchModel m) {
-    if (m.isKachinuki || m.matchType == '無限勝ち抜き' || m.matchType == '勝ち抜き戦') {
+    if (m.isKachinuki ||
+        m.matchType == '無限勝ち抜き' ||
+        m.matchType.contains('勝ち抜き')) {
+      if (m.matchType.contains('3人制')) {
+        return '勝ち抜き戦（3人制）';
+      }
+      if (m.matchType.contains('5人制')) {
+        return '勝ち抜き戦（5人制）';
+      }
       return '勝ち抜き戦';
     }
     final isLeague =

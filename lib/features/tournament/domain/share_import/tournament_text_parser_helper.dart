@@ -205,6 +205,15 @@ class TournamentTextParserHelper {
     if (c == '個人戦' || c == '個人' || c == '個人戦の部' || c == '個人の部') {
       return '個人戦';
     }
+    if (c.contains('勝ち抜き') &&
+        (c.contains('3人制') || c.contains('三人制') || c.contains('3人'))) {
+      return '勝ち抜き戦（3人制）';
+    }
+    if (c == '勝ち抜き戦（5人制）' ||
+        (c.contains('勝ち抜き') &&
+            (c.contains('5人制') || c.contains('五人制') || c.contains('5人')))) {
+      return '勝ち抜き戦（5人制）';
+    }
     if (c == '勝ち抜き戦' || c == '勝ち抜き' || c == '勝ち抜き戦の部') {
       return '勝ち抜き戦';
     }
@@ -226,7 +235,19 @@ class TournamentTextParserHelper {
     required String rawText,
     required int memberCount,
   }) {
-    if (teamName.contains('勝ち抜き')) return '勝ち抜き戦';
+    if (teamName.contains('勝ち抜き')) {
+      if (teamName.contains('3人制') ||
+          teamName.contains('3人') ||
+          memberCount == 3) {
+        return '勝ち抜き戦（3人制）';
+      }
+      if (teamName.contains('5人制') ||
+          teamName.contains('5人') ||
+          memberCount >= 4) {
+        return '勝ち抜き戦（5人制）';
+      }
+      return '勝ち抜き戦';
+    }
     if (teamName.contains('リーグ')) {
       return (memberCount == 1 || teamName.contains('個人'))
           ? 'リーグ個人戦'
@@ -236,6 +257,16 @@ class TournamentTextParserHelper {
       return '個人戦';
     }
     if (rawText.contains('勝ち抜き戦') || rawText.contains('勝ち抜き')) {
+      if (rawText.contains('3人制') ||
+          rawText.contains('3人') ||
+          memberCount == 3) {
+        return '勝ち抜き戦（3人制）';
+      }
+      if (rawText.contains('5人制') ||
+          rawText.contains('5人') ||
+          memberCount >= 4) {
+        return '勝ち抜き戦（5人制）';
+      }
       return '勝ち抜き戦';
     }
     if (rawText.contains('リーグ戦') || rawText.contains('リーグ')) {

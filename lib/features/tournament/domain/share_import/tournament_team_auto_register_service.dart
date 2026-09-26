@@ -13,6 +13,8 @@ class TournamentTeamAutoRegisterService {
     '団体戦（5人制）',
     '団体戦（3人制）',
     '団体戦（7人制）',
+    '勝ち抜き戦（5人制）',
+    '勝ち抜き戦（3人制）',
     '勝ち抜き戦',
     'リーグ団体戦',
     'リーグ個人戦',
@@ -33,7 +35,13 @@ class TournamentTeamAutoRegisterService {
 
     // 2. 勝ち抜き戦の判定（チーム名やカテゴリに含まれる場合）
     if (teamName.contains('勝ち抜き') || team.category.contains('勝ち抜き')) {
-      return '勝ち抜き戦';
+      if (teamName.contains('3人制') ||
+          team.category.contains('3人制') ||
+          teamName.contains('3人') ||
+          count == 3) {
+        return '勝ち抜き戦（3人制）';
+      }
+      return '勝ち抜き戦（5人制）';
     }
 
     // 3. リーグ戦の判定

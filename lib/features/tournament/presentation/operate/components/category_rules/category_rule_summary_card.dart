@@ -82,19 +82,18 @@ class CategoryRuleSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isTeam =
-        matchType == '団体戦' ||
-        matchType == '勝ち抜き戦' ||
-        matchType == 'リーグ団体戦' ||
+        matchType.contains('団体') ||
+        matchType.contains('勝ち抜き') ||
         matchType == '錬成会';
     final bool isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
-    final bool isKachinuki = matchType == '勝ち抜き戦';
+    final bool isKachinuki = matchType.contains('勝ち抜き');
     final bool isRenseikai = matchType == '錬成会' || (rule.isRenseikai);
 
     String formatText;
     if (isRenseikai) {
       formatText = '錬成会';
     } else if (isKachinuki) {
-      formatText = '勝ち抜き戦';
+      formatText = matchType.isNotEmpty ? matchType : '勝ち抜き戦';
     } else if (matchType == 'リーグ団体戦') {
       formatText = 'リーグ戦（団体）';
     } else if (matchType == 'リーグ個人戦') {
