@@ -15,18 +15,26 @@ class TournamentTeamAutoRegisterService {
     '団体戦（7人制）',
     '勝ち抜き戦（5人制）',
     '勝ち抜き戦（3人制）',
-    '勝ち抜き戦',
     'リーグ団体戦',
     'リーグ個人戦',
     '個人戦',
     '団体戦（それ以上）',
   ];
 
+  /// 試合形式の正規化（旧「勝ち抜き戦」を「勝ち抜き戦（5人制）」にマイグレーション）
+  static String normalizeMatchType(String matchType) {
+    final clean = matchType.trim();
+    if (clean == '勝ち抜き戦') {
+      return '勝ち抜き戦（5人制）';
+    }
+    return clean;
+  }
+
   /// チームの指定形式、メンバー構成やチーム名から試合形式を自動判定
   static String determineMatchType(ParsedTeamOrder team) {
-    // 1. 指定済みの形式があれば最優先
+    // 1. 指定済みの形式があれば最優先（旧表記は正規化）
     if (team.matchType.trim().isNotEmpty) {
-      return team.matchType.trim();
+      return normalizeMatchType(team.matchType);
     }
 
     final teamName = team.teamName;

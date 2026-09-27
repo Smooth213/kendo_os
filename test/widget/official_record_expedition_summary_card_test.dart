@@ -39,28 +39,44 @@ void main() {
         );
 
         expect(find.text('成績サマリー'), findsOneWidget);
+        // 初期状態ではカード全体が折りたたまれており「開く」が表示される
+        expect(find.text('開く'), findsOneWidget);
+        expect(find.text('閉じる'), findsNothing);
+
+        // カードを展開
+        await tester.tap(
+          find.byKey(const Key('btn_toggle_expedition_summary')),
+        );
+        await tester.pumpAndSettle();
+
+        // 展開後は「閉じる」が表示され、中身の各要素が表示される
+        expect(find.text('閉じる'), findsOneWidget);
         expect(find.text('本戦 (団体)'), findsOneWidget);
         expect(find.text('詳細分析 ›'), findsOneWidget);
         expect(find.text('選手別成績 (1名)'), findsOneWidget);
         expect(find.text('表示する'), findsOneWidget);
 
-        // 初期状態では折りたたまれており「閉じる」は表示されない
-        expect(find.text('閉じる'), findsNothing);
-
-        // アコーディオンをタップして展開
+        // 選手別成績のアコーディオンをタップして展開
         await tester.tap(find.text('選手別成績 (1名)'));
         await tester.pumpAndSettle();
 
-        // 展開状態: 「閉じる」と選手成績チップが表示される
-        expect(find.text('閉じる'), findsOneWidget);
+        // 選手別成績が展開される
         expect(find.text('佐藤: 1勝0敗'), findsOneWidget);
 
-        // もう一度タップして折りたたみ
+        // もう一度タップして選手別成績を折りたたみ
         await tester.tap(find.text('選手別成績 (1名)'));
         await tester.pumpAndSettle();
 
         expect(find.text('表示する'), findsOneWidget);
-        expect(find.text('閉じる'), findsNothing);
+
+        // カード全体の「閉じる」をタップしてサマリーを折りたたむ
+        await tester.tap(
+          find.byKey(const Key('btn_toggle_expedition_summary')),
+        );
+        await tester.pumpAndSettle();
+
+        // 再び「開く」が表示される
+        expect(find.text('開く'), findsOneWidget);
       },
     );
 

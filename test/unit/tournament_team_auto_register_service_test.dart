@@ -248,8 +248,8 @@ void main() {
       );
       expect(TournamentTeamAutoRegisterService.getBaseSlots('リーグ個人戦'), ['選手']);
 
-      // 4. 明示的に matchType が指定されている場合はそれを最優先
-      final manualTeam = const ParsedTeamOrder(
+      // 4. 明示的に matchType が指定されている場合はそれを最優先（旧表記「勝ち抜き戦」は「勝ち抜き戦（5人制）」に正規化）
+      final manualLegacyTeam = const ParsedTeamOrder(
         teamName: '低学年チーム',
         matchType: '勝ち抜き戦',
         members: [
@@ -259,8 +259,22 @@ void main() {
         ],
       );
       expect(
-        TournamentTeamAutoRegisterService.determineMatchType(manualTeam),
-        '勝ち抜き戦',
+        TournamentTeamAutoRegisterService.determineMatchType(manualLegacyTeam),
+        '勝ち抜き戦（5人制）',
+      );
+
+      final manualTeam3 = const ParsedTeamOrder(
+        teamName: '低学年チーム',
+        matchType: '勝ち抜き戦（3人制）',
+        members: [
+          ParsedTeamMember(position: '先鋒', name: '選手1'),
+          ParsedTeamMember(position: '中堅', name: '選手2'),
+          ParsedTeamMember(position: '大将', name: '選手3'),
+        ],
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(manualTeam3),
+        '勝ち抜き戦（3人制）',
       );
     });
   });

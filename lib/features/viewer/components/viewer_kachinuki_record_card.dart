@@ -30,7 +30,7 @@ class ViewerKachinukiRecordCard extends StatelessWidget {
     final first = matches.first;
     final rTeam = first.redName.split(':').first.trim();
     final wTeam = first.whiteName.split(':').first.trim();
-    final canvasWidth = 60.0 + ((matches.length + 5) * 60.0);
+    final canvasWidth = 70.0 + ((matches.length + 5) * 50.0) + 40.0;
 
     final engine = KendoRuleEngine();
     final projections = matches.map((m) {
@@ -71,7 +71,7 @@ class ViewerKachinukiRecordCard extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.lg),
               color: themeColors.cardBackground,
               width: canvasWidth,
-              height: 480,
+              height: 250,
               child: CustomPaint(
                 painter: KachinukiBracketPainter(
                   matches: projections,

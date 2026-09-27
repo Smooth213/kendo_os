@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
+import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 void main() {
   group('🛡️ OfficialRecordExportBar Widget Tests', () {
@@ -55,5 +56,91 @@ void main() {
       );
       expect(pdfButton.enabled, isFalse);
     });
+
+    testWidgets('Hides toggle when hasMultipleCategories is false', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: OfficialRecordExportBar(
+              isExporting: false,
+              isDark: false,
+              hasMultipleCategories: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('全カテゴリを一括出力'), findsNothing);
+      expect(find.text('PDF'), findsOneWidget);
+    });
+
+    testWidgets(
+      'Shows AppSwitch and switches labels when switch or label is tapped',
+      (WidgetTester tester) async {
+        OfficialRecordExportScope? selectedScope;
+
+        await tester.pumpWidget(
+          StatefulBuilder(
+            builder: (context, setState) {
+              return MaterialApp(
+                home: Scaffold(
+                  body: OfficialRecordExportBar(
+                    isExporting: false,
+                    isDark: false,
+                    hasMultipleCategories: true,
+                    exportScope:
+                        selectedScope ?? OfficialRecordExportScope.current,
+                    onScopeChanged: (scope) {
+                      setState(() {
+                        selectedScope = scope;
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+
+        // 初期表示確認: スイッチOFF
+        expect(find.text('全カテゴリを一括出力'), findsOneWidget);
+        expect(find.byType(AppSwitch), findsOneWidget);
+        final switchWidgetInitial = tester.widget<AppSwitch>(
+          find.byType(AppSwitch),
+        );
+        expect(switchWidgetInitial.value, isFalse);
+        expect(find.text('PDF'), findsOneWidget);
+        expect(find.text('画像'), findsOneWidget);
+        expect(find.text('CSV'), findsOneWidget);
+
+        // ラベルまたはスイッチをタップ
+        await tester.tap(find.text('全カテゴリを一括出力'));
+        await tester.pumpAndSettle();
+
+        expect(selectedScope, OfficialRecordExportScope.all);
+        final switchWidgetActive = tester.widget<AppSwitch>(
+          find.byType(AppSwitch),
+        );
+        expect(switchWidgetActive.value, isTrue);
+        expect(find.text('PDF（全）'), findsOneWidget);
+        expect(find.text('画像（全）'), findsOneWidget);
+        expect(find.text('CSV（全）'), findsOneWidget);
+
+        // スイッチ自体をタップして解除
+        await tester.tap(find.byType(AppSwitch));
+        await tester.pumpAndSettle();
+
+        expect(selectedScope, OfficialRecordExportScope.current);
+        final switchWidgetInactive = tester.widget<AppSwitch>(
+          find.byType(AppSwitch),
+        );
+        expect(switchWidgetInactive.value, isFalse);
+        expect(find.text('PDF'), findsOneWidget);
+        expect(find.text('画像'), findsOneWidget);
+        expect(find.text('CSV'), findsOneWidget);
+      },
+    );
   });
 }

@@ -80,9 +80,10 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
     _selectedCategory = widget.team.category.trim().isNotEmpty
         ? widget.team.category.trim()
         : '小学生の部';
-    _matchType = widget.team.matchType.trim().isNotEmpty
+    final rawMatchType = widget.team.matchType.trim().isNotEmpty
         ? widget.team.matchType.trim()
         : '団体戦（5人制）';
+    _matchType = rawMatchType == '勝ち抜き戦' ? '勝ち抜き戦（5人制）' : rawMatchType;
 
     _tempSelectedPlayers = {};
     for (int i = 0; i < widget.team.playerNames.length; i++) {

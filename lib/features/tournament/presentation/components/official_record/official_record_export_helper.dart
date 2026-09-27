@@ -94,4 +94,79 @@ class OfficialRecordExportHelper {
       }
     }
   }
+
+  /// 全カテゴリ一括エクスポート
+  static Future<void> handleExportAll({
+    required BuildContext context,
+    required WidgetRef ref,
+    required StateController<bool> isExportingController,
+    StateController<String?>? exportingTypeController,
+    required List<
+      ({String categoryName, List<Map<String, dynamic>> groupDataList})
+    >
+    allCategoryData,
+    required String type,
+    String? tName,
+    String? tDate,
+    String? tVenue,
+    bool isBottomSheet = false,
+  }) async {
+    if (isExportingController.state) return;
+    isExportingController.state = true;
+    exportingTypeController?.state = type;
+
+    BuildContext? dialogContext;
+    if (!isBottomSheet) {
+      showAppDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          dialogContext = ctx;
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    try {
+      final now = ref.read(timeSourceProvider).now();
+      if (type == 'pdf') {
+        await pdf_service.loadLibrary();
+        await pdf_service.PdfService.printOfficialRecordAll(
+          allCategoryData,
+          tournamentName: tName,
+          tournamentDate: tDate,
+          tournamentVenue: tVenue,
+          outputTime: now,
+        );
+      } else if (type == 'image') {
+        await pdf_service.loadLibrary();
+        await pdf_service.PdfService.shareOfficialRecordAllAsImage(
+          allCategoryData,
+          tournamentName: tName,
+          tournamentDate: tDate,
+          tournamentVenue: tVenue,
+          outputTime: now,
+        );
+      } else if (type == 'csv') {
+        await CsvService.shareOfficialRecordAllAsCsv(allCategoryData);
+      }
+
+      if (context.mounted) {
+        final label = type == 'pdf' ? 'PDF' : (type == 'image' ? '画像' : 'CSV');
+        AppSnackBar.showSuccess(context, '全カテゴリの公式記録（$label）を出力しました');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackBar.showError(context, '出力に失敗しました: $e');
+      }
+    } finally {
+      isExportingController.state = false;
+      exportingTypeController?.state = null;
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.pop(dialogContext!);
+      } else if (!isBottomSheet && context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+  }
 }

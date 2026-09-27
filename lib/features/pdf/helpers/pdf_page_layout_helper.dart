@@ -147,7 +147,7 @@ class PdfPageLayoutHelper {
         contentWidgets.add(
           PdfKachinukiPainter.build(group['groupName'], matches, ttf, ttfBold),
         );
-        contentWidgets.add(pw.SizedBox(height: 16));
+        contentWidgets.add(pw.SizedBox(height: 10));
       } else if (isLeague) {
         _buildLeagueContent(
           contentWidgets: contentWidgets,

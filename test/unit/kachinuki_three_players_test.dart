@@ -103,7 +103,7 @@ void main() {
       );
       expect(
         TournamentTextParserHelper.detectSectionMatchType('【勝ち抜き戦】'),
-        equals('勝ち抜き戦'),
+        equals('勝ち抜き戦（5人制）'),
       );
 
       // 初期形式検出

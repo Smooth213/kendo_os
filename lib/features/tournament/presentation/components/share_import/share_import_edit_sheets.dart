@@ -45,7 +45,11 @@ abstract final class ShareImportEditSheets {
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: candidateMatchTypes.map((type) {
-                    final isSel = currentMatchType == type;
+                    final normalizedCurrent =
+                        TournamentTeamAutoRegisterService.normalizeMatchType(
+                          currentMatchType,
+                        );
+                    final isSel = normalizedCurrent == type;
                     return AppChoiceChip(
                       label: Text(type),
                       selected: isSel,

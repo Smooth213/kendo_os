@@ -161,6 +161,139 @@ class PdfService {
       PaintingBinding.instance.imageCache.clearLiveImages();
     } catch (_) {}
   }
+
+  static Future<Uint8List> _generateMultiPdfBytes(
+    List<({String categoryName, List<Map<String, dynamic>> groupDataList})>
+    allCategoryData, {
+    String? tournamentName,
+    String? tournamentDate,
+    String? tournamentVenue,
+    required DateTime outputTime,
+  }) async {
+    final rawFontBytes = await PdfFontLoader.loadFontBytes();
+    final params = _PdfMultiWorkerParams(
+      allCategoryData: allCategoryData,
+      tournamentName: tournamentName,
+      tournamentDate: tournamentDate,
+      tournamentVenue: tournamentVenue,
+      outputTimeMillis: outputTime.millisecondsSinceEpoch,
+      regularFontBytes: rawFontBytes.regular,
+      boldFontBytes: rawFontBytes.bold,
+    );
+
+    return compute(_generatePdfBytesInMultiWorker, params);
+  }
+
+  static Future<void> printOfficialRecordAll(
+    List<({String categoryName, List<Map<String, dynamic>> groupDataList})>
+    allCategoryData, {
+    String? tournamentName,
+    String? tournamentDate,
+    String? tournamentVenue,
+    required DateTime outputTime,
+  }) async {
+    if (_isTest) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return;
+    }
+    final pdfBytes = await _generateMultiPdfBytes(
+      allCategoryData,
+      tournamentName: tournamentName,
+      tournamentDate: tournamentDate,
+      tournamentVenue: tournamentVenue,
+      outputTime: outputTime,
+    );
+
+    if (kIsWeb) {
+      download_helper.downloadFileWeb(
+        pdfBytes,
+        '公式記録_全カテゴリ.pdf',
+        'application/pdf',
+      );
+    } else {
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) => pdfBytes,
+        name: '公式記録_全カテゴリ.pdf',
+        usePrinterSettings: true,
+      );
+    }
+  }
+
+  static Future<void> shareOfficialRecordAllAsImage(
+    List<({String categoryName, List<Map<String, dynamic>> groupDataList})>
+    allCategoryData, {
+    String? tournamentName,
+    String? tournamentDate,
+    String? tournamentVenue,
+    required DateTime outputTime,
+  }) async {
+    if (_isTest) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return;
+    }
+
+    final outputFiles = <XFile>[];
+
+    for (final catData in allCategoryData) {
+      final pdfBytes = await _generatePdfBytes(
+        catData.categoryName,
+        catData.groupDataList,
+        tournamentName: tournamentName,
+        tournamentDate: tournamentDate,
+        tournamentVenue: tournamentVenue,
+        outputTime: outputTime,
+      );
+
+      int pageNum = 1;
+      await for (final page in Printing.raster(pdfBytes, dpi: 300)) {
+        final pngBytes = await page.toPng();
+        outputFiles.add(
+          XFile.fromData(
+            pngBytes,
+            mimeType: 'image/png',
+            name: '公式記録_${catData.categoryName}_$pageNum.png',
+          ),
+        );
+        pageNum++;
+      }
+    }
+
+    if (kIsWeb) {
+      final List<Uint8List> filesBytes = [];
+      final List<String> filenames = [];
+      for (final file in outputFiles) {
+        filesBytes.add(await file.readAsBytes());
+        filenames.add(file.name);
+      }
+
+      final String text = '全カテゴリの公式記録です。';
+      final shared = await download_helper.shareFilesWeb(
+        filesBytes,
+        filenames,
+        'image/png',
+        text,
+      );
+
+      if (!shared) {
+        for (int i = 0; i < filesBytes.length; i++) {
+          download_helper.downloadFileWeb(
+            filesBytes[i],
+            filenames[i],
+            'image/png',
+          );
+        }
+      }
+    } else {
+      await SharePlus.instance.share(
+        ShareParams(files: outputFiles, text: '全カテゴリの公式記録です。'),
+      );
+    }
+
+    try {
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+    } catch (_) {}
+  }
 }
 
 class _PdfWorkerParams {
@@ -176,6 +309,27 @@ class _PdfWorkerParams {
   const _PdfWorkerParams({
     required this.categoryName,
     required this.groupDataList,
+    this.tournamentName,
+    this.tournamentDate,
+    this.tournamentVenue,
+    required this.outputTimeMillis,
+    required this.regularFontBytes,
+    required this.boldFontBytes,
+  });
+}
+
+class _PdfMultiWorkerParams {
+  final List<({String categoryName, List<Map<String, dynamic>> groupDataList})>
+  allCategoryData;
+  final String? tournamentName;
+  final String? tournamentDate;
+  final String? tournamentVenue;
+  final int outputTimeMillis;
+  final Uint8List regularFontBytes;
+  final Uint8List boldFontBytes;
+
+  const _PdfMultiWorkerParams({
+    required this.allCategoryData,
     this.tournamentName,
     this.tournamentDate,
     this.tournamentVenue,
@@ -214,6 +368,44 @@ Future<Uint8List> _generatePdfBytesInWorker(_PdfWorkerParams params) async {
       ),
     ),
   );
+
+  return pdf.save();
+}
+
+Future<Uint8List> _generatePdfBytesInMultiWorker(
+  _PdfMultiWorkerParams params,
+) async {
+  final regular = pw.Font.ttf(ByteData.sublistView(params.regularFontBytes));
+  final bold = pw.Font.ttf(ByteData.sublistView(params.boldFontBytes));
+  final pdf = pw.Document();
+
+  final outputTime = DateTime.fromMillisecondsSinceEpoch(
+    params.outputTimeMillis,
+  );
+
+  for (final catData in params.allCategoryData) {
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(AppSpacing.xxl),
+        theme: pw.ThemeData.withFont(base: regular, bold: bold),
+        header: (pw.Context context) => PdfPageLayoutHelper.buildHeader(
+          categoryName: catData.categoryName,
+          tournamentName: params.tournamentName,
+          tournamentDate: params.tournamentDate,
+          tournamentVenue: params.tournamentVenue,
+          outputTime: outputTime,
+        ),
+        footer: (pw.Context context) =>
+            PdfPageLayoutHelper.buildFooter(context),
+        build: (pw.Context context) => PdfPageLayoutHelper.buildContentWidgets(
+          groupDataList: catData.groupDataList,
+          ttf: regular,
+          ttfBold: bold,
+        ),
+      ),
+    );
+  }
 
   return pdf.save();
 }

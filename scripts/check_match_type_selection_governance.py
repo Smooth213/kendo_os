@@ -16,11 +16,16 @@ TARGET_FILES = [
     "lib/features/tournament/presentation/components/share_import/tournament_share_import_cards.dart",
     "lib/features/tournament/presentation/components/share_import/share_import_edit_sheets.dart",
     "lib/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_teams_card.dart",
+    "lib/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart",
+    "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
 ]
 
 FORBIDDEN_PATTERNS = [
     # 4形式のみの古いハードコード配列
     ("['団体戦（3人制）', '団体戦（5人制）', '団体戦（7人制）', '個人戦']", "4形式限定の旧ハードコードリストが残っています"),
+    # 旧「勝ち抜き戦」単体のハードコード選択肢
+    ("value: '勝ち抜き戦'", "旧「勝ち抜き戦」単独のDropdownMenuItemが残っています（5人制または3人制に統一してください）"),
+    ("'勝ち抜き戦',\n    'リーグ団体戦'", "TeamRegistrationCategoryStep に旧「勝ち抜き戦」単独の選択肢が残っています"),
 ]
 
 REQUIRED_PATTERNS = [

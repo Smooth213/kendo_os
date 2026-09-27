@@ -204,6 +204,13 @@ void main() {
 
         // サマリーカードが表示されていることを検証
         expect(find.text('成績サマリー'), findsOneWidget);
+        expect(find.text('開く'), findsOneWidget);
+
+        // サマリーカードを展開
+        await tester.tap(
+          find.byKey(const Key('btn_toggle_expedition_summary')),
+        );
+        await tester.pumpAndSettle();
 
         // 団体戦1試合（本数差勝ち）と個人戦1試合がそれぞれ「1勝 0敗」として独立集計されていることを検証
         expect(find.text('1勝 0敗'), findsNWidgets(2));
@@ -364,6 +371,14 @@ void main() {
 
         // 375px幅でサマリーヘッダーが正常に描画され、エラーがないことを検証
         expect(find.text('成績サマリー'), findsOneWidget);
+        expect(find.text('開く'), findsOneWidget);
+
+        // サマリーカードを展開
+        await tester.tap(
+          find.byKey(const Key('btn_toggle_expedition_summary')),
+        );
+        await tester.pumpAndSettle();
+
         expect(find.text('詳細分析 ›'), findsOneWidget);
 
         // 詳細分析を開いてUUIDが排除され「10:15 錬成会」と表示されていることを検証

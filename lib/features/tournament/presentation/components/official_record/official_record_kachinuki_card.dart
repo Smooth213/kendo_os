@@ -46,7 +46,7 @@ class OfficialRecordKachinukiCard extends StatelessWidget {
     final int maxRem = redRem > whiteRem ? redRem : whiteRem;
     final int totalCols = matches.length + maxRem;
 
-    final canvasWidth = 60.0 + (totalCols * 60.0) + 120.0;
+    final canvasWidth = 70.0 + (totalCols * 50.0) + 40.0;
 
     final engine = KendoRuleEngine();
     final projections = matches.map((m) {
@@ -138,7 +138,7 @@ class OfficialRecordKachinukiCard extends StatelessWidget {
               width: canvasWidth < MediaQuery.of(context).size.width
                   ? MediaQuery.of(context).size.width
                   : canvasWidth,
-              height: 520,
+              height: 250,
               child: CustomPaint(
                 painter: KachinukiBracketPainter(
                   matches: projections,

@@ -5,6 +5,68 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 /// 勝ち抜き戦の文字・延長表記・スコアマーク描画ヘルパー
 class KachinukiDrawingHelper {
+  /// チーム名を横書き2行自動折り返しで中央に描画
+  static void drawTeamNameHorizontal(
+    Canvas canvas,
+    String teamName,
+    Rect bounds,
+    Color color,
+  ) {
+    if (teamName.isEmpty) return;
+
+    final String displayName = teamName.length > 25
+        ? '${teamName.substring(0, 24)}…'
+        : teamName;
+
+    final double maxWidth = bounds.width - 8.0;
+    final double maxHeight = bounds.height - 6.0;
+
+    double fontSize = displayName.length > 14
+        ? 9.5
+        : (displayName.length > 8 ? 11.0 : 12.0);
+
+    TextPainter tp = TextPainter(
+      text: TextSpan(
+        text: displayName,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: AppFontWeight.bold,
+          fontFamily: 'Noto Sans JP',
+          height: 1.2,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 3,
+    )..layout(maxWidth: maxWidth);
+
+    while (tp.height > maxHeight && fontSize > 8.0) {
+      fontSize -= 0.5;
+      tp = TextPainter(
+        text: TextSpan(
+          text: displayName,
+          style: TextStyle(
+            color: color,
+            fontSize: fontSize,
+            fontWeight: AppFontWeight.bold,
+            fontFamily: 'Noto Sans JP',
+            height: 1.15,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        maxLines: 3,
+      )..layout(maxWidth: maxWidth);
+    }
+
+    final Offset offset = Offset(
+      bounds.left + (bounds.width - tp.width) / 2,
+      bounds.top + (bounds.height - tp.height) / 2,
+    );
+    tp.paint(canvas, offset);
+  }
+
   static void drawEnchoTextCenter(Canvas canvas, Offset center, bool isDark) {
     const double width = 16.0;
     const double height = 26.0;
@@ -54,9 +116,9 @@ class KachinukiDrawingHelper {
     bool isDark, {
     Color? customColor,
   }) {
-    double availableHeight = 130.0;
-    double charHeight = 22.0;
-    double fontSize = isTeamName ? 18.0 : 16.0;
+    double availableHeight = 56.0;
+    double charHeight = 15.0;
+    double fontSize = 12.0;
 
     final Color textColor =
         customColor ??
@@ -68,7 +130,7 @@ class KachinukiDrawingHelper {
           text: '(欠員)',
           style: TextStyle(
             color: Color(0xFF64748B),
-            fontSize: AppFontSize.bodySmall,
+            fontSize: AppFontSize.caption,
             fontWeight: AppFontWeight.bold,
           ),
         ),
@@ -85,7 +147,7 @@ class KachinukiDrawingHelper {
     final chars = text.split('');
     if (chars.length * charHeight > availableHeight) {
       charHeight = availableHeight / chars.length;
-      fontSize = charHeight * 0.8;
+      fontSize = (charHeight * 0.85).clamp(8.0, 12.0);
     }
 
     final textStyle = TextStyle(
@@ -110,7 +172,7 @@ class KachinukiDrawingHelper {
         text: TextSpan(
           text: span.initial,
           style: textStyle.copyWith(
-            fontSize: fontSize * 0.65,
+            fontSize: (fontSize * 0.7).clamp(7.0, 10.0),
             color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF64748B),
           ),
         ),
@@ -118,13 +180,13 @@ class KachinukiDrawingHelper {
       )..layout();
       tp.paint(
         canvas,
-        Offset(center.dx + (fontSize * 0.2), y - (charHeight * 0.8)),
+        Offset(center.dx + (fontSize * 0.25), y - (charHeight * 0.8)),
       );
     }
   }
 
   static void drawSmallCross(Canvas canvas, Offset center, Paint paint) {
-    const double size = 8.0;
+    const double size = 6.0;
     canvas.drawLine(
       Offset(center.dx - size, center.dy - size),
       Offset(center.dx + size, center.dy + size),
@@ -143,20 +205,21 @@ class KachinukiDrawingHelper {
     Offset baseAnchor,
     bool isRed,
   ) {
-    double y = isRed ? baseAnchor.dy : baseAnchor.dy - (pts.length * 24.0);
+    const double step = 18.0;
+    double y = isRed ? baseAnchor.dy : baseAnchor.dy - (pts.length * step);
     final Color color = isRed
         ? const Color(0xFFE53935)
         : const Color(0xFF3F51B5);
 
     final textStyle = TextStyle(
       color: color,
-      fontSize: AppFontSize.bodyMedium,
+      fontSize: AppFontSize.small,
       fontWeight: AppFontWeight.black,
     );
     final circlePaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1.2;
 
     for (var p in pts) {
       final tp = TextPainter(
@@ -167,11 +230,11 @@ class KachinukiDrawingHelper {
       if (p.isFirstMatchPoint && p.mark != '◯') {
         canvas.drawCircle(
           Offset(baseAnchor.dx, y + (tp.height / 2)),
-          11.5,
+          9.0,
           circlePaint,
         );
       }
-      y += 24.0;
+      y += step;
     }
   }
 }

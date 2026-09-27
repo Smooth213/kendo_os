@@ -66,11 +66,17 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // 1. タイトルとLINE・共有ボタンの存在確認
+      // 1. タイトルとLINE・共有ボタン、開くボタンの存在確認
       expect(find.text('成績サマリー'), findsOneWidget);
       expect(find.text('LINE・共有'), findsOneWidget);
+      expect(find.text('開く'), findsOneWidget);
 
-      // 2. 実施された本戦(団体)のみが表示され、未実施の錬成会や申し合わせが表示されないこと
+      // カードを展開
+      await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
+      await tester.pumpAndSettle();
+
+      // 2. 展開後に実施された本戦(団体)のみが表示され、未実施の錬成会や申し合わせが表示されないこと
+      expect(find.text('閉じる'), findsOneWidget);
       expect(find.text('本戦 (団体)'), findsOneWidget);
       expect(find.text('1勝 0敗'), findsOneWidget);
       expect(find.text('錬成会 (団体)'), findsNothing);
@@ -170,6 +176,10 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // サマリーカードを展開
+      await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
       await tester.pumpAndSettle();
 
       // 詳細分析ボタンをタップ

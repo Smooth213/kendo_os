@@ -343,7 +343,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
           teamMatches.last.redRemaining.length,
           teamMatches.last.whiteRemaining.length,
         );
-    final double estimatedWidth = 60.0 + (maxCols * 60.0) + 120.0;
+    final double estimatedWidth = 70.0 + (maxCols * 50.0) + 40.0;
 
     return Container(
       margin: const EdgeInsets.all(AppSpacing.lg),
@@ -370,7 +370,7 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
               width: estimatedWidth < MediaQuery.of(context).size.width
                   ? MediaQuery.of(context).size.width
                   : estimatedWidth,
-              height: 550,
+              height: 260,
               child: CustomPaint(
                 painter: KachinukiBracketPainter(
                   matches: teamMatches,

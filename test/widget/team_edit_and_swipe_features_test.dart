@@ -268,7 +268,8 @@ void main() {
       );
 
       // 試合形式チップの確認
-      expect(find.text('勝ち抜き戦'), findsOneWidget);
+      expect(find.text('勝ち抜き戦（5人制）'), findsOneWidget);
+      expect(find.text('勝ち抜き戦（3人制）'), findsOneWidget);
       expect(find.text('リーグ団体戦'), findsOneWidget);
       expect(find.text('リーグ個人戦'), findsOneWidget);
       expect(find.text('団体戦（5人制）'), findsOneWidget);
@@ -277,10 +278,15 @@ void main() {
       expect(find.text('個人戦'), findsOneWidget);
       expect(find.text('団体戦（それ以上）'), findsOneWidget);
 
-      // 「勝ち抜き戦」をタップ
-      await tester.tap(find.text('勝ち抜き戦'));
+      // 「勝ち抜き戦（5人制）」をタップ
+      await tester.tap(find.text('勝ち抜き戦（5人制）'));
       await tester.pump();
-      expect(selectedType, equals('勝ち抜き戦'));
+      expect(selectedType, equals('勝ち抜き戦（5人制）'));
+
+      // 「勝ち抜き戦（3人制）」をタップ
+      await tester.tap(find.text('勝ち抜き戦（3人制）'));
+      await tester.pump();
+      expect(selectedType, equals('勝ち抜き戦（3人制）'));
 
       // 「リーグ団体戦」をタップ
       await tester.tap(find.text('リーグ団体戦'));

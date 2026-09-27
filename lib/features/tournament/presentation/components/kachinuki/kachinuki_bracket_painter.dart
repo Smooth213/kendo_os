@@ -48,12 +48,12 @@ class KachinukiBracketPainter extends CustomPainter {
       ..color = baseLineColor
       ..strokeWidth = 1.0;
 
-    const double dx = 60.0;
-    const double startX = 60.0;
+    const double dx = 50.0;
+    const double startX = 70.0;
     const double y0 = 0.0;
-    const double y1 = 150.0;
-    const double y2 = 350.0;
-    const double y3 = 500.0;
+    const double y1 = 65.0;
+    const double y2 = 155.0;
+    const double y3 = 220.0;
 
     canvas.drawRect(
       Rect.fromLTRB(0, y0, size.width, (y1 + y2) / 2),
@@ -97,23 +97,17 @@ class KachinukiBracketPainter extends CustomPainter {
       thickLinePaint,
     );
 
-    KachinukiDrawingHelper.drawVerticalText(
+    KachinukiDrawingHelper.drawTeamNameHorizontal(
       canvas,
-      null,
       rTeam,
-      const Offset(startX / 2, (y0 + y1) / 2),
-      true,
-      isDark,
-      customColor: redWinColor,
+      const Rect.fromLTWH(0, y0, startX, y1 - y0),
+      redWinColor,
     );
-    KachinukiDrawingHelper.drawVerticalText(
+    KachinukiDrawingHelper.drawTeamNameHorizontal(
       canvas,
-      null,
       wTeam,
-      const Offset(startX / 2, (y2 + y3) / 2),
-      true,
-      isDark,
-      customColor: whiteWinColor,
+      const Rect.fromLTWH(0, y2, startX, y3 - y2),
+      isDark ? const Color(0xFF90CAF9) : whiteWinColor,
     );
 
     for (var span in redSpans) {
@@ -206,7 +200,7 @@ class KachinukiBracketPainter extends CustomPainter {
           ),
           Paint()
             ..color = drawCrossColor
-            ..strokeWidth = 3.0,
+            ..strokeWidth = 2.5,
         );
       } else {
         if (isEncho) {
@@ -223,14 +217,14 @@ class KachinukiBracketPainter extends CustomPainter {
           KachinukiDrawingHelper.drawScoreMarksVertical(
             canvas,
             match.redDisplays,
-            Offset(startX + (i * dx) + dx / 2, y1 + 15),
+            Offset(startX + (i * dx) + dx / 2, y1 + 6),
             true,
           );
         } else {
           KachinukiDrawingHelper.drawScoreMarksVertical(
             canvas,
             match.whiteDisplays,
-            Offset(startX + (i * dx) + dx / 2, y2 - 15),
+            Offset(startX + (i * dx) + dx / 2, y2 - 6),
             false,
           );
         }

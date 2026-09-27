@@ -80,6 +80,8 @@ class OfficialRecordScreen extends ConsumerStatefulWidget {
 }
 
 class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
+  OfficialRecordExportScope _exportScope = OfficialRecordExportScope.current;
+
   @override
   Widget build(BuildContext context) {
     final tournamentId = widget.tournamentId;
@@ -180,6 +182,32 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
     }
 
     final categories = categoryGroups.keys.toList();
+    final hasMultipleCategories = categories.length > 1;
+
+    final allCategoryData = categories.map((cat) {
+      final groupsMap = categoryGroups[cat]!;
+      final mergedGroups = OfficialRecordGroupHelper.mergeIndividualGroups(
+        groupsMap,
+      );
+      final sortedGroupKeys = mergedGroups.keys.toList()
+        ..sort((a, b) {
+          final aLast = _getLastTimestamp(mergedGroups[a]!);
+          final bLast = _getLastTimestamp(mergedGroups[b]!);
+          return aLast.compareTo(bLast);
+        });
+
+      final groupDataList = sortedGroupKeys
+          .map(
+            (key) => {
+              'groupName': key,
+              'matches': mergedGroups[key]!
+                ..sort((a, b) => a.order.compareTo(b.order)),
+            },
+          )
+          .toList();
+
+      return (categoryName: cat, groupDataList: groupDataList);
+    }).toList();
 
     final tabWidget = TabBar(
       isScrollable: true,
@@ -224,6 +252,121 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
 
       return Column(
         children: [
+          OfficialRecordExportBar(
+            isExporting: isExporting,
+            exportingType: ref.watch(exportingTypeProvider),
+            isDark: isDark,
+            hasMultipleCategories: hasMultipleCategories,
+            categoryName: cat,
+            exportScope: _exportScope,
+            onScopeChanged: (newScope) =>
+                setState(() => _exportScope = newScope),
+            onPdfPressed: () {
+              if (_exportScope == OfficialRecordExportScope.all) {
+                OfficialRecordExportHelper.handleExportAll(
+                  context: context,
+                  ref: ref,
+                  isExportingController: ref.read(isExportingProvider.notifier),
+                  exportingTypeController: ref.read(
+                    exportingTypeProvider.notifier,
+                  ),
+                  allCategoryData: allCategoryData,
+                  type: 'pdf',
+                  tName: tName,
+                  tDate: tDate,
+                  tVenue: tVenue,
+                  isBottomSheet: widget.isBottomSheet,
+                );
+              } else {
+                OfficialRecordExportHelper.handleExport(
+                  context: context,
+                  ref: ref,
+                  isExportingController: ref.read(isExportingProvider.notifier),
+                  exportingTypeController: ref.read(
+                    exportingTypeProvider.notifier,
+                  ),
+                  sortedGroupKeys: sortedGroupKeys,
+                  mergedGroups: mergedGroups,
+                  cat: cat,
+                  type: 'pdf',
+                  tName: tName,
+                  tDate: tDate,
+                  tVenue: tVenue,
+                  isBottomSheet: widget.isBottomSheet,
+                );
+              }
+            },
+            onImagePressed: () {
+              if (_exportScope == OfficialRecordExportScope.all) {
+                OfficialRecordExportHelper.handleExportAll(
+                  context: context,
+                  ref: ref,
+                  isExportingController: ref.read(isExportingProvider.notifier),
+                  exportingTypeController: ref.read(
+                    exportingTypeProvider.notifier,
+                  ),
+                  allCategoryData: allCategoryData,
+                  type: 'image',
+                  tName: tName,
+                  tDate: tDate,
+                  tVenue: tVenue,
+                  isBottomSheet: widget.isBottomSheet,
+                );
+              } else {
+                OfficialRecordExportHelper.handleExport(
+                  context: context,
+                  ref: ref,
+                  isExportingController: ref.read(isExportingProvider.notifier),
+                  exportingTypeController: ref.read(
+                    exportingTypeProvider.notifier,
+                  ),
+                  sortedGroupKeys: sortedGroupKeys,
+                  mergedGroups: mergedGroups,
+                  cat: cat,
+                  type: 'image',
+                  tName: tName,
+                  tDate: tDate,
+                  tVenue: tVenue,
+                  isBottomSheet: widget.isBottomSheet,
+                );
+              }
+            },
+            onCsvPressed: () {
+              if (_exportScope == OfficialRecordExportScope.all) {
+                OfficialRecordExportHelper.handleExportAll(
+                  context: context,
+                  ref: ref,
+                  isExportingController: ref.read(isExportingProvider.notifier),
+                  exportingTypeController: ref.read(
+                    exportingTypeProvider.notifier,
+                  ),
+                  allCategoryData: allCategoryData,
+                  type: 'csv',
+                  tName: tName,
+                  tDate: tDate,
+                  tVenue: tVenue,
+                  isBottomSheet: widget.isBottomSheet,
+                );
+              } else {
+                OfficialRecordExportHelper.handleExport(
+                  context: context,
+                  ref: ref,
+                  isExportingController: ref.read(isExportingProvider.notifier),
+                  exportingTypeController: ref.read(
+                    exportingTypeProvider.notifier,
+                  ),
+                  sortedGroupKeys: sortedGroupKeys,
+                  mergedGroups: mergedGroups,
+                  cat: cat,
+                  type: 'csv',
+                  tName: tName,
+                  tDate: tDate,
+                  tVenue: tVenue,
+                  isBottomSheet: widget.isBottomSheet,
+                );
+              }
+            },
+          ),
           if (!permissions.isReadOnly && !widget.isBottomSheet)
             OfficialRecordExpeditionSummaryCard(
               matches: categoryMatches,
@@ -231,53 +374,6 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               registeredTeamNames: categoryRegisteredTeamNames,
               registeredPlayerNames: categoryRegisteredPlayerNames,
             ),
-          OfficialRecordExportBar(
-            isExporting: isExporting,
-            exportingType: ref.watch(exportingTypeProvider),
-            isDark: isDark,
-            onPdfPressed: () => OfficialRecordExportHelper.handleExport(
-              context: context,
-              ref: ref,
-              isExportingController: ref.read(isExportingProvider.notifier),
-              exportingTypeController: ref.read(exportingTypeProvider.notifier),
-              sortedGroupKeys: sortedGroupKeys,
-              mergedGroups: mergedGroups,
-              cat: cat,
-              type: 'pdf',
-              tName: tName,
-              tDate: tDate,
-              tVenue: tVenue,
-              isBottomSheet: widget.isBottomSheet,
-            ),
-            onImagePressed: () => OfficialRecordExportHelper.handleExport(
-              context: context,
-              ref: ref,
-              isExportingController: ref.read(isExportingProvider.notifier),
-              exportingTypeController: ref.read(exportingTypeProvider.notifier),
-              sortedGroupKeys: sortedGroupKeys,
-              mergedGroups: mergedGroups,
-              cat: cat,
-              type: 'image',
-              tName: tName,
-              tDate: tDate,
-              tVenue: tVenue,
-              isBottomSheet: widget.isBottomSheet,
-            ),
-            onCsvPressed: () => OfficialRecordExportHelper.handleExport(
-              context: context,
-              ref: ref,
-              isExportingController: ref.read(isExportingProvider.notifier),
-              exportingTypeController: ref.read(exportingTypeProvider.notifier),
-              sortedGroupKeys: sortedGroupKeys,
-              mergedGroups: mergedGroups,
-              cat: cat,
-              type: 'csv',
-              tName: tName,
-              tDate: tDate,
-              tVenue: tVenue,
-              isBottomSheet: widget.isBottomSheet,
-            ),
-          ),
           Expanded(
             child: ListView.builder(
               physics: const ClampingScrollPhysics(),

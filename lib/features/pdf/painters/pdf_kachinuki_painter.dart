@@ -31,13 +31,13 @@ class PdfKachinukiPainter {
         : '$scenePrefix勝ち抜き戦：$rTeam vs $wTeam';
 
     const double dx = 45.0;
-    const double startX = 45.0;
-    const double height = 280.0;
+    const double startX = 60.0;
+    const double height = 155.0;
 
     const double y0 = 0.0;
-    const double y1 = 80.0;
-    const double y2 = 200.0;
-    const double y3 = 280.0;
+    const double y1 = 45.0;
+    const double y2 = 110.0;
+    const double y3 = 155.0;
 
     List<PdfPlayerSpan> redSpans = [];
     List<PdfPlayerSpan> whiteSpans = [];
@@ -173,27 +173,25 @@ class PdfKachinukiPainter {
 
     List<pw.Widget> textWidgets = [];
 
-    pw.Widget vertText(
-      String text,
+    pw.Widget teamText(
+      String name,
       double x,
       double y,
       double w,
       double h,
-      pw.Font font, {
-      bool isBold = false,
-      double fSize = 9,
-      PdfColor color = PdfColors.black,
+      pw.Font fontBold, {
+      required PdfColor color,
     }) {
-      final chars = text.split('');
-      if (chars.isEmpty) return pw.SizedBox();
+      final double fontSize = name.length > 20
+          ? 6.0
+          : (name.length > 12
+                ? 7.0
+                : (name.length > 8 ? 8.0 : AppFontSize.badge));
+      final String displayName = name.length > 25
+          ? '${name.substring(0, 24)}…'
+          : name;
 
-      // 上下パディング（計4pt）を考慮した有効描画高さ
-      final double availableH = (h - (AppSpacing.xxs * 2)).clamp(10.0, h);
-      // 日本語フォントの行高（約1.45倍）を考慮して文字数に応じたフォントサイズを動的計算
-      final double calculatedFSize = availableH / (chars.length * 1.45);
-      final double dynamicFSize = calculatedFSize < fSize
-          ? calculatedFSize.clamp(4.0, fSize)
-          : fSize;
+      final double availableW = w - (AppSpacing.xxs * 2);
 
       return pw.Positioned(
         left: x,
@@ -201,44 +199,115 @@ class PdfKachinukiPainter {
         child: pw.Container(
           width: w,
           height: h,
-          padding: const pw.EdgeInsets.all(AppSpacing.xxs),
+          padding: const pw.EdgeInsets.symmetric(
+            horizontal: AppSpacing.xxs,
+            vertical: AppSpacing.xxs,
+          ),
           child: pw.Center(
             child: pw.FittedBox(
               fit: pw.BoxFit.scaleDown,
               alignment: pw.Alignment.center,
-              child: pw.Column(
+              child: pw.SizedBox(
+                width: availableW,
+                child: pw.Text(
+                  displayName,
+                  style: pw.TextStyle(
+                    color: color,
+                    fontWeight: pw.FontWeight.bold,
+                    font: fontBold,
+                    fontSize: fontSize,
+                  ),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    Map<String, String> parsePlayerName(String raw) {
+      if (raw.contains('欠員')) return {'last': '', 'first': ''};
+      String clean = raw.contains(':')
+          ? raw.split(':').last.replaceAll(RegExp(r'[()（）]'), '').trim()
+          : raw.replaceAll(RegExp(r'[()（）]'), '').trim();
+      var parts = clean.split(RegExp(r'\s+'));
+      return {'last': parts[0], 'first': parts.length > 1 ? parts[1] : ''};
+    }
+
+    final List<String> redTeamLastNames = redSpans
+        .map((s) => parsePlayerName(s.name)['last']!)
+        .where((s) => s.isNotEmpty)
+        .toList();
+    final List<String> whiteTeamLastNames = whiteSpans
+        .map((s) => parsePlayerName(s.name)['last']!)
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    pw.Widget playerCell(
+      String rawName,
+      List<String> teamLastNames,
+      double x,
+      double y,
+      double w,
+      double h,
+      pw.Font font,
+    ) {
+      if (rawName.contains('欠員')) return pw.SizedBox();
+      final parsed = parsePlayerName(rawName);
+      final rawLastName = parsed['last']!;
+      final firstName = parsed['first']!;
+
+      // 極長選手名でも縦書きが枠高さを突破しないよう最大8文字ガード
+      final lastName = rawLastName.length > 8
+          ? '${rawLastName.substring(0, 7)}…'
+          : rawLastName;
+      final double fontSize = lastName.length > 5 ? 7.0 : 9.0;
+
+      final showInitial =
+          teamLastNames.where((n) => n == rawLastName).length > 1 &&
+          firstName.isNotEmpty;
+
+      return pw.Positioned(
+        left: x,
+        top: y,
+        child: pw.Container(
+          width: w,
+          height: h,
+          padding: const pw.EdgeInsets.symmetric(
+            vertical: AppSpacing.xs,
+            horizontal: 2.0,
+          ),
+          child: pw.Center(
+            child: pw.FittedBox(
+              fit: pw.BoxFit.scaleDown,
+              alignment: pw.Alignment.center,
+              child: pw.Row(
                 mainAxisSize: pw.MainAxisSize.min,
-                mainAxisAlignment: pw.MainAxisAlignment.center,
-                children: chars.map((c) {
-                  if (c == 'ー' || c == '-') {
-                    return pw.Container(
-                      width: 1,
-                      height: dynamicFSize * 0.8,
-                      color: color,
-                      margin: const pw.EdgeInsets.symmetric(vertical: 1),
-                    );
-                  }
-                  if (c == '(' || c == ')' || c == '（' || c == '）') {
-                    return pw.Text(
-                      c,
-                      style: pw.TextStyle(
-                        font: font,
-                        fontSize: dynamicFSize * 0.8,
-                        fontWeight: isBold ? pw.FontWeight.bold : null,
-                        color: color,
-                      ),
-                    );
-                  }
-                  return pw.Text(
-                    c,
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    lastName.split('').join('\n'),
                     style: pw.TextStyle(
                       font: font,
-                      fontSize: dynamicFSize,
-                      fontWeight: isBold ? pw.FontWeight.bold : null,
-                      color: color,
+                      fontSize: fontSize,
+                      color: PdfColors.black,
                     ),
-                  );
-                }).toList(),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  if (showInitial)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(left: 1.0, bottom: 0.0),
+                      child: pw.Text(
+                        firstName.substring(0, 1),
+                        style: pw.TextStyle(
+                          font: font,
+                          fontSize: 6.0,
+                          color: PdfColors.grey700,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -247,44 +316,24 @@ class PdfKachinukiPainter {
     }
 
     textWidgets.add(
-      vertText(
-        rTeam,
-        0,
-        y0,
-        startX,
-        y1 - y0,
-        ttfBold,
-        isBold: true,
-        fSize: 11,
-        color: PdfColors.red700,
-      ),
+      teamText(rTeam, 0, y0, startX, y1 - y0, ttfBold, color: PdfColors.red700),
     );
     textWidgets.add(
-      vertText(
-        wTeam,
-        0,
-        y2,
-        startX,
-        y3 - y2,
-        ttfBold,
-        isBold: true,
-        fSize: 11,
-        color: PdfColors.black,
-      ),
+      teamText(wTeam, 0, y2, startX, y3 - y2, ttfBold, color: PdfColors.black),
     );
 
     for (var span in redSpans) {
       double left = startX + (span.startIndex * dx);
       double w = ((span.endIndex - span.startIndex) + 1) * dx;
       textWidgets.add(
-        vertText(span.name, left, y0, w, y1 - y0, ttf, color: PdfColors.black),
+        playerCell(span.name, redTeamLastNames, left, y0, w, y1 - y0, ttf),
       );
     }
     for (var span in whiteSpans) {
       double left = startX + (span.startIndex * dx);
       double w = ((span.endIndex - span.startIndex) + 1) * dx;
       textWidgets.add(
-        vertText(span.name, left, y2, w, y3 - y2, ttf, color: PdfColors.black),
+        playerCell(span.name, whiteTeamLastNames, left, y2, w, y3 - y2, ttf),
       );
     }
 
@@ -331,36 +380,38 @@ class PdfKachinukiPainter {
       }
     }
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          titleText,
-          style: pw.TextStyle(
-            fontWeight: pw.FontWeight.bold,
-            font: ttfBold,
-            fontSize: AppFontSize.small,
-          ),
-        ),
-        pw.SizedBox(height: 8),
-        pw.FittedBox(
-          fit: pw.BoxFit.scaleDown,
-          alignment: pw.Alignment.centerLeft,
-          child: pw.Container(
-            width: totalWidth,
-            height: height,
-            child: pw.Stack(
-              children: [
-                pw.CustomPaint(
-                  size: PdfPoint(totalWidth, height),
-                  painter: paintBracket,
-                ),
-                ...textWidgets,
-              ],
+    return pw.Inseparable(
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            titleText,
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              font: ttfBold,
+              fontSize: AppFontSize.small,
             ),
           ),
-        ),
-      ],
+          pw.SizedBox(height: 5),
+          pw.FittedBox(
+            fit: pw.BoxFit.scaleDown,
+            alignment: pw.Alignment.centerLeft,
+            child: pw.Container(
+              width: totalWidth,
+              height: height,
+              child: pw.Stack(
+                children: [
+                  pw.CustomPaint(
+                    size: PdfPoint(totalWidth, height),
+                    painter: paintBracket,
+                  ),
+                  ...textWidgets,
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -50,6 +50,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/governance/screens_and_bottom_sheets_governance_test.dart \
              test/governance/match_type_selection_governance_test.dart \
              test/governance/kachinuki_selection_and_execution_governance_test.dart \
+             test/governance/kachinuki_bracket_layout_governance_test.dart \
              test/unit/kachinuki_three_players_test.dart \
              test/governance/category_rules_fallback_governance_test.dart \
              test/security/firestore_rules_governance_test.dart \
@@ -59,6 +60,8 @@ flutter test test/governance/design_system_governance_test.dart \
              test/unit/fusensho_two_points_scoring_test.dart \
              test/unit/hansoku_accumulation_and_undo_test.dart \
              test/unit/official_record_pdf_font_embedding_test.dart \
+             test/governance/official_record_export_governance_test.dart \
+             test/unit/services/csv_service_test.dart \
              test/widget/tournament_edit_dock_bottom_sheet_integration_test.dart \
              test/widget/tournament_share_import_and_order_flow_test.dart \
              test/widget/clipboard_import_button_and_service_test.dart \
@@ -85,6 +88,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/golden/pixel_match_scoreboard_golden_test.dart \
              test/golden/pixel_league_matrix_grid_golden_test.dart \
              test/golden/pixel_tournament_bracket_tree_golden_test.dart \
+             test/golden/pixel_kachinuki_bracket_golden_test.dart \
              test/golden/pixel_large_text_accessibility_golden_test.dart \
              test/golden/pixel_tablet_landscape_scoreboard_golden_test.dart \
              test/e2e/team_match_representative_decision_e2e_test.dart \
