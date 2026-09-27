@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全20大ガバナンス個別監査 (1/20 〜 20/20: 100% PASS)
+# 1. 全21大ガバナンス個別監査 (1/21 〜 21/21: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全20大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全20大ガバナンス個別監査を実行中..."
+# 1. 全21大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全21大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全20大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全21大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -128,12 +128,17 @@ flutter test test/governance/design_system_governance_test.dart \
               test/golden/pixel_expedition_summary_card_golden_test.dart \
               test/e2e/composite_large_text_multi_player_team_match_e2e_test.dart \
               test/e2e/composite_multi_court_offline_sync_expedition_e2e_test.dart \
-              test/e2e/composite_bunaiksen_dynamic_entry_and_retirement_e2e_test.dart
+              test/e2e/composite_bunaiksen_dynamic_entry_and_retirement_e2e_test.dart \
+              test/unit/team_match_double_forfeit_boundary_test.dart \
+              test/governance/court_reassignment_governance_test.dart \
+              test/golden/pixel_safety_net_and_admin_golden_test.dart \
+              test/e2e/composite_court_reassignment_live_sync_e2e_test.dart \
+              test/e2e/composite_simultaneous_score_input_undo_convergence_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全20大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全21大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

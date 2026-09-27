@@ -34,6 +34,7 @@ def main():
         ("③ [コントローラー解放] 各種画面・ダイアログの TextEditingController 明示破棄規約", is_ok),
         ("④ [アナウンス購読解除] cancelGlobalAnnouncements ＆ 既読ID上限トリム規約", is_ok),
         ("⑤ [プロバイダ管理] matchList / viewer / sound プロバイダの autoDispose ＆ keepAlive 規約", is_ok),
+        ("⑥ [非同期完全解放] リスナー・タイマー・コントローラー破棄漏れゼロ規約", is_ok),
     ]
 
     for label, ok in rules:

@@ -116,12 +116,15 @@ class SyncCrdtMerger {
       preferLocal: preferLocal,
     );
 
+    final chosenNote = preferLocal ? localMatch.note : remoteMatch.note;
+
     MatchModel rebuiltMatch = remoteMatch.copyWith(
       events: mergedEvents,
       timerStartedAt: chosenTimerStartedAt,
       timerPausedAt: chosenTimerPausedAt,
       accumulatedPauseDurationMs: chosenAccPauseMs,
       status: chosenStatus,
+      note: chosenNote,
     );
 
     try {

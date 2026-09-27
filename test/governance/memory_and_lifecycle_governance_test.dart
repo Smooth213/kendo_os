@@ -246,5 +246,79 @@ void main() {
         );
       },
     );
+
+    test(
+      'Rule 6: [非同期リスナー・タイマー完全解放] StreamSubscription / Timer / AnimationController の dispose 明示解放規約',
+      () {
+        // 1. thermal_floating_toast.dart
+        final toastFile = File(
+          'lib/shared/widgets/thermal_floating_toast.dart',
+        );
+        expect(toastFile.existsSync(), isTrue);
+        final toastContent = toastFile.readAsStringSync();
+        expect(
+          toastContent.contains('_subscription?.cancel();'),
+          isTrue,
+          reason: 'ThermalToastListener で _subscription が cancel されていること',
+        );
+        expect(
+          toastContent.contains('_dismissTimer?.cancel();'),
+          isTrue,
+          reason: 'ThermalToastListener で _dismissTimer が cancel されていること',
+        );
+        expect(
+          toastContent.contains('_animController.dispose();'),
+          isTrue,
+          reason:
+              '_ThermalFloatingToastView で _animController が dispose されていること',
+        );
+
+        // 2. quick_memo_screen.dart & quick_memo_bottom_sheet.dart
+        final memoScreenFile = File(
+          'lib/features/tournament/presentation/components/program_management/quick_memo_screen.dart',
+        );
+        expect(memoScreenFile.existsSync(), isTrue);
+        final memoScreenContent = memoScreenFile.readAsStringSync();
+        expect(
+          memoScreenContent.contains('_memoSubscription?.cancel();'),
+          isTrue,
+          reason: 'QuickMemoScreen で _memoSubscription が cancel されていること',
+        );
+        expect(
+          memoScreenContent.contains('_textController.dispose();'),
+          isTrue,
+          reason: 'QuickMemoScreen で _textController が dispose されていること',
+        );
+
+        final memoSheetFile = File(
+          'lib/features/tournament/presentation/components/program_management/quick_memo_bottom_sheet.dart',
+        );
+        expect(memoSheetFile.existsSync(), isTrue);
+        final memoSheetContent = memoSheetFile.readAsStringSync();
+        expect(
+          memoSheetContent.contains('_memoSubscription?.cancel();'),
+          isTrue,
+          reason: 'QuickMemoBottomSheet で _memoSubscription が cancel されていること',
+        );
+        expect(
+          memoSheetContent.contains('_textController.dispose();'),
+          isTrue,
+          reason: 'QuickMemoBottomSheet で _textController が dispose されていること',
+        );
+
+        // 3. user_data_cloud_sync_manager.dart
+        final userSyncFile = File(
+          'lib/features/auth/application/user_data_cloud_sync_manager.dart',
+        );
+        expect(userSyncFile.existsSync(), isTrue);
+        final userSyncContent = userSyncFile.readAsStringSync();
+        expect(
+          userSyncContent.contains('_authSubscription?.cancel();') ||
+              userSyncContent.contains('dispose()'),
+          isTrue,
+          reason: 'UserDataCloudSyncManager で Subscription が解放されていること',
+        );
+      },
+    );
   });
 }
