@@ -382,10 +382,38 @@ void main() {
           '追加試合',
         ]);
 
-        // 多人数戦（8人制、9人制、10人制、12人制）の整列検証
-        for (final size in [8, 9, 10, 12]) {
-          final expected = MatchFormatSetupHelper.generatePositions(size);
-          final multiMatches = expected.reversed.map((pos) {
+        // 多人数戦（3人制〜20人制）の全バリエーションにおける配列整合性・名称ユニーク性・中堅規則の検証
+        for (int size = 3; size <= 20; size++) {
+          final positions = MatchFormatSetupHelper.generatePositions(size);
+          expect(positions.length, size, reason: '$size 人制のポジション数が一致すること');
+          expect(positions.first, '先鋒', reason: '$size 人制の先頭は必ず先鋒');
+          expect(positions.last, '大将', reason: '$size 人制の末尾は必ず大将');
+          expect(
+            positions.toSet().length,
+            size,
+            reason: '$size 人制のポジション名に重複がないこと',
+          );
+
+          if (size.isOdd) {
+            expect(
+              positions.contains('中堅'),
+              isTrue,
+              reason: '$size 人制（奇数）には中堅が存在すること',
+            );
+            expect(
+              positions[size ~/ 2],
+              '中堅',
+              reason: '$size 人制（奇数）の中央は中堅であること',
+            );
+          } else {
+            expect(
+              positions.contains('中堅'),
+              isFalse,
+              reason: '$size 人制（偶数）には中堅が存在しないこと',
+            );
+          }
+
+          final multiMatches = positions.reversed.map((pos) {
             return MatchModel(
               id: 'm_${size}_$pos',
               tournamentId: 'tour_gov_1',
@@ -399,7 +427,7 @@ void main() {
           final multiSorted = KendoPositionSorter.sortMatches(multiMatches);
           expect(
             multiSorted.map((m) => m.matchType).toList(),
-            expected,
+            positions,
             reason: '$size 人制の逆順リストが正しい剣道配列（先鋒〜大将）に整列されること',
           );
         }

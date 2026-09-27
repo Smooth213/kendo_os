@@ -54,14 +54,17 @@ class OfficialRecordExportBar extends StatelessWidget {
                 ),
               )
             : Icon(icon, size: 16),
-        label: Text(
-          label,
-          style: const TextStyle(
-            fontWeight: AppFontWeight.bold,
-            fontSize: AppFontSize.small,
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: AppFontWeight.bold,
+              fontSize: AppFontSize.small,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,

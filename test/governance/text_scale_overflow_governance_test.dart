@@ -17,6 +17,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_format_selector.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/match_calculator_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_settings_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_summary_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_summary_header.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_category_tab_view.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_order_step.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 // ============================================================================
@@ -334,6 +339,141 @@ void main() {
           tester: tester,
           widget: const ViewerSettingsBottomSheet(),
           componentName: 'ViewerSettingsBottomSheet',
+        );
+      },
+    );
+
+    testWidgets(
+      '【動的規約 10】遠征サマリーツールバー (ExpeditionSummaryToolbar): 文字拡大時も文字切れゼロ',
+      (tester) async {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'normal',
+        );
+        final summaryData = ExpeditionSummaryData(
+          teamsList: const ['一般の部チームA', '一般の部チームB'],
+          renseikaiWin: 2,
+          renseikaiLoss: 1,
+          renseikaiDraw: 0,
+          honsenWin: 1,
+          honsenLoss: 0,
+          honsenDraw: 1,
+          moushiawaseWin: 0,
+          moushiawaseLoss: 0,
+          moushiawaseDraw: 0,
+          teamMen: 4,
+          teamKote: 2,
+          teamDou: 1,
+          teamTsuki: 0,
+          teamHansoku: 1,
+          teamOther: 0,
+          teamTotalScored: 8,
+          teamTotalConceded: 4,
+          playerStatsMap: const {},
+          cardResults: const [],
+        );
+
+        await testWidgetWithTextScalers(
+          tester: tester,
+          widget: ExpeditionSummaryToolbar(
+            isDark: false,
+            themeColors: themeColors,
+            selectedSummaryTeam: '一般の部チームA',
+            teamsList: const ['一般の部チームA', '一般の部チームB'],
+            summaryData: summaryData,
+            onTeamChanged: (_) {},
+          ),
+          componentName: 'ExpeditionSummaryToolbar',
+        );
+      },
+    );
+
+    testWidgets(
+      '【動的規約 11】遠征サマリーヘッダー (ExpeditionSummaryHeader): タイトル・共有・開閉ボタン文字切れゼロ',
+      (tester) async {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'normal',
+        );
+        await testWidgetWithTextScalers(
+          tester: tester,
+          widget: ExpeditionSummaryHeader(
+            isCardExpanded: true,
+            isDark: false,
+            themeColors: themeColors,
+            selectedSummaryTeam: '全体',
+            matches: const [],
+            onToggleExpand: () {},
+          ),
+          componentName: 'ExpeditionSummaryHeader',
+        );
+      },
+    );
+
+    testWidgets(
+      '【動的規約 12】チーム登録オーダー入力ステップ (TeamRegistrationOrderStep): 特大文字時もボタン・アバター文字切れゼロ',
+      (tester) async {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'normal',
+        );
+        final controller = TextEditingController(text: '赤心館道場Aチーム');
+        final focusNode = FocusNode();
+
+        await testWidgetWithTextScalers(
+          tester: tester,
+          widget: TeamRegistrationOrderStep(
+            playerCount: 5,
+            posNames: const ['先鋒', '次鋒', '中堅', '副将', '大将'],
+            players: const [],
+            teamNameController: controller,
+            teamNameFocusNode: focusNode,
+            teamNameSuggestions: const ['赤心館道場Aチーム', '白龍会Bチーム'],
+            tempSelectedPlayers: const {0: '選手1'},
+            substituteCount: 0,
+            matchType: '団体戦（5人制）',
+            themeColors: themeColors,
+            onSelectPlayer: (_) {},
+            onRemoveSubstitute: (_) {},
+            onAddSubstitute: () {},
+          ),
+          componentName: 'TeamRegistrationOrderStep',
+        );
+      },
+    );
+
+    testWidgets(
+      '【動的規約 13】公式記録カテゴリ別タブビュー (OfficialRecordCategoryTabView): 特大文字時も全要素崩れゼロ',
+      (tester) async {
+        await testWidgetWithTextScalers(
+          tester: tester,
+          widget: Consumer(
+            builder: (context, ref, _) {
+              return OfficialRecordCategoryTabView(
+                cat: '一般の部',
+                categoryMatches: const [],
+                mergedGroups: const {},
+                sortedGroupKeys: const [],
+                categoryRegisteredTeamNames: const {},
+                categoryRegisteredPlayerNames: const {},
+                allCategoryData: const [],
+                isExporting: false,
+                exportingType: null,
+                isDark: false,
+                cardColor: Colors.white,
+                hasMultipleCategories: true,
+                exportScope: OfficialRecordExportScope.all,
+                onScopeChanged: (_) {},
+                tName: '第50回記念全国大会',
+                tDate: '2026/09/27',
+                tVenue: '日本武道館',
+                isBottomSheet: false,
+                isReadOnly: false,
+                ref: ref,
+              );
+            },
+          ),
+          componentName: 'OfficialRecordCategoryTabView',
         );
       },
     );

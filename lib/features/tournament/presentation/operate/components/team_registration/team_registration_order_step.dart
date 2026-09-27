@@ -89,7 +89,7 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
           focusNode: teamNameFocusNode,
           suggestions: teamNameSuggestions,
           labelText: 'チーム名 (例: 〇〇剣友会A)',
-          hintText: 'タップして登録済みリストから選択',
+          hintText: '登録済みリストから選択',
           fillColor: inputBgColor,
           borderColor: borderColor,
           textColor: textColor,

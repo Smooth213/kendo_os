@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全18大ガバナンス個別監査 (1/18 〜 18/18: 100% PASS)
+# 1. 全19大ガバナンス個別監査 (1/19 〜 19/19: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全18大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全18大ガバナンス個別監査を実行中..."
+# 1. 全19大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全19大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全18大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全19大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -107,12 +107,12 @@ flutter test test/governance/design_system_governance_test.dart \
              test/e2e/multi_player_team_match_e2e_test.dart \
              test/e2e/tournament_full_lifecycle_journey_e2e_test.dart \
              test/e2e/web_pwa_browser_navigation_resilience_e2e_test.dart \
-             test/e2e/operator_to_viewer_realtime_sync_e2e_test.dart
+             test/e2e/operator_to_viewer_realtime_sync_e2e_test.dart              test/golden/pixel_multi_player_scoreboard_golden_test.dart              test/golden/pixel_official_record_all_categories_golden_test.dart              test/golden/pixel_bunaiksen_queue_leaderboard_golden_test.dart              test/unit/team_registration_slot_helper_test.dart              test/unit/kendo_overtime_hansoku_sudden_death_test.dart              test/unit/services/csv_service_robustness_test.dart              test/widget/expedition_summary_toolbar_test.dart              test/widget/team_registration_views_test.dart              test/governance/deferred_loading_governance_test.dart              test/e2e/multi_player_team_match_fusensho_daihyosen_e2e_test.dart              test/e2e/official_record_export_all_categories_e2e_test.dart              test/e2e/pwa_stream_reconnect_resilience_e2e_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全18大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全19大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

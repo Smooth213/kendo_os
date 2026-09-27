@@ -59,6 +59,7 @@ class TeamRegistrationAutocompleteField extends StatelessWidget {
                   fontWeight: AppFontWeight.bold,
                 ),
                 hintText: hintText,
+                hintMaxLines: 2,
                 hintStyle: const TextStyle(color: AppKendoColors.grey),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: AppRadius.medium,
