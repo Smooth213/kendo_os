@@ -53,6 +53,7 @@ def main():
         ("⑦ [完全べき等キュー] match_command_queue 重複UUIDコマンド排除規約", is_main_ok),
         ("⑧ [物理的誤操作ガード] match_screen.dart PopScope 離脱ガード規約", is_main_ok),
         ("⑨ [フォントオフライン耐性] app_startup.dart enforceOfflineFontFallback 規約", is_main_ok),
+        ("⑩ [Fatal Crash Trap] 非同期例外完全捕捉＆クラッシュ隔離（Async Error Boundary）規約", is_main_ok),
     ]
 
     for label, ok in rules:

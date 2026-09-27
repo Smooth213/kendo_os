@@ -164,5 +164,38 @@ void main() {
         );
       },
     );
+
+    test(
+      'Rule 9: [Fatal Crash Trap & Async Error Boundary] 非同期例外完全捕捉＆クラッシュ隔離（runZonedGuarded / ErrorWidget.builder）規約',
+      () {
+        final globalErrorFile = File(
+          'lib/shared/errors/global_error_handler.dart',
+        );
+        expect(globalErrorFile.existsSync(), isTrue);
+        final globalErrorContent = globalErrorFile.readAsStringSync();
+
+        // 1. runZonedGuarded による完全非同期ゾーン捕捉
+        expect(globalErrorContent.contains('runZonedGuarded'), isTrue);
+        expect(
+          globalErrorContent.contains('PlatformDispatcher.instance.onError'),
+          isTrue,
+        );
+        expect(globalErrorContent.contains('FlutterError.onError'), isTrue);
+        expect(
+          globalErrorContent.contains(
+            'EmergencyCrashPreserver.preserveOnCrash',
+          ),
+          isTrue,
+        );
+
+        // 2. ErrorWidget.builder の赤画面排除・セーフティネットUI
+        final startupFile = File('lib/bootstrap/app_startup.dart');
+        expect(startupFile.existsSync(), isTrue);
+        final startupContent = startupFile.readAsStringSync();
+
+        expect(startupContent.contains('ErrorWidget.builder ='), isTrue);
+        expect(startupContent.contains('KendoOS 不壊セーフティネット作動'), isTrue);
+      },
+    );
   });
 }
