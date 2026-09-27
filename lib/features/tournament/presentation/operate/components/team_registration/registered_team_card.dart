@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -22,6 +23,9 @@ class RegisteredTeamCard extends StatelessWidget {
   });
 
   List<String> _getPosNames(String matchType, int count) {
+    if (matchType.contains('それ以上') || count > 7) {
+      return MatchFormatSetupHelper.generatePositions(count);
+    }
     List<String> base;
     if (matchType.contains('3人制')) {
       base = ['先鋒', '中堅', '大将'];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -93,8 +94,15 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
       }
     }
 
-    final baseLen = _getBasePlayerCount(_matchType);
-    _substituteCount = (widget.team.playerNames.length - baseLen).clamp(0, 4);
+    final isMoreThan7 = _matchType.contains('それ以上');
+    final baseLen = isMoreThan7
+        ? (widget.team.playerNames.length > 8
+              ? widget.team.playerNames.length
+              : 8)
+        : _getBasePlayerCount(_matchType);
+    _substituteCount = isMoreThan7
+        ? 0
+        : (widget.team.playerNames.length - baseLen).clamp(0, 4);
     final totalCount = baseLen + _substituteCount;
     _slotIds = List.generate(
       totalCount,
@@ -109,6 +117,12 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
   }
 
   int _getBasePlayerCount(String matchType) {
+    if (matchType.contains('それ以上')) {
+      final slotLen = _slotIds.length;
+      if (slotLen > 0) return slotLen;
+      final playerLen = widget.team.playerNames.length;
+      return playerLen > 8 ? playerLen : 8;
+    }
     if (matchType.contains('3人制')) return 3;
     if (matchType.contains('個人戦')) return 1;
     if (matchType.contains('7人制')) return 7;
@@ -116,6 +130,10 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
   }
 
   List<String> _getPosNames(String matchType, int substituteCount) {
+    if (matchType.contains('それ以上')) {
+      final count = _getBasePlayerCount(matchType);
+      return MatchFormatSetupHelper.generatePositions(count);
+    }
     List<String> base;
     if (matchType.contains('3人制')) {
       base = ['先鋒', '中堅', '大将'];
@@ -292,7 +310,11 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                     setState(() {
                       _matchType = type;
                       _substituteCount = 0;
-                      final baseLen = _getBasePlayerCount(type);
+                      final baseLen = type.contains('それ以上')
+                          ? (widget.team.playerNames.length > 8
+                                ? widget.team.playerNames.length
+                                : 8)
+                          : _getBasePlayerCount(type);
                       _slotIds = List.generate(
                         baseLen,
                         (i) =>
@@ -318,7 +340,24 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                         ),
                       ),
                     ),
-                    if (_substituteCount < 4)
+                    if (_matchType.contains('それ以上'))
+                      TextButton.icon(
+                        onPressed: () => setState(() {
+                          _slotIds.add(
+                            'slot_${DateTime.now().microsecondsSinceEpoch}_${_slotIds.length}',
+                          );
+                        }),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('選手枠を追加'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: accentColor,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                        ),
+                      )
+                    else if (_substituteCount < 4)
                       TextButton.icon(
                         onPressed: () => setState(() {
                           _substituteCount++;

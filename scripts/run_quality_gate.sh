@@ -24,8 +24,19 @@ echo ""
 
 # 2. 静的解析
 echo "🔍 [Step 2/3] Flutter 静的解析を実行中..."
-flutter analyze
-echo "✅ [Step 2/3] 静的解析: PASS (0 issues)"
+ANALYZE_STATUS=0
+ANALYZE_OUTPUT=$(flutter analyze 2>&1) || ANALYZE_STATUS=$?
+echo "$ANALYZE_OUTPUT"
+
+if [ $ANALYZE_STATUS -ne 0 ]; then
+  echo "❌ [Step 2/3] 静的解析: FAIL"
+  exit 1
+elif echo "$ANALYZE_OUTPUT" | grep -q "No issues found!"; then
+  echo "🟢 [Step 2/3] 静的解析: 🟢 PASS (0 issues, 警告ゼロ)"
+else
+  # 終了コード0（致命的エラーなし）だが、警告・info等の指摘がある場合
+  echo "🟢 [Step 2/3] 静的解析: 🟢 PASS（🟡警告あり）"
+fi
 echo ""
 
 # 3. 単体・E2Eテスト
@@ -49,6 +60,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/governance/tournament_edit_sheet_governance_test.dart \
              test/governance/screens_and_bottom_sheets_governance_test.dart \
              test/governance/match_type_selection_governance_test.dart \
+             test/governance/team_match_order_governance_test.dart \
              test/governance/kachinuki_selection_and_execution_governance_test.dart \
              test/governance/kachinuki_bracket_layout_governance_test.dart \
              test/unit/kachinuki_three_players_test.dart \
@@ -92,6 +104,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/golden/pixel_large_text_accessibility_golden_test.dart \
              test/golden/pixel_tablet_landscape_scoreboard_golden_test.dart \
              test/e2e/team_match_representative_decision_e2e_test.dart \
+             test/e2e/multi_player_team_match_e2e_test.dart \
              test/e2e/tournament_full_lifecycle_journey_e2e_test.dart \
              test/e2e/web_pwa_browser_navigation_resilience_e2e_test.dart \
              test/e2e/operator_to_viewer_realtime_sync_e2e_test.dart

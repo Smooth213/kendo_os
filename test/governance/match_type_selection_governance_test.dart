@@ -313,6 +313,40 @@ void main() {
         '副将',
         '大将',
       ]);
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('団体戦（それ以上）', 8), [
+        '先鋒',
+        '次鋒',
+        '六将',
+        '五将',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('団体戦（それ以上）', 9), [
+        '先鋒',
+        '次鋒',
+        '七将',
+        '六将',
+        '中堅',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+
+      // 8人以上のメンバー構成時に「団体戦（それ以上）」が自動判定されること
+      final eightMemberTeam = ParsedTeamOrder(
+        teamName: '多人数テストチーム',
+        members: List.generate(
+          8,
+          (i) => ParsedTeamMember(position: '', name: '選手$i'),
+        ),
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(eightMemberTeam),
+        equals('団体戦（それ以上）'),
+      );
 
       // 2. matchType が明示指定されたチームはそのまま最優先されること
       for (final type in allCandidateTypes) {

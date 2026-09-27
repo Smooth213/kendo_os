@@ -21,6 +21,8 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
   final void Function(int index) onSelectPlayer;
   final void Function(int index) onRemoveSubstitute;
   final VoidCallback onAddSubstitute;
+  final VoidCallback? onAddPlayerSlot;
+  final void Function(int index)? onRemovePlayerSlot;
 
   const TeamRegistrationOrderStep({
     super.key,
@@ -37,6 +39,8 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
     required this.onSelectPlayer,
     required this.onRemoveSubstitute,
     required this.onAddSubstitute,
+    this.onAddPlayerSlot,
+    this.onRemovePlayerSlot,
   });
 
   Widget _buildSectionTitle(String title) {
@@ -116,6 +120,7 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
               children: List.generate(playerCount, (index) {
                 final bool isSubstitute =
                     index >= (playerCount - substituteCount);
+                final bool isMoreThan7 = matchType.contains('それ以上');
 
                 return Column(
                   children: [
@@ -135,7 +140,11 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                                   : const Color(0xFFFFF3E0))
                             : themeColors.softAccent,
                         child: Text(
-                          isSubstitute ? '補' : posNames[index].substring(0, 1),
+                          isSubstitute
+                              ? '補'
+                              : (posNames[index].isNotEmpty
+                                    ? posNames[index].substring(0, 1)
+                                    : '選'),
                           style: TextStyle(
                             color: isSubstitute
                                 ? (isDark
@@ -178,11 +187,21 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                               tooltip: 'この補欠枠を削除',
                               onPressed: () => onRemoveSubstitute(index),
                             )
-                          : const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: AppKendoColors.grey,
-                            ),
+                          : (isMoreThan7 && playerCount > 3
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                      color: AppKendoColors.redAccent,
+                                    ),
+                                    tooltip: 'この選手枠を削除',
+                                    onPressed: () =>
+                                        onRemovePlayerSlot?.call(index),
+                                  )
+                                : const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 16,
+                                    color: AppKendoColors.grey,
+                                  )),
                     ),
                     if (index < playerCount - 1)
                       Divider(
@@ -199,7 +218,43 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
             ),
           ),
         ),
-        if (substituteCount < 4 && !matchType.contains('個人戦')) ...[
+        if (matchType.contains('それ以上')) ...[
+          const SizedBox(height: AppSpacing.lg),
+          Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton.icon(
+              onPressed: onAddPlayerSlot,
+              icon: Icon(
+                Icons.person_add_alt_1,
+                color: themeColors.primaryAccent,
+                size: 18,
+              ),
+              label: Text(
+                '選手枠を追加 ($playerCount名)',
+                style: TextStyle(
+                  color: themeColors.primaryAccent,
+                  fontWeight: AppFontWeight.bold,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: isDark
+                      ? const Color(0xFF38383A)
+                      : themeColors.primaryAccent.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
+                backgroundColor: isDark
+                    ? const Color(0xFF1C1C1E)
+                    : themeColors.softAccent,
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.md,
+                ),
+              ),
+            ),
+          ),
+        ] else if (substituteCount < 4 && !matchType.contains('個人戦')) ...[
           const SizedBox(height: AppSpacing.lg),
           Align(
             alignment: Alignment.centerRight,

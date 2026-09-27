@@ -1,10 +1,104 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 
 void main() {
   group('KendoPositionSorter Tests', () {
+    test('toKanjiNumber converts numbers to kanji correctly', () {
+      expect(MatchFormatSetupHelper.toKanjiNumber(1), '一');
+      expect(MatchFormatSetupHelper.toKanjiNumber(3), '三');
+      expect(MatchFormatSetupHelper.toKanjiNumber(10), '十');
+      expect(MatchFormatSetupHelper.toKanjiNumber(11), '十一');
+      expect(MatchFormatSetupHelper.toKanjiNumber(20), '二十');
+      expect(MatchFormatSetupHelper.toKanjiNumber(25), '二十五');
+    });
+
+    test(
+      'generatePositions generates correct positions for various team sizes',
+      () {
+        expect(MatchFormatSetupHelper.generatePositions(3), ['先鋒', '中堅', '大将']);
+        expect(MatchFormatSetupHelper.generatePositions(4), [
+          '先鋒',
+          '次鋒',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(5), [
+          '先鋒',
+          '次鋒',
+          '中堅',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(6), [
+          '先鋒',
+          '次鋒',
+          '四将',
+          '三将',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(7), [
+          '先鋒',
+          '次鋒',
+          '五将',
+          '中堅',
+          '三将',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(8), [
+          '先鋒',
+          '次鋒',
+          '六将',
+          '五将',
+          '四将',
+          '三将',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(9), [
+          '先鋒',
+          '次鋒',
+          '七将',
+          '六将',
+          '中堅',
+          '四将',
+          '三将',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(10), [
+          '先鋒',
+          '次鋒',
+          '八将',
+          '七将',
+          '六将',
+          '五将',
+          '四将',
+          '三将',
+          '副将',
+          '大将',
+        ]);
+        expect(MatchFormatSetupHelper.generatePositions(12), [
+          '先鋒',
+          '次鋒',
+          '十将',
+          '九将',
+          '八将',
+          '七将',
+          '六将',
+          '五将',
+          '四将',
+          '三将',
+          '副将',
+          '大将',
+        ]);
+      },
+    );
+
     test('getPositionPriority returns correct priority for positions', () {
       expect(KendoPositionSorter.getPositionPriority('先鋒'), 10);
       expect(KendoPositionSorter.getPositionPriority('【先鋒】'), 10);
@@ -18,6 +112,114 @@ void main() {
       expect(KendoPositionSorter.getPositionPriority('追加試合'), 120);
       expect(KendoPositionSorter.getPositionPriority('その他'), 999);
       expect(KendoPositionSorter.getPositionPriority(null), 999);
+    });
+
+    test('sortMatches sorts scrambled 8-person team matches correctly', () {
+      final positions = MatchFormatSetupHelper.generatePositions(8);
+      // ['先鋒', '次鋒', '六将', '五将', '四将', '三将', '副将', '大将']
+      final matches = positions
+          .map(
+            (p) => MatchModel(
+              id: 'm_$p',
+              order: 0,
+              matchType: p,
+              redName: '赤: $p',
+              whiteName: '白: $p',
+            ),
+          )
+          .toList();
+
+      final scrambled = matches.reversed.toList();
+      final sorted = KendoPositionSorter.sortMatches(scrambled);
+      expect(sorted.map((m) => m.matchType).toList(), positions);
+    });
+
+    test(
+      'sortMatches sorts scrambled 9-person team matches correctly with Chuken',
+      () {
+        final positions = MatchFormatSetupHelper.generatePositions(9);
+        // ['先鋒', '次鋒', '七将', '六将', '中堅', '四将', '三将', '副将', '大将']
+        final matches = positions
+            .map(
+              (p) => MatchModel(
+                id: 'm_$p',
+                order: 0,
+                matchType: p,
+                redName: '赤: $p',
+                whiteName: '白: $p',
+              ),
+            )
+            .toList();
+
+        // あえてシャッフル（大将、中堅、先鋒、四将、副将...）
+        final scrambled = [
+          matches[8], // 大将
+          matches[4], // 中堅
+          matches[0], // 先鋒
+          matches[5], // 四将
+          matches[7], // 副将
+          matches[2], // 七将
+          matches[1], // 次鋒
+          matches[6], // 三将
+          matches[3], // 六将
+        ];
+        final sorted = KendoPositionSorter.sortMatches(scrambled);
+        expect(sorted.map((m) => m.matchType).toList(), positions);
+      },
+    );
+
+    test('sortMatches sorts scrambled 10-person team matches correctly', () {
+      final positions = MatchFormatSetupHelper.generatePositions(10);
+      final matches = positions
+          .map(
+            (p) => MatchModel(
+              id: 'm_$p',
+              order: 0,
+              matchType: p,
+              redName: '赤: $p',
+              whiteName: '白: $p',
+            ),
+          )
+          .toList();
+
+      final scrambled = matches.reversed.toList();
+      final sorted = KendoPositionSorter.sortMatches(scrambled);
+      expect(sorted.map((m) => m.matchType).toList(), positions);
+    });
+
+    test('sortMatches handles arabic fallback positions correctly', () {
+      final matches = [
+        MatchModel(
+          id: 'm_taisho',
+          order: 0,
+          matchType: '大将',
+          redName: '',
+          whiteName: '',
+        ),
+        MatchModel(
+          id: 'm_sempo',
+          order: 0,
+          matchType: '先鋒',
+          redName: '',
+          whiteName: '',
+        ),
+        MatchModel(
+          id: 'm_4',
+          order: 0,
+          matchType: '4将',
+          redName: '',
+          whiteName: '',
+        ),
+        MatchModel(
+          id: 'm_6',
+          order: 0,
+          matchType: '6将',
+          redName: '',
+          whiteName: '',
+        ),
+      ];
+      final sorted = KendoPositionSorter.sortMatches(matches);
+      expect(sorted.map((m) => m.matchType).toList(), ['先鋒', '6将', '4将', '大将']);
     });
 
     test('sortMatches sorts scrambled 3-person team matches correctly', () {

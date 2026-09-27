@@ -62,16 +62,25 @@ void main() {
         final screenFile = File(
           'lib/features/tournament/presentation/operate/match_screen.dart',
         );
+        final screenBodyFile = File(
+          'lib/features/tournament/presentation/operate/components/match_screen/match_screen_body_content.dart',
+        );
         expect(screenFile.existsSync(), isTrue);
         final screenContent = screenFile.readAsStringSync();
+        final bodyContent = screenBodyFile.existsSync()
+            ? screenBodyFile.readAsStringSync()
+            : '';
+        final totalMatchScreenContent = screenContent + bodyContent;
 
         expect(
-          screenContent.contains('final timerPart = RepaintBoundary'),
+          totalMatchScreenContent.contains('final timerPart = RepaintBoundary'),
           isTrue,
           reason: 'タイマー更新時のリビルドを局所化するため、timerPart に RepaintBoundary が必須です。',
         );
         expect(
-          screenContent.contains('final scoreboardPart = RepaintBoundary'),
+          totalMatchScreenContent.contains(
+            'final scoreboardPart = RepaintBoundary',
+          ),
           isTrue,
           reason: 'スコアボードの再描画を局所化するため、scoreboardPart に RepaintBoundary が必須です。',
         );

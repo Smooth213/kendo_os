@@ -64,28 +64,51 @@ class MatchFormatSetupHelper {
     return ('小学生', '低学年');
   }
 
+  /// 数値を漢数字（1〜99）に変換するユーティリティ
+  static String toKanjiNumber(int n) {
+    if (n <= 0) return '$n';
+    const kanjiDigits = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+    if (n < 10) {
+      return kanjiDigits[n];
+    }
+    if (n == 10) {
+      return '十';
+    }
+    if (n < 20) {
+      return '十${kanjiDigits[n % 10]}';
+    }
+    final tens = n ~/ 10;
+    final ones = n % 10;
+    if (ones == 0) {
+      return '${kanjiDigits[tens]}十';
+    }
+    return '${kanjiDigits[tens]}十${kanjiDigits[ones]}';
+  }
+
   /// チームサイズに応じたポジション名の生成
   static List<String> generatePositions(int size) {
     if (size <= 0) return [];
     if (size == 1) return ['選手'];
+    if (size == 2) return ['先鋒', '大将'];
     if (size == 3) return ['先鋒', '中堅', '大将'];
+    if (size == 4) return ['先鋒', '次鋒', '副将', '大将'];
     if (size == 5) return ['先鋒', '次鋒', '中堅', '副将', '大将'];
 
-    List<String> positions = [];
-    positions.add('先鋒');
-    if (size >= 2) positions.add('次鋒');
+    final positions = <String>['先鋒', '次鋒'];
+    final isOdd = size % 2 != 0;
+    final mid = (size + 1) ~/ 2;
 
     for (int i = 3; i <= size - 2; i++) {
-      if (size % 2 != 0 && i == (size + 1) ~/ 2) {
+      if (isOdd && i == mid) {
         positions.add('中堅');
       } else {
-        int k = size - i + 1;
-        positions.add('$k将');
+        final int k = size - i + 1;
+        positions.add('${toKanjiNumber(k)}将');
       }
     }
 
-    if (size >= 4) positions.add('副将');
-    if (size >= 3) positions.add('大将');
+    positions.add('副将');
+    positions.add('大将');
 
     return positions;
   }
@@ -116,19 +139,41 @@ class MatchFormatSetupHelper {
           break;
         }
       }
-      if (selectedTeam != null && selectedTeam.matchType.isNotEmpty) {
-        if (selectedTeam.matchType.contains('3人制')) {
-          return 3;
+      if (selectedTeam != null) {
+        if (selectedTeam.matchType.contains('それ以上') ||
+            matchType.contains('それ以上')) {
+          if (selectedTeam.playerNames.isNotEmpty) {
+            return selectedTeam.playerNames.length;
+          }
         }
-        if (selectedTeam.matchType.contains('7人制')) {
-          return 7;
+        if (selectedTeam.matchType.isNotEmpty) {
+          if (selectedTeam.matchType.contains('3人制')) {
+            return 3;
+          }
+          if (selectedTeam.matchType.contains('7人制')) {
+            return 7;
+          }
+          if (selectedTeam.matchType.contains('1人制') ||
+              selectedTeam.matchType.contains('個人戦')) {
+            return 1;
+          }
         }
-        if (selectedTeam.matchType.contains('1人制') ||
-            selectedTeam.matchType.contains('個人戦')) {
-          return 1;
+        if (selectedTeam.playerNames.length > 5) {
+          return selectedTeam.playerNames.length;
         }
       }
     }
+
+    if (matchType.contains('それ以上')) {
+      int maxCount = 8;
+      for (var t in registeredTeams) {
+        if (t.matchType.contains('それ以上') && t.playerNames.length > maxCount) {
+          maxCount = t.playerNames.length;
+        }
+      }
+      return maxCount;
+    }
+
     return 5;
   }
 

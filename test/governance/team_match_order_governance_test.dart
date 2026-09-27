@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/application/projections/tournament_projection_ma
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/tournament_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 
 class MockTournamentRepository extends Mock implements TournamentRepository {}
@@ -47,7 +48,7 @@ void main() {
     });
 
     // =========================================================================
-    // 1. [静的スキャン規約] 団体戦スコア関連クラスの KendoPositionSorter 適用検証
+    // 1. [静的スキャン規約] 団体戦スコア関連クラスの KendoPositionSorter 適用 & 試合作成時の動的ポジション生成検証
     // =========================================================================
     test('1. 【静的コード規約】団体戦スコアボード・記録コンポーネントにおける KendoPositionSorter 適用規約', () {
       final targetFiles = [
@@ -67,6 +68,25 @@ void main() {
           reason: '$path で KendoPositionSorter による整列が適用されていません',
         );
       }
+
+      // 試合作成クラスで固定5人配列がハードコードされず、動的ポジション生成が利用されていること
+      final generatorFile = File(
+        'lib/features/tournament/presentation/operate/providers/match_generator_provider.dart',
+      );
+      expect(generatorFile.existsSync(), isTrue);
+      final genContent = generatorFile.readAsStringSync();
+      expect(
+        genContent.contains("['先鋒', '次鋒', '中堅', '副将', '大将']"),
+        isFalse,
+        reason:
+            'match_generator_provider.dart に固定5人配列が残っています。多人数戦に対応するため MatchFormatSetupHelper.generatePositions を使用してください',
+      );
+      expect(
+        genContent.contains('MatchFormatSetupHelper.generatePositions'),
+        isTrue,
+        reason:
+            'match_generator_provider.dart は MatchFormatSetupHelper.generatePositions を使用する必要があります',
+      );
     });
 
     // =========================================================================
@@ -316,50 +336,75 @@ void main() {
     });
 
     // =========================================================================
-    // 5. [動的規約: ポジション体系網羅] 3人/5人/7人/多人数/代表戦 網羅規約
+    // 5. [動的規約: ポジション体系網羅] 3人/5人/7人/多人数(8人/9人/10人/12人)/代表戦 網羅規約
     // =========================================================================
-    test('5. 【動的規約: ポジション体系網羅】3人制・5人制・7人制・代表戦・順位戦・追加試合 全配列整合性規約', () {
-      // 7人制 + 代表戦 + 順位決定戦 + 追加試合 の逆順リスト
-      final reversedPositions = [
-        '追加試合',
-        '順位決定戦',
-        '代表戦',
-        '大将',
-        '副将',
-        '三将',
-        '中堅',
-        '五将',
-        '次鋒',
-        '先鋒',
-      ];
+    test(
+      '5. 【動的規約: ポジション体系網羅】3人制・5人制・7人制・多人数戦(8〜12人制)・代表戦・順位戦・追加試合 全配列整合性規約',
+      () {
+        // 7人制 + 代表戦 + 順位決定戦 + 追加試合 の逆順リスト
+        final reversedPositions = [
+          '追加試合',
+          '順位決定戦',
+          '代表戦',
+          '大将',
+          '副将',
+          '三将',
+          '中堅',
+          '五将',
+          '次鋒',
+          '先鋒',
+        ];
 
-      final matches = reversedPositions.map((pos) {
-        return MatchModel(
-          id: 'm_$pos',
-          tournamentId: 'tour_gov_1',
-          order: 0.0,
-          matchType: pos,
-          redName: '赤チーム: 選手',
-          whiteName: '白チーム: 選手',
-        );
-      }).toList();
+        final matches = reversedPositions.map((pos) {
+          return MatchModel(
+            id: 'm_$pos',
+            tournamentId: 'tour_gov_1',
+            order: 0.0,
+            matchType: pos,
+            redName: '赤チーム: 選手',
+            whiteName: '白チーム: 選手',
+          );
+        }).toList();
 
-      final sorted = KendoPositionSorter.sortMatches(matches);
-      final resultPositions = sorted.map((m) => m.matchType).toList();
+        final sorted = KendoPositionSorter.sortMatches(matches);
+        final resultPositions = sorted.map((m) => m.matchType).toList();
 
-      expect(resultPositions, [
-        '先鋒',
-        '次鋒',
-        '五将',
-        '中堅',
-        '三将',
-        '副将',
-        '大将',
-        '代表戦',
-        '順位決定戦',
-        '追加試合',
-      ]);
-    });
+        expect(resultPositions, [
+          '先鋒',
+          '次鋒',
+          '五将',
+          '中堅',
+          '三将',
+          '副将',
+          '大将',
+          '代表戦',
+          '順位決定戦',
+          '追加試合',
+        ]);
+
+        // 多人数戦（8人制、9人制、10人制、12人制）の整列検証
+        for (final size in [8, 9, 10, 12]) {
+          final expected = MatchFormatSetupHelper.generatePositions(size);
+          final multiMatches = expected.reversed.map((pos) {
+            return MatchModel(
+              id: 'm_${size}_$pos',
+              tournamentId: 'tour_gov_1',
+              order: 0.0,
+              matchType: pos,
+              redName: '赤チーム: 選手',
+              whiteName: '白チーム: 選手',
+            );
+          }).toList();
+
+          final multiSorted = KendoPositionSorter.sortMatches(multiMatches);
+          expect(
+            multiSorted.map((m) => m.matchType).toList(),
+            expected,
+            reason: '$size 人制の逆順リストが正しい剣道配列（先鋒〜大将）に整列されること',
+          );
+        }
+      },
+    );
 
     // =========================================================================
     // 6. [動的規約: 異常系耐性] order反転・未設定・同値および文字揺れ耐性規約

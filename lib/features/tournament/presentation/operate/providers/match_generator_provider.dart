@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'match_list_provider.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart'; // ★ 修正: ApplicationServiceを使用
 
@@ -65,7 +66,7 @@ class MatchGenerator {
     int maxLength = redMembers.length > whiteMembers.length
         ? redMembers.length
         : whiteMembers.length;
-    final positions = ['先鋒', '次鋒', '中堅', '副将', '大将'];
+    final positions = MatchFormatSetupHelper.generatePositions(maxLength);
     final double baseOrder = DateTime.now().millisecondsSinceEpoch.toDouble();
     List<MatchModel> matchesToSave = [];
     for (int i = 0; i < maxLength; i++) {

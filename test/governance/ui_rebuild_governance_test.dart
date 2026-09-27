@@ -38,9 +38,16 @@ void main() {
         final screenFile = File(
           'lib/features/tournament/presentation/operate/match_screen.dart',
         );
+        final screenBodyFile = File(
+          'lib/features/tournament/presentation/operate/components/match_screen/match_screen_body_content.dart',
+        );
         final scoreboardFile = File('lib/shared/widgets/scoreboard.dart');
 
         final screenContent = screenFile.readAsStringSync();
+        final bodyContent = screenBodyFile.existsSync()
+            ? screenBodyFile.readAsStringSync()
+            : '';
+        final totalMatchScreenContent = screenContent + bodyContent;
         final scoreboardContent = scoreboardFile.readAsStringSync();
 
         expect(
@@ -55,26 +62,30 @@ void main() {
         );
 
         expect(
-          screenContent.contains('scoreboardMatchIdProvider.overrideWithValue'),
+          totalMatchScreenContent.contains(
+            'scoreboardMatchIdProvider.overrideWithValue',
+          ),
           isFalse,
           reason:
               'match_screen.dart 内で scoreboardMatchIdProvider を動的オーバーライドしてはならない',
         );
         expect(
-          screenContent.contains('scoreboardMatchProvider.overrideWithValue'),
+          totalMatchScreenContent.contains(
+            'scoreboardMatchProvider.overrideWithValue',
+          ),
           isFalse,
           reason:
               'match_screen.dart 内で scoreboardMatchProvider を動的オーバーライドしてはならない',
         );
 
         expect(
-          screenContent.contains('MatchScoreboard('),
+          totalMatchScreenContent.contains('MatchScoreboard('),
           isTrue,
           reason:
               'match_screen.dart は MatchScoreboard を直接インスタンス化してElementを再利用しなければならない',
         );
-        expect(screenContent.contains('matchId: match.id'), isTrue);
-        expect(screenContent.contains('match: match'), isTrue);
+        expect(totalMatchScreenContent.contains('matchId: match.id'), isTrue);
+        expect(totalMatchScreenContent.contains('match: match'), isTrue);
       },
     );
 

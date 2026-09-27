@@ -3,9 +3,6 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kendo_os/shared/domain/entities/team_model.dart';
-import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart'
-    hide registeredTeamsProvider;
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -13,14 +10,14 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_app_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_order_step.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_confirm_step.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_page_two_view.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_page_three_view.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_slot_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_sticky_bottom_bar.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
-
-import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_save_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_providers.dart';
@@ -59,6 +56,7 @@ class _TeamRegistrationScreenState
   String? _editingTeamId;
 
   int _substituteCount = 0;
+  int _customSlotCount = 8;
 
   final _teamNameController = TextEditingController();
   final FocusNode _teamNameFocusNode = FocusNode(); // ★ 追加：フォーカス状態を永続化
@@ -133,6 +131,7 @@ class _TeamRegistrationScreenState
       registeredTeamsProvider(widget.tournamentId),
     );
 
+    final bool isMoreThan7 = _matchType.contains('それ以上');
     final (basePlayerCount, basePosNames) = switch (_matchType) {
       final t when t.contains('3人制') => (3, ['先鋒', '中堅', '大将']),
       final t when t.contains('個人戦') => (1, ['選手']),
@@ -140,10 +139,24 @@ class _TeamRegistrationScreenState
         7,
         ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
       ),
+      final t when t.contains('それ以上') => () {
+        int maxIndex = -1;
+        for (final k in _tempSelectedPlayers.keys) {
+          if (k > maxIndex) maxIndex = k;
+        }
+        final count = (maxIndex + 1 > _customSlotCount)
+            ? (maxIndex + 1)
+            : _customSlotCount;
+        return (count, MatchFormatSetupHelper.generatePositions(count));
+      }(),
       _ => (5, ['先鋒', '次鋒', '中堅', '副将', '大将']),
     };
-    final posNames = [...basePosNames, ...List.filled(_substituteCount, '補欠')];
-    final totalPlayerCount = basePlayerCount + _substituteCount;
+    final posNames = isMoreThan7
+        ? basePosNames
+        : [...basePosNames, ...List.filled(_substituteCount, '補欠')];
+    final totalPlayerCount = isMoreThan7
+        ? basePlayerCount
+        : (basePlayerCount + _substituteCount);
 
     // ★ Phase 8-3: キーボードが開いているかを検知
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
@@ -212,6 +225,7 @@ class _TeamRegistrationScreenState
                             _matchType = type;
                             _tempSelectedPlayers.clear();
                             _substituteCount = 0;
+                            _customSlotCount = 8;
                           }),
                           onToggleExtraMajorCategories: () => setState(
                             () => _showExtraMajorCategories =
@@ -222,18 +236,61 @@ class _TeamRegistrationScreenState
                           ),
                         ),
                         playerListAsync.when(
-                          data: (players) => _buildPage2TeamAndOrder(
-                            totalPlayerCount,
-                            posNames,
-                            players,
+                          data: (players) => TeamRegistrationPageTwoView(
+                            playerCount: totalPlayerCount,
+                            posNames: posNames,
+                            players: players,
+                            teamNameController: _teamNameController,
+                            teamNameFocusNode: _teamNameFocusNode,
+                            tempSelectedPlayers: _tempSelectedPlayers,
+                            substituteCount: _substituteCount,
+                            matchType: _matchType,
+                            themeColors: _themeColors,
+                            onSelectPlayer: (index) async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              await _selectPlayerDialog(
+                                index,
+                                players,
+                                posNames,
+                              );
+                              if (!mounted) return;
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                            onRemoveSubstitute: (index) => setState(() {
+                              TeamRegistrationSlotHelper.removeSubstitute(
+                                index: index,
+                                playerCount: totalPlayerCount,
+                                tempSelectedPlayers: _tempSelectedPlayers,
+                              );
+                              _substituteCount--;
+                            }),
+                            onAddSubstitute: () =>
+                                setState(() => _substituteCount++),
+                            onAddPlayerSlot: () =>
+                                setState(() => _customSlotCount++),
+                            onRemovePlayerSlot: (index) => setState(() {
+                              _customSlotCount =
+                                  TeamRegistrationSlotHelper.removePlayerSlot(
+                                    index: index,
+                                    playerCount: totalPlayerCount,
+                                    tempSelectedPlayers: _tempSelectedPlayers,
+                                    customSlotCount: _customSlotCount,
+                                  );
+                            }),
                           ),
                           loading: () =>
                               const Center(child: CircularProgressIndicator()),
                           error: (e, s) => Center(child: Text('エラー: $e')),
                         ),
-                        _buildPage3Confirm(
-                          registeredTeamsAsync,
-                          totalPlayerCount,
+                        TeamRegistrationPageThreeView(
+                          registeredTeamsAsync: registeredTeamsAsync,
+                          playerCount: totalPlayerCount,
+                          selectedCategory: _selectedCategory,
+                          teamName: _teamNameController.text,
+                          matchType: _matchType,
+                          tempSelectedPlayers: _tempSelectedPlayers,
+                          themeColors: _themeColors,
+                          onAddNewTeam: _resetToInitialInputState,
                         ),
                       ],
                     ),
@@ -256,99 +313,16 @@ class _TeamRegistrationScreenState
     );
   }
 
-  // ===== ウィザード構成部品 =====
-
-  Widget _buildPage2TeamAndOrder(
-    int playerCount,
-    List<String> posNames,
-    List<PlayerModel> players,
-  ) {
-    return TeamRegistrationOrderStep(
-      playerCount: playerCount,
-      posNames: posNames,
-      players: players,
-      teamNameController: _teamNameController,
-      teamNameFocusNode: _teamNameFocusNode,
-      teamNameSuggestions: ref.watch(customTeamNamesProvider).value ?? [],
-      tempSelectedPlayers: _tempSelectedPlayers,
-      substituteCount: _substituteCount,
-      matchType: _matchType,
-      themeColors: _themeColors,
-      onSelectPlayer: (index) async {
-        FocusManager.instance.primaryFocus?.unfocus();
-        await _selectPlayerDialog(index, players, posNames);
-        if (!mounted) return;
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      onRemoveSubstitute: (index) {
-        setState(() {
-          for (int i = index; i < playerCount - 1; i++) {
-            if (_tempSelectedPlayers.containsKey(i + 1)) {
-              _tempSelectedPlayers[i] = _tempSelectedPlayers[i + 1]!;
-            } else {
-              _tempSelectedPlayers.remove(i);
-            }
-          }
-          _tempSelectedPlayers.remove(playerCount - 1);
-          _substituteCount--;
-        });
-      },
-      onAddSubstitute: () => setState(() => _substituteCount++),
-    );
-  }
-
-  Widget _buildPage3Confirm(
-    AsyncValue<List<TeamModel>> registeredTeamsAsync,
-    int playerCount,
-  ) {
-    return TeamRegistrationConfirmStep(
-      registeredTeamsAsync: registeredTeamsAsync,
-      playerCount: playerCount,
-      selectedCategory: _selectedCategory,
-      teamName: _teamNameController.text,
-      matchType: _matchType,
-      tempSelectedPlayers: _tempSelectedPlayers,
-      themeColors: _themeColors,
-      onEditTeam: (t) {
-        final players = ref.read(playerListProvider).value ?? <PlayerModel>[];
-        TeamEditBottomSheet.show(
-          context: context,
-          team: t,
-          players: players,
-          onSave: (updatedTeam) async {
-            await ref.read(teamRepositoryProvider).saveTeam(updatedTeam);
-          },
-        );
-      },
-      onUpdateCategory: (team, newCategory) async {
-        try {
-          final updated = team.copyWith(category: newCategory);
-          await ref.read(teamRepositoryProvider).saveTeam(updated);
-          if (mounted) {
-            AppSnackBar.showSuccess(
-              context,
-              '「${team.teamName}」を「$newCategory」に変更しました',
-            );
-          }
-        } catch (e) {
-          if (mounted) {
-            AppSnackBar.showError(context, 'カテゴリ変更エラー: $e');
-          }
-        }
-      },
-      onDeleteTeam: (teamId) =>
-          ref.read(teamRepositoryProvider).deleteTeam(teamId),
-      onAddNewTeam: () {
-        setState(() {
-          _editingTeamId = null;
-          _teamNameController.clear();
-          _tempSelectedPlayers.clear();
-          _substituteCount = 0;
-          _currentPage = 0;
-        });
-        _pageController.jumpToPage(0);
-      },
-    );
+  void _resetToInitialInputState() {
+    setState(() {
+      _editingTeamId = null;
+      _teamNameController.clear();
+      _tempSelectedPlayers.clear();
+      _substituteCount = 0;
+      _customSlotCount = 8;
+      _currentPage = 0;
+    });
+    _pageController.jumpToPage(0);
   }
 
   Widget _buildStickyBottomAction(int playerCount) {
@@ -374,6 +348,7 @@ class _TeamRegistrationScreenState
               _teamNameController.clear();
               _tempSelectedPlayers.clear();
               _substituteCount = 0;
+              _customSlotCount = 8;
               _currentPage = 0;
             });
             _pageController.jumpToPage(0);
@@ -401,6 +376,7 @@ class _TeamRegistrationScreenState
             _teamNameController.clear();
             _tempSelectedPlayers.clear();
             _substituteCount = 0;
+            _customSlotCount = 8;
             _currentPage = 0;
           });
           _pageController.jumpToPage(0);

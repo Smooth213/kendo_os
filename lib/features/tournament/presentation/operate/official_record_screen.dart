@@ -2,21 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_expedition_summary_card.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_category_tab_view.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_helper.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_individual_matches_list.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_kachinuki_card.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_section.dart';
-import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_score_table_builder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_group_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+
+export 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_category_tab_view.dart'
+    show isExportingProvider, exportingTypeProvider;
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
@@ -25,9 +22,6 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:go_router/go_router.dart';
 import '../components/program_management/floating_program_dock_button.dart';
-
-final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
-final exportingTypeProvider = StateProvider.autoDispose<String?>((ref) => null);
 
 class OfficialRecordScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -250,191 +244,27 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         allRegisteredPlayerNames: registeredPlayerNames,
       );
 
-      return Column(
-        children: [
-          OfficialRecordExportBar(
-            isExporting: isExporting,
-            exportingType: ref.watch(exportingTypeProvider),
-            isDark: isDark,
-            hasMultipleCategories: hasMultipleCategories,
-            categoryName: cat,
-            exportScope: _exportScope,
-            onScopeChanged: (newScope) =>
-                setState(() => _exportScope = newScope),
-            onPdfPressed: () {
-              if (_exportScope == OfficialRecordExportScope.all) {
-                OfficialRecordExportHelper.handleExportAll(
-                  context: context,
-                  ref: ref,
-                  isExportingController: ref.read(isExportingProvider.notifier),
-                  exportingTypeController: ref.read(
-                    exportingTypeProvider.notifier,
-                  ),
-                  allCategoryData: allCategoryData,
-                  type: 'pdf',
-                  tName: tName,
-                  tDate: tDate,
-                  tVenue: tVenue,
-                  isBottomSheet: widget.isBottomSheet,
-                );
-              } else {
-                OfficialRecordExportHelper.handleExport(
-                  context: context,
-                  ref: ref,
-                  isExportingController: ref.read(isExportingProvider.notifier),
-                  exportingTypeController: ref.read(
-                    exportingTypeProvider.notifier,
-                  ),
-                  sortedGroupKeys: sortedGroupKeys,
-                  mergedGroups: mergedGroups,
-                  cat: cat,
-                  type: 'pdf',
-                  tName: tName,
-                  tDate: tDate,
-                  tVenue: tVenue,
-                  isBottomSheet: widget.isBottomSheet,
-                );
-              }
-            },
-            onImagePressed: () {
-              if (_exportScope == OfficialRecordExportScope.all) {
-                OfficialRecordExportHelper.handleExportAll(
-                  context: context,
-                  ref: ref,
-                  isExportingController: ref.read(isExportingProvider.notifier),
-                  exportingTypeController: ref.read(
-                    exportingTypeProvider.notifier,
-                  ),
-                  allCategoryData: allCategoryData,
-                  type: 'image',
-                  tName: tName,
-                  tDate: tDate,
-                  tVenue: tVenue,
-                  isBottomSheet: widget.isBottomSheet,
-                );
-              } else {
-                OfficialRecordExportHelper.handleExport(
-                  context: context,
-                  ref: ref,
-                  isExportingController: ref.read(isExportingProvider.notifier),
-                  exportingTypeController: ref.read(
-                    exportingTypeProvider.notifier,
-                  ),
-                  sortedGroupKeys: sortedGroupKeys,
-                  mergedGroups: mergedGroups,
-                  cat: cat,
-                  type: 'image',
-                  tName: tName,
-                  tDate: tDate,
-                  tVenue: tVenue,
-                  isBottomSheet: widget.isBottomSheet,
-                );
-              }
-            },
-            onCsvPressed: () {
-              if (_exportScope == OfficialRecordExportScope.all) {
-                OfficialRecordExportHelper.handleExportAll(
-                  context: context,
-                  ref: ref,
-                  isExportingController: ref.read(isExportingProvider.notifier),
-                  exportingTypeController: ref.read(
-                    exportingTypeProvider.notifier,
-                  ),
-                  allCategoryData: allCategoryData,
-                  type: 'csv',
-                  tName: tName,
-                  tDate: tDate,
-                  tVenue: tVenue,
-                  isBottomSheet: widget.isBottomSheet,
-                );
-              } else {
-                OfficialRecordExportHelper.handleExport(
-                  context: context,
-                  ref: ref,
-                  isExportingController: ref.read(isExportingProvider.notifier),
-                  exportingTypeController: ref.read(
-                    exportingTypeProvider.notifier,
-                  ),
-                  sortedGroupKeys: sortedGroupKeys,
-                  mergedGroups: mergedGroups,
-                  cat: cat,
-                  type: 'csv',
-                  tName: tName,
-                  tDate: tDate,
-                  tVenue: tVenue,
-                  isBottomSheet: widget.isBottomSheet,
-                );
-              }
-            },
-          ),
-          if (!permissions.isReadOnly && !widget.isBottomSheet)
-            OfficialRecordExpeditionSummaryCard(
-              matches: categoryMatches,
-              isDark: isDark,
-              registeredTeamNames: categoryRegisteredTeamNames,
-              registeredPlayerNames: categoryRegisteredPlayerNames,
-            ),
-          Expanded(
-            child: ListView.builder(
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              itemCount: sortedGroupKeys.length,
-              itemBuilder: (context, index) {
-                final groupName = sortedGroupKeys[index];
-                final matches = mergedGroups[groupName]!
-                  ..sort((a, b) => a.order.compareTo(b.order));
-
-                if (matches.isNotEmpty && matches.first.isKachinuki) {
-                  return OfficialRecordKachinukiCard(
-                    matches: matches,
-                    isDark: isDark,
-                    ref: ref,
-                  );
-                } else if (matches.isNotEmpty &&
-                    matches.any((m) => m.note.contains('[リーグ戦]'))) {
-                  final ownTeams =
-                      ref.watch(customTeamNamesProvider).value ?? [];
-                  return OfficialRecordLeagueSection(
-                    groupName: groupName,
-                    matches: matches,
-                    cardColor: cardColor,
-                    isDark: isDark,
-                    ownTeams: ownTeams,
-                    scoreTableBuilder:
-                        (name, bouts, {cardColor, isDark = false}) =>
-                            OfficialRecordScoreTableBuilder.buildScoreTable(
-                              name,
-                              bouts,
-                              cardColor: cardColor,
-                              isDark: isDark,
-                            ),
-                  );
-                } else if (matches.isNotEmpty &&
-                    matches.any(
-                      (m) =>
-                          m.matchType == 'individual' ||
-                          m.matchType == '選手' ||
-                          m.matchType.contains('個人戦'),
-                    )) {
-                  return OfficialRecordIndividualMatchesList(
-                    groupName: groupName,
-                    matches: matches,
-                    cardColor: cardColor,
-                    isDark: isDark,
-                    applySort: true,
-                  );
-                } else {
-                  return OfficialRecordScoreTableBuilder.buildScoreTable(
-                    groupName,
-                    matches,
-                    cardColor: cardColor,
-                    isDark: isDark,
-                  );
-                }
-              },
-            ),
-          ),
-        ],
+      return OfficialRecordCategoryTabView(
+        cat: cat,
+        categoryMatches: categoryMatches,
+        mergedGroups: mergedGroups,
+        sortedGroupKeys: sortedGroupKeys,
+        categoryRegisteredTeamNames: categoryRegisteredTeamNames,
+        categoryRegisteredPlayerNames: categoryRegisteredPlayerNames,
+        allCategoryData: allCategoryData,
+        isExporting: isExporting,
+        exportingType: ref.watch(exportingTypeProvider),
+        isDark: isDark,
+        cardColor: cardColor,
+        hasMultipleCategories: hasMultipleCategories,
+        exportScope: _exportScope,
+        onScopeChanged: (newScope) => setState(() => _exportScope = newScope),
+        tName: tName,
+        tDate: tDate,
+        tVenue: tVenue,
+        isBottomSheet: widget.isBottomSheet,
+        isReadOnly: permissions.isReadOnly,
+        ref: ref,
       );
     }).toList();
 

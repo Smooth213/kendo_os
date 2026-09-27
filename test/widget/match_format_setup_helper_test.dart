@@ -40,9 +40,9 @@ void main() {
       expect(MatchFormatSetupHelper.generatePositions(7), [
         '先鋒',
         '次鋒',
-        '5将',
+        '五将',
         '中堅',
-        '3将',
+        '三将',
         '副将',
         '大将',
       ]);

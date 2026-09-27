@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/player_roster_matcher.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_name_history_provider.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
@@ -78,22 +79,28 @@ class TournamentTeamAutoRegisterService {
       return '個人戦';
     }
 
-    // 6. 7人制の判定
+    // 6. 8人以上、または多人数戦の判定
+    if (count >= 8 ||
+        positions.any((p) => RegExp(r'([六七八九十\d]+)将').hasMatch(p))) {
+      return '団体戦（それ以上）';
+    }
+
+    // 7. 7人制の判定
     if (positions.contains('五将') || positions.contains('三将') || count >= 7) {
       return '団体戦（7人制）';
     }
 
-    // 7. 5人制の判定（次鋒または副将を含む、または5名以上）
+    // 8. 5人制の判定（次鋒または副将を含む、または5名以上）
     if (positions.contains('次鋒') || positions.contains('副将') || count >= 4) {
       return '団体戦（5人制）';
     }
 
-    // 8. 1名のみの場合（個人戦と判定）
+    // 9. 1名のみの場合（個人戦と判定）
     if (count == 1) {
       return '個人戦';
     }
 
-    // 9. 3名以下、または先鋒・中堅・大将構成
+    // 10. 3名以下、または先鋒・中堅・大将構成
     if (count <= 3) {
       return '団体戦（3人制）';
     }
@@ -207,7 +214,11 @@ class TournamentTeamAutoRegisterService {
   }
 
   /// 試合形式に応じた基準スロット定義を取得
-  static List<String> getBaseSlots(String matchType) {
+  static List<String> getBaseSlots(String matchType, [int count = 5]) {
+    if (matchType.contains('それ以上')) {
+      final size = count > 0 ? count : 8;
+      return MatchFormatSetupHelper.generatePositions(size);
+    }
     if (matchType.contains('3人制')) {
       return ['先鋒', '中堅', '大将'];
     }
@@ -226,7 +237,7 @@ class TournamentTeamAutoRegisterService {
     required String matchType,
     required List<PlayerModel> roster,
   }) {
-    final baseSlots = getBaseSlots(matchType);
+    final baseSlots = getBaseSlots(matchType, team.members.length);
     final slotCount = baseSlots.length;
     final assignedSlots = List<String>.filled(slotCount, '');
     final unassignedOrSubs = <String>[];
