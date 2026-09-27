@@ -38,118 +38,120 @@ class BandGroupSelectSheet extends ConsumerWidget {
     return AppBottomSheetContent(
       title: 'BANDでLIVE配信・共有',
       titleIcon: Icons.cell_tower,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 1. コピー完了バナー
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFF00C73C).withValues(alpha: 0.12),
-              borderRadius: AppRadius.medium,
-              border: Border.all(
-                color: const Color(0xFF00C73C).withValues(alpha: 0.4),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 1. コピー完了バナー
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00C73C).withValues(alpha: 0.12),
+                borderRadius: AppRadius.medium,
+                border: Border.all(
+                  color: const Color(0xFF00C73C).withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF00C73C),
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '対戦カードをコピーしました！\n配信先のBANDグループを選択してください。',
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: themeColors.textColor,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          '※グループへの直接起動には端末に「BANDアプリ」のインストールが必要です。未インストールの場合は「コピーのみで閉じる」からLINE等に貼り付けてご共有ください。',
+                          style: TextStyle(
+                            fontSize: AppFontSize.nano,
+                            color: themeColors.subTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: Color(0xFF00C73C),
-                  size: 20,
+            const SizedBox(height: AppSpacing.md),
+
+            // 2. グループ一覧
+            groupsAsync.when(
+              data: (groups) {
+                if (groups.isEmpty) {
+                  return _buildEmptyState(context, themeColors);
+                }
+                return _buildGroupList(context, groups, themeColors, isDark);
+              },
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(),
                 ),
-                const SizedBox(width: AppSpacing.xs),
+              ),
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Text(
+                  'グループ一覧の読み込みに失敗しました: $e',
+                  style: TextStyle(color: themeColors.errorColor),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+            const Divider(height: 1),
+            const SizedBox(height: AppSpacing.xs),
+
+            // 3. アクション行（テキストのみコピー / 追加）
+            Row(
+              children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '対戦カードをコピーしました！\n配信先のBANDグループを選択してください。',
-                        style: TextStyle(
-                          fontSize: AppFontSize.caption,
-                          fontWeight: AppFontWeight.bold,
-                          color: themeColors.textColor,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        '※グループへの直接起動には端末に「BANDアプリ」のインストールが必要です。未インストールの場合は「コピーのみで閉じる」からLINE等に貼り付けてご共有ください。',
-                        style: TextStyle(
-                          fontSize: AppFontSize.nano,
-                          color: themeColors.subTextColor,
-                        ),
-                      ),
-                    ],
+                  child: TextButton.icon(
+                    onPressed: () {
+                      AppHaptics.light();
+                      Navigator.of(context).pop();
+                      AppSnackBar.show(context, '対戦カードをクリップボードに保持しました');
+                    },
+                    icon: const Icon(Icons.copy, size: 16),
+                    label: const Text('コピーのみで閉じる'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: themeColors.subTextColor,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    AppHaptics.selection();
+                    BandGroupEditDialog.show(context);
+                  },
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Bandを追加'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF00C73C),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-
-          // 2. グループ一覧
-          groupsAsync.when(
-            data: (groups) {
-              if (groups.isEmpty) {
-                return _buildEmptyState(context, themeColors);
-              }
-              return _buildGroupList(context, groups, themeColors, isDark);
-            },
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            error: (e, _) => Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Text(
-                'グループ一覧の読み込みに失敗しました: $e',
-                style: TextStyle(color: themeColors.errorColor),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-          const Divider(height: 1),
-          const SizedBox(height: AppSpacing.xs),
-
-          // 3. アクション行（テキストのみコピー / 追加）
-          Row(
-            children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () {
-                    AppHaptics.light();
-                    Navigator.of(context).pop();
-                    AppSnackBar.show(context, '対戦カードをクリップボードに保持しました');
-                  },
-                  icon: const Icon(Icons.copy, size: 16),
-                  label: const Text('コピーのみで閉じる'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: themeColors.subTextColor,
-                  ),
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  AppHaptics.selection();
-                  BandGroupEditDialog.show(context);
-                },
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Bandを追加'),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF00C73C),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-        ],
+            const SizedBox(height: AppSpacing.xs),
+          ],
+        ),
       ),
     );
   }
@@ -225,8 +227,11 @@ class BandGroupSelectSheet extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xxs,
             children: [
               Text(
                 '登録グループ (${groups.length})',

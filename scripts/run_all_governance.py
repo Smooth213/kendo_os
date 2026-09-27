@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全21大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全22大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全21大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全22大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 - 第1部：ドメイン・プロダクト品質規約（第1条〜第8条）
 - 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条）
 - 第3部：大会運営支援・シミュレーション規約（第18条）
 - 第4部：プラットフォーム最適化・遅延バンドル規約（第19条）
 - 第5部：ルーティング・セキュリティ規約（第20条）
 - 第6部：現場動的運用・進行整合性規約（第21条）
+- 第7部：現場通信・近距離配信規約（第22条）
 """
 
 import argparse
@@ -163,11 +164,20 @@ AUDIT_DEFINITIONS = [
         "name": "🔀 現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約",
         "cmd": ["python3", "scripts/check_gov_21_court_reassignment_governance.py"],
     },
+    # ==========================================================================
+    # 【第7部：現場通信・近距離配信規約】（第22条）
+    # ==========================================================================
+    {
+        "id": 22,
+        "part": "第7部: 現場通信・近距離配信",
+        "name": "📶 現場P2Pローカル配信 ＆ ソケットライフサイクル・Webプラットフォーム完全隔離規約",
+        "cmd": ["python3", "scripts/check_gov_22_p2p_local_broadcast_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全21大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜21）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全22大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜22）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 

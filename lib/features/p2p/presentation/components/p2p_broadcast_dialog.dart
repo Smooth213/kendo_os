@@ -141,18 +141,20 @@ class _P2pBroadcastDialogState extends ConsumerState<P2pBroadcastDialog> {
                       size: 18,
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      _isLocalP2p
-                          ? '完全無料・オフライン対応 (0遅延)'
-                          : 'Webリアルタイム同期 (アプリ不要)',
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        fontWeight: AppFontWeight.bold,
-                        color: _isLocalP2p
-                            ? (isDark
-                                  ? const Color(0xFF34C759)
-                                  : const Color(0xFF248A3D))
-                            : context.appColors.primaryAccent,
+                    Flexible(
+                      child: Text(
+                        _isLocalP2p
+                            ? '完全無料・オフライン対応 (0遅延)'
+                            : 'Webリアルタイム同期 (アプリ不要)',
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          fontWeight: AppFontWeight.bold,
+                          color: _isLocalP2p
+                              ? (isDark
+                                    ? const Color(0xFF34C759)
+                                    : const Color(0xFF248A3D))
+                              : context.appColors.primaryAccent,
+                        ),
                       ),
                     ),
                   ],
