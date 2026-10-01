@@ -67,5 +67,33 @@ void main() {
         expect(hasThemeColors, isTrue, reason: '$path でデザイントークン拡張が利用されていません');
       }
     });
+
+    test('UIアコーディオンおよび境界値防護において 不正値入力でもクラッシュせず安全にフォールバックされること', () {
+      const boundarySettings = CalculatorSettings(
+        participantCount: 0,
+        leagueCount: 0,
+        courtCount: -1,
+        matchDurationMinutes: -5.0,
+      );
+
+      expect(boundarySettings.leagueParticipantCounts.isNotEmpty, isTrue);
+      expect(boundarySettings.matchDurationFormatted, '0分');
+      expect(boundarySettings.slotDurationMinutes, lessThanOrEqualTo(1.0));
+      expect(
+        boundarySettings.effectiveParticipantCount,
+        greaterThanOrEqualTo(0),
+      );
+    });
+
+    test('UIコンポーネント完全性において アコーディオンカードおよび関連ファイルが存在し整合していること', () {
+      final accordionFile = File(
+        'lib/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_accordion_card.dart',
+      );
+      expect(accordionFile.existsSync(), isTrue);
+
+      final content = accordionFile.readAsStringSync();
+      expect(content.contains('class MatchCalculatorAccordionCard'), isTrue);
+      expect(content.contains('SingleTickerProviderStateMixin'), isTrue);
+    });
   });
 }

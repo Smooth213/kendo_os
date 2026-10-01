@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全24大ガバナンス個別監査 (1/24 〜 24/24: 100% PASS)
+# 1. 全25大ガバナンス個別監査 (1/25 〜 25/25: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全24大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全24大ガバナンス個別監査を実行中..."
+# 1. 全25大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全25大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全24大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全25大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -160,12 +160,25 @@ flutter test test/governance/design_system_governance_test.dart \
               test/e2e/composite_kachinuki_daihyosen_court_reassign_offline_test.dart \
               test/e2e/composite_quick_memo_zoom_rotation_stress_test.dart \
               test/e2e/composite_multi_player_fusensho_daihyosen_export_test.dart \
-              test/e2e/composite_room_join_chaos_resilience_test.dart
+              test/e2e/composite_room_join_chaos_resilience_test.dart \
+              test/governance/event_signature_governance_test.dart \
+              test/unit/match_signature_verifier_test.dart \
+              test/unit/local_match_micro_batch_test.dart \
+              test/unit/local_match_emergency_backup_rotation_test.dart \
+              test/unit/pdf_kachinuki_widgets_boundary_test.dart \
+              test/unit/expedition_match_processor_test.dart \
+              test/golden/pixel_bunaiksen_dock_calculator_golden_test.dart \
+              test/golden/pixel_room_join_duplicate_warning_golden_test.dart \
+              test/golden/pixel_corrupted_match_banner_golden_test.dart \
+              test/e2e/event_signature_tamper_quarantine_e2e_test.dart \
+              test/e2e/micro_batch_extreme_rapid_score_flush_e2e_test.dart \
+              test/e2e/composite_expedition_multi_court_scene_report_test.dart \
+              test/e2e/composite_room_id_collision_resolution_flow_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全24大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全25大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全24大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全25大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全24大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全25大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 - 第1部：ドメイン・プロダクト品質規約（第1条〜第8条）
 - 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条）
 - 第3部：大会運営支援・シミュレーション規約（第18条）
@@ -13,6 +13,7 @@ kendo OS の全24大ガバナンス監査を一括実行し、品質・アーキ
 - 第7部：現場通信・近距離配信規約（第22条）
 - 第8部：テスト品質・保守性規約（第23条）
 - 第9部：UI操作性・手書きジェスチャー規約（第24条）
+- 第10部：データ完全性・電子署名規約（第25条）
 """
 
 import argparse
@@ -193,11 +194,20 @@ AUDIT_DEFINITIONS = [
         "name": "🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約",
         "cmd": ["python3", "scripts/check_gov_24_drawing_zoom_governance.py"],
     },
+    # ==========================================================================
+    # 【第10部：データ完全性・電子署名規約】（第25条）
+    # ==========================================================================
+    {
+        "id": 25,
+        "part": "第10部: データ完全性・電子署名",
+        "name": "🔐 スコアイベント電子署名・改ざん隔離 ＆ ゼロトラストデータ完全性保証規約",
+        "cmd": ["python3", "scripts/check_gov_25_event_signature_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全24大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜24）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全25大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜25）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 
