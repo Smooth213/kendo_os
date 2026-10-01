@@ -47,12 +47,18 @@ class ProgramViewStateService {
   int getLastProgramIndex(String tournamentId, {int defaultIndex = 0}) {
     if (tournamentId.isEmpty) return defaultIndex;
     if (_programIndexCache.containsKey(tournamentId)) {
-      return _programIndexCache[tournamentId]!;
+      final cached = _programIndexCache[tournamentId]!;
+      return cached >= 0 ? cached : defaultIndex;
     }
-    final saved = _prefs?.getInt(_idxKey(tournamentId));
-    if (saved != null) {
-      _programIndexCache[tournamentId] = saved;
-      return saved;
+    try {
+      final saved = _prefs?.getInt(_idxKey(tournamentId));
+      if (saved != null) {
+        final valid = saved >= 0 ? saved : defaultIndex;
+        _programIndexCache[tournamentId] = valid;
+        return valid;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [ProgramViewStateService] 破損データ検出、デフォルト値へ自己修復: $e');
     }
     return defaultIndex;
   }
@@ -60,9 +66,10 @@ class ProgramViewStateService {
   /// 大会ごとに前回選択されていたプログラムのインデックスを保存
   void setLastProgramIndex(String tournamentId, int index) {
     if (tournamentId.isEmpty) return;
-    _programIndexCache[tournamentId] = index;
+    final validIndex = index >= 0 ? index : 0;
+    _programIndexCache[tournamentId] = validIndex;
     try {
-      _prefs?.setInt(_idxKey(tournamentId), index);
+      _prefs?.setInt(_idxKey(tournamentId), validIndex);
     } catch (e) {
       debugPrint('⚠️ [ProgramViewStateService] setLastProgramIndex 保存エラー: $e');
     }
@@ -72,12 +79,18 @@ class ProgramViewStateService {
   int getLastPageNumber(String programKey, {int defaultPage = 1}) {
     if (programKey.isEmpty) return defaultPage;
     if (_pageNumberCache.containsKey(programKey)) {
-      return _pageNumberCache[programKey]!;
+      final cached = _pageNumberCache[programKey]!;
+      return cached >= 1 ? cached : defaultPage;
     }
-    final saved = _prefs?.getInt(_pageKey(programKey));
-    if (saved != null) {
-      _pageNumberCache[programKey] = saved;
-      return saved;
+    try {
+      final saved = _prefs?.getInt(_pageKey(programKey));
+      if (saved != null) {
+        final valid = saved >= 1 ? saved : defaultPage;
+        _pageNumberCache[programKey] = valid;
+        return valid;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [ProgramViewStateService] 破損ページ番号検出、1ページ目へ自己修復: $e');
     }
     return defaultPage;
   }
@@ -85,9 +98,10 @@ class ProgramViewStateService {
   /// プログラム（PDF）ごとに前回閲覧していたページ番号（1-indexed）を保存
   void setLastPageNumber(String programKey, int pageNumber) {
     if (programKey.isEmpty) return;
-    _pageNumberCache[programKey] = pageNumber;
+    final validPage = pageNumber >= 1 ? pageNumber : 1;
+    _pageNumberCache[programKey] = validPage;
     try {
-      _prefs?.setInt(_pageKey(programKey), pageNumber);
+      _prefs?.setInt(_pageKey(programKey), validPage);
     } catch (e) {
       debugPrint('⚠️ [ProgramViewStateService] setLastPageNumber 保存エラー: $e');
     }

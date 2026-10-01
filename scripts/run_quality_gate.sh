@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全23大ガバナンス個別監査 (1/23 〜 23/23: 100% PASS)
+# 1. 全24大ガバナンス個別監査 (1/24 〜 24/24: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全23大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全23大ガバナンス個別監査を実行中..."
+# 1. 全24大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全24大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全23大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全24大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -146,12 +146,26 @@ flutter test test/governance/design_system_governance_test.dart \
               test/e2e/dock_program_persistence_e2e_test.dart \
               test/e2e/dock_quick_memo_zoom_and_sheet_expansion_e2e_test.dart \
               test/widget/quick_memo_zoom_and_keyboard_test.dart \
-              test/governance/test_naming_convention_governance_test.dart
+              test/governance/test_naming_convention_governance_test.dart \
+              test/unit/program_view_state_service_corruption_recovery_test.dart \
+              test/unit/quick_memo_transformation_math_test.dart \
+              test/unit/setup_match_format_multi_player_boundary_test.dart \
+              test/governance/drawing_zoom_and_gesture_governance_test.dart \
+              test/golden/pixel_quick_memo_zoom_and_canvas_golden_test.dart \
+              test/golden/pixel_viewer_bunaiksen_official_record_golden_test.dart \
+              test/golden/pixel_program_dock_pagination_and_return_golden_test.dart \
+              test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart \
+              test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart \
+              test/e2e/multi_tenant_dock_program_state_isolation_e2e_test.dart \
+              test/e2e/composite_kachinuki_daihyosen_court_reassign_offline_test.dart \
+              test/e2e/composite_quick_memo_zoom_rotation_stress_test.dart \
+              test/e2e/composite_multi_player_fusensho_daihyosen_export_test.dart \
+              test/e2e/composite_room_join_chaos_resilience_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全23大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全24大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

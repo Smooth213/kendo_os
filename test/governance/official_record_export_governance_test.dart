@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
+import 'package:kendo_os/features/viewer/components/official_record_action_button.dart';
+import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_category_content.dart';
+import 'package:kendo_os/features/viewer/services/viewer_bunaiksen_export_service.dart';
 import 'package:kendo_os/shared/application/services/csv_service.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 // ============================================================================
@@ -182,6 +187,70 @@ void main() {
       expect(bytes[0], 0xEF);
       expect(bytes[1], 0xBB);
       expect(bytes[2], 0xBF);
+    });
+
+    // ------------------------------------------------------------------------
+    // 4. 部内戦観戦モード公式記録エクスポートUIレンダリング安全規約 (第6条拡充)
+    // ------------------------------------------------------------------------
+    group('第6条において 部内戦観戦公式記録エクスポートUIレンダリング安全＆アクションボタン完全性保証規約', () {
+      testWidgets(
+        '部内戦観戦記録画面においてPDF印刷・画像保存・CSV保存の3ボタンが狭小画面でもオーバーフローなく正しく配置されること',
+        (WidgetTester tester) async {
+          final dummyStateController = StateController<bool>(false);
+          final themeColors = AppThemeColors.ofMode(
+            isDark: false,
+            mode: 'bunaiksen_viewer',
+          );
+
+          final sampleMatches = [
+            MatchModel(
+              id: 'm1',
+              tournamentId: 'bunaiksen_20261001',
+              category: '部内戦の部',
+              groupName: 'Aリーグ',
+              order: 1.0,
+              redName: '選手A',
+              whiteName: '選手B',
+              redScore: 2,
+              whiteScore: 0,
+              matchType: '選手',
+              status: 'finished',
+              note: '[リーグ戦]',
+            ),
+          ];
+
+          await tester.pumpWidget(
+            ProviderScope(
+              child: MaterialApp(
+                theme: ThemeData.light().copyWith(extensions: [themeColors]),
+                home: Scaffold(
+                  body: ViewerBunaiksenCategoryContent(
+                    category: '部内戦の部',
+                    groupsMap: {'Aリーグ': sampleMatches},
+                    cardColor: Colors.white,
+                    themeColors: themeColors,
+                    isDark: false,
+                    isExporting: false,
+                    isExportingController: dummyStateController,
+                    tDate: '2026年10月01日',
+                    exportService: const ViewerBunaiksenExportService(),
+                  ),
+                ),
+              ),
+            ),
+          );
+
+          await tester.pumpAndSettle();
+
+          // オーバーフローエラーが一切ないこと
+          expect(tester.takeException(), isNull);
+
+          // 2つのエクスポートボタンが存在すること
+          expect(find.byType(OfficialRecordActionButton), findsNWidgets(2));
+          expect(find.text('PDF印刷'), findsOneWidget);
+          expect(find.text('画像シェア'), findsOneWidget);
+        },
+      );
     });
   });
 }
