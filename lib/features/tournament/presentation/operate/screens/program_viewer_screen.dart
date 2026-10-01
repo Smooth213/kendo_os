@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_app_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
@@ -18,10 +19,12 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
 import '../providers/permission_provider.dart';
 import '../providers/role_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 final viewerProgramListProvider =
     StreamProvider.family<List<ProgramModel>, String>((ref, tournamentId) {
@@ -55,6 +58,9 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
 
   @visibleForTesting
   Map<String, int> get pdfPageCountsForTesting => _pdfPageCounts;
+
+  @visibleForTesting
+  Map<String, int> get pdfCurrentPagesForTesting => _pdfCurrentPages;
 
   final TransformationController _transformationController =
       TransformationController();
@@ -91,6 +97,23 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     _isDrawingMode = widget.initialDrawingMode;
     _pageController = PageController(initialPage: widget.initialIndex);
     _transformationController.addListener(_handleTransformationChanged);
+
+    if (widget.programs.isNotEmpty &&
+        widget.programs.first.tournamentId.isNotEmpty) {
+      ProgramViewStateService.instance.setLastProgramIndex(
+        widget.programs.first.tournamentId,
+        widget.initialIndex,
+      );
+    }
+    for (final p in widget.programs) {
+      final pKey = p.id.isNotEmpty ? p.id : p.fileUrl;
+      final savedPage = ProgramViewStateService.instance.getLastPageNumber(
+        pKey,
+        defaultPage: 1,
+      );
+      _pdfCurrentPages[pKey] = savedPage;
+      _pdfCurrentPages[p.fileUrl] = savedPage;
+    }
   }
 
   @override
@@ -116,6 +139,15 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
         _isZoomed = zoomed;
       });
     }
+  }
+
+  void _handleFirstPage(String itemProgramId, String fileUrl) {
+    AppHaptics.selection();
+    setState(() {
+      _pdfCurrentPages[itemProgramId] = 1;
+      _pdfCurrentPages[fileUrl] = 1;
+    });
+    ProgramViewStateService.instance.setLastPageNumber(itemProgramId, 1);
   }
 
   @override
@@ -223,6 +255,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           onToggleDrawingMode: () => setState(() {
             _isDrawingMode = !_isDrawingMode;
           }),
+          onFirstPagePressed: () =>
+              _handleFirstPage(programId, currentProgram.fileUrl),
         ),
         body: Column(
           children: [
@@ -267,6 +301,13 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 onPageChanged: (index) => setState(() {
                   _currentIndex = index;
                   _isDrawingMode = false;
+                  if (displayPrograms.isNotEmpty &&
+                      displayPrograms.first.tournamentId.isNotEmpty) {
+                    ProgramViewStateService.instance.setLastProgramIndex(
+                      displayPrograms.first.tournamentId,
+                      index,
+                    );
+                  }
                 }),
                 itemBuilder: (context, index) {
                   final program = displayPrograms[index];
@@ -304,10 +345,23 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                     );
                   }
 
+                  final targetInitialPage =
+                      _pdfCurrentPages[itemProgramId] ??
+                      _pdfCurrentPages[program.fileUrl] ??
+                      ProgramViewStateService.instance.getLastPageNumber(
+                        itemProgramId,
+                        defaultPage: 1,
+                      );
+                  final loadedCount =
+                      _pdfPageCounts[program.fileUrl] ?? program.pageCount;
+                  final effectivePageCount = loadedCount >= targetInitialPage
+                      ? loadedCount
+                      : targetInitialPage;
+
                   final Widget childWidget = isFilePdf
                       ? ProgramViewerPdfBody(
                           program: program,
-                          pageCount: _pdfPageCounts[program.fileUrl] ?? 1,
+                          pageCount: effectivePageCount,
                           pdfViewerController: _pdfViewerController,
                           sdkPdfBytesFuture: getCachedPdfBytesViaSdk(
                             program.fileUrl,
@@ -328,14 +382,33 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                               buildCanvas(penWidth: 10.0, pageIndex: pIndex),
                           isDrawingMode: _isDrawingMode,
                           isZoomed: _isZoomed,
-                          initialPage:
-                              (_pdfCurrentPages[program.fileUrl] ?? 1) - 1,
+                          initialPage: targetInitialPage - 1,
                           onPageChanged: (pIndex) {
-                            if (mounted) {
-                              setState(() {
-                                _pdfCurrentPages[program.fileUrl] = pIndex + 1;
-                              });
+                            final newPage = pIndex + 1;
+                            if (newPage == 1 &&
+                                targetInitialPage > 1 &&
+                                (_pdfPageCounts[program.fileUrl] == null ||
+                                    _pdfPageCounts[program.fileUrl]! <= 1)) {
+                              return;
                             }
+                            void updatePages() {
+                              _pdfCurrentPages[itemProgramId] = newPage;
+                              _pdfCurrentPages[program.fileUrl] = newPage;
+                              if (mounted) setState(() {});
+                            }
+
+                            if (WidgetsBinding.instance.schedulerPhase ==
+                                SchedulerPhase.persistentCallbacks) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                updatePages();
+                              });
+                            } else {
+                              updatePages();
+                            }
+                            ProgramViewStateService.instance.setLastPageNumber(
+                              itemProgramId,
+                              newPage,
+                            );
                           },
                         )
                       : ProgramViewerImageBody(

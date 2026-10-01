@@ -94,5 +94,47 @@ void main() {
       await tester.pump();
       expect(noteController.text, '注意事項テスト, ');
     });
+
+    testWidgets('Hint text color is subdued with hintColor in dark mode', (
+      tester,
+    ) async {
+      final darkColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');
+      final emptyCourtCtrl = TextEditingController();
+      final emptyNoteCtrl = TextEditingController();
+
+      addTearDown(() {
+        emptyCourtCtrl.dispose();
+        emptyNoteCtrl.dispose();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchEditCourtAndGroupTab(
+              themeColors: darkColors,
+              courtController: emptyCourtCtrl,
+              noteController: emptyNoteCtrl,
+              isDark: true,
+              textColor: darkColors.textColor,
+              onToggleHeadingPreset: (_) {},
+              onClearCourt: () {},
+            ),
+          ),
+        ),
+      );
+
+      final textFields = tester.widgetList<TextField>(find.byType(TextField));
+      expect(textFields, isNotEmpty);
+      for (final textField in textFields) {
+        expect(
+          textField.decoration?.hintStyle?.color,
+          equals(darkColors.hintColor),
+        );
+        expect(
+          textField.decoration?.hintStyle?.color,
+          isNot(equals(const Color(0xFFFFFFFF))),
+        );
+      }
+    });
   });
 }

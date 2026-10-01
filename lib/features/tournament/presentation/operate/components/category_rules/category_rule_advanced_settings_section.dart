@@ -7,10 +7,10 @@ import 'package:kendo_os/shared/widgets/app_chip.dart';
 class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
   final bool isNormal;
   final String categoryKey;
-  final int ipponLimit;
+  final int? ipponLimit;
   final int hansokuLimit;
   final TextEditingController? keywordsController;
-  final ValueChanged<int> onIpponLimitChanged;
+  final ValueChanged<int>? onIpponLimitChanged;
   final ValueChanged<int> onHansokuLimitChanged;
   final ValueChanged<List<String>> onKeywordsChanged;
 
@@ -18,10 +18,10 @@ class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
     super.key,
     required this.isNormal,
     required this.categoryKey,
-    required this.ipponLimit,
+    this.ipponLimit,
     required this.hansokuLimit,
     this.keywordsController,
-    required this.onIpponLimitChanged,
+    this.onIpponLimitChanged,
     required this.onHansokuLimitChanged,
     required this.onKeywordsChanged,
   });
@@ -47,7 +47,7 @@ class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
                 ),
                 SizedBox(width: AppSpacing.sm),
                 Text(
-                  '詳細設定（得点制限・反則ルール）',
+                  '詳細設定（反則ルール・上位戦設定）',
                   style: TextStyle(
                     fontWeight: AppFontWeight.bold,
                     fontSize: AppFontSize.body,
@@ -77,68 +77,6 @@ class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 勝敗本数制限
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '勝敗本数制限（得点制限）',
-                                style: TextStyle(
-                                  fontWeight: AppFontWeight.bold,
-                                  fontSize: AppFontSize.bodySmall,
-                                ),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                '勝敗に必要な本数（通常は三本勝負＝2本先取）',
-                                style: TextStyle(
-                                  fontSize: AppFontSize.caption,
-                                  color: AppKendoColors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.remove_circle_outline,
-                                size: 20,
-                              ),
-                              onPressed: ipponLimit > 1
-                                  ? () => onIpponLimitChanged(ipponLimit - 1)
-                                  : null,
-                            ),
-                            Text(
-                              ipponLimit == 1
-                                  ? '1本 (1本勝負)'
-                                  : (ipponLimit == 2
-                                        ? '2本 (3本勝負)'
-                                        : '$ipponLimit本'),
-                              style: const TextStyle(
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.body,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.add_circle_outline,
-                                size: 20,
-                              ),
-                              onPressed: ipponLimit < 5
-                                  ? () => onIpponLimitChanged(ipponLimit + 1)
-                                  : null,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 24),
                     // 反則制限
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

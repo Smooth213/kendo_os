@@ -120,6 +120,17 @@ void main() {
     expect(find.text(todayBannerText), findsOneWidget);
 
     // 5. カレンダー内の過去の試合日をタップしてジャンプ
+    // pastDate が前月の場合は前月へページ移動
+    if (pastDate.month != today.month) {
+      final prevMonthFinder = find.descendant(
+        of: find.byType(CalendarDatePicker),
+        matching: find.byIcon(Icons.chevron_left),
+      );
+      expect(prevMonthFinder, findsWidgets);
+      await tester.tap(prevMonthFinder.first);
+      await tester.pumpAndSettle();
+    }
+
     // pastDate の日番号のテキスト（例: pastDate.day）を探す
     // CalendarDatePicker 内の該当日のText
     final dayFinder = find.descendant(

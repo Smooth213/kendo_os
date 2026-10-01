@@ -21,7 +21,7 @@ void main() {
         );
 
         expect(
-          content.contains('void clearUrl(String url)'),
+          content.contains('void clearUrl(String url'),
           isTrue,
           reason: 'ビューワー画面を閉じた際に単一ページPDFバイトを即座に解放するための clearUrl メソッドが必須です。',
         );

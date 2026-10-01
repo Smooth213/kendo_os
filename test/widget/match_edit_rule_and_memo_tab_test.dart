@@ -96,11 +96,12 @@ void main() {
       // Verify Unified Form headers and switch options
       expect(find.text('🏷️ 試合ルール設定からワンタップ選択'), findsOneWidget);
       expect(find.text('⏱️ 試合時間 ＆ 基本形式'), findsOneWidget);
-      expect(find.text('一本勝負形式にする'), findsOneWidget);
+      expect(find.text('勝負形式'), findsOneWidget);
+      expect(find.text('1本勝負'), findsOneWidget);
       expect(find.text('判定の適用'), findsOneWidget);
 
-      // Toggle switches
-      await tester.tap(find.text('一本勝負形式にする'));
+      // Toggle match format
+      await tester.tap(find.text('1本勝負'));
       await tester.pumpAndSettle();
       expect(ipponToggled, isTrue);
 

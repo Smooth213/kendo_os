@@ -122,6 +122,48 @@ def check_main_base_scaffold_resize_disabled():
 
     return True, "🟢 lib/main.dart のベース Scaffold に resizeToAvoidBottomInset: false が設定され、二重リサイズが完全防止されています"
 
+def check_no_web_keyboard_suppression_and_bottom_sheet_insets():
+    """Web/PWAでのキーボード無力化（kIsWeb ? 0.0）の禁止 ＆ 主要入力ボトムシートのキーボード追従Padding検証"""
+    errors = []
+
+    # 1. kIsWeb によるキーボード高さゼロ化（アンチパターン）の検出
+    suppression_pattern = re.compile(r'kIsWeb\s*\?\s*0(\.0)?\s*:\s*.*viewInsets')
+    for root, _, files in os.walk("lib"):
+        for file in files:
+            if not file.endswith(".dart"):
+                continue
+            path = os.path.join(root, file)
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            if suppression_pattern.search(content):
+                errors.append(f"❌ {path} で kIsWeb による viewInsets ゼロ化が検出されました。モバイルWeb/PWAでキーボードの裏に隠れる原因となるため禁止です。")
+
+    # 2. 主要入力ボトムシートでキーボード追従Padding（bottom: keyboardHeight / viewInsets）が適用されているか
+    target_bottom_sheets = [
+        "lib/shared/widgets/room_join_qr_dialog.dart",
+        "lib/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart",
+        "lib/features/tournament/presentation/operate/components/timeline/timeline_edit_comment_dialog.dart",
+        "lib/admin/presentation/components/master_player_edit_bottom_sheet.dart",
+        "lib/admin/presentation/components/master_register_organization_bottom_sheet.dart",
+        "lib/admin/presentation/components/master_edit_organization_bottom_sheet.dart",
+        "lib/admin/presentation/components/master_team_name_management_sheet.dart",
+    ]
+
+    for path in target_bottom_sheets:
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+        has_bottom_inset_padding = bool(
+            re.search(r'bottom:\s*(keyboardHeight|MediaQuery\.(viewInsetsOf|of)\(context\)\.viewInsets\.bottom|MediaQuery\.viewInsetsOf\(context\)\.bottom)', content)
+        )
+        if not has_bottom_inset_padding:
+            errors.append(f"❌ {path} でキーボード追従Padding (bottom: keyboardHeight または viewInsets) が設定されていません。")
+
+    if errors:
+        return False, "\n".join(errors)
+    return True, "🟢 Web/PWAキーボード無力化アンチパターンゼロ件 ＆ 主要入力ボトムシートのキーボード追従Paddingが完全保証されています"
+
 def main():
     print("=" * 72)
     print(" 🥋 【第5条 第4項 ガバナンス監査】入力フォーカス時ビューポート安定性・跳ね上がり防止保証")
@@ -132,6 +174,7 @@ def main():
         ("2. 全入力フィールド scrollPadding ゼロ保証検証", check_all_text_fields_scroll_padding_zero),
         ("3. 主要入力モーダルのボトムシート＆キーボード追従構造検証", check_modal_input_bottom_sheet),
         ("4. 基盤Scaffold二重リサイズ（跳ね上がり）防止設定検証", check_main_base_scaffold_resize_disabled),
+        ("5. Web/PWAキーボード可視性保証＆ボトムシート追従Padding検証", check_no_web_keyboard_suppression_and_bottom_sheet_insets),
     ]
 
     all_passed = True

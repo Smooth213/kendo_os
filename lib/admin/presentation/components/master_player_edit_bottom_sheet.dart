@@ -166,12 +166,14 @@ class _MasterPlayerEditBottomSheetState
     final inputBgColor = themeColors.inputBackground;
     final textColor = themeColors.textColor;
 
-    final keyboardHeight = kIsWeb
-        ? 0.0
-        : MediaQuery.of(context).viewInsets.bottom;
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     final isKeyboardVisible = keyboardHeight > 0;
     final screenHeight = MediaQuery.of(context).size.height;
-    final maxSheetHeight = screenHeight * 0.9;
+    final availableHeight = (screenHeight - keyboardHeight).clamp(
+      0.0,
+      screenHeight,
+    );
+    final maxSheetHeight = availableHeight * 0.9;
 
     final gapLarge = isKeyboardVisible ? 12.0 : 24.0;
     final gapMedium = isKeyboardVisible ? 8.0 : 16.0;
@@ -420,25 +422,27 @@ class _MasterPlayerEditBottomSheetState
             ),
           ],
         ),
-        if (!kIsWeb && isKeyboardVisible) SizedBox(height: keyboardHeight),
       ],
     );
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: maxSheetHeight),
-      decoration: BoxDecoration(
-        color: dialogBgColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+        decoration: BoxDecoration(
+          color: dialogBgColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
+        padding: const EdgeInsets.only(
+          top: AppSpacing.lg,
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          bottom: AppSpacing.xl,
+        ),
+        child: SingleChildScrollView(child: innerForm),
       ),
-      padding: const EdgeInsets.only(
-        top: AppSpacing.lg,
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        bottom: AppSpacing.xl,
-      ),
-      child: SingleChildScrollView(child: innerForm),
     );
   }
 }

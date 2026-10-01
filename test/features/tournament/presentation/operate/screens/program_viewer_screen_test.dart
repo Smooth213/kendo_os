@@ -11,6 +11,7 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
 import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
@@ -142,6 +143,7 @@ void main() {
     setUp(() async {
       ProgramViewerMediaCache.shared.clear();
       ProgramViewerPdfPageCache.shared.clear();
+      ProgramViewStateService.instance.resetForTesting();
 
       mockStrokeRepo = MockStrokeRepository();
       mockLocalStrokeRepo = MockLocalStrokeRepository();
@@ -798,6 +800,63 @@ void main() {
             firestoreId: any(named: 'firestoreId'),
           ),
         ).called(1);
+      },
+    );
+
+    testWidgets(
+      '✅ 14. 複数ページPDFで2ページ目以降のとき「最初のページに戻る」ボタンをタップすると1ページ目に戻り保存値が1に更新されること',
+      (tester) async {
+        addTearDown(tester.view.resetPhysicalSize);
+        tester.view.physicalSize = const Size(1080, 1920);
+
+        final pdfProgram = ProgramModel(
+          id: 'pdf_multi',
+          tournamentId: 't1',
+          title: '大会進行表 (複数ページ)',
+          fileUrl: 'https://example.com/multi.pdf',
+          fileType: 'pdf',
+          pageCount: 5,
+          createdAt: DateTime.now(),
+        );
+
+        when(
+          () => mockProgramRepo.watchPrograms(any()),
+        ).thenAnswer((_) => Stream.value([pdfProgram]));
+
+        // 事前に3ページ目を保存
+        ProgramViewStateService.instance.setLastPageNumber('pdf_multi', 3);
+
+        await tester.pumpWidget(createViewerWidget([pdfProgram]));
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // 3ページ目が表示されており、「最初のページに戻る」ボタンが存在して活性化していること
+        final firstPageBtnFinder = find.widgetWithIcon(
+          IconButton,
+          Icons.first_page,
+        );
+        expect(firstPageBtnFinder, findsOneWidget);
+
+        final iconButtonBefore = tester.widget<IconButton>(firstPageBtnFinder);
+        expect(iconButtonBefore.onPressed, isNotNull);
+
+        // 「最初のページに戻る」ボタンをタップ
+        await tester.tap(firstPageBtnFinder);
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // 1ページ目に戻り、保存値も1に更新されること
+        expect(
+          ProgramViewStateService.instance.getLastPageNumber('pdf_multi'),
+          1,
+        );
+
+        // 1ページ目になったためボタンが非活性化（onPressed == null）していること
+        final iconButtonAfter = tester.widget<IconButton>(firstPageBtnFinder);
+        expect(iconButtonAfter.onPressed, isNull);
+
+        await tester.pump(const Duration(seconds: 1)); // タイマー消化
+        await tester.pump(
+          const Duration(milliseconds: 600),
+        ); // SfPdfViewer内部タイマー完全消化
       },
     );
   });

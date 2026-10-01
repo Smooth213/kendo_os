@@ -245,9 +245,16 @@ void main() {
         await tester.tap(find.text('⚔️ 錬成 (2分・1本)'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        // 4. 下部の入力フォーム（試合時間 2分・一本勝負 Switch ON）がリアルタイム連動して更新されていることを直接アサート
+        // 4. 下部の入力フォーム（試合時間 2分・勝負形式 1本勝負 選択）がリアルタイム連動して更新されていることを直接アサート
         expect(find.text('2分'), findsWidgets);
-        expect(find.text('一本勝負形式にする'), findsOneWidget);
+        expect(find.text('勝負形式'), findsOneWidget);
+        expect(find.text('1本勝負'), findsOneWidget);
+        expect(
+          tester
+              .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '1本勝負'))
+              .selected,
+          isTrue,
+        );
         expect(tester.takeException(), isNull);
       },
     );

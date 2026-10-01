@@ -183,11 +183,13 @@ class ProgramViewerPdfPageCache {
     return _singlePageBytesCache[url]?.length ?? 0;
   }
 
-  /// 特定URLのPDFキャッシュを解放し、次回表示時にページ情報を再解析させる
-  void clearUrl(String url) {
+  /// 特定URLのPDF単一ページバイナリキャッシュを解放（keepDocumentInfo: false の場合はページ情報も破棄）
+  void clearUrl(String url, {bool keepDocumentInfo = true}) {
     _singlePageBytesCache.remove(url);
-    _pageCanvasSizeCache.remove(url);
-    _pageCountCache.remove(url);
+    if (!keepDocumentInfo) {
+      _pageCanvasSizeCache.remove(url);
+      _pageCountCache.remove(url);
+    }
   }
 
   /// 全キャッシュのクリア（メモリ解放用）

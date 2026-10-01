@@ -24,7 +24,7 @@ void main() {
         ),
       );
 
-      expect(find.text('詳細設定（得点制限・反則ルール）'), findsOneWidget);
+      expect(find.text('詳細設定（反則ルール・上位戦設定）'), findsOneWidget);
     },
   );
 

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -113,133 +112,138 @@ class _MasterRegisterOrganizationSheetState
         : context.appColors.cardBackground;
     final textColor = context.appColors.textColor;
 
-    final keyboardHeight = kIsWeb
-        ? 0.0
-        : MediaQuery.of(context).viewInsets.bottom;
-    final isKeyboardVisible = keyboardHeight > 0;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final maxSheetHeight = screenHeight * 0.9;
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final availableHeight = (screenHeight - keyboardHeight).clamp(
+      0.0,
+      screenHeight,
+    );
+    final maxSheetHeight = availableHeight * 0.9;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: maxSheetHeight),
-      decoration: BoxDecoration(
-        color: dialogBgColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+        decoration: BoxDecoration(
+          color: dialogBgColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.only(
-        top: AppSpacing.lg,
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        bottom: AppSpacing.xl,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
+        padding: const EdgeInsets.only(
+          top: AppSpacing.lg,
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          bottom: AppSpacing.xl,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFFFFFFFF)
+                        : const Color(0x33000000),
+                    borderRadius: AppRadius.medium,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                '道場名・学校名の登録',
+                style: TextStyle(
+                  fontWeight: AppFontWeight.bold,
                   color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0x33000000),
-                  borderRadius: AppRadius.medium,
+                      ? AppKendoColors.purpleAccent
+                      : const Color(0xFF9C27B0),
+                  fontSize: AppFontSize.header,
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              '道場名・学校名の登録',
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                color: isDark
-                    ? AppKendoColors.purpleAccent
-                    : const Color(0xFF9C27B0),
-                fontSize: AppFontSize.header,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const Text(
-              '選手を追加する前に、道場名または学校名を入力してください。',
-              style: TextStyle(
-                fontSize: AppFontSize.bodySmall,
-                color: AppKendoColors.grey,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppTextField(
-              controller: controller,
-              autofocus: false,
-              style: TextStyle(color: textColor),
-              decoration: InputDecoration(
-                labelText: '道場名・学校名',
-                prefixIcon: Icon(
-                  Icons.account_balance,
-                  color: isDark ? const Color(0xFFFFFFFF) : AppKendoColors.grey,
+              const SizedBox(height: AppSpacing.lg),
+              const Text(
+                '選手を追加する前に、道場名または学校名を入力してください。',
+                style: TextStyle(
+                  fontSize: AppFontSize.bodySmall,
+                  color: AppKendoColors.grey,
                 ),
-                border: OutlineInputBorder(borderRadius: AppRadius.medium),
-                filled: true,
-                fillColor: inputBgColor,
               ),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'キャンセル',
-                    style: TextStyle(
-                      color: isDark
-                          ? context.appColors.subTextColor
-                          : AppKendoColors.grey,
-                      fontWeight: AppFontWeight.bold,
+              const SizedBox(height: AppSpacing.xl),
+              AppTextField(
+                controller: controller,
+                autofocus: false,
+                style: TextStyle(color: textColor),
+                decoration: InputDecoration(
+                  labelText: '道場名・学校名',
+                  prefixIcon: Icon(
+                    Icons.account_balance,
+                    color: isDark
+                        ? const Color(0xFFFFFFFF)
+                        : AppKendoColors.grey,
+                  ),
+                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  filled: true,
+                  fillColor: inputBgColor,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'キャンセル',
+                      style: TextStyle(
+                        color: isDark
+                            ? context.appColors.subTextColor
+                            : AppKendoColors.grey,
+                        fontWeight: AppFontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
+                  const SizedBox(width: AppSpacing.md),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.medium,
+                      ),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xl,
+                        vertical: AppSpacing.lg,
+                      ),
                     ),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xl,
-                      vertical: AppSpacing.lg,
-                    ),
+                    icon: const Icon(Icons.check),
+                    label: const Text('登録'),
+                    onPressed: () async {
+                      final newName = TextSanitizer.clean(controller.text);
+                      if (newName.isEmpty) return;
+
+                      final dojoId = widget.ref.read(currentDojoIdProvider);
+                      final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+                      final firestore = widget.ref.read(firestoreProvider);
+
+                      await firestore
+                          .collection('organizations')
+                          .doc(safeDojoId)
+                          .set({'name': newName}, SetOptions(merge: true));
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
                   ),
-                  icon: const Icon(Icons.check),
-                  label: const Text('登録'),
-                  onPressed: () async {
-                    final newName = TextSanitizer.clean(controller.text);
-                    if (newName.isEmpty) return;
-
-                    final dojoId = widget.ref.read(currentDojoIdProvider);
-                    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
-                    final firestore = widget.ref.read(firestoreProvider);
-
-                    await firestore
-                        .collection('organizations')
-                        .doc(safeDojoId)
-                        .set({'name': newName}, SetOptions(merge: true));
-
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
-                ),
-              ],
-            ),
-            if (!kIsWeb && isKeyboardVisible) SizedBox(height: keyboardHeight),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

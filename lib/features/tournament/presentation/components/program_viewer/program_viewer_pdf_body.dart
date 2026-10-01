@@ -83,10 +83,19 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
           final totalCount = ProgramViewerPdfPageCache.shared.parseDocumentInfo(
             widget.program.fileUrl,
             bytes,
-            force: true,
           );
           widget.onPageCountLoaded?.call(totalCount);
           setState(() {});
+
+          // 🎯 前回の閲覧ページ位置へ確実に同期
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _pageController.hasClients && totalCount > 0) {
+              final targetPage = widget.initialPage.clamp(0, totalCount - 1);
+              if (_pageController.page?.round() != targetPage) {
+                _pageController.jumpToPage(targetPage);
+              }
+            }
+          });
         })
         .catchError((dynamic error) {
           debugPrint(
@@ -113,8 +122,11 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
   @override
   void dispose() {
     _pageController.dispose();
-    // 🔋 画面破棄時にこのドキュメントの単一ページキャッシュを解放し、メモリリーク・OOMを防ぐ
-    ProgramViewerPdfPageCache.shared.clearUrl(widget.program.fileUrl);
+    // 🔋 画面破棄時に単一ページPDFの重いバイナリのみ解放（ページ数・向きなどの軽量メタデータは保持して再オープンを0ms化）
+    ProgramViewerPdfPageCache.shared.clearUrl(
+      widget.program.fileUrl,
+      keepDocumentInfo: true,
+    );
     super.dispose();
   }
 
@@ -125,7 +137,13 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
           widget.program.fileUrl,
         ) ??
         widget.pageCount;
-    final int safePageCount = cachedCount > 0 ? cachedCount : 1;
+    // 🎯 復元防護: initialPage 指定時は、ページ情報取得完了前でも PageView が index 0 に巻き戻されないよう最低 initialPage + 1 を保証
+    final int minRequiredCount = widget.initialPage + 1;
+    final int safePageCount = cachedCount >= minRequiredCount
+        ? cachedCount
+        : (minRequiredCount > 1
+              ? minRequiredCount
+              : (cachedCount > 0 ? cachedCount : 1));
 
     return PageView.builder(
       controller: _pageController,

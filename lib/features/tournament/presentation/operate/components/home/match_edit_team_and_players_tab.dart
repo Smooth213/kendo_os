@@ -246,7 +246,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
+              color: isDark ? const Color(0xFF8E8E93) : const Color(0x8A000000),
               fontSize: AppFontSize.caption,
             ),
             filled: true,

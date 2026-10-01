@@ -20,6 +20,7 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../program_viewer/program_viewer_media_cache.dart';
 import '../program_viewer/program_viewer_pdf_body.dart';
 import 'program_stroke_layer.dart';
+import 'program_view_state_service.dart';
 
 /// 🥋 大会プログラム 2画面クイック確認シート（ボトムシート＆サイドパネル両対応）
 class ProgramBottomSheet extends ConsumerStatefulWidget {
@@ -64,13 +65,19 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
   late PdfViewerController _pdfController;
   int _pageNumber = 1;
   int _pageCount = 0;
+  bool _hasRestoredInitialPage = false;
+  bool _isInitialPageRestorePending = false;
   String? _cachedPdfUrl;
   Future<Uint8List>? _cachedPdfBytesFuture;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+    final savedIndex = ProgramViewStateService.instance.getLastProgramIndex(
+      widget.tournamentId,
+      defaultIndex: widget.initialIndex,
+    );
+    _currentIndex = savedIndex;
     _pdfController = PdfViewerController();
   }
 
@@ -96,12 +103,22 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
   }) {
     AppHaptics.selection();
     FloatingDockSheetManager.close(immediate: true);
+    if (programs.isNotEmpty && _currentIndex < programs.length) {
+      final cur = programs[_currentIndex];
+      final itemKey = cur.id.isNotEmpty ? cur.id : cur.fileUrl;
+      ProgramViewStateService.instance.setLastProgramIndex(
+        widget.tournamentId,
+        _currentIndex,
+      );
+      ProgramViewStateService.instance.setLastPageNumber(itemKey, _pageNumber);
+    }
     appRouter.push(
       widget.isViewerMode ? '/program-viewer?role=viewer' : '/program-viewer',
       extra: {
         'programs': programs,
         'index': _currentIndex,
         'initialDrawingMode': isDrawingMode,
+        'initialPage': _pageNumber,
       },
     );
   }
@@ -142,8 +159,19 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
                       themeColors: themeColors,
                     );
                   }
-                  if (_currentIndex >= programs.length) {
+                  if (_currentIndex >= programs.length || _currentIndex < 0) {
                     _currentIndex = 0;
+                  }
+                  if (!_hasRestoredInitialPage) {
+                    _hasRestoredInitialPage = true;
+                    final activeProg = programs[_currentIndex];
+                    final itemKey = activeProg.id.isNotEmpty
+                        ? activeProg.id
+                        : activeProg.fileUrl;
+                    final savedPage = ProgramViewStateService.instance
+                        .getLastPageNumber(itemKey, defaultPage: 1);
+                    _pageNumber = savedPage;
+                    _isInitialPageRestorePending = savedPage > 1;
                   }
                   return Column(
                     children: [
@@ -239,7 +267,23 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
                     : themeColors.textColor,
               ),
             ),
-            onSelected: (_) => setState(() => _currentIndex = idx),
+            onSelected: (_) {
+              final newProg = programs[idx];
+              final itemKey = newProg.id.isNotEmpty
+                  ? newProg.id
+                  : newProg.fileUrl;
+              final savedPage = ProgramViewStateService.instance
+                  .getLastPageNumber(itemKey, defaultPage: 1);
+              setState(() {
+                _currentIndex = idx;
+                _pageNumber = savedPage;
+                _isInitialPageRestorePending = savedPage > 1;
+              });
+              ProgramViewStateService.instance.setLastProgramIndex(
+                widget.tournamentId,
+                idx,
+              );
+            },
           );
         },
       ),
@@ -255,6 +299,12 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
     final itemProgramId = program.id.isNotEmpty ? program.id : program.fileUrl;
 
     if (program.fileType == 'pdf') {
+      final effectivePageCount = _pageCount > 0
+          ? _pageCount
+          : (program.pageCount >= _pageNumber
+                ? program.pageCount
+                : _pageNumber);
+
       return Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -266,12 +316,16 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
               child: Center(
                 child: ProgramViewerPdfBody(
                   program: program,
-                  pageCount: _pageCount > 0 ? _pageCount : program.pageCount,
+                  pageCount: effectivePageCount,
                   pdfViewerController: _pdfController,
                   sdkPdfBytesFuture: _getPdfBytes(program.fileUrl),
                   onPageCountLoaded: (count) {
-                    if (mounted && _pageCount != count) {
-                      setState(() => _pageCount = count);
+                    if (_pageCount != count) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted && _pageCount != count) {
+                          setState(() => _pageCount = count);
+                        }
+                      });
                     }
                   },
                   buildPageOverlay: (pIndex) => ProgramStrokeLayer(
@@ -281,9 +335,23 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
                   ),
                   initialPage: _pageNumber - 1,
                   onPageChanged: (pIndex) {
-                    if (mounted) {
-                      setState(() => _pageNumber = pIndex + 1);
+                    final newPage = pIndex + 1;
+                    if (_isInitialPageRestorePending &&
+                        newPage == 1 &&
+                        _pageNumber > 1) {
+                      // 🛡️ 初期レイアウト時の一時的な0発火による保存値破壊を防止
+                      return;
                     }
+                    _isInitialPageRestorePending = false;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _pageNumber != newPage) {
+                        setState(() => _pageNumber = newPage);
+                      }
+                    });
+                    ProgramViewStateService.instance.setLastPageNumber(
+                      itemProgramId,
+                      newPage,
+                    );
                   },
                 ),
               ),
@@ -294,12 +362,16 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
             bottom: AppSpacing.sm,
             child: ProgramSheetPaginationBar(
               currentPage: _pageNumber,
-              pageCount: _pageCount,
+              pageCount: effectivePageCount,
               themeColors: themeColors,
               isDark: isDark,
               onPageChanged: (newPage) {
-                if (mounted && newPage >= 1 && newPage <= _pageCount) {
+                if (mounted && newPage >= 1 && newPage <= effectivePageCount) {
                   setState(() => _pageNumber = newPage);
+                  ProgramViewStateService.instance.setLastPageNumber(
+                    itemProgramId,
+                    newPage,
+                  );
                 }
               },
             ),

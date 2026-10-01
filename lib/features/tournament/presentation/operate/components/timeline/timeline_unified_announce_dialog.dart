@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_target_chip.dart';
@@ -105,186 +104,185 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
         ? const Color(0xFF1C1C1E)
         : context.appColors.cardBackground;
 
-    final keyboardHeight = kIsWeb
-        ? 0.0
-        : MediaQuery.of(context).viewInsets.bottom;
-    final isKeyboardVisible =
-        _titleFocusNode.hasFocus ||
-        _bodyFocusNode.hasFocus ||
-        keyboardHeight > 0 ||
-        MediaQuery.viewInsetsOf(context).bottom > 50;
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
 
-    final screenHeight = MediaQuery.of(context).size.height;
-    final maxSheetHeight = screenHeight * 0.90;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final availableHeight = (screenHeight - keyboardHeight).clamp(
+      0.0,
+      screenHeight,
+    );
+    final maxSheetHeight = availableHeight * 0.90;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: maxSheetHeight),
-      decoration: BoxDecoration(
-        color: cardBgColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+        decoration: BoxDecoration(
+          color: cardBgColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.only(
-        top: AppSpacing.md,
-        left: AppSpacing.lg,
-        right: AppSpacing.lg,
-        bottom: AppSpacing.lg,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ドラッグハンドルバー
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
-                      : const Color(0x33000000),
-                  borderRadius: AppRadius.medium,
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            // ヘッダー行
-            Row(
-              children: [
-                const Icon(Icons.add_alert, color: Color(0xFFFF69B4)),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    '公式アナウンス・コメントの一斉発信',
-                    style: TextStyle(
-                      fontSize: AppFontSize.subhead,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
-                    ),
+        padding: const EdgeInsets.only(
+          top: AppSpacing.md,
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          bottom: AppSpacing.lg,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ドラッグハンドルバー
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
+                        : const Color(0x33000000),
+                    borderRadius: AppRadius.medium,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // タイトル入力欄
-            AppTextField(
-              controller: titleController,
-              focusNode: _titleFocusNode,
-              scrollPadding: EdgeInsets.zero,
-              style: TextStyle(color: context.appColors.textColor),
-              decoration: const InputDecoration(
-                labelText: 'タイトル（例：【緊急】会場変更）',
-                hintText: '空欄の場合は自動で見出しになります',
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
 
-            // 本文入力欄
-            AppTextField(
-              controller: bodyController,
-              focusNode: _bodyFocusNode,
-              scrollPadding: EdgeInsets.zero,
-              maxLines: 3,
-              style: TextStyle(color: context.appColors.textColor),
-              decoration: const InputDecoration(
-                labelText: 'アナウンス本文内容',
-                hintText: '例：3会場へ移動になりました。選手は速やかに移動してください。',
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // 通知範囲選択チップ
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF242426)
-                    : const Color(0xFFF2F2F7),
-                borderRadius: AppRadius.medium,
-              ),
-              child: Row(
+              // ヘッダー行
+              Row(
                 children: [
-                  TimelineTargetChip(
-                    chipKey: const Key('timeline_target_all_chip'),
-                    label: '全員に通知',
-                    icon: Icons.campaign,
-                    activeColor: const Color(0xFFFF69B4),
-                    isSelected: selectedTarget == 'all',
-                    isDark: isDark,
-                    onTap: () => setState(() => selectedTarget = 'all'),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  TimelineTargetChip(
-                    chipKey: const Key('timeline_target_staff_chip'),
-                    label: 'スタッフ限定',
-                    icon: Icons.lock_outline,
-                    activeColor: AppKendoColors.deepOrange,
-                    isSelected: selectedTarget == 'staff',
-                    isDark: isDark,
-                    onTap: () => setState(() => selectedTarget = 'staff'),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  TimelineTargetChip(
-                    chipKey: const Key('timeline_target_none_chip'),
-                    label: '通知なし',
-                    icon: Icons.notifications_off_outlined,
-                    activeColor: AppKendoColors.blue,
-                    isSelected: selectedTarget == 'none',
-                    isDark: isDark,
-                    onTap: () => setState(() => selectedTarget = 'none'),
+                  const Icon(Icons.add_alert, color: Color(0xFFFF69B4)),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      '公式アナウンス・コメントの一斉発信',
+                      style: TextStyle(
+                        fontSize: AppFontSize.subhead,
+                        fontWeight: AppFontWeight.bold,
+                        color: context.appColors.textColor,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
 
-            // アクションボタン（キャンセル / 保存ボタン）
-            Wrap(
-              alignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.xs,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'キャンセル',
-                    style: TextStyle(color: AppKendoColors.grey),
-                  ),
+              // タイトル入力欄
+              AppTextField(
+                controller: titleController,
+                focusNode: _titleFocusNode,
+                scrollPadding: EdgeInsets.zero,
+                style: TextStyle(color: context.appColors.textColor),
+                decoration: const InputDecoration(
+                  labelText: 'タイトル（例：【緊急】会場変更）',
+                  hintText: '空欄の場合は自動で見出しになります',
                 ),
-                ElevatedButton.icon(
-                  key: const Key('timeline_submit_announce_button'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: themeColors.primaryAccent,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.small,
-                    ),
-                  ),
-                  onPressed: _onSubmit,
-                  icon: Icon(
-                    selectedTarget == 'none'
-                        ? Icons.chat_bubble_outline
-                        : Icons.campaign,
-                    size: 18,
-                  ),
-                  label: Text(
-                    selectedTarget == 'none' ? 'コメントを保存' : '一斉発信して保存',
-                    style: const TextStyle(fontWeight: AppFontWeight.bold),
-                  ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // 本文入力欄
+              AppTextField(
+                controller: bodyController,
+                focusNode: _bodyFocusNode,
+                scrollPadding: EdgeInsets.zero,
+                maxLines: 3,
+                style: TextStyle(color: context.appColors.textColor),
+                decoration: const InputDecoration(
+                  labelText: 'アナウンス本文内容',
+                  hintText: '例：3会場へ移動になりました。選手は速やかに移動してください。',
                 ),
-              ],
-            ),
-            if (!kIsWeb && isKeyboardVisible) SizedBox(height: keyboardHeight),
-          ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // 通知範囲選択チップ
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF242426)
+                      : const Color(0xFFF2F2F7),
+                  borderRadius: AppRadius.medium,
+                ),
+                child: Row(
+                  children: [
+                    TimelineTargetChip(
+                      chipKey: const Key('timeline_target_all_chip'),
+                      label: '全員に通知',
+                      icon: Icons.campaign,
+                      activeColor: const Color(0xFFFF69B4),
+                      isSelected: selectedTarget == 'all',
+                      isDark: isDark,
+                      onTap: () => setState(() => selectedTarget = 'all'),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    TimelineTargetChip(
+                      chipKey: const Key('timeline_target_staff_chip'),
+                      label: 'スタッフ限定',
+                      icon: Icons.lock_outline,
+                      activeColor: AppKendoColors.deepOrange,
+                      isSelected: selectedTarget == 'staff',
+                      isDark: isDark,
+                      onTap: () => setState(() => selectedTarget = 'staff'),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    TimelineTargetChip(
+                      chipKey: const Key('timeline_target_none_chip'),
+                      label: '通知なし',
+                      icon: Icons.notifications_off_outlined,
+                      activeColor: AppKendoColors.blue,
+                      isSelected: selectedTarget == 'none',
+                      isDark: isDark,
+                      onTap: () => setState(() => selectedTarget = 'none'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // アクションボタン（キャンセル / 保存ボタン）
+              Wrap(
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'キャンセル',
+                      style: TextStyle(color: AppKendoColors.grey),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    key: const Key('timeline_submit_announce_button'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: themeColors.primaryAccent,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.small,
+                      ),
+                    ),
+                    onPressed: _onSubmit,
+                    icon: Icon(
+                      selectedTarget == 'none'
+                          ? Icons.chat_bubble_outline
+                          : Icons.campaign,
+                      size: 18,
+                    ),
+                    label: Text(
+                      selectedTarget == 'none' ? 'コメントを保存' : '一斉発信して保存',
+                      style: const TextStyle(fontWeight: AppFontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

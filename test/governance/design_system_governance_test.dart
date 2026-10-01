@@ -1319,6 +1319,43 @@ void main() {
         );
       },
     );
+
+    test(
+      '39. [全画面ヒントテキスト視認性] hintStyle における不透明純白(0xFFFFFFFF/white)および純黒(0xFF000000/black)指定の完全防止',
+      () {
+        final violations = <String>[];
+        final whiteRegex = RegExp(
+          r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFFFFFFFF|Colors\.white\b)',
+        );
+        final blackRegex = RegExp(
+          r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFF000000|Colors\.black\b)',
+        );
+
+        for (final file in dartFiles) {
+          final content = file.readAsStringSync();
+          if (whiteRegex.hasMatch(content)) {
+            violations.add(
+              '${file.path}: hintStyle に不透明純白 (0xFFFFFFFF / Colors.white) が指定されています',
+            );
+          }
+          if (blackRegex.hasMatch(content)) {
+            violations.add(
+              '${file.path}: hintStyle に不透明純黒 (0xFF000000 / Colors.black) が指定されています',
+            );
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'ヒントテキストの文字色に不透明な白または黒が直書きされているため、'
+              'ライト・ダークモードでの視認性崩壊（同化・白飛び・黒潰れ）が発生します。\n'
+              'themeColors.hintColor または適正なグレー系トークンを使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }
 

@@ -255,9 +255,7 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
           style: TextStyle(color: textColor, fontSize: AppFontSize.body),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
-            ),
+            hintStyle: TextStyle(color: themeColors.hintColor),
             filled: true,
             fillColor: isDark
                 ? const Color(0xFF1C1C1E)

@@ -27,6 +27,7 @@ import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.d
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
 import 'package:kendo_os/features/auth/application/user_data_cloud_sync_manager.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
 
 class AppStartup {
   static Future<ProviderContainer> initialize() async {
@@ -54,6 +55,9 @@ class AppStartup {
 
     // Firestore 現場継続設定（ネイティブキャッシュ管理）
     await _configureFirestore(prefs);
+
+    // 📖 プログラム閲覧状態（選択中プログラムおよびPDFページ位置）の端末永続化サービス初期化
+    await ProgramViewStateService.instance.init(prefs: prefs);
 
     final container = ProviderContainer(
       overrides: [

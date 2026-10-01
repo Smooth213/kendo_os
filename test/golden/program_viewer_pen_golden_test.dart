@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_stroke_layer.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
@@ -149,6 +150,7 @@ void main() {
 
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    ProgramViewStateService.instance.resetForTesting();
 
     HttpOverrides.global = _MockHttpOverrides(mixedPdfBytes);
     ProgramViewerPdfPageCache.shared.clear();
@@ -361,6 +363,7 @@ void main() {
     testWidgets('3. 【マルチデバイス Golden】iPhone・iPad・デスクトップ全端末で用紙とペンの同期構造が不変であること', (
       tester,
     ) async {
+      ProgramViewStateService.instance.resetForTesting();
       final testSizes = [
         const Size(390, 844), // iPhone
         const Size(820, 1180), // iPad

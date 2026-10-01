@@ -214,7 +214,8 @@ void main() {
       expect(find.text('🏷️ 試合ルール設定からワンタップ選択'), findsOneWidget);
       expect(find.text('⏱️ 試合時間 ＆ 基本形式'), findsOneWidget);
       expect(find.text('通し時間（空回し）にする'), findsOneWidget);
-      expect(find.text('一本勝負形式にする'), findsOneWidget);
+      expect(find.text('勝負形式'), findsOneWidget);
+      expect(find.text('1本勝負'), findsOneWidget);
       expect(find.text('🔄 延長戦ルール'), findsOneWidget);
       expect(find.text('⚖️ 判定（ハンテイ）ルール'), findsOneWidget);
       expect(find.text('🥋 団体戦・代表戦ルール'), findsOneWidget);

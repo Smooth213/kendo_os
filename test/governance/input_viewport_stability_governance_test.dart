@@ -144,6 +144,71 @@ void main() {
       },
     );
 
+    test(
+      '5. [Web/PWAキーボード可視性保証] kIsWeb による viewInsets ゼロ化アンチパターンの混入が 0 件であること',
+      () {
+        final libDir = Directory('lib');
+        final dartFiles = libDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'));
+
+        final pattern = RegExp(r'kIsWeb\s*\?\s*0(\.0)?\s*:\s*.*viewInsets');
+        final violations = <String>[];
+
+        for (final file in dartFiles) {
+          final content = file.readAsStringSync();
+          if (pattern.hasMatch(content)) {
+            violations.add(file.path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'kIsWeb による viewInsets ゼロ化アンチパターンが検出されました。'
+              'モバイルWeb/PWAでキーボード背後に入力欄が隠れてしまうため禁止です:\n${violations.join('\n')}',
+        );
+      },
+    );
+
+    test(
+      '6. [主要入力ボトムシート] キーボード出現時にシート全体を押し上げる Padding (bottom: keyboardHeight / viewInsets) が適用されていること',
+      () {
+        final targetBottomSheets = [
+          'lib/shared/widgets/room_join_qr_dialog.dart',
+          'lib/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart',
+          'lib/features/tournament/presentation/operate/components/timeline/timeline_edit_comment_dialog.dart',
+          'lib/admin/presentation/components/master_player_edit_bottom_sheet.dart',
+          'lib/admin/presentation/components/master_register_organization_bottom_sheet.dart',
+          'lib/admin/presentation/components/master_edit_organization_bottom_sheet.dart',
+          'lib/admin/presentation/components/master_team_name_management_sheet.dart',
+        ];
+
+        final violations = <String>[];
+        for (final path in targetBottomSheets) {
+          final file = File(path);
+          expect(file.existsSync(), isTrue, reason: '$path が存在すること');
+          final content = file.readAsStringSync();
+          final hasBottomInsetPadding = RegExp(
+            r'bottom:\s*(keyboardHeight|MediaQuery\.(viewInsetsOf|of)\(context\)\.viewInsets\.bottom|MediaQuery\.viewInsetsOf\(context\)\.bottom)',
+          ).hasMatch(content);
+
+          if (!hasBottomInsetPadding) {
+            violations.add(path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '以下の入力ボトムシートで、キーボード出現時にシートを持ち上げる Padding (bottom: keyboardHeight または viewInsets) が設定されていません:\n${violations.join('\n')}',
+        );
+      },
+    );
+
     // -------------------------------------------------------------------------
     // 2. ウィジェット・キーボード出現時跳ね上がり・破綻防止テスト
     // -------------------------------------------------------------------------

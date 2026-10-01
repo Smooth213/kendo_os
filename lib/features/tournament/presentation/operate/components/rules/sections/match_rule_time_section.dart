@@ -254,98 +254,43 @@ class MatchRuleTimeSection extends StatelessWidget {
           ),
           const Divider(height: AppSpacing.xl),
 
-          // 勝負形式（一本勝負）
-          InkWell(
-            onTap: () {
-              final nextVal = !isIpponShobu;
-              onIpponShobuChanged(nextVal);
-              if (nextVal && onIpponLimitChanged != null) {
-                onIpponLimitChanged!(1);
-              } else if (!nextVal && onIpponLimitChanged != null) {
-                onIpponLimitChanged!(2);
-              }
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '一本勝負形式にする',
-                        style: TextStyle(fontSize: AppFontSize.body),
-                      ),
-                      Text(
-                        isIpponShobu ? '先に1本取った選手が勝者となります' : '通常の3本勝負（2本先取）です',
-                        style: TextStyle(
-                          fontSize: AppFontSize.nano,
-                          color: context.appColors.subTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AppSwitch(
-                  value: isIpponShobu,
-                  activeColor: primaryAccent,
-                  onChanged: (v) {
-                    onIpponShobuChanged(v);
-                    if (v && onIpponLimitChanged != null) {
-                      onIpponLimitChanged!(1);
-                    } else if (!v && onIpponLimitChanged != null) {
-                      onIpponLimitChanged!(2);
-                    }
-                  },
-                ),
-              ],
+          // 勝負形式 (3本勝負 / 1本勝負)
+          Text(
+            '勝負形式',
+            style: TextStyle(
+              fontSize: AppFontSize.caption,
+              color: context.appColors.subTextColor,
+              fontWeight: AppFontWeight.bold,
             ),
           ),
-          const Divider(height: AppSpacing.xl),
-
-          // 勝敗本数上限（得点制限）
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const SizedBox(height: AppSpacing.xs),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '勝敗本数制限（得点制限）',
-                      style: TextStyle(fontSize: AppFontSize.body),
-                    ),
-                    Text(
-                      ipponLimit == 1
-                          ? '1本先取で勝利（一本勝負）'
-                          : (ipponLimit == 3 ? '3本先取で勝利' : '2本先取で勝利（通常）'),
-                      style: TextStyle(
-                        fontSize: AppFontSize.nano,
-                        color: context.appColors.subTextColor,
-                      ),
-                    ),
-                  ],
-                ),
+              AppChoiceChip(
+                selected: !isIpponShobu,
+                label: const Text('3本勝負（2本先取）'),
+                onSelected: (selected) {
+                  if (selected) {
+                    onIpponShobuChanged(false);
+                    if (onIpponLimitChanged != null) {
+                      onIpponLimitChanged!(2);
+                    }
+                  }
+                },
               ),
-              Wrap(
-                spacing: AppSpacing.xxs,
-                children: [
-                  for (final count in [1, 2, 3])
-                    AppChoiceChip(
-                      selected: ipponLimit == count,
-                      label: Text('$count本'),
-                      onSelected: (s) {
-                        if (s && onIpponLimitChanged != null) {
-                          onIpponLimitChanged!(count);
-                          if (count == 1) {
-                            onIpponShobuChanged(true);
-                          } else {
-                            onIpponShobuChanged(false);
-                          }
-                        }
-                      },
-                    ),
-                ],
+              AppChoiceChip(
+                selected: isIpponShobu,
+                label: const Text('1本勝負'),
+                onSelected: (selected) {
+                  if (selected) {
+                    onIpponShobuChanged(true);
+                    if (onIpponLimitChanged != null) {
+                      onIpponLimitChanged!(1);
+                    }
+                  }
+                },
               ),
             ],
           ),

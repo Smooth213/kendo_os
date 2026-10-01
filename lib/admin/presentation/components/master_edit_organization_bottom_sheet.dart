@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -120,118 +119,121 @@ class _MasterEditOrganizationBottomSheetState
         ? AppKendoColors.purpleAccent
         : context.appColors.primaryAccent;
 
-    final keyboardHeight = kIsWeb
-        ? 0.0
-        : MediaQuery.of(context).viewInsets.bottom;
-    final isKeyboardVisible = keyboardHeight > 0;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final maxSheetHeight = screenHeight * 0.9;
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final availableHeight = (screenHeight - keyboardHeight).clamp(
+      0.0,
+      screenHeight,
+    );
+    final maxSheetHeight = availableHeight * 0.9;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: maxSheetHeight),
-      decoration: BoxDecoration(
-        color: context.appColors.cardBackground,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xlargeValue),
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: maxSheetHeight),
+        decoration: BoxDecoration(
+          color: context.appColors.cardBackground,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xlargeValue),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.only(
-        top: AppSpacing.lg,
-        left: AppSpacing.xl,
-        right: AppSpacing.xl,
-        bottom: AppSpacing.xl,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // つまみバー
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: const Color(0x33000000),
-                  borderRadius: AppRadius.medium,
+        padding: const EdgeInsets.only(
+          top: AppSpacing.lg,
+          left: AppSpacing.xl,
+          right: AppSpacing.xl,
+          bottom: AppSpacing.xl,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // つまみバー
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0x33000000),
+                    borderRadius: AppRadius.medium,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
 
-            Text(
-              '所属名の変更',
-              style: TextStyle(
-                fontWeight: AppFontWeight.bold,
-                color: primaryColor,
-                fontSize: AppFontSize.header,
+              Text(
+                '所属名の変更',
+                style: TextStyle(
+                  fontWeight: AppFontWeight.bold,
+                  color: primaryColor,
+                  fontSize: AppFontSize.header,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const Text(
-              '登録されている全選手の所属名を一括で書き換えます。',
-              style: TextStyle(
-                fontSize: AppFontSize.bodySmall,
-                color: AppKendoColors.grey,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppTextField(
-              controller: _controller,
-              autofocus: false,
-              decoration: InputDecoration(
-                labelText: '新しい道場名・学校名',
-                prefixIcon: const Icon(
-                  Icons.account_balance,
+              const SizedBox(height: AppSpacing.lg),
+              const Text(
+                '登録されている全選手の所属名を一括で書き換えます。',
+                style: TextStyle(
+                  fontSize: AppFontSize.bodySmall,
                   color: AppKendoColors.grey,
                 ),
-                border: OutlineInputBorder(borderRadius: AppRadius.medium),
-                filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF2C2C2E)
-                    : const Color(0xFFF2F2F7),
               ),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xl),
+              AppTextField(
+                controller: _controller,
+                autofocus: false,
+                decoration: InputDecoration(
+                  labelText: '新しい道場名・学校名',
+                  prefixIcon: const Icon(
+                    Icons.account_balance,
+                    color: AppKendoColors.grey,
+                  ),
+                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFF2F2F7),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'キャンセル',
-                    style: TextStyle(
-                      color: AppKendoColors.grey,
-                      fontWeight: AppFontWeight.bold,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'キャンセル',
+                      style: TextStyle(
+                        color: AppKendoColors.grey,
+                        fontWeight: AppFontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
+                  const SizedBox(width: AppSpacing.md),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.medium,
+                      ),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xl,
+                        vertical: AppSpacing.lg,
+                      ),
                     ),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xl,
-                      vertical: AppSpacing.lg,
+                    icon: const Icon(Icons.check),
+                    onPressed: _handleUpdate,
+                    label: const Text(
+                      '一括更新',
+                      style: TextStyle(fontWeight: AppFontWeight.bold),
                     ),
                   ),
-                  icon: const Icon(Icons.check),
-                  onPressed: _handleUpdate,
-                  label: const Text(
-                    '一括更新',
-                    style: TextStyle(fontWeight: AppFontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            if (!kIsWeb && isKeyboardVisible) SizedBox(height: keyboardHeight),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

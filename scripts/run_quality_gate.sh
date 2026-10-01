@@ -42,6 +42,7 @@ echo ""
 # 3. 単体・E2Eテスト
 echo "🧪 [Step 3/3] 単体・結合・E2Eテストを実行中..."
 flutter test test/governance/design_system_governance_test.dart \
+             test/governance/hint_text_theme_contrast_governance_test.dart \
              test/governance/qr_share_design_governance_test.dart \
              test/governance/text_scale_overflow_governance_test.dart \
              test/widget/all_screens_text_scale_no_overflow_test.dart \
@@ -139,7 +140,9 @@ flutter test test/governance/design_system_governance_test.dart \
               test/unit/simultaneous_hansoku_sudden_death_boundary_test.dart \
               test/golden/pixel_p2p_and_band_share_dialog_golden_test.dart \
               test/e2e/composite_kachinuki_full_sweep_and_daihyosen_e2e_test.dart \
-              test/e2e/composite_p2p_offline_cloud_blackout_streaming_e2e_test.dart
+              test/e2e/composite_p2p_offline_cloud_blackout_streaming_e2e_test.dart \
+              test/governance/program_view_state_governance_test.dart \
+              test/e2e/dock_program_persistence_e2e_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 

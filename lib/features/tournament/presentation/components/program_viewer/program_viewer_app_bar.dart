@@ -29,6 +29,7 @@ class ProgramViewerAppBar extends StatelessWidget
   final VoidCallback onCloseSearch;
   final VoidCallback onOpenSearch;
   final VoidCallback onToggleDrawingMode;
+  final VoidCallback? onFirstPagePressed;
 
   const ProgramViewerAppBar({
     super.key,
@@ -50,6 +51,7 @@ class ProgramViewerAppBar extends StatelessWidget
     required this.onCloseSearch,
     required this.onOpenSearch,
     required this.onToggleDrawingMode,
+    this.onFirstPagePressed,
   });
 
   @override
@@ -57,6 +59,18 @@ class ProgramViewerAppBar extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
+    final int loadedCount =
+        pdfPageCounts[currentProgram.fileUrl] ?? currentProgram.pageCount;
+    final int totalPdfPages = loadedCount >= currentProgram.pageCount
+        ? loadedCount
+        : currentProgram.pageCount;
+    final int curPdfPage =
+        pdfCurrentPages[currentProgram.id.isNotEmpty
+            ? currentProgram.id
+            : currentProgram.fileUrl] ??
+        pdfCurrentPages[currentProgram.fileUrl] ??
+        1;
+
     return AppHeader(
       backgroundColor: isDark
           ? const Color(0xFF1C1C1E)
@@ -95,6 +109,12 @@ class ProgramViewerAppBar extends StatelessWidget
           ),
         ],
         if (!isSearchMode) ...[
+          if (isFilePdf && totalPdfPages > 1)
+            IconButton(
+              icon: const Icon(Icons.first_page),
+              tooltip: '最初のページに戻る',
+              onPressed: curPdfPage > 1 ? onFirstPagePressed : null,
+            ),
           if (!isFilePdf)
             Tooltip(
               message: (currentProgram.isOcrProcessed ?? false)

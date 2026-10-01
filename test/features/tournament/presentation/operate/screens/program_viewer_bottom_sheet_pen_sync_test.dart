@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_stroke_layer.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
@@ -157,6 +158,7 @@ void main() {
 
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    ProgramViewStateService.instance.resetForTesting();
 
     // キャッシュをクリアし、モックPDFバイト列をプリセット
     ProgramViewerPdfPageCache.shared.clear();
@@ -394,6 +396,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 500));
 
         // (B) ボトムシート（ProgramBottomSheet）で横向きページ（p1）を開く
+        ProgramViewStateService.instance.resetForTesting();
         await tester.pumpWidget(
           buildTestScope(child: const ProgramBottomSheet(tournamentId: 't-1')),
         );

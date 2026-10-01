@@ -65,8 +65,17 @@ class ProgramViewerSearchAppBarTitle extends StatelessWidget {
       );
     }
 
-    final int totalPdfPages = pdfPageCounts[currentProgram.fileUrl] ?? 1;
-    final int curPdfPage = pdfCurrentPages[currentProgram.fileUrl] ?? 1;
+    final int loadedCount =
+        pdfPageCounts[currentProgram.fileUrl] ?? currentProgram.pageCount;
+    final int totalPdfPages = loadedCount >= currentProgram.pageCount
+        ? loadedCount
+        : currentProgram.pageCount;
+    final int curPdfPage =
+        pdfCurrentPages[currentProgram.id.isNotEmpty
+            ? currentProgram.id
+            : currentProgram.fileUrl] ??
+        pdfCurrentPages[currentProgram.fileUrl] ??
+        1;
     final String pageSuffix = isFilePdf && totalPdfPages > 1
         ? ' - $curPdfPage/$totalPdfPages 頁'
         : '';

@@ -230,6 +230,7 @@ class CategoryRuleFormSection extends StatelessWidget {
               onSelected: (selected) {
                 if (selected) {
                   onIsIpponShobuChanged(false);
+                  onIpponLimitChanged(2);
                 }
               },
             ),
@@ -239,6 +240,7 @@ class CategoryRuleFormSection extends StatelessWidget {
               onSelected: (selected) {
                 if (selected) {
                   onIsIpponShobuChanged(true);
+                  onIpponLimitChanged(1);
                 }
               },
             ),

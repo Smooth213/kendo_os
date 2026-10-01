@@ -25,6 +25,7 @@ class ProgramSheetPaginationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (pageCount <= 1) return const SizedBox.shrink();
 
+    final canGoFirst = currentPage > 1;
     final canGoPrev = currentPage > 1;
     final canGoNext = currentPage < pageCount;
 
@@ -55,6 +56,19 @@ class ProgramSheetPaginationBar extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // |◀ 最初のページへ戻るボタン
+          _buildArrowButton(
+            icon: Icons.first_page,
+            enabled: canGoFirst,
+            tooltip: '最初のページに戻る',
+            onTap: () {
+              if (canGoFirst) {
+                AppHaptics.selection();
+                onPageChanged?.call(1);
+              }
+            },
+          ),
+          const SizedBox(width: 2),
           // ◀ 前ページボタン
           _buildArrowButton(
             icon: Icons.chevron_left,
