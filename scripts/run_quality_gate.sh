@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全27大ガバナンス個別監査 (1/27 〜 27/27: 100% PASS)
+# 1. 全28大ガバナンス個別監査 (1/28 〜 28/28: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全27大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全27大ガバナンス個別監査を実行中..."
+# 1. 全28大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全28大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全27大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全28大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -205,15 +205,50 @@ flutter test test/governance/design_system_governance_test.dart \
               test/unit/team_progress_status_test.dart \
               test/golden/pixel_thermal_floating_toast_golden_test.dart \
               test/golden/pixel_tournament_quick_hub_golden_test.dart \
-              test/golden/pixel_viewer_team_scoreboard_score_box_golden_test.dart \
               test/e2e/composite_offline_fifo_sync_projection_convergence_test.dart \
               test/e2e/composite_hantei_finish_audio_approval_flow_e2e_test.dart \
-              test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart
+              test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart \
+              test/unit/security_guards_test.dart \
+              test/unit/match_corrupted_state_test.dart \
+              test/unit/expedition_event_processor_test.dart \
+              test/unit/dock_slot_layout_calculator_test.dart \
+              test/unit/tournament_aggregate_test.dart \
+              test/unit/pdf_isolate_generation_test.dart \
+              test/unit/in_memory_event_store_occ_test.dart \
+              test/unit/sync_downstream_helper_dirty_protection_test.dart \
+              test/unit/firestore_path_deterministic_test.dart \
+              test/unit/json_converters_type_safety_test.dart \
+              test/unit/bulk_rule_apply_helper_test.dart \
+              test/unit/match_player_roster_resolver_test.dart \
+              test/unit/match_infinite_handler_helper_test.dart \
+              test/unit/projection_updater_test.dart \
+              test/unit/tournament_program_pdf_engine_test.dart \
+              test/unit/team_registration_player_filter_helper_test.dart \
+              test/unit/official_record_export_helper_test.dart \
+              test/unit/platform_boundary_safe_call_test.dart \
+              test/unit/internal_public_router_fallback_test.dart \
+              test/unit/event_settings_serialization_test.dart \
+              test/golden/pixel_expedition_detail_bottom_sheet_golden_test.dart \
+              test/golden/pixel_match_calculator_summary_card_golden_test.dart \
+              test/golden/pixel_vertical_name_text_golden_test.dart \
+              test/e2e/corrupted_match_emergency_isolation_e2e_test.dart \
+              test/e2e/expedition_multi_court_scoring_aggregation_e2e_test.dart \
+              test/e2e/composite_dock_slot_drag_swap_persistence_test.dart \
+              test/e2e/composite_deep_link_internal_guard_security_test.dart \
+              test/governance/expedition_strike_decision_governance_test.dart \
+              test/governance/security_guards_access_control_governance_test.dart \
+              test/governance/platform_boundary_governance_test.dart \
+              test/governance/dock_slot_layout_governance_test.dart \
+              test/governance/projection_updater_memory_leak_governance_test.dart \
+              test/governance/event_store_logical_clock_governance_test.dart \
+              test/governance/sync_downstream_dirty_protection_governance_test.dart \
+              test/governance/router_fallback_access_denied_governance_test.dart \
+              test/governance/corrupted_state_quarantine_governance_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全27大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全28大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

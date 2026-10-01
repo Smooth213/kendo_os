@@ -39,7 +39,16 @@ def main():
     res2 = subprocess.run(cmd2, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     is_ok2 = (res2.returncode == 0)
 
-    is_ok = is_ok1 and is_ok2
+    cmd3 = [
+        "flutter",
+        "test",
+        "test/governance/sync_downstream_dirty_protection_governance_test.dart",
+        "--reporter=expanded",
+    ]
+    res3 = subprocess.run(cmd3, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    is_ok3 = (res3.returncode == 0)
+
+    is_ok = is_ok1 and is_ok2 and is_ok3
 
     rules = [
         ("① [Clock Skew補正] server_clock_offset_service ＆ system_time_source 連携規約", is_ok1),
@@ -52,6 +61,7 @@ def main():
         ("⑧ [差分デルタ伝送] broadcastMatchDelta デルタ伝送規約", is_ok1),
         ("⑨ [CQRS DI一貫性] ProjectionStore の firestoreProvider 経由規約", is_ok1),
         ("⑩ [分散プロジェクション＆FIFO] TimelineProjection決定論的ハッシュ ＆ PendingSyncQueue不変性規約", is_ok2),
+        ("⑪ [オフラインダーティ保護] SyncDownstreamHelper isDirty未送信変更上書き防止規約", is_ok3),
     ]
 
     for label, ok in rules:
@@ -70,6 +80,8 @@ def main():
             print(res1.stdout + res1.stderr)
         if not is_ok2:
             print(res2.stdout + res2.stderr)
+        if not is_ok3:
+            print(res3.stdout + res3.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

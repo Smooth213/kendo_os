@@ -15,11 +15,16 @@ void main() {
           .where((f) => f.path.endsWith('.dart'))
           .where((f) {
             final p = f.path;
-            if (!p.contains('/presentation/')) return false;
-            // 認証入力画面および内部Provider層のマッピング処理は正当な定義箇所として除外
-            if (p.contains('lib/features/auth/presentation/screens/'))
+            if (!p.contains('/presentation/')) {
               return false;
-            if (p.contains('/providers/')) return false;
+            }
+            // 認証入力画面および内部Provider層のマッピング処理は正当な定義箇所として除外
+            if (p.contains('lib/features/auth/presentation/screens/')) {
+              return false;
+            }
+            if (p.contains('/providers/')) {
+              return false;
+            }
             return true;
           });
 

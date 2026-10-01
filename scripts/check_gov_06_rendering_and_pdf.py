@@ -17,6 +17,7 @@ SUB_AUDITS = [
     ("③ ドック常設ミニパネル・オーバーレイ解放規約", ["python3", "scripts/check_dock_lifecycle_governance.py"]),
     ("④ 大会＆部内戦観戦 公式記録一括エクスポート＆UI永続保証規約", ["flutter", "test", "test/governance/official_record_export_governance_test.dart"]),
     ("⑤ ドックプログラム閲覧位置端末保存・自動復元 ＆ PDFページキャッシュ契約保証規約", ["flutter", "test", "test/governance/program_view_state_governance_test.dart"]),
+    ("⑥ 常設ドックスロット配置座標 ＆ スワップ決定論保証規約", ["flutter", "test", "test/governance/dock_slot_layout_governance_test.dart"]),
 ]
 
 def main():

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全27大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全28大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全27大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全28大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 - 第1部：ドメイン・プロダクト品質規約（第1条〜第8条）
 - 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条、第27条）
 - 第3部：大会運営支援・シミュレーション規約（第18条）
@@ -15,6 +15,8 @@ kendo OS の全27大ガバナンス監査を一括実行し、品質・アーキ
 - 第9部：UI操作性・手書きジェスチャー規約（第24条）
 - 第10部：データ完全性・電子署名規約（第25条）
 - 第11部：データ防護・サニタイズ規約（第26条）
+- 第12部：サーマルUI・省電力規約（第27条）
+- 第13部：障害隔離・二次破壊防止規約（第28条）
 """
 
 import argparse
@@ -222,11 +224,20 @@ AUDIT_DEFINITIONS = [
         "name": "🚨 サーマル適応警告・省電力UIトースト非ブロッキング表示 ＆ メモリリークゼロ規約",
         "cmd": ["python3", "scripts/check_gov_27_thermal_toast_governance.py"],
     },
+    # ==========================================================================
+    # 【第13部：障害隔離・二次破壊防止規約】（第28条）
+    # ==========================================================================
+    {
+        "id": 28,
+        "part": "第13部: 障害隔離・二次破壊防止",
+        "name": "🚨 障害データ隔離・フェイルセーフ二次破壊完全阻止 ＆ 生データ救済規約",
+        "cmd": ["python3", "scripts/check_gov_28_corrupted_quarantine_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全27大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜27）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全28大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜28）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 

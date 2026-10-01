@@ -18,6 +18,7 @@ SUB_AUDITS = [
     ("④ 入力フォーカス時ビューポート安定性・跳ね上がり防止保証規約", ["python3", "scripts/check_input_viewport_stability_governance.py"]),
     ("⑤ Web境界・ネイティブ直接import遮断規約", ["python3", "scripts/check_web_native_import_isolation_governance.py"]),
     ("⑥ 全ボトムシート・キーボード追従＆自動全開視認性保証規約", ["python3", "scripts/check_bottom_sheet_keyboard_tracking_governance.py"]),
+    ("⑦ PlatformBoundary Web/ネイティブ完全分離実行保証規約", ["flutter", "test", "test/governance/platform_boundary_governance_test.dart"]),
 ]
 
 def main():

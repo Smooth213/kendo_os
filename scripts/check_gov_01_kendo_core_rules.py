@@ -23,6 +23,7 @@ SUB_AUDITS = [
     ("⑤ 全試合形式（勝ち抜き・リーグ含む）編集選択＆完全整合性保証規約", ["python3", "scripts/check_match_type_selection_governance.py"]),
     ("⑥ 勝ち抜き戦（5人制 / 3人制）選択・適応・実行 総合保証規約", ["python3", "scripts/check_kachinuki_governance.py"]),
     ("⑦ 大会ルール設定バリデーション ＆ ルール永続化マイグレーション規約", ["python3", "scripts/check_tournament_rule_config_governance.py"]),
+    ("⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約", ["flutter", "test", "test/governance/expedition_strike_decision_governance_test.dart"]),
 ]
 
 def main():
