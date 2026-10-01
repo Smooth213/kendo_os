@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全25大ガバナンス個別監査 (1/25 〜 25/25: 100% PASS)
+# 1. 全26大ガバナンス個別監査 (1/26 〜 26/26: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全25大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全25大ガバナンス個別監査を実行中..."
+# 1. 全26大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全26大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全25大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全26大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -173,12 +173,32 @@ flutter test test/governance/design_system_governance_test.dart \
               test/e2e/event_signature_tamper_quarantine_e2e_test.dart \
               test/e2e/micro_batch_extreme_rapid_score_flush_e2e_test.dart \
               test/e2e/composite_expedition_multi_court_scene_report_test.dart \
-              test/e2e/composite_room_id_collision_resolution_flow_test.dart
+              test/e2e/composite_room_id_collision_resolution_flow_test.dart \
+              test/unit/player_repository_grade_promotion_boundary_test.dart \
+              test/unit/band_repository_local_cache_resilience_test.dart \
+              test/unit/match_snapshot_service_recovery_test.dart \
+              test/unit/match_generator_bulk_creation_test.dart \
+              test/widget/team_scoreboard_daihyo_handler_test.dart \
+              test/governance/tournament_rule_config_governance_test.dart \
+              test/governance/match_generation_helper_governance_test.dart \
+              test/governance/input_sanitization_governance_test.dart \
+              test/unit/rule_config_validator_test.dart \
+              test/unit/rule_serializer_and_resolver_test.dart \
+              test/unit/match_generation_helper_berger_tables_test.dart \
+              test/unit/redo_score_usecase_test.dart \
+              test/unit/timeline_export_service_test.dart \
+              test/unit/organization_repository_test.dart \
+              test/golden/pixel_rule_config_panel_golden_test.dart \
+              test/golden/pixel_viewer_call_banner_golden_test.dart \
+              test/golden/pixel_master_delete_dialog_golden_test.dart \
+              test/e2e/composite_dynamic_rule_change_and_export_e2e_test.dart \
+              test/e2e/composite_odd_league_multi_court_viewer_sync_test.dart \
+              test/e2e/composite_redo_offline_crdt_convergence_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全25大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全26大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

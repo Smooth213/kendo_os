@@ -6,6 +6,7 @@
 ① 試合数計算機 設計憲法・モデル不変性・アコーディオンUI・境界値防護・行数境界（Max 500行）規約
 ② 試合数計算機 UI表示・視認性・アコーディオンレイアウト完全性規約
 ③ 試合数計算・コート割り振りシミュレーションエンジン完全性規約
+④ サークル方式総当たり（Berger Tables）・奇数バイ ＆ 3位決定戦生成規約
 """
 
 import subprocess
@@ -23,6 +24,10 @@ SUB_AUDITS = [
     (
         "③ [計算エンジン完全性] 総試合数算出・コート割当・所要時間シミュレーション完全性規約",
         ["flutter", "test", "test/unit/match_allocation_engine_test.dart"],
+    ),
+    (
+        "④ [サークル方式・奇数バイ・3位決定戦] サークル方式総当たり（Berger Tables）・奇数バイ ＆ 3位決定戦生成規約",
+        ["flutter", "test", "test/governance/match_generation_helper_governance_test.dart"],
     ),
 ]
 

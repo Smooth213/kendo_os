@@ -15,12 +15,14 @@ import 'package:kendo_os/shared/widgets/app_switch.dart';
 // プリセットによる安全な設定と、エキスパート向けの詳細設定を分離
 // ==========================================
 class RuleConfigPanel extends ConsumerWidget {
-  const RuleConfigPanel({super.key});
+  final bool forceShow;
+
+  const RuleConfigPanel({super.key, this.forceShow = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // ★ Phase 5-1: Rule Config UI削除（Stage2 β環境における編集パネルの完全隠蔽）
-    if (!BetaFeatureFlags.showRuleDslEditor) {
+    if (!forceShow && !BetaFeatureFlags.showRuleDslEditor) {
       return const SizedBox.shrink(); // UI上からパネルの存在を完全に消滅させます
     }
 
