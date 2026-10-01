@@ -5,45 +5,48 @@ import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_category_tile.dart';
 
 void main() {
-  group('CategoryRuleCategoryTile Widget Tests', () {
-    testWidgets('renders category name and triggers onShowRuleDetail on tap', (
-      tester,
-    ) async {
-      bool detailCalled = false;
-      bool editCalled = false;
-      bool deleteCalled = false;
+  group('[Widget] CategoryRuleCategoryTile ウィジェットテスト', () {
+    testWidgets(
+      'renders category name and triggers onShowRuleDetail on tapであること',
+      (tester) async {
+        bool detailCalled = false;
+        bool editCalled = false;
+        bool deleteCalled = false;
 
-      final ruleSet = CategoryRuleSet(
-        matchType: '個人戦',
-        normalRule: MatchRule(matchTimeMinutes: 3),
-      );
+        final ruleSet = CategoryRuleSet(
+          matchType: '個人戦',
+          normalRule: MatchRule(matchTimeMinutes: 3),
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CategoryRuleCategoryTile(
-              category: '中学生男子の部',
-              ruleSet: ruleSet,
-              isDark: false,
-              enableLiquidGlass: false,
-              onStartEditing: () => editCalled = true,
-              onDeleteCategory: () => deleteCalled = true,
-              onShowRuleDetail: () => detailCalled = true,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CategoryRuleCategoryTile(
+                category: '中学生男子の部',
+                ruleSet: ruleSet,
+                isDark: false,
+                enableLiquidGlass: false,
+                onStartEditing: () => editCalled = true,
+                onDeleteCategory: () => deleteCalled = true,
+                onShowRuleDetail: () => detailCalled = true,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('中学生男子の部'), findsOneWidget);
+        expect(find.text('中学生男子の部'), findsOneWidget);
 
-      await tester.tap(find.text('中学生男子の部'));
-      await tester.pump();
-      expect(detailCalled, isTrue);
-      expect(editCalled, isFalse);
-      expect(deleteCalled, isFalse);
-    });
+        await tester.tap(find.text('中学生男子の部'));
+        await tester.pump();
+        expect(detailCalled, isTrue);
+        expect(editCalled, isFalse);
+        expect(deleteCalled, isFalse);
+      },
+    );
 
-    testWidgets('renders category with subtitle and comment', (tester) async {
+    testWidgets('renders category with subtitle and commentであること', (
+      tester,
+    ) async {
       final ruleSet = CategoryRuleSet(
         matchType: '団体戦',
         subtitle: '決勝トーナメント',
@@ -73,7 +76,7 @@ void main() {
     });
 
     testWidgets(
-      'omits (2) when subtitle makes it distinguishable, but keeps (2) when duplicated',
+      'omits (2) when subtitle makes it distinguishable, but keeps (2) when duplicatedであること',
       (tester) async {
         final rules = <String, CategoryRuleSet>{
           '小学生の部': const CategoryRuleSet(subtitle: '予選リーグ'),

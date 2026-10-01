@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 void main() {
   testWidgets(
-    'ProgramViewerDrawingToolbar renders tools and handles callbacks',
+    'ProgramViewerDrawingToolbar renders tools and handles callbacksであること',
     (WidgetTester tester) async {
       String selectedTool = 'pen';
       Color penColor = AppKendoColors.pink;
@@ -43,7 +43,7 @@ void main() {
   );
 
   testWidgets(
-    'ProgramViewerDrawingToolbar hides shared pen options when canUseSharedPen is false (Viewer Mode)',
+    'ProgramViewerDrawingToolbar hides shared pen options when canUseSharedPen is false (Viewer Mode)こと',
     (WidgetTester tester) async {
       Color selectedColor = AppKendoColors.blue;
 
@@ -101,7 +101,7 @@ void main() {
   );
 
   testWidgets(
-    'ProgramViewerDrawingToolbar shows shared pen options when canUseSharedPen is true (Operator Mode)',
+    'ProgramViewerDrawingToolbar shows shared pen options when canUseSharedPen is true (Operator Mode)こと',
     (WidgetTester tester) async {
       Color selectedColor = AppKendoColors.pink;
 

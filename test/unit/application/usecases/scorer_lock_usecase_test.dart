@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/application/usecases/scorer_lock_usecase.dart';
 
 void main() {
-  group('🛡️ ScorerLockUseCase Tests', () {
+  group('[Unit] ScorerLockUseCase テスト', () {
     const useCase = ScorerLockUseCase();
     final baseMatch = MatchModel(
       id: 'match_1',
@@ -13,7 +13,7 @@ void main() {
       tournamentId: 'tournament_1',
     );
 
-    test('tryClaimScorer succeeds when scorerId is null', () {
+    test('tryClaimScorer succeeds when scorerId is nullであること', () {
       final now = DateTime(2026, 8, 16, 12, 0);
       final updated = useCase.tryClaimScorer(baseMatch, 'user_A', now: now);
 
@@ -22,7 +22,7 @@ void main() {
       expect(updated.lockExpiresAt, DateTime(2026, 8, 16, 12, 30));
     });
 
-    test('tryClaimScorer succeeds when claimed by same user', () {
+    test('tryClaimScorer succeeds when claimed by same userであること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 12, 10),
@@ -36,7 +36,7 @@ void main() {
     });
 
     test(
-      'tryClaimScorer fails when locked by different user and not expired',
+      'tryClaimScorer fails when locked by different user and not expiredであること',
       () {
         final locked = baseMatch.copyWith(
           scorerId: 'user_A',
@@ -49,7 +49,7 @@ void main() {
       },
     );
 
-    test('tryClaimScorer succeeds when previous lock is expired', () {
+    test('tryClaimScorer succeeds when previous lock is expiredであること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 11, 59),
@@ -61,7 +61,7 @@ void main() {
       expect(updated!.scorerId, 'user_B');
     });
 
-    test('forceClaimScorer overrides existing lock immediately', () {
+    test('forceClaimScorer overrides existing lock immediatelyであること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 12, 30),
@@ -73,7 +73,7 @@ void main() {
       expect(updated.lockExpiresAt, DateTime(2026, 8, 16, 12, 30));
     });
 
-    test('releaseScorer only releases if user matches', () {
+    test('releaseScorer only releases if user matchesであること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 12, 30),

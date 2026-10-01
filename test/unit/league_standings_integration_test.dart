@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 
 void main() {
-  group('🛡️ リーグ団体戦・個人戦星取り表集計完全検証テスト', () {
+  group('[Unit] リーグ団体戦・個人戦星取り表集計完全検証テスト', () {
     late MatchRule testRule;
 
     setUp(() {
@@ -16,7 +16,7 @@ void main() {
       );
     });
 
-    test('1. 団体リーグ戦（団体戦）において、コロンの前半（チーム名）で正しく集計されること', () {
+    test('団体リーグ戦（団体戦）において、コロンの前半（チーム名）で正しく集計されること', () {
       final matches = [
         // チームA : 選手A1 vs チームB : 選手B1 (A勝ち 2-0)
         const MatchModel(
@@ -76,7 +76,7 @@ void main() {
       expect(teamC.totalPointsScored, equals(1));
     });
 
-    test('2. 個人リーグ戦（個人戦）において、コロンの後半（個人名）で正しく集計されること', () {
+    test('個人リーグ戦（個人戦）において、コロンの後半（個人名）で正しく集計されること', () {
       final matches = [
         // リーグ個人チーム:中村 一郎 vs 剣道道場:高橋 守 (中村勝ち 2-0)
         const MatchModel(

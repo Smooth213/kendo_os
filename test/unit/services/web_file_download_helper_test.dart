@@ -7,8 +7,8 @@ import 'package:kendo_os/shared/utils/file_download_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🌐 【Unit】Webファイルダウンロード＆共有ヘルパー 安全性・フォールバック検証', () {
-    test('1. file_download_helper (ネイティブ/スタブ環境): 例外スローなく安全に終了すること', () async {
+  group('[Unit] 【Unit】Webファイルダウンロード＆共有ヘルパー 安全性・フォールバック検証', () {
+    test('file_download_helper (ネイティブ/スタブ環境): 例外スローなく安全に終了すること', () async {
       final dummyBytes = Uint8List.fromList([
         0x4B,
         0x45,
@@ -34,7 +34,7 @@ void main() {
       expect(shared, isFalse);
     });
 
-    test('2. CsvService: CSV文字列生成とヘッダー・BOM付与の完全性検証', () {
+    test('CsvService: CSV文字列生成とヘッダー・BOM付与の完全性が正しく検証されること', () {
       final sampleMatch = MatchModel(
         id: 'test_m1',
         matchType: '個人戦',
@@ -70,7 +70,7 @@ void main() {
       expect(csvString.contains('1'), isTrue);
     });
 
-    test('3. CsvService: 空データ・複数カテゴリ一括CSV生成の安全性', () {
+    test('CsvService: 空データ・複数カテゴリ一括CSV生成の安全性こと', () {
       final emptyCsv = CsvService.generateMultiCategoryCsvString([]);
       expect(emptyCsv.startsWith('\uFEFF'), isTrue);
       expect(emptyCsv.contains('カテゴリ,グループ名'), isTrue);
@@ -93,7 +93,7 @@ void main() {
       expect(multiCatCsv.contains('カテゴリ,グループ名'), isTrue);
     });
 
-    test('4. Safariポップアップ抑止・Blob URL安全処理: 不正バイト列・空バイト列での例外隔離', () async {
+    test('Safariポップアップ抑止・Blob URL安全処理: 不正バイト列・空バイト列での例外隔離こと', () async {
       final emptyBytes = Uint8List(0);
 
       expect(

@@ -114,8 +114,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('🥋 ドックプログラム閲覧位置の端末保存・自動復元 網羅テスト', () {
-    testWidgets('1. フローティングドックから起動時、前回選択プログラムが自動復元されること', (tester) async {
+  group('[Widget] ドックプログラム閲覧位置の端末保存・自動復元 網羅テスト', () {
+    testWidgets('フローティングドックから起動時、前回選択プログラムが自動復元されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -142,9 +142,7 @@ void main() {
       expect(filterChips[2].selected, isFalse);
     });
 
-    testWidgets('2. ボトムシート内でプログラムおよびページ位置を変更すると、端末に即座に永続化されること', (
-      tester,
-    ) async {
+    testWidgets('ボトムシート内でプログラムおよびページ位置を変更すると、端末に即座に永続化されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -199,7 +197,7 @@ void main() {
       expect(find.text('2 / 6'), findsOneWidget);
     });
 
-    testWidgets('3. シートを閉じて再展開しても、前回の選択プログラムとページが正しく復元されること', (tester) async {
+    testWidgets('シートを閉じて再展開しても、前回の選択プログラムとページが正しく復元されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -240,7 +238,7 @@ void main() {
       expect(find.text('4 / 10'), findsOneWidget);
     });
 
-    testWidgets('4. アプリ再起動（SharedPreferences コールドスタート）でも保存値から復元されること', (
+    testWidgets('アプリ再起動（SharedPreferences コールドスタート）でも保存値から復元されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);

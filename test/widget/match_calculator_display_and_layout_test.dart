@@ -22,7 +22,7 @@ void main() {
     );
   }
 
-  group('📱 試合数計算機：表示・視認性・レイアウト完全性テスト', () {
+  group('[Widget] 試合数計算機：表示・視認性・レイアウト完全性テスト', () {
     testWidgets('スマートフォン標準幅 (390px) でオーバーフローなく全要素が正しく表示されること', (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
@@ -51,7 +51,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('アコーディオンの開閉トグル（展開 ➔ 折りたたみ）が正常に機能すること', (tester) async {
+    testWidgets('アコーディオンの開閉トグル（展開  折りたたみ）が正常に機能すること', (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

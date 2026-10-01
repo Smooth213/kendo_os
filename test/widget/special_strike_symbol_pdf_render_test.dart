@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('👁️ 【Phase 6-6/12】全剣連特殊技記号（判・不・反・棄・×）丸囲みレンダリング Widgetテスト', () {
-    testWidgets('1. 特殊勝敗記号（判・不・反・棄・×）が丸囲みバッジとして美麗に収まること', (tester) async {
+  group('[Widget] 【Phase 6-6/12】全剣連特殊技記号（判・不・反・棄・×）丸囲みレンダリング Widgetテスト', () {
+    testWidgets('特殊勝敗記号（判・不・反・棄・×）が丸囲みバッジとして美麗に収まること', (tester) async {
       const specialSymbols = ['判', '不', '反', '棄', '×'];
 
       Widget buildSymbolBadge(String symbol) {

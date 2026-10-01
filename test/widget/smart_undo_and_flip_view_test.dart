@@ -24,7 +24,7 @@ void main() {
     settingsProvider.overrideWith(() => FakeSettingsNotifier()),
   ];
 
-  group('スマートUndo & 視点反転 Widget Tests', () {
+  group('[Widget] スマートUndo & 視点反転 ウィジェットテスト', () {
     testWidgets('SmartUndoFloatingBar がイベント登録時に表示され、手動クリアで非表示になること', (
       tester,
     ) async {

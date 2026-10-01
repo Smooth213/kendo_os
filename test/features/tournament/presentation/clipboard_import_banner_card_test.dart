@@ -40,7 +40,7 @@ Widget _buildTestApp({
 }
 
 void main() {
-  group('📋 ClipboardImportBannerCard 単体テスト', () {
+  group('[Widget] ClipboardImportBannerCard 単体テスト', () {
     testWidgets('ライトモードで基本UI（タイトル・バッジ・説明文・アイコン）が正しく表示されること', (tester) async {
       await tester.pumpWidget(
         _buildTestApp(isDark: false, child: const ClipboardImportBannerCard()),
@@ -143,7 +143,7 @@ void main() {
     });
   });
 
-  group('🏆 CreateTournamentPage1 統合テスト (解説付きインポートUI)', () {
+  group('CreateTournamentPage1 統合テスト (解説付きインポートUI)', () {
     late TextEditingController nameController;
 
     setUp(() {

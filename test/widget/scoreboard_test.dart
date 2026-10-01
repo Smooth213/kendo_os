@@ -19,9 +19,9 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('🛡️ MatchScoreboard Design & Layout Verification Tests', () {
+  group('[Widget] MatchScoreboard Design & Layout 検証 テスト', () {
     testWidgets(
-      'Scoreboard maintains size parameters, name font sizes, and point badge dimensions',
+      'Scoreboard maintains size parameters, name font sizes, and point badge dimensionsであること',
       (WidgetTester tester) async {
         // Set physical size to guarantee full layout rendering
         tester.view.physicalSize = const Size(1200, 1000);
@@ -155,7 +155,7 @@ void main() {
     );
 
     testWidgets(
-      'Scoreboard does not show Draw/Tie badge when the match is in progress, but shows it when finished as a tie',
+      'Scoreboard does not show Draw/Tie badge when the match is in progress, but shows it when finished as a tieであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1000);
         tester.view.devicePixelRatio = 1.0;

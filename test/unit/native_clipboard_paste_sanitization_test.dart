@@ -24,8 +24,8 @@ class ClipboardSanitizer {
 }
 
 void main() {
-  group('🌍 【Phase 8-4/7】OSクリップボード貼り付け HTML・制御文字サニタイズテスト', () {
-    test('1. リッチテキストHTML（<span style=...>佐藤</span>）がプレーンテキスト「佐藤」へ変換されること', () {
+  group('[Unit] 【Phase 8-4/7】OSクリップボード貼り付け HTML・制御文字サニタイズテスト', () {
+    test('リッチテキストHTML（<span style=...>佐藤</span>）がプレーンテキスト「佐藤」へ変換されること', () {
       const richHtml =
           '<b style="color:red"><span onclick="evil()">佐藤 健</span></b>';
       final safeText = ClipboardSanitizer.sanitizePastedText(richHtml);
@@ -35,7 +35,7 @@ void main() {
       expect(safeText.contains('evil'), isFalse);
     });
 
-    test('2. 改行連打やNULL文字が含まれていても単一スペース区切りの安全な文字列に変換されること', () {
+    test('改行連打やNULL文字が含まれていても単一スペース区切りの安全な文字列に変換されること', () {
       const messyPaste = '山田\r\n\r\n\x00太郎\n\n道場';
       final safeText = ClipboardSanitizer.sanitizePastedText(messyPaste);
 

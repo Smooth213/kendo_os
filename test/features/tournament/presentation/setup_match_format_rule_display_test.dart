@@ -168,39 +168,39 @@ SetupSectionVisibility computeSectionVisibility(SetupRuleDisplayState s) {
 // Tests
 // --------------------------------------------------------------------------
 void main() {
-  group('🎯 SetupMatchFormat 現在適用中のルール 表示ロジック', () {
+  group('[Unit] SetupMatchFormat 現在適用中のルール 表示ロジック', () {
     // ─────────────────────────────────────────────────────────
     // _applyMatchRuleToState 相当: MatchRule → 状態変数への変換
     // ─────────────────────────────────────────────────────────
-    group('📥 MatchRule → 状態変数変換 (_applyMatchRuleToState)', () {
-      test('✅ 試合時間・計測方式が正しくロードされる', () {
+    group('MatchRule → 状態変数変換 (_applyMatchRuleToState)', () {
+      test('試合時間・計測方式が正しくロードされること', () {
         final rule = MatchRule(matchTimeMinutes: 4.0, isRunningTime: true);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.matchTime, 4.0);
         expect(s.isRunningTime, isTrue);
       });
 
-      test('✅ 勝負方式: 一本勝負', () {
+      test('勝負方式: 一本勝負こと', () {
         final rule = MatchRule(isIpponShobu: true, ipponLimit: 1);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.isIpponShobu, isTrue);
         expect(s.ipponLimit, 1);
       });
 
-      test('✅ 勝負方式: 三本勝負 (2本先取)', () {
+      test('勝負方式: 三本勝負 (2本先取)こと', () {
         final rule = MatchRule(isIpponShobu: false, ipponLimit: 2);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.isIpponShobu, isFalse);
         expect(s.ipponLimit, 2);
       });
 
-      test('✅ 反則数が正しくロードされる', () {
+      test('反則数が正しくロードされること', () {
         final rule = MatchRule(hansokuLimit: 3);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hansokuLimit, 3);
       });
 
-      test('✅ 延長戦あり (3分・2回)', () {
+      test('延長戦あり (3分・2回)こと', () {
         final rule = MatchRule(enchoCount: 2, enchoTimeMinutes: 3.0);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hasExtension, isTrue);
@@ -208,26 +208,26 @@ void main() {
         expect(s.extTime, 3.0);
       });
 
-      test('✅ 延長戦なし (enchoCount=0)', () {
+      test('延長戦なし (enchoCount=0)こと', () {
         final rule = MatchRule(enchoCount: 0, enchoTimeMinutes: 0);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hasExtension, isFalse);
       });
 
-      test('✅ 延長戦無制限: extCount=-2 にマップされる', () {
+      test('延長戦無制限: extCount=-2 にマップされること', () {
         final rule = MatchRule(isEnchoUnlimited: true);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hasExtension, isTrue);
         expect(s.extCount, -2);
       });
 
-      test('✅ 判定フラグ', () {
+      test('判定フラグこと', () {
         final rule = MatchRule(hasHantei: true);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hasHantei, isTrue);
       });
 
-      test('✅ 錬成会フラグ・進行方式・全体時間', () {
+      test('錬成会フラグ・進行方式・全体時間こと', () {
         final rule = MatchRule(
           isRenseikai: true,
           renseikaiType: '時間制',
@@ -239,7 +239,7 @@ void main() {
         expect(s.overallTimeMinutes, 45);
       });
 
-      test('✅ 代表戦詳細: 時間・延長・判定が正しくロードされる', () {
+      test('代表戦詳細: 時間・延長・判定が正しくロードされること', () {
         final rule = MatchRule(
           hasLeagueDaihyo: true,
           isDaihyoIpponShobu: true,
@@ -259,13 +259,13 @@ void main() {
         expect(s.daihyoHasHantei, isTrue);
       });
 
-      test('✅ 代表戦なし: hasLeagueDaihyo=false', () {
+      test('代表戦なし: hasLeagueDaihyo=falseであること', () {
         final rule = MatchRule(hasLeagueDaihyo: false);
         final s = applyRuleToState(rule, '団体戦');
         expect(s.hasLeagueDaihyo, isFalse);
       });
 
-      test('✅ リーグ勝ち点', () {
+      test('リーグ勝ち点こと', () {
         final rule = MatchRule(winPoint: 2.0, lossPoint: 0.0, drawPoint: 1.0);
         final s = applyRuleToState(rule, 'リーグ個人戦');
         expect(s.winPoint, 2.0);
@@ -273,7 +273,7 @@ void main() {
         expect(s.drawPoint, 1.0);
       });
 
-      test('✅ 勝ち抜き戦: kachinukiUnlimitedType が正しくロードされる', () {
+      test('勝ち抜き戦: kachinukiUnlimitedType が正しくロードされること', () {
         final rule = MatchRule(
           isKachinuki: true,
           kachinukiUnlimitedType: '無制限',
@@ -286,8 +286,8 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // セクション表示可視性
     // ─────────────────────────────────────────────────────────
-    group('👁️ セクション表示可視性', () {
-      test('✅ 個人戦: 試合ルールのみ表示', () {
+    group('セクション表示可視性', () {
+      test('個人戦: 試合ルールのみ表示こと', () {
         final s = applyRuleToState(MatchRule(), '個人戦');
         final v = computeSectionVisibility(s);
         expect(v.showMatchRuleSection, isTrue);
@@ -298,7 +298,7 @@ void main() {
         expect(v.showLeagueSection, isFalse);
       });
 
-      test('✅ 団体戦 + 代表戦なし: 試合ルール + 団体戦設定のみ', () {
+      test('団体戦 + 代表戦なし: 試合ルール + 団体戦設定のみこと', () {
         final rule = MatchRule(
           hasLeagueDaihyo: false,
           hasRepresentativeMatch: false,
@@ -311,7 +311,7 @@ void main() {
         expect(v.showLeagueSection, isFalse);
       });
 
-      test('✅ 団体戦 + 代表戦あり: 試合ルール + 団体戦設定 + 代表戦設定', () {
+      test('団体戦 + 代表戦あり: 試合ルール + 団体戦設定 + 代表戦設定こと', () {
         final rule = MatchRule(
           hasLeagueDaihyo: true,
           hasRepresentativeMatch: true,
@@ -324,7 +324,7 @@ void main() {
         expect(v.showLeagueSection, isFalse);
       });
 
-      test('✅ 勝ち抜き戦: 試合ルール + 勝ち抜き戦設定', () {
+      test('勝ち抜き戦: 試合ルール + 勝ち抜き戦設定こと', () {
         final rule = MatchRule(isKachinuki: true);
         final s = applyRuleToState(rule, '勝ち抜き戦');
         final v = computeSectionVisibility(s);
@@ -334,7 +334,7 @@ void main() {
         expect(v.showDaihyoSection, isFalse);
       });
 
-      test('✅ リーグ個人戦: 試合ルール + リーグ戦設定', () {
+      test('リーグ個人戦: 試合ルール + リーグ戦設定こと', () {
         final rule = MatchRule(isLeague: true);
         final s = applyRuleToState(rule, 'リーグ個人戦');
         final v = computeSectionVisibility(s);
@@ -345,7 +345,7 @@ void main() {
         expect(v.showDaihyoSection, isFalse);
       });
 
-      test('✅ リーグ団体戦 + 同点代表戦なし: リーグ設定のみ、代表戦詳細なし', () {
+      test('リーグ団体戦 + 同点代表戦なし: リーグ設定のみ、代表戦詳細なしこと', () {
         final rule = MatchRule(isLeague: true, hasLeagueDaihyo: false);
         final s = applyRuleToState(rule, 'リーグ団体戦');
         final v = computeSectionVisibility(s);
@@ -353,7 +353,7 @@ void main() {
         expect(v.showLeagueDaihyoDetail, isFalse);
       });
 
-      test('✅ リーグ団体戦 + 同点代表戦あり: 代表戦詳細を表示', () {
+      test('リーグ団体戦 + 同点代表戦あり: 代表戦詳細を表示こと', () {
         final rule = MatchRule(isLeague: true, hasLeagueDaihyo: true);
         final s = applyRuleToState(rule, 'リーグ団体戦');
         final v = computeSectionVisibility(s);
@@ -365,7 +365,7 @@ void main() {
         );
       });
 
-      test('✅ 錬成会: 錬成会設定のみ、試合ルールは非表示', () {
+      test('錬成会: 錬成会設定のみ、試合ルールは非表示こと', () {
         final rule = MatchRule(isRenseikai: true);
         final s = applyRuleToState(rule, '錬成会');
         final v = computeSectionVisibility(s);
@@ -379,7 +379,7 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // 勝ち抜き戦の大将VS挙動テキスト
     // ─────────────────────────────────────────────────────────
-    group('⚔️ 勝ち抜き戦の大将VS挙動テキスト', () {
+    group('勝ち抜き戦の大将VS挙動テキスト', () {
       String daishoDaishoBehavior(String kachinukiType) {
         if (kachinukiType == 'なし' || kachinukiType.isEmpty) return '引き分け';
         return '延長戦を行う';
@@ -389,22 +389,22 @@ void main() {
         return kachinukiType == '無制限' ? '延長戦を行う' : '引き分け';
       }
 
-      test('✅ 大将対大将: 大将VS大将=延長戦、大将VS他=引き分け', () {
+      test('大将対大将: 大将VS大将=延長戦、大将VS他=引き分けこと', () {
         expect(daishoDaishoBehavior('大将対大将'), '延長戦を行う');
         expect(daishoVsOtherBehavior('大将対大将'), '引き分け');
       });
 
-      test('✅ 無制限: 大将VS大将=延長戦、大将VS他=延長戦', () {
+      test('無制限: 大将VS大将=延長戦、大将VS他=延長戦こと', () {
         expect(daishoDaishoBehavior('無制限'), '延長戦を行う');
         expect(daishoVsOtherBehavior('無制限'), '延長戦を行う');
       });
 
-      test('✅ なし: 大将VS大将=引き分け、大将VS他=引き分け', () {
+      test('なし: 大将VS大将=引き分け、大将VS他=引き分けこと', () {
         expect(daishoDaishoBehavior('なし'), '引き分け');
         expect(daishoVsOtherBehavior('なし'), '引き分け');
       });
 
-      test('✅ 空文字: 大将VS大将=引き分け', () {
+      test('空文字: 大将VS大将=引き分けこと', () {
         expect(daishoDaishoBehavior(''), '引き分け');
       });
     });
@@ -412,22 +412,22 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // 代表戦延長テキスト
     // ─────────────────────────────────────────────────────────
-    group('🏆 代表戦延長テキスト', () {
+    group('代表戦延長テキスト', () {
       String daihyoEnchoText(bool hasExt, int count) {
         if (!hasExt) return 'なし';
         if (count == -2) return 'あり (無制限)';
         return 'あり (〇分・$count回)';
       }
 
-      test('✅ 代表戦延長なし', () {
+      test('代表戦延長なしこと', () {
         expect(daihyoEnchoText(false, 0), 'なし');
       });
 
-      test('✅ 代表戦延長あり (無制限)', () {
+      test('代表戦延長あり (無制限)こと', () {
         expect(daihyoEnchoText(true, -2), 'あり (無制限)');
       });
 
-      test('✅ 代表戦延長あり (2回)', () {
+      test('代表戦延長あり (2回)こと', () {
         expect(daihyoEnchoText(true, 2), 'あり (〇分・2回)');
       });
     });
@@ -435,7 +435,7 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // 代表戦時間テキスト
     // ─────────────────────────────────────────────────────────
-    group('⏱️ 代表戦時間テキスト', () {
+    group('代表戦時間テキスト', () {
       String daihyoTimeText(double minutes) {
         if (minutes <= 0) return '無制限';
         final m = minutes.toInt();
@@ -443,15 +443,15 @@ void main() {
         return s == 0 ? '$m分' : '$m分$s秒';
       }
 
-      test('✅ 0分 → "無制限"', () {
+      test('0分 → "無制限"であること', () {
         expect(daihyoTimeText(0.0), '無制限');
       });
 
-      test('✅ 3分 → "3分"', () {
+      test('3分 → "3分"であること', () {
         expect(daihyoTimeText(3.0), '3分');
       });
 
-      test('✅ 2分30秒 → "2分30秒"', () {
+      test('2分30秒 → "2分30秒"であること', () {
         expect(daihyoTimeText(2.5), '2分30秒');
       });
     });
@@ -459,15 +459,15 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // 代表戦 一本/三本勝負テキスト
     // ─────────────────────────────────────────────────────────
-    group('🥋 代表戦勝負方式テキスト', () {
+    group('代表戦勝負方式テキスト', () {
       String daihyoRuleText(bool isIpponShobu) =>
           isIpponShobu ? '一本勝負' : '三本勝負';
 
-      test('✅ 一本勝負', () {
+      test('一本勝負こと', () {
         expect(daihyoRuleText(true), '一本勝負');
       });
 
-      test('✅ 三本勝負', () {
+      test('三本勝負こと', () {
         expect(daihyoRuleText(false), '三本勝負');
       });
     });
@@ -475,8 +475,8 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // 錬成会の1対戦時間表示
     // ─────────────────────────────────────────────────────────
-    group('🔄 錬成会の1対戦時間', () {
-      test('✅ 錬成会のとき matchTime が1対戦の時間として使われる', () {
+    group('錬成会の1対戦時間', () {
+      test('錬成会のとき matchTime が1対戦の時間として使われること', () {
         final rule = MatchRule(
           isRenseikai: true,
           matchTimeMinutes: 2.0,
@@ -489,7 +489,7 @@ void main() {
         expect(s.renseikaiType, '一試合制');
       });
 
-      test('✅ 錬成会 時間制のとき overallTimeMinutes が別途表示される', () {
+      test('錬成会 時間制のとき overallTimeMinutes が別途表示されること', () {
         final rule = MatchRule(
           isRenseikai: true,
           matchTimeMinutes: 3.0,
@@ -506,8 +506,8 @@ void main() {
     // ─────────────────────────────────────────────────────────
     // MatchRule からの完全な状態変換 (総合テスト)
     // ─────────────────────────────────────────────────────────
-    group('🧩 完全な状態変換 (総合)', () {
-      test('✅ 団体戦フル: 全ての代表戦詳細が正しく変換される', () {
+    group('完全な状態変換 (総合)', () {
+      test('団体戦フル: 全ての代表戦詳細が正しく変換されること', () {
         final rule = MatchRule(
           matchTimeMinutes: 4.0,
           isRunningTime: false,
@@ -552,7 +552,7 @@ void main() {
         expect(v.showLeagueSection, isFalse);
       });
 
-      test('✅ リーグ団体戦フル: 同点代表戦詳細も正しく変換される', () {
+      test('リーグ団体戦フル: 同点代表戦詳細も正しく変換されること', () {
         final rule = MatchRule(
           isLeague: true,
           hasLeagueDaihyo: true,

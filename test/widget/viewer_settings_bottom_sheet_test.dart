@@ -6,8 +6,8 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('🛡️ ViewerSettingsBottomSheet Widget Tests', () {
-    testWidgets('Renders theme options and liquid glass switch', (
+  group('[Widget] ViewerSettingsBottomSheet ウィジェットテスト', () {
+    testWidgets('Renders theme options and liquid glass switchであること', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

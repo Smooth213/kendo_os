@@ -4,9 +4,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/new
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ NewMatchHeadingNotesCard Widget Tests', () {
+  group('[Widget] NewMatchHeadingNotesCard ウィジェットテスト', () {
     testWidgets(
-      'Renders heading presets and triggers preset toggle and clear',
+      'Renders heading presets and triggers preset toggle and clearであること',
       (WidgetTester tester) async {
         final courtController = TextEditingController();
         final noteController = TextEditingController();

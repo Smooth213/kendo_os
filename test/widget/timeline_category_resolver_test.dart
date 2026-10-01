@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 
 void main() {
-  group('TimelineCategoryTeamResolver Tests', () {
+  group('[Widget] TimelineCategoryTeamResolver テスト', () {
     test('チームおよびグループごとに正しく試合を振り分けられること', () {
       final matches = [
         MatchModel(
@@ -89,7 +89,7 @@ void main() {
     });
   });
 
-  group('TimelinePlayerMatchClassifier Tests', () {
+  group('TimelinePlayerMatchClassifier テスト', () {
     test('団体戦グループと個人戦を正しく分類できること', () {
       final matches = [
         MatchModel(

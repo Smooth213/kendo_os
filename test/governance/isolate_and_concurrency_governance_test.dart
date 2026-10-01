@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🧵 【第12条 ガバナンス監査】Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約', () {
+  group('[Governance] 【第12条 ガバナンス監査】Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約', () {
     test(
-      'Rule 1: [CRDT非同期マージ] sync_crdt_merger.dart における mergeAndRebuildAsync および compute ワーカー配備規約',
+      'Rule 1: [CRDT非同期マージ] sync_crdt_merger.dart における mergeAndRebuildAsync および compute ワーカー配備規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/providers/sync_crdt_merger.dart',
@@ -36,7 +36,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [PDF非同期オフロード] pdf_service.dart におけるPDF生成の compute (Isolate) オフロード義務付け規約',
+      'Rule 2: [PDF非同期オフロード] pdf_service.dart におけるPDF生成の compute (Isolate) オフロード義務付け規約こと',
       () {
         final file = File('lib/features/pdf/pdf_service.dart');
         expect(file.existsSync(), isTrue);
@@ -58,7 +58,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [生フォントバイトキャッシュ] pdf_font_loader.dart における生フォントバイト(loadFontBytes)配備規約',
+      'Rule 3: [生フォントバイトキャッシュ] pdf_font_loader.dart における生フォントバイト(loadFontBytes)配備規約こと',
       () {
         final file = File('lib/features/pdf/services/pdf_font_loader.dart');
         expect(file.existsSync(), isTrue);
@@ -78,7 +78,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [非ブロッキングバックオフ] sync_engine.dart における Future.delayed ブロッキング禁止 ＆ 非同期バックオフ(_nextAttemptAt)規約',
+      'Rule 4: [非ブロッキングバックオフ] sync_engine.dart における Future.delayed ブロッキング禁止 ＆ 非同期バックオフ(_nextAttemptAt)規約こと',
       () {
         final file = File(
           'lib/shared/infrastructure/repository/sync_engine.dart',
@@ -110,7 +110,7 @@ void main() {
     );
 
     test(
-      'Rule 5: [アセットノンブロッキング暖機] app_startup.dart における prewarmAppAssets 配備およびノンブロッキング事前ウォームアップ規約',
+      'Rule 5: [アセットノンブロッキング暖機] app_startup.dart における prewarmAppAssets 配備およびノンブロッキング事前ウォームアップ規約こと',
       () {
         final file = File('lib/bootstrap/app_startup.dart');
         expect(file.existsSync(), isTrue);
@@ -184,7 +184,7 @@ void main() {
     });
 
     test(
-      'Rule 7: [SyncEngineライフサイクル＆タイマー破棄] SyncEngine の AppLifecycleListener コールドスリープ ＆ dispose時破棄規約',
+      'Rule 7: [SyncEngineライフサイクル＆タイマー破棄] SyncEngine の AppLifecycleListener コールドスリープ ＆ dispose時破棄規約こと',
       () {
         final syncEngineFile = File(
           'lib/shared/infrastructure/repository/sync_engine.dart',

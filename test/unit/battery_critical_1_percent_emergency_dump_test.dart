@@ -21,8 +21,8 @@ class EmergencyPowerSaver {
 }
 
 void main() {
-  group('☁️ 【Phase 7-2/8】バッテリー残量1%緊急電源断直前 同期フラッシュダンプテスト', () {
-    test('1. バッテリー1%検知時、進行中のタイマー・スコアが即座に同期永続化されること', () {
+  group('[Unit] 【Phase 7-2/8】バッテリー残量1%緊急電源断直前 同期フラッシュダンプテスト', () {
+    test('バッテリー1%検知時、進行中のタイマー・スコアが即座に同期永続化されること', () {
       final emergencySaver = EmergencyPowerSaver();
 
       final activeMatch = {

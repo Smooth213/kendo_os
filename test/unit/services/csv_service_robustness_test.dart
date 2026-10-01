@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/application/services/csv_service.dart';
 
 void main() {
-  group('🥋 【Unit】CsvService 堅牢性・文字コード・RFC 4180適合テスト', () {
-    test('1. UTF-8 BOM(\\uFEFF)が先頭に付与され、Excelでの文字化けが完全に防止されること', () {
+  group('[Unit] 【Unit】CsvService 堅牢性・文字コード・RFC 4180適合テスト', () {
+    test('UTF-8 BOM(\\uFEFF)が先頭に付与され、Excelでの文字化けが完全に防止されること', () {
       final csv = CsvService.generateCsvString('一般男子の部', []);
       expect(csv.startsWith('\uFEFF'), isTrue);
 
@@ -16,7 +16,7 @@ void main() {
       expect(bytes[2], 0xBF);
     });
 
-    test('2. 外字（異体字・サロゲートペア文字: 髙、﨑、𠮷、德など）が破損せず正確に出力されること', () {
+    test('外字（異体字・サロゲートペア文字: 髙、﨑、𠮷、德など）が破損せず正確に出力されること', () {
       final matches = [
         MatchModel(
           id: 'm_surrogate',
@@ -48,7 +48,7 @@ void main() {
       expect(decoded, equals(csv.substring(1)));
     });
 
-    test('3. 改行やカンマを含む備考欄が改行置換＆ダブルクォーテーションで安全にエスケープされること', () {
+    test('改行やカンマを含む備考欄が改行置換＆ダブルクォーテーションで安全にエスケープされること', () {
       final matches = [
         MatchModel(
           id: 'm_escape',
@@ -81,7 +81,7 @@ void main() {
       expect(dataRow.endsWith('"注意: 行動制限あり, 審判合議あり, 警告2回"'), isTrue);
     });
 
-    test('4. 複数カテゴリ混在時のマルチカテゴリ一括CSV生成の整合性', () {
+    test('複数カテゴリ混在時のマルチカテゴリ一括CSV生成の整合性こと', () {
       final category1Matches = [
         MatchModel(
           id: 'm_cat1',

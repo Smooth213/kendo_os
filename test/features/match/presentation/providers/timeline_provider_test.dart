@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 
 void main() {
-  group('MatchGroupTimelineItem Tests', () {
-    test('order returns the minimum order of matches and comments', () {
+  group('[Unit] MatchGroupTimelineItem テスト', () {
+    test('order returns the minimum order of matches and commentsであること', () {
       final match = const MatchModel(
         id: 'm1',
         matchType: '先鋒',
@@ -40,38 +40,43 @@ void main() {
       expect(item2.order, 10.0, reason: '試合の方が値が小さければ、試合のorderを返すこと');
     });
 
-    test('order returns 0.0 when both matches and comments are empty', () {
+    test('order returns 0.0 when both matches and comments are emptyであること', () {
       final item = MatchGroupTimelineItem('group_empty', [], []);
       expect(item.order, 0.0, reason: '試合もコメントも無い場合は0.0を返すこと');
     });
 
-    test('order works correctly when only comments or only matches exist', () {
-      final match = const MatchModel(
-        id: 'm1',
-        matchType: '先鋒',
-        redName: '赤',
-        whiteName: '白',
-        order: 15.0,
-      );
-      final comment = const MatchCommentModel(
-        id: 'c1',
-        text: 'コメント',
-        order: 25.0,
-      );
+    test(
+      'order works correctly when only comments or only matches existであること',
+      () {
+        final match = const MatchModel(
+          id: 'm1',
+          matchType: '先鋒',
+          redName: '赤',
+          whiteName: '白',
+          order: 15.0,
+        );
+        final comment = const MatchCommentModel(
+          id: 'c1',
+          text: 'コメント',
+          order: 25.0,
+        );
 
-      final itemMatchesOnly = MatchGroupTimelineItem('group_m', [match], []);
-      expect(itemMatchesOnly.order, 15.0, reason: '試合のみの場合は試合の最小orderを返すこと');
+        final itemMatchesOnly = MatchGroupTimelineItem('group_m', [match], []);
+        expect(itemMatchesOnly.order, 15.0, reason: '試合のみの場合は試合の最小orderを返すこと');
 
-      final itemCommentsOnly = MatchGroupTimelineItem('group_c', [], [comment]);
-      expect(
-        itemCommentsOnly.order,
-        25.0,
-        reason: 'コメントのみの場合はコメントの最小orderを返すこと',
-      );
-    });
+        final itemCommentsOnly = MatchGroupTimelineItem('group_c', [], [
+          comment,
+        ]);
+        expect(
+          itemCommentsOnly.order,
+          25.0,
+          reason: 'コメントのみの場合はコメントの最小orderを返すこと',
+        );
+      },
+    );
 
     test(
-      'sortedInnerItems returns a sorted list of matches and comments combined',
+      'sortedInnerItems returns a sorted list of matches and comments combinedであること',
       () {
         final match1 = const MatchModel(
           id: 'm1',
@@ -119,8 +124,8 @@ void main() {
     );
   });
 
-  group('MatchCommentModel implements TimelineItem Tests', () {
-    test('returns correct timeline properties', () {
+  group('MatchCommentModel implements TimelineItem テスト', () {
+    test('returns correct timeline propertiesであること', () {
       final comment = const MatchCommentModel(
         id: 'c123',
         text: 'テスト',

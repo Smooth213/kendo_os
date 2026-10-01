@@ -29,7 +29,7 @@ void main() {
     ProgramViewerPdfPageCache.shared.clear();
   });
 
-  group('📄 1. ProgramSheetPaginationBar 「最初のページに戻る」単体テスト', () {
+  group('[Widget] ProgramSheetPaginationBar 「最初のページに戻る」単体テスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     testWidgets('1ページ目表示時は「最初のページに戻る」ボタンが非活性でタップしてもコールバックが発火しないこと', (
@@ -121,7 +121,7 @@ void main() {
     });
   });
 
-  group('📖 2. ProgramViewerAppBar 「最初のページに戻る」単体テスト', () {
+  group('ProgramViewerAppBar 「最初のページに戻る」単体テスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     testWidgets('複数ページPDFで2ページ目以降のとき「最初のページに戻る」ボタンが活性化し、タップでコールバックが呼ばれること', (
@@ -321,7 +321,7 @@ void main() {
     });
   });
 
-  group('🥋 3. ProgramBottomSheet 「最初のページに戻る」統合動作テスト', () {
+  group('ProgramBottomSheet 「最初のページに戻る」統合動作テスト', () {
     testWidgets('ボトムシートでページ遷移後に「最初のページに戻る」をタップすると1ページ目に戻り保存値も1になること', (
       tester,
     ) async {

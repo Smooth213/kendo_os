@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_finished_navigation_dialog.dart';
 
 void main() {
-  group('MatchFinishedNavigationDialog Tests', () {
+  group('[Widget] MatchFinishedNavigationDialog テスト', () {
     testWidgets(
-      '① Displays clear distinctive buttons for new team match and adding matches',
+      'Displays clear distinctive buttons for new team match and adding matchesであること',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -34,7 +34,7 @@ void main() {
     );
 
     testWidgets(
-      '② Does not display quick next match button when onQuickNextMatch is null (Hon-sen tournament)',
+      'Does not display quick next match button when onQuickNextMatch is null (Hon-sen tournament)こと',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(

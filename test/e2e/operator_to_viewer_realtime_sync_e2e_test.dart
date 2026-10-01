@@ -11,7 +11,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🌐 【E2E】運営者入力 〜 観客席Webビューア即時追従E2Eテスト', () {
+  group('[E2E] 【E2E】運営者入力 〜 観客席Webビューア即時追従E2Eテスト', () {
     test('運営者の得点入力がStreamを通じて観客席Webビューアへ即時伝播・同期されること', () async {
       final now = DateTime(2026, 9, 25, 11, 0, 0);
       final ruleEngine = KendoRuleEngine();

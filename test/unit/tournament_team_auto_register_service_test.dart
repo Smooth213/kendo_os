@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/domain/share_import/tournament_team
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('TournamentTeamAutoRegisterService', () {
+  group('[Unit] TournamentTeamAutoRegisterService', () {
     final roster = [
       PlayerModel(
         id: 'p1',
@@ -32,7 +32,7 @@ void main() {
       ),
     ];
 
-    test('3人制チームの試合形式・カテゴリ・スロット割り当てテスト', () {
+    test('3人制チームの試合形式・カテゴリ・スロット割り当てが正常に機能すること', () {
       final team = const ParsedTeamOrder(
         teamName: '低学年',
         members: [
@@ -61,7 +61,7 @@ void main() {
       expect(playerNames, ['皿田 脩人', '塚本 大道', '久安 智也']);
     });
 
-    test('5人制チームで補欠が存在する場合の割り当てテスト', () {
+    test('5人制チームで補欠が存在する場合の割り当てが正常に機能すること', () {
       final team = const ParsedTeamOrder(
         teamName: '高学年A',
         members: [
@@ -98,7 +98,7 @@ void main() {
       expect(playerNames[5], '補欠選手');
     });
 
-    test('チーム一覧から TeamModel リストへの変換テスト', () {
+    test('チーム一覧から TeamModel リストへの変換が正常に機能すること', () {
       final teams = [
         const ParsedTeamOrder(
           teamName: '低学年',
@@ -162,7 +162,7 @@ void main() {
       expect(category, '小学生の部');
     });
 
-    test('勝ち抜き戦・リーグ戦の自動判定および明示指定テスト', () {
+    test('勝ち抜き戦・リーグ戦の自動判定および明示指定が正常に機能すること', () {
       // 1. チーム名に「勝ち抜き」が含まれる場合 -> 勝ち抜き戦（5人制 / 3人制）
       final kachinukiTeam = const ParsedTeamOrder(
         teamName: '小学生勝ち抜き選抜',

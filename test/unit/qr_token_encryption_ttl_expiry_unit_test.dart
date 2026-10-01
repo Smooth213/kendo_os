@@ -98,10 +98,10 @@ class QrTokenSecurityEngine {
 }
 
 void main() {
-  group('🥋 【Phase 1-8/10】大会・審判QRコード一時トークン暗号署名＆TTL有効期限失効テスト', () {
+  group('[Unit] 【Phase 1-8/10】大会・審判QRコード一時トークン暗号署名＆TTL有効期限失効テスト', () {
     final baseTime = DateTime(2026, 9, 3, 10, 0, 0);
 
-    test('1. 有効期限内の正規トークンが正しく検証・認証されること', () {
+    test('有効期限内の正規トークンが正しく検証・認証されること', () {
       final token = QrTokenSecurityEngine.generateToken(
         tournamentId: 'tourney_101',
         role: 'operator',
@@ -120,7 +120,7 @@ void main() {
       expect(result.error, isNull);
     });
 
-    test('2. 有効期限切れ（TTL Expiry: 24時間経過後）のトークンが確実に失効・遮断されること', () {
+    test('有効期限切れ（TTL Expiry: 24時間経過後）のトークンが確実に失効・遮断されること', () {
       final token = QrTokenSecurityEngine.generateToken(
         tournamentId: 'tourney_101',
         role: 'viewer',
@@ -137,7 +137,7 @@ void main() {
       expect(result.error, 'Token expired');
     });
 
-    test('3. ペイロード改ざん（ViewerからAdminへの権限昇格工作）がHMAC検証で遮断されること', () {
+    test('ペイロード改ざん（ViewerからAdminへの権限昇格工作）がHMAC検証で遮断されること', () {
       final originalToken = QrTokenSecurityEngine.generateToken(
         tournamentId: 'tourney_101',
         role: 'viewer',

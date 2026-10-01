@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
-  group('🛡️ STEP 2-4: オフライン同期エンジン（CRDT・マージ・コンフリクト解決）ユニットテスト要塞', () {
+  group('[Unit] オフライン同期エンジン（CRDT・マージ・コンフリクト解決）ユニットテスト要塞', () {
     late DateTime now;
 
     setUp(() {
@@ -14,7 +14,7 @@ void main() {
     });
 
     test(
-      '1. 【Queue & Dirty判定】syncStateがsynced以外の試合は、未送信データ（isDirty）として正しく検出されること',
+      '【Queue & Dirty判定】syncStateがsynced以外の試合は、未送信データ（isDirty）として正しく検出されること',
       () {
         const matchLocal = MatchModel(
           id: 'sync_test_001',
@@ -38,7 +38,7 @@ void main() {
     );
 
     test(
-      '2. 【Merge & Conflict Resolution】サーバーの歴史とローカルの未送信差分（pendingEvents）が、ランポート論理時計と絶対時刻で厳密にソートされ、確定的に一本化されること',
+      '【Merge & Conflict Resolution】サーバーの歴史とローカルの未送信差分（pendingEvents）が、ランポート論理時計と絶対時刻で厳密にソートされ、確定的に一本化されること',
       () {
         // サーバー側にある既存の歴史（先に同期されていたイベント）
         final remoteEvents = [
@@ -92,7 +92,7 @@ void main() {
     );
 
     test(
-      '3. 【Retry & Sequence防壁】イベント順序順のcompareToが、論理時計最優先のドメイン規約に完全適合していること',
+      '【Retry & Sequence防壁】イベント順序順のcompareToが、論理時計最優先のドメイン規約に完全適合していること',
       () {
         final earlyEvent = ScoreEventLegacyAdapter.fromLegacy(
           id: 'a',

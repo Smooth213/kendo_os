@@ -62,7 +62,7 @@ void main() {
     );
   }
 
-  group('🥋 ProgramBottomSheet 閲覧位置の端末保存・自動復元テスト', () {
+  group('[Widget] ProgramBottomSheet 閲覧位置の端末保存・自動復元テスト', () {
     testWidgets('事前に保存されたプログラムインデックスが自動復元されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
@@ -218,7 +218,7 @@ void main() {
     });
   });
 
-  group('📖 ProgramViewerAppBar 最初のページに戻るボタンのテスト', () {
+  group('ProgramViewerAppBar 最初のページに戻るボタンのテスト', () {
     testWidgets('複数ページPDFで2ページ目以降のときボタンが活性化し、タップでコールバックが呼ばれること', (
       tester,
     ) async {

@@ -6,9 +6,9 @@ import 'package:kendo_os/features/tournament/presentation/components/share_impor
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_teams_card.dart';
 
 void main() {
-  group('📸 【Golden】クリップボード取り込み（個人戦・複数名）＆ 試合形式選択 UI整合性 Goldenテスト', () {
+  group('[Golden] 【Golden】クリップボード取り込み（個人戦・複数名）＆ 試合形式選択 UI整合性 Goldenテスト', () {
     testWidgets(
-      '1. [Golden] 複数名個人戦（中学生の部）取り込みカードがダークモード・ライトモードでオーバーフローなく描画されること',
+      '[Golden] 複数名個人戦（中学生の部）取り込みカードがダークモード・ライトモードでオーバーフローなく描画されること',
       (tester) async {
         tester.view.physicalSize = const Size(400, 800);
         tester.view.devicePixelRatio = 1.0;
@@ -83,53 +83,51 @@ void main() {
       },
     );
 
-    testWidgets(
-      '2. [Golden] 全6カテゴリ（小学生低学年〜一般）の個人戦バッジがモバイル幅（375px）で崩れず描画されること',
-      (tester) async {
-        tester.view.physicalSize = const Size(375, 900);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+    testWidgets('[Golden] 全6カテゴリ（小学生低学年〜一般）の個人戦バッジがモバイル幅（375px）で崩れず描画されること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(375, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
-        final List<ParsedTeamOrder> allCategoryTeams =
-            TournamentTeamAutoRegisterService.candidateCategories
-                .map(
-                  (category) => ParsedTeamOrder(
-                    teamName: '代表選手（$category）',
-                    category: category,
-                    matchType: '個人戦',
-                    members: [
-                      ParsedTeamMember(position: '個人', name: '選手（$category）'),
-                    ],
-                  ),
-                )
-                .toList();
-
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.dark(),
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: CreateTournamentImportTeamsCard(
-                  teams: allCategoryTeams,
-                  isEnabled: true,
-                  onToggle: (_) {},
-                  roster: const [],
+      final List<ParsedTeamOrder> allCategoryTeams =
+          TournamentTeamAutoRegisterService.candidateCategories
+              .map(
+                (category) => ParsedTeamOrder(
+                  teamName: '代表選手（$category）',
+                  category: category,
+                  matchType: '個人戦',
+                  members: [
+                    ParsedTeamMember(position: '個人', name: '選手（$category）'),
+                  ],
                 ),
+              )
+              .toList();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CreateTournamentImportTeamsCard(
+                teams: allCategoryTeams,
+                isEnabled: true,
+                onToggle: (_) {},
+                roster: const [],
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(tester.takeException(), isNull);
-        for (final cat
-            in TournamentTeamAutoRegisterService.candidateCategories) {
-          expect(find.text(cat), findsWidgets);
-        }
-      },
-    );
+      expect(tester.takeException(), isNull);
+      for (final cat in TournamentTeamAutoRegisterService.candidateCategories) {
+        expect(find.text(cat), findsWidgets);
+      }
+    });
 
-    testWidgets('3. [Golden] 試合形式編集ボトムシート（全8形式）がタブレット＆モバイルでレイアウト崩れなく表示されること', (
+    testWidgets('[Golden] 試合形式編集ボトムシート（全8形式）がタブレット＆モバイルでレイアウト崩れなく表示されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844); // iPhone 14相当

@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 /// 🔋 【ガバナンス監査 23/23】端末サーマル冷却＆省電力モード管理（温度＞手動＞自動 ガバナンス永続保証テスト）
 void main() {
-  group('🔋 【ガバナンス監査 23/23】端末サーマル冷却＆省電力モード管理 永続保証テスト', () {
+  group('[Governance] 【ガバナンス監査 23/23】端末サーマル冷却＆省電力モード管理 永続保証テスト', () {
     late ThermalPowerGovernor governor;
     late SharedPreferences prefs;
 
@@ -28,7 +28,7 @@ void main() {
     // =========================================================================
     // 1. 最重要ガバナンス「温度 ＞ 手動 ＞ 自動」の完全階層保証
     // =========================================================================
-    test('1. 【最重要ガバナンス】優先順位「温度 ＞ 手動 ＞ 自動」の完全階層保証規約', () {
+    test('【最重要ガバナンス】優先順位「温度 ＞ 手動 ＞ 自動」の完全階層保証規約こと', () {
       // A. 手動 ＞ 自動: 手動通常固定時は、バッテリー低下やOS低電力モードを無視して通常高速を維持
       governor.updatePreference('normal');
       governor.updateBatteryInfo(
@@ -70,7 +70,7 @@ void main() {
     // =========================================================================
     // 2. 低電力モードON時における電池残量自動切り替え規約
     // =========================================================================
-    test('2. 【低電力＆電池残量連携】OS低電力モードON時における電池残量自動切り替え規約', () {
+    test('【低電力＆電池残量連携】OS低電力モードON時における電池残量自動切り替え規約こと', () {
       governor.updatePreference('auto');
       governor.updateBatteryInfo(
         batteryLevel: 0.80,
@@ -115,38 +115,35 @@ void main() {
     // =========================================================================
     // 3. 絶対時間精度保証規約（タイマー間引き時の精度100%保証）
     // =========================================================================
-    test(
-      '3. 【絶対時間精度保証】サーマル間引き（100ms vs 500ms vs 1000ms）におけるタイマー計算精度100%規約',
-      () {
-        final baseTime = DateTime(2026, 9, 13, 10, 0, 0);
-        final match = MatchModel(
-          id: 'gov_thermal_match',
-          tournamentId: 'tour_1',
-          matchType: 'individual',
-          redName: '選手A',
-          whiteName: '選手B',
-          category: '一般男子',
-          status: 'in_progress',
-          matchTimeMinutes: 3.0, // 3分 (180秒)
-          timerStartedAt: baseTime,
-        );
+    test('【絶対時間精度保証】サーマル間引き（100ms vs 500ms vs 1000ms）におけるタイマー計算精度100%規約こと', () {
+      final baseTime = DateTime(2026, 9, 13, 10, 0, 0);
+      final match = MatchModel(
+        id: 'gov_thermal_match',
+        tournamentId: 'tour_1',
+        matchType: 'individual',
+        redName: '選手A',
+        whiteName: '選手B',
+        category: '一般男子',
+        status: 'in_progress',
+        matchTimeMinutes: 3.0, // 3分 (180秒)
+        timerStartedAt: baseTime,
+      );
 
-        // モードが極限省電力 (1000ms) に間引かれても絶対時刻から残り秒数が完全一致すること
-        final t45 = baseTime.add(const Duration(seconds: 45));
-        expect(match.calculateRemainingSeconds(t45), equals(135));
+      // モードが極限省電力 (1000ms) に間引かれても絶対時刻から残り秒数が完全一致すること
+      final t45 = baseTime.add(const Duration(seconds: 45));
+      expect(match.calculateRemainingSeconds(t45), equals(135));
 
-        final t90 = baseTime.add(const Duration(seconds: 90));
-        expect(match.calculateRemainingSeconds(t90), equals(90));
+      final t90 = baseTime.add(const Duration(seconds: 90));
+      expect(match.calculateRemainingSeconds(t90), equals(90));
 
-        final t180 = baseTime.add(const Duration(seconds: 180));
-        expect(match.calculateRemainingSeconds(t180), equals(0));
-      },
-    );
+      final t180 = baseTime.add(const Duration(seconds: 180));
+      expect(match.calculateRemainingSeconds(t180), equals(0));
+    });
 
     // =========================================================================
     // 4. CPU負荷削減規約（エコ冷却80%削減、極限省電力90%削減）
     // =========================================================================
-    test('4. 【CPU負荷削減規約】エコ冷却で80%削減、極限省電力で90%削減のウェイクアップ間引き規約', () {
+    test('【CPU負荷削減規約】エコ冷却で80%削減、極限省電力で90%削減のウェイクアップ間引き規約こと', () {
       expect(
         governor.recommendedTickInterval,
         equals(const Duration(milliseconds: 100)),
@@ -178,7 +175,7 @@ void main() {
     // =========================================================================
     // 5. 通知クールダウン規約（重複・連続連発の完全防止）
     // =========================================================================
-    test('5. 【通知クールダウン規約】同一温度・状態におけるトースト通知の連発抑制規約', () async {
+    test('【通知クールダウン規約】同一温度・状態におけるトースト通知の連発抑制規約こと', () async {
       governor.updatePreference('auto');
       final events = <ThermalToastEvent>[];
       final sub = governor.toastStream.listen(events.add);
@@ -199,7 +196,7 @@ void main() {
     // =========================================================================
     // 6. 操作非遮断・タップ透過規約（トースト表示中もボタンタップが阻害されない）
     // =========================================================================
-    testWidgets('6. 【操作非遮断・タップ透過規約】トースト表示中も試合画面のボタン操作が一切阻害されない規約', (
+    testWidgets('【操作非遮断・タップ透過規約】トースト表示中も試合画面のボタン操作が一切阻害されない規約こと', (
       tester,
     ) async {
       int tapCount = 0;
@@ -244,7 +241,7 @@ void main() {
     // 7. 設定永続化規約（thermalPowerPreference の SharedPreferences 保持復元）
     // =========================================================================
     test(
-      '7. 【設定永続化規約】thermalPowerPreference の変更が SharedPreferences および SettingsModel に完全永続化・復元される規約',
+      '【設定永続化規約】thermalPowerPreference の変更が SharedPreferences および SettingsModel に完全永続化・復元される規約こと',
       () async {
         final container = ProviderContainer(
           overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],

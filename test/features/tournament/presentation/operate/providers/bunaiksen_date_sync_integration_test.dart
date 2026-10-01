@@ -41,7 +41,7 @@ void main() {
     );
   });
 
-  group('🛡️ Bunaiksen Date & Timezone Sync Integration Tests', () {
+  group('[Unit] Bunaiksen Date & Timezone Sync 統合テスト', () {
     late MockLocalMatchRepository mockLocalRepo;
 
     setUp(() {
@@ -74,7 +74,7 @@ void main() {
       ).thenAnswer((_) => Stream.value(0));
     });
 
-    testWidgets('1. JSTローカル時間に基づく今日の試合作成・バインド検証 (深夜・早朝時間帯の先祖返り防止)', (
+    testWidgets('JSTローカル時間に基づく今日の試合作成・バインド検証 (深夜・早朝時間帯の先祖返り防止)こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -144,7 +144,7 @@ void main() {
       expect(capturedMatch!.tournamentId, 'bunaiksen_$expectedDateStr');
     });
 
-    test('2. Web（Firestore）＆ ネイティブ（Isar）双方向データ表示検証', () async {
+    test('Web（Firestore）＆ ネイティブ（Isar）双方向データ表示が正しく検証されること', () async {
       final fakeFirestore = FakeFirebaseFirestore();
       final targetDateId = 'bunaiksen_20260622';
 
@@ -198,7 +198,7 @@ void main() {
       expect(capturedMatches!.first.tournamentId, targetDateId);
     });
 
-    test('3. 過去日付へのタイムトラベル（カレンダー開放）＆ ソート順検証', () {
+    test('過去日付へのタイムトラベル（カレンダー開放）＆ ソート順が正しく検証されること', () {
       // 過去カレンダーロック解除Predicateの検証 (常にtrue)
       bool calendarPredicate(DateTime date) {
         return true; // selectableDayPredicate is always true
@@ -270,7 +270,7 @@ void main() {
       expect(sortedMatches[3].id, '1'); // finished
     });
 
-    test('4. 例外安全弁（TamperedEventException 対策）の堅牢性検証', () async {
+    test('例外安全弁（TamperedEventException 対策）の堅牢性が正しく検証されること', () async {
       final fakeFirestore = FakeFirebaseFirestore();
       final targetDateId = 'bunaiksen_20260622';
 

@@ -177,8 +177,8 @@ void main() {
     );
   }
 
-  group('MatchTimelineList Sorting Tests', () {
-    testWidgets('1. 個人戦の並び替え (_onReorderInnerTimeline)', (
+  group('[Widget] MatchTimelineList Sorting テスト', () {
+    testWidgets('個人戦の並び替え (_onReorderInnerTimeline)こと', (
       WidgetTester tester,
     ) async {
       // 抽出された個別試合アコーディオン（個人戦）に入る
@@ -244,9 +244,7 @@ void main() {
       ); // 降順ソートのため先頭への移動は remaining.first (m3: 30.0) + 100.0
     });
 
-    testWidgets('2. 団体戦の並び替え (_onReorderTimeline)', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('団体戦の並び替え (_onReorderTimeline)こと', (WidgetTester tester) async {
       // 外側のReorderableListViewでの並び替え
       final matches = [
         createMockMatch(
@@ -324,7 +322,7 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, -90.0);
     });
 
-    testWidgets('3. リーグ個人戦の並び替え (_onReorderInnerTimeline)', (
+    testWidgets('リーグ個人戦の並び替え (_onReorderInnerTimeline)こと', (
       WidgetTester tester,
     ) async {
       final matches = [
@@ -389,9 +387,7 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, 130.0);
     });
 
-    testWidgets('4. リーグ団体戦の並び替え不可仕様の確認 (Column固定)', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('リーグ団体戦の並び替え不可仕様の確認 (Column固定)こと', (WidgetTester tester) async {
       final matches = [
         createMockMatch(
           id: 'm1_1',
@@ -477,8 +473,8 @@ void main() {
     });
   });
 
-  group('MatchTimelineList Grouping Tests (リーグ戦分割不具合の回帰テスト)', () {
-    testWidgets('1. 自チームを含まないリーグ戦が分割されず、1つのグループにまとまること', (
+  group('MatchTimelineList Grouping テスト (リーグ戦分割不具合の回帰テスト)', () {
+    testWidgets('自チームを含まないリーグ戦が分割されず、1つのグループにまとまること', (
       WidgetTester tester,
     ) async {
       final leagueMatches = [
@@ -530,7 +526,7 @@ void main() {
       expect(find.text('青龍会'), findsNothing);
     });
 
-    testWidgets('2. 自チームを含むリーグ戦が1つのグループにまとまること', (WidgetTester tester) async {
+    testWidgets('自チームを含むリーグ戦が1つのグループにまとまること', (WidgetTester tester) async {
       final leagueMatches = [
         createMockMatch(
           id: 'league_a_1',
@@ -577,7 +573,7 @@ void main() {
       expect(find.text('赤龍館'), findsOneWidget);
     });
 
-    testWidgets('3. リーグ団体戦終了時に同点の場合、決定戦の作成ダイアログと各選択肢（代表戦、再試合、何もしない）が表示されること', (
+    testWidgets('リーグ団体戦終了時に同点の場合、決定戦の作成ダイアログと各選択肢（代表戦、再試合、何もしない）が表示されること', (
       WidgetTester tester,
     ) async {
       // 2チームが完全に引き分けた対戦データを作成
@@ -656,7 +652,7 @@ void main() {
       expect(find.text('決定戦の形式を選択'), findsNothing);
     });
 
-    testWidgets('3. 団体戦のオーダー直前変更（ドラッグ＆ドロップ・控え選手交代）', (
+    testWidgets('団体戦のオーダー直前変更（ドラッグ＆ドロップ・控え選手交代）こと', (
       WidgetTester tester,
     ) async {
       // 団体戦の試合データを作成
@@ -798,7 +794,7 @@ void main() {
       expect(updatedSecondMatch.redName, '白虎剣友会 : 山田 太郎');
     });
 
-    testWidgets('4. 団体戦のオーダー直前変更（マスタ外・助っ人手動追加）', (WidgetTester tester) async {
+    testWidgets('団体戦のオーダー直前変更（マスタ外・助っ人手動追加）こと', (WidgetTester tester) async {
       // 団体戦の試合データを作成
       final matches = [
         createMockMatch(
@@ -905,7 +901,9 @@ void main() {
       expect(updatedFirstMatch.redName, '白虎剣友会 : 助っ人 太郎');
     });
 
-    testWidgets('5. 団体戦のオーダー直前変更ボトムシートのデザイン整合性検証', (WidgetTester tester) async {
+    testWidgets('団体戦のオーダー直前変更ボトムシートのデザイン整合性が正しく検証されること', (
+      WidgetTester tester,
+    ) async {
       // 団体戦の試合データを作成
       final matches = [
         createMockMatch(
@@ -979,7 +977,7 @@ void main() {
       expect(textWidget.style?.fontWeight, AppFontWeight.semiBold);
     });
 
-    testWidgets('5. ルール一括変更ボタンタップ時の動作検証', (WidgetTester tester) async {
+    testWidgets('ルール一括変更ボタンタップ時の動作が正しく検証されること', (WidgetTester tester) async {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -1019,7 +1017,7 @@ void main() {
     });
 
     testWidgets(
-      '6. matchCommandProvider.deleteMatch on Web preserves currentDojoIdProvider',
+      'matchCommandProvider.deleteMatch on Web preserves currentDojoIdProviderであること',
       (WidgetTester tester) async {
         debugIsWebOverride = true;
         addTearDown(() {
@@ -1056,7 +1054,7 @@ void main() {
       },
     );
 
-    testWidgets('7. 団体戦 vs 個人戦のヘッダーコメント表示＆ダークモード文字色視認性検証', (
+    testWidgets('団体戦 vs 個人戦のヘッダーコメント表示＆ダークモード文字色視認性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2000);
@@ -1137,7 +1135,7 @@ void main() {
       expect(checkedIndiv, isTrue);
     });
 
-    testWidgets('8. 団体戦 vs 個人戦のヘッダーコメント表示＆ライトモード文字色視認性検証', (
+    testWidgets('団体戦 vs 個人戦のヘッダーコメント表示＆ライトモード文字色視認性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2000);
@@ -1208,7 +1206,7 @@ void main() {
     });
 
     testWidgets(
-      '15. 【視認性保証テスト】MatchListTileCard の中央スコアセパレーター（ー）および引き分けマーク（✕）が黒潰れ(0x8A000000)せず、高コントラストな subTextColor で描画されること',
+      '【視認性保証テスト】MatchListTileCard の中央スコアセパレーター（ー）および引き分けマーク（）が黒潰れ(0x8A000000)せず、高コントラストな subTextColor で描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2000);
         tester.view.devicePixelRatio = 1.0;
@@ -1317,7 +1315,7 @@ void main() {
     );
 
     testWidgets(
-      '16. 【Null check operator 回帰テスト】見出しコメント（MatchCommentModel）が存在する場合に ReorderableListView がクラッシュせず正常描画されること',
+      '【Null check operator 回帰テスト】見出しコメント（MatchCommentModel）が存在する場合に ReorderableListView がクラッシュせず正常描画されること',
       (tester) async {
         final List<MatchModel> matches = [
           createMockMatch(

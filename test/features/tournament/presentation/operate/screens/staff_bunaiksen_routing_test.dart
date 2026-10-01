@@ -57,7 +57,7 @@ void main() {
     );
   });
 
-  group('🛡️ Staff Bunaiksen Routing Tests', () {
+  group('[Widget] Staff Bunaiksen Routing テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockPlayerRepository mockPlayerRepo;
     late MockSyncEngine mockSyncEngine;
@@ -120,7 +120,7 @@ void main() {
     });
 
     testWidgets(
-      '1. スタッフ権限（UserRole.admin）での部内戦遷移検証：BunaiksenHomeScreenへ遷移し試合作成ボタンが活性化していること',
+      'スタッフ権限（UserRole.admin）での部内戦遷移検証：BunaiksenHomeScreenへ遷移し試合作成ボタンが活性化していること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

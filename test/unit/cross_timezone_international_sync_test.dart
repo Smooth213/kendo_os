@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🌐 【Phase 4-10/11】世界剣道選手権 時差跨ぎ端末間（UTCエポックミリ秒同期）経過秒数完全一致テスト', () {
-    test('1. エポックミリ秒（Unix Timestamp）基準で計算することで、全世界どの端末でも残り時間が完全一致すること', () {
+  group('[Unit] 【Phase 4-10/11】世界剣道選手権 時差跨ぎ端末間（UTCエポックミリ秒同期）経過秒数完全一致テスト', () {
+    test('エポックミリ秒（Unix Timestamp）基準で計算することで、全世界どの端末でも残り時間が完全一致すること', () {
       // 試合開始時刻（UTC 2026-09-03 01:00:00Z）
       final matchStartEpochMs = DateTime.utc(
         2026,

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📜 【第11条 ガバナンス監査】リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約', () {
+  group('[Governance] 【第11条 ガバナンス監査】リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約', () {
     test(
       'Rule 1: [選手候補入力仮想化] smart_player_input.dart で全選手の一斉生成が禁止され、ListView.builder が使用されていること',
       () {

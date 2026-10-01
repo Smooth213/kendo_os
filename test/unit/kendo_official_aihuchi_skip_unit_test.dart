@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🥋 【Phase 1-5/10】全剣連規則 相打ち・無効打突時のスコア不変性＆タイマー再開制御テスト', () {
+  group('[Unit] 【Phase 1-5/10】全剣連規則 相打ち・無効打突時のスコア不変性＆タイマー再開制御テスト', () {
     late KendoRuleEngine ruleEngine;
     final startTime = DateTime(2026, 9, 3, 10, 0, 0);
 
@@ -25,7 +25,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 相打ち（同時打突）発生時、有効打突不成立としてスコアに変化がないこと', () {
+    test('相打ち（同時打突）発生時、有効打突不成立としてスコアに変化がないこと', () {
       // 相打ち時はスコアイベントを記録しない（審判は「相打ち」と宣告して始めに戻す）
       final List<ScoreEvent> activeEvents = [];
 
@@ -41,7 +41,7 @@ void main() {
       expect(analysis.displays[Side.white]?.isEmpty ?? true, isTrue);
     });
 
-    test('2. 相打ちによる時計停止（中段）➔ 再開後、タイマー経過秒数が正しく積算されること', () {
+    test('相打ちによる時計停止（中段） 再開後、タイマー経過秒数が正しく積算されること', () {
       // 30秒経過時点で相打ち発生、時計停止（10:00:30）
       // 停止時間: 15秒間（合議・位置戻し）
       // 10:00:45 に「始め」で再開

@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 BunaiksenDockButton Widget Tests', () {
+  group('[Widget] BunaiksenDockButton ウィジェットテスト', () {
     late SharedPreferences prefs;
 
     setUp(() async {
@@ -49,7 +49,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 管理者・オペレーター時は部内戦ドックボタンが正常に描画されること', (tester) async {
+    testWidgets('管理者・オペレーター時は部内戦ドックボタンが正常に描画されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -64,7 +64,7 @@ void main() {
     });
 
     testWidgets(
-      '2. 🛡️ ガバナンス第6条: isViewerMode=true の場合は画面上に一切描画されないこと (findsNothing)',
+      '【findsNothing】ガバナンス第6条: isViewerMode=true の場合は画面上に一切描画されないこと',
       (tester) async {
         await tester.pumpWidget(
           createTestWidget(isViewerMode: true, role: UserRole.admin),
@@ -75,19 +75,18 @@ void main() {
       },
     );
 
-    testWidgets(
-      '3. 🛡️ ガバナンス第6条: UserRole.viewer の場合は画面上に一切描画されないこと (findsNothing)',
-      (tester) async {
-        await tester.pumpWidget(
-          createTestWidget(isViewerMode: false, role: UserRole.viewer),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('【findsNothing】ガバナンス第6条: UserRole.viewer の場合は画面上に一切描画されないこと', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createTestWidget(isViewerMode: false, role: UserRole.viewer),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.byType(DockParentButton), findsNothing);
-      },
-    );
+      expect(find.byType(DockParentButton), findsNothing);
+    });
 
-    testWidgets('4. タップで展開され、全6つの機能アイテム（対戦・成績・日付・メモ・タイマー・設定）が表示されること', (
+    testWidgets('タップで展開され、全6つの機能アイテム（対戦・成績・日付・メモ・タイマー・設定）が表示されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);
@@ -123,7 +122,7 @@ void main() {
     });
 
     testWidgets(
-      '5. タイマー動作時は親ボタンにタイマーバッジが表示され、展開時はIcons.timer_roundedとなること（大会ホームと同一）',
+      '【大会ホームと同一】タイマー動作時は親ボタンにタイマーバッジが表示され、展開時はIcons.timer_roundedとなること',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1000);
         tester.view.devicePixelRatio = 1.0;
@@ -154,7 +153,7 @@ void main() {
     );
 
     test(
-      '6. 🛡️ ガバナンス第6条 静的検証: lib/features/viewer/ 配下に BunaiksenDockButton が一切存在しないこと',
+      'ガバナンス第6条 静的検証: lib/features/viewer/ 配下に BunaiksenDockButton が一切存在しないこと',
       () {
         final viewerDir = Directory('lib/features/viewer');
         expect(viewerDir.existsSync(), isTrue);

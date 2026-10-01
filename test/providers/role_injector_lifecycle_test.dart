@@ -10,9 +10,9 @@ void main() {
     await setupTestFirebase();
   });
 
-  group('🛡️ RoleInjector Riverpod Lifecycle Safety Test', () {
+  group('[Unit] RoleInjector Riverpod Lifecycle Safety テスト', () {
     test(
-      '✅ 1. URL パラメータ role=viewer が正しく解析され authSessionProvider に反映されること',
+      'URL パラメータ role=viewer が正しく解析され authSessionProvider に反映されること',
       () async {
         const roleStr = 'viewer';
         const dojoId = 'test010';
@@ -38,7 +38,7 @@ void main() {
       },
     );
 
-    test('✅ 2. authSessionProvider が viewer session で確立されること', () async {
+    test('authSessionProvider が viewer session で確立されること', () async {
       final testContainer = ProviderContainer();
       addTearDown(testContainer.dispose);
 
@@ -53,33 +53,30 @@ void main() {
       }
     });
 
-    test(
-      '✅ 3. RoleInjector が Provider init 中に state を修正しないこと（回帰テスト）',
-      () async {
-        bool riverpodViolationDetected = false;
+    test('【回帰テスト】RoleInjector が Provider init 中に state を修正しないこと', () async {
+      bool riverpodViolationDetected = false;
 
-        try {
-          final badContainer = ProviderContainer();
+      try {
+        final badContainer = ProviderContainer();
 
-          final testProvider = FutureProvider<String>((ref) async {
-            await Future.delayed(Duration.zero);
-            return 'ok';
-          });
+        final testProvider = FutureProvider<String>((ref) async {
+          await Future.delayed(Duration.zero);
+          return 'ok';
+        });
 
-          addTearDown(badContainer.dispose);
-          await badContainer.read(testProvider.future);
-        } on AssertionError catch (e) {
-          if (e.toString().contains('Providers are not allowed')) {
-            riverpodViolationDetected = true;
-          }
+        addTearDown(badContainer.dispose);
+        await badContainer.read(testProvider.future);
+      } on AssertionError catch (e) {
+        if (e.toString().contains('Providers are not allowed')) {
+          riverpodViolationDetected = true;
         }
+      }
 
-        expect(
-          riverpodViolationDetected,
-          isFalse,
-          reason: 'Riverpod provider lifecycle violation should not occur',
-        );
-      },
-    );
+      expect(
+        riverpodViolationDetected,
+        isFalse,
+        reason: 'Riverpod provider lifecycle violation should not occur',
+      );
+    });
   });
 }

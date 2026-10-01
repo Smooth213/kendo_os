@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
 
 void main() {
-  group('🏎️ 【Phase 11: Dart AOT コンパイル関数インライン化】マイクロベンチマーク＆整合性テスト', () {
+  group('[Governance] 【Phase 11: Dart AOT コンパイル関数インライン化】マイクロベンチマーク＆整合性テスト', () {
     late MatchModel testMatch;
 
     setUp(() {
@@ -21,7 +21,7 @@ void main() {
     });
 
     test(
-      'calculateRemainingSeconds 100,000回連続呼び出しマイクロベンチマーク（超高速・ゼロアロケーション）',
+      'calculateRemainingSeconds 100,000回連続呼び出しマイクロベンチマーク（超高速・ゼロアロケーション）こと',
       () {
         final now = DateTime(2026, 9, 4, 10, 1, 30);
         const iterations = 100000;
@@ -58,7 +58,7 @@ void main() {
       },
     );
 
-    test('timerIsRunning 及び isDirty のインライン getter 整合性', () {
+    test('timerIsRunning 及び isDirty のインライン getter 整合性こと', () {
       expect(testMatch.timerIsRunning, isTrue);
       expect(testMatch.isDirty, isFalse);
 
@@ -66,7 +66,7 @@ void main() {
       expect(stoppedMatch.timerIsRunning, isFalse);
     });
 
-    test('isHansokuIppon のインライン述語計算の正確性', () {
+    test('isHansokuIppon のインライン述語計算の正確性こと', () {
       final engine = KendoRuleEngine();
 
       expect(engine.isHansokuIppon(1), isFalse);
@@ -76,7 +76,7 @@ void main() {
       expect(engine.isHansokuIppon(0), isFalse);
     });
 
-    test('SyncCrdtMerger.sanitizeForSync のインラインペイロード変換', () {
+    test('SyncCrdtMerger.sanitizeForSync のインラインペイロード変換こと', () {
       final rawData = {
         'redScore': 2,
         'whiteScore': 1,

@@ -136,12 +136,12 @@ Widget _buildDialogContent({
 }
 
 void main() {
-  group('🎨 プログラム追加ダイアログ テーマ対応テスト', () {
+  group('[Widget] プログラム追加ダイアログ テーマ対応テスト', () {
     // ────────────────────────────────────────
     // ① 文字色：テーマに応じた onSurface カラー
     // ────────────────────────────────────────
-    group('① TextFormField 文字色', () {
-      testWidgets('1-1. ライトモード: 入力文字色が onSurface（ほぼ黒）であること', (
+    group('TextFormField 文字色', () {
+      testWidgets('ライトモード: 入力文字色が onSurface（ほぼ黒）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -167,7 +167,7 @@ void main() {
         );
       });
 
-      testWidgets('1-2. ダークモード: 入力文字色が onSurface（ほぼ白）であること', (
+      testWidgets('ダークモード: 入力文字色が onSurface（ほぼ白）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -193,7 +193,7 @@ void main() {
         );
       });
 
-      testWidgets('1-3. ライト/ダークで onSurface の色が異なること（ヒント色は同じグレー）', (
+      testWidgets('【ヒント色は同じグレー】3. ライト/ダークで onSurface の色が異なること', (
         WidgetTester tester,
       ) async {
         final lightOnSurface = ThemeData.light().colorScheme.onSurface;
@@ -211,8 +211,8 @@ void main() {
     // ────────────────────────────────────────
     // ② 必須案内テキスト：表示/非表示・強調
     // ────────────────────────────────────────
-    group('② 入力欄下の必須案内テキスト', () {
-      testWidgets('2-1. タイトルが空のとき案内テキストが表示されること', (WidgetTester tester) async {
+    group('入力欄下の必須案内テキスト', () {
+      testWidgets('タイトルが空のとき案内テキストが表示されること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: false,
@@ -231,7 +231,7 @@ void main() {
         expect(find.text('タイトルは必須です（入力しないと保存できません）'), findsOneWidget);
       });
 
-      testWidgets('2-2. タイトルを入力すると案内テキストが消えること', (WidgetTester tester) async {
+      testWidgets('タイトルを入力すると案内テキストが消えること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: false,
@@ -249,7 +249,7 @@ void main() {
         );
       });
 
-      testWidgets('2-3. OK押下前（通常時）はオレンジ色・info_outline アイコンで表示されること', (
+      testWidgets('OK押下前（通常時）はオレンジ色・info_outline アイコンで表示されること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -285,7 +285,7 @@ void main() {
         );
       });
 
-      testWidgets('2-4. OK押下後（強調時）は赤色・error_outline アイコンに切り替わること', (
+      testWidgets('OK押下後（強調時）は赤色・error_outline アイコンに切り替わること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -321,9 +321,7 @@ void main() {
         );
       });
 
-      testWidgets('2-5. ダークモードでも必須案内テキストが正しく表示されること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ダークモードでも必須案内テキストが正しく表示されること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: true,
@@ -341,9 +339,7 @@ void main() {
         );
       });
 
-      testWidgets('2-6. ダークモードのOK押下後強調もオレンジ→赤に切り替わること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ダークモードのOK押下後強調もオレンジ→赤に切り替わること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: true,
@@ -368,8 +364,8 @@ void main() {
     // ────────────────────────────────────────
     // ③ 入力エリア背景色
     // ────────────────────────────────────────
-    group('③ タイトル入力エリア背景色', () {
-      testWidgets('3-1. ライトモード: 背景色が indigo.shade50（薄紫）であること', (
+    group('タイトル入力エリア背景色', () {
+      testWidgets('ライトモード: 背景色が indigo.shade50（薄紫）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -392,7 +388,7 @@ void main() {
         );
       });
 
-      testWidgets('3-2. ダークモード: 背景色が #1C1C2E（暗い紺色）であること', (
+      testWidgets('ダークモード: 背景色が #1C1C2E（暗い紺色）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -419,8 +415,8 @@ void main() {
     // ────────────────────────────────────────
     // ④ ファイルリストタイルのダーク対応
     // ────────────────────────────────────────
-    group('④ ファイルリストタイル', () {
-      testWidgets('4-1. ライトモード: タイルの tileColor は null（テーマ依存）であること', (
+    group('ファイルリストタイル', () {
+      testWidgets('ライトモード: タイルの tileColor は null（テーマ依存）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -443,7 +439,7 @@ void main() {
         );
       });
 
-      testWidgets('4-2. ダークモード: タイルの tileColor が #1C1C1E（暗色）であること', (
+      testWidgets('ダークモード: タイルの tileColor が #1C1C1E（暗色）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -466,7 +462,7 @@ void main() {
         );
       });
 
-      testWidgets('4-3. ライトモード: 選択ハイライトが indigo.shade50 であること', (
+      testWidgets('ライトモード: 選択ハイライトが indigo.shade50 であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -489,7 +485,7 @@ void main() {
         );
       });
 
-      testWidgets('4-4. ダークモード: 選択ハイライトが indigo.shade900（半透明）であること', (
+      testWidgets('ダークモード: 選択ハイライトが indigo.shade900（半透明）であること', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(

@@ -11,7 +11,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('TimelineUnifiedAnnounceDialog renders properly', (tester) async {
+  testWidgets('TimelineUnifiedAnnounceDialog renders properlyであること', (
+    tester,
+  ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

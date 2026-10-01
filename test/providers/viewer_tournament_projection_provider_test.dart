@@ -28,7 +28,7 @@ class FakeTournamentRepository implements TournamentRepository {
 }
 
 void main() {
-  group('🛡️ STEP 3-1: viewerTournamentProjectionProvider 非同期4状態 完全テスト要塞', () {
+  group('[Unit] viewerTournamentProjectionProvider 非同期4状態 完全テスト要塞', () {
     late FakeTournamentRepository fakeRepo;
     const tId = 'tournament_provider_test_001';
 
@@ -37,7 +37,7 @@ void main() {
     });
 
     test(
-      '1. 【Projection生成】正常な大会モデルと試合リストが供給された際、完全な動的Projection（AsyncData）が生成されること',
+      '【Projection生成】正常な大会モデルと試合リストが供給された際、完全な動的Projection（AsyncData）が生成されること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -80,7 +80,7 @@ void main() {
     );
 
     test(
-      '2. 【null処理】大会データが未登録（null）であっても、システムがクラッシュせずフォールバックダミーが自動適用されること',
+      '【null処理】大会データが未登録（null）であっても、システムがクラッシュせずフォールバックダミーが自動適用されること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -105,7 +105,7 @@ void main() {
     );
 
     test(
-      '3. 【loading】インフラ層からのデータ疎通を待機している間、プロバイダが正確に AsyncLoading 状態をホールドすること',
+      '【loading】インフラ層からのデータ疎通を待機している間、プロバイダが正確に AsyncLoading 状態をホールドすること',
       () {
         final container = ProviderContainer(
           overrides: [
@@ -121,7 +121,7 @@ void main() {
     );
 
     test(
-      '4. 【error】通信障害や権限エラーが発生した際、プロバイダが破綻せず正確に AsyncError をUIへ伝播すること',
+      '【error】通信障害や権限エラーが発生した際、プロバイダが破綻せず正確に AsyncError をUIへ伝播すること',
       () async {
         final container = ProviderContainer(
           overrides: [

@@ -44,7 +44,7 @@ void main() {
     ).thenAnswer((_) => Future.value());
   });
 
-  group('🛡️ MasterManagementScreen Welcome Flow Tests', () {
+  group('[Widget] MasterManagementScreen Welcome Flow テスト', () {
     testWidgets(
       '初期状態で道場名登録ボタンが表示され、登録後に選手登録ボタンへ切り替わり、organizationが正しくインジェクションされること',
       (WidgetTester tester) async {

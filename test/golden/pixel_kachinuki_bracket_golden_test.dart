@@ -39,8 +39,8 @@ MatchProjection _makeMatchProjection({
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】勝ち抜き戦ブラケット（PDFスタイル準拠スリム描画）視覚整合性テスト', () {
-    testWidgets('1. 勝ち抜き戦ブラケット：標準試合展開（打突・勝敗・残留・スコアマーク）検証', (
+  group('[Golden] 【Golden】勝ち抜き戦ブラケット（PDFスタイル準拠スリム描画）視覚整合性テスト', () {
+    testWidgets('勝ち抜き戦ブラケット：標準試合展開（打突・勝敗・残留・スコアマーク）が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 600);
@@ -107,7 +107,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 勝ち抜き戦ブラケット：長いチーム名2行折り返し・引き分け×・延長バッジ描画検証', (
+    testWidgets('勝ち抜き戦ブラケット：長いチーム名2行折り返し・引き分け×・延長バッジ描画が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 600);
@@ -164,7 +164,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('3. 勝ち抜き戦ブラケット：ダークモード視覚的整合性・高コントラスト描画検証', (
+    testWidgets('勝ち抜き戦ブラケット：ダークモード視覚的整合性・高コントラスト描画が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 600);

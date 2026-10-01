@@ -55,9 +55,9 @@ void main() {
     order: 1.0,
   );
 
-  group('🥋 個人戦カード 5段構造レイアウト ＆ 統一バッジ 永続保持テスト要塞', () {
+  group('[Widget] 個人戦カード 5段構造レイアウト ＆ 統一バッジ 永続保持テスト要塞', () {
     testWidgets(
-      '1. 管理画面（TimelineIndividualPlayerCard）で試合中（LIVE）の5段構造が正しく描画されること',
+      '管理画面（TimelineIndividualPlayerCard）で試合中（LIVE）の5段構造が正しく描画されること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -117,7 +117,7 @@ void main() {
       },
     );
 
-    testWidgets('2. 待機中（pendingのみ）の場合、4段目に「⏳ 次の出番」が表示されること', (tester) async {
+    testWidgets('待機中（pendingのみ）の場合、4段目に「 次の出番」が表示されること', (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
       await tester.pumpWidget(
@@ -147,7 +147,7 @@ void main() {
       expect(find.textContaining('⏳ 次の出番: vs 相手 次郎（強豪館）'), findsOneWidget);
     });
 
-    testWidgets('3. 全試合終了時、1段目に「終了」バッジ、4段目に「🏁 全試合終了: 通算 1勝 0敗」が表示されること', (
+    testWidgets('全試合終了時、1段目に「終了」バッジ、4段目に「 全試合終了: 通算 1勝 0敗」が表示されること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -180,7 +180,7 @@ void main() {
     });
 
     testWidgets(
-      '4. 観客席画面（ViewerIndividualPlayerCard）でも同一の5段構造とMatchStatusBadgeが描画されること',
+      '観客席画面（ViewerIndividualPlayerCard）でも同一の5段構造とMatchStatusBadgeが描画されること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,

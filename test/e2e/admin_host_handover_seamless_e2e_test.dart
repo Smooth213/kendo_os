@@ -29,8 +29,8 @@ class AdminHostManager {
 }
 
 void main() {
-  group('🚀 【Phase 5-6/10】大会本部端末電池切れ サブ端末へのAdminホスト権限引き継ぎ E2Eテスト', () {
-    test('1. 旧端末（iPad A）から新端末（iPad B）へPIN引き継ぎ実行後、旧端末が降格し新端末がAdminに昇格すること', () {
+  group('[E2E] 【Phase 5-6/10】大会本部端末電池切れ サブ端末へのAdminホスト権限引き継ぎ E2Eテスト', () {
+    test('旧端末（iPad A）から新端末（iPad B）へPIN引き継ぎ実行後、旧端末が降格し新端末がAdminに昇格すること', () {
       final manager = AdminHostManager(
         initialAdminDevice: 'ipad_hq_primary',
         masterHandoverPin: '8899',
@@ -52,7 +52,7 @@ void main() {
       expect(manager.getRoleForDevice('ipad_hq_primary'), Role.viewer);
     });
 
-    test('2. 不正なPINでの乗っ取り試行が拒絶されること', () {
+    test('不正なPINでの乗っ取り試行が拒絶されること', () {
       final manager = AdminHostManager(
         initialAdminDevice: 'ipad_hq_primary',
         masterHandoverPin: '8899',

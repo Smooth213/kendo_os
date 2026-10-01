@@ -55,8 +55,8 @@ void main() {
     fakeService = FakeMatchApplicationService();
   });
 
-  group('MatchTimerProvider (UI Layer) Governance Tests', () {
-    test('1. 無限リセット防止: キャッシュされた秒数は外部の通信ラグで上書きされない', () {
+  group('[Unit] MatchTimerProvider (UI Layer) Governance テスト', () {
+    test('無限リセット防止: キャッシュされた秒数は外部の通信ラグで上書きされないこと', () {
       final dummyMatch = createDummyMatch(id: 'match1', matchTimeMinutes: 3);
 
       final container = ProviderContainer(
@@ -81,61 +81,58 @@ void main() {
       container.dispose();
     });
 
-    test(
-      '2. 計算の正確性: toggleTimer(Pause) 時に現在の残り秒数(キャッシュ)が正しくDBへ保存される',
-      () async {
-        final dummyMatch = createDummyMatch(
-          id: 'match2',
-          matchTimeMinutes: 3, // 初期の残り時間
-          timerStartedAt: SystemTimeSource().now().subtract(
-            const Duration(seconds: 10),
-          ),
-          status: 'in_progress',
-        );
+    test('計算の正確性: toggleTimer(Pause) 時に現在の残り秒数(キャッシュ)が正しくDBへ保存されること', () async {
+      final dummyMatch = createDummyMatch(
+        id: 'match2',
+        matchTimeMinutes: 3, // 初期の残り時間
+        timerStartedAt: SystemTimeSource().now().subtract(
+          const Duration(seconds: 10),
+        ),
+        status: 'in_progress',
+      );
 
-        final container = ProviderContainer(
-          overrides: [
-            matchListProvider.overrideWith((ref) => [dummyMatch]),
-            matchApplicationServiceProvider.overrideWithValue(fakeService),
-          ],
-        );
+      final container = ProviderContainer(
+        overrides: [
+          matchListProvider.overrideWith((ref) => [dummyMatch]),
+          matchApplicationServiceProvider.overrideWithValue(fakeService),
+        ],
+      );
 
-        final timerEngine = container.read(matchTimerProvider);
+      final timerEngine = container.read(matchTimerProvider);
 
-        // ★ 新アーキテクチャのシミュレート:
-        // 画面ロード時にタイマーが稼働中であればTickerが開始される状態を作る
-        timerEngine.startLocalTicker('match2', isImmediateStart: true);
+      // ★ 新アーキテクチャのシミュレート:
+      // 画面ロード時にタイマーが稼働中であればTickerが開始される状態を作る
+      timerEngine.startLocalTicker('match2', isImmediateStart: true);
 
-        // ローカルのTickerが10秒間動いて、UIの表示秒数が「170秒」に更新されている状態を作る
-        container.read(liveRemainingSecondsProvider('match2').notifier).state =
-            170;
+      // ローカルのTickerが10秒間動いて、UIの表示秒数が「170秒」に更新されている状態を作る
+      container.read(liveRemainingSecondsProvider('match2').notifier).state =
+          170;
 
-        // UIから「一時停止(Pause)」を指令
-        await timerEngine.toggleTimer('match2');
+      // UIから「一時停止(Pause)」を指令
+      await timerEngine.toggleTimer('match2');
 
-        // 検証: モックに渡された保存データを確認
-        final savedMatch = fakeService.lastSavedMatch;
-        expect(savedMatch, isNotNull);
-        expect(savedMatch!.timerIsRunning, false, reason: 'タイマーが停止状態になっていること');
-        expect(
-          savedMatch.timerStartedAt,
-          isNull,
-          reason: '次回の計算のために開始時刻がリセットされていること',
-        );
-        expect(savedMatch.timerPausedAt, isNotNull, reason: '停止時刻が記録されていること');
+      // 検証: モックに渡された保存データを確認
+      final savedMatch = fakeService.lastSavedMatch;
+      expect(savedMatch, isNotNull);
+      expect(savedMatch!.timerIsRunning, false, reason: 'タイマーが停止状態になっていること');
+      expect(
+        savedMatch.timerStartedAt,
+        isNull,
+        reason: '次回の計算のために開始時刻がリセットされていること',
+      );
+      expect(savedMatch.timerPausedAt, isNotNull, reason: '停止時刻が記録されていること');
 
-        // ★ 検証: DBの計算ではなく、「UIに見えていた170秒」がそのまま正確にDBへ保存されていること
-        expect(
-          savedMatch.calculateRemainingSeconds(SystemTimeSource().now()),
-          170,
-          reason: '画面上の秒数がそのまま記録されること',
-        );
+      // ★ 検証: DBの計算ではなく、「UIに見えていた170秒」がそのまま正確にDBへ保存されていること
+      expect(
+        savedMatch.calculateRemainingSeconds(SystemTimeSource().now()),
+        170,
+        reason: '画面上の秒数がそのまま記録されること',
+      );
 
-        container.dispose();
-      },
-    );
+      container.dispose();
+    });
 
-    test('3. 手動更新時の凍結防止: 稼働中に時間を修正してもタイマーがフリーズしない', () async {
+    test('手動更新時の凍結防止: 稼働中に時間を修正してもタイマーがフリーズしないこと', () async {
       final dummyMatch = createDummyMatch(
         id: 'match3',
         matchTimeMinutes: 2,
@@ -176,7 +173,7 @@ void main() {
       container.dispose();
     });
 
-    test('4. 試合時間の端数保持: 1.5分（90秒）の試合時間が切り捨てられずに正しく反映される', () {
+    test('試合時間の端数保持: 1.5分（90秒）の試合時間が切り捨てられずに正しく反映されること', () {
       // 1.5分（= 90秒）を設定。以前のバグではここで int に丸められて 1分（60秒）になっていた。
       final dummyMatch = createDummyMatch(id: 'match4', matchTimeMinutes: 1.5);
 
@@ -192,7 +189,7 @@ void main() {
       container.dispose();
     });
 
-    test('5. 延長時間の端数保持: 延長戦で2.5分（150秒）の時間が正しく反映される', () {
+    test('延長時間の端数保持: 延長戦で2.5分（150秒）の時間が正しく反映されること', () {
       // 延長戦のシミュレート: matchTypeを延長戦にして、matchTimeMinutesに2.5を設定
       final dummyMatch = createDummyMatch(
         id: 'match5',
@@ -211,7 +208,7 @@ void main() {
       container.dispose();
     });
 
-    test('6. 代表戦のタイマー設定: 時間が無制限（0.0分）のとき、初期値が0秒になること', () {
+    test('代表戦のタイマー設定: 時間が無制限（0.0分）のとき、初期値が0秒になること', () {
       // 代表戦のシミュレート: matchTypeを代表戦にして、matchTimeMinutesに0.0を設定
       final dummyMatch = createDummyMatch(
         id: 'match6',

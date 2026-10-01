@@ -6,13 +6,13 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_command_st
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🌐 LocalMatchCommandStore Web/SharedPreferences フォールバック結合テスト', () {
+  group('[Unit] LocalMatchCommandStore Web/SharedPreferences フォールバック結合テスト', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
     });
 
     test(
-      '1. [単体コマンド保存＆取得] isar=null (Web環境) でも SharedPreferences に保存され復元できること',
+      '[単体コマンド保存＆取得] isar=null (Web環境) でも SharedPreferences に保存され復元できること',
       () async {
         final cmd = MatchCommandModel(
           id: 'cmd-web-001',
@@ -36,7 +36,7 @@ void main() {
       },
     );
 
-    test('2. [バルク保存＆作成日時昇順ソート] 複数コマンドが正しく時系列順に保持されること', () async {
+    test('[バルク保存＆作成日時昇順ソート] 複数コマンドが正しく時系列順に保持されること', () async {
       final cmd1 = MatchCommandModel(
         id: 'cmd-web-002',
         type: CommandType.addScore,
@@ -62,7 +62,7 @@ void main() {
       expect(retrieved[1].id, equals('cmd-web-002'));
     });
 
-    test('3. [個別コマンド削除] 完了したコマンドが確実にストレージから消去されること', () async {
+    test('[個別コマンド削除] 完了したコマンドが確実にストレージから消去されること', () async {
       final cmd1 = MatchCommandModel(
         id: 'cmd-del-001',
         type: CommandType.addScore,
@@ -92,7 +92,7 @@ void main() {
       expect(remaining.first.id, equals('cmd-del-002'));
     });
 
-    test('4. [試合単位一括削除] 指定された試合IDに属する未送信コマンドが一括消去されること', () async {
+    test('[試合単位一括削除] 指定された試合IDに属する未送信コマンドが一括消去されること', () async {
       final cmdMatchA1 = MatchCommandModel(
         id: 'cmd-a-1',
         type: CommandType.addScore,
@@ -136,7 +136,7 @@ void main() {
     });
 
     test(
-      '5. [ストレージ直接永続化検証] SharedPreferencesのキーを直接確認し、JSON配列として保存されていること',
+      '[ストレージ直接永続化検証] SharedPreferencesのキーを直接確認し、JSON配列として保存されていること',
       () async {
         final cmd = MatchCommandModel(
           id: 'cmd-json-check',

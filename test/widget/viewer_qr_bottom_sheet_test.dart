@@ -11,7 +11,7 @@ Widget createTestWidget({required Widget child}) {
 }
 
 void main() {
-  group('📲 ViewerQrBottomSheet Widget Tests', () {
+  group('[Widget] ViewerQrBottomSheet ウィジェットテスト', () {
     testWidgets('観戦用QRコードボトムシートが正常にレンダリングされQRとボタンが表示されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;

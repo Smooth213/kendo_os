@@ -5,8 +5,8 @@ import 'package:kendo_os/features/tournament/presentation/painters/program_viewe
 import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
 
 void main() {
-  group('🛡️ ProgramViewer Painters Tests', () {
-    testWidgets('StrokePainter paints shared and private strokes', (
+  group('[Widget] ProgramViewer Painters テスト', () {
+    testWidgets('StrokePainter paints shared and private strokesであること', (
       tester,
     ) async {
       final sharedStroke = StrokeModel(
@@ -43,7 +43,7 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('OcrHighlightPainter paints matched bounding box', (
+    testWidgets('OcrHighlightPainter paints matched bounding boxであること', (
       tester,
     ) async {
       final ocrWords = [

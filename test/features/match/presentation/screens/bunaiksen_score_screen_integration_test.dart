@@ -17,7 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/time
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
 
 void main() {
-  group('🛡️ Bunaiksen Score & Match Screen Integration Tests', () {
+  group('[Widget] Bunaiksen Score & Match Screen 統合テスト', () {
     const mockMatch = MatchModel(
       id: 'test_match_1',
       tournamentId: 'bunaiksen_20260622',
@@ -27,7 +27,7 @@ void main() {
       status: 'waiting',
     );
 
-    test('✅ 1. ViewerMatchScreen Webインデックス未作成エラー根治パッチの存在を検証 (静的コード解析)', () {
+    test('ViewerMatchScreen Webインデックス未作成エラー根治パッチの存在を検証 (静的コード解析)こと', () {
       final file = File(
         'lib/features/viewer/presentation/viewer_match_screen.dart',
       );
@@ -57,7 +57,7 @@ void main() {
       );
     });
 
-    testWidgets('✅ 2. 運営用部位入力画面 (MatchScreen) データロード & レンダリング検証', (
+    testWidgets('運営用部位入力画面 (MatchScreen) データロード & レンダリングが正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -133,7 +133,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('✅ 3. 一般観客席 (ViewerMatchScreen) データロード & レンダリング検証', (
+    testWidgets('一般観客席 (ViewerMatchScreen) データロード & レンダリングが正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

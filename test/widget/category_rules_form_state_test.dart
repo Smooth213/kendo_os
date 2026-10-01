@@ -7,9 +7,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_form_state.dart';
 
 void main() {
-  group('CategoryRulesFormState Tests', () {
+  group('[Widget] CategoryRulesFormState テスト', () {
     test(
-      'populateFromRuleSet fills state and buildCategoryRuleSet reproduces it',
+      'populateFromRuleSet fills state and buildCategoryRuleSet reproduces itであること',
       () {
         final formState = CategoryRulesFormState();
         final initialRule = CategoryRuleSet(
@@ -50,7 +50,7 @@ void main() {
       },
     );
 
-    test('formatRuleTitle works as expected', () {
+    test('formatRuleTitle works as expectedであること', () {
       expect(
         CategoryRuleMatchHelper.formatRuleTitle('小学生の部', '決勝トーナメント'),
         '小学生の部 決勝トーナメント',
@@ -60,7 +60,7 @@ void main() {
     });
 
     test(
-      'representative match (代表戦) OFF is correctly saved and restored without automatically turning ON',
+      'representative match (代表戦) OFF is correctly saved and restored without automatically turning ONであること',
       () {
         // 1. トーナメント団体戦で代表戦をOFFにした場合
         final formState = CategoryRulesFormState();
@@ -107,26 +107,29 @@ void main() {
       },
     );
 
-    test('representative match (代表戦) ON is correctly saved and restored', () {
-      final formState = CategoryRulesFormState();
-      formState.editingMatchType = '団体戦';
-      formState.normalHasLeagueDaihyo = true;
-      formState.advancedHasLeagueDaihyo = true;
+    test(
+      'representative match (代表戦) ON is correctly saved and restoredであること',
+      () {
+        final formState = CategoryRulesFormState();
+        formState.editingMatchType = '団体戦';
+        formState.normalHasLeagueDaihyo = true;
+        formState.advancedHasLeagueDaihyo = true;
 
-      final saved = formState.buildCategoryRuleSet('高校生女子の部');
-      expect(saved.normalRule.hasRepresentativeMatch, isTrue);
-      expect(saved.normalRule.hasLeagueDaihyo, isTrue);
-      expect(saved.advancedRule.hasRepresentativeMatch, isTrue);
-      expect(saved.advancedRule.hasLeagueDaihyo, isTrue);
+        final saved = formState.buildCategoryRuleSet('高校生女子の部');
+        expect(saved.normalRule.hasRepresentativeMatch, isTrue);
+        expect(saved.normalRule.hasLeagueDaihyo, isTrue);
+        expect(saved.advancedRule.hasRepresentativeMatch, isTrue);
+        expect(saved.advancedRule.hasLeagueDaihyo, isTrue);
 
-      final restored = CategoryRulesFormState();
-      restored.populateFromRuleSet('高校生女子の部', saved);
-      expect(restored.normalHasLeagueDaihyo, isTrue);
-      expect(restored.advancedHasLeagueDaihyo, isTrue);
-    });
+        final restored = CategoryRulesFormState();
+        restored.populateFromRuleSet('高校生女子の部', saved);
+        expect(restored.normalHasLeagueDaihyo, isTrue);
+        expect(restored.advancedHasLeagueDaihyo, isTrue);
+      },
+    );
 
     test(
-      'comprehensive test: all rule parameters are fully saved and faithfully restored',
+      'comprehensive test: all rule parameters are fully saved and faithfully restoredであること',
       () {
         final form = CategoryRulesFormState();
         // 基本メタ
@@ -297,7 +300,7 @@ void main() {
     );
 
     test(
-      'team match (団体戦) does not have normal match extension, only daihyo extension, and CategoryRuleChips does not show "延長1回"',
+      'team match (団体戦) does not have normal match extension, only daihyo extension, and CategoryRuleChips does not show "延長1回"こと',
       () {
         final form = CategoryRulesFormState();
         form.editingMatchType = '団体戦';
@@ -322,7 +325,7 @@ void main() {
     );
 
     testWidgets(
-      'CategoryRuleChips does not show extension badge for team match (even if rule has enchoCount)',
+      'CategoryRuleChips does not show extension badge for team match (even if rule has enchoCount)こと',
       (tester) async {
         final ruleSet = CategoryRuleSet(
           matchType: '団体戦',
@@ -352,7 +355,7 @@ void main() {
     );
 
     testWidgets(
-      'CategoryRuleChips shows extension badge for individual match when enchoCount > 0',
+      'CategoryRuleChips shows extension badge for individual match when enchoCount > 0であること',
       (tester) async {
         final ruleSet = CategoryRuleSet(
           matchType: '個人戦',
@@ -374,7 +377,7 @@ void main() {
       },
     );
 
-    test('ipponLimit = 1 correctly synchronizes isIpponShobu to true', () {
+    test('ipponLimit = 1 correctly synchronizes isIpponShobu to trueであること', () {
       final formState = CategoryRulesFormState();
       formState.normalIpponLimit = 1;
       formState.advancedIpponLimit = 1;

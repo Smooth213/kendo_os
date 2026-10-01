@@ -6,8 +6,8 @@ import 'package:kendo_os/features/p2p/infrastructure/local_p2p_broadcaster.dart'
 import 'package:kendo_os/shared/utils/payload_compression_helper.dart';
 
 void main() {
-  group('📶 【Composite E2E】電波暗黒下（体育館オフライン）P2Pストリーミング ＆ 復旧時クラウド同期完全性テスト', () {
-    test('1. 体育館の電波完全遮断時におけるP2Pローカル配信・リアルタイム打突伝送ライフサイクル', () async {
+  group('[E2E] 【Composite E2E】電波暗黒下（体育館オフライン）P2Pストリーミング ＆ 復旧時クラウド同期完全性テスト', () {
+    test('体育館の電波完全遮断時におけるP2Pローカル配信・リアルタイム打突伝送ライフサイクルこと', () async {
       final broadcaster = LocalP2pBroadcaster();
       addTearDown(broadcaster.stopServer);
 
@@ -91,7 +91,7 @@ void main() {
       expect(broadcaster.isRunning, isFalse);
     });
 
-    test('2. オフライン蓄積イベントの復帰時アップストリーム一括同期・CRDTマージ完全性', () {
+    test('オフライン蓄積イベントの復帰時アップストリーム一括同期・CRDTマージ完全性こと', () {
       final baseTime = DateTime(2026, 9, 27, 14, 0, 0);
 
       // オフライン中に端末ローカルで記録された一連のイベント

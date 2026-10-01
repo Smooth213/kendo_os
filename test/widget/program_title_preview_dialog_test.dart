@@ -52,8 +52,8 @@ void main() {
     );
   }
 
-  group('🥋 ProgramTitlePreviewDialog 視認性・コントラスト保護テスト', () {
-    testWidgets('☀️ ライトモード: 選択中ファイル名・ラベル・ガイドが背景と同化せず、高コントラストで視認できること', (
+  group('[Widget] ProgramTitlePreviewDialog 視認性・コントラスト保護テスト', () {
+    testWidgets('ライトモード: 選択中ファイル名・ラベル・ガイドが背景と同化せず、高コントラストで視認できること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -148,7 +148,7 @@ void main() {
       );
     });
 
-    testWidgets('🌙 ダークモード: 選択中ファイル名・ラベル・バッジが高コントラストで視認できること', (tester) async {
+    testWidgets('ダークモード: 選択中ファイル名・ラベル・バッジが高コントラストで視認できること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

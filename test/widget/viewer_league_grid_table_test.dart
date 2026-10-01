@@ -4,8 +4,8 @@ import 'package:kendo_os/features/viewer/components/viewer_league_grid_table.dar
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 void main() {
-  group('🛡️ ViewerLeagueGridTable Widget Tests', () {
-    testWidgets('Renders league grid card with matches', (tester) async {
+  group('[Widget] ViewerLeagueGridTable ウィジェットテスト', () {
+    testWidgets('Renders league grid card with matchesであること', (tester) async {
       final matches = [
         const MatchListProjection(
           id: 'm1',

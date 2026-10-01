@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/team
 
 void main() {
   testWidgets(
-    'MasterTeamNameManagementSheet displays team names and input field',
+    'MasterTeamNameManagementSheet displays team names and input fieldであること',
     (tester) async {
       await tester.pumpWidget(
         ProviderScope(

@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  group('🛡️ Phase 4: アイコン・スピナー・スイッチ iOS洗練化 テスト', () {
+  group('[Widget] アイコン・スピナー・スイッチ iOS洗練化 テスト', () {
     testWidgets('SettingsSwitchTile が AppSwitch を内包しタップでコールバックが発火すること', (
       tester,
     ) async {

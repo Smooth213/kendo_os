@@ -19,10 +19,8 @@ class StrikeMutexController {
 }
 
 void main() {
-  group('🎨 【Phase 3-2/11】赤白同時マルチタッチタップ排他制御（Mutex）テスト', () {
-    testWidgets('1. 赤面と白小手を同一フレームで同時タップした場合、片方のみ受理され二重加点が防止されること', (
-      tester,
-    ) async {
+  group('[Widget] 【Phase 3-2/11】赤白同時マルチタッチタップ排他制御（Mutex）テスト', () {
+    testWidgets('赤面と白小手を同一フレームで同時タップした場合、片方のみ受理され二重加点が防止されること', (tester) async {
       final mutex = StrikeMutexController();
       int redScore = 0;
       int whiteScore = 0;

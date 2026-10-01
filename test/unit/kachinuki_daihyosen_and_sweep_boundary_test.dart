@@ -5,14 +5,14 @@ import 'package:kendo_os/features/match/domain/services/kendo_overtime_evaluator
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart';
 
 void main() {
-  group('🥋 【Unit】勝ち抜き戦・5人抜きスイープ＆大将延長代表戦 境界値テスト', () {
+  group('[Unit] 【Unit】勝ち抜き戦・5人抜きスイープ＆大将延長代表戦 境界値テスト', () {
     late MatchDomainService domainService;
 
     setUp(() {
       domainService = MatchDomainService();
     });
 
-    test('1. 先鋒1名による5人抜き（全勝優勝）の自動世代交代と完全終了判定', () {
+    test('先鋒1名による5人抜き（全勝優勝）の自動世代交代と完全終了判定こと', () {
       const rule = MatchRule(
         isKachinuki: true,
         matchTimeMinutes: 3.0,
@@ -143,7 +143,7 @@ void main() {
       expect(bout6, isNull, reason: '敗者側の控えが0名のため全試合終了');
     });
 
-    test('2. 先鋒〜副将相引き分け→大将戦時間切れ引き分け時の大将延長戦（一本勝負）自動生成と完全決着判定', () {
+    test('先鋒〜副将相引き分け→大将戦時間切れ引き分け時の大将延長戦（一本勝負）自動生成と完全決着判定こと', () {
       const rule = MatchRule(
         isKachinuki: true,
         matchTimeMinutes: 3.0,

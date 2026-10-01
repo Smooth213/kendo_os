@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('📸 【Phase 3-9/11】モノクロ白黒プリンタ高コントラスト印刷 Goldenテスト', () {
-    testWidgets('1. 白黒印刷時に赤旗（黒地・反転）と白旗（白地・枠線）が明瞭に判別可能であること', (tester) async {
+  group('[Golden] 【Phase 3-9/11】モノクロ白黒プリンタ高コントラスト印刷 Goldenテスト', () {
+    testWidgets('白黒印刷時に赤旗（黒地・反転）と白旗（白地・枠線）が明瞭に判別可能であること', (tester) async {
       tester.view.physicalSize = const Size(500, 300);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);

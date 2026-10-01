@@ -31,7 +31,7 @@ void main() {
     MapEntry('小学生高学年', [m2]),
   ];
 
-  group('🥋 Timeline Category Filter Chips & Expansion Widget Tests', () {
+  group('[Widget] Timeline Category Filter Chips & Expansion ウィジェットテスト', () {
     testWidgets('TimelineCategoryFilterChipsBar でチップが表示され、タップでフィルターが切り替わること', (
       WidgetTester tester,
     ) async {

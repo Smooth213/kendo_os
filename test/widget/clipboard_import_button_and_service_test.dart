@@ -17,8 +17,8 @@ void main() {
     await initializeDateFormatting('ja');
   });
 
-  group('🛡️ ClipboardImportButton 視認性・スタイリング保証テスト', () {
-    testWidgets('1. ライトモード（白背景）: 高コントラストディープアンバーと円形枠線コンテナで視認性が保証されていること', (
+  group('[Widget] ClipboardImportButton 視認性・スタイリング保証テスト', () {
+    testWidgets('ライトモード（白背景）: 高コントラストディープアンバーと円形枠線コンテナで視認性が保証されていること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -51,7 +51,7 @@ void main() {
       expect(decoration.border, isNotNull);
     });
 
-    testWidgets('2. ダークモード（黒背景）: 鮮やかなアンバーゴールドで視認性が保証されていること', (tester) async {
+    testWidgets('ダークモード（黒背景）: 鮮やかなアンバーゴールドで視認性が保証されていること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
@@ -68,7 +68,7 @@ void main() {
       expect(icon.color, equals(const Color(0xFFFBBF24)));
     });
 
-    testWidgets('3. ツールチップが「クリップボードから取り込み」に設定されていること', (tester) async {
+    testWidgets('ツールチップが「クリップボードから取り込み」に設定されていること', (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(home: Scaffold(body: ClipboardImportButton())),
@@ -83,8 +83,8 @@ void main() {
     });
   });
 
-  group('🛡️ ClipboardImportService 誤爆防止＆取り込み判定保証テスト', () {
-    testWidgets('4. クリップボードが空の場合: 「テキストがコピーされていません」と案内されシートは開かないこと', (
+  group('ClipboardImportService 誤爆防止＆取り込み判定保証テスト', () {
+    testWidgets('クリップボードが空の場合: 「テキストがコピーされていません」と案内されシートは開かないこと', (
       tester,
     ) async {
       // クリップボードをクリア
@@ -131,7 +131,7 @@ void main() {
     });
 
     testWidgets(
-      '5. 無関係なテキスト（Gitコマンド等）の場合: 「大会情報やオーダーが見つかりませんでした」と案内されシートは開かないこと',
+      '無関係なテキスト（Gitコマンド等）の場合: 「大会情報やオーダーが見つかりませんでした」と案内されシートは開かないこと',
       (tester) async {
         tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
           SystemChannels.platform,
@@ -180,7 +180,7 @@ void main() {
       },
     );
 
-    testWidgets('6. 正常な大会テキストの場合: TournamentShareImportSheet が正常に開くこと', (
+    testWidgets('正常な大会テキストの場合: TournamentShareImportSheet が正常に開くこと', (
       tester,
     ) async {
       const validTournamentText = '''

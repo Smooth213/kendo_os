@@ -5,9 +5,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🌐 【第16条 ガバナンス監査】分散同期整合性・Clock Skew補正 ＆ CRDT調停規約', () {
+  group('[Governance] 【第16条 ガバナンス監査】分散同期整合性・Clock Skew補正 ＆ CRDT調停規約', () {
     test(
-      'Rule 1: [Clock Skew時刻補正] server_clock_offset_service.dart ＆ system_time_source.dart による端末時計ズレ補正規約',
+      'Rule 1: [Clock Skew時刻補正] server_clock_offset_service.dart ＆ system_time_source.dart による端末時計ズレ補正規約こと',
       () {
         final serviceFile = File(
           'lib/shared/time/server_clock_offset_service.dart',
@@ -29,7 +29,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [CRDT 3者マージ＆LWW調停] sync_crdt_merger.dart における 3者（リモート確定・ローカル確定・ローカル未送信）マージ ＆ LWWタイマー調停規約',
+      'Rule 2: [CRDT 3者マージ＆LWW調停] sync_crdt_merger.dart における 3者（リモート確定・ローカル確定・ローカル未送信）マージ ＆ LWWタイマー調停規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/providers/sync_crdt_merger.dart',
@@ -96,7 +96,7 @@ void main() {
     );
 
     test(
-      'Rule 5: [ライフサイクル同期一元化] main.dart 重複同期排除 ＆ sync_provider.dart 一元化規約',
+      'Rule 5: [ライフサイクル同期一元化] main.dart 重複同期排除 ＆ sync_provider.dart 一元化規約こと',
       () {
         final mainFile = File('lib/main.dart');
         final syncProviderFile = File(
@@ -118,7 +118,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [Firestoreリスナー一元化＆O(1)直結] scoreboard.dart 階層パス監視優先 ＆ 重複リスナー排除規約',
+      'Rule 6: [Firestoreリスナー一元化＆O(1)直結] scoreboard.dart 階層パス監視優先 ＆ 重複リスナー排除規約こと',
       () {
         final scoreboardFile = File('lib/shared/widgets/scoreboard.dart');
         expect(scoreboardFile.existsSync(), isTrue);
@@ -148,7 +148,7 @@ void main() {
     );
 
     test(
-      'Rule 7: [Webステート保護＆FSM状態遷移＆コネクティビティ統一] 大会ID切替ステートリセット、FSM遷移、ネットワーク判定統一規約',
+      'Rule 7: [Webステート保護＆FSM状態遷移＆コネクティビティ統一] 大会ID切替ステートリセット、FSM遷移、ネットワーク判定統一規約こと',
       () {
         final listFile = File(
           'lib/features/tournament/presentation/operate/providers/match_list_provider.dart',
@@ -195,7 +195,7 @@ void main() {
     );
 
     test(
-      'Rule 8: [差分デルタ伝送] local_p2p_broadcaster.dart の broadcastMatchDelta 規約',
+      'Rule 8: [差分デルタ伝送] local_p2p_broadcaster.dart の broadcastMatchDelta 規約こと',
       () {
         final file = File(
           'lib/features/p2p/infrastructure/local_p2p_broadcaster.dart',

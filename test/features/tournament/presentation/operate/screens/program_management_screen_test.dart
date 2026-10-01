@@ -48,7 +48,7 @@ void main() {
     registerFallbackValue(FileType.any);
   });
 
-  group('🛡️ ProgramManagementScreen - Upload Validation Tests', () {
+  group('[Widget] ProgramManagementScreen - Upload Validation テスト', () {
     late MockProgramRepository mockProgramRepo;
     late MockFilePicker mockFilePicker;
     late SharedPreferences prefs;
@@ -104,7 +104,7 @@ void main() {
       );
     }
 
-    testWidgets('✅ タイトル空欄バリデーションエラーのテスト: 空のまま決定すると警告が出てダイアログが閉じないこと', (
+    testWidgets('タイトル空欄バリデーションエラーのテスト: 空のまま決定すると警告が出てダイアログが閉じないこと', (
       tester,
     ) async {
       await tester.pumpWidget(createManagementWidget());

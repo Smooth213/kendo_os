@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/share_provider.dart';
 
 void main() {
-  group('🛡️ Share Service Kendo Score Formatting Verification Tests', () {
+  group('[Unit] Share Service Kendo Score Formatting 検証 テスト', () {
     late ProviderContainer container;
     late ShareService shareService;
 
@@ -18,7 +18,7 @@ void main() {
       container.dispose();
     });
 
-    test('1. Formatting 1 - 0 with first point Kote (㋙)', () {
+    test('Formatting 1 - 0 with first point Kote (㋙)こと', () {
       final match = MatchModel(
         id: 'test_match_1',
         matchType: 'individual',
@@ -42,7 +42,7 @@ void main() {
     });
 
     test(
-      '2. Formatting 2 - 1 with Red first Kote (㋙) + normal Kote (コ) and White normal Men (メ)',
+      'Formatting 2 - 1 with Red first Kote (㋙) + normal Kote (コ) and White normal Men (メ)こと',
       () {
         final match = MatchModel(
           id: 'test_match_2',
@@ -81,7 +81,7 @@ void main() {
       },
     );
 
-    test('3. Formatting Hansoku penalty points (反) correctly', () {
+    test('Formatting Hansoku penalty points (反) correctlyであること', () {
       final match = MatchModel(
         id: 'test_match_3',
         matchType: 'individual',
@@ -109,7 +109,7 @@ void main() {
       expect(display, contains('🔴 佐々木 武 0 - 1反 選手 ⚪️'));
     });
 
-    test('4. Correctly excludes undone/canceled points', () {
+    test('Correctly excludes undone/canceled pointsであること', () {
       final match = MatchModel(
         id: 'test_match_4',
         matchType: 'individual',

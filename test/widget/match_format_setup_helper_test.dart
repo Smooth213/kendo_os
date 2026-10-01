@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 
 void main() {
-  group('MatchFormatSetupHelper Tests', () {
-    test('parseCategoryToState parses correctly', () {
+  group('[Widget] MatchFormatSetupHelper テスト', () {
+    test('parseCategoryToState parses correctlyであること', () {
       expect(MatchFormatSetupHelper.parseCategoryToState('初心者の部'), (
         '初心者',
         '全体',
@@ -27,7 +27,7 @@ void main() {
       ));
     });
 
-    test('generatePositions generates correct lists', () {
+    test('generatePositions generates correct listsであること', () {
       expect(MatchFormatSetupHelper.generatePositions(1), ['選手']);
       expect(MatchFormatSetupHelper.generatePositions(3), ['先鋒', '中堅', '大将']);
       expect(MatchFormatSetupHelper.generatePositions(5), [
@@ -48,7 +48,7 @@ void main() {
       ]);
     });
 
-    test('calculateTeamSize handles individual and team formats', () {
+    test('calculateTeamSize handles individual and team formatsであること', () {
       expect(
         MatchFormatSetupHelper.calculateTeamSize(
           matchType: '個人戦',

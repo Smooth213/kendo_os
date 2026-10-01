@@ -26,9 +26,9 @@ class AudioOutputFallbackManager {
 
 void main() {
   group(
-    '👁️ 【Phase 6-4/12】試合終了ブザー鳴動中 Bluetoothスピーカー急断 端末内蔵スピーカー自動フォールバックテスト',
+    '[Unit] 【Phase 6-4/12】試合終了ブザー鳴動中 Bluetoothスピーカー急断 端末内蔵スピーカー自動フォールバックテスト',
     () {
-      test('1. 外部BTスピーカー切断時、即座に本体スピーカーへ切り替わりブザー鳴動状態が維持されること', () {
+      test('外部BTスピーカー切断時、即座に本体スピーカーへ切り替わりブザー鳴動状態が維持されること', () {
         final audioManager = AudioOutputFallbackManager(
           isBluetoothConnected: true,
         );

@@ -10,7 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ Phase 3: ボトムシート統一ウィジェット テスト', () {
+  group('[Widget] ボトムシート統一ウィジェット テスト', () {
     testWidgets('CategoryRuleDetailBottomSheet がクラッシュせず正常にレンダリングされること', (
       tester,
     ) async {

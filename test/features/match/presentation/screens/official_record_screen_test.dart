@@ -21,7 +21,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('OfficialRecordScreen UI/Logic Tests', () {
+  group('[Widget] OfficialRecordScreen UI/Logic テスト', () {
     const testTournamentId = 'test_tournament_1';
     const testGroupId = '12345678-1234-1234-1234-123456789012';
 
@@ -73,9 +73,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 代表戦のスコアがチームの合計(勝数/本数)に合算されないこと', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('代表戦のスコアがチームの合計(勝数/本数)に合算されないこと', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -118,7 +116,7 @@ void main() {
       );
     });
 
-    testWidgets('2. 判定勝ちの場合、「判」という1文字に圧縮されて丸囲み等で描画されること', (
+    testWidgets('判定勝ちの場合、「判」という1文字に圧縮されて丸囲み等で描画されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);
@@ -160,7 +158,7 @@ void main() {
       );
     });
 
-    testWidgets('3. 欠員の場合、選手名のセルは空欄で表示されるべき', (WidgetTester tester) async {
+    testWidgets('欠員の場合、選手名のセルは空欄で表示されること', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -187,7 +185,7 @@ void main() {
       expect(find.text('(欠員)'), findsNothing);
     });
 
-    testWidgets('4. 同姓の選手がいる場合、名（イニシャル）が表示されるべき', (WidgetTester tester) async {
+    testWidgets('同姓の選手がいる場合、名（イニシャル）が表示されること', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -229,7 +227,7 @@ void main() {
       expect(find.text('花'), findsOneWidget);
     });
 
-    testWidgets('5. PDF出力ボタンをタップした際、ローディングが表示され最終的に閉じられること', (
+    testWidgets('PDF出力ボタンをタップした際、ローディングが表示され最終的に閉じられること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);
@@ -272,7 +270,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('6. 試合が order プロパティの昇順にソートされて表示されること', (
+    testWidgets('試合が order プロパティの昇順にソートされて表示されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);

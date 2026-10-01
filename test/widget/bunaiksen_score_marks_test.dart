@@ -6,8 +6,8 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_score_marks.dart';
 
 void main() {
-  group('🛡️ BunaiksenScoreMarks Widget Tests', () {
-    testWidgets('Renders draw icon (close) when both scores are 0', (
+  group('[Widget] BunaiksenScoreMarks ウィジェットテスト', () {
+    testWidgets('Renders draw icon (close) when both scores are 0であること', (
       WidgetTester tester,
     ) async {
       const match = MatchModel(
@@ -36,7 +36,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders score marks accurately with strike types and close icon on draw',
+      'Renders score marks accurately with strike types and close icon on drawであること',
       (WidgetTester tester) async {
         final now = DateTime.now();
         final events = [
@@ -87,7 +87,7 @@ void main() {
       },
     );
 
-    testWidgets('Renders victory match with remove icon', (
+    testWidgets('Renders victory match with remove iconであること', (
       WidgetTester tester,
     ) async {
       final now = DateTime.now();

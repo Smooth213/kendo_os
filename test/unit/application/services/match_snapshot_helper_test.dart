@@ -4,11 +4,11 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('🛡️ MatchSnapshotHelper Unit Tests', () {
+  group('[Unit] MatchSnapshotHelper 単体テスト', () {
     const helper = MatchSnapshotHelper();
 
     test(
-      '1. addSnapshotToMatch adds a snapshot to match with correct version and reason',
+      'addSnapshotToMatch adds a snapshot to match with correct version and reasonであること',
       () {
         final initialMatch = MatchModel(
           id: 'match-1',
@@ -45,7 +45,7 @@ void main() {
     );
 
     test(
-      '2. addSnapshotToMatch caps snapshots at 1 item by default (sliding window for light memory/DB footprint)',
+      'addSnapshotToMatch caps snapshots at 1 item by default (sliding window for light memory/DB footprint)こと',
       () {
         var currentMatch = MatchModel(
           id: 'match-1',
@@ -72,7 +72,7 @@ void main() {
     );
 
     test(
-      '3. addSnapshotToMatch supports configurable maxSnapshots parameter',
+      'addSnapshotToMatch supports configurable maxSnapshots parameterであること',
       () {
         const customHelper = MatchSnapshotHelper(maxSnapshots: 5);
         var currentMatch = MatchModel(

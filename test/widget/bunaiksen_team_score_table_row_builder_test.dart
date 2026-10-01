@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_team_score_table_row_builder.dart';
 
 void main() {
-  group('BunaiksenTeamScoreTableRowBuilder Tests', () {
-    testWidgets('renders teamResultCell correctly', (tester) async {
+  group('[Widget] BunaiksenTeamScoreTableRowBuilder テスト', () {
+    testWidgets('renders teamResultCell correctlyであること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -22,7 +22,7 @@ void main() {
       expect(find.text('負'), findsOneWidget);
     });
 
-    testWidgets('renders summaryCell correctly', (tester) async {
+    testWidgets('renders summaryCell correctlyであること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         tournamentId: 't1',

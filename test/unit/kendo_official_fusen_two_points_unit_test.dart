@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🥋 【Phase 1-3/10】全剣連規則第32条 不戦勝の自動2本付与＆チーム勝敗数決定論的積算テスト', () {
+  group('[Unit] 【Phase 1-3/10】全剣連規則第32条 不戦勝の自動2本付与＆チーム勝敗数決定論的積算テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm_fusen',
@@ -22,7 +22,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 赤の不戦勝（相手欠席）時、自動的に「◯」「◯」の2本が付与され赤の二本勝ちとなること', () {
+    test('赤の不戦勝（相手欠席）時、自動的に「◯」「◯」の2本が付与され赤の二本勝ちとなること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
 
       // 通常不戦勝イベント（isRetirement: false）

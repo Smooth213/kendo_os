@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('📸 【Phase 3-8/11】OS「太字テキスト」アクセシビリティ有効時 Goldenテスト', () {
-    testWidgets('1. boldText: true 環境下でボタン・ラベルが崩れず正確に描画されること', (tester) async {
+  group('[Golden] 【Phase 3-8/11】OS「太字テキスト」アクセシビリティ有効時 Goldenテスト', () {
+    testWidgets('boldText: true 環境下でボタン・ラベルが崩れず正確に描画されること', (tester) async {
       tester.view.physicalSize = const Size(600, 300);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);

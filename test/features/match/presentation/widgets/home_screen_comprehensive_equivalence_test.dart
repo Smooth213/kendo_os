@@ -64,7 +64,7 @@ void main() {
   };
 
   roleMatrices.forEach((roleName, mockedPermission) {
-    testWidgets('[$roleName 権限] ネイティブアプリ基準のデザイン・階層・コンポーネント配置の完全等価性検証', (
+    testWidgets('[$roleName 権限] ネイティブアプリ基準のデザイン・階層・コンポーネント配置の完全等価性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

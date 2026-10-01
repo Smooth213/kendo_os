@@ -11,74 +11,76 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🥋 【Widget】TeamRegistrationPageTwoView & PageThreeView 表示統合テスト', () {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+  group(
+    '[Widget] 【Widget】TeamRegistrationPageTwoView & PageThreeView 表示統合テスト',
+    () {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    testWidgets('1. TeamRegistrationPageTwoView が適切にオーダーフォームをレンダリングすること', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 1200);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+      testWidgets('TeamRegistrationPageTwoView が適切にオーダーフォームをレンダリングすること', (
+        tester,
+      ) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      final controller = TextEditingController(text: '赤心館');
-      final focusNode = FocusNode();
+        final controller = TextEditingController(text: '赤心館');
+        final focusNode = FocusNode();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            customTeamNamesProvider.overrideWith(
-              (ref) => Stream.value(['赤心館', '白龍館']),
-            ),
-          ],
-          child: MaterialApp(
-            theme: ThemeData.light().copyWith(extensions: [themeColors]),
-            home: Scaffold(
-              body: TeamRegistrationPageTwoView(
-                playerCount: 5,
-                posNames: const ['先鋒', '次鋒', '中堅', '副将', '大将'],
-                players: [
-                  PlayerModel(
-                    id: 'p1',
-                    lastName: '山田',
-                    firstName: '太郎',
-                    lastNameKana: 'ヤマダ',
-                    firstNameKana: 'タロウ',
-                    grade: 1,
-                    organization: '赤心館',
-                  ),
-                ],
-                teamNameController: controller,
-                teamNameFocusNode: focusNode,
-                tempSelectedPlayers: const {0: '山田 太郎'},
-                substituteCount: 0,
-                matchType: '団体戦（5人制）',
-                themeColors: themeColors,
-                onSelectPlayer: (_) async {},
-                onAddSubstitute: () {},
-                onAddPlayerSlot: () {},
-                onRemoveSubstitute: (_) {},
-                onRemovePlayerSlot: (_) {},
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(['赤心館', '白龍館']),
+              ),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.light().copyWith(extensions: [themeColors]),
+              home: Scaffold(
+                body: TeamRegistrationPageTwoView(
+                  playerCount: 5,
+                  posNames: const ['先鋒', '次鋒', '中堅', '副将', '大将'],
+                  players: [
+                    PlayerModel(
+                      id: 'p1',
+                      lastName: '山田',
+                      firstName: '太郎',
+                      lastNameKana: 'ヤマダ',
+                      firstNameKana: 'タロウ',
+                      grade: 1,
+                      organization: '赤心館',
+                    ),
+                  ],
+                  teamNameController: controller,
+                  teamNameFocusNode: focusNode,
+                  tempSelectedPlayers: const {0: '山田 太郎'},
+                  substituteCount: 0,
+                  matchType: '団体戦（5人制）',
+                  themeColors: themeColors,
+                  onSelectPlayer: (_) async {},
+                  onAddSubstitute: () {},
+                  onAddPlayerSlot: () {},
+                  onRemoveSubstitute: (_) {},
+                  onRemovePlayerSlot: (_) {},
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      expect(find.text('チーム名とオーダーを\n入力してください'), findsOneWidget);
-      expect(find.text('山田 太郎'), findsOneWidget);
-      expect(find.text('先鋒'), findsOneWidget);
-      expect(find.text('補欠を追加 (0/4)'), findsOneWidget);
-    });
+        expect(find.text('チーム名とオーダーを\n入力してください'), findsOneWidget);
+        expect(find.text('山田 太郎'), findsOneWidget);
+        expect(find.text('先鋒'), findsOneWidget);
+        expect(find.text('補欠を追加 (0/4)'), findsOneWidget);
+      });
 
-    testWidgets(
-      '2. TeamRegistrationPageThreeView が登録確認カードと登録済みチームをレンダリングすること',
-      (tester) async {
+      testWidgets('TeamRegistrationPageThreeView が登録確認カードと登録済みチームをレンダリングすること', (
+        tester,
+      ) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() {
@@ -135,7 +137,7 @@ void main() {
         expect(find.textContaining('登録済みチーム'), findsOneWidget);
         expect(find.text('赤心館A'), findsOneWidget);
         expect(find.text('新規追加'), findsOneWidget);
-      },
-    );
-  });
+      });
+    },
+  );
 }

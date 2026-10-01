@@ -10,7 +10,7 @@ void main() {
     await initializeDateFormatting('ja');
   });
 
-  group('Expedition Stats Team & Individual Separation Tests', () {
+  group('[Widget] Expedition Stats Team & Individual Separation テスト', () {
     test('団体戦と個人戦で選手別成績が正しく分離されて集計されること', () {
       final matches = [
         // 1. 団体戦の試合 (groupName: group_1) - 山田選手が勝利 (2本勝ち)

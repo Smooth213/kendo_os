@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🔍 マニュアル検索・クエリ機能テスト (Manual Search & Query Tests)', () {
+  group('[Unit] マニュアル検索・クエリ機能テスト (Manual Search & Query テスト)', () {
     const indexPath =
         'packages/documentation_runtime/manuals/manual_search_index.json';
     late List<dynamic> searchIndex;
@@ -27,7 +27,7 @@ void main() {
       }).toList();
     }
 
-    test('1. 「ドック」検索でドック操作ガイドが最上位または上位にヒットすること', () {
+    test('「ドック」検索でドック操作ガイドが最上位または上位にヒットすること', () {
       final results = performSearch('ドック');
       expect(results, isNotEmpty);
 
@@ -39,7 +39,7 @@ void main() {
       );
     });
 
-    test('2. 「ルール」検索で独立ルール設定および一括ルール編集がヒットすること', () {
+    test('「ルール」検索で独立ルール設定および一括ルール編集がヒットすること', () {
       final results = performSearch('ルール');
       expect(results, isNotEmpty);
 
@@ -56,7 +56,7 @@ void main() {
       );
     });
 
-    test('3. 「チーム」検索でチーム試合状況マニュアル（Operate/Viewer）がヒットすること', () {
+    test('「チーム」検索でチーム試合状況マニュアル（Operate/Viewer）がヒットすること', () {
       final results = performSearch('チーム');
       expect(results, isNotEmpty);
 
@@ -68,7 +68,7 @@ void main() {
       );
     });
 
-    test('4. 「Undo」または「取り消し」検索で試合記録マニュアルやクイックシートがヒットすること', () {
+    test('「Undo」または「取り消し」検索で試合記録マニュアルやクイックシートがヒットすること', () {
       final resultsUndo = performSearch('undo');
       final resultsCancel = performSearch('取り消し');
 
@@ -84,7 +84,7 @@ void main() {
       );
     });
 
-    test('5. 「部内戦」検索で運営マニュアルと閲覧マニュアルが両方ヒットすること', () {
+    test('「部内戦」検索で運営マニュアルと閲覧マニュアルが両方ヒットすること', () {
       final results = performSearch('部内戦');
       expect(results, isNotEmpty);
 
@@ -96,7 +96,7 @@ void main() {
       );
     });
 
-    test('6. 「進級」検索で選手マスタ管理（新年度一括進級）マニュアルがヒットすること', () {
+    test('「進級」検索で選手マスタ管理（新年度一括進級）マニュアルがヒットすること', () {
       final results = performSearch('進級');
       expect(results, isNotEmpty);
 
@@ -108,7 +108,7 @@ void main() {
       );
     });
 
-    test('7. 「サンシャイン」または「サーマル」検索で設定マニュアルがヒットすること', () {
+    test('「サンシャイン」または「サーマル」検索で設定マニュアルがヒットすること', () {
       final resultsSunshine = performSearch('サンシャイン');
       final resultsThermal = performSearch('サーマル');
 
@@ -124,7 +124,7 @@ void main() {
       );
     });
 
-    test('8. 「プログラム」検索で大会プログラムマニュアルがヒットすること', () {
+    test('「プログラム」検索で大会プログラムマニュアルがヒットすること', () {
       final results = performSearch('プログラム');
       expect(results, isNotEmpty);
 
@@ -133,7 +133,7 @@ void main() {
       expect(paths.any((p) => p.contains('viewer_program.md')), isTrue);
     });
 
-    test('9. 「PDF」または「公式記録」検索で記録出力マニュアルがヒットすること', () {
+    test('「PDF」または「公式記録」検索で記録出力マニュアルがヒットすること', () {
       final results = performSearch('pdf');
       expect(results, isNotEmpty);
 

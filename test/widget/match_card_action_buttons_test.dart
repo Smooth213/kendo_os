@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_card_action_buttons.dart';
 
 void main() {
-  group('🛡️ MatchCardActionButtons Widget Tests', () {
-    testWidgets('Renders all buttons and responds to taps', (
+  group('[Widget] MatchCardActionButtons ウィジェットテスト', () {
+    testWidgets('Renders all buttons and responds to tapsであること', (
       WidgetTester tester,
     ) async {
       bool summaryPressed = false;
@@ -42,7 +42,7 @@ void main() {
       expect(scorePressed, isTrue);
     });
 
-    testWidgets('Hides buttons when flags are false', (
+    testWidgets('Hides buttons when flags are falseであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

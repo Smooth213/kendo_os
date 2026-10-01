@@ -64,8 +64,8 @@ class DualDisplayRouter extends StatelessWidget {
 }
 
 void main() {
-  group('📱 【Phase 2-6/10】HDMIデュアルディスプレイ（外部電光掲示板＆手元操作）完全分離テスト', () {
-    testWidgets('1. 外部HDMIモニター（isExternalDisplay: true）には操作ボタンが一切描画されないこと', (
+  group('[Widget] 【Phase 2-6/10】HDMIデュアルディスプレイ（外部電光掲示板＆手元操作）完全分離テスト', () {
+    testWidgets('外部HDMIモニター（isExternalDisplay: true）には操作ボタンが一切描画されないこと', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -91,7 +91,7 @@ void main() {
       expect(find.text('審判操作パネル'), findsNothing);
     });
 
-    testWidgets('2. 手元端末（isExternalDisplay: false）には操作UIが表示されタップ操作可能なこと', (
+    testWidgets('手元端末（isExternalDisplay: false）には操作UIが表示されタップ操作可能なこと', (
       tester,
     ) async {
       bool scoreTapped = false;

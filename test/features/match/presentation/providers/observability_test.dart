@@ -7,7 +7,7 @@ import 'package:kendo_os/admin/providers/metrics_provider.dart';
 class MockAlertService extends Mock implements AlertService {}
 
 void main() {
-  group('🔍 Observability (可観測性) Tests', () {
+  group('[Unit] Observability (可観測性) テスト', () {
     late ProviderContainer container;
     late MockAlertService mockAlertService;
 
@@ -23,7 +23,7 @@ void main() {
       container.dispose();
     });
 
-    test('1. メトリクス記録時に traceId が付与されること', () {
+    test('メトリクス記録時に traceId が付与されること', () {
       final metrics = container.read(metricsProvider);
       final traceId = 'test_trace_123';
 
@@ -35,7 +35,7 @@ void main() {
       expect(() => metrics.recordError(traceId: traceId), returnsNormally);
     });
 
-    test('2. 画面反映(Projection)が2000msを超えた場合、HighProjectionLagアラートが発行されること', () {
+    test('画面反映(Projection)が2000msを超えた場合、HighProjectionLagアラートが発行されること', () {
       final metrics = container.read(metricsProvider);
       final traceId = 'lag_trace_999';
 
@@ -64,7 +64,7 @@ void main() {
       ).called(1);
     });
 
-    test('3. エラー率が1%を超えた場合、HighErrorRateアラートが発行されること', () async {
+    test('エラー率が1%を超えた場合、HighErrorRateアラートが発行されること', () async {
       final metrics = container.read(metricsProvider);
 
       // サンプルを貯めるためのダミー成功ログ（9件）
@@ -96,7 +96,7 @@ void main() {
       ).called(1);
     });
 
-    test('4. ダッシュボード用の状態(State)が正しく更新されること', () async {
+    test('ダッシュボード用の状態(State)が正しく更新されること', () async {
       final metrics = container.read(metricsProvider);
 
       metrics.recordLatency('event_append', 50);

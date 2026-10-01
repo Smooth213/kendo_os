@@ -6,8 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 // 捏造（Hallucination）したりした際、Linterが停止させるかを検証します。
 // ============================================================================
 void main() {
-  group('👹 Step 8-1 & 8-4: Rogue AI & Hallucination Test', () {
-    test('Forbidden Pattern Detection', () {
+  group('[E2E] & 8-4: Rogue AI & Hallucination テスト', () {
+    test('Forbidden Pattern Detectionであること', () {
       // 攻撃コードのシミュレーション
       const rogueCode = 'final now = DateTime.now(); // Forbidden!';
 
@@ -20,7 +20,7 @@ void main() {
       );
     });
 
-    test('AI Hallucination (Non-existent API) Check', () {
+    test('AI Hallucination (Non-existent API) Checkであること', () {
       const hallucinatedCode = 'KendoEngine.autoJudgeMatch(); // Non-existent!';
       // 静的解析（dart analyze）によりビルドエラーになることを期待
       expect(hallucinatedCode, isNotNull);

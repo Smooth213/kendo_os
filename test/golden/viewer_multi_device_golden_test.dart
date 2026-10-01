@@ -20,7 +20,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('📸 【Golden 2/5】観客席ビュー（Viewer）マルチデバイス 視覚的境界整合性テスト', () {
+  group('[Golden] 【Golden 2/5】観客席ビュー（Viewer）マルチデバイス 視覚的境界整合性テスト', () {
     final devices = {
       'Mobile_Portrait (iPhone)': const Size(375, 812),
       'Tablet_Landscape (iPad 4-Court)': const Size(1024, 768),
@@ -31,7 +31,7 @@ void main() {
       final deviceName = entry.key;
       final size = entry.value;
 
-      testWidgets('【マルチデバイス整合】$deviceName での観客席チームスコアボード描画整合性', (
+      testWidgets('【マルチデバイス整合】$deviceName での観客席チームスコアボード描画整合性こと', (
         WidgetTester tester,
       ) async {
         tester.view.physicalSize = size;
@@ -70,7 +70,7 @@ void main() {
       });
 
       testWidgets(
-        '【マルチデバイス整合】$deviceName での観客席試合速報画面（ViewerMatchScreen）描画整合性',
+        '【マルチデバイス整合】$deviceName での観客席試合速報画面（ViewerMatchScreen）描画整合性こと',
         (WidgetTester tester) async {
           tester.view.physicalSize = size;
           tester.view.devicePixelRatio = 1.0;

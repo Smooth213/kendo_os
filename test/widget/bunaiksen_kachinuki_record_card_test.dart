@@ -5,8 +5,10 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_kachinuki_record_card.dart';
 
 void main() {
-  group('🛡️ BunaiksenKachinukiRecordCard Widget Tests', () {
-    testWidgets('Renders kachinuki card with title and canvas', (tester) async {
+  group('[Widget] BunaiksenKachinukiRecordCard ウィジェットテスト', () {
+    testWidgets('Renders kachinuki card with title and canvasであること', (
+      tester,
+    ) async {
       final match = MatchModel(
         id: 'match1',
         redName: '赤チーム: 先鋒',
@@ -37,7 +39,9 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('Renders empty widget when matches is empty', (tester) async {
+    testWidgets('Renders empty widget when matches is emptyであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

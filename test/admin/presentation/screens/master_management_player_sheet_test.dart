@@ -43,8 +43,8 @@ void main() {
     ).thenAnswer((_) => Future.value());
   });
 
-  group('🎯 Player Master BottomSheet & Timing Regression Tests', () {
-    testWidgets('1. 自動フォーカスの排除検証 (フォーカスバッティング・せり上がり防止)', (
+  group('[Widget] Player Master BottomSheet & Timing リグレッションテスト', () {
+    testWidgets('自動フォーカスの排除検証 (フォーカスバッティング・せり上がり防止)こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -106,7 +106,7 @@ void main() {
       expect(focusScope.hasFocus, isTrue);
     });
 
-    testWidgets('2. ボトムシートの最大高さ制限の物理ガード検証', (WidgetTester tester) async {
+    testWidgets('ボトムシートの最大高さ制限の物理ガードが正しく検証されること', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final fakeFirestore = FakeFirebaseFirestore();
@@ -155,7 +155,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('3. 道場名登録、所属名一括変更、チーム名管理ボトムシートの自動フォーカス排除検証 (Webでの跳ね上がり防止)', (
+    testWidgets('道場名登録、所属名一括変更、チーム名管理ボトムシートの自動フォーカス排除検証 (Webでの跳ね上がり防止)こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -231,7 +231,7 @@ void main() {
       expect(teamTextField.autofocus, isFalse);
     });
 
-    testWidgets('4. 自動ふりがな機能のライブ変換・分割入力・削除シミュレーション検証 (Web/IME対応)', (
+    testWidgets('自動ふりがな機能のライブ変換・分割入力・削除シミュレーション検証 (Web/IME対応)こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -351,7 +351,7 @@ void main() {
       ); // よみがな「たなか」が自己修復されていること！
     });
 
-    testWidgets('5. 自動ふりがな機能の各種例外・エッジケースシミュレーション検証 (カタカナ・英字・コピペ・時間超過ガード)', (
+    testWidgets('自動ふりがな機能の各種例外・エッジケースシミュレーション検証 (カタカナ・英字・コピペ・時間超過ガード)こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

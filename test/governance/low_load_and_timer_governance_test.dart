@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/application/services/thermal_power_governor.dart
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🔋 【第13条 ガバナンス監査】端末低負荷・省電力・タイマー沈黙 ＆ サーマル適応制御規約', () {
-    test('Rule 1: [タイマーTick適正化＆天井逆算排除] 通常1000ms間引きTick＆停止時生ミリ秒加算規約', () {
+  group('[Governance] 【第13条 ガバナンス監査】端末低負荷・省電力・タイマー沈黙 ＆ サーマル適応制御規約', () {
+    test('Rule 1: [タイマーTick適正化＆天井逆算排除] 通常1000ms間引きTick＆停止時生ミリ秒加算規約こと', () {
       final governor = ThermalPowerGovernor();
 
       expect(
@@ -54,7 +54,7 @@ void main() {
     });
 
     test(
-      'Rule 2: [待機時タイマー沈黙] タイマーループ内ディスクI/O禁止 ＆ AppLifecycleListener によるタイマー沈黙規約',
+      'Rule 2: [待機時タイマー沈黙] タイマーループ内ディスクI/O禁止 ＆ AppLifecycleListener によるタイマー沈黙規約こと',
       () {
         final timerFile = File(
           'lib/features/tournament/presentation/operate/providers/match_timer_provider.dart',
@@ -109,7 +109,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [VRR適応制御] ThermalPowerGovernor の targetFps / isVrrThrottled 規約',
+      'Rule 3: [VRR適応制御] ThermalPowerGovernor の targetFps / isVrrThrottled 規約こと',
       () {
         final governor = ThermalPowerGovernor();
         expect(governor.targetFps, equals(60));
@@ -126,7 +126,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [タイマーコールドスリープ] match_timer_provider.dart の enterColdSleep / resumeFromColdSleep 規約',
+      'Rule 4: [タイマーコールドスリープ] match_timer_provider.dart の enterColdSleep / resumeFromColdSleep 規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/providers/match_timer_provider.dart',
@@ -140,7 +140,7 @@ void main() {
     );
 
     test(
-      'Rule 5: [画像ダウンサンプリング＆StackTrace走査排除] cacheWidth / cacheHeight ＆ StackTrace走査排除規約',
+      'Rule 5: [画像ダウンサンプリング＆StackTrace走査排除] cacheWidth / cacheHeight ＆ StackTrace走査排除規約こと',
       () {
         final viewsFile = File(
           'lib/features/tournament/presentation/components/program_management/program_management_content_views.dart',

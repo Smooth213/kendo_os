@@ -34,7 +34,7 @@ void main() {
     ).thenAnswer((_) => Stream.value(<TeamModel>[]));
   });
 
-  testWidgets('RenseikaiAddNextMatchBottomSheet renders properly', (
+  testWidgets('RenseikaiAddNextMatchBottomSheet renders properlyであること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_league_points_section.dart';
 
 void main() {
-  group('🛡️ CategoryLeaguePointsSection Widget Tests', () {
-    testWidgets('Renders league points text fields and handles input', (
+  group('[Widget] CategoryLeaguePointsSection ウィジェットテスト', () {
+    testWidgets('Renders league points text fields and handles inputであること', (
       WidgetTester tester,
     ) async {
       double win = 3.0;

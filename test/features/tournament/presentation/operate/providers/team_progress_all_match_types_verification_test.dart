@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/team
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_provider.dart';
 
 void main() {
-  group('🥋 【完全保証】チーム試合状況 全試合形式判定＆対戦カード展開テスト要塞', () {
-    group('1. 試合形式判定・対戦見出しの精密性保証（誤判定ゼロ保証）', () {
+  group('[Unit] 【完全保証】チーム試合状況 全試合形式判定＆対戦カード展開テスト要塞', () {
+    group('試合形式判定・対戦見出しの精密性保証（誤判定ゼロ保証）', () {
       test('トーナメント団体戦（先鋒〜大将）が絶対に「リーグ団体戦」と誤判定されず「団体戦：」となること', () {
         const matchSenpo = MatchModel(
           id: 'senpo_1',
@@ -185,7 +185,7 @@ void main() {
       });
     });
 
-    group('2. 対戦カード完全展開（全試合漏れゼロ保証）', () {
+    group('対戦カード完全展開（全試合漏れゼロ保証）', () {
       test('同一チームの1回戦・2回戦および個人戦がそれぞれ独立したカードとして完全展開されること', () {
         final multiMatches = [
           // ① 団体戦 1回戦（道上剣友会A vs 相手01: 終了済）

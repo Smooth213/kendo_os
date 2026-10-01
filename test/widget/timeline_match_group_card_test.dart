@@ -9,9 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('TimelineMatchGroupCard Widget Tests', () {
+  group('[Widget] TimelineMatchGroupCard ウィジェットテスト', () {
     testWidgets(
-      'renders TimelineMatchGroupCard successfully and shows 編集 on swipe',
+      'renders TimelineMatchGroupCard successfully and shows 編集 on swipeであること',
       (tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

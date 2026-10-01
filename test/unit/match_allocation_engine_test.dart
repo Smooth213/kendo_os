@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/domain/match_calculator/match_calcu
 import 'package:kendo_os/features/tournament/domain/match_calculator/match_allocation_engine.dart';
 
 void main() {
-  group('🧮 MatchAllocationEngine Unit Tests', () {
+  group('[Unit] MatchAllocationEngine 単体テスト', () {
     test('1リーグ総当たり: 4名で6試合、5名で10試合になること', () {
       final s4 = const CalculatorSettings(
         format: MatchFormatType.singleLeague,

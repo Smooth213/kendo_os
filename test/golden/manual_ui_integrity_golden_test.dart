@@ -22,7 +22,7 @@ class FakePathProviderPlatform extends Fake
 }
 
 void main() {
-  group('📸 【Golden/視覚整合性】マニュアル画面 多端末・テーマ別UI崩壊ゼロ検証テスト', () {
+  group('[Golden] 【Golden/視覚整合性】マニュアル画面 多端末・テーマ別UI崩壊ゼロ検証テスト', () {
     late Directory tempDir;
 
     setUpAll(() async {

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_point_badge.dart';
 
 void main() {
-  group('🛡️ MatchPointBadge Widget Tests', () {
-    testWidgets('Renders simple strike mark correctly', (
+  group('[Widget] MatchPointBadge ウィジェットテスト', () {
+    testWidgets('Renders simple strike mark correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -30,7 +30,7 @@ void main() {
       expect(circleDecorations.isEmpty, isTrue);
     });
 
-    testWidgets('Renders first match point with circle border correctly', (
+    testWidgets('Renders first match point with circle border correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -58,22 +58,23 @@ void main() {
       expect(circleDecorations.isNotEmpty, isTrue);
     });
 
-    testWidgets('Normalizes fullwidth cross ✕ to halfwidth cross × correctly', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: MatchPointBadge(
-              mark: '✕',
-              isFirst: false,
-              color: Colors.grey,
+    testWidgets(
+      'Normalizes fullwidth cross  to halfwidth cross × correctlyであること',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: MatchPointBadge(
+                mark: '✕',
+                isFirst: false,
+                color: Colors.grey,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('×'), findsOneWidget);
-    });
+        expect(find.text('×'), findsOneWidget);
+      },
+    );
   });
 }

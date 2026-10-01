@@ -13,8 +13,8 @@ class CourtMatchQueue {
 }
 
 void main() {
-  group('🚀 【Phase 5-2/10】8コート一斉同時進行・非同期ストリーム詰まりゼロ E2Eテスト', () {
-    test('1. 8コートから一斉に同時打突イベントが発生しても、各コートのキューが完全に独立して並行処理されること', () async {
+  group('[E2E] 【Phase 5-2/10】8コート一斉同時進行・非同期ストリーム詰まりゼロ E2Eテスト', () {
+    test('8コートから一斉に同時打突イベントが発生しても、各コートのキューが完全に独立して並行処理されること', () async {
       final courts = List.generate(8, (i) => CourtMatchQueue(i + 1));
 
       // 8コート一斉並行書き込み（Future.wait）

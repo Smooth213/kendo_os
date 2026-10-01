@@ -7,12 +7,12 @@ import 'package:kendo_os/features/pdf/services/pdf_font_loader.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📄 公式記録PDF 日本語フォント埋め込み＆バイナリ生成検証テスト', () {
+  group('[Unit] 公式記録PDF 日本語フォント埋め込み＆バイナリ生成検証テスト', () {
     setUp(() {
       PdfFontLoader.clearCache();
     });
 
-    test('1. 日本語フォント (NotoSansJP Regular/Bold) の読み込みとキャッシュの検証', () async {
+    test('日本語フォント (NotoSansJP Regular/Bold) の読み込みとキャッシュが正しく検証できること', () async {
       final fontPair = await PdfFontLoader.loadFonts();
       expect(fontPair.regular, isNotNull);
       expect(fontPair.bold, isNotNull);
@@ -27,7 +27,7 @@ void main() {
       expect(rawBytes.bold.isNotEmpty, isTrue);
     });
 
-    test('2. 日本語・外字・外国人名を含む公式PDF生成とフォント埋め込みバイナリ検証', () async {
+    test('日本語・外字・外国人名を含む公式PDF生成とフォント埋め込みバイナリが正しく検証されること', () async {
       final fontPair = await PdfFontLoader.loadFonts();
       final pdf = pw.Document(
         theme: pw.ThemeData.withFont(

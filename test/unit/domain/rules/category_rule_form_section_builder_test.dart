@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('CategoryRuleFormSectionBuilder テスト', () {
+  group('[Unit] CategoryRuleFormSectionBuilder テスト', () {
     late TextEditingController keywordsController;
     late TextEditingController subtitleController;
     late TextEditingController commentController;

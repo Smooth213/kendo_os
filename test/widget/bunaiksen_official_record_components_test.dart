@@ -5,8 +5,8 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_team_score_table.dart';
 
 void main() {
-  group('BunaiksenOfficialRecord Components Tests', () {
-    testWidgets('BunaiksenRecordActionBar renders action buttons', (
+  group('[Widget] BunaiksenOfficialRecord Components テスト', () {
+    testWidgets('BunaiksenRecordActionBar renders action buttonsであること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -27,7 +27,7 @@ void main() {
       expect(find.text('画像シェア'), findsOneWidget);
     });
 
-    testWidgets('BunaiksenTeamScoreTable renders matchup properly', (
+    testWidgets('BunaiksenTeamScoreTable renders matchup properlyであること', (
       tester,
     ) async {
       const match1 = MatchModel(

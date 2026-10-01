@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/utils/payload_compression_helper.dart';
 
 void main() {
-  group('📶 【Phase 9: 通信パケット・同期ペイロード極小化】Gzip 圧縮・解凍ガバナンステスト', () {
+  group('[Governance] 【Phase 9: 通信パケット・同期ペイロード極小化】Gzip 圧縮・解凍ガバナンステスト', () {
     late List<Map<String, dynamic>> dummyTournamentMatches;
 
     setUp(() {
@@ -96,7 +96,7 @@ void main() {
       );
     });
 
-    test('Gzip 圧縮・解凍のラウンドトリップでデータが 100% 完全復元されること (Zero Data Loss)', () {
+    test('【Zero Data Loss】Gzip 圧縮・解凍のラウンドトリップでデータが 100% 完全復元されること', () {
       final jsonString = jsonEncode(dummyTournamentMatches);
 
       // 文字列の圧縮・解凍
@@ -130,7 +130,7 @@ void main() {
       expect(decompressed, equals(Uint8List.fromList(rawBytes)));
     });
 
-    test('Base64 シリアライズ / デシリアライズが完全一致すること (Firestore/WebSocket用)', () {
+    test('【Firestore/WebSocket用】Base64 シリアライズ / デシリアライズが完全一致すること', () {
       final jsonString = jsonEncode(dummyTournamentMatches.take(10).toList());
 
       final base64Gzip = PayloadCompressionHelper.compressToBase64(jsonString);
@@ -142,7 +142,7 @@ void main() {
       expect(restored, equals(jsonString));
     });
 
-    test('空配列や極小データの安全なエッジケース処理', () {
+    test('空配列や極小データの安全なエッジケース処理こと', () {
       expect(PayloadCompressionHelper.compressBytes([]), isEmpty);
       expect(PayloadCompressionHelper.decompressBytes([]), isEmpty);
       expect(PayloadCompressionHelper.compressString(''), isEmpty);

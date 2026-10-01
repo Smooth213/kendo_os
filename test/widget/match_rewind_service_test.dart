@@ -9,9 +9,9 @@ import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🛡️ MatchRewindService Unit Tests', () {
+  group('[Widget] MatchRewindService 単体テスト', () {
     test(
-      '1. executeRewind returns initialMatch if targetVersion >= validEvents.length',
+      'executeRewind returns initialMatch if targetVersion >= validEvents.lengthであること',
       () {
         final match = MatchModel(
           id: 'm1',
@@ -42,7 +42,7 @@ void main() {
     );
 
     test(
-      '2. executeRewind appends undo events to roll back to targetVersion',
+      'executeRewind appends undo events to roll back to targetVersionであること',
       () {
         final now = DateTime.now();
         final match = MatchModel(

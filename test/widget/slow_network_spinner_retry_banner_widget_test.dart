@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🎨 【Phase 3-5/11】低速ネットワーク10秒タイムアウト・再試行バナー耐久テスト', () {
-    testWidgets('1. ローディング中 ➔ タイムアウトエラーバナー表示 ➔ 再試行ボタン押下による再接続フロー', (
-      tester,
-    ) async {
+  group('[Widget] 【Phase 3-5/11】低速ネットワーク10秒タイムアウト・再試行バナー耐久テスト', () {
+    testWidgets('ローディング中  タイムアウトエラーバナー表示  再試行ボタン押下による再接続フローこと', (tester) async {
       bool isLoading = true;
       bool hasError = false;
       int retryCount = 0;

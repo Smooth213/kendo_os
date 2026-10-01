@@ -24,7 +24,7 @@ void main() {
     infoColor: Colors.blue,
   );
 
-  testWidgets('MatchFormatTeamDetailDialog renders correctly', (tester) async {
+  testWidgets('MatchFormatTeamDetailDialog 正しく描画されること', (tester) async {
     const mockTeam = TeamModel(
       id: 'team1',
       tournamentId: 'tourney1',

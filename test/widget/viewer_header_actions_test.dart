@@ -9,9 +9,9 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ ViewerHeaderActions Widget Tests', () {
+  group('[Widget] ViewerHeaderActions ウィジェットテスト', () {
     testWidgets(
-      '1. ViewerHomeHeaderActions renders QR share button and opens dialog correctly',
+      'ViewerHomeHeaderActions renders QR share button and opens dialog correctlyであること',
       (tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -51,7 +51,7 @@ void main() {
     );
 
     testWidgets(
-      '2. ViewerBunaiksenHeaderActions renders calendar button when not QR access and opens More menu',
+      'ViewerBunaiksenHeaderActions renders calendar button when not QR access and opens More menuであること',
       (tester) async {
         await tester.pumpWidget(
           ProviderScope(

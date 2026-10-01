@@ -12,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('MatchRepresentativeModalBottomSheet renders properly', (
+  testWidgets('MatchRepresentativeModalBottomSheet renders properlyであること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

@@ -32,79 +32,12 @@ void main() {
     status: 'ongoing',
   );
 
-  group('🎨 [Phase 3 Performance Governance] RepaintBoundary 描画境界分離テスト', () {
-    testWidgets('MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            settingsProvider.overrideWith(() => _MockSettingsNotifier()),
-            matchViewStateUserIdProvider.overrideWith((ref) => 'test_user_id'),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-            matchListProvider.overrideWith((ref) => [testMatch]),
-            scoreboardMatchIdProvider.overrideWithValue('test_m1'),
-            scoreboardMatchProvider.overrideWithValue(testMatch),
-            scoreboardNameTapProvider.overrideWithValue((side) {}),
-          ],
-          child: const MaterialApp(home: Scaffold(body: MatchScoreboard())),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // MatchScoreboard の内部ツリーに RepaintBoundary が存在することを検証
-      final scoreboardFinder = find.byType(MatchScoreboard);
-      expect(scoreboardFinder, findsOneWidget);
-
-      final repaintBoundaryFinder = find.descendant(
-        of: scoreboardFinder,
-        matching: find.byType(RepaintBoundary),
-      );
-      expect(repaintBoundaryFinder, findsWidgets);
-    });
-
-    testWidgets('MatchTimerSection が RepaintBoundary を持ち、毎秒タイマー再描画を隔離していること', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            settingsProvider.overrideWith(() => _MockSettingsNotifier()),
-            matchListProvider.overrideWith((ref) => [testMatch]),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: MatchTimerSection(
-                match: testMatch,
-                rule: const MatchRule(),
-                isInputLocked: false,
-              ),
-            ),
-          ),
-        ),
-      );
-
-      final timerSectionFinder = find.byType(MatchTimerSection);
-      expect(timerSectionFinder, findsOneWidget);
-
-      final repaintBoundaryFinder = find.descendant(
-        of: timerSectionFinder,
-        matching: find.byType(RepaintBoundary),
-      );
-      expect(repaintBoundaryFinder, findsWidgets);
-    });
-
-    testWidgets(
-      'LargeViewerScoreboard が RepaintBoundary を持ち、観戦描画負荷を最小化していること',
-      (tester) async {
+  group(
+    '[Governance] [Phase 3 Performance Governance] RepaintBoundary 描画境界分離テスト',
+    () {
+      testWidgets('MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること', (
+        tester,
+      ) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() {
@@ -112,44 +45,117 @@ void main() {
           tester.view.resetDevicePixelRatio();
         });
 
-        const projection = MatchProjection(
-          id: 'p1',
-          tournamentId: 't1',
-          matchOrder: 1,
-          matchType: '個人戦',
-          status: 'ongoing',
-          groupName: 'A',
-          isKachinuki: false,
-          redName: '選手A',
-          whiteName: '選手B',
-          redScore: 1,
-          whiteScore: 0,
-          remainingSeconds: 180,
-          timerIsRunning: false,
-          note: '',
-        );
-
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: LargeViewerScoreboard(
-                projection: projection,
-                activeMatch: null,
-                isDark: false,
+          ProviderScope(
+            overrides: [
+              settingsProvider.overrideWith(() => _MockSettingsNotifier()),
+              matchViewStateUserIdProvider.overrideWith(
+                (ref) => 'test_user_id',
               ),
-            ),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              matchListProvider.overrideWith((ref) => [testMatch]),
+              scoreboardMatchIdProvider.overrideWithValue('test_m1'),
+              scoreboardMatchProvider.overrideWithValue(testMatch),
+              scoreboardNameTapProvider.overrideWithValue((side) {}),
+            ],
+            child: const MaterialApp(home: Scaffold(body: MatchScoreboard())),
           ),
         );
 
-        final viewerScoreboardFinder = find.byType(LargeViewerScoreboard);
-        expect(viewerScoreboardFinder, findsOneWidget);
+        await tester.pumpAndSettle();
+
+        // MatchScoreboard の内部ツリーに RepaintBoundary が存在することを検証
+        final scoreboardFinder = find.byType(MatchScoreboard);
+        expect(scoreboardFinder, findsOneWidget);
 
         final repaintBoundaryFinder = find.descendant(
-          of: viewerScoreboardFinder,
+          of: scoreboardFinder,
           matching: find.byType(RepaintBoundary),
         );
         expect(repaintBoundaryFinder, findsWidgets);
-      },
-    );
-  });
+      });
+
+      testWidgets(
+        'MatchTimerSection が RepaintBoundary を持ち、毎秒タイマー再描画を隔離していること',
+        (tester) async {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                settingsProvider.overrideWith(() => _MockSettingsNotifier()),
+                matchListProvider.overrideWith((ref) => [testMatch]),
+              ],
+              child: MaterialApp(
+                home: Scaffold(
+                  body: MatchTimerSection(
+                    match: testMatch,
+                    rule: const MatchRule(),
+                    isInputLocked: false,
+                  ),
+                ),
+              ),
+            ),
+          );
+
+          final timerSectionFinder = find.byType(MatchTimerSection);
+          expect(timerSectionFinder, findsOneWidget);
+
+          final repaintBoundaryFinder = find.descendant(
+            of: timerSectionFinder,
+            matching: find.byType(RepaintBoundary),
+          );
+          expect(repaintBoundaryFinder, findsWidgets);
+        },
+      );
+
+      testWidgets(
+        'LargeViewerScoreboard が RepaintBoundary を持ち、観戦描画負荷を最小化していること',
+        (tester) async {
+          tester.view.physicalSize = const Size(1200, 800);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
+
+          const projection = MatchProjection(
+            id: 'p1',
+            tournamentId: 't1',
+            matchOrder: 1,
+            matchType: '個人戦',
+            status: 'ongoing',
+            groupName: 'A',
+            isKachinuki: false,
+            redName: '選手A',
+            whiteName: '選手B',
+            redScore: 1,
+            whiteScore: 0,
+            remainingSeconds: 180,
+            timerIsRunning: false,
+            note: '',
+          );
+
+          await tester.pumpWidget(
+            const MaterialApp(
+              home: Scaffold(
+                body: LargeViewerScoreboard(
+                  projection: projection,
+                  activeMatch: null,
+                  isDark: false,
+                ),
+              ),
+            ),
+          );
+
+          final viewerScoreboardFinder = find.byType(LargeViewerScoreboard);
+          expect(viewerScoreboardFinder, findsOneWidget);
+
+          final repaintBoundaryFinder = find.descendant(
+            of: viewerScoreboardFinder,
+            matching: find.byType(RepaintBoundary),
+          );
+          expect(repaintBoundaryFinder, findsWidgets);
+        },
+      );
+    },
+  );
 }

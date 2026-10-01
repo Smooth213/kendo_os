@@ -8,7 +8,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 
 void main() {
-  group('🥋 【Unit】団体戦 極限境界・両者同時棄権・相討ち反則失格フォールバック判定テスト', () {
+  group('[Unit] 【Unit】団体戦 極限境界・両者同時棄権・相討ち反則失格フォールバック判定テスト', () {
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0, 0);
 
@@ -37,7 +37,7 @@ void main() {
       );
     }
 
-    test('1. 5人制団体戦: 先鋒〜副将まで同点・同本数の大将戦で両者同時負傷棄権（不戦）となった場合の決着判定', () {
+    test('5人制団体戦: 先鋒〜副将まで同点・同本数の大将戦で両者同時負傷棄権（不戦）となった場合の決着判定こと', () {
       // 先鋒〜副将: 4戦すべて 0-0 引き分け
       final matches = List.generate(
         4,
@@ -101,7 +101,7 @@ void main() {
       expect(teamResult.teamWinner, 'draw');
     });
 
-    test('2. 7人制団体戦: 先鋒〜副将まで同点・同本数の大将戦で両者反則4回（相反則失格）時の安全フォールバック', () {
+    test('7人制団体戦: 先鋒〜副将まで同点・同本数の大将戦で両者反則4回（相反則失格）時の安全フォールバックこと', () {
       // 先鋒〜副将: 6戦すべて 1勝1敗4分（各チーム勝者1、総本数2で完全同点）
       final matches = [
         createFinishedMatch(
@@ -200,7 +200,7 @@ void main() {
       expect(teamResult.teamWinner, 'draw');
     });
 
-    test('3. 代表戦（延長サドンデス）: 両者に同時に反則2回目が宣告された場合のサドンデス再補正・継続挙動', () {
+    test('代表戦（延長サドンデス）: 両者に同時に反則2回目が宣告された場合のサドンデス再補正・継続挙動こと', () {
       final daihyoMatch = MatchModel(
         id: 'm_daihyo_double_hansoku',
         tournamentId: 't1',

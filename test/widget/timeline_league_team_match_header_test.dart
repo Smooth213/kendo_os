@@ -5,8 +5,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_team_match_header.dart';
 
 void main() {
-  group('TimelineLeagueTeamMatchHeader Tests', () {
-    testWidgets('renders teams and wins correctly', (tester) async {
+  group('[Widget] TimelineLeagueTeamMatchHeader テスト', () {
+    testWidgets('renders teams and wins correctlyであること', (tester) async {
       final bout1 = MatchModel(
         id: 'm1',
         tournamentId: 't1',

@@ -5,8 +5,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchSnapshotHistoryDialog Widget Tests', () {
-    testWidgets('Renders empty message when validEvents is empty', (
+  group('[Widget] MatchSnapshotHistoryDialog ウィジェットテスト', () {
+    testWidgets('Renders empty message when validEvents is emptyであること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -30,7 +30,7 @@ void main() {
       expect(find.text('閉じる'), findsOneWidget);
     });
 
-    testWidgets('Renders history list and triggers rewind callback', (
+    testWidgets('Renders history list and triggers rewind callbackであること', (
       WidgetTester tester,
     ) async {
       int? selectedVersion;

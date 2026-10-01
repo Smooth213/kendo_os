@@ -81,8 +81,8 @@ void main() {
     );
   }
 
-  group('🥋 大会ホームドック: 操作とアプリ反映の完全保証テスト', () {
-    testWidgets('1. クイックメモタップでドックが収納され、QuickMemoBottomSheetが画面に展開されること', (
+  group('[Widget] 大会ホームドック: 操作とアプリ反映の完全保証テスト', () {
+    testWidgets('クイックメモタップでドックが収納され、QuickMemoBottomSheetが画面に展開されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -116,7 +116,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('2. タイマータップでドックが収納され、DockTimerBottomSheetが画面に展開されること', (
+    testWidgets('タイマータップでドックが収納され、DockTimerBottomSheetが画面に展開されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -149,7 +149,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('3. プログラムタップでドックが収納され、ProgramBottomSheetが画面に展開されること', (
+    testWidgets('プログラムタップでドックが収納され、ProgramBottomSheetが画面に展開されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -182,7 +182,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('4. 観戦QRタップでViewerQrBottomSheetが展開されること', (tester) async {
+    testWidgets('観戦QRタップでViewerQrBottomSheetが展開されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -210,7 +210,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('5. ヘルプタップでManualBottomSheetが展開されること', (tester) async {
+    testWidgets('ヘルプタップでManualBottomSheetが展開されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -238,7 +238,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('6. 背景（半透明バリア）タップでドックがスムーズに収納されること', (tester) async {
+    testWidgets('背景（半透明バリア）タップでドックがスムーズに収納されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -266,8 +266,8 @@ void main() {
     });
   });
 
-  group('🥋 部内戦ドック: 操作とアプリ反映の完全保証テスト', () {
-    testWidgets('1. カレンダータップでBunaiksenDockCalendarSheetが画面に展開されること', (
+  group('部内戦ドック: 操作とアプリ反映の完全保証テスト', () {
+    testWidgets('カレンダータップでBunaiksenDockCalendarSheetが画面に展開されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -299,7 +299,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('2. 成績・星取表タップでBunaiksenDockStandingsSheetが展開されること', (
+    testWidgets('成績・星取表タップでBunaiksenDockStandingsSheetが展開されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -332,7 +332,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('3. 対戦一覧タップでBunaiksenDockMatchesSheetが展開されること', (tester) async {
+    testWidgets('対戦一覧タップでBunaiksenDockMatchesSheetが展開されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -360,7 +360,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('4. 試合数計算タップでBunaiksenDockCalculatorSheetが展開されること', (
+    testWidgets('試合数計算タップでBunaiksenDockCalculatorSheetが展開されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -390,7 +390,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('5. 観戦QRタップでViewerQrBottomSheetが展開されること', (tester) async {
+    testWidgets('観戦QRタップでViewerQrBottomSheetが展開されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -419,8 +419,8 @@ void main() {
     });
   });
 
-  group('🥋 ドック並び替え: ドラッグスワップ＆アプリ即時反映 保証テスト', () {
-    testWidgets('大会ホームドック: 長押しジグル ➔ 完了タップでプロバイダに新順序が反映されること', (tester) async {
+  group('ドック並び替え: ドラッグスワップ＆アプリ即時反映 保証テスト', () {
+    testWidgets('大会ホームドック: 長押しジグル  完了タップでプロバイダに新順序が反映されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -484,7 +484,7 @@ void main() {
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
     });
 
-    testWidgets('部内戦ドック: 長押しジグル ➔ 完了タップでプロバイダに新順序が反映されること', (tester) async {
+    testWidgets('部内戦ドック: 長押しジグル  完了タップでプロバイダに新順序が反映されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

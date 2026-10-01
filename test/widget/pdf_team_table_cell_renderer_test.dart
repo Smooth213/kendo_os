@@ -6,11 +6,11 @@ import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart'
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ PdfTeamTableCellRenderer Tests', () {
+  group('[Widget] PdfTeamTableCellRenderer テスト', () {
     final ttf = pw.Font.helvetica();
     final ttfBold = pw.Font.helveticaBold();
 
-    test('1. buildTeamCell renders team name correctly', () {
+    test('buildTeamCell renders team name correctlyであること', () {
       final widget = PdfTeamTableCellRenderer.buildTeamCell(
         '東京道場',
         PdfColors.red900,
@@ -20,7 +20,7 @@ void main() {
       expect(widget, isA<pw.Widget>());
     });
 
-    test('2. buildTeamResultCell handles draw and win cases', () {
+    test('buildTeamResultCell handles draw and win casesであること', () {
       final drawWidget = PdfTeamTableCellRenderer.buildTeamResultCell(
         'draw',
         ttfBold,
@@ -34,7 +34,7 @@ void main() {
       expect(winWidget, isNotNull);
     });
 
-    test('3. buildNameCell handles single and duplicated last names', () {
+    test('buildNameCell handles single and duplicated last namesであること', () {
       final nameWidget = PdfTeamTableCellRenderer.buildNameCell('東京道場 : 佐藤 健', [
         '佐藤',
         '武田',

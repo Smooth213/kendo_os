@@ -12,46 +12,47 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('ViewerIndividualPlayerCard renders player name and matches', (
-    tester,
-  ) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+  testWidgets(
+    'ViewerIndividualPlayerCard renders player name and matchesであること',
+    (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    final match = MatchModel(
-      id: 'm1',
-      tournamentId: 't1',
-      matchType: 'individual',
-      order: 1,
-      redName: '選手A',
-      whiteName: '選手B',
-      status: 'in_progress',
-      note: '',
-    );
+      final match = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: 'individual',
+        order: 1,
+        redName: '選手A',
+        whiteName: '選手B',
+        status: 'in_progress',
+        note: '',
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: ViewerIndividualPlayerCard(
-              playerName: '選手A',
-              playerMatches: [match],
-              matchLabel: '個人戦',
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: ViewerIndividualPlayerCard(
+                playerName: '選手A',
+                playerMatches: [match],
+                matchLabel: '個人戦',
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('選'), findsOneWidget);
-    expect(
-      find.byWidgetPredicate(
-        (w) => w is RichText && w.text.toPlainText().contains('選手A'),
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('試合中 (LIVE)'), findsOneWidget);
-  });
+      expect(find.text('選'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('選手A'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
+    },
+  );
 }

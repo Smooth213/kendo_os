@@ -14,7 +14,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  group('🥋 ドック内全機能ボトムシート ウィジェットテスト', () {
+  group('[Widget] ドック内全機能ボトムシート ウィジェットテスト', () {
     testWidgets('DockBottomSheetHeader がタイトル、アイコン、全画面ボタンを表示すること', (
       tester,
     ) async {

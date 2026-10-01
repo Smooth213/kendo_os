@@ -44,7 +44,7 @@ class FakeLocalMatchRepository implements LocalMatchRepository {
 }
 
 void main() {
-  group('🛡️ Bunaiksen Official Record Dual-Platform Verification', () {
+  group('[Widget] Bunaiksen Official Record Dual-Platform 検証', () {
     late FakeFirebaseFirestore fakeFirestore;
     final dateId = 'bunaiksen_20260703';
     final mockMatch = MatchModel(
@@ -65,7 +65,7 @@ void main() {
     });
 
     testWidgets(
-      '1. Web Environment: Should load match records from Firestore',
+      'Web Environment: Should load match records from Firestoreであること',
       (WidgetTester tester) async {
         debugIsWebOverride = true; // Simulate Web
         addTearDown(() => debugIsWebOverride = false);
@@ -109,7 +109,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Native Environment: Should load match records from Local Database (Isar)',
+      'Native Environment: Should load match records from Local Database (Isar)こと',
       (WidgetTester tester) async {
         debugIsWebOverride = false; // Simulate Native
 

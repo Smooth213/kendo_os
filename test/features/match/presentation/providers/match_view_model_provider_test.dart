@@ -30,7 +30,7 @@ void main() {
     );
   }
 
-  group('🛡️ MatchViewModelProvider Tests (UI Projection Logic)', () {
+  group('[Unit] MatchViewModelProvider テスト (UI Projection Logic)', () {
     late ProviderContainer container;
 
     setUp(() {
@@ -42,7 +42,7 @@ void main() {
     });
 
     test(
-      '1. tournamentMatchesProvider: 特定のtournamentIdの試合のみ抽出し、order順にソートされること',
+      'tournamentMatchesProvider: 特定のtournamentIdの試合のみ抽出し、order順にソートされること',
       () {
         final m1 = createMatch(
           id: '1',
@@ -83,7 +83,7 @@ void main() {
       },
     );
 
-    test('2. activeMatchesProvider: in_progressとwaitingが正しく分類・グループ化されること', () {
+    test('activeMatchesProvider: in_progressとwaitingが正しく分類・グループ化されること', () {
       final m1 = createMatch(
         id: '1',
         tournamentId: 't1',
@@ -140,7 +140,7 @@ void main() {
       expect(activeMatches.waiting[0].id, '3');
     });
 
-    test('3. timelineMatchesByCategoryProvider: 検索クエリで正しくフィルタリングされること', () {
+    test('timelineMatchesByCategoryProvider: 検索クエリで正しくフィルタリングされること', () {
       final m1 = createMatch(
         id: '1',
         tournamentId: 't1',
@@ -184,7 +184,7 @@ void main() {
       expect(result.entries.first.key, '小学生');
     });
 
-    test('4. timelineMatchesByCategoryProvider: 重み付けによるカテゴリソートが機能すること', () {
+    test('timelineMatchesByCategoryProvider: 重み付けによるカテゴリソートが機能すること', () {
       final m1 = createMatch(
         id: '1',
         tournamentId: 't1',
@@ -241,7 +241,7 @@ void main() {
     });
 
     test(
-      '5. bunaiksenMatchesProvider: 進行中 -> 待機中 -> 終了済み の優先度でソートされること',
+      'bunaiksenMatchesProvider: 進行中 -> 待機中 -> 終了済み の優先度でソートされること',
       () async {
         final m1 = createMatch(
           id: '1',

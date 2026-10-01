@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 void main() {
-  group('🛡️ AppHaptics ユーティリティ テスト', () {
+  group('[Widget] AppHaptics ユーティリティ テスト', () {
     test('全Hapticメソッドがクラッシュせず安全に実行できること', () {
       expect(() => AppHaptics.selection(), returnsNormally);
       expect(() => AppHaptics.light(), returnsNormally);
@@ -24,7 +24,7 @@ void main() {
     });
   });
 
-  group('🛡️ AppLoadingIndicator ウィジェット テスト', () {
+  group('AppLoadingIndicator ウィジェット テスト', () {
     testWidgets(
       '標準の AppLoadingIndicator が CupertinoActivityIndicator として描画されること',
       (tester) async {
@@ -77,7 +77,7 @@ void main() {
     });
   });
 
-  group('🛡️ AppSwitch ウィジェット テスト', () {
+  group('AppSwitch ウィジェット テスト', () {
     testWidgets('Switch.adaptive が描画され、タップ時に値の変更コールバックが発火すること', (tester) async {
       bool currentValue = false;
 
@@ -113,7 +113,7 @@ void main() {
       expect(currentValue, isTrue);
     });
   });
-  group('🛡️ AppChoiceChip ウィジェット テスト', () {
+  group('AppChoiceChip ウィジェット テスト', () {
     testWidgets('ピル形状(Capsule)で描画され、タップ時にonSelectedが発火すること', (tester) async {
       bool isSelected = false;
 
@@ -155,7 +155,7 @@ void main() {
     });
   });
 
-  group('🛡️ AppSnackBar ユーティリティ テスト', () {
+  group('AppSnackBar ユーティリティ テスト', () {
     testWidgets('show, showError, showSuccess がクラッシュせず SnackBar を表示すること', (
       tester,
     ) async {
@@ -186,7 +186,7 @@ void main() {
     });
   });
 
-  group('🛡️ AppBottomSheetContent ウィジェット テスト', () {
+  group('AppBottomSheetContent ウィジェット テスト', () {
     testWidgets('ドラッグハンドルとタイトルが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -209,7 +209,7 @@ void main() {
     });
   });
 
-  group('🛡️ AppHeader ウィジェット テスト', () {
+  group('AppHeader ウィジェット テスト', () {
     testWidgets('canPop時に自動で iOS 戻るボタンが描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

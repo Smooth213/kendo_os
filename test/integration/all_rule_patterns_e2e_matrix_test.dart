@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/rul
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🏛️ 剣道OS 全ルールパターン網羅 (14大マトリクス) E2E インテグレーション完全要塞テスト', () {
+  group('[Widget] 剣道OS 全ルールパターン網羅 (14大マトリクス) E2E インテグレーション完全要塞テスト', () {
     late TournamentModel completeTournament;
 
     setUp(() {
@@ -292,7 +292,7 @@ void main() {
     // パターン 1〜14 の完全個別自動検証テスト
     // ─────────────────────────────────────────────────────────
 
-    testWidgets('1. 【パターン①: トーナメント団体戦_標準5人制】試合モデル & レギュレーション完全一致検証', (
+    testWidgets('【パターン①: トーナメント団体戦_標準5人制】試合モデル & レギュレーション完全一致が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule =
@@ -322,7 +322,7 @@ void main() {
       );
     });
 
-    testWidgets('2. 【パターン②: トーナメント団体戦_1本勝負3人制】代表戦なし時の個別代表戦項目完全非表示検証', (
+    testWidgets('【パターン②: トーナメント団体戦_1本勝負3人制】代表戦なし時の個別代表戦項目完全非表示が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule =
@@ -350,7 +350,7 @@ void main() {
       );
     });
 
-    testWidgets('3. 【パターン③: トーナメント個人戦_標準】個人戦の延長戦・判定が正しく表示され代表戦が非表示であること', (
+    testWidgets('【パターン③: トーナメント個人戦_標準】個人戦の延長戦・判定が正しく表示され代表戦が非表示であること', (
       WidgetTester tester,
     ) async {
       final rule =
@@ -386,7 +386,7 @@ void main() {
       );
     });
 
-    testWidgets('4. 【パターン④: トーナメント個人戦_1本勝負無制限】無制限延長と判定なしが正しく反映されること', (
+    testWidgets('【パターン④: トーナメント個人戦_1本勝負無制限】無制限延長と判定なしが正しく反映されること', (
       WidgetTester tester,
     ) async {
       final rule =
@@ -422,7 +422,7 @@ void main() {
       );
     });
 
-    testWidgets('5. 【パターン⑤: リーグ団体戦_代表戦あり】勝点3/1/0・同点時代表戦の完全反映検証', (
+    testWidgets('【パターン⑤: リーグ団体戦_代表戦あり】勝点3/1/0・同点時代表戦の完全反映が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule =
@@ -450,7 +450,7 @@ void main() {
       );
     });
 
-    testWidgets('6. 【パターン⑥: リーグ団体戦_代表戦なし】代表戦なし設定時の代表戦項目完全非表示検証', (
+    testWidgets('【パターン⑥: リーグ団体戦_代表戦なし】代表戦なし設定時の代表戦項目完全非表示が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule =
@@ -475,7 +475,7 @@ void main() {
       );
     });
 
-    testWidgets('7. 【パターン⑦: リーグ個人戦_勝点制】リーグ個人戦での勝点・延長・判定が正しく表示されること', (
+    testWidgets('【パターン⑦: リーグ個人戦_勝点制】リーグ個人戦での勝点・延長・判定が正しく表示されること', (
       WidgetTester tester,
     ) async {
       final rule = completeTournament.categoryRules['⑦リーグ個人戦_勝点制']!.normalRule;
@@ -501,7 +501,7 @@ void main() {
       );
     });
 
-    testWidgets('8. 【パターン⑧: 勝ち抜き戦_大将対大将】勝ち抜き戦設定・無制限条件の完全反映検証', (
+    testWidgets('【パターン⑧: 勝ち抜き戦_大将対大将】勝ち抜き戦設定・無制限条件の完全反映が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule = completeTournament.categoryRules['⑧勝ち抜き戦_大将対大将']!.normalRule;
@@ -525,7 +525,7 @@ void main() {
       );
     });
 
-    testWidgets('9. 【パターン⑨: 勝ち抜き戦_完全無制限】完全無制限条件の完全反映検証', (
+    testWidgets('【パターン⑨: 勝ち抜き戦_完全無制限】完全無制限条件の完全反映が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule = completeTournament.categoryRules['⑨勝ち抜き戦_完全無制限']!.normalRule;
@@ -549,7 +549,7 @@ void main() {
       );
     });
 
-    testWidgets('10. 【パターン⑩: 錬成会_一試合制】一試合制・流し時間の完全反映検証', (
+    testWidgets('【パターン⑩: 錬成会_一試合制】一試合制・流し時間の完全反映が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule = completeTournament.categoryRules['⑩錬成会_一試合制']!.normalRule;
@@ -575,7 +575,7 @@ void main() {
       );
     });
 
-    testWidgets('11. 【パターン⑪: 錬成会_時間制15分】時間制・制限時間の完全反映検証', (
+    testWidgets('【パターン⑪: 錬成会_時間制15分】時間制・制限時間の完全反映が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule = completeTournament.categoryRules['⑪錬成会_時間制15分']!.normalRule;
@@ -600,7 +600,7 @@ void main() {
       );
     });
 
-    testWidgets('12. 【パターン⑫: 遠征マルチシーン】3シーン個別切替時のルール完全分離・非干渉検証', (
+    testWidgets('【パターン⑫: 遠征マルチシーン】3シーン個別切替時のルール完全分離・非干渉が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final multiRuleSet =
@@ -646,7 +646,7 @@ void main() {
       expect(moushiawaseMatch.rule?.hasHantei, isTrue);
     });
 
-    testWidgets('13. 【パターン⑬: 上位戦自動昇格】通常戦と上位戦（3分・無制限延長）の動的ルール解決検証', (
+    testWidgets('【パターン⑬: 上位戦自動昇格】通常戦と上位戦（3分・無制限延長）の動的ルール解決が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final advancedRuleSet =
@@ -680,7 +680,7 @@ void main() {
       expect(finalMatch.rule?.hasRepresentativeMatch, isTrue);
     });
 
-    testWidgets('14. 【パターン⑭: 特設部内戦】部内戦（bunaiksen）テーマ・ルール完全性検証', (
+    testWidgets('【パターン⑭: 特設部内戦】部内戦（bunaiksen）テーマ・ルール完全性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final rule = completeTournament.categoryRules['⑭部内戦_特設紅白戦']!.normalRule;
@@ -707,7 +707,7 @@ void main() {
     });
 
     testWidgets(
-      '15. 【全14パターン整合性完全走査】全カテゴリーのルールがドメイン不変条件（団体戦は代表戦、個人戦は延長判定、リーグは勝点、錬成会は進行方式）を100%満足すること',
+      '【全14パターン整合性完全走査】全カテゴリーのルールがドメイン不変条件（団体戦は代表戦、個人戦は延長判定、リーグは勝点、錬成会は進行方式）を100%満足すること',
       (WidgetTester tester) async {
         for (final entry in completeTournament.categoryRules.entries) {
           final catName = entry.key;
@@ -749,65 +749,64 @@ void main() {
       },
     );
 
+    testWidgets('【パターン⑯: 7人制・9人制 多人数団体戦】実業団・警察・大学選抜の多人数ポジション配列が欠落なく反映されること', (
+      WidgetTester tester,
+    ) async {
+      // 7人制
+      const rule7 = MatchRule(
+        matchTimeMinutes: 4.0,
+        hasRepresentativeMatch: true,
+        positions: ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
+      );
+      final match7 = MatchModel(
+        id: 'm_7nin',
+        category: '実業団大会',
+        groupName: '1回戦',
+        matchType: '先鋒',
+        redName: 'A社:先鋒',
+        whiteName: 'B社:先鋒',
+        rule: rule7,
+      );
+      expect(match7.rule?.positions.length, equals(7));
+
+      await pumpAndVerifyBottomSheet(
+        tester,
+        match7,
+        ['団体戦', '4分 (都度ストップ)'],
+        ['反則', '延長戦', '判定'],
+      );
+
+      // 1つ目のシートを閉じる
+      Navigator.pop(tester.element(find.text('団体戦')));
+      await tester.pumpAndSettle();
+
+      // 9人制
+      const rule9 = MatchRule(
+        matchTimeMinutes: 3.0,
+        hasRepresentativeMatch: true,
+        positions: ['先鋒', '次鋒', '七将', '六将', '中堅', '四将', '三将', '副将', '大将'],
+      );
+      final match9 = MatchModel(
+        id: 'm_9nin',
+        category: '東西対抗大会',
+        groupName: '東西戦',
+        matchType: '先鋒',
+        redName: '東軍:先鋒',
+        whiteName: '西軍:先鋒',
+        rule: rule9,
+      );
+      expect(match9.rule?.positions.length, equals(9));
+
+      await pumpAndVerifyBottomSheet(
+        tester,
+        match9,
+        ['団体戦', '3分 (都度ストップ)'],
+        ['反則', '延長戦', '判定'],
+      );
+    });
+
     testWidgets(
-      '16. 【パターン⑯: 7人制・9人制 多人数団体戦】実業団・警察・大学選抜の多人数ポジション配列が欠落なく反映されること',
-      (WidgetTester tester) async {
-        // 7人制
-        const rule7 = MatchRule(
-          matchTimeMinutes: 4.0,
-          hasRepresentativeMatch: true,
-          positions: ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
-        );
-        final match7 = MatchModel(
-          id: 'm_7nin',
-          category: '実業団大会',
-          groupName: '1回戦',
-          matchType: '先鋒',
-          redName: 'A社:先鋒',
-          whiteName: 'B社:先鋒',
-          rule: rule7,
-        );
-        expect(match7.rule?.positions.length, equals(7));
-
-        await pumpAndVerifyBottomSheet(
-          tester,
-          match7,
-          ['団体戦', '4分 (都度ストップ)'],
-          ['反則', '延長戦', '判定'],
-        );
-
-        // 1つ目のシートを閉じる
-        Navigator.pop(tester.element(find.text('団体戦')));
-        await tester.pumpAndSettle();
-
-        // 9人制
-        const rule9 = MatchRule(
-          matchTimeMinutes: 3.0,
-          hasRepresentativeMatch: true,
-          positions: ['先鋒', '次鋒', '七将', '六将', '中堅', '四将', '三将', '副将', '大将'],
-        );
-        final match9 = MatchModel(
-          id: 'm_9nin',
-          category: '東西対抗大会',
-          groupName: '東西戦',
-          matchType: '先鋒',
-          redName: '東軍:先鋒',
-          whiteName: '西軍:先鋒',
-          rule: rule9,
-        );
-        expect(match9.rule?.positions.length, equals(9));
-
-        await pumpAndVerifyBottomSheet(
-          tester,
-          match9,
-          ['団体戦', '3分 (都度ストップ)'],
-          ['反則', '延長戦', '判定'],
-        );
-      },
-    );
-
-    testWidgets(
-      '17. 【パターン⑰: 通し時間（空回し/ランニングタイム）団体戦】isRunningTime: true がタイマー表示・レギュレーションへ100%正確に反映されること',
+      '【パターン⑰: 通し時間（空回し/ランニングタイム）団体戦】isRunningTime: true がタイマー表示・レギュレーションへ100%正確に反映されること',
       (WidgetTester tester) async {
         const runningRule = MatchRule(
           matchTimeMinutes: 3.0,
@@ -837,7 +836,7 @@ void main() {
     );
 
     testWidgets(
-      '18. 【パターン⑱: 遠征マルチシーン 8通り全組み合わせ完全網羅】各選択パターンに応じて有効なシーンのみが厳格に排他出力されること',
+      '【パターン⑱: 遠征マルチシーン 8通り全組み合わせ完全網羅】各選択パターンに応じて有効なシーンのみが厳格に排他出力されること',
       (WidgetTester tester) async {
         final multiCombinations = [
           // (錬成会ON, 本戦ON, 申し合わせON, 期待セクション一覧, 非表示セクション一覧)
@@ -894,7 +893,7 @@ void main() {
     );
 
     testWidgets(
-      '19. 【パターン⑲: 勝ち抜き戦 特殊決着バリエーション】大将対大将無制限・完全無制限・通常引分がモデルおよびUIに完全同期されること',
+      '【パターン⑲: 勝ち抜き戦 特殊決着バリエーション】大将対大将無制限・完全無制限・通常引分がモデルおよびUIに完全同期されること',
       (WidgetTester tester) async {
         // 大将対大将
         const kachinukiRuleA = MatchRule(
@@ -950,7 +949,7 @@ void main() {
     );
 
     testWidgets(
-      '20. 【パターン⑳: リーグ戦 多彩な勝点配分】全国大会型(3/1/0)・従来型(2/1/0)・勝数重視型(1/0/0)が正確に出力されること',
+      '【パターン⑳: リーグ戦 多彩な勝点配分】全国大会型(3/1/0)・従来型(2/1/0)・勝数重視型(1/0/0)が正確に出力されること',
       (WidgetTester tester) async {
         final pointScenarios = [
           (3.0, 1.0, 0.0),
@@ -997,7 +996,7 @@ void main() {
     );
 
     testWidgets(
-      '21. 【パターン㉑: 上位戦キーワードの柔軟検知】全角半角・大文字小文字・日英混在メモから上位戦ルールが決定論的に解決されること',
+      '【パターン㉑: 上位戦キーワードの柔軟検知】全角半角・大文字小文字・日英混在メモから上位戦ルールが決定論的に解決されること',
       (WidgetTester tester) async {
         const advancedRuleSet = CategoryRuleSet(
           matchType: '団体戦',

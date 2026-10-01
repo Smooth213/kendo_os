@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchStatusBadge Widget Tests', () {
-    testWidgets('Renders 試合中 (LIVE) when isPlaying is true', (
+  group('[Widget] MatchStatusBadge ウィジェットテスト', () {
+    testWidgets('Renders 試合中 (LIVE) when isPlaying is trueであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -26,7 +26,7 @@ void main() {
       expect(find.text('試合中 (LIVE)'), findsOneWidget);
     });
 
-    testWidgets('Renders 終了 when isFinished is true', (
+    testWidgets('Renders 終了 when isFinished is trueであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -47,7 +47,7 @@ void main() {
       expect(find.text('終了'), findsOneWidget);
     });
 
-    testWidgets('Renders ⏳ 待機中 when match is pending', (
+    testWidgets('Renders  待機中 when match is pendingであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -68,7 +68,7 @@ void main() {
       expect(find.text('⏳ 待機中'), findsOneWidget);
     });
 
-    testWidgets('Renders customFinishedText (🏁 全試合終了) when provided', (
+    testWidgets('Renders customFinishedText ( 全試合終了) when providedであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

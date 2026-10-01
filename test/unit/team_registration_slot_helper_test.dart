@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_slot_helper.dart';
 
 void main() {
-  group('🥋 【Unit】TeamRegistrationSlotHelper 選手・補欠スロット操作テスト', () {
-    test('1. removeSubstitute: 補欠スロット削除時に後続が正しく前詰めシフトされ、末尾が削除されること', () {
+  group('[Unit] 【Unit】TeamRegistrationSlotHelper 選手・補欠スロット操作テスト', () {
+    test('removeSubstitute: 補欠スロット削除時に後続が正しく前詰めシフトされ、末尾が削除されること', () {
       final selectedPlayers = <int, String>{5: '補欠1', 6: '補欠2', 7: '補欠3'};
 
       // 補欠1 (index 5) を削除（playerCount = 8）
@@ -19,7 +19,7 @@ void main() {
       expect(selectedPlayers.containsKey(7), isFalse);
     });
 
-    test('2. removeSubstitute: 末尾スロット削除時の整合性', () {
+    test('removeSubstitute: 末尾スロット削除時の整合性こと', () {
       final selectedPlayers = <int, String>{5: '補欠1', 6: '補欠2'};
 
       TeamRegistrationSlotHelper.removeSubstitute(
@@ -32,7 +32,7 @@ void main() {
       expect(selectedPlayers.containsKey(6), isFalse);
     });
 
-    test('3. removeSubstitute: 歯抜けスロット（未選択）存在時も安全に削除・シフトできること', () {
+    test('removeSubstitute: 歯抜けスロット（未選択）存在時も安全に削除・シフトできること', () {
       final selectedPlayers = <int, String>{
         5: '補欠1',
         // index 6 は空欄
@@ -52,7 +52,7 @@ void main() {
     });
 
     test(
-      '4. removePlayerSlot: 先頭スロット (index 0) 削除時に後続が正しくシフトされ、customSlotCountが減算されること',
+      'removePlayerSlot: 先頭スロット (index 0) 削除時に後続が正しくシフトされ、customSlotCountが減算されること',
       () {
         final selectedPlayers = <int, String>{
           0: '先鋒選手',
@@ -78,7 +78,7 @@ void main() {
       },
     );
 
-    test('5. removePlayerSlot: 3枠（下限値）ガード機能が働き、3枠未満には減算されないこと', () {
+    test('removePlayerSlot: 3枠（下限値）ガード機能が働き、3枠未満には減算されないこと', () {
       final selectedPlayers = <int, String>{0: '先鋒', 1: '中堅', 2: '大将'};
 
       final newCount = TeamRegistrationSlotHelper.removePlayerSlot(

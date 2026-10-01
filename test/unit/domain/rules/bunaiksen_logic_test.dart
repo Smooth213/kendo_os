@@ -16,8 +16,8 @@ import 'package:kendo_os/features/match/domain/match_context.dart';
 // 分離が完了した本番用の BunaiksenHelper を直接テストします！
 // ============================================================================
 void main() {
-  group('カテゴリ1: 部内戦ルールのテスト', () {
-    test('部内戦の基本ルールが正しく定義されていること（3分・延長なし）', () {
+  group('[Unit] カテゴリ1: 部内戦ルールのテスト', () {
+    test('【3分・延長なし】部内戦の基本ルールが正しく定義されていること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -75,7 +75,7 @@ void main() {
   });
 
   group('カテゴリ2: 技（スコアマーク）変換ロジックのテスト', () {
-    test('赤が先取（メン）、白が取り返し（コテ）、赤が勝負あり（ドウ）の場合の正確な変換', () {
+    test('赤が先取（メン）、白が取り返し（コテ）、赤が勝負あり（ドウ）の場合の正確な変換こと', () {
       final mockEvents = [
         {'side': 'red', 'type': 'men'},
         {'side': 'white', 'type': 'kote'},

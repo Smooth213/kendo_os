@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/viewer/components/viewer_vertical_player_name_cell.dart';
 
 void main() {
-  group('🛡️ ViewerVerticalPlayerNameCell Widget Tests', () {
-    testWidgets('Renders simple vertical text characters', (
+  group('[Widget] ViewerVerticalPlayerNameCell ウィジェットテスト', () {
+    testWidgets('Renders simple vertical text charactersであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -21,25 +21,26 @@ void main() {
       expect(find.text('田'), findsOneWidget);
     });
 
-    testWidgets('Renders RotatedBox for hyphen and brackets, with initial', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: ViewerVerticalPlayerNameCell(
-                text: 'リーダー(A)',
-                initial: 'Y',
-                isDark: true,
+    testWidgets(
+      'Renders RotatedBox for hyphen and brackets, with initialであること',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: ViewerVerticalPlayerNameCell(
+                  text: 'リーダー(A)',
+                  initial: 'Y',
+                  isDark: true,
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.byType(RotatedBox), findsWidgets);
-      expect(find.text('Y'), findsOneWidget);
-    });
+        expect(find.byType(RotatedBox), findsWidgets);
+        expect(find.text('Y'), findsOneWidget);
+      },
+    );
   });
 }

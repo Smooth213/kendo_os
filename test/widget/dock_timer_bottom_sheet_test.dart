@@ -10,7 +10,7 @@ Widget createTestWidget({required Widget child}) {
 }
 
 void main() {
-  group('⏱️ DockTimerBottomSheet Widget Tests', () {
+  group('[Widget] DockTimerBottomSheet ウィジェットテスト', () {
     testWidgets('初期表示で3分のデジタル表示と定型プリセットが表示されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;

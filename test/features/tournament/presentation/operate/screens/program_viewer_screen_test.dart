@@ -126,7 +126,7 @@ class MockHttpHeaders extends Mock implements HttpHeaders {
 }
 
 void main() {
-  group('🛡️ ProgramViewerScreen Stability & Regression Tests', () {
+  group('[Widget] ProgramViewerScreen Stability & リグレッションテスト', () {
     late MockStrokeRepository mockStrokeRepo;
     late MockLocalStrokeRepository mockLocalStrokeRepo;
     late MockProgramRepository mockProgramRepo;
@@ -211,7 +211,7 @@ void main() {
       );
     }
 
-    testWidgets('✅ 1. PDFがRenderFlexオーバーフローエラーを起こさずに描画されること', (tester) async {
+    testWidgets('PDFがRenderFlexオーバーフローエラーを起こさずに描画されること', (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
 
       // OverflowBox と ClipRect の効果を検証
@@ -241,9 +241,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('✅ 2. Web特有のCORS回避: 画像読み込みが無限クルクルにならずフォールバックされること', (
-      tester,
-    ) async {
+    testWidgets('Web特有のCORS回避: 画像読み込みが無限クルクルにならずフォールバックされること', (tester) async {
       final imageProgram = ProgramModel(
         id: 'img_1',
         tournamentId: 't1',
@@ -271,7 +269,7 @@ void main() {
       expect(find.byType(Image), findsOneWidget);
     });
 
-    testWidgets('✅ 3. OCRの完了状態に応じてアイコンが正しく切り替わること', (tester) async {
+    testWidgets('OCRの完了状態に応じてアイコンが正しく切り替わること', (tester) async {
       final streamController = StreamController<List<ProgramModel>>.broadcast();
       addTearDown(() => streamController.close());
       when(
@@ -306,7 +304,7 @@ void main() {
       expect(boltIconProcessed.color, equals(Colors.amber));
     });
 
-    testWidgets('✅ 4. 閲覧専用(Viewer)権限の時は書き込みボタンが完全に非表示になること', (tester) async {
+    testWidgets('閲覧専用(Viewer)権限の時は書き込みボタンが完全に非表示になること', (tester) async {
       final program = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -334,7 +332,7 @@ void main() {
       expect(find.byTooltip('黄色'), findsNothing);
     });
 
-    testWidgets('✅ 5. 手書きアノテーションの Undo 操作が正しくトリガーされること', (tester) async {
+    testWidgets('手書きアノテーションの Undo 操作が正しくトリガーされること', (tester) async {
       final program = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -370,7 +368,7 @@ void main() {
       verify(() => mockLocalStrokeRepo.undoLastStroke('p1')).called(1);
     });
 
-    test('✅ 6. 蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)', () {
+    test('蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)こと', () {
       final painter = StrokePainter(
         sharedStrokes: [],
         privateStrokes: [],
@@ -406,7 +404,7 @@ void main() {
       expect(yellowMarkerPaint.blendMode, equals(BlendMode.multiply));
     });
 
-    testWidgets('✅ 7. 消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
+    testWidgets('消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
       final program = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -467,7 +465,7 @@ void main() {
       verify(() => mockStrokeRepo.deleteStroke('stroke_123')).called(1);
     });
 
-    testWidgets('✅ 8. PDFの2重ロード（フェッチ）防止キャッシュの動作検証', (tester) async {
+    testWidgets('PDFの2重ロード（フェッチ）防止キャッシュの動作が正しく検証されること', (tester) async {
       final pdfProgram = ProgramModel(
         id: 'pdf_1',
         tournamentId: 't1',
@@ -510,7 +508,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('✅ 9. PDFの複数ページの個別ページ数管理（スワイプ時の競合防止）の検証', (tester) async {
+    testWidgets('PDFの複数ページの個別ページ数管理（スワイプ時の競合防止）が正しく検証できること', (tester) async {
       final program1 = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -559,7 +557,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1)); // タイマー消化
     });
 
-    testWidgets('✅ 10. 画像共有の適切な実施 (プログラム追加によるリアルタイムでのリスト自動更新) の検証', (
+    testWidgets('画像共有の適切な実施 (プログラム追加によるリアルタイムでのリスト自動更新) が正しく検証できること', (
       tester,
     ) async {
       final streamController = StreamController<List<ProgramModel>>.broadcast();
@@ -612,7 +610,7 @@ void main() {
     });
 
     testWidgets(
-      '✅ 11. ピンチズーム（拡大）中に PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
+      'ピンチズーム（拡大）中に PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
       (tester) async {
         final program = ProgramModel(
           id: 'p1',
@@ -651,7 +649,9 @@ void main() {
       },
     );
 
-    testWidgets('✅ 12. ツールバーのグループ分離レイアウト（描画と消去コンテナの分離・配色）の検証', (tester) async {
+    testWidgets('ツールバーのグループ分離レイアウト（描画と消去コンテナの分離・配色）が正しく検証できること', (
+      tester,
+    ) async {
       final program = ProgramModel(
         id: 'p1',
         tournamentId: 't1',
@@ -704,107 +704,104 @@ void main() {
       expect(find.byTooltip('すべて消す'), findsOneWidget);
     });
 
-    testWidgets(
-      '✅ 13. 観客ビュアー(Viewer)権限では、表示されている共有ペンは消しゴムで削除できず、個人ペンのみ削除対象となること',
-      (tester) async {
-        final program = ProgramModel(
-          id: 'p_viewer_erase',
-          tournamentId: 't1',
-          title: '観客消しゴムテスト',
-          fileUrl: 'https://placehold.co/400x600.jpg',
-          fileType: 'image',
-          pageCount: 1,
-          createdAt: DateTime.now(),
-        );
+    testWidgets('観客ビュアー(Viewer)権限では、表示されている共有ペンは消しゴムで削除できず、個人ペンのみ削除対象となること', (
+      tester,
+    ) async {
+      final program = ProgramModel(
+        id: 'p_viewer_erase',
+        tournamentId: 't1',
+        title: '観客消しゴムテスト',
+        fileUrl: 'https://placehold.co/400x600.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime.now(),
+      );
 
-        when(
-          () => mockProgramRepo.watchPrograms(any()),
-        ).thenAnswer((_) => Stream.value([program]));
-        when(() => mockStrokeRepo.deleteStroke(any())).thenAnswer((_) async {});
-        when(
-          () => mockLocalStrokeRepo.deleteStroke(
-            any(),
-            firestoreId: any(named: 'firestoreId'),
-          ),
-        ).thenAnswer((_) async {});
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+      when(() => mockStrokeRepo.deleteStroke(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalStrokeRepo.deleteStroke(
+          any(),
+          firestoreId: any(named: 'firestoreId'),
+        ),
+      ).thenAnswer((_) async {});
 
-        // 共有ペン (100, 100)
-        final sharedStroke = StrokeModel(
-          id: 'shared_stroke_999',
-          programId: 'p_viewer_erase',
-          points: [const Offset(100, 100), const Offset(105, 105)],
-          color: Colors.pink,
-          strokeWidth: 10.0,
-          isShared: true,
-          pageIndex: 0,
-        );
+      // 共有ペン (100, 100)
+      final sharedStroke = StrokeModel(
+        id: 'shared_stroke_999',
+        programId: 'p_viewer_erase',
+        points: [const Offset(100, 100), const Offset(105, 105)],
+        color: Colors.pink,
+        strokeWidth: 10.0,
+        isShared: true,
+        pageIndex: 0,
+      );
 
-        // 個人ペン (200, 200)
-        final privateStroke = LocalStrokeModel()
-          ..id = 888
-          ..programId = 'p_viewer_erase'
-          ..pointsX = [200.0, 205.0]
-          ..pointsY = [200.0, 205.0]
-          ..colorValue = Colors.blue.toARGB32()
-          ..strokeWidth = 5.0
-          ..createdAt = DateTime.now();
+      // 個人ペン (200, 200)
+      final privateStroke = LocalStrokeModel()
+        ..id = 888
+        ..programId = 'p_viewer_erase'
+        ..pointsX = [200.0, 205.0]
+        ..pointsY = [200.0, 205.0]
+        ..colorValue = Colors.blue.toARGB32()
+        ..strokeWidth = 5.0
+        ..createdAt = DateTime.now();
 
-        when(
-          () => mockStrokeRepo.watchStrokes(any()),
-        ).thenAnswer((_) => Stream.value([sharedStroke]));
-        when(
-          () => mockLocalStrokeRepo.watchStrokes(any()),
-        ).thenAnswer((_) => Stream.value([privateStroke]));
+      when(
+        () => mockStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([sharedStroke]));
+      when(
+        () => mockLocalStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([privateStroke]));
 
-        // 観客権限(isReadOnly: true)で画面を起動
-        await tester.pumpWidget(
-          createViewerWidget([program], isReadOnly: true),
-        );
-        await tester.pump(const Duration(milliseconds: 200));
+      // 観客権限(isReadOnly: true)で画面を起動
+      await tester.pumpWidget(createViewerWidget([program], isReadOnly: true));
+      await tester.pump(const Duration(milliseconds: 200));
 
-        // 書き込みモードをONにする
-        await tester.tap(find.byIcon(Icons.edit));
-        await tester.pump(const Duration(milliseconds: 200));
+      // 書き込みモードをONにする
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pump(const Duration(milliseconds: 200));
 
-        // 消しゴムツールを選択
-        final eraserButton = find.byTooltip('消しゴム');
-        expect(eraserButton, findsOneWidget);
-        await tester.tap(eraserButton);
-        await tester.pump(const Duration(milliseconds: 200));
+      // 消しゴムツールを選択
+      final eraserButton = find.byTooltip('消しゴム');
+      expect(eraserButton, findsOneWidget);
+      await tester.tap(eraserButton);
+      await tester.pump(const Duration(milliseconds: 200));
 
-        final listenerFinder = find.byWidgetPredicate(
-          (widget) => widget is Listener && widget.onPointerMove != null,
-        );
-        expect(listenerFinder, findsOneWidget);
-        final Listener listener = tester.widget(listenerFinder);
+      final listenerFinder = find.byWidgetPredicate(
+        (widget) => widget is Listener && widget.onPointerMove != null,
+      );
+      expect(listenerFinder, findsOneWidget);
+      final Listener listener = tester.widget(listenerFinder);
 
-        // 1. 共有ペンの位置 (102, 102) をタップして消そうとする
-        listener.onPointerDown!(
-          const PointerDownEvent(position: Offset(102, 102)),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
+      // 1. 共有ペンの位置 (102, 102) をタップして消そうとする
+      listener.onPointerDown!(
+        const PointerDownEvent(position: Offset(102, 102)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
 
-        // ★ 共有ペンは決して削除されないこと（deleteStrokeが一切呼ばれていないこと）を検証！
-        verifyNever(() => mockStrokeRepo.deleteStroke(any()));
+      // ★ 共有ペンは決して削除されないこと（deleteStrokeが一切呼ばれていないこと）を検証！
+      verifyNever(() => mockStrokeRepo.deleteStroke(any()));
 
-        // 2. 個人ペンの位置 (202, 202) をタップして消す
-        listener.onPointerDown!(
-          const PointerDownEvent(position: Offset(202, 202)),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
+      // 2. 個人ペンの位置 (202, 202) をタップして消す
+      listener.onPointerDown!(
+        const PointerDownEvent(position: Offset(202, 202)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
 
-        // ★ 個人ペンは正しく削除処理がトリガーされたことを検証！
-        verify(
-          () => mockLocalStrokeRepo.deleteStroke(
-            888,
-            firestoreId: any(named: 'firestoreId'),
-          ),
-        ).called(1);
-      },
-    );
+      // ★ 個人ペンは正しく削除処理がトリガーされたことを検証！
+      verify(
+        () => mockLocalStrokeRepo.deleteStroke(
+          888,
+          firestoreId: any(named: 'firestoreId'),
+        ),
+      ).called(1);
+    });
 
     testWidgets(
-      '✅ 14. 複数ページPDFで2ページ目以降のとき「最初のページに戻る」ボタンをタップすると1ページ目に戻り保存値が1に更新されること',
+      '複数ページPDFで2ページ目以降のとき「最初のページに戻る」ボタンをタップすると1ページ目に戻り保存値が1に更新されること',
       (tester) async {
         addTearDown(tester.view.resetPhysicalSize);
         tester.view.physicalSize = const Size(1080, 1920);

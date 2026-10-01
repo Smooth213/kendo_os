@@ -4,8 +4,8 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_tourname
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('🛡️ ViewerTournamentInfoCard Widget Tests', () {
-    testWidgets('Renders tournament info correctly', (tester) async {
+  group('[Widget] ViewerTournamentInfoCard ウィジェットテスト', () {
+    testWidgets('Renders tournament info correctlyであること', (tester) async {
       final tournament = TournamentModel(
         id: 't1',
         organizationId: 'org1',

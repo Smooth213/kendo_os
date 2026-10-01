@@ -34,8 +34,8 @@ void main() {
     return '$m分$s秒';
   }
 
-  group('🥋 Refactored MatchRule Sections Widget Tests', () {
-    testWidgets('1. MatchRuleTimeSection: 試合時間・進行形式・計測方式・勝負形式が操作可能であること', (
+  group('[Widget] Refactored MatchRule Sections ウィジェットテスト', () {
+    testWidgets('MatchRuleTimeSection: 試合時間・進行形式・計測方式・勝負形式が操作可能であること', (
       WidgetTester tester,
     ) async {
       double matchTime = 3.0;
@@ -89,7 +89,7 @@ void main() {
       expect(matchTime, 4.0);
     });
 
-    testWidgets('2. MatchRuleEnchoSection: 延長戦トグル・延長時間チップ・無制限スイッチが動作すること', (
+    testWidgets('MatchRuleEnchoSection: 延長戦トグル・延長時間チップ・無制限スイッチが動作すること', (
       WidgetTester tester,
     ) async {
       bool hasExtension = false;
@@ -136,7 +136,7 @@ void main() {
       expect(enchoTime, 3.0);
     });
 
-    testWidgets('3. MatchRuleHanteiSection: 判定トグルが動作すること', (
+    testWidgets('MatchRuleHanteiSection: 判定トグルが動作すること', (
       WidgetTester tester,
     ) async {
       bool hasHantei = false;
@@ -166,7 +166,7 @@ void main() {
       expect(hasHantei, true);
     });
 
-    testWidgets('4. MatchRuleDaihyoSection: 団体戦ON時に代表戦詳細設定が展開されること', (
+    testWidgets('MatchRuleDaihyoSection: 団体戦ON時に代表戦詳細設定が展開されること', (
       WidgetTester tester,
     ) async {
       bool hasRepresentativeMatch = true;
@@ -225,7 +225,7 @@ void main() {
       expect(find.text('代表戦の延長戦を行う'), findsOneWidget);
     });
 
-    testWidgets('5. MatchRuleSpecialSection: 勝ち抜き戦・リーグ勝ち点が設定可能であること', (
+    testWidgets('MatchRuleSpecialSection: 勝ち抜き戦・リーグ勝ち点が設定可能であること', (
       WidgetTester tester,
     ) async {
       bool isKachinuki = true;
@@ -268,7 +268,7 @@ void main() {
       expect(find.text('リーグ戦（勝点集計ルール）'), findsOneWidget);
     });
 
-    testWidgets('6. MatchRuleDialogHelper: カスタム時間ダイアログが正しく表示・入力・決定できること', (
+    testWidgets('MatchRuleDialogHelper: カスタム時間ダイアログが正しく表示・入力・決定できること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);

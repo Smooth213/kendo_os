@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchOperateActionButtonsGrid Widget Tests', () {
-    testWidgets('Renders all 4 buttons and triggers callbacks', (
+  group('[Widget] MatchOperateActionButtonsGrid ウィジェットテスト', () {
+    testWidgets('Renders all 4 buttons and triggers callbacksであること', (
       WidgetTester tester,
     ) async {
       bool shareClicked = false;
@@ -62,7 +62,7 @@ void main() {
       expect(checkRuleClicked, isTrue);
     });
 
-    testWidgets('Disables restore button when isViewOnly is true', (
+    testWidgets('Disables restore button when isViewOnly is trueであること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

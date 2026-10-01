@@ -53,7 +53,7 @@ class FakeSyncEngine implements SyncEngine {
 
 void main() {
   testWidgets(
-    'Tapping confirm button in auto-finished Infinite Kachinuki match triggers next match setup dialog',
+    'Tapping confirm button in auto-finished Infinite Kachinuki match triggers next match setup dialogであること',
     (WidgetTester tester) async {
       // Set larger physical size so the bottom button is visible and hit-testable
       tester.view.physicalSize = const Size(800, 1200);

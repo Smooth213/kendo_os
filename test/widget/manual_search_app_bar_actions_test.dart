@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_search_app_bar_actions.dart';
 
 void main() {
-  group('🛡️ ManualSearchAppBarActions Widget Tests', () {
+  group('[Widget] ManualSearchAppBarActions ウィジェットテスト', () {
     testWidgets(
-      'Renders search icon when showSearch is true and isSearching is false',
+      'Renders search icon when showSearch is true and isSearching is falseであること',
       (tester) async {
         bool searchStarted = false;
 
@@ -37,7 +37,7 @@ void main() {
     );
 
     testWidgets(
-      'Renders navigation and clear buttons when searching with query',
+      'Renders navigation and clear buttons when searching with queryであること',
       (tester) async {
         bool prevPressed = false;
         bool nextPressed = false;

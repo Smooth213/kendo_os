@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_floating_action_bar.dart';
 
 void main() {
-  group('🛡️ ManualFloatingActionBar Widget Tests', () {
-    testWidgets('Renders buttons and triggers callbacks', (
+  group('[Widget] ManualFloatingActionBar ウィジェットテスト', () {
+    testWidgets('Renders buttons and triggers callbacksであること', (
       WidgetTester tester,
     ) async {
       bool primaryTapped = false;
@@ -36,7 +36,9 @@ void main() {
       expect(secondaryTapped, isTrue);
     });
 
-    testWidgets('Renders in dark mode correctly', (WidgetTester tester) async {
+    testWidgets('Renders in dark mode correctlyであること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

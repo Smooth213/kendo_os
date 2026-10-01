@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('KendoHaptics Unit Tests', () {
+  group('[Unit] KendoHaptics 単体テスト', () {
     test('全てのハプティクスAPIが例外をスローせず安全に完了すること', () async {
       await expectLater(KendoHaptics.timerToggle(isStarting: true), completes);
       await expectLater(KendoHaptics.timerToggle(isStarting: false), completes);

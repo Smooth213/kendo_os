@@ -6,8 +6,8 @@ import 'package:kendo_os/features/viewer/components/viewer_kachinuki_record_card
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ ViewerKachinukiRecordCard Widget Tests', () {
-    testWidgets('Renders team title and CustomPaint canvas', (
+  group('[Widget] ViewerKachinukiRecordCard ウィジェットテスト', () {
+    testWidgets('Renders team title and CustomPaint canvasであること', (
       WidgetTester tester,
     ) async {
       final match = MatchModel(

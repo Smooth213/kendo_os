@@ -21,7 +21,7 @@ class FakeLocalMatchRepository implements LocalMatchRepository {
 }
 
 void main() {
-  group('🛡️ STEP 3-2: Stream Provider（自動バインド・瞬断再接続）完全テスト要塞', () {
+  group('[Unit] Stream Provider（自動バインド・瞬断再接続）完全テスト要塞', () {
     late FakeLocalMatchRepository fakeLocalRepo;
 
     setUp(() {
@@ -29,7 +29,7 @@ void main() {
     });
 
     test(
-      '1. 【matchStreamProvider】ローカルDBストリームからデータが射出された際、リアクティブに最新の試合リスト配列が伝播されること',
+      '【matchStreamProvider】ローカルDBストリームからデータが射出された際、リアクティブに最新の試合リスト配列が伝播されること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -66,7 +66,7 @@ void main() {
     );
 
     test(
-      '2. 【再接続シーケンスホールド】ストリームが空配列を射出した際にも、システムがクラッシュせず安全にデータ状態が維持されること',
+      '【再接続シーケンスホールド】ストリームが空配列を射出した際にも、システムがクラッシュせず安全にデータ状態が維持されること',
       () async {
         final container = ProviderContainer(
           overrides: [

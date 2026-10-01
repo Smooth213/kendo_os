@@ -3,13 +3,13 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_provider.dart';
 
 void main() {
-  group('🥋 チーム試合状況 ドメイン＆計算ロジック完全保証テスト', () {
-    group('1. 自チーム判定（isSideOwn）高精度リゾルバー検証', () {
+  group('[Unit] チーム試合状況 ドメイン＆計算ロジック完全保証テスト', () {
+    group('自チーム判定（isSideOwn）高精度リゾルバー検証', () {
       final knownTeams = {'道上剣友会A', '道上選抜', '合同テスト'};
       final knownPlayers = {'皿田 脩人', '久安 智也', '塚本 大道'};
       const myDojo = '道上';
 
-      test('登録チーム名と完全一致する場合は自チームと判定', () {
+      test('登録チーム名と完全一致する場合は自チームと判定こと', () {
         expect(
           isSideOwn(
             sideFullName: '道上剣友会A: 選手1',
@@ -21,7 +21,7 @@ void main() {
         );
       });
 
-      test('ルール設定のチーム名と一致する場合は自チームと判定', () {
+      test('ルール設定のチーム名と一致する場合は自チームと判定こと', () {
         expect(
           isSideOwn(
             sideFullName: '特別選抜: 選手1',
@@ -34,7 +34,7 @@ void main() {
         );
       });
 
-      test('チーム名が全く異なっていても登録選手名が含まれれば逆引きで自チームと判定', () {
+      test('チーム名が全く異なっていても登録選手名が含まれれば逆引きで自チームと判定こと', () {
         expect(
           isSideOwn(
             sideFullName: '大阪連合チーム: 久安 智也',
@@ -46,7 +46,7 @@ void main() {
         );
       });
 
-      test('道場名プレフィックス（道上）に前方一致する場合は自チームと判定', () {
+      test('道場名プレフィックス（道上）に前方一致する場合は自チームと判定こと', () {
         expect(
           isSideOwn(
             sideFullName: '道上剣友会B: 選手2',
@@ -71,8 +71,8 @@ void main() {
       });
     });
 
-    group('2. コート・回戦・試合順抽出（extractCourtAndRoundDisplay）検証', () {
-      test('第2コート, 1回戦, 4試合目 -> 第2コート (1回戦・第4試合)', () {
+    group('コート・回戦・試合順抽出（extractCourtAndRoundDisplay）検証', () {
+      test('第2コート, 1回戦, 4試合目 -> 第2コート (1回戦・第4試合)こと', () {
         const match = MatchModel(
           id: 'm1',
           matchType: '個人戦',
@@ -83,7 +83,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '第2コート (1回戦・第4試合)');
       });
 
-      test('第1試合場, 3試合目 -> 第1試合場 (第3試合)', () {
+      test('第1試合場, 3試合目 -> 第1試合場 (第3試合)こと', () {
         const match = MatchModel(
           id: 'm2',
           matchType: '個人戦',
@@ -94,7 +94,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '第1試合場 (第3試合)');
       });
 
-      test('第3コート, 準決勝 -> 第3コート (準決勝)', () {
+      test('第3コート, 準決勝 -> 第3コート (準決勝)こと', () {
         const match = MatchModel(
           id: 'm3',
           matchType: '個人戦',
@@ -105,7 +105,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '第3コート (準決勝)');
       });
 
-      test('部内戦コート -> 部内戦コート', () {
+      test('部内戦コート -> 部内戦コートこと', () {
         const match = MatchModel(
           id: 'm4',
           matchType: '個人戦',
@@ -116,7 +116,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '部内戦コート');
       });
 
-      test('コート未指定で回戦のみ -> コート未指定 (2回戦・第1試合)', () {
+      test('コート未指定で回戦のみ -> コート未指定 (2回戦・第1試合)こと', () {
         const match = MatchModel(
           id: 'm5',
           matchType: '個人戦',
@@ -127,7 +127,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), 'コート未指定 (2回戦・第1試合)');
       });
 
-      test('すべて未指定 -> コート未指定', () {
+      test('すべて未指定 -> コート未指定こと', () {
         const match = MatchModel(
           id: 'm6',
           matchType: '個人戦',
@@ -139,7 +139,7 @@ void main() {
       });
     });
 
-    group('3. 団体戦対戦集計（calculateTeamProgress）検証', () {
+    group('団体戦対戦集計（calculateTeamProgress）検証', () {
       test('団体戦5試合（先鋒〜大将）が1対戦カードとして正しく集計されること', () {
         final matches = [
           // 団体戦1回戦（5試合）: 終了済（3勝1敗1分でチーム勝利）
@@ -276,7 +276,7 @@ void main() {
         expect(round1Progress.totalPoints, 7); // 1回戦5本 + 2回戦2本 = 7本
       });
 
-      test('4. 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦が漏れなくカード化され正しく集計されること', () {
+      test('個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦が漏れなくカード化され正しく集計されること', () {
         final multiMatches = [
           // 個人戦（皿田 脩人: 終了済勝）
           const MatchModel(

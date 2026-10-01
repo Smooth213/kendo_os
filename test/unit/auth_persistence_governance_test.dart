@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('🛡️ Google連携・クイックペン・クラウド同期 統合ガバナンステスト', () {
+  group('[Unit] Google連携・クイックペン・クラウド同期 統合ガバナンステスト', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
     });

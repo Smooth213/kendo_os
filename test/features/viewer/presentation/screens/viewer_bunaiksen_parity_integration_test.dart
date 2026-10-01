@@ -24,7 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ 部内戦 観客用ビュアー完全一致（Parity）検証テスト要塞', () {
+  group('[Widget] 部内戦 観客用ビュアー完全一致（Parity）検証テスト要塞', () {
     late SharedPreferences prefs;
     final testDate = DateTime(2026, 8, 28);
     final dateStr = DateFormat('yyyyMMdd').format(testDate);
@@ -112,7 +112,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 【本部 👁️ ボタン押下 ➔ 観客席画面への完全遷移検証】'
+    testWidgets('【本部  ボタン押下  観客席画面への完全遷移検証】こと'
         '本部ホームからプレビューを開いた際、QR直リンクと同一の ViewerBunaiksenHomeScreen が描画されること', (
       WidgetTester tester,
     ) async {
@@ -194,7 +194,7 @@ void main() {
       expect(find.byType(SlidableAction), findsNothing);
     });
 
-    testWidgets('2. 【観客画面の専用機能パリティ検証】'
+    testWidgets('【観客画面の専用機能パリティ検証】こと'
         '観客席画面において、表示設定・共有・成績一覧の各アクションが正常に利用可能であること', (
       WidgetTester tester,
     ) async {

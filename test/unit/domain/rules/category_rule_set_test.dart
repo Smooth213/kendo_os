@@ -4,15 +4,15 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('CategoryRuleSet & TournamentModel Serialization Tests', () {
-    test('CategoryRuleSet defaults are initialized correctly', () {
+  group('[Unit] CategoryRuleSet & TournamentModel Serialization テスト', () {
+    test('CategoryRuleSet defaults are initialized correctlyであること', () {
       const ruleSet = CategoryRuleSet();
       expect(ruleSet.useAdvancedRule, isFalse);
       expect(ruleSet.normalRule.matchTimeMinutes, equals(3.0));
       expect(ruleSet.advancedRule.matchTimeMinutes, equals(3.0));
     });
 
-    test('CategoryRuleSet serializes and deserializes correctly', () {
+    test('CategoryRuleSet serializes and deserializes correctlyであること', () {
       final ruleSet = CategoryRuleSet(
         normalRule: const MatchRule(matchTimeMinutes: 2.0, hasHantei: true),
         advancedRule: const MatchRule(
@@ -33,7 +33,7 @@ void main() {
     });
 
     test(
-      'TournamentModel handles empty categoryRules correctly for backward compatibility',
+      'TournamentModel handles empty categoryRules correctly for backward compatibilityであること',
       () {
         final tournament = TournamentModel(
           id: 'test_id',
@@ -51,7 +51,7 @@ void main() {
     );
 
     test(
-      'TournamentModel serializes and deserializes categoryRules map correctly',
+      'TournamentModel serializes and deserializes categoryRules map correctlyであること',
       () {
         final ruleSet = CategoryRuleSet(
           normalRule: const MatchRule(matchTimeMinutes: 1.5),
@@ -82,7 +82,7 @@ void main() {
     );
   });
 
-  group('Keyword detection analysis test for advanced rounds', () {
+  group('Keyword detection analysis テスト for advanced rounds', () {
     bool isAdvancedMatch(String note) {
       final cleanNote = note.toLowerCase();
       final keywords = [
@@ -108,7 +108,7 @@ void main() {
       return keywords.any((kw) => cleanNote.contains(kw));
     }
 
-    test('Identifies advanced matches correctly', () {
+    test('Identifies advanced matches correctlyであること', () {
       expect(isAdvancedMatch('準決勝 第1試合'), isTrue);
       expect(isAdvancedMatch('Aコート 決勝'), isTrue);
       expect(isAdvancedMatch('3位決定戦'), isTrue);
@@ -119,7 +119,7 @@ void main() {
       expect(isAdvancedMatch('予選リーグ Aブロック'), isFalse);
     });
 
-    test('Identifies advanced matches with custom keywords correctly', () {
+    test('Identifies advanced matches with custom keywords correctlyであること', () {
       bool isAdvancedMatchWithCustom(String note, List<String> customKeywords) {
         final cleanNote = note.toLowerCase().trim();
         final keywords = customKeywords

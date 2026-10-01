@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/presentation/providers/manual_index_provider.dar
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ manualIndexProvider Tests', () {
-    test('Provider exists and is a FutureProvider', () {
+  group('[Unit] manualIndexProvider テスト', () {
+    test('Provider exists and is a FutureProviderであること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

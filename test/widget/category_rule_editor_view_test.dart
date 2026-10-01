@@ -12,7 +12,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  testWidgets('CategoryRuleEditorView renders properly', (tester) async {
+  testWidgets('CategoryRuleEditorView renders properlyであること', (tester) async {
     tester.view.physicalSize = const Size(1200, 1600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {

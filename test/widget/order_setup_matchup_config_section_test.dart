@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    'OrderSetupMatchupConfigSection renders red/white options and opponent input',
+    'OrderSetupMatchupConfigSection renders red/white options and opponent inputであること',
     (WidgetTester tester) async {
       final controller = TextEditingController(text: '相手剣道クラブ');
       final focusNode = FocusNode();

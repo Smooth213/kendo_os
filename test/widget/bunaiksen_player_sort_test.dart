@@ -68,9 +68,9 @@ void main() {
     ).thenAnswer((_) => Stream.value(samplePlayers));
   });
 
-  group('🥋 Bunaiksen Player Sorting & Asc/Desc Toggle Tests', () {
+  group('[Widget] Bunaiksen Player Sorting & Asc/Desc Toggle テスト', () {
     testWidgets(
-      '1. BunaiksenSinglePlayerSelectSheet - Default Grade Ascending & Toggle to Descending',
+      'BunaiksenSinglePlayerSelectSheet - Default Grade Ascending & Toggle to Descendingであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1000);
         tester.view.devicePixelRatio = 1.0;
@@ -135,7 +135,7 @@ void main() {
       },
     );
 
-    testWidgets('2. SmartPlayerInput - Header Sort Toggle & Grade Ordering', (
+    testWidgets('SmartPlayerInput - Header Sort Toggle & Grade Orderingであること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);
@@ -205,7 +205,7 @@ void main() {
     });
 
     testWidgets(
-      '3. MultiPlayerSelectInput - Header Sort Toggle & Multi Selection',
+      'MultiPlayerSelectInput - Header Sort Toggle & Multi Selectionであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1000);
         tester.view.devicePixelRatio = 1.0;

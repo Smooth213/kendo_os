@@ -20,7 +20,7 @@ void main() {
     );
   }
 
-  group('🥋 QuickMemoScreen Widget Tests', () {
+  group('[Widget] QuickMemoScreen ウィジェットテスト', () {
     testWidgets('白紙メモ画面がレンダリングされ、タイトル「クイックメモ」とガイダンスが表示されること', (tester) async {
       await tester.pumpWidget(
         createTestWidget(

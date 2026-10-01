@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('🛡️ PHASE 19 — 同時編集競合要塞：マルチデバイス同期', () {
-    test('1. 【2端末同時更新】論理時計による順序制御の検証', () async {
+  group('[E2E] — 同時編集競合要塞：マルチデバイス同期', () {
+    test('【2端末同時更新】論理時計による順序制御が正しく検証できること', () async {
       final now = DateTime.now();
       final eventA = ScoreEvent(
         id: 'e1',
@@ -29,7 +29,7 @@ void main() {
       expect(history.last.id, 'e2');
     });
 
-    test('2. 【オフライン競合】ローカルで発生したイベントが同期時に正しくマージされること', () async {
+    test('【オフライン競合】ローカルで発生したイベントが同期時に正しくマージされること', () async {
       final match = MatchModel(
         id: 'm1',
         matchType: '個人戦',

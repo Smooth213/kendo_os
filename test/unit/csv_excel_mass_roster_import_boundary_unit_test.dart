@@ -45,8 +45,8 @@ class RosterCsvParser {
 }
 
 void main() {
-  group('🥋 【Phase 1-7/10】1,000名規模名簿CSV・BOM・改行混在パース異常系リカバリテスト', () {
-    test('1. UTF-8 BOM・CRLF/LF混在・空行・余剰カンマを含むCSVが正確にパースされること', () {
+  group('[Unit] 【Phase 1-7/10】1,000名規模名簿CSV・BOM・改行混在パース異常系リカバリテスト', () {
+    test('UTF-8 BOM・CRLF/LF混在・空行・余剰カンマを含むCSVが正確にパースされること', () {
       const dirtyCsv =
           "\uFEFF氏名, 道場, 段位\r\n"
           "佐藤 健, 神武館, 三段\n"
@@ -70,7 +70,7 @@ void main() {
       expect(parsed[2].grade, ''); // 不足分は空文字フォールバック
     });
 
-    test('2. 1,000名の大規模名簿CSVが例外なく10ミリ秒未満で高速パースされること', () {
+    test('1,000名の大規模名簿CSVが例外なく10ミリ秒未満で高速パースされること', () {
       final buffer = StringBuffer();
       buffer.writeln('名前,所属,学年');
       for (int i = 1; i <= 1000; i++) {

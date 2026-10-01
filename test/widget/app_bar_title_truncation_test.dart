@@ -9,8 +9,8 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 
 void main() {
-  group('🛡️ AppBar タイトル文字切れ防止・Moreメニュー検証テスト', () {
-    testWidgets('1. 幅狭端末(375pt)において試合画面ヘッダーが文字切れせずMoreメニューが動作すること', (
+  group('[Widget] AppBar タイトル文字切れ防止・Moreメニュー検証テスト', () {
+    testWidgets('幅狭端末(375pt)において試合画面ヘッダーが文字切れせずMoreメニューが動作すること', (
       tester,
     ) async {
       // iPhone SE 等の 375px 幅をシミュレート
@@ -68,7 +68,7 @@ void main() {
       expect(find.text('アプリ設定'), findsOneWidget);
     });
 
-    testWidgets('2. 大会ホーム画面のAppHeaderが375pt幅で「大会ホーム」タイトルを広々と描画できること', (
+    testWidgets('大会ホーム画面のAppHeaderが375pt幅で「大会ホーム」タイトルを広々と描画できること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
@@ -113,7 +113,7 @@ void main() {
       expect(titleSize.width, greaterThan(0));
     });
 
-    testWidgets('3. 公式記録画面のAppHeaderが375pt幅でタイトルを広々と描画できること', (tester) async {
+    testWidgets('公式記録画面のAppHeaderが375pt幅でタイトルを広々と描画できること', (tester) async {
       tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -144,7 +144,7 @@ void main() {
     });
 
     testWidgets(
-      '4. iOSネイティブのステータスバー・ノッチ領域(padding.top: 47pt)が存在する場合、AppBarが重ならず正しくオフセットされること',
+      'iOSネイティブのステータスバー・ノッチ領域(padding.top: 47pt)が存在する場合、AppBarが重ならず正しくオフセットされること',
       (tester) async {
         // iPhone 14 Pro 相当のステータスバーパディング (47pt) をシミュレート
         tester.view.physicalSize = const Size(393 * 3.0, 852 * 3.0);
@@ -208,7 +208,7 @@ void main() {
     );
 
     testWidgets(
-      '5. 観戦席ホーム画面(ViewerHomeScreen)が375pt幅端末で「大会ホーム (観客席)」タイトルを広々と描画し、QR共有ボタンが配置されていること',
+      '観戦席ホーム画面(ViewerHomeScreen)が375pt幅端末で「大会ホーム (観客席)」タイトルを広々と描画し、QR共有ボタンが配置されていること',
       (tester) async {
         tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
         tester.view.devicePixelRatio = 2.0;
@@ -250,7 +250,7 @@ void main() {
     );
 
     testWidgets(
-      '6. 部内戦観客席ホーム(ViewerBunaiksenHomeScreen)が375pt幅端末でタイトルを広々と描画し、Moreメニューに成績一覧・共有・設定が集約されていること',
+      '部内戦観客席ホーム(ViewerBunaiksenHomeScreen)が375pt幅端末でタイトルを広々と描画し、Moreメニューに成績一覧・共有・設定が集約されていること',
       (tester) async {
         tester.view.physicalSize = const Size(375 * 2.0, 667 * 2.0);
         tester.view.devicePixelRatio = 2.0;

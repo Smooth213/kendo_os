@@ -6,13 +6,13 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_event_cloud_codec.dart';
 
 void main() {
-  group('イベント履歴分割ガバナンス', () {
-    test('イベント本体上限とチャンク上限が定義されている', () {
+  group('[Governance] イベント履歴分割ガバナンス', () {
+    test('イベント本体上限とチャンク上限が定義されていること', () {
       expect(MatchEventCloudCodec.hotEventLimit, 200);
       expect(MatchEventCloudCodec.archiveChunkSize, 200);
     });
 
-    test('450件の履歴を本体200件とアーカイブ2チャンクへ分割する', () {
+    test('450件の履歴を本体200件とアーカイブ2チャンクへ分割すること', () {
       final events = List.generate(
         450,
         (index) => ScoreEvent(
@@ -41,7 +41,7 @@ void main() {
       );
     });
 
-    test('分割保存・削除の契約がコードとRulesに存在する', () {
+    test('分割保存・削除の契約がコードとRulesに存在すること', () {
       final repository = File(
         'lib/shared/infrastructure/repository/match_repository.dart',
       ).readAsStringSync();

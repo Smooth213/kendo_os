@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/announce_model.dart';
 
 void main() {
-  group('🛡️ AnnounceModel Serialization & Validation Tests', () {
-    test('1. fromJson with raw ISO String timestamp', () {
+  group('[Unit] AnnounceModel Serialization & Validation テスト', () {
+    test('fromJson with raw ISO String timestampであること', () {
       final json = {
         'id': 'ann_1',
         'tournamentId': 'tourney_99',
@@ -27,7 +27,7 @@ void main() {
       expect(model.isRead, isFalse);
     });
 
-    test('2. fromJson with Cloud Firestore Timestamp type', () {
+    test('fromJson with Cloud Firestore Timestamp typeであること', () {
       final firestoreTimestamp = Timestamp.fromDate(
         DateTime.utc(2026, 7, 5, 13, 30),
       );
@@ -51,7 +51,7 @@ void main() {
       expect(model.isRead, isTrue);
     });
 
-    test('3. toJson serialization verification', () {
+    test('toJson serializationの検証が行えること', () {
       final time = DateTime.utc(2026, 7, 5, 14, 0);
       final model = AnnounceModel(
         id: 'ann_3',
@@ -74,7 +74,7 @@ void main() {
       expect(json['isRead'], isFalse);
     });
 
-    test('4. copyWith verification', () {
+    test('copyWithの検証が行えること', () {
       final time = DateTime.now();
       final model = AnnounceModel(
         id: 'ann_4',

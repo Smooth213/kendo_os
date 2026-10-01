@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_retirement_dialog.dart';
 
 void main() {
-  group('🥋 MatchRetirementDialog ウィジェットテスト', () {
+  group('[Widget] MatchRetirementDialog ウィジェットテスト', () {
     const testMatch = MatchModel(
       id: 'test_match_1',
       matchType: '先鋒',
@@ -38,7 +38,7 @@ void main() {
       );
     }
 
-    testWidgets('1. ダイアログが正常に表示され、赤・白の棄権選択肢が表示されること', (tester) async {
+    testWidgets('ダイアログが正常に表示され、赤・白の棄権選択肢が表示されること', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.tap(find.text('ダイアログを開く'));
       await tester.pumpAndSettle();
@@ -60,7 +60,7 @@ void main() {
       expect(confirmBtn.onPressed, isNull);
     });
 
-    testWidgets('2. 赤の棄権を選択すると確定ボタンが有効化されること', (tester) async {
+    testWidgets('赤の棄権を選択すると確定ボタンが有効化されること', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.tap(find.text('ダイアログを開く'));
       await tester.pumpAndSettle();
@@ -75,7 +75,7 @@ void main() {
       expect(confirmBtn.onPressed, isNotNull);
     });
 
-    testWidgets('3. キャンセルボタンでダイアログが閉じること', (tester) async {
+    testWidgets('キャンセルボタンでダイアログが閉じること', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.tap(find.text('ダイアログを開く'));
       await tester.pumpAndSettle();

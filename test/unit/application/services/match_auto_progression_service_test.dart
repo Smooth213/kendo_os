@@ -5,9 +5,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart';
 
 void main() {
-  group('🛡️ MatchAutoProgressionService Unit Tests', () {
+  group('[Unit] MatchAutoProgressionService 単体テスト', () {
     test(
-      'autoProcessFusenIfNeeded triggers finish when both players are 欠員',
+      'autoProcessFusenIfNeeded triggers finish when both players are 欠員こと',
       () async {
         final container = ProviderContainer();
         addTearDown(container.dispose);

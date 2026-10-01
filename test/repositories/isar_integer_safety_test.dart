@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 void main() {
-  group('🛡️ Isar Integer JavaScript Safety Test', () {
+  group('[Unit] Isar Integer JavaScript Safety テスト', () {
     const maxSafeJsInteger = 9007199254740991; // 2^53 - 1
     const minSafeJsInteger = -9007199254740991;
 
@@ -54,7 +54,7 @@ void main() {
       return unsafeIds;
     }
 
-    test('✅ 1. match_entity.g.dart が JS-safe 整数のみを使用すること', () async {
+    test('match_entity.g.dart が JS-safe 整数のみを使用すること', () async {
       const filePath =
           'lib/infrastructure/persistence/models/match_entity.g.dart';
       final unsafeIds = await findUnsafeIntegers(filePath);
@@ -68,7 +68,7 @@ void main() {
       );
     });
 
-    test('✅ 2. local_stroke_model.g.dart が JS-safe 整数のみを使用すること', () async {
+    test('local_stroke_model.g.dart が JS-safe 整数のみを使用すること', () async {
       const filePath =
           'lib/infrastructure/persistence/models/local_stroke_model.g.dart';
       final unsafeIds = await findUnsafeIntegers(filePath);
@@ -82,7 +82,7 @@ void main() {
       );
     });
 
-    test('✅ 3. match_comment_entity.g.dart が JS-safe 整数のみを使用すること', () async {
+    test('match_comment_entity.g.dart が JS-safe 整数のみを使用すること', () async {
       const filePath =
           'lib/infrastructure/persistence/models/match_comment_entity.g.dart';
       final unsafeIds = await findUnsafeIntegers(filePath);
@@ -96,7 +96,7 @@ void main() {
       );
     });
 
-    test('✅ 4. match_projection_entity.g.dart が JS-safe 整数のみを使用すること', () async {
+    test('match_projection_entity.g.dart が JS-safe 整数のみを使用すること', () async {
       const filePath =
           'lib/infrastructure/persistence/models/match_projection_entity.g.dart';
       final unsafeIds = await findUnsafeIntegers(filePath);
@@ -110,7 +110,7 @@ void main() {
       );
     });
 
-    test('✅ 5. 全 .g.dart ファイルが制限内の整数を使用すること（包括テスト）', () async {
+    test('【包括テスト】全 .g.dart ファイルが制限内の整数を使用すること', () async {
       final modelDir = Directory('lib');
       if (!modelDir.existsSync()) {
         fail('lib directory not found');
@@ -138,7 +138,7 @@ void main() {
       );
     });
 
-    test('✅ 6. JS-safe 範囲の境界値が正確に定義されていることを確認', () async {
+    test('JS-safe 範囲の境界値が正確に定義されていることが確認できること', () async {
       // Verify boundary values are correct
       expect(maxSafeJsInteger, equals(9007199254740991));
       expect(minSafeJsInteger, equals(-9007199254740991));
@@ -148,7 +148,7 @@ void main() {
       expect((maxSafeJsInteger + 1).abs() > maxSafeJsInteger, isTrue);
     });
 
-    test('✅ 7. 生成後再実行しても安全性が維持されることを確認（再発防止）', () async {
+    test('生成後再実行しても安全性が維持されることを確認（再発防止）こと', () async {
       // This test documents the expected behavior after code generation
       // If this test fails, it means generated files lost their JS-safe ID patches
 
@@ -171,7 +171,7 @@ void main() {
       }
     });
 
-    test('✅ 8. build_runner 再実行後 .backup_g_dart の復元が完了することを確認', () {
+    test('build_runner 再実行後 .backup_g_dart の復元が完了することが確認できること', () {
       // The deploy_web.sh script ensures that after building,
       // the original safe versions are restored from backup
 

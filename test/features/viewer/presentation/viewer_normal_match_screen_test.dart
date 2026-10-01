@@ -56,7 +56,7 @@ class FakeAuthSessionNotifier extends AuthSessionNotifier {
 }
 
 void main() {
-  group('🛡️ ViewerNormalMatch 観客席防衛線・通常試合モード自動検証テスト', () {
+  group('[Widget] ViewerNormalMatch 観客席防衛線・通常試合モード自動検証テスト', () {
     late MatchModel testNormalMatch;
     late MatchProjection testProjection;
     late MatchViewState testViewState;
@@ -138,7 +138,7 @@ void main() {
       );
     }
 
-    testWidgets('①-a 【詳細画面：QR直接アクセス時】スタックが無い状態では、物理的に戻るボタンが非表示（null）になること', (
+    testWidgets('-a 【詳細画面：QR直接アクセス時】スタックが無い状態では、物理的に戻るボタンが非表示（null）になること', (
       WidgetTester tester,
     ) async {
       final router = GoRouter(
@@ -179,7 +179,7 @@ void main() {
       expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
     });
 
-    testWidgets('①-b 【詳細画面：アプリ内遷移時】スタックが存在する状態では、戻るボタンが正常に表示されること', (
+    testWidgets('-b 【詳細画面：アプリ内遷移時】スタックが存在する状態では、戻るボタンが正常に表示されること', (
       WidgetTester tester,
     ) async {
       final router = GoRouter(
@@ -229,7 +229,7 @@ void main() {
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
     });
 
-    testWidgets('②-a 【ホーム画面：QRコードURL検証】ホーム画面の共有ボタンから正しいベータ環境URLが生成されること', (
+    testWidgets('-a 【ホーム画面：QRコードURL検証】ホーム画面の共有ボタンから正しいベータ環境URLが生成されること', (
       WidgetTester tester,
     ) async {
       final router = GoRouter(
@@ -281,7 +281,7 @@ void main() {
       expect(FakeSharePlatform.instance.sharedText, contains('dojoId=test201'));
     });
 
-    testWidgets('②-b 【詳細画面：QRコードURL検証】詳細画面の共有ボタンから正しいベータ環境URLが生成されること', (
+    testWidgets('-b 【詳細画面：QRコードURL検証】詳細画面の共有ボタンから正しいベータ環境URLが生成されること', (
       WidgetTester tester,
     ) async {
       final router = GoRouter(
@@ -342,7 +342,7 @@ void main() {
       expect(FakeSharePlatform.instance.sharedText, contains('dojoId=test201'));
     });
 
-    testWidgets('③ 【詳細画面：正常描画】注入された通常試合データが一本速報スコアボードに美しく反映されること', (
+    testWidgets('【詳細画面：正常描画】注入された通常試合データが一本速報スコアボードに美しく反映されること', (
       WidgetTester tester,
     ) async {
       final router = GoRouter(

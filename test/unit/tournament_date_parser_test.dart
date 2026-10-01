@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_date_parser.dart';
 
 void main() {
-  group('TournamentDateParser Tests', () {
+  group('[Unit] TournamentDateParser テスト', () {
     test('令和表記の日時が西暦に正しく変換されること', () {
       final date = TournamentDateParser.extractDate('日時: 令和8年9月20日(日)');
       expect(date, isNotNull);

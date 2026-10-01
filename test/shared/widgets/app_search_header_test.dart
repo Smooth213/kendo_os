@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/widgets/app_search_header.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 void main() {
-  group('🔍 AppSearchHeader Widget Tests', () {
+  group('[Widget] AppSearchHeader ウィジェットテスト', () {
     Widget buildTestableWidget({required Widget child, bool isDark = false}) {
       return MaterialApp(
         theme: ThemeData(
@@ -16,7 +16,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 初期表示時に検索ヒントテキストと検索アイコン、キャンセルボタンが正しく描画されること', (
+    testWidgets('初期表示時に検索ヒントテキストと検索アイコン、キャンセルボタンが正しく描画されること', (
       WidgetTester tester,
     ) async {
       String query = '';
@@ -43,7 +43,7 @@ void main() {
       expect(isClosed, isFalse);
     });
 
-    testWidgets('2. 検索テキストを入力した際に onSearchQueryChanged が発火すること', (
+    testWidgets('検索テキストを入力した際に onSearchQueryChanged が発火すること', (
       WidgetTester tester,
     ) async {
       String currentQuery = '';
@@ -77,7 +77,7 @@ void main() {
       expect(find.byIcon(Icons.cancel), findsOneWidget);
     });
 
-    testWidgets('3. クリアアイコン（Icons.cancel）をタップした際にクエリが空文字にリセットされること', (
+    testWidgets('クリアアイコン（Icons.cancel）をタップした際にクエリが空文字にリセットされること', (
       WidgetTester tester,
     ) async {
       String currentQuery = '佐々木';
@@ -109,7 +109,7 @@ void main() {
       expect(find.byIcon(Icons.cancel), findsNothing);
     });
 
-    testWidgets('4. キャンセルボタンをタップした際に onClose コールバックが実行されること', (
+    testWidgets('キャンセルボタンをタップした際に onClose コールバックが実行されること', (
       WidgetTester tester,
     ) async {
       bool closedCalled = false;
@@ -135,7 +135,7 @@ void main() {
       expect(closedCalled, isTrue);
     });
 
-    testWidgets('5. ダークモード設定時でも文字・アイコン・背景が破綻せずレンダリングされること', (
+    testWidgets('ダークモード設定時でも文字・アイコン・背景が破綻せずレンダリングされること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -154,7 +154,7 @@ void main() {
       expect(find.byIcon(Icons.cancel), findsOneWidget);
     });
 
-    testWidgets('6. カスタム hintText が正しく反映されること', (WidgetTester tester) async {
+    testWidgets('カスタム hintText が正しく反映されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestableWidget(
           child: AppSearchHeader(

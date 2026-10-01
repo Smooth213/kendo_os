@@ -11,9 +11,9 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ Match Edit & Creation Flow Expansion Integration Tests', () {
+  group('[Widget] Match Edit & Creation Flow Expansion 統合テスト', () {
     testWidgets(
-      '1. Verify MatchEditSheet renders 3 tabs and handles individual match properly',
+      'Verify MatchEditSheet renders 3 tabs and handles individual match properlyであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;
@@ -66,7 +66,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Verify MatchEditSheet Team-wide Bulk Edit Mode for Dantai Matches',
+      'Verify MatchEditSheet Team-wide Bulk Edit Mode for Dantai Matchesであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;
@@ -141,7 +141,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Verify My-Team (自チーム) Tracking & Alignment Preservation after Swap',
+      'Verify My-Team (自チーム) Tracking & Alignment Preservation after Swapであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;
@@ -194,7 +194,7 @@ void main() {
     );
 
     testWidgets(
-      '4. Verify Red/White Swap, Own-Team Tracking, Accordion Integrity & Rule Score Input Propagation',
+      'Verify Red/White Swap, Own-Team Tracking, Accordion Integrity & Rule Score Input Propagationであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;
@@ -280,7 +280,7 @@ void main() {
     );
 
     testWidgets(
-      '5. Verify MatchEditSheet unified court and round heading chips with clear and left alignment',
+      'Verify MatchEditSheet unified court and round heading chips with clear and left alignmentであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;

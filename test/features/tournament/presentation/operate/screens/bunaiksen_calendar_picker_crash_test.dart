@@ -12,7 +12,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
   testWidgets(
-    'Bunaiksen calendar picker does not crash when initialDate (viewDate) is not in selectableDayPredicate',
+    'Bunaiksen calendar picker does not crash when initialDate (viewDate) is not in selectableDayPredicateであること',
     (WidgetTester tester) async {
       // 1. Setup mock preferences
       SharedPreferences.setMockInitialValues({});

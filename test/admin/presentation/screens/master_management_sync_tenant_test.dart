@@ -44,8 +44,8 @@ void main() {
     ).thenAnswer((_) => Future.value());
   });
 
-  group('🛡️ MasterManagementScreen Multi-Tenant Sync Tests', () {
-    testWidgets('1. 道場ID（テナント）切り替え時のリッスンパス動的追従アサート', (
+  group('[Widget] MasterManagementScreen Multi-Tenant Sync テスト', () {
+    testWidgets('道場ID（テナント）切り替え時のリッスンパス動的追従アサートこと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -131,7 +131,7 @@ void main() {
       expect(find.text('テスト 次郎'), findsNothing);
     });
 
-    testWidgets('2. 選手登録時（organizationフィールド）のクラウド完全一致マージ検証', (
+    testWidgets('選手登録時（organizationフィールド）のクラウド完全一致マージが正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

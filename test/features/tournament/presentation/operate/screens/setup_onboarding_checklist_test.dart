@@ -66,66 +66,65 @@ void main() {
     ).thenAnswer((_) => Stream.value(<MatchModel>[]));
   });
 
-  testWidgets(
-    '1. HomeScreen onboarding checklist rendering and state verification',
-    (WidgetTester tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+  testWidgets('HomeScreen onboarding checklist rendering and stateの検証が行えること', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
 
-      // 準備フェーズ: 試合が0件、チームも0件
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
-            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
-            syncEngineProvider.overrideWithValue(mockSyncEngine),
-            dojoRoomSyncProvider.overrideWithValue(null),
-            commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
-            permissionProvider.overrideWith(
-              (ref) => const AppPermissions(
-                isReadOnly: false,
-                canManageTournament: true,
-                canCreateMatch: true,
-                canChangeSettings: true,
-                canDeleteData: true,
-              ),
+    // 準備フェーズ: 試合が0件、チームも0件
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
+          playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+          localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+          syncEngineProvider.overrideWithValue(mockSyncEngine),
+          dojoRoomSyncProvider.overrideWithValue(null),
+          commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
+          permissionProvider.overrideWith(
+            (ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
             ),
-            currentDojoIdProvider.overrideWith((ref) => 'dojo_123'),
-            currentTournamentIdProvider.overrideWith(
-              (ref) => 'test_tournament_123',
-            ),
-            matchListByTournamentProvider.overrideWith(
-              (ref, id) => Stream.value(<MatchModel>[]),
-            ),
-            registeredTeamsProvider.overrideWith(
-              (ref, id) => Stream.value(<TeamModel>[]),
-            ),
-          ],
-          child: const MaterialApp(
-            home: HomeScreen(tournamentId: 'test_tournament_123'),
           ),
+          currentDojoIdProvider.overrideWith((ref) => 'dojo_123'),
+          currentTournamentIdProvider.overrideWith(
+            (ref) => 'test_tournament_123',
+          ),
+          matchListByTournamentProvider.overrideWith(
+            (ref, id) => Stream.value(<MatchModel>[]),
+          ),
+          registeredTeamsProvider.overrideWith(
+            (ref, id) => Stream.value(<TeamModel>[]),
+          ),
+        ],
+        child: const MaterialApp(
+          home: HomeScreen(tournamentId: 'test_tournament_123'),
         ),
-      );
+      ),
+    );
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      // 1. チェックリストが表示されていること
-      expect(find.text('大会準備ステップ'), findsOneWidget);
-      expect(find.text('25% 完了'), findsOneWidget); // 大会作成(25%)のみ完了
+    // 1. チェックリストが表示されていること
+    expect(find.text('大会準備ステップ'), findsOneWidget);
+    expect(find.text('25% 完了'), findsOneWidget); // 大会作成(25%)のみ完了
 
-      // 2. 「出場チーム・選手の登録」と「部門別ルールの設定」が未完了（打ち消し線なし）
-      final teamText = find.text('出場チーム・選手の登録');
-      expect(teamText, findsOneWidget);
+    // 2. 「出場チーム・選手の登録」と「部門別ルールの設定」が未完了（打ち消し線なし）
+    final teamText = find.text('出場チーム・選手の登録');
+    expect(teamText, findsOneWidget);
 
-      final ruleText = find.text('部門別ルールの設定');
-      expect(ruleText, findsOneWidget);
-    },
-  );
+    final ruleText = find.text('部門別ルールの設定');
+    expect(ruleText, findsOneWidget);
+  });
 
   testWidgets(
-    '2. Onboarding checklist dynamic checks update when teams and rules are set',
+    'Onboarding checklist dynamic checks update when teams and rules are setであること',
     (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
@@ -190,7 +189,7 @@ void main() {
     },
   );
 
-  testWidgets('3. Checklist is completely hidden when matches exist', (
+  testWidgets('Checklist is completely hidden when matches existであること', (
     WidgetTester tester,
   ) async {
     SharedPreferences.setMockInitialValues({});

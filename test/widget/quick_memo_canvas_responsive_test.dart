@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group(
-    '📐 QuickMemoDrawingCanvas Responsive & Resolution Integrity Tests',
+    '[Widget] QuickMemoDrawingCanvas Responsive & Resolution Integrity テスト',
     () {
       test('基準キャンバス解像度が 800 x 1000 (アスペクト比 4:5) で厳格に定義されていること', () {
         expect(QuickMemoDrawingCanvas.baseCanvasSize.width, equals(800.0));

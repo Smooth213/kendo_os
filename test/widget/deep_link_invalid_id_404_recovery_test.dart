@@ -53,10 +53,8 @@ class DeepLinkSafetyRouter extends StatelessWidget {
 }
 
 void main() {
-  group('🌐 【Phase 4-3/11】ディープリンク無効ID・404安全リカバリ Widgetテスト', () {
-    testWidgets('1. 存在しない大会IDアクセス時に404フォールバック画面が表示され、トップへ戻れること', (
-      tester,
-    ) async {
+  group('[Widget] 【Phase 4-3/11】ディープリンク無効ID・404安全リカバリ Widgetテスト', () {
+    testWidgets('存在しない大会IDアクセス時に404フォールバック画面が表示され、トップへ戻れること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           initialRoute: '/tournament/invalid_id_999',

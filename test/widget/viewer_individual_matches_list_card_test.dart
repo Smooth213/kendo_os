@@ -4,9 +4,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/components/viewer_individual_matches_list_card.dart';
 
 void main() {
-  group('🛡️ ViewerIndividualMatchesListCard Widget Tests', () {
+  group('[Widget] ViewerIndividualMatchesListCard ウィジェットテスト', () {
     testWidgets(
-      'Renders individual matches list with player names and scores',
+      'Renders individual matches list with player names and scoresであること',
       (WidgetTester tester) async {
         final match1 = MatchModel(
           id: 'indiv_1',

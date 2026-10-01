@@ -19,10 +19,10 @@ class AiStrikeMetadataPacket {
 }
 
 void main() {
-  group('🚀 【Phase 5-9/10】AI打突アシストメタデータ受信 メインスレッド低遅延（60FPS維持）パフォーマンステスト', () {
-    test(
-      '1. 秒間60フレームのAIメタデータパケット受信時、1フレームあたり処理時間が1ms未満でUIを一切阻害しないこと',
-      () async {
+  group(
+    '[Governance] 【Phase 5-9/10】AI打突アシストメタデータ受信 メインスレッド低遅延（60FPS維持）パフォーマンステスト',
+    () {
+      test('秒間60フレームのAIメタデータパケット受信時、1フレームあたり処理時間が1ms未満でUIを一切阻害しないこと', () async {
         final streamController = StreamController<AiStrikeMetadataPacket>();
         final receivedPackets = <AiStrikeMetadataPacket>[];
 
@@ -56,7 +56,7 @@ void main() {
         expect(receivedPackets.length, 1);
         expect(receivedPackets.first.detectedPart, 'men');
         expect(receivedPackets.first.confidence, 0.95);
-      },
-    );
-  });
+      });
+    },
+  );
 }

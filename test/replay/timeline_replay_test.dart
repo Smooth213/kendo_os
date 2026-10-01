@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/events/comment_event.dart'; // �
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
-  group('Phase 4: Timeline Replay & Merge Conflict Test', () {
-    test('Comment Event Append-Only & Deterministic Rebuild', () {
+  group('[Unit] Timeline Replay & Merge Conflict テスト', () {
+    test('Comment Event Append-Only & Deterministic Rebuildであること', () {
       final events = [
         CommentEvent(
           id: 'evt1',
@@ -52,7 +52,7 @@ void main() {
       expect(state.order, 10.0);
     });
 
-    test('Timeline Merge Conflict Determinism', () {
+    test('Timeline Merge Conflict Determinismであること', () {
       final evt1 = CommentEvent(
         id: 'evt1',
         commentId: 'c1',

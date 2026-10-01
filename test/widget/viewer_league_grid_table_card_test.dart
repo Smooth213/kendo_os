@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/components/viewer_league_grid_table_card.dart';
 
 void main() {
-  group('🛡️ ViewerLeagueGridTableCard Widget Tests', () {
-    testWidgets('Renders league grid table headers and ranks', (
+  group('[Widget] ViewerLeagueGridTableCard ウィジェットテスト', () {
+    testWidgets('Renders league grid table headers and ranksであること', (
       WidgetTester tester,
     ) async {
       final match1 = MatchModel(

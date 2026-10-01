@@ -43,9 +43,9 @@ void main() {
     }
   });
 
-  group('ManualDownloadService Tests', () {
+  group('[Unit] ManualDownloadService テスト', () {
     test(
-      'isFileDownloaded should return false when file does not exist',
+      'isFileDownloaded should return false when file does not existであること',
       () async {
         final exists = await downloadService.isFileDownloaded(testFileName);
         expect(exists, isFalse);
@@ -53,7 +53,7 @@ void main() {
     );
 
     test(
-      'downloadManual should download file and trigger onProgress',
+      'downloadManual should download file and trigger onProgressであること',
       () async {
         // 1. モックデータを作成 (100バイト)
         final dummyData = List<int>.generate(100, (i) => i);
@@ -94,7 +94,7 @@ void main() {
     );
 
     test(
-      'getLocalFile should return File when downloaded, and null otherwise',
+      'getLocalFile should return File when downloaded, and null otherwiseであること',
       () async {
         // ダウンロード前
         var file = await downloadService.getLocalFile(testFileName);
@@ -111,7 +111,7 @@ void main() {
       },
     );
 
-    test('deleteLocalFile should delete the file from storage', () async {
+    test('deleteLocalFile should delete the file from storageであること', () async {
       // 手動でファイルを配置
       final localFile = File('${tempDir.path}/$testFileName');
       await localFile.writeAsString('dummy content');

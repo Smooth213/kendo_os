@@ -3,7 +3,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
 
 void main() {
-  group('MultiPlayerFilterHelper テスト', () {
+  group('[Unit] MultiPlayerFilterHelper テスト', () {
     final pBeginner = PlayerModel(
       id: 'p1',
       lastName: '山田',

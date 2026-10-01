@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   testWidgets(
-    'CategoryRuleMultiSceneTabsCard renders checkboxes and tab views',
+    'CategoryRuleMultiSceneTabsCard renders checkboxes and tab viewsであること',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(

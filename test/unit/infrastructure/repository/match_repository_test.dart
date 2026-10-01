@@ -5,7 +5,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 
 void main() {
-  group('Phase 1: MatchRepository Optimization Tests', () {
+  group('[Unit] MatchRepository Optimization テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late MatchRepository repository;
 
@@ -45,7 +45,7 @@ void main() {
     });
 
     test(
-      'watchActiveMatches: 進行中(in_progress)と待機中(waiting)の試合を抽出して監視できるか',
+      'watchActiveMatches: 進行中(in_progress)と待機中(waiting)の試合を抽出して監視できるかこと',
       () async {
         // 実行
         final stream = repository.watchActiveMatches();
@@ -59,17 +59,20 @@ void main() {
       },
     );
 
-    test('getStaticMatches: 終了済み(finished, approved)の試合を1回だけ取得できるか', () async {
-      // 実行
-      final staticMatches = await repository.getStaticMatches();
+    test(
+      'getStaticMatches: 終了済み(finished, approved)の試合を1回だけ取得できるかこと',
+      () async {
+        // 実行
+        final staticMatches = await repository.getStaticMatches();
 
-      // 検証: 3件中、終了済みの1件がヒットするはず
-      expect(staticMatches.length, 1, reason: '終了済みの試合は1件のはず');
+        // 検証: 3件中、終了済みの1件がヒットするはず
+        expect(staticMatches.length, 1, reason: '終了済みの試合は1件のはず');
 
-      final ids = staticMatches.map((m) => m.id).toList();
-      expect(ids.contains('match_done'), isTrue);
-      expect(ids.contains('match_waiting'), isFalse);
-      expect(ids.contains('match_active'), isFalse);
-    });
+        final ids = staticMatches.map((m) => m.id).toList();
+        expect(ids.contains('match_done'), isTrue);
+        expect(ids.contains('match_waiting'), isFalse);
+        expect(ids.contains('match_active'), isFalse);
+      },
+    );
   });
 }

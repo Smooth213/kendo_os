@@ -39,8 +39,8 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('🛡️ UI Error Regression Tests: ListTile Material Assertion', () {
-    testWidgets('❌ [Bad Pattern] 色付きDecoratedBoxが直接ListTileをラップすると例外が発生すること', (
+  group('[Widget] UI Error リグレッションテスト: ListTile Material Assertion', () {
+    testWidgets('[Bad Pattern] 色付きDecoratedBoxが直接ListTileをラップすると例外が発生すること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -67,7 +67,7 @@ void main() {
       );
     });
 
-    testWidgets('✅ [Good Pattern] 中間に透明なMaterialを挟むことで例外を回避できること', (
+    testWidgets('[Good Pattern] 中間に透明なMaterialを挟むことで例外を回避できること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -88,7 +88,7 @@ void main() {
       expect(exception, isNull, reason: '正しい階層構造であれば例外は発生しません。');
     });
 
-    testWidgets('✅ SettingsScreen が ListTile のアサーションエラーなしで正常にレンダリングされること', (
+    testWidgets('SettingsScreen が ListTile のアサーションエラーなしで正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
       // 依存する SharedPreferences をモック化して UnimplementedError を回避
@@ -118,7 +118,7 @@ void main() {
       expect(find.byType(SettingsScreen), findsOneWidget);
     });
 
-    testWidgets('✅ MasterManagementScreen がアサーションエラーなしで正常にレンダリングされること', (
+    testWidgets('MasterManagementScreen がアサーションエラーなしで正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -140,7 +140,7 @@ void main() {
       expect(find.byType(MasterManagementScreen), findsOneWidget);
     });
 
-    testWidgets('✅ TeamRegistrationScreen がアサーションエラーなしで正常にレンダリングされること', (
+    testWidgets('TeamRegistrationScreen がアサーションエラーなしで正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -165,7 +165,7 @@ void main() {
       expect(find.byType(TeamRegistrationScreen), findsOneWidget);
     });
 
-    testWidgets('✅ SetupMatchFormatScreen がアサーションエラーなしで正常にレンダリングされること', (
+    testWidgets('SetupMatchFormatScreen がアサーションエラーなしで正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -190,7 +190,7 @@ void main() {
       expect(find.byType(SetupMatchFormatScreen), findsOneWidget);
     });
 
-    testWidgets('✅ OrderSetupScreen がアサーションエラーなしで正常にレンダリングされること', (
+    testWidgets('OrderSetupScreen がアサーションエラーなしで正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -215,7 +215,7 @@ void main() {
       expect(find.byType(OrderSetupScreen), findsOneWidget);
     });
 
-    testWidgets('✅ BunaiksenSetupScreen がアサーションエラーなしで正常にレンダリングされること', (
+    testWidgets('BunaiksenSetupScreen がアサーションエラーなしで正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

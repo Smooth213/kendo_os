@@ -32,7 +32,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('Tournament Setup Flow Navigation Tests', () {
+  group('[Widget] Tournament Setup Flow Navigation テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockTeamRepository mockTeamRepo;
     late MockPlayerRepository mockPlayerRepo;
@@ -68,7 +68,7 @@ void main() {
     });
 
     testWidgets(
-      '1. TeamRegistrationScreen completed button navigates to CategoryRulesScreen with query param',
+      'TeamRegistrationScreen completed button navigates to CategoryRulesScreen with query paramであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -146,7 +146,7 @@ void main() {
     );
 
     testWidgets(
-      '2. CategoryRulesScreen renders setup buttons and navigates to home when isFromSetup=true',
+      'CategoryRulesScreen renders setup buttons and navigates to home when isFromSetup=trueであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -217,7 +217,7 @@ void main() {
     );
 
     testWidgets(
-      '3. CategoryRulesScreen skip button navigates to home when isFromSetup=true',
+      'CategoryRulesScreen skip button navigates to home when isFromSetup=trueであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -278,7 +278,7 @@ void main() {
     );
 
     testWidgets(
-      '4. CategoryRulesScreen does NOT show setup UI elements when isFromSetup=false',
+      'CategoryRulesScreen does NOT show setup UI elements when isFromSetup=falseであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

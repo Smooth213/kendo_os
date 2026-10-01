@@ -16,7 +16,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group(
-    '🥋 【Composite E2E】文字拡大モード(1.35x) × 7人制団体戦 × 反則累積・不戦勝 × 代表戦 × CSV一括出力',
+    '[E2E] 【Composite E2E】文字拡大モード(1.35x) × 7人制団体戦 × 反則累積・不戦勝 × 代表戦 × CSV一括出力',
     () {
       late KendoRuleEngine ruleEngine;
       final now = DateTime(2026, 9, 27, 13, 0);
@@ -25,7 +25,7 @@ void main() {
         ruleEngine = KendoRuleEngine();
       });
 
-      test('1. [ドメイン＆極限シナリオ] 7人制団体戦で反則累積一本・不戦勝・大将戦同点・代表戦サドンデス完全決着', () {
+      test('[ドメイン＆極限シナリオ] 7人制団体戦で反則累積一本・不戦勝・大将戦同点・代表戦サドンデス完全決着こと', () {
         final positions = MatchFormatSetupHelper.generatePositions(7);
         expect(positions, ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将']);
 
@@ -294,83 +294,84 @@ void main() {
         expect(csvString.contains('白峰'), isTrue);
       });
 
-      testWidgets('2. [UI・アクセシビリティ] 文字拡大モード(特大 1.35x)下での7人制結果表示・オーバーフローゼロ検証', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(390, 1000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+      testWidgets(
+        '[UI・アクセシビリティ] 文字拡大モード(特大 1.35x)下での7人制結果表示・オーバーフローゼロが正しく検証されること',
+        (tester) async {
+          tester.view.physicalSize = const Size(390, 1000);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() {
+            tester.view.resetPhysicalSize();
+            tester.view.resetDevicePixelRatio();
+          });
 
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
+          final themeColors = AppThemeColors.ofMode(
+            isDark: false,
+            mode: 'normal',
+          );
 
-        // 文字拡大 1.35x をシミュレート
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              theme: ThemeData.light().copyWith(extensions: [themeColors]),
-              home: MediaQuery(
-                data: const MediaQueryData(
-                  textScaler: TextScaler.linear(1.35),
-                  size: Size(390, 1000),
-                ),
-                child: Scaffold(
-                  appBar: AppBar(
-                    title: const Text(
-                      '7人制 団体戦公式記録',
-                      style: TextStyle(fontSize: AppFontSize.headline),
-                    ),
+          // 文字拡大 1.35x をシミュレート
+          await tester.pumpWidget(
+            ProviderScope(
+              child: MaterialApp(
+                theme: ThemeData.light().copyWith(extensions: [themeColors]),
+                home: MediaQuery(
+                  data: const MediaQueryData(
+                    textScaler: TextScaler.linear(1.35),
+                    size: Size(390, 1000),
                   ),
-                  body: ListView(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: themeColors.cardBackground,
-                          borderRadius: AppRadius.medium,
-                        ),
-                        child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '錬心館道場 3 (4) - 3 (4) 修道館道場',
-                              style: TextStyle(
-                                fontSize: AppFontSize.headline,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: AppSpacing.xs),
-                            Text(
-                              '代表戦: 錬心館道場 勝ち (赤坂 メ - 白峰)',
-                              style: TextStyle(
-                                fontSize: AppFontSize.body,
-                                color: AppKendoColors.ipponGold,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: const Text(
+                        '7人制 団体戦公式記録',
+                        style: TextStyle(fontSize: AppFontSize.headline),
                       ),
-                    ],
+                    ),
+                    body: ListView(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: themeColors.cardBackground,
+                            borderRadius: AppRadius.medium,
+                          ),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '錬心館道場 3 (4) - 3 (4) 修道館道場',
+                                style: TextStyle(
+                                  fontSize: AppFontSize.headline,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: AppSpacing.xs),
+                              Text(
+                                '代表戦: 錬心館道場 勝ち (赤坂 メ - 白峰)',
+                                style: TextStyle(
+                                  fontSize: AppFontSize.body,
+                                  color: AppKendoColors.ipponGold,
+                                  fontWeight: AppFontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        expect(find.text('7人制 団体戦公式記録'), findsOneWidget);
-        expect(find.text('錬心館道場 3 (4) - 3 (4) 修道館道場'), findsOneWidget);
-        expect(find.textContaining('代表戦: 錬心館道場 勝ち'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+          expect(find.text('7人制 団体戦公式記録'), findsOneWidget);
+          expect(find.text('錬心館道場 3 (4) - 3 (4) 修道館道場'), findsOneWidget);
+          expect(find.textContaining('代表戦: 錬心館道場 勝ち'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
     },
   );
 }

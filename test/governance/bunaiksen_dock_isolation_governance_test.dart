@@ -21,8 +21,8 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('🛡️ 【部内戦ドック完全隔離・画面外残留ゼロ保証ガバナンス】', () {
-    test('1. 静的コード規約: 部内戦対象画面以外に BunaiksenDockButton が1文字たりとも記述されていないこと', () {
+  group('[Governance] 【部内戦ドック完全隔離・画面外残留ゼロ保証ガバナンス】', () {
+    test('静的コード規約: 部内戦対象画面以外に BunaiksenDockButton が1文字たりとも記述されていないこと', () {
       final libDir = Directory('lib');
       expect(libDir.existsSync(), isTrue);
 
@@ -55,7 +55,7 @@ void main() {
       }
     });
 
-    testWidgets('2. スタート画面（トップ画面）に部内戦ドックが一切描画されないこと', (tester) async {
+    testWidgets('スタート画面（トップ画面）に部内戦ドックが一切描画されないこと', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -73,7 +73,7 @@ void main() {
       expect(find.text('部内戦をはじめる'), findsOneWidget);
     });
 
-    testWidgets('3. 部内戦画面を離脱（Pop / 画面破棄）した際、表示中のドックシートが確実に自動破棄（close）されること', (
+    testWidgets('部内戦画面を離脱（Pop / 画面破棄）した際、表示中のドックシートが確実に自動破棄（close）されること', (
       tester,
     ) async {
       final viewDate = DateTime(2026, 9, 11);
@@ -150,30 +150,29 @@ void main() {
       expect(find.text('Go to Bunaiksen'), findsOneWidget);
     });
 
-    testWidgets(
-      '4. 観客（Viewer）モード時は部内戦画面内であっても BunaiksenDockButton が一切描画されないこと',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              currentUserRoleProvider.overrideWithValue(UserRole.viewer),
-            ],
-            child: const MaterialApp(
-              home: Scaffold(
-                body: BunaiksenDockButton(
-                  tournamentId: 'bunaiksen_20260911',
-                  isViewerMode: true,
-                ),
+    testWidgets('観客（Viewer）モード時は部内戦画面内であっても BunaiksenDockButton が一切描画されないこと', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserRoleProvider.overrideWithValue(UserRole.viewer),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: BunaiksenDockButton(
+                tournamentId: 'bunaiksen_20260911',
+                isViewerMode: true,
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.byType(BunaiksenDockButton), findsOneWidget);
-        // SizedBox.shrink なので実体ボタンアイコンは見つからない
-        expect(find.byIcon(Icons.dashboard_customize_rounded), findsNothing);
-      },
-    );
+      expect(find.byType(BunaiksenDockButton), findsOneWidget);
+      // SizedBox.shrink なので実体ボタンアイコンは見つからない
+      expect(find.byIcon(Icons.dashboard_customize_rounded), findsNothing);
+    });
   });
 }

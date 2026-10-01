@@ -57,7 +57,7 @@ void main() {
       'bunaiksen_${DateFormat('yyyyMMdd').format(testDate)}';
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen team score table should display "赤" and "白"',
+    'BunaiksenOfficialRecordScreen team score table should display "赤" and "白"こと',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
@@ -109,7 +109,7 @@ void main() {
   );
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen league table should use BunaiksenHelper for points',
+    'BunaiksenOfficialRecordScreen league table should use BunaiksenHelper for pointsであること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(
@@ -233,7 +233,7 @@ void main() {
   );
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen should display empty cell for "欠員"',
+    'BunaiksenOfficialRecordScreen should display empty cell for "欠員"こと',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(
@@ -286,7 +286,7 @@ void main() {
   );
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen should display initial for same last names',
+    'BunaiksenOfficialRecordScreen should display initial for same last namesであること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(
@@ -372,7 +372,7 @@ void main() {
   );
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen should show and hide loading dialog on PDF export',
+    'BunaiksenOfficialRecordScreen should show and hide loading dialog on PDF exportであること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/utils/text_input_helper.dart';
 
 void main() {
-  group('TextInputHelper.insertComma Tests', () {
-    test('空文字の場合はカンマのみを挿入しないか、あるいはスマートに扱うか', () {
+  group('[Unit] TextInputHelper.insertComma テスト', () {
+    test('空文字の場合はカンマのみを挿入せず適切に処理されること', () {
       final controller = TextEditingController();
       TextInputHelper.insertComma(controller);
 
@@ -13,7 +13,7 @@ void main() {
       expect(controller.selection.baseOffset, -1);
     });
 
-    test('既存テキストの末尾にカーソルがある場合、カンマと半角スペースを挿入する', () {
+    test('既存テキストの末尾にカーソルがある場合、カンマと半角スペースが挿入されること', () {
       final controller = TextEditingController(text: '第1試合場');
       controller.selection = const TextSelection.collapsed(offset: 5);
 
@@ -23,7 +23,7 @@ void main() {
       expect(controller.selection.baseOffset, '第1試合場, '.length);
     });
 
-    test('既に末尾がカンマまたはカンマ+空白で終わっている場合、二重にカンマを挿入しない', () {
+    test('既に末尾がカンマまたはカンマ+空白で終わっている場合、二重にカンマを挿入しないこと', () {
       final controller = TextEditingController(text: '第1試合場, ');
       controller.selection = TextSelection.collapsed(
         offset: controller.text.length,
@@ -46,7 +46,7 @@ void main() {
       expect(controller2.selection.baseOffset, '第1試合場, '.length);
     });
 
-    test('全角読点（、）や全角カンマ（，）で終わっている場合も重複挿入せず適切にフォーマット', () {
+    test('全角読点（、）や全角カンマ（，）で終わっている場合も重複挿入せず適切にフォーマットされること', () {
       final controller = TextEditingController(text: '第1試合場、');
       controller.selection = TextSelection.collapsed(
         offset: controller.text.length,
@@ -58,7 +58,7 @@ void main() {
       expect(controller.selection.baseOffset, '第1試合場, '.length);
     });
 
-    test('文章の途中にカーソルがある場合、その位置にカンマと空白を挿入しカーソルを進める', () {
+    test('文章の途中にカーソルがある場合、その位置にカンマと空白が挿入されカーソルが進むこと', () {
       final controller = TextEditingController(text: '第1試合場12試合目');
       controller.selection = const TextSelection.collapsed(
         offset: 5,
@@ -70,7 +70,7 @@ void main() {
       expect(controller.selection.baseOffset, 7); // 5 + 2
     });
 
-    test('選択範囲がある場合、選択範囲をカンマと空白で置換する', () {
+    test('選択範囲がある場合、選択範囲がカンマと空白で置換されること', () {
       final controller = TextEditingController(text: '第1試合場 XXX 12試合目');
       controller.selection = const TextSelection(
         baseOffset: 5,

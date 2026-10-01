@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_home_action_helper.dart';
 
 void main() {
-  group('BunaiksenHomeActionHelper Tests', () {
-    testWidgets('confirmDeleteMatch shows confirmation dialog', (tester) async {
+  group('[Widget] BunaiksenHomeActionHelper テスト', () {
+    testWidgets('confirmDeleteMatch shows confirmation dialogであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

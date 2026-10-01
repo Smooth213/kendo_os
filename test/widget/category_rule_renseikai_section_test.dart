@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   testWidgets(
-    'CategoryRuleRenseikaiSection renders renseikai settings when isRenseikai is true',
+    'CategoryRuleRenseikaiSection renders renseikai settings when isRenseikai is trueであること',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -36,7 +36,7 @@ void main() {
   );
 
   testWidgets(
-    'CategoryRuleRenseikaiSection renders kachinuki settings when isKachinuki is true',
+    'CategoryRuleRenseikaiSection renders kachinuki settings when isKachinuki is trueであること',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(

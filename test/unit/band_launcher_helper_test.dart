@@ -23,8 +23,8 @@ void main() {
     BandLauncherHelper.webDirectLauncherOverride = null;
   });
 
-  group('🛡️ 【SFSafariViewController・アプリ内ブラウザ白紙残留 物理ゼロ保証テスト】', () {
-    group('📱 1. ネイティブ環境（iOS / Android）保証', () {
+  group('[Unit] 【SFSafariViewController・アプリ内ブラウザ白紙残留 物理ゼロ保証テスト】', () {
+    group('ネイティブ環境（iOS / Android）保証', () {
       setUp(() {
         BandLauncherHelper.isWebOverride = false;
       });
@@ -106,7 +106,7 @@ void main() {
       );
     });
 
-    group('🌐 2. Web環境（iOS PWA / Safari / Chrome）保証', () {
+    group('Web環境（iOS PWA / Safari / Chrome）保証', () {
       setUp(() {
         BandLauncherHelper.isWebOverride = true;
       });
@@ -204,7 +204,7 @@ void main() {
       );
     });
 
-    group('📱✨ 3. UI（BandGroupSelectSheet）連携における白紙画面防止保証', () {
+    group('UI（BandGroupSelectSheet）連携における白紙画面防止保証', () {
       final sampleGroups = [
         BandGroupModel(
           id: 'g_inv',

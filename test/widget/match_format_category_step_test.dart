@@ -22,7 +22,7 @@ void main() {
     infoColor: Colors.blue,
   );
 
-  testWidgets('MatchFormatCategoryStep renders correctly', (tester) async {
+  testWidgets('MatchFormatCategoryStep 正しく描画されること', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(

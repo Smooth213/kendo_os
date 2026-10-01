@@ -5,38 +5,39 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_detail_bottom_sheet.dart';
 
 void main() {
-  group('🛡️ CategoryRuleDetailBottomSheet Widget Tests', () {
-    testWidgets('Renders standard rules detail sheet with correct labels', (
-      WidgetTester tester,
-    ) async {
-      final ruleSet = const CategoryRuleSet(
-        normalRule: MatchRule(
-          matchTimeMinutes: 3.0,
-          isEnchoUnlimited: true,
-          hasHantei: false,
-        ),
-      );
+  group('[Widget] CategoryRuleDetailBottomSheet ウィジェットテスト', () {
+    testWidgets(
+      'Renders standard rules detail sheet with correct labelsであること',
+      (WidgetTester tester) async {
+        final ruleSet = const CategoryRuleSet(
+          normalRule: MatchRule(
+            matchTimeMinutes: 3.0,
+            isEnchoUnlimited: true,
+            hasHantei: false,
+          ),
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CategoryRuleDetailBottomSheet(
-              categoryName: '中学男子の部',
-              ruleSet: ruleSet,
-              isDark: false,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CategoryRuleDetailBottomSheet(
+                categoryName: '中学男子の部',
+                ruleSet: ruleSet,
+                isDark: false,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('中学男子の部 のルール設定'), findsOneWidget);
-      expect(find.text('通常戦ルール'), findsOneWidget);
-      expect(find.text('試合時間'), findsOneWidget);
-      expect(find.text('閉じる'), findsOneWidget);
-    });
+        expect(find.text('中学男子の部 のルール設定'), findsOneWidget);
+        expect(find.text('通常戦ルール'), findsOneWidget);
+        expect(find.text('試合時間'), findsOneWidget);
+        expect(find.text('閉じる'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-      'Renders team match details with representative match settings',
+      'Renders team match details with representative match settingsであること',
       (WidgetTester tester) async {
         final ruleSet = const CategoryRuleSet(
           matchType: '団体戦',
@@ -69,7 +70,7 @@ void main() {
       },
     );
 
-    testWidgets('Renders subtitle and comment when provided', (
+    testWidgets('Renders subtitle and comment when providedであること', (
       WidgetTester tester,
     ) async {
       final ruleSet = const CategoryRuleSet(

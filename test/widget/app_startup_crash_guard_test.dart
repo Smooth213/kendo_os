@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🛡️ アプリ起動エラー（シミュレータ起動不可・ホワイトアウト）保護テスト', () {
+  group('[Widget] アプリ起動エラー（シミュレータ起動不可・ホワイトアウト）保護テスト', () {
     testWidgets(
-      '1. Isar / IndexedDB エラー等の致命的エラー時に、ホワイトアウトせず「ブラウザのセキュリティ制限」案内画面が描画されること',
+      'Isar / IndexedDB エラー等の致命的エラー時に、ホワイトアウトせず「ブラウザのセキュリティ制限」案内画面が描画されること',
       (WidgetTester tester) async {
         // main.dart 内の catch(e) で使用されているのと同じ、致命的エラー時のフォールバックUI（エラーハンドラー）のロジックをテストします
         final Exception mockFatalError = Exception(
@@ -64,7 +64,7 @@ void main() {
       },
     );
 
-    testWidgets('2. その他のエラー([core/no-app]等)発生時は、通常のエラー原因と詳細スタックが描画されること', (
+    testWidgets('その他のエラー([core/no-app]等)発生時は、通常のエラー原因と詳細スタックが描画されること', (
       WidgetTester tester,
     ) async {
       final Exception mockFatalError = Exception(
@@ -103,7 +103,7 @@ void main() {
       );
     });
 
-    testWidgets('3. FlutterError.onError のカスタムエラー画面（X線画面）が正しく描画されること', (
+    testWidgets('FlutterError.onError のカスタムエラー画面（X線画面）が正しく描画されること', (
       WidgetTester tester,
     ) async {
       // main.dart に定義されている ErrorWidget.builder (赤いエラー画面の回避)の挙動をテスト

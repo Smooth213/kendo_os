@@ -14,8 +14,8 @@ class FakeRenseikaiMasterTimerNotifier extends RenseikaiMasterTimerNotifier {
 }
 
 void main() {
-  group('🛡️ RenseikaiMasterTimerWidget Widget Tests', () {
-    testWidgets('Renders initial timer display and toggles on tap', (
+  group('[Widget] RenseikaiMasterTimerWidget ウィジェットテスト', () {
+    testWidgets('Renders initial timer display and toggles on tapであること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -45,7 +45,7 @@ void main() {
       expect(find.byIcon(Icons.play_circle), findsOneWidget);
     });
 
-    testWidgets('Renders running state and time up state correctly', (
+    testWidgets('Renders running state and time up state correctlyであること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_data_helper.dart';
 
 void main() {
-  group('🛡️ BulkRuleDataHelper Unit Tests', () {
-    test('1. BulkRuleDataHelper correctly resolves match types', () {
+  group('[Widget] BulkRuleDataHelper 単体テスト', () {
+    test('BulkRuleDataHelper correctly resolves match typesであること', () {
       final teamMatch = MatchModel(
         id: 'm1',
         matchType: '団体戦',
@@ -30,7 +30,7 @@ void main() {
       expect(BulkRuleDataHelper.getResolvedType(leagueMatch), 'リーグ個人戦');
     });
 
-    test('2. BulkRuleDataHelper groups matches into units correctly', () {
+    test('BulkRuleDataHelper groups matches into units correctlyであること', () {
       final matches = [
         MatchModel(
           id: 'm1',

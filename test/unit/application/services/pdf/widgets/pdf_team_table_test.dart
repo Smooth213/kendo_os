@@ -55,8 +55,8 @@ void main() {
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
-  group('PdfTeamTable Widget Tests', () {
-    test('引き分けの試合で正しい引き分け記号「×」が表示されるべき', () {
+  group('[Unit] PdfTeamTable ウィジェットテスト', () {
+    test('引き分けの試合で正しい引き分け記号「×」が表示されること', () {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -86,7 +86,7 @@ void main() {
       expect(drawSymbolText.text.toPlainText(), '×');
     });
 
-    test('古い引き分け記号「✕」が入力されても、PDFでは「×」に変換されるべき', () {
+    test('古い引き分け記号「」が入力されても、PDFでは「×」に変換されること', () {
       // This tests the pdfPointBox directly as it's hard to simulate the old data through MatchModel
       final oldDrawPoint = PdfPointData('✕', false);
       final resultWidget = PdfTeamTable.pdfPointBox(
@@ -103,7 +103,7 @@ void main() {
       expect(textWidget.text.toPlainText(), '×');
     });
 
-    test('ヘッダータイトルが正しく生成されるべき', () {
+    test('ヘッダータイトルが正しく生成されること', () {
       // Case 1: Normal team match
       final matches1 = [
         createMockMatch(id: 'm1', redName: 'チームA:選手', whiteName: 'チームB:選手'),
@@ -130,7 +130,7 @@ void main() {
       expect(headerText2, '【リーグ団体戦】対戦スコア詳細（決勝トーナメント）');
     });
 
-    test('欠員の場合、選手名のセルは空欄で表示されるべき', () {
+    test('欠員の場合、選手名のセルは空欄で表示されること', () {
       final matches = [
         createMockMatch(id: 'm1', redName: 'チームA:山田太郎', whiteName: 'チームB:(欠員)'),
       ];
@@ -146,7 +146,7 @@ void main() {
       expect(nameCell, isA<pw.SizedBox>());
     });
 
-    test('同姓の選手がいる場合、名（イニシャル）が表示されるべき', () {
+    test('同姓の選手がいる場合、名（イニシャル）が表示されること', () {
       final matches = [
         createMockMatch(
           id: 'm1',

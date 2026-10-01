@@ -13,7 +13,7 @@ import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 void main() {
-  group('🛡️ Representative Match Regulation Rescue Guard Tests', () {
+  group('[Unit] Representative Match Regulation Rescue Guard テスト', () {
     late MockLocalMatchRepository mockLocalRepo;
 
     setUp(() {
@@ -33,7 +33,7 @@ void main() {
     });
 
     test(
-      '1. Web environment parsing - automatically heals finished/approved/corrupted representative match with no events',
+      'Web environment parsing - automatically heals finished/approved/corrupted representative match with no eventsであること',
       () async {
         debugIsWebOverride = true;
         final fakeFirestore = FakeFirebaseFirestore();
@@ -87,7 +87,7 @@ void main() {
     );
 
     test(
-      '2. Native environment downstream sync - heals representative match and saves bulk',
+      'Native environment downstream sync - heals representative match and saves bulkであること',
       () async {
         debugIsWebOverride = false;
         final fakeFirestore = FakeFirebaseFirestore();
@@ -155,52 +155,55 @@ void main() {
       },
     );
 
-    test('3. Bunaiksen stream provider - heals representative match', () async {
-      final fakeFirestore = FakeFirebaseFirestore();
-      const targetTournamentId = 'bunaiksen_rep_test';
+    test(
+      'Bunaiksen stream provider - heals representative matchであること',
+      () async {
+        final fakeFirestore = FakeFirebaseFirestore();
+        const targetTournamentId = 'bunaiksen_rep_test';
 
-      // Insert corrupted representative match in Firestore
-      await fakeFirestore
-          .collection('organizations')
-          .doc('test202')
-          .collection('tournaments')
-          .doc(targetTournamentId)
-          .collection('matches')
-          .doc('match_rep_03')
-          .set({
-            'tournamentId': targetTournamentId,
-            'redName': '部内戦赤',
-            'whiteName': '部内戦白',
-            'matchType': '代表戦',
-            'status': 'approved', // should be waiting
-            'order': 3.0,
-            'events': [],
-          });
+        // Insert corrupted representative match in Firestore
+        await fakeFirestore
+            .collection('organizations')
+            .doc('test202')
+            .collection('tournaments')
+            .doc(targetTournamentId)
+            .collection('matches')
+            .doc('match_rep_03')
+            .set({
+              'tournamentId': targetTournamentId,
+              'redName': '部内戦赤',
+              'whiteName': '部内戦白',
+              'matchType': '代表戦',
+              'status': 'approved', // should be waiting
+              'order': 3.0,
+              'events': [],
+            });
 
-      final container = ProviderContainer(
-        overrides: [
-          firestoreProvider.overrideWithValue(fakeFirestore),
-          currentDojoIdProvider.overrideWith((ref) => 'test202'),
-          localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
-        ],
-      );
+        final container = ProviderContainer(
+          overrides: [
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            currentDojoIdProvider.overrideWith((ref) => 'test202'),
+            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+          ],
+        );
 
-      final subscription = container.listen(
-        bunaiksenMatchesStreamProvider(targetTournamentId),
-        (previous, next) {},
-      );
+        final subscription = container.listen(
+          bunaiksenMatchesStreamProvider(targetTournamentId),
+          (previous, next) {},
+        );
 
-      final List<MatchModel> resultMatches = await container.read(
-        bunaiksenMatchesStreamProvider(targetTournamentId).future,
-      );
+        final List<MatchModel> resultMatches = await container.read(
+          bunaiksenMatchesStreamProvider(targetTournamentId).future,
+        );
 
-      expect(resultMatches.length, 1);
-      final match = resultMatches.first;
-      expect(match.id, 'match_rep_03');
-      expect(match.status, 'waiting'); // Healed!
-      expect(match.timerStartedAt, isNull);
+        expect(resultMatches.length, 1);
+        final match = resultMatches.first;
+        expect(match.id, 'match_rep_03');
+        expect(match.status, 'waiting'); // Healed!
+        expect(match.timerStartedAt, isNull);
 
-      subscription.close();
-    });
+        subscription.close();
+      },
+    );
   });
 }

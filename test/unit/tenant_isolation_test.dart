@@ -17,95 +17,92 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 void main() {
-  group('🛡️ マルチテナント（道場ID）隔離・同期不具合修正テスト要塞', () {
+  group('[Unit] マルチテナント（道場ID）隔離・同期不具合修正テスト要塞', () {
     setUp(() {
       // テスト用に SharedPreferences のモック（ダミー）を初期化
       SharedPreferences.setMockInitialValues({});
     });
 
-    test(
-      '1. 【テナントID伝播】currentDojoId が切り替わると、各Repositoryが新しいdojoIdで再生成されること',
-      () {
-        final fakeFirestore = FakeFirebaseFirestore();
+    test('【テナントID伝播】currentDojoId が切り替わると、各Repositoryが新しいdojoIdで再生成されること', () {
+      final fakeFirestore = FakeFirebaseFirestore();
 
-        final container = ProviderContainer(
-          overrides: [
-            tournamentRepositoryProvider.overrideWith((ref) {
-              return TournamentRepository(
-                dojoId: ref.watch(currentDojoIdProvider),
-                firestore: fakeFirestore,
-              );
-            }),
-            playerRepositoryProvider.overrideWith((ref) {
-              return PlayerRepository(
-                dojoId: ref.watch(currentDojoIdProvider),
-                firestore: fakeFirestore,
-              );
-            }),
-            teamRepositoryProvider.overrideWith((ref) {
-              return TeamRepository(
-                dojoId: ref.watch(currentDojoIdProvider),
-                firestore: fakeFirestore,
-              );
-            }),
-            programRepositoryProvider.overrideWith((ref) {
-              return ProgramRepository(
-                dojoId: ref.watch(currentDojoIdProvider),
-                firestore: fakeFirestore,
-              );
-            }),
-            auditFirestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+      final container = ProviderContainer(
+        overrides: [
+          tournamentRepositoryProvider.overrideWith((ref) {
+            return TournamentRepository(
+              dojoId: ref.watch(currentDojoIdProvider),
+              firestore: fakeFirestore,
+            );
+          }),
+          playerRepositoryProvider.overrideWith((ref) {
+            return PlayerRepository(
+              dojoId: ref.watch(currentDojoIdProvider),
+              firestore: fakeFirestore,
+            );
+          }),
+          teamRepositoryProvider.overrideWith((ref) {
+            return TeamRepository(
+              dojoId: ref.watch(currentDojoIdProvider),
+              firestore: fakeFirestore,
+            );
+          }),
+          programRepositoryProvider.overrideWith((ref) {
+            return ProgramRepository(
+              dojoId: ref.watch(currentDojoIdProvider),
+              firestore: fakeFirestore,
+            );
+          }),
+          auditFirestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        // ログイン前のデフォルト状態の取得
-        final initialDojoId = container.read(currentDojoIdProvider);
+      // ログイン前のデフォルト状態の取得
+      final initialDojoId = container.read(currentDojoIdProvider);
 
-        // 初期状態での各リポジトリの生成確認
-        final tournamentRepo = container.read(tournamentRepositoryProvider);
-        final playerRepo = container.read(playerRepositoryProvider);
-        final teamRepo = container.read(teamRepositoryProvider);
-        final auditService = container.read(auditProvider);
+      // 初期状態での各リポジトリの生成確認
+      final tournamentRepo = container.read(tournamentRepositoryProvider);
+      final playerRepo = container.read(playerRepositoryProvider);
+      final teamRepo = container.read(teamRepositoryProvider);
+      final auditService = container.read(auditProvider);
 
-        expect(tournamentRepo.dojoId, equals(initialDojoId));
-        expect(playerRepo.dojoId, equals(initialDojoId));
-        expect(teamRepo.dojoId, equals(initialDojoId));
-        expect(auditService.dojoId, equals(initialDojoId));
+      expect(tournamentRepo.dojoId, equals(initialDojoId));
+      expect(playerRepo.dojoId, equals(initialDojoId));
+      expect(teamRepo.dojoId, equals(initialDojoId));
+      expect(auditService.dojoId, equals(initialDojoId));
 
-        // ★ 別の道場ID（テナント）でログインしたと仮定してIDを切り替える
-        container.read(currentDojoIdProvider.notifier).state = 'new_dojo_123';
+      // ★ 別の道場ID（テナント）でログインしたと仮定してIDを切り替える
+      container.read(currentDojoIdProvider.notifier).state = 'new_dojo_123';
 
-        // 新しいdojoIdでリポジトリが再生成されていること（Riverpodの依存性注入による自動再構築の保証）
-        final newTournamentRepo = container.read(tournamentRepositoryProvider);
-        final newPlayerRepo = container.read(playerRepositoryProvider);
-        final newTeamRepo = container.read(teamRepositoryProvider);
-        final newAuditService = container.read(auditProvider);
+      // 新しいdojoIdでリポジトリが再生成されていること（Riverpodの依存性注入による自動再構築の保証）
+      final newTournamentRepo = container.read(tournamentRepositoryProvider);
+      final newPlayerRepo = container.read(playerRepositoryProvider);
+      final newTeamRepo = container.read(teamRepositoryProvider);
+      final newAuditService = container.read(auditProvider);
 
-        expect(
-          newTournamentRepo.dojoId,
-          equals('new_dojo_123'),
-          reason: 'TournamentRepositoryが新しい道場IDを向いていること',
-        );
-        expect(
-          newPlayerRepo.dojoId,
-          equals('new_dojo_123'),
-          reason: 'PlayerRepositoryが新しい道場IDを向いていること',
-        );
-        expect(
-          newTeamRepo.dojoId,
-          equals('new_dojo_123'),
-          reason: 'TeamRepositoryが新しい道場IDを向いていること',
-        );
-        expect(
-          newAuditService.dojoId,
-          equals('new_dojo_123'),
-          reason: 'AuditServiceが新しい道場IDを向いていること',
-        );
-      },
-    );
+      expect(
+        newTournamentRepo.dojoId,
+        equals('new_dojo_123'),
+        reason: 'TournamentRepositoryが新しい道場IDを向いていること',
+      );
+      expect(
+        newPlayerRepo.dojoId,
+        equals('new_dojo_123'),
+        reason: 'PlayerRepositoryが新しい道場IDを向いていること',
+      );
+      expect(
+        newTeamRepo.dojoId,
+        equals('new_dojo_123'),
+        reason: 'TeamRepositoryが新しい道場IDを向いていること',
+      );
+      expect(
+        newAuditService.dojoId,
+        equals('new_dojo_123'),
+        reason: 'AuditServiceが新しい道場IDを向いていること',
+      );
+    });
 
     test(
-      '2. 【共有キーワイプ競合排除】SharedPreferences の global_last_dojo_id_v4 が確実に記録・更新され、ワイプの競合を防ぐこと',
+      '【共有キーワイプ競合排除】SharedPreferences の global_last_dojo_id_v4 が確実に記録・更新され、ワイプの競合を防ぐこと',
       () async {
         SharedPreferences.setMockInitialValues({
           'global_last_dojo_id_v4': 'old_dojo_abc',
@@ -125,7 +122,7 @@ void main() {
     );
 
     test(
-      '3. 【データ分離保存】 各ドメインのデータが道場ID（テナント）別の専用サブコレクションに確実に保存され、ルート階層へ漏洩しないこと',
+      '【データ分離保存】 各ドメインのデータが道場ID（テナント）別の専用サブコレクションに確実に保存され、ルート階層へ漏洩しないこと',
       () async {
         final fakeFirestore = FakeFirebaseFirestore();
         final targetDojoId = 'test_dojo_tenant_123';
@@ -380,7 +377,7 @@ void main() {
     );
 
     test(
-      '4. 【階層ツリー完全検証】新しいFirestore Schemaの通りに、道場層と大会層へデータが正確にカプセル化されること',
+      '【階層ツリー完全検証】新しいFirestore Schemaの通りに、道場層と大会層へデータが正確にカプセル化されること',
       () async {
         final fakeFirestore = FakeFirebaseFirestore();
         final targetDojoId = 'schema_test_dojo';

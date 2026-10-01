@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/domain/entities/program_model.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ ProgramManagement Extracted Components Tests', () {
+  group('[Widget] ProgramManagement Extracted Components テスト', () {
     final programs = [
       ProgramModel(
         id: 'p1',
@@ -28,7 +28,7 @@ void main() {
     ];
 
     testWidgets(
-      '1. ProgramManagementContentViews renders list view with Slidable',
+      'ProgramManagementContentViews renders list view with Slidableであること',
       (tester) async {
         ProgramModel? deletedProgram;
 
@@ -78,7 +78,7 @@ void main() {
     );
 
     testWidgets(
-      '2. ProgramManagementContentViews viewer mode disables Slidable delete',
+      'ProgramManagementContentViews viewer mode disables Slidable deleteであること',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -106,40 +106,42 @@ void main() {
       },
     );
 
-    testWidgets('3. Long press triggers onLongPress callback in normal mode', (
-      tester,
-    ) async {
-      ProgramModel? longPressedProgram;
+    testWidgets(
+      'Long press triggers onLongPress callback in normal modeであること',
+      (tester) async {
+        ProgramModel? longPressedProgram;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ProgramManagementContentViews.buildListView(
-                context: context,
-                programs: programs,
-                getSafeUrl: (url) => url,
-                onDelete: (_) {},
-                isViewerMode: false,
-                onLongPress: (p) {
-                  longPressedProgram = p;
-                },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) =>
+                    ProgramManagementContentViews.buildListView(
+                      context: context,
+                      programs: programs,
+                      getSafeUrl: (url) => url,
+                      onDelete: (_) {},
+                      isViewerMode: false,
+                      onLongPress: (p) {
+                        longPressedProgram = p;
+                      },
+                    ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      // 長押し操作
-      await tester.longPress(find.text('進行表'));
-      await tester.pumpAndSettle();
+        // 長押し操作
+        await tester.longPress(find.text('進行表'));
+        await tester.pumpAndSettle();
 
-      expect(longPressedProgram, isNotNull);
-      expect(longPressedProgram!.id, 'p1');
-    });
+        expect(longPressedProgram, isNotNull);
+        expect(longPressedProgram!.id, 'p1');
+      },
+    );
 
     testWidgets(
-      '4. Selection mode shows checkboxes, toggles selection, and disables Slidable',
+      'Selection mode shows checkboxes, toggles selection, and disables Slidableであること',
       (tester) async {
         ProgramModel? toggledProgram;
 
@@ -182,7 +184,7 @@ void main() {
     );
 
     testWidgets(
-      '5. ProgramManagementContentViews renders grid view with selection support',
+      'ProgramManagementContentViews renders grid view with selection supportであること',
       (tester) async {
         ProgramModel? toggledProgram;
 

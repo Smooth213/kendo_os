@@ -12,7 +12,7 @@ import '../helpers/test_isar_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🗄️ 【Phase 13: Isar メモリマップトI/O（MMAP）＆ ページサイズ最適化】ガバナンステスト', () {
+  group('[Governance] 【Phase 13: Isar メモリマップトI/O（MMAP）＆ ページサイズ最適化】ガバナンステスト', () {
     TestIsarContext? isarContext;
     late Isar isar;
 
@@ -42,7 +42,7 @@ void main() {
       await isarContext?.dispose();
     });
 
-    test('MMAP 1024MiB 仮想メモリ空間上での 1,000 件一括書き込み＆RAM速度検索検証', () async {
+    test('MMAP 1024MiB 仮想メモリ空間上での 1,000 件一括書き込み＆RAM速度検索が正しく検証されること', () async {
       final now = DateTime.now();
 
       // 1,000件の試合データを生成

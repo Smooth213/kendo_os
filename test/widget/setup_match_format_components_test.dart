@@ -8,28 +8,32 @@ import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ SetupMatchFormat Components Widget Tests', () {
-    testWidgets('MatchFormatDynamicHeader renders header texts and progress', (
-      tester,
-    ) async {
-      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+  group('[Widget] SetupMatchFormat Components ウィジェットテスト', () {
+    testWidgets(
+      'MatchFormatDynamicHeader renders header texts and progressであること',
+      (tester) async {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'normal',
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MatchFormatDynamicHeader(
-              currentPage: 0,
-              themeColors: themeColors,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MatchFormatDynamicHeader(
+                currentPage: 0,
+                themeColors: themeColors,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('試合ルールの設定'), findsOneWidget);
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    });
+        expect(find.text('試合ルールの設定'), findsOneWidget);
+        expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      },
+    );
 
-    testWidgets('MatchFormatSectionHeader renders title and accent bar', (
+    testWidgets('MatchFormatSectionHeader renders title and accent barであること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -46,7 +50,7 @@ void main() {
       expect(find.text('試合時間の設定'), findsOneWidget);
     });
 
-    testWidgets('MatchFormatCategoryPreviewCard renders category text', (
+    testWidgets('MatchFormatCategoryPreviewCard renders category textであること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -68,7 +72,7 @@ void main() {
     });
 
     testWidgets(
-      'MatchFormatTeamSelectionCard renders team info and triggers callbacks',
+      'MatchFormatTeamSelectionCard renders team info and triggers callbacksであること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,

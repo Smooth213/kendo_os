@@ -29,8 +29,8 @@ void main() {
         });
   });
 
-  group('OfficialRecordExpeditionSummaryCard UI & Share Tests', () {
-    testWidgets('① 成績サマリーのレイアウト維持: タイトル行右端にLINE・共有ボタン、実施カテゴリのみ表示されること', (
+  group('[Widget] OfficialRecordExpeditionSummaryCard UI & Share テスト', () {
+    testWidgets('成績サマリーのレイアウト維持: タイトル行右端にLINE・共有ボタン、実施カテゴリのみ表示されること', (
       tester,
     ) async {
       final matches = [
@@ -86,7 +86,7 @@ void main() {
       expect(find.text('詳細分析 ›'), findsOneWidget);
     });
 
-    testWidgets('② 共有ボタンをタップした際にクリップボード格納および共有コールバックが正しく呼び出されること', (
+    testWidgets('共有ボタンをタップした際にクリップボード格納および共有コールバックが正しく呼び出されること', (
       tester,
     ) async {
       final matches = [
@@ -145,7 +145,7 @@ void main() {
       expect(capturedSubject, '【遠征・試合 結果速報】');
     });
 
-    testWidgets('③ 「詳細分析 ›」をタップした際に詳細モーダルが開き、対戦カード履歴が表示されること', (tester) async {
+    testWidgets('「詳細分析 ›」をタップした際に詳細モーダルが開き、対戦カード履歴が表示されること', (tester) async {
       final matches = [
         const MatchModel(
           id: 'm1',

@@ -69,7 +69,7 @@ void main() {
     );
   }
 
-  group('🥋 ドック機能＆全画面拡大 保証テスト', () {
+  group('[Widget] ドック機能＆全画面拡大 保証テスト', () {
     testWidgets('ドック展開時に7つの全機能子アイコンが過不足なく表示されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;

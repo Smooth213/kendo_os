@@ -56,7 +56,7 @@ void main() {
     );
   });
 
-  group('🛡️ Viewer Bunaiksen Calendar Integration Tests', () {
+  group('[Widget] Viewer Bunaiksen Calendar 統合テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockPlayerRepository mockPlayerRepo;
     late MockSyncEngine mockSyncEngine;
@@ -163,7 +163,7 @@ void main() {
       ).thenAnswer((_) => Future.value());
     });
 
-    testWidgets('1. 観客席カレンダー切り替え：過去日付の試合が正しくロードされ、試合作成ボタンがないこと', (
+    testWidgets('観客席カレンダー切り替え：過去日付の試合が正しくロードされ、試合作成ボタンがないこと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

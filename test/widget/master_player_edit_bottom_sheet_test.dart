@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
   testWidgets(
-    'MasterPlayerEditBottomSheet displays player registration fields',
+    'MasterPlayerEditBottomSheet displays player registration fieldsであること',
     (tester) async {
       await tester.pumpWidget(
         const ProviderScope(
@@ -28,7 +28,7 @@ void main() {
   );
 
   testWidgets(
-    'MasterPlayerEditBottomSheet displays edit mode with existing player',
+    'MasterPlayerEditBottomSheet displays edit mode with existing playerであること',
     (tester) async {
       final player = PlayerModel(
         id: 'p1',

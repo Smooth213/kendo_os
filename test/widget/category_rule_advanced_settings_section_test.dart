@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   testWidgets(
-    'CategoryRuleAdvancedSettingsSection renders ippon and hansoku limits',
+    'CategoryRuleAdvancedSettingsSection renders ippon and hansoku limitsであること',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -29,7 +29,7 @@ void main() {
   );
 
   testWidgets(
-    'CategoryRuleAdvancedSettingsSection renders keyword field for advanced mode',
+    'CategoryRuleAdvancedSettingsSection renders keyword field for advanced modeであること',
     (tester) async {
       final controller = TextEditingController(text: '準決勝, 決勝');
 

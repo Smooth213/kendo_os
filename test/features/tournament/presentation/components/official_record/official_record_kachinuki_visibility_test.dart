@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('勝ち抜き戦公式記録カードの視認性テスト', () {
+  group('[Widget] 勝ち抜き戦公式記録カードの視認性テスト', () {
     final kachinukiMatches = [
       MatchModel(
         id: 'kachinuki_m1',

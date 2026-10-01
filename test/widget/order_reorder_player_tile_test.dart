@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/she
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ OrderReorderPlayerTile Widget Tests', () {
-    testWidgets('Renders position player tile correctly', (
+  group('[Widget] OrderReorderPlayerTile ウィジェットテスト', () {
+    testWidgets('Renders position player tile correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -29,7 +29,7 @@ void main() {
       expect(find.byIcon(Icons.drag_handle), findsOneWidget);
     });
 
-    testWidgets('Renders reserve player tile correctly in dark mode', (
+    testWidgets('Renders reserve player tile correctly in dark modeであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

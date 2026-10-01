@@ -38,7 +38,7 @@ void main() {
     );
   }
 
-  group('🥋 ドック機能統合改修テスト', () {
+  group('[Widget] ドック機能統合改修テスト', () {
     testWidgets('大会ホームドック: 長押しでジグルモード起動し、親ボタンが完了アイコンに切り替わること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;

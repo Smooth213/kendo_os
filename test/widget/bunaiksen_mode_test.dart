@@ -19,7 +19,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('部内戦 成績一覧 UIの表示テスト (Widget Test)', () {
+  group('[Widget] 部内戦 成績一覧 UIの表示テスト (ウィジェットテスト)', () {
     final mockDate = DateTime(2026, 4, 29);
 
     Widget createTestableWidget(List<MatchModel> mockMatches) {
@@ -83,7 +83,7 @@ void main() {
       expect(find.textContaining('剣道花子'), findsWidgets);
     });
 
-    testWidgets('引き分けの場合、スコアに✕が表示されること', (WidgetTester tester) async {
+    testWidgets('引き分けの場合、スコアにが表示されること', (WidgetTester tester) async {
       final mockDrawMatch = [
         const MatchModel(
           id: 'm3',

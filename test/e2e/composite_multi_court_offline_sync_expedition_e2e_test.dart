@@ -4,9 +4,9 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_calculator.dart';
 
 void main() {
-  group('🌐 【Composite E2E】複数コート並行 × ネットワーク途絶復帰CRDTマージ × 遠征記録リアルタイム合算', () {
+  group('[E2E] 【Composite E2E】複数コート並行 × ネットワーク途絶復帰CRDTマージ × 遠征記録リアルタイム合算', () {
     test(
-      '1. 第1コート(常時接続)と第2コート(オフライン断線)の並行進行後、復帰時CRDT決定論的マージ＆遠征記録完全合算',
+      '第1コート(常時接続)と第2コート(オフライン断線)の並行進行後、復帰時CRDT決定論的マージ＆遠征記録完全合算こと',
       () async {
         final baseTime = DateTime(2026, 9, 27, 9, 0, 0);
 

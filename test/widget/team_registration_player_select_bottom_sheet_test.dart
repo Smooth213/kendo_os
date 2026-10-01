@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    'TeamRegistrationPlayerSelectBottomSheet renders player list and handles selection',
+    'TeamRegistrationPlayerSelectBottomSheet renders player list and handles selectionであること',
     (WidgetTester tester) async {
       final p1 = PlayerModel(
         id: 'p1',

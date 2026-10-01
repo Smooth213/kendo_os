@@ -5,9 +5,9 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ ViewerOfficialRecordCardItemBuilder Tests', () {
+  group('[Widget] ViewerOfficialRecordCardItemBuilder テスト', () {
     test(
-      '1. generateDescriptiveLeagueTitle generates title correctly for team league',
+      'generateDescriptiveLeagueTitle generates title correctly for team leagueであること',
       () {
         final matches = [
           const MatchListProjection(

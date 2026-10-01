@@ -214,9 +214,9 @@ void main() {
     );
   }
 
-  group('🚀 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞', () {
+  group('[E2E] 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞', () {
     testWidgets(
-      '1. 【描画〜ボトムシート即時反映E2E】全画面で描画されたストロークが、ボトムシート起動時に同一用紙位置へ即時反映されること',
+      '【描画〜ボトムシート即時反映E2E】全画面で描画されたストロークが、ボトムシート起動時に同一用紙位置へ即時反映されること',
       (tester) async {
         tester.view.physicalSize = const Size(900, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -284,7 +284,7 @@ void main() {
       },
     );
 
-    testWidgets('2. 【縦横混在ページ送りE2E】1ページ目（縦）から2ページ目（横）へ移動時、用紙とペンが独立して完全に同期すること', (
+    testWidgets('【縦横混在ページ送りE2E】1ページ目（縦）から2ページ目（横）へ移動時、用紙とペンが独立して完全に同期すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1024, 768);
@@ -398,7 +398,7 @@ void main() {
     });
 
     testWidgets(
-      '3. 【閲覧専用モード整合性E2E】観客（Viewer）席で手書きペンが完全一致で閲覧でき、編集ツールが物理排除されていること',
+      '【閲覧専用モード整合性E2E】観客（Viewer）席で手書きペンが完全一致で閲覧でき、編集ツールが物理排除されていること',
       (tester) async {
         tester.view.physicalSize = const Size(390, 844);
         tester.view.devicePixelRatio = 1.0;

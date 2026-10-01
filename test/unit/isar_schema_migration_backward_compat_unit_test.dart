@@ -5,9 +5,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🥋 【Phase 1-9/10】IsarローカルDB旧スキーマ互換＆安全マイグレーションテスト', () {
+  group('[Unit] 【Phase 1-9/10】IsarローカルDB旧スキーマ互換＆安全マイグレーションテスト', () {
     test(
-      '1. 旧形式（古いアプリ版）のMatchEntityで新フィールドがnull/未設定の場合でも例外なくMatchModelへ復元されること',
+      '旧形式（古いアプリ版）のMatchEntityで新フィールドがnull/未設定の場合でも例外なくMatchModelへ復元されること',
       () {
         // 過去バージョンの最小限データしか持たないEntity
         final legacyEntity = MatchEntity()
@@ -38,7 +38,7 @@ void main() {
       },
     );
 
-    test('2. MatchModel ➔ MatchEntity ➔ MatchModel の双方向変換で情報が完全に保存されること', () {
+    test('MatchModel  MatchEntity  MatchModel の双方向変換で情報が完全に保存されること', () {
       final originalModel = MatchModel(
         id: 'round_trip_m1',
         tournamentId: 'tourney_2026',

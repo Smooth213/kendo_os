@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
 
 void main() {
-  group('🛡️ NameFormatter Tests', () {
-    test('1. parse extracts last and first names correctly', () {
+  group('[Unit] NameFormatter テスト', () {
+    test('parse extracts last and first names correctlyであること', () {
       final res1 = NameFormatter.parse('佐藤 太郎');
       expect(res1['last'], '佐藤');
       expect(res1['first'], '太郎');
@@ -18,7 +18,7 @@ void main() {
     });
 
     test(
-      '2. formatScoreboardTitle removes UUIDs and raw group IDs correctly',
+      'formatScoreboardTitle removes UUIDs and raw group IDs correctlyであること',
       () {
         // UUID単体ケース
         expect(

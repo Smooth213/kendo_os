@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/domain/share_import/tournament_shar
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('PlayerRosterMatcher', () {
+  group('[Unit] PlayerRosterMatcher', () {
     final roster = [
       PlayerModel(
         id: 'p1',
@@ -48,7 +48,7 @@ void main() {
       ),
     ];
 
-    test('スペース揺れがあっても完全一致する（皿田 脩人、皿田脩人、皿田　脩人）', () {
+    test('【皿田 脩人、皿田脩人、皿田　脩人】スペース揺れがあっても完全一致すること', () {
       final res1 = PlayerRosterMatcher.matchPlayer(
         rawName: '皿田脩人',
         roster: roster,
@@ -72,7 +72,7 @@ void main() {
       expect(res3.resolvedName, '皿田 脩人');
     });
 
-    test('苗字のみの場合、名簿で一意ならその選手を採用する（塚本、久安）', () {
+    test('【塚本、久安】苗字のみの場合、名簿で一意ならその選手を採用すること', () {
       final res1 = PlayerRosterMatcher.matchPlayer(
         rawName: '塚本',
         roster: roster,
@@ -89,7 +89,7 @@ void main() {
       expect(res2.resolvedName, '久安 智也');
     });
 
-    test('同姓の選手が複数いる場合、カテゴリから学年を賢く推定する（佐藤）', () {
+    test('【佐藤】同姓の選手が複数いる場合、カテゴリから学年を賢く推定すること', () {
       // 低学年の部 → 佐藤 太郎（小2）
       final resLow = PlayerRosterMatcher.matchPlayer(
         rawName: '佐藤',
@@ -111,7 +111,7 @@ void main() {
       expect(resMiddle.matchedPlayer?.id, 'p5');
     });
 
-    test('名簿未登録の選手は元の名前を保持し、isMatched = false になる', () {
+    test('名簿未登録の選手は元の名前を保持し、isMatched = false になること', () {
       final res = PlayerRosterMatcher.matchPlayer(
         rawName: '外部 助っ人',
         roster: roster,
@@ -122,7 +122,7 @@ void main() {
       expect(res.badgeText, '外部 助っ人 (名簿未登録)');
     });
 
-    test('チーム全員の照合', () {
+    test('チーム全員の照合こと', () {
       final members = [
         const ParsedTeamMember(position: '先鋒', name: '皿田 脩人'),
         const ParsedTeamMember(position: '中堅', name: '塚本'),

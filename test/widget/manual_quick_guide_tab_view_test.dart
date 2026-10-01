@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_quick_guide_tab_view.dart';
 
 void main() {
-  group('🛡️ ManualQuickGuideTabView Widget Tests', () {
-    testWidgets('Renders ManualQuickGuideTabView structure correctly', (
+  group('[Widget] ManualQuickGuideTabView ウィジェットテスト', () {
+    testWidgets('Renders ManualQuickGuideTabView structure correctlyであること', (
       tester,
     ) async {
       bool printTapped = false;

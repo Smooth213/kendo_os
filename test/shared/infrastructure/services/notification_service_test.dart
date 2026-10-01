@@ -6,19 +6,19 @@ import 'package:kendo_os/shared/infrastructure/services/notification_service.dar
 class MockRef extends Mock implements Ref {}
 
 void main() {
-  group('🛡️ NotificationService Compilation and Safe Boundary Tests', () {
+  group('[Unit] NotificationService Compilation and Safe Boundary テスト', () {
     late MockRef mockRef;
 
     setUp(() {
       mockRef = MockRef();
     });
 
-    test('1. NotificationService compiles and instantiates correctly', () {
+    test('NotificationServiceが正常にコンパイルおよびインスタンス化されること', () {
       final service = NotificationService(mockRef);
       expect(service, isNotNull);
     });
 
-    test('2. Provider successfully resolves NotificationService', () {
+    test('ProviderからNotificationServiceが正常に解決されること', () {
       final container = ProviderContainer(
         overrides: [
           notificationServiceProvider.overrideWith(
@@ -32,20 +32,17 @@ void main() {
       expect(service, isNotNull);
     });
 
-    test(
-      '3. registerPushNotification returns safely if Firebase is not initialized',
-      () async {
-        final service = NotificationService(mockRef);
-        // Firebase is not initialized in standard unit tests, so this should execute
-        // the safety boundary condition and return cleanly without throwing exceptions.
-        await expectLater(
-          service.registerPushNotification(
-            tournamentId: 'test_tournament_123',
-            isStaff: true,
-          ),
-          completes,
-        );
-      },
-    );
+    test('Firebase未初期化時にregisterPushNotificationが安全に復帰すること', () async {
+      final service = NotificationService(mockRef);
+      // Firebase is not initialized in standard unit tests, so this should execute
+      // the safety boundary condition and return cleanly without throwing exceptions.
+      await expectLater(
+        service.registerPushNotification(
+          tournamentId: 'test_tournament_123',
+          isStaff: true,
+        ),
+        completes,
+      );
+    });
   });
 }

@@ -79,7 +79,7 @@ void main() {
     await setupTestFirebase();
   });
 
-  group('🛡️ Page 2 — UI崩壊検知（多端末・ダークモード・DynamicType）包括テスト要塞', () {
+  group('[Golden] Page 2 — UI崩壊検知（多端末・ダークモード・DynamicType）包括テスト要塞', () {
     const testMatchId = 'phase2_gold_match_123';
     const testTournamentId = 'phase2_gold_tourney_456';
     const testGroupName = '一般の部_リーグ戦';
@@ -120,7 +120,9 @@ void main() {
       for (var env in environments) {
         final label = '【${device.key} - ${env['name']}】';
 
-        testWidgets('$label 6大主要コンポーネント整合性検証', (WidgetTester tester) async {
+        testWidgets('$label 6大主要コンポーネント整合性が正しく検証されること', (
+          WidgetTester tester,
+        ) async {
           tester.view.physicalSize = device.value;
           tester.view.devicePixelRatio = 1.0;
           addTearDown(() => tester.view.resetPhysicalSize());

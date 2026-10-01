@@ -7,10 +7,10 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ Settings Extracted Components Widget Tests', () {
+  group('[Widget] Settings Extracted Components ウィジェットテスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    testWidgets('1. SettingsSectionHeader & Footer render text correctly', (
+    testWidgets('SettingsSectionHeader & Footer render text correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -31,7 +31,7 @@ void main() {
       expect(find.text('表示に関する説明文です'), findsOneWidget);
     });
 
-    testWidgets('2. SettingsBlock renders children and divider', (
+    testWidgets('SettingsBlock renders children and dividerであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -52,7 +52,7 @@ void main() {
       expect(find.byType(Divider), findsOneWidget);
     });
 
-    testWidgets('3. SettingsSwitchTile toggles value correctly', (
+    testWidgets('SettingsSwitchTile toggles value correctlyであること', (
       WidgetTester tester,
     ) async {
       bool switchValue = false;
@@ -87,7 +87,7 @@ void main() {
       expect(switchValue, isTrue);
     });
 
-    testWidgets('4. SettingsTestActionPanel responds to tap gestures', (
+    testWidgets('SettingsTestActionPanel responds to tap gesturesであること', (
       WidgetTester tester,
     ) async {
       final settings = SettingsModel(confirmBehavior: 'tap');

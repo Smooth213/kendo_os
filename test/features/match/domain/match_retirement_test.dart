@@ -7,7 +7,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
-  group('🥋 途中棄権（全日本剣道連盟 試合審判規則 第39条準拠）テスト要塞', () {
+  group('[Unit] 途中棄権（全日本剣道連盟 試合審判規則 第39条準拠）テスト要塞', () {
     late KendoRuleEngine ruleEngine;
     const rule = MatchRule(matchTimeMinutes: 3, ipponLimit: 2);
 
@@ -15,7 +15,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 0-0の状態で赤が途中棄権 ➔ 白に不戦勝2本が付与され、スコア白2-赤0で白の勝ち', () {
+    test('0の状態で赤が途中棄権  白に不戦勝2本が付与され、スコア白2-赤0で白の勝ちこと', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'fusen1',
@@ -54,7 +54,7 @@ void main() {
       expect(analysis.displays[Side.red]!.isEmpty, isTrue);
     });
 
-    test('2. 赤がメン1本先取後、赤が途中棄権 ➔ 白に2本付与され白2-赤1で白の勝ち（赤の先取点は維持）', () {
+    test('赤がメン1本先取後、赤が途中棄権  白に2本付与され白2-赤1で白の勝ち（赤の先取点は維持）こと', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'e1',
@@ -99,7 +99,7 @@ void main() {
       expect(analysis.displays[Side.white]![1].mark, '◯');
     });
 
-    test('3. 白がコテ1本先取後、赤が途中棄権 ➔ 白に不足分の1本のみ追加付与され白2-赤0で白の勝ち', () {
+    test('白がコテ1本先取後、赤が途中棄権  白に不足分の1本のみ追加付与され白2-赤0で白の勝ちこと', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'e1',
@@ -136,7 +136,7 @@ void main() {
       expect(analysis.displays[Side.white]![1].mark, '◯');
     });
 
-    test('4. 途中棄権イベントをUndo（取り消し）した場合、棄権前のスコア状態に戻ること', () {
+    test('途中棄権イベントをUndo（取り消し）した場合、棄権前のスコア状態に戻ること', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'e1',
@@ -190,7 +190,7 @@ void main() {
       expect(result, MatchResultStatus.inProgress);
     });
 
-    test('5. 試合終了状態または規定本数到達後でも、途中棄権イベントがvalidateEventで拒絶されず許可されること', () {
+    test('試合終了状態または規定本数到達後でも、途中棄権イベントがvalidateEventで拒絶されず許可されること', () {
       final match = MatchModel(
         id: 'm5',
         matchType: '中堅',

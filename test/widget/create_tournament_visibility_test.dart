@@ -42,7 +42,7 @@ List<Color?> _collectTileColors(WidgetTester tester) {
 }
 
 void main() {
-  group('🚨 大会作成画面 視認性ガードテスト', () {
+  group('[Widget] 大会作成画面 視認性ガードテスト', () {
     // ----------------------------------------------------------
     // Page1 ライトモード
     // ----------------------------------------------------------
@@ -54,7 +54,7 @@ void main() {
       });
       tearDown(() => nameController.dispose());
 
-      testWidgets('1. 大会名フィールドの背景色がテキスト色（黒）ではない', (tester) async {
+      testWidgets('大会名フィールドの背景色がテキスト色（黒）ではないこと', (tester) async {
         await tester.pumpWidget(
           _wrap(
             CreateTournamentPage1(
@@ -82,7 +82,7 @@ void main() {
         }
       });
 
-      testWidgets('2. 日付選択ListTileの背景色がテキスト色（黒）ではない', (tester) async {
+      testWidgets('日付選択ListTileの背景色がテキスト色（黒）ではないこと', (tester) async {
         await tester.pumpWidget(
           _wrap(
             CreateTournamentPage1(
@@ -108,7 +108,7 @@ void main() {
         }
       });
 
-      testWidgets('3. 入力欄の背景色がデザインシステムのinputBackground（明るい色）と一致する', (
+      testWidgets('入力欄の背景色がデザインシステムのinputBackground（明るい色）と一致すること', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -153,7 +153,7 @@ void main() {
         notesController.dispose();
       });
 
-      testWidgets('4. 会場フィールドの背景色がテキスト色（黒）ではない', (tester) async {
+      testWidgets('会場フィールドの背景色がテキスト色（黒）ではないこと', (tester) async {
         await tester.pumpWidget(
           _wrap(
             CreateTournamentPage2(
@@ -180,7 +180,7 @@ void main() {
         }
       });
 
-      testWidgets('5. 全入力欄(会場・メモ)の背景色がinputBackgroundと一致する', (tester) async {
+      testWidgets('全入力欄(会場・メモ)の背景色がinputBackgroundと一致すること', (tester) async {
         await tester.pumpWidget(
           _wrap(
             CreateTournamentPage2(
@@ -226,7 +226,7 @@ void main() {
         notesController.dispose();
       });
 
-      testWidgets('6. Page1 ダークモード: 入力欄の背景色が白（= 文字色）ではない', (tester) async {
+      testWidgets('Page1 ダークモード: 入力欄の背景色が白（= 文字色）ではないこと', (tester) async {
         await tester.pumpWidget(
           _wrap(
             CreateTournamentPage1(
@@ -249,7 +249,7 @@ void main() {
         }
       });
 
-      testWidgets('7. Page2 ダークモード: 入力欄の背景色が白（= 文字色）ではない', (tester) async {
+      testWidgets('Page2 ダークモード: 入力欄の背景色が白（= 文字色）ではないこと', (tester) async {
         await tester.pumpWidget(
           _wrap(
             CreateTournamentPage2(
@@ -277,7 +277,7 @@ void main() {
     // テキスト・ラベルの視認性
     // ----------------------------------------------------------
     group('テキスト視認性テスト', () {
-      testWidgets('8. Page1 ライトモード: 見出しテキストが表示される', (tester) async {
+      testWidgets('Page1 ライトモード: 見出しテキストが表示されること', (tester) async {
         final ctrl = TextEditingController();
         addTearDown(ctrl.dispose);
         await tester.pumpWidget(
@@ -295,7 +295,7 @@ void main() {
         expect(find.text('2025年08月22日'), findsOneWidget);
       });
 
-      testWidgets('9. Page2 ライトモード: 見出しテキストが表示される', (tester) async {
+      testWidgets('Page2 ライトモード: 見出しテキストが表示されること', (tester) async {
         final venue = TextEditingController();
         final notes = TextEditingController();
         addTearDown(() {

@@ -41,12 +41,12 @@ class ClockTamperDetector {
 }
 
 void main() {
-  group('🌐 【Phase 4-5/11】端末時刻意図的改ざん（時間切れ不正工作）検知＆矯正テスト', () {
+  group('[Unit] 【Phase 4-5/11】端末時刻意図的改ざん（時間切れ不正工作）検知＆矯正テスト', () {
     final serverNow = DateTime(2026, 9, 3, 10, 1, 0); // 試合開始1分後（残り120秒のはず）
     final matchStart = DateTime(2026, 9, 3, 10, 0, 0);
     const totalSeconds = 180;
 
-    test('1. 悪意ある端末が時計を5分未来に進めて「時間切れ勝ち」を偽装した場合、改ざんを検知して矯正すること', () {
+    test('悪意ある端末が時計を5分未来に進めて「時間切れ勝ち」を偽装した場合、改ざんを検知して矯正すること', () {
       // 端末時刻を勝手に 10:05:00（5分進めた）に偽装
       final tamperedClientTime = serverNow.add(const Duration(minutes: 5));
 
@@ -65,7 +65,7 @@ void main() {
       expect(validation.correctedRemainingSeconds, 120);
     });
 
-    test('2. 正常なミリ秒のネットワーク揺らぎ（1〜2秒以内）は改ざんと誤認せず承認すること', () {
+    test('正常なミリ秒のネットワーク揺らぎ（1〜2秒以内）は改ざんと誤認せず承認すること', () {
       final normalClientTime = serverNow.add(const Duration(seconds: 2));
 
       final validation = ClockTamperDetector.validateMatchTime(

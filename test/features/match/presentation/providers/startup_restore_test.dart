@@ -8,8 +8,8 @@ void main() {
   // 🛡️ Phase 4 - STEP 4-2 テスト要件：startup_restore_test
   // 回線断起動、途中クラッシュ、Safari再読込、iPadスリープ復帰時にも画面維持ができるかを検証
   // =========================================================================
-  group('🛡️ [Governance Quality Assurance] Isar Startup Restore Test', () {
-    test('1. 回線ゼロ（Firestore応答なし）の状態でも、Isarキャッシュから即座に前回状態が復元されること', () async {
+  group('[Unit] [Governance Quality Assurance] Isar Startup Restore テスト', () {
+    test('回線ゼロ（Firestore応答なし）の状態でも、Isarキャッシュから即座に前回状態が復元されること', () async {
       final container = ProviderContainer(
         overrides: [
           // ストリームがFirestoreに依存せず、安全にローカルモックデータをミリ秒で返すことを擬似保証
@@ -43,7 +43,7 @@ void main() {
       container.dispose();
     });
 
-    test('2. アプリが途中クラッシュ・Safari強制リロードされても状態が崩壊しないこと', () async {
+    test('アプリが途中クラッシュ・Safari強制リロードされても状態が崩壊しないこと', () async {
       final container = ProviderContainer(
         overrides: [
           matchStreamProvider.overrideWith(

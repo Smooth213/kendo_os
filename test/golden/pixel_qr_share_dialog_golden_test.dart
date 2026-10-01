@@ -10,7 +10,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】WebアプリQRコード ＆ 道場ルームQRダイアログ視覚整合性テスト', () {
+  group('[Golden] 【Golden】WebアプリQRコード ＆ 道場ルームQRダイアログ視覚整合性テスト', () {
     Widget buildQrWrapper({required Widget child, required bool isDark}) {
       final themeColors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
       return ProviderScope(
@@ -29,7 +29,7 @@ void main() {
       );
     }
 
-    testWidgets('1. WebAppQrDialog: スマホ幅(390px) ライトモード レンダリング検証', (
+    testWidgets('WebAppQrDialog: スマホ幅(390px) ライトモード レンダリングが正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -52,7 +52,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. WebAppQrDialog: タブレット幅(800px) ダークモード コントラスト・白背景検証', (
+    testWidgets('WebAppQrDialog: タブレット幅(800px) ダークモード コントラスト・白背景が正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);
@@ -82,7 +82,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('3. RoomJoinQrDialog: スマホ幅(390px) 道場ルーム参加シートのピクセル完全性', (
+    testWidgets('RoomJoinQrDialog: スマホ幅(390px) 道場ルーム参加シートのピクセル完全性こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);

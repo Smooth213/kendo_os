@@ -53,8 +53,8 @@ void main() {
     container.dispose();
   });
 
-  group('UserDataCloudSyncManager 4大機能同期テスト', () {
-    test('1. アプリ個人設定 (preferences) のクラウド保存と同期反映', () async {
+  group('[Unit] UserDataCloudSyncManager 4大機能同期テスト', () {
+    test('アプリ個人設定 (preferences) のクラウド保存と同期反映こと', () async {
       final syncManager = container.read(userDataCloudSyncManagerProvider);
 
       // クラウドに設定を事前格納
@@ -85,7 +85,7 @@ void main() {
       expect(settings.haptic, false);
     });
 
-    test('2. 道場通信ルーム履歴 (dojo_history) のスマートマージとプッシュ', () async {
+    test('道場通信ルーム履歴 (dojo_history) のスマートマージとプッシュこと', () async {
       final syncManager = container.read(userDataCloudSyncManagerProvider);
 
       // ローカル端末で履歴を追加
@@ -117,7 +117,7 @@ void main() {
       expect(history.length, 3);
     });
 
-    test('3. チーム名・対戦相手入力履歴 (input_history) のスマートマージとプッシュ', () async {
+    test('チーム名・対戦相手入力履歴 (input_history) のスマートマージとプッシュこと', () async {
       final syncManager = container.read(userDataCloudSyncManagerProvider);
 
       // ローカル端末で履歴を追加
@@ -145,7 +145,7 @@ void main() {
       expect(teamNames.length, 3);
     });
 
-    test('4. タイマー設定 (timer_preferences) の保存と復元', () async {
+    test('タイマー設定 (timer_preferences) の保存と復元こと', () async {
       final syncManager = container.read(userDataCloudSyncManagerProvider);
 
       // クラウドにタイマー初期秒数 (240秒 = 4分) を格納
@@ -164,7 +164,7 @@ void main() {
       expect(timerState.remainingSeconds, 240);
     });
 
-    test('5. 未連携（overrideUid = null）時は例外なく安全にスキップされること', () async {
+    test('未連携（overrideUid = null）時は例外なく安全にスキップされること', () async {
       final unlinkedContainer = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),

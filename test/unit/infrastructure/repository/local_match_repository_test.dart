@@ -11,7 +11,7 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 import '../../../helpers/test_isar_helper.dart';
 
 void main() {
-  group('LocalMatchRepository (Isar Database) Tests', () {
+  group('[Unit] LocalMatchRepository (Isar Database) テスト', () {
     TestIsarContext? isarContext;
     late Isar isar;
     late LocalMatchRepository repository;

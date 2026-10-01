@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    'ViewerMatchListSearchBar renders search button and sort button',
+    'ViewerMatchListSearchBar renders search button and sort buttonであること',
     (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
       bool toggledSort = false;

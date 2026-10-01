@@ -5,9 +5,9 @@ import 'package:kendo_os/admin/presentation/components/master_empty_state_card.d
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MasterEmptyStateCard Widget Tests', () {
+  group('[Widget] MasterEmptyStateCard ウィジェットテスト', () {
     testWidgets(
-      'Renders empty state texts and registration button when not readOnly',
+      'Renders empty state texts and registration button when not readOnlyであること',
       (WidgetTester tester) async {
         bool buttonTapped = false;
         final themeColors = AppThemeColors.ofMode(
@@ -49,7 +49,7 @@ void main() {
       },
     );
 
-    testWidgets('Hides registration button when isReadOnly is true', (
+    testWidgets('Hides registration button when isReadOnly is trueであること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

@@ -20,7 +20,7 @@ class FakePathProviderPlatform extends Fake
 }
 
 void main() {
-  group('📖 ヘルプ・マニュアル画面 (EmbeddedManualScreen) UI検証テスト', () {
+  group('[Widget] ヘルプ・マニュアル画面 (EmbeddedManualScreen) UI検証テスト', () {
     late Directory tempDir;
 
     setUp(() async {

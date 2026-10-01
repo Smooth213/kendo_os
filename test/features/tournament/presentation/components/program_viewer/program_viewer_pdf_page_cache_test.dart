@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 void main() {
-  group('🥋 ProgramViewerPdfPageCache 縦横混在PDF動的抽出＆キャンバス比率 単体テスト', () {
+  group('[Widget] ProgramViewerPdfPageCache 縦横混在PDF動的抽出＆キャンバス比率 単体テスト', () {
     late Uint8List mixedPdfBytes;
 
     setUp(() {
@@ -54,7 +54,7 @@ void main() {
       doc.dispose();
     });
 
-    test('1. parseDocumentInfo で縦横混在の各ページが最適なキャンバスサイズに分類されること', () {
+    test('parseDocumentInfo で縦横混在の各ページが最適なキャンバスサイズに分類されること', () {
       const url = 'https://example.com/mixed.pdf';
       final totalCount = ProgramViewerPdfPageCache.shared.parseDocumentInfo(
         url,
@@ -80,7 +80,7 @@ void main() {
       expect(size2, equals(const Size(1414.0, 1000.0)));
     });
 
-    test('2. extractSinglePage で抽出されたPDFが常に総ページ数「1」であること', () {
+    test('extractSinglePage で抽出されたPDFが常に総ページ数「1」であること', () {
       // Page 0 抽出
       final singleP0Bytes = ProgramViewerPdfPageCache.shared.extractSinglePage(
         mixedPdfBytes,
@@ -125,7 +125,7 @@ void main() {
       docP2.dispose();
     });
 
-    test('3. getOrExtractSinglePage でキャッシュが正しく効くこと', () {
+    test('getOrExtractSinglePage でキャッシュが正しく効くこと', () {
       const url = 'https://example.com/cached.pdf';
 
       final firstCall = ProgramViewerPdfPageCache.shared.getOrExtractSinglePage(
@@ -143,7 +143,7 @@ void main() {
       );
     });
 
-    test('4. 異常系・単一ページPDFの場合は安全にバイナリをそのままパススルーすること', () {
+    test('異常系・単一ページPDFの場合は安全にバイナリをそのままパススルーすること', () {
       final singleDoc = PdfDocument();
       singleDoc.pages.add();
       final singleBytes = Uint8List.fromList(singleDoc.saveSync());

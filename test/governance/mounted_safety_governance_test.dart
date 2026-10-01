@@ -2,15 +2,15 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🛡️ 【ガバナンス第2条】BuildContext Mounted Safety (非同期安全) 監査テスト', () {
-    test('1. analysis_options.yaml で flutter_lints の非同期安全規約が包含されていること', () {
+  group('[Governance] 【ガバナンス第2条】BuildContext Mounted Safety (非同期安全) 監査テスト', () {
+    test('analysis_options.yaml で flutter_lints の非同期安全規約が包含されていること', () {
       final file = File('analysis_options.yaml');
       expect(file.existsSync(), isTrue);
       final content = file.readAsStringSync();
       expect(content.contains('package:flutter_lints/flutter.yaml'), isTrue);
     });
 
-    test('2. 主要UI画面・コンポーネントで非同期処理後の mounted ガードが遵守されていること', () {
+    test('主要UI画面・コンポーネントで非同期処理後の mounted ガードが遵守されていること', () {
       final dir = Directory('lib');
       final dartFiles = dir
           .listSync(recursive: true)

@@ -7,11 +7,11 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ TimelineGroupScoreSummary Widget Tests', () {
+  group('[Widget] TimelineGroupScoreSummary ウィジェットテスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     testWidgets(
-      '1. TimelineGroupScoreSummary calculates wins and renders teams',
+      'TimelineGroupScoreSummary calculates wins and renders teamsであること',
       (WidgetTester tester) async {
         final matches = [
           MatchModel(

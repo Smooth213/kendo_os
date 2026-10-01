@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/widgets/room_join_validator.dart';
 
 void main() {
-  group('RoomJoinValidator.normalize - ルームコード正規化', () {
+  group('[Unit] RoomJoinValidator.normalize - ルームコード正規化', () {
     test('前後のスペースがトリムされること', () {
       expect(RoomJoinValidator.normalize('  tokyo_dojo  '), 'tokyo_dojo');
     });
@@ -21,50 +21,50 @@ void main() {
   });
 
   group('RoomJoinValidator.validate - バリデーション', () {
-    test('空文字 → エラー（コード入力を求める）', () {
+    test('空文字 → エラー（コード入力を求める）こと', () {
       final result = RoomJoinValidator.validate('');
       expect(result.isValid, isFalse);
       expect(result.errorMessage, isNotEmpty);
     });
 
-    test('スペースのみ → エラー', () {
+    test('スペースのみ → エラーこと', () {
       final result = RoomJoinValidator.validate('   ');
       expect(result.isValid, isFalse);
     });
 
-    test('半角英数字のみ → OK', () {
+    test('半角英数字のみ → OKであること', () {
       final result = RoomJoinValidator.validate('abc123');
       expect(result.isValid, isTrue);
       expect(result.errorMessage, isNull);
     });
 
-    test('ハイフン含む → OK', () {
+    test('ハイフン含む → OKであること', () {
       final result = RoomJoinValidator.validate('tokyo-dojo-2026');
       expect(result.isValid, isTrue);
     });
 
-    test('アンダーバー含む → OK', () {
+    test('アンダーバー含む → OKであること', () {
       final result = RoomJoinValidator.validate('tokyo_dojo_2026');
       expect(result.isValid, isTrue);
     });
 
-    test('ハイフンとアンダーバー混在 → OK', () {
+    test('ハイフンとアンダーバー混在 → OKであること', () {
       final result = RoomJoinValidator.validate('tokyo_dojo-2026');
       expect(result.isValid, isTrue);
     });
 
-    test('日本語文字 → エラー', () {
+    test('日本語文字 → エラーこと', () {
       final result = RoomJoinValidator.validate('東京道場');
       expect(result.isValid, isFalse);
       expect(result.errorMessage, isNotEmpty);
     });
 
-    test('スペース含む → エラー', () {
+    test('スペース含む → エラーこと', () {
       final result = RoomJoinValidator.validate('tokyo dojo');
       expect(result.isValid, isFalse);
     });
 
-    test('特殊記号（@）含む → エラー', () {
+    test('特殊記号（@）含む → エラーこと', () {
       final result = RoomJoinValidator.validate('tokyo@dojo');
       expect(result.isValid, isFalse);
     });
@@ -75,7 +75,7 @@ void main() {
       expect(result.isValid, isTrue);
     });
 
-    test('現実的な道場コード例 → OK', () {
+    test('現実的な道場コード例 → OKであること', () {
       final codes = [
         'shinagawa-kendo-2026',
         'osaka_dojo01',

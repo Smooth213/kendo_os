@@ -49,8 +49,8 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('🛡️ Theme Integration & Color Verifications', () {
-    testWidgets('1. StartScreen is themed correctly in dark and light modes', (
+  group('[Widget] Theme Integration & Color 検証', () {
+    testWidgets('StartScreen ダーク・ライト両モードでテーマが正しく適用されること', (
       WidgetTester tester,
     ) async {
       await tester.binding.setSurfaceSize(const Size(800, 1400));
@@ -109,7 +109,7 @@ void main() {
     });
 
     testWidgets(
-      '2. CreateTournamentScreen is themed correctly with Indigo focus and gradient colors',
+      'CreateTournamentScreen is themed correctly with Indigo focus and gradient colorsであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -131,40 +131,39 @@ void main() {
       },
     );
 
-    testWidgets(
-      '3. SetupMatchFormatScreen renders correctly with dynamic theme colors',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+    testWidgets('SetupMatchFormatScreen 動的テーマカラーで正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        // Test under normal theme (Indigo)
-        final lightTheme = ThemeData.light().copyWith(
-          extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
-        );
+      // Test under normal theme (Indigo)
+      final lightTheme = ThemeData.light().copyWith(
+        extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+      );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-              teamRepositoryProvider.overrideWithValue(mockTeamRepo),
-              isarProvider.overrideWithValue(null),
-            ],
-            child: MaterialApp(
-              theme: lightTheme,
-              home: const SetupMatchFormatScreen(tournamentId: 'test_id'),
-            ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+            teamRepositoryProvider.overrideWithValue(mockTeamRepo),
+            isarProvider.overrideWithValue(null),
+          ],
+          child: MaterialApp(
+            theme: lightTheme,
+            home: const SetupMatchFormatScreen(tournamentId: 'test_id'),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-        expect(find.byType(SetupMatchFormatScreen), findsOneWidget);
-      },
-    );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SetupMatchFormatScreen), findsOneWidget);
+    });
 
     testWidgets(
-      '4. OrderSetupScreen and BunaiksenSetupScreen render without crashes under Bunaiksen mode',
+      'OrderSetupScreen and BunaiksenSetupScreen render without crashes under Bunaiksen modeであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -198,7 +197,7 @@ void main() {
     );
 
     testWidgets(
-      '5. OperatorActionButtons viewer preview color matches viewer theme (BlueGrey/Purple)',
+      'OperatorActionButtons viewer preview color matches viewer theme (BlueGrey/Purple)こと',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -264,7 +263,7 @@ void main() {
     );
 
     testWidgets(
-      '6. OfficialRecordScreen Image share button uses LINE brand green color',
+      'OfficialRecordScreen Image share button uses LINE brand green colorであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

@@ -7,8 +7,8 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ MatchPlayer Roster Components Tests', () {
-    testWidgets('1. MatchPlayerSelectionCard renders sub player correctly', (
+  group('[Widget] MatchPlayer Roster Components テスト', () {
+    testWidgets('MatchPlayerSelectionCard renders sub player correctlyであること', (
       tester,
     ) async {
       final player = PlayerModel(
@@ -45,7 +45,7 @@ void main() {
     });
 
     testWidgets(
-      '2. MatchPlayerRosterListSection displays active and sub players',
+      'MatchPlayerRosterListSection displays active and sub playersであること',
       (tester) async {
         final p1 = PlayerModel(
           id: 'p1',

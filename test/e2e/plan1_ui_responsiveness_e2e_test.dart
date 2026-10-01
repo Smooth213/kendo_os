@@ -4,9 +4,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 void main() {
-  group('🚀 【E2E / 統合シナリオ】プラン1: UIレスポンス高速化・局所再描画・非同期バックオフ検証', () {
+  group('[E2E] 【E2E / 統合シナリオ】プラン1: UIレスポンス高速化・局所再描画・非同期バックオフ検証', () {
     test(
-      '1. [他コート更新遮断] 別コートの試合が頻繁に更新されても、操作中コートの singleMatchProvider は一切リビルドされないこと',
+      '[他コート更新遮断] 別コートの試合が頻繁に更新されても、操作中コートの singleMatchProvider は一切リビルドされないこと',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -71,7 +71,7 @@ void main() {
     );
 
     test(
-      '2. [非同期バックオフ & 即時再送] 通信断の指数バックオフ待機中であっても、電波復帰シグナルで即時にキューがフラッシュされること',
+      '[非同期バックオフ & 即時再送] 通信断の指数バックオフ待機中であっても、電波復帰シグナルで即時にキューがフラッシュされること',
       () async {
         // 模擬的な非同期バックオフ管理エンジンの動作検証
         final mockSyncQueue = <String>[];
@@ -139,7 +139,7 @@ void main() {
       },
     );
 
-    test('3. [団体戦グループ局所化] 同一トーナメント内でも、別グループの更新が自グループのセレクターに影響しないこと', () {
+    test('[団体戦グループ局所化] 同一トーナメント内でも、別グループの更新が自グループのセレクターに影響しないこと', () {
       final container = ProviderContainer(
         overrides: [
           matchListProvider.overrideWith(

@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🚀 【Phase 5-1/10】1,000試合メガ大会 メモリヒープ・GCスループット耐久テスト', () {
-    test('1. 1,000試合・5,000スコアイベントの一括生成・集計が300ms未満で高速完了すること', () {
+  group('[Governance] 【Phase 5-1/10】1,000試合メガ大会 メモリヒープ・GCスループット耐久テスト', () {
+    test('1,000試合・5,000スコアイベントの一括生成・集計が300ms未満で高速完了すること', () {
       final baseTime = DateTime(2026, 9, 3, 9, 0, 0);
       final matches = <MatchModel>[];
 

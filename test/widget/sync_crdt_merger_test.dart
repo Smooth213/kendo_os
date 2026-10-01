@@ -8,8 +8,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🛡️ SyncCrdtMerger Unit Tests', () {
-    test('1. sanitizeForSync converts types and keys properly', () {
+  group('[Widget] SyncCrdtMerger 単体テスト', () {
+    test('sanitizeForSync converts types and keys properlyであること', () {
       final input = {
         'redScore': 2.0,
         'matchTimeMinutes': 3,
@@ -22,57 +22,60 @@ void main() {
       expect(output['nested']['whiteScore'], 1);
     });
 
-    test('2. mergeAndRebuild orders events by logicalClock and timestamp', () {
-      final now = DateTime.now();
-      final remoteMatch = MatchModel(
-        id: 'm1',
-        matchType: '個人戦',
-        redName: '山田',
-        whiteName: '佐藤',
-        events: [
-          ScoreEvent(
-            id: 'e1',
-            timestamp: now,
-            logicalClock: 1,
-            side: Side.red,
-            strikeType: StrikeType.men,
+    test(
+      'mergeAndRebuild orders events by logicalClock and timestampであること',
+      () {
+        final now = DateTime.now();
+        final remoteMatch = MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '山田',
+          whiteName: '佐藤',
+          events: [
+            ScoreEvent(
+              id: 'e1',
+              timestamp: now,
+              logicalClock: 1,
+              side: Side.red,
+              strikeType: StrikeType.men,
+            ),
+          ],
+        );
+
+        final localMatch = MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '山田',
+          whiteName: '佐藤',
+          pendingEvents: [
+            ScoreEvent(
+              id: 'e2',
+              timestamp: now.add(const Duration(seconds: 1)),
+              logicalClock: 2,
+              side: Side.white,
+              strikeType: StrikeType.kote,
+            ),
+          ],
+        );
+
+        final merged = SyncCrdtMerger.mergeAndRebuild(
+          remoteMatch: remoteMatch,
+          localMatch: localMatch,
+          rule: const MatchRule(),
+          rebuilder: RebuildMatchFromEventsUseCase(
+            KendoRuleEngine(),
+            SystemTimeSource(),
           ),
-        ],
-      );
+        );
 
-      final localMatch = MatchModel(
-        id: 'm1',
-        matchType: '個人戦',
-        redName: '山田',
-        whiteName: '佐藤',
-        pendingEvents: [
-          ScoreEvent(
-            id: 'e2',
-            timestamp: now.add(const Duration(seconds: 1)),
-            logicalClock: 2,
-            side: Side.white,
-            strikeType: StrikeType.kote,
-          ),
-        ],
-      );
-
-      final merged = SyncCrdtMerger.mergeAndRebuild(
-        remoteMatch: remoteMatch,
-        localMatch: localMatch,
-        rule: const MatchRule(),
-        rebuilder: RebuildMatchFromEventsUseCase(
-          KendoRuleEngine(),
-          SystemTimeSource(),
-        ),
-      );
-
-      expect(merged.events.length, 2);
-      expect(merged.events.first.id, 'e1');
-      expect(merged.events.last.id, 'e2');
-    });
+        expect(merged.events.length, 2);
+        expect(merged.events.first.id, 'e1');
+        expect(merged.events.last.id, 'e2');
+      },
+    );
 
     test(
-      '3. mergeAndRebuildAsync executes in worker and returns properly merged match',
+      'mergeAndRebuildAsync executes in worker and returns properly merged matchであること',
       () async {
         final now = DateTime.now();
         final remoteMatch = MatchModel(

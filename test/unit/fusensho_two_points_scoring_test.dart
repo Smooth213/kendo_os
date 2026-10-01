@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🥋 不戦勝（棄権・相手欠席）時の二本勝ち自動判定・集計検証テスト', () {
+  group('[Unit] 不戦勝（棄権・相手欠席）時の二本勝ち自動判定・集計検証テスト', () {
     late KendoRuleEngine ruleEngine;
     final testUser = const User(
       id: 'admin_user',
@@ -32,7 +32,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 相手欠席（不戦勝）時に自動で二本（◯・◯）が付与され二本勝ちとなること', () {
+    test('相手欠席（不戦勝）時に自動で二本（◯・◯）が付与され二本勝ちとなること', () {
       final now = DateTime(2026, 9, 25, 10, 0, 0);
       final events = [
         ScoreEvent(
@@ -65,7 +65,7 @@ void main() {
       expect(result, MatchResultStatus.redWin);
     });
 
-    test('2. 途中棄権時（MatchRetirementHelper）: 0-0から相手棄権で残りの2本が付与されること', () {
+    test('途中棄権時（MatchRetirementHelper）: 0-0から相手棄権で残りの2本が付与されること', () {
       final addScoreUseCase = AddScoreUseCase(
         ruleEngine,
         PermissionService(),
@@ -97,7 +97,7 @@ void main() {
       expect(result, MatchResultStatus.redWin);
     });
 
-    test('3. 途中棄権時: 白が1本先取していた状態(1-0)で白が負傷棄権した場合、赤に2本付与され2-1で赤の勝ち', () {
+    test('途中棄権時: 白が1本先取していた状態(1-0)で白が負傷棄権した場合、赤に2本付与され2-1で赤の勝ちこと', () {
       final addScoreUseCase = AddScoreUseCase(
         ruleEngine,
         PermissionService(),
@@ -146,7 +146,7 @@ void main() {
       expect(result, MatchResultStatus.redWin);
     });
 
-    test('4. 団体戦での不戦勝試合の勝者数・取得本数集計が正しく積算されること', () {
+    test('団体戦での不戦勝試合の勝者数・取得本数集計が正しく積算されること', () {
       // 団体戦5人制のスコアボード集計
       // 先鋒: 赤不戦勝 (2-0)
       // 次鋒: 白一本勝ち (0-1)

@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_position_slot.dart';
 
 void main() {
-  group('🛡️ OrderSetupPositionSlot Widget Tests', () {
+  group('[Widget] OrderSetupPositionSlot ウィジェットテスト', () {
     testWidgets(
-      'Renders position slot with player name, change button, and handles vacant',
+      'Renders position slot with player name, change button, and handles vacantであること',
       (WidgetTester tester) async {
         bool tapped = false;
         bool vacantTapped = false;

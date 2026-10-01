@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_team_header_row.dart';
 
 void main() {
-  group('🛡️ MatchTeamHeaderRow Widget Tests', () {
-    testWidgets('Renders team names correctly', (WidgetTester tester) async {
+  group('[Widget] MatchTeamHeaderRow ウィジェットテスト', () {
+    testWidgets('Renders team names correctlyであること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -21,7 +23,7 @@ void main() {
       expect(find.text('相手道場'), findsOneWidget);
     });
 
-    testWidgets('Renders fallback label when team name is empty', (
+    testWidgets('Renders fallback label when team name is emptyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

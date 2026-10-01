@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 
 void main() {
   testWidgets(
-    'QuickRosterSwapDialog renders reorderable player list with drag handles',
+    'QuickRosterSwapDialog renders reorderable player list with drag handlesであること',
     (tester) async {
       final teamMatches = [
         const MatchModel(

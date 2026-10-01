@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  group('🛡️ Global Announcement Popup Manager Tests', () {
+  group('[Widget] Global Announcement Popup Manager テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late SharedPreferences prefs;
 
@@ -53,7 +53,7 @@ void main() {
     }
 
     testWidgets(
-      '1. Should show dialog for recent emergency announcement (target: all)',
+      'Should show dialog for recent emergency announcement (target: all)こと',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -105,7 +105,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Should NOT show dialog if notifyOnEmergency settings is disabled',
+      'Should NOT show dialog if notifyOnEmergency settings is disabledであること',
       (WidgetTester tester) async {
         // Set settings to disable notifyOnEmergency in SharedPreferences
         await prefs.setString(
@@ -150,7 +150,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Should NOT show dialog for announcements older than 30 minutes',
+      'Should NOT show dialog for announcements older than 30 minutesであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -188,7 +188,7 @@ void main() {
     );
 
     testWidgets(
-      '4. Staff target announcement: Should show in staff room, but skip in non-staff room',
+      'Staff target announcement: Should show in staff room, but skip in non-staff roomであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -245,7 +245,7 @@ void main() {
     );
 
     testWidgets(
-      '5. Should NOT show dialog for announcements sent by the user themselves',
+      'Should NOT show dialog for announcements sent by the user themselvesであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [

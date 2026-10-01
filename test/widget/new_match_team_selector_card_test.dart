@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/domain/entities/organization.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ NewMatchTeamSelectorCard Widget Tests', () {
-    testWidgets('Renders organization dropdown and triggers selection', (
+  group('[Widget] NewMatchTeamSelectorCard ウィジェットテスト', () {
+    testWidgets('Renders organization dropdown and triggers selectionであること', (
       WidgetTester tester,
     ) async {
       Organization? selectedOrg;

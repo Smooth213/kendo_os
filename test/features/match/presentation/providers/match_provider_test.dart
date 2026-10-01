@@ -171,7 +171,7 @@ void main() {
     container.dispose();
   });
 
-  group('MatchProvider - Step 3-1: 初期状態の検証', () {
+  group('[Unit] MatchProvider - Step 3-1: 初期状態の検証', () {
     test('currentMatchIdProvider の初期値は null であること', () {
       final matchId = container.read(currentMatchIdProvider);
       expect(matchId, isNull);
@@ -368,7 +368,7 @@ void main() {
       ).called(1);
     });
 
-    test('addIppon を呼び出した際、DB保存(saveMatch)が1回しか呼ばれないこと（二重保存の防止）', () async {
+    test('【二重保存の防止】addIppon を呼び出した際、DB保存(saveMatch)が1回しか呼ばれないこと', () async {
       final match = TestMatchFactory.createIndividualMatch(
         id: 'match-add-ippon',
       );

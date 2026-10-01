@@ -21,8 +21,8 @@ class FakeTournamentRepository extends TournamentRepository {
 }
 
 void main() {
-  group('🥋 CategoryRulesScreen UI統合テスト要塞', () {
-    testWidgets('1. 同一カテゴリ（例: 小学生の部）で団体戦と個人戦の2つのルールが共存表示されること', (tester) async {
+  group('[Widget] CategoryRulesScreen UI統合テスト要塞', () {
+    testWidgets('同一カテゴリ（例: 小学生の部）で団体戦と個人戦の2つのルールが共存表示されること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -82,7 +82,7 @@ void main() {
       expect(find.text('👥 団体戦'), findsNWidgets(2));
     });
 
-    testWidgets('2. 新規部門名を入力して追加ボタンを押すと、編集画面（ルールの編集）に遷移すること', (tester) async {
+    testWidgets('新規部門名を入力して追加ボタンを押すと、編集画面（ルールの編集）に遷移すること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -128,7 +128,7 @@ void main() {
       expect(find.text('ルールの編集'), findsOneWidget);
     });
 
-    testWidgets('3. 定番の部門ショートカットチップをタップすると、新規ルールが作成されて編集画面へ遷移すること', (
+    testWidgets('定番の部門ショートカットチップをタップすると、新規ルールが作成されて編集画面へ遷移すること', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -172,7 +172,7 @@ void main() {
       expect(find.text('ルールの編集'), findsOneWidget);
     });
 
-    testWidgets('4. ルールカードをタップするとルール詳細ボトムシートが表示されること', (tester) async {
+    testWidgets('ルールカードをタップするとルール詳細ボトムシートが表示されること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

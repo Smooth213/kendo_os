@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 void main() {
-  group('🛡️ Bunaiksen Web Stream Loop Prevention Tests', () {
+  group('[Unit] Bunaiksen Web Stream Loop Prevention テスト', () {
     late MockLocalMatchRepository mockLocalRepo;
 
     setUp(() {
@@ -25,7 +25,7 @@ void main() {
     });
 
     test(
-      '1. matchListByTournamentProvider の Web環境下単方向直列ロード ＆ 無限ループ防止検証',
+      'matchListByTournamentProvider の Web環境下単方向直列ロード ＆ 無限ループ防止が正しく検証されること',
       () async {
         final fakeFirestore = FakeFirebaseFirestore();
         final targetDateId = 'bunaiksen_20260621';

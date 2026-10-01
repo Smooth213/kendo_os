@@ -197,9 +197,9 @@ void main() {
     );
   }
 
-  group('🥋 PDFプログラムビューア 直交ジェスチャー＆ペン完全一体化 堅牢性保護テスト', () {
+  group('[Widget] PDFプログラムビューア 直交ジェスチャー＆ペン完全一体化 堅牢性保護テスト', () {
     testWidgets(
-      '1. 縦スクロール（Axis.vertical）と横スワイプ（Axis.horizontal）が直交して正しく配備されていること',
+      '縦スクロール（Axis.vertical）と横スワイプ（Axis.horizontal）が直交して正しく配備されていること',
       (tester) async {
         final pdfProgram = ProgramModel(
           id: 'pdf-prog-1',
@@ -258,49 +258,47 @@ void main() {
       },
     );
 
-    testWidgets(
-      '2. Safari 4096px メモリ制限回避: PDF各ページのキャンバスサイズが 1414px 安全固定されていること',
-      (tester) async {
-        final pdfProgram = ProgramModel(
-          id: 'pdf-prog-large',
-          tournamentId: 'tourney-test',
-          title: '長大プログラムPDF',
-          fileUrl: 'https://example.com/large_program.pdf',
-          fileType: 'pdf',
-          pageCount: 3,
-          createdAt: DateTime.now(),
-        );
+    testWidgets('Safari 4096px メモリ制限回避: PDF各ページのキャンバスサイズが 1414px 安全固定されていること', (
+      tester,
+    ) async {
+      final pdfProgram = ProgramModel(
+        id: 'pdf-prog-large',
+        tournamentId: 'tourney-test',
+        title: '長大プログラムPDF',
+        fileUrl: 'https://example.com/large_program.pdf',
+        fileType: 'pdf',
+        pageCount: 3,
+        createdAt: DateTime.now(),
+      );
 
-        when(
-          () => mockProgramRepo.watchPrograms(any()),
-        ).thenAnswer((_) => Stream.value([pdfProgram]));
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([pdfProgram]));
 
-        await tester.pumpWidget(createTestViewer([pdfProgram]));
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(createTestViewer([pdfProgram]));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
-        // ProgramViewerPdfBody 内のキャンバス SizedBox を検証
-        final sizedBoxFinder = find.descendant(
-          of: find.byType(ProgramViewerPdfBody),
-          matching: find.byWidgetPredicate(
-            (widget) =>
-                widget is SizedBox &&
-                widget.width == 1000.0 &&
-                widget.height == 1414.0,
-          ),
-        );
-        expect(
-          sizedBoxFinder,
-          findsOneWidget,
-          reason:
-              'Safariの4096pxメモリ上限を超えないよう、各ページは高さ1414pxの安全サイズで固定されていなければなりません',
-        );
-        await tester.pump(const Duration(milliseconds: 500));
-      },
-    );
+      // ProgramViewerPdfBody 内のキャンバス SizedBox を検証
+      final sizedBoxFinder = find.descendant(
+        of: find.byType(ProgramViewerPdfBody),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is SizedBox &&
+              widget.width == 1000.0 &&
+              widget.height == 1414.0,
+        ),
+      );
+      expect(
+        sizedBoxFinder,
+        findsOneWidget,
+        reason: 'Safariの4096pxメモリ上限を超えないよう、各ページは高さ1414pxの安全サイズで固定されていなければなりません',
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+    });
 
     testWidgets(
-      '3. ペン書き込みモード時: 縦・横両方のスワイプ物理が NeverScrollableScrollPhysics にロックされること',
+      'ペン書き込みモード時: 縦・横両方のスワイプ物理が NeverScrollableScrollPhysics にロックされること',
       (tester) async {
         final pdfProgram = ProgramModel(
           id: 'pdf-prog-lock',
@@ -357,7 +355,7 @@ void main() {
       },
     );
 
-    testWidgets('4. ペンと用紙の完全一体化: 用紙と手書きオーバーレイが同一の Stack 内で同居していること', (
+    testWidgets('ペンと用紙の完全一体化: 用紙と手書きオーバーレイが同一の Stack 内で同居していること', (
       tester,
     ) async {
       final pdfProgram = ProgramModel(
@@ -402,7 +400,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('5. ページごとのペン分離: 各ページの手書きペンがページ番号（pageIndex）ごとに独立管理されること', (
+    testWidgets('ページごとのペン分離: 各ページの手書きペンがページ番号（pageIndex）ごとに独立管理されること', (
       tester,
     ) async {
       final pdfProgram = ProgramModel(

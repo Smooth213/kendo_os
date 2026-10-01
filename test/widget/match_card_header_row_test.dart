@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_card_header_row.dart';
 
 void main() {
-  group('🛡️ MatchCardHeaderRow Widget Tests', () {
-    testWidgets('Renders action buttons and status badge with spacer', (
+  group('[Widget] MatchCardHeaderRow ウィジェットテスト', () {
+    testWidgets('Renders action buttons and status badge with spacerであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -22,7 +22,7 @@ void main() {
       expect(find.text('STATUS'), findsOneWidget);
     });
 
-    testWidgets('Renders leading widget when provided', (
+    testWidgets('Renders leading widget when providedであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

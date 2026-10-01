@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_simple_scene_rule_form.dart';
 
 void main() {
-  group('🛡️ CategorySimpleSceneRuleForm Widget Tests', () {
-    testWidgets('Renders simple scene rule form and handles type toggle', (
+  group('[Widget] CategorySimpleSceneRuleForm ウィジェットテスト', () {
+    testWidgets('Renders simple scene rule form and handles type toggleであること', (
       WidgetTester tester,
     ) async {
       double time = 2.0;

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/utils/promotion_display_helper.dart';
 
 void main() {
-  group('📱 【Phase 12: 120Hz ProMotion ディスプレイ完全同期】ガバナンステスト', () {
+  group('[Governance] 【Phase 12: 120Hz ProMotion ディスプレイ完全同期】ガバナンステスト', () {
     test('フレームバジェット（許容時間）がリフレッシュレートに対して正確に計算されること', () {
       // 120Hz: 1000 / 120 = 8.333... ms
       const rate120 = 120.0;
@@ -37,7 +37,7 @@ void main() {
       expect(budget, lessThanOrEqualTo(16.67));
     });
 
-    test('最適なアニメーション時間の算出とスクロール物理の取得', () {
+    test('最適なアニメーション時間の算出とスクロール物理の取得こと', () {
       const baseDuration = Duration(milliseconds: 300);
       final optimal = PromotionDisplayHelper.optimalDuration(
         baseDuration: baseDuration,

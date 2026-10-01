@@ -50,9 +50,9 @@ void main() {
     when(() => mockMatchAppService.saveMatch(any())).thenAnswer((_) async {});
   });
 
-  group('🛡️ 申し合わせ・錬成会「次の申し合わせ・錬成試合を追加設定」ボタン機能性検証テスト', () {
+  group('[Widget] 申し合わせ・錬成会「次の申し合わせ・錬成試合を追加設定」ボタン機能性検証テスト', () {
     testWidgets(
-      '1. 申し合わせ試合終了ダイアログ内の「⚔️ 次の申し合わせ・錬成試合を追加設定」ボタンを押すと、404エラーにならず選手選択ボトムシートが正しく開くこと',
+      '申し合わせ試合終了ダイアログ内の「 次の申し合わせ・錬成試合を追加設定」ボタンを押すと、404エラーにならず選手選択ボトムシートが正しく開くこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1366, 1024);
         tester.view.devicePixelRatio = 1.0;

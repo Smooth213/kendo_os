@@ -95,8 +95,8 @@ void main() {
     );
   }
 
-  group('📸 【Golden】P2Pローカル配信QR ＆ BANDグループ共有シート ピクセル視覚整合性テスト', () {
-    testWidgets('1. P2pBroadcastDialog: 通常スマホ幅(390px) ライトモード レンダリング検証', (
+  group('[Golden] 【Golden】P2Pローカル配信QR ＆ BANDグループ共有シート ピクセル視覚整合性テスト', () {
+    testWidgets('P2pBroadcastDialog: 通常スマホ幅(390px) ライトモード レンダリングが正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -123,7 +123,7 @@ void main() {
     });
 
     testWidgets(
-      '2. P2pBroadcastDialog: 極小端末(iPhone SE / 375x667) & ダークモード ピクセル整合性検証',
+      'P2pBroadcastDialog: 極小端末(iPhone SE / 375x667) & ダークモード ピクセル整合性が正しく検証されること',
       (tester) async {
         tester.view.physicalSize = const Size(375, 667);
         tester.view.devicePixelRatio = 1.0;
@@ -148,7 +148,7 @@ void main() {
     );
 
     testWidgets(
-      '3. P2pBroadcastDialog: 特大文字(textScaler 2.0x) 下でのレイアウト崩れ・オーバーフローゼロ検証',
+      'P2pBroadcastDialog: 特大文字(textScaler 2.0x) 下でのレイアウト崩れ・オーバーフローゼロが正しく検証されること',
       (tester) async {
         tester.view.physicalSize = const Size(390, 844);
         tester.view.devicePixelRatio = 1.0;
@@ -172,41 +172,42 @@ void main() {
       },
     );
 
-    testWidgets('4. BandGroupSelectSheet: 登録グループ一覧・通常幅(390px) ライトモード ピクセル検証', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'BandGroupSelectSheet: 登録グループ一覧・通常幅(390px) ライトモード ピクセルが正しく検証されること',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        buildWrapper(
-          child: const BandGroupSelectSheet(
-            formattedText: '【対戦カード速報】\n先鋒戦: 選手赤 vs 選手白',
-          ),
-          isDark: false,
-          overrides: [
-            bandGroupsStreamProvider.overrideWith(
-              (ref) => Stream.value(dummyBandGroups),
+        await tester.pumpWidget(
+          buildWrapper(
+            child: const BandGroupSelectSheet(
+              formattedText: '【対戦カード速報】\n先鋒戦: 選手赤 vs 選手白',
             ),
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
+            isDark: false,
+            overrides: [
+              bandGroupsStreamProvider.overrideWith(
+                (ref) => Stream.value(dummyBandGroups),
+              ),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('BANDでLIVE配信・共有'), findsOneWidget);
-      expect(find.text('誠道館 父母会LIVE'), findsOneWidget);
-      expect(find.text('中体連 剣道部LIVE配信'), findsOneWidget);
-      expect(find.text('コピーのみで閉じる'), findsOneWidget);
-      expect(find.text('Bandを追加'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.text('BANDでLIVE配信・共有'), findsOneWidget);
+        expect(find.text('誠道館 父母会LIVE'), findsOneWidget);
+        expect(find.text('中体連 剣道部LIVE配信'), findsOneWidget);
+        expect(find.text('コピーのみで閉じる'), findsOneWidget);
+        expect(find.text('Bandを追加'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     testWidgets(
-      '5. BandGroupSelectSheet: 極小端末(375x667) & 特大文字(textScaler 2.0x) オーバーフローゼロ検証',
+      'BandGroupSelectSheet: 極小端末(375x667) & 特大文字(textScaler 2.0x) オーバーフローゼロが正しく検証されること',
       (tester) async {
         tester.view.physicalSize = const Size(375, 667);
         tester.view.devicePixelRatio = 1.0;

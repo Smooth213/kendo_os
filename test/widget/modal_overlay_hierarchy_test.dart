@@ -17,7 +17,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  testWidgets('SettingsScreen を内部 Navigator 化した際のサブシート・ダイアログ最前面動作検証', (
+  testWidgets('SettingsScreen を内部 Navigator 化した際のサブシート・ダイアログ最前面動作が正しく検証されること', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(800, 1200);

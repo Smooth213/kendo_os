@@ -10,8 +10,8 @@ import 'package:kendo_os/shared/widgets/match_tables/components/score_table_cell
 import 'package:pdf/widgets.dart' as pw;
 
 void main() {
-  group('🥋 反則マーク「△」の配置位置・大丸除外保証テスト', () {
-    group('1. 試合結果一覧・公式記録 (KendoScoreBox / ScoreTableCell)', () {
+  group('[Widget] 反則マーク「△」の配置位置・大丸除外保証テスト', () {
+    group('試合結果一覧・公式記録 (KendoScoreBox / ScoreTableCell)', () {
       testWidgets('反則△はスコアの左下に小さく表示され、大丸（勝者丸）の完全な外部に位置すること', (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
@@ -149,7 +149,7 @@ void main() {
       });
     });
 
-    group('2. 団体戦スコアボード（運営画面）', () {
+    group('団体戦スコアボード（運営画面）', () {
       testWidgets(
         'TeamScoreboardTableBuilder: 反則△はスコアの左下に小さく表示され、大丸（勝者丸）の外側にあること',
         (tester) async {
@@ -217,7 +217,7 @@ void main() {
       );
     });
 
-    group('3. 団体戦スコアボード（観戦画面）', () {
+    group('団体戦スコアボード（観戦画面）', () {
       testWidgets(
         'ViewerTeamScoreboardTableBuilder: 反則△はスコアの左下に小さく表示され、大丸（勝者丸）の外側にあること',
         (tester) async {
@@ -268,7 +268,7 @@ void main() {
       );
     });
 
-    group('4. PDF出力（団体戦・個人戦共通セル）', () {
+    group('PDF出力（団体戦・個人戦共通セル）', () {
       test('PdfTeamTableCellRenderer: 反則△はスコアの左下に小さく配置され、大丸の外側にあること', () {
         final font = pw.Font.helvetica();
         final widget = PdfTeamTableCellRenderer.buildPointBox(

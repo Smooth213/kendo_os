@@ -11,8 +11,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/safe
 import 'package:pdf/widgets.dart' as pw;
 
 void main() {
-  group('🥋 【試合記録画面 & PDF】ヘッダー先頭への【錬成】・【申合せ】バッジ／テキスト表示完全保証テスト', () {
-    testWidgets('1. 公式記録画面の団体戦スコアテーブルヘッダー先頭に色分けされた【錬成】バッジが表示されること', (
+  group('[Widget] 【試合記録画面 & PDF】ヘッダー先頭への【錬成】・【申合せ】バッジ／テキスト表示完全保証テスト', () {
+    testWidgets('公式記録画面の団体戦スコアテーブルヘッダー先頭に色分けされた【錬成】バッジが表示されること', (
       tester,
     ) async {
       const renseiMatches = [
@@ -43,9 +43,7 @@ void main() {
       expect(find.text('【団体戦】 道上剣友会 vs 相手02'), findsOneWidget);
     });
 
-    testWidgets('2. 公式記録画面の個人戦リストヘッダー先頭に色分けされた【申合せ】バッジが表示されること', (
-      tester,
-    ) async {
+    testWidgets('公式記録画面の個人戦リストヘッダー先頭に色分けされた【申合せ】バッジが表示されること', (tester) async {
       const moushiawaseMatches = [
         MatchModel(
           id: 'indiv_m1',
@@ -85,7 +83,7 @@ void main() {
       expect(find.text('【個人戦】 小学生個人の部'), findsOneWidget);
     });
 
-    testWidgets('3. 公式記録画面の勝ち抜き戦カードヘッダー先頭に【錬成】バッジが表示されること', (tester) async {
+    testWidgets('公式記録画面の勝ち抜き戦カードヘッダー先頭に【錬成】バッジが表示されること', (tester) async {
       const kachinukiMatches = [
         MatchModel(
           id: 'kachinuki_m1',
@@ -122,7 +120,7 @@ void main() {
       expect(find.text('【勝ち抜き戦】 道上剣友会 vs 相手05'), findsOneWidget);
     });
 
-    test('4. PDF出力（団体戦・個人戦）のタイトルにシンプルな【錬成】・【申合せ】が付与されること', () {
+    test('PDF出力（団体戦・個人戦）のタイトルにシンプルな【錬成】・【申合せ】が付与されること', () {
       final font = pw.Font.courier();
       final fontBold = pw.Font.courierBold();
 

@@ -6,8 +6,8 @@ import 'package:kendo_os/features/pdf/services/pdf_font_loader.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📦 [Phase 6 Performance Governance] フォント・アセット最適化テスト', () {
-    test('1. PdfFontLoader がメモ化キャッシュにより2回目以降を即座（同一インスタンス）に返却すること', () async {
+  group('[Governance] [Phase 6 Performance Governance] フォント・アセット最適化テスト', () {
+    test('PdfFontLoader がメモ化キャッシュにより2回目以降を即座（同一インスタンス）に返却すること', () async {
       PdfFontLoader.clearCache();
 
       final firstLoad = await PdfFontLoader.loadFonts();
@@ -20,7 +20,7 @@ void main() {
       expect(identical(firstLoad, secondLoad), isTrue);
     });
 
-    test('2. PdfFontLoader.clearCache でキャッシュが安全に破棄され再生成できること', () async {
+    test('PdfFontLoader.clearCache でキャッシュが安全に破棄され再生成できること', () async {
       final firstLoad = await PdfFontLoader.loadFonts();
 
       PdfFontLoader.clearCache();
@@ -31,15 +31,12 @@ void main() {
       expect(identical(firstLoad, reloaded), isFalse);
     });
 
-    test(
-      '3. AppStartup.configureFontOptimization が GoogleFonts の設定を制御できること',
-      () {
-        AppStartup.configureFontOptimization(allowRuntimeFetching: false);
-        expect(GoogleFonts.config.allowRuntimeFetching, isFalse);
+    test('AppStartup.configureFontOptimization が GoogleFonts の設定を制御できること', () {
+      AppStartup.configureFontOptimization(allowRuntimeFetching: false);
+      expect(GoogleFonts.config.allowRuntimeFetching, isFalse);
 
-        AppStartup.configureFontOptimization(allowRuntimeFetching: true);
-        expect(GoogleFonts.config.allowRuntimeFetching, isTrue);
-      },
-    );
+      AppStartup.configureFontOptimization(allowRuntimeFetching: true);
+      expect(GoogleFonts.config.allowRuntimeFetching, isTrue);
+    });
   });
 }

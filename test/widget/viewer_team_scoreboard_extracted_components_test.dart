@@ -7,8 +7,8 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ ViewerTeamScoreboard Extracted Components Tests', () {
-    testWidgets('1. ViewerTeamScoreboardTableBuilder builds rows correctly', (
+  group('[Widget] ViewerTeamScoreboard Extracted Components テスト', () {
+    testWidgets('ViewerTeamScoreboardTableBuilder builds rows correctlyであること', (
       tester,
     ) async {
       final headerRow = ViewerTeamScoreboardTableBuilder.buildHeaderRow(
@@ -42,7 +42,7 @@ void main() {
       expect(find.text('1 / 1'), findsOneWidget);
     });
 
-    testWidgets('2. 観戦側 1本勝ちの公式記録表記テスト（左上に丸囲み技マーク＋全体勝者円）', (tester) async {
+    testWidgets('観戦側 1本勝ちの公式記録表記テスト（左上に丸囲み技マーク＋全体勝者円）こと', (tester) async {
       final matchRow = ViewerTeamScoreboardTableBuilder.buildMatchRow(
         const MatchListProjection(
           id: 'm1',

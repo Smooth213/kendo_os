@@ -18,7 +18,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('League Representative Match Rules Integration & Domain Tests', () {
+  group('[Widget] League Representative Match Rules Integration & Domain テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {
@@ -26,7 +26,7 @@ void main() {
     });
 
     test(
-      '1. Domain Layer - Timer resolution count-up / count-down for representative matches',
+      'Domain Layer - Timer resolution count-up / count-down for representative matchesであること',
       () {
         final now = DateTime(2026, 7, 1, 12, 0, 0);
 
@@ -66,7 +66,7 @@ void main() {
     );
 
     testWidgets(
-      '2. UI Layer - setup_match_format_screen renders detailed representative settings under league mode',
+      'UI Layer - setup_match_format_screen renders detailed representative settings under league modeであること',
       (WidgetTester tester) async {
         // Set large size to build all lazy ListView items
         tester.view.physicalSize = const Size(1200, 1600);

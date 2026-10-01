@@ -9,8 +9,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_timer_section.dart';
 
 void main() {
-  group('MatchScreen Extracted Components Tests', () {
-    testWidgets('renders MatchTimerSection correctly', (tester) async {
+  group('[Widget] MatchScreen Extracted Components テスト', () {
+    testWidgets('renders MatchTimerSection correctlyであること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

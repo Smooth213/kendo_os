@@ -92,93 +92,91 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  group('🥋 大会情報・オーダー取り込み機能 総合テスト', () {
-    testWidgets(
-      '1. ShareImportTeamSection: チーム名・カテゴリ・オーダー選手が名簿情報と合致して描画されること',
-      (tester) async {
-        setupDisplaySize(tester);
+  group('[Widget] 大会情報・オーダー取り込み機能 総合テスト', () {
+    testWidgets('ShareImportTeamSection: チーム名・カテゴリ・オーダー選手が名簿情報と合致して描画されること', (
+      tester,
+    ) async {
+      setupDisplaySize(tester);
 
-        await tester.pumpWidget(
-          buildTestHost(
-            child: ShareImportTeamSection(
-              team: sampleTeamOrder,
-              accentColor: AppKendoColors.indigo,
-              textColor: AppKendoColors.black,
-              subTextColor: AppKendoColors.grey,
-              roster: sampleRoster,
-            ),
+      await tester.pumpWidget(
+        buildTestHost(
+          child: ShareImportTeamSection(
+            team: sampleTeamOrder,
+            accentColor: AppKendoColors.indigo,
+            textColor: AppKendoColors.black,
+            subTextColor: AppKendoColors.grey,
+            roster: sampleRoster,
           ),
-        );
+        ),
+      );
 
-        // チーム名とカテゴリ
-        expect(find.text('低学年A'), findsOneWidget);
-        expect(find.text('小学生低学年の部'), findsOneWidget);
+      // チーム名とカテゴリ
+      expect(find.text('低学年A'), findsOneWidget);
+      expect(find.text('小学生低学年の部'), findsOneWidget);
 
-        // 各ポジション名と選手名
-        expect(find.text('先鋒'), findsOneWidget);
-        expect(find.text('皿田 脩人'), findsOneWidget);
-        expect(find.text('中堅'), findsOneWidget);
-        expect(find.text('塚本 大道'), findsOneWidget);
-        expect(find.text('大将'), findsOneWidget);
-        expect(find.text('久安 智也'), findsOneWidget);
+      // 各ポジション名と選手名
+      expect(find.text('先鋒'), findsOneWidget);
+      expect(find.text('皿田 脩人'), findsOneWidget);
+      expect(find.text('中堅'), findsOneWidget);
+      expect(find.text('塚本 大道'), findsOneWidget);
+      expect(find.text('大将'), findsOneWidget);
+      expect(find.text('久安 智也'), findsOneWidget);
 
-        // 名簿マッチングで取得された学年情報（小学3年、小学4年）
-        expect(find.text('(小学3年)'), findsOneWidget);
-        expect(find.text('(小学4年)'), findsNWidgets(2));
-      },
-    );
+      // 名簿マッチングで取得された学年情報（小学3年、小学4年）
+      expect(find.text('(小学3年)'), findsOneWidget);
+      expect(find.text('(小学4年)'), findsNWidgets(2));
+    });
 
-    testWidgets(
-      '2. ShareImportTeamSection: チーム名およびカテゴリのタップで編集ボトムシートが起動し更新されること',
-      (tester) async {
-        setupDisplaySize(tester);
+    testWidgets('ShareImportTeamSection: チーム名およびカテゴリのタップで編集ボトムシートが起動し更新されること', (
+      tester,
+    ) async {
+      setupDisplaySize(tester);
 
-        String? updatedTeamName;
-        String? updatedCategory;
+      String? updatedTeamName;
+      String? updatedCategory;
 
-        await tester.pumpWidget(
-          buildTestHost(
-            child: ShareImportTeamSection(
-              team: sampleTeamOrder,
-              accentColor: AppKendoColors.indigo,
-              textColor: AppKendoColors.black,
-              subTextColor: AppKendoColors.grey,
-              roster: sampleRoster,
-              onTeamNameUpdated: (val) => updatedTeamName = val,
-              onCategoryUpdated: (val) => updatedCategory = val,
-            ),
+      await tester.pumpWidget(
+        buildTestHost(
+          child: ShareImportTeamSection(
+            team: sampleTeamOrder,
+            accentColor: AppKendoColors.indigo,
+            textColor: AppKendoColors.black,
+            subTextColor: AppKendoColors.grey,
+            roster: sampleRoster,
+            onTeamNameUpdated: (val) => updatedTeamName = val,
+            onCategoryUpdated: (val) => updatedCategory = val,
           ),
-        );
+        ),
+      );
 
-        // チーム名タップ
-        await tester.tap(find.text('低学年A'));
-        await tester.pumpAndSettle();
+      // チーム名タップ
+      await tester.tap(find.text('低学年A'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('チーム名の変更'), findsOneWidget);
-        final field = find.widgetWithText(TextField, '低学年A');
-        await tester.enterText(field, '低学年選抜');
-        final saveBtn = find.text('変更を保存');
-        await tester.ensureVisible(saveBtn);
-        await tester.tap(saveBtn);
-        await tester.pumpAndSettle();
+      expect(find.text('チーム名の変更'), findsOneWidget);
+      final field = find.widgetWithText(TextField, '低学年A');
+      await tester.enterText(field, '低学年選抜');
+      final saveBtn = find.text('変更を保存');
+      await tester.ensureVisible(saveBtn);
+      await tester.tap(saveBtn);
+      await tester.pumpAndSettle();
 
-        expect(updatedTeamName, equals('低学年選抜'));
+      expect(updatedTeamName, equals('低学年選抜'));
 
-        // カテゴリタップ
-        await tester.tap(find.text('小学生低学年の部'));
-        await tester.pumpAndSettle();
+      // カテゴリタップ
+      await tester.tap(find.text('小学生低学年の部'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('「低学年A」のカテゴリ（部門）'), findsOneWidget);
-        // 「小学生高学年の部」を選択
-        await tester.tap(find.text('小学生高学年の部'));
-        await tester.pumpAndSettle();
+      expect(find.text('「低学年A」のカテゴリ（部門）'), findsOneWidget);
+      // 「小学生高学年の部」を選択
+      await tester.tap(find.text('小学生高学年の部'));
+      await tester.pumpAndSettle();
 
-        expect(updatedCategory, equals('小学生高学年の部'));
-      },
-    );
+      expect(updatedCategory, equals('小学生高学年の部'));
+    });
 
     testWidgets(
-      '3. EditParsedMemberDialog: 選手編集ボトムシートでポジション変更・名簿選択・登録済みマークが表示されること',
+      'EditParsedMemberDialog: 選手編集ボトムシートでポジション変更・名簿選択・登録済みマークが表示されること',
       (tester) async {
         setupDisplaySize(tester);
 
@@ -247,7 +245,7 @@ void main() {
     );
 
     testWidgets(
-      '4. CreateTournamentImportTeamsCard: 自動登録トグルとチームオーダー一覧の連携動作テスト',
+      'CreateTournamentImportTeamsCard: 自動登録トグルとチームオーダー一覧の連携動作が正常に機能すること',
       (tester) async {
         setupDisplaySize(tester);
 
@@ -282,7 +280,7 @@ void main() {
       },
     );
 
-    testWidgets('5. RegisteredTeamCard: 登録済みチームカードのオーダー描画と編集アクション発火テスト', (
+    testWidgets('RegisteredTeamCard: 登録済みチームカードのオーダー描画と編集アクション発火が正常に機能すること', (
       tester,
     ) async {
       setupDisplaySize(tester);

@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_full_manual_tab_view.dart';
 
 void main() {
-  group('🛡️ ManualFullManualTabView Widget Tests', () {
-    testWidgets('Renders download card when not downloaded', (tester) async {
+  group('[Widget] ManualFullManualTabView ウィジェットテスト', () {
+    testWidgets('Renders download card when not downloadedであること', (
+      tester,
+    ) async {
       bool downloadStarted = false;
 
       await tester.pumpWidget(
@@ -39,40 +41,41 @@ void main() {
       expect(downloadStarted, isTrue);
     });
 
-    testWidgets('Renders downloading indicator when isDownloading is true', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ManualFullManualTabView(
-              buildIndexPane: const SizedBox(),
-              markdownPane: const SizedBox(),
-              isPdfDownloaded: false,
-              isDownloading: true,
-              downloadProgress: 0.5,
-              forceMarkdownFallback: false,
-              localPdfFile: null,
-              pdfViewerController: null,
-              fullManualFileName: 'test.pdf',
-              onStartDownload: () {},
-              onEnableMarkdownFallback: () {},
-              onDisableMarkdownFallback: () {},
-              onOpenPdfInBrowser: () {},
-              onShareWebUrl: () {},
-              onPrintPdf: () {},
-              onSharePdf: () {},
+    testWidgets(
+      'Renders downloading indicator when isDownloading is trueであること',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ManualFullManualTabView(
+                buildIndexPane: const SizedBox(),
+                markdownPane: const SizedBox(),
+                isPdfDownloaded: false,
+                isDownloading: true,
+                downloadProgress: 0.5,
+                forceMarkdownFallback: false,
+                localPdfFile: null,
+                pdfViewerController: null,
+                fullManualFileName: 'test.pdf',
+                onStartDownload: () {},
+                onEnableMarkdownFallback: () {},
+                onDisableMarkdownFallback: () {},
+                onOpenPdfInBrowser: () {},
+                onShareWebUrl: () {},
+                onPrintPdf: () {},
+                onSharePdf: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('マニュアルをロード中...'), findsOneWidget);
-      expect(find.text('50% 完了'), findsOneWidget);
-    });
+        expect(find.text('マニュアルをロード中...'), findsOneWidget);
+        expect(find.text('50% 完了'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-      'Renders markdown fallback header when forceMarkdownFallback is true',
+      'Renders markdown fallback header when forceMarkdownFallback is trueであること',
       (tester) async {
         bool fallbackDisabled = false;
 

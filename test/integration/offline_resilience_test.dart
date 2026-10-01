@@ -111,11 +111,11 @@ class FakeFirebaseCrashlyticsPlatform extends Fake
 }
 
 void main() {
-  group('🛡️ Offline Resilience & Data Persistence Integration Tests', () {
+  group('[Widget] Offline Resilience & Data Persistence 統合テスト', () {
     // ==========================================
     // 1. UI Test: オフラインバナーの即時点火・消失の完全性 (testWidgetsを使用)
     // ==========================================
-    testWidgets('UI Test: オフライン警告バナーの即時点火・消失の完全性検証', (
+    testWidgets('UI Test: オフライン警告バナーの即時点火・消失の完全性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       final connectivityStreamController = StreamController<bool>();
@@ -205,7 +205,7 @@ void main() {
     // ==========================================
     // 2. Data Persistence Test: Isar保存確約と緊急バックアップ (通常のtestを使用しハングを根治)
     // ==========================================
-    group('Data Persistence Tests', () {
+    group('Data Persistence テスト', () {
       TestIsarContext? isarContext;
       late Isar isar;
       late LocalMatchRepository repository;
@@ -248,7 +248,7 @@ void main() {
         }
       });
 
-      test('Isar保存確約テスト（正常系）: オフライン保存されPending状態としてDB内に存在する', () async {
+      test('Isar保存確約テスト（正常系）: オフライン保存されPending状態としてDB内に存在すること', () async {
         final match = const MatchModel(
           id: 'test_persistence_success_1',
           tournamentId: 'test_tournament_1',
@@ -277,7 +277,7 @@ void main() {
       });
 
       test(
-        '緊急JSONバックアップ生成テスト（異常系）: DB保存失敗時に緊急JSONバックアップファイルが物理ディスク上に生成される',
+        '緊急JSONバックアップ生成テスト（異常系）: DB保存失敗時に緊急JSONバックアップファイルが物理ディスク上に生成されること',
         () async {
           final match = const MatchModel(
             id: 'test_persistence_failure_1',

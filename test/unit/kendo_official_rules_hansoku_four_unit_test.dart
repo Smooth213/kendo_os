@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🥋 【Phase 1-1/10】全剣連規則第34条 反則4回相手二本勝ち・即座試合終了境界値テスト', () {
+  group('[Unit] 【Phase 1-1/10】全剣連規則第34条 反則4回相手二本勝ち・即座試合終了境界値テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm1',
@@ -22,7 +22,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 反則1回目・2回目（相手に1本目加点）・3回目・4回目（相手に2本目加点）の判定境界', () {
+    test('反則1回目・2回目（相手に1本目加点）・3回目・4回目（相手に2本目加点）の判定境界こと', () {
       // 1回目反則
       expect(ruleEngine.isHansokuIppon(1), isFalse);
 
@@ -36,7 +36,7 @@ void main() {
       expect(ruleEngine.isHansokuIppon(4), isTrue);
     });
 
-    test('2. 赤の反則4回連続発生による白の「反」「反」二本勝ちと即座試合終了の検証', () {
+    test('赤の反則4回連続発生による白の「反」「反」二本勝ちと即座試合終了が正しく検証できること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
 
       // 赤に反則を4回連続で付与

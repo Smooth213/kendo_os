@@ -11,7 +11,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import '../helpers/event_factory.dart';
 
 void main() {
-  group('🥋 【E2E】チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト', () {
+  group('[E2E] 【E2E】チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト', () {
     final liveEvents = [kote(Side.red), men(Side.white)];
 
     final comprehensiveMatches = [
@@ -98,142 +98,143 @@ void main() {
       ),
     ];
 
-    testWidgets('【総合E2Eシナリオ】個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程検証', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    testWidgets(
+      '【総合E2Eシナリオ】個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
 
-      final currentMatches = [...comprehensiveMatches];
+        final currentMatches = [...comprehensiveMatches];
 
-      final router = GoRouter(
-        initialLocation: '/team-status',
-        routes: [
-          GoRoute(
-            path: '/team-status',
-            builder: (context, state) => const TeamMatchStatusScreen(),
-          ),
-          GoRoute(
-            path: '/team-scoreboard/:groupName',
-            builder: (context, state) {
-              final groupName = state.pathParameters['groupName'] ?? '';
-              return Scaffold(
-                body: Center(child: Text('団体戦スコアボード画面: $groupName')),
-              );
-            },
-          ),
-          GoRoute(
-            path: '/match/:matchId',
-            builder: (context, state) {
-              final matchId = state.pathParameters['matchId'] ?? '';
-              return Scaffold(body: Center(child: Text('個別試合画面: $matchId')));
-            },
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            matchListProvider.overrideWith((ref) => currentMatches),
-            customTeamNamesProvider.overrideWith(
-              (ref) => Stream.value(['道上剣友会A', '道上選抜', '道上勝抜隊']),
+        final router = GoRouter(
+          initialLocation: '/team-status',
+          routes: [
+            GoRoute(
+              path: '/team-status',
+              builder: (context, state) => const TeamMatchStatusScreen(),
             ),
-            timelinePlayerListProvider.overrideWith(
-              (ref) => Stream.value([
-                PlayerModel(
-                  id: 'p1',
-                  lastName: '皿田',
-                  firstName: '脩人',
-                  lastNameKana: 'さらだ',
-                  firstNameKana: 'しゅうと',
-                  grade: 3,
-                ),
-                PlayerModel(
-                  id: 'p2',
-                  lastName: '久安',
-                  firstName: '智也',
-                  lastNameKana: 'ひさやす',
-                  firstNameKana: 'ともや',
-                  grade: 5,
-                ),
-              ]),
+            GoRoute(
+              path: '/team-scoreboard/:groupName',
+              builder: (context, state) {
+                final groupName = state.pathParameters['groupName'] ?? '';
+                return Scaffold(
+                  body: Center(child: Text('団体戦スコアボード画面: $groupName')),
+                );
+              },
             ),
-            currentDojoNameProvider.overrideWith((ref) => Stream.value('道上')),
+            GoRoute(
+              path: '/match/:matchId',
+              builder: (context, state) {
+                final matchId = state.pathParameters['matchId'] ?? '';
+                return Scaffold(body: Center(child: Text('個別試合画面: $matchId')));
+              },
+            ),
           ],
-          child: MaterialApp.router(routerConfig: router),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
 
-      // ----------------------------------------------------
-      // Step 1: 初期表示 & 自チーム認識（ヘッダー）の検証
-      // ----------------------------------------------------
-      expect(find.text('チーム試合状況'), findsOneWidget);
-      expect(find.textContaining('すべて表示'), findsOneWidget);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              matchListProvider.overrideWith((ref) => currentMatches),
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(['道上剣友会A', '道上選抜', '道上勝抜隊']),
+              ),
+              timelinePlayerListProvider.overrideWith(
+                (ref) => Stream.value([
+                  PlayerModel(
+                    id: 'p1',
+                    lastName: '皿田',
+                    firstName: '脩人',
+                    lastNameKana: 'さらだ',
+                    firstNameKana: 'しゅうと',
+                    grade: 3,
+                  ),
+                  PlayerModel(
+                    id: 'p2',
+                    lastName: '久安',
+                    firstName: '智也',
+                    lastNameKana: 'ひさやす',
+                    firstNameKana: 'ともや',
+                    grade: 5,
+                  ),
+                ]),
+              ),
+              currentDojoNameProvider.overrideWith((ref) => Stream.value('道上')),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // 自道場チームカードの存在確認
-      expect(find.text('道上剣友会A'), findsWidgets);
-      expect(find.text('道上選抜'), findsWidgets);
+        // ----------------------------------------------------
+        // Step 1: 初期表示 & 自チーム認識（ヘッダー）の検証
+        // ----------------------------------------------------
+        expect(find.text('チーム試合状況'), findsOneWidget);
+        expect(find.textContaining('すべて表示'), findsOneWidget);
 
-      // ----------------------------------------------------
-      // Step 2: 各試合形式の対戦枠見出し（全形式網羅）の検証
-      // ----------------------------------------------------
-      // ① トーナメント団体戦
-      expect(find.text('団体戦：道上剣友会A vs 相手チーム02'), findsOneWidget);
+        // 自道場チームカードの存在確認
+        expect(find.text('道上剣友会A'), findsWidgets);
+        expect(find.text('道上選抜'), findsWidgets);
 
-      // ② 個人戦（トーナメント個人戦）
-      expect(find.textContaining('個人戦：'), findsWidgets);
+        // ----------------------------------------------------
+        // Step 2: 各試合形式の対戦枠見出し（全形式網羅）の検証
+        // ----------------------------------------------------
+        // ① トーナメント団体戦
+        expect(find.text('団体戦：道上剣友会A vs 相手チーム02'), findsOneWidget);
 
-      // ③ リーグ個人戦
-      expect(find.textContaining('リーグ個人戦：'), findsWidgets);
+        // ② 個人戦（トーナメント個人戦）
+        expect(find.textContaining('個人戦：'), findsWidgets);
 
-      // ④ リーグ団体戦
-      expect(find.textContaining('リーグ団体戦：'), findsWidgets);
+        // ③ リーグ個人戦
+        expect(find.textContaining('リーグ個人戦：'), findsWidgets);
 
-      // ⑤ 勝ち抜き戦
-      expect(find.textContaining('勝ち抜き戦：'), findsWidgets);
+        // ④ リーグ団体戦
+        expect(find.textContaining('リーグ団体戦：'), findsWidgets);
 
-      // ----------------------------------------------------
-      // Step 3: コートタップ直接編集シート起動＆復帰検証
-      // ----------------------------------------------------
-      await tester.tap(find.text('第3試合場 (2回戦・第3試合)'));
-      await tester.pumpAndSettle();
+        // ⑤ 勝ち抜き戦
+        expect(find.textContaining('勝ち抜き戦：'), findsWidgets);
 
-      expect(find.text('団体戦対戦の編集'), findsOneWidget);
-      expect(find.text('コート・メモ'), findsOneWidget);
+        // ----------------------------------------------------
+        // Step 3: コートタップ直接編集シート起動＆復帰検証
+        // ----------------------------------------------------
+        await tester.tap(find.text('第3試合場 (2回戦・第3試合)'));
+        await tester.pumpAndSettle();
 
-      // 閉じるボタンで復帰
-      await tester.tap(find.byIcon(Icons.close));
-      await tester.pumpAndSettle();
+        expect(find.text('団体戦対戦の編集'), findsOneWidget);
+        expect(find.text('コート・メモ'), findsOneWidget);
 
-      expect(find.text('チーム試合状況'), findsOneWidget);
+        // 閉じるボタンで復帰
+        await tester.tap(find.byIcon(Icons.close));
+        await tester.pumpAndSettle();
 
-      // ----------------------------------------------------
-      // Step 4: フィルター動作の検証
-      // ----------------------------------------------------
-      // 「🔴 試合中のみ (1)」で絞り込み
-      await tester.tap(find.text('🔴 試合中のみ (1)'));
-      await tester.pumpAndSettle();
+        expect(find.text('チーム試合状況'), findsOneWidget);
 
-      expect(find.text('道上剣友会A'), findsWidgets);
-      expect(find.text('道上選抜'), findsNothing);
+        // ----------------------------------------------------
+        // Step 4: フィルター動作の検証
+        // ----------------------------------------------------
+        // 「🔴 試合中のみ (1)」で絞り込み
+        await tester.tap(find.text('🔴 試合中のみ (1)'));
+        await tester.pumpAndSettle();
 
-      // 「すべて表示」で全解除
-      await tester.tap(find.textContaining('すべて表示'));
-      await tester.pumpAndSettle();
+        expect(find.text('道上剣友会A'), findsWidgets);
+        expect(find.text('道上選抜'), findsNothing);
 
-      expect(find.text('道上剣友会A'), findsWidgets);
-      expect(find.text('道上選抜'), findsWidgets);
+        // 「すべて表示」で全解除
+        await tester.tap(find.textContaining('すべて表示'));
+        await tester.pumpAndSettle();
 
-      // ----------------------------------------------------
-      // Step 5: 終了した団体戦カードタップでスコアボード遷移検証
-      // ----------------------------------------------------
-      await tester.tap(find.text('道上選抜').first);
-      await tester.pumpAndSettle();
+        expect(find.text('道上剣友会A'), findsWidgets);
+        expect(find.text('道上選抜'), findsWidgets);
 
-      expect(find.text('団体戦スコアボード画面: group_league_dohjo_1'), findsOneWidget);
-    });
+        // ----------------------------------------------------
+        // Step 5: 終了した団体戦カードタップでスコアボード遷移検証
+        // ----------------------------------------------------
+        await tester.tap(find.text('道上選抜').first);
+        await tester.pumpAndSettle();
+
+        expect(find.text('団体戦スコアボード画面: group_league_dohjo_1'), findsOneWidget);
+      },
+    );
   });
 }

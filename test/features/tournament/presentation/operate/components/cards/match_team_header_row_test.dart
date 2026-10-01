@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_team_header_row.dart';
 
 void main() {
-  group('MatchTeamHeaderRow Tests', () {
-    testWidgets('④ Highlights red team when isRedOwn is true', (tester) async {
+  group('[Widget] MatchTeamHeaderRow テスト', () {
+    testWidgets('Highlights red team when isRedOwn is trueであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -27,7 +29,7 @@ void main() {
       expect(whiteText.style?.color, const Color(0xFF000000));
     });
 
-    testWidgets('④ Highlights white team when isWhiteOwn is true', (
+    testWidgets('Highlights white team when isWhiteOwn is trueであること', (
       tester,
     ) async {
       await tester.pumpWidget(

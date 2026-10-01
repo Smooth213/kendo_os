@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 programListProvider テスト', () {
+  group('[Unit] programListProvider テスト', () {
     test('currentDojoId が既に設定されている場合、正常にプロバイダが監視開始されること', () async {
       final container = ProviderContainer(
         overrides: [

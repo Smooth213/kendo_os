@@ -4,8 +4,8 @@ import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog_actions.dart';
 
 void main() {
-  group('RoomJoinQrDialogActions Widget Tests', () {
-    testWidgets('renders Cancel and Join buttons when not loading', (
+  group('[Widget] RoomJoinQrDialogActions ウィジェットテスト', () {
+    testWidgets('renders Cancel and Join buttons when not loadingであること', (
       tester,
     ) async {
       bool canceled = false;
@@ -38,7 +38,7 @@ void main() {
     });
 
     testWidgets(
-      'renders AppLoadingIndicator and disables cancel when loading',
+      'renders AppLoadingIndicator and disables cancel when loadingであること',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(

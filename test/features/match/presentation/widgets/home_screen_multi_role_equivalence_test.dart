@@ -61,7 +61,7 @@ void main() {
   };
 
   rolesToTest.forEach((roleName, permission) {
-    testWidgets('[$roleName 権限] ネイティブ基準の画面デザイン・コンポーネント構造との完全な等価性を検証', (
+    testWidgets('[$roleName 権限] ネイティブ基準の画面デザイン・コンポーネント構造との完全な等価性が正しく検証できること', (
       WidgetTester tester,
     ) async {
       // 1. 各権限プロバイダーを上書きしてモック環境を起動

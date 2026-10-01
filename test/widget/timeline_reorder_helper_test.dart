@@ -42,15 +42,15 @@ class FakeMatchAppService implements MatchApplicationService {
 }
 
 void main() {
-  group('TimelineReorderHelper Tests', () {
-    test('TimelineReorderHelper exists and is statically accessible', () {
+  group('[Widget] TimelineReorderHelper テスト', () {
+    test('TimelineReorderHelper exists and is statically accessibleであること', () {
       expect(TimelineReorderHelper.onReorderInnerTimeline, isNotNull);
       expect(TimelineReorderHelper.onReorderMatches, isNotNull);
       expect(TimelineReorderHelper.onReorderTimeline, isNotNull);
     });
 
     testWidgets(
-      'onReorderTimeline correctly calculates newOrder when moving comment between matches',
+      'onReorderTimeline correctly calculates newOrder when moving comment between matchesであること',
       (tester) async {
         final fakeCommentCommand = FakeCommentCommandService();
 
@@ -122,7 +122,7 @@ void main() {
     );
 
     testWidgets(
-      'onReorderTimeline correctly calculates newOrder when moving comment to top or bottom',
+      'onReorderTimeline correctly calculates newOrder when moving comment to top or bottomであること',
       (tester) async {
         final fakeCommentCommand = FakeCommentCommandService();
 
@@ -173,7 +173,7 @@ void main() {
     );
 
     testWidgets(
-      'onReorderTimeline works seamlessly with IndividualPlayerTimelineItem',
+      'onReorderTimeline works seamlessly with IndividualPlayerTimelineItemであること',
       (tester) async {
         final fakeCommentCommand = FakeCommentCommandService();
 
@@ -234,7 +234,7 @@ void main() {
     );
 
     testWidgets(
-      'onReorderTimeline correctly moves match group downward and upward',
+      'onReorderTimeline correctly moves match group downward and upwardであること',
       (tester) async {
         final fakeMatchAppService = FakeMatchAppService();
 
@@ -305,7 +305,7 @@ void main() {
     );
 
     testWidgets(
-      'onReorderInnerTimeline correctly handles inner matches and comments reordering',
+      'onReorderInnerTimeline correctly handles inner matches and comments reorderingであること',
       (tester) async {
         final fakeCommentCommand = FakeCommentCommandService();
         final fakeMatchAppService = FakeMatchAppService();
@@ -380,7 +380,7 @@ void main() {
       },
     );
 
-    testWidgets('onReorderMatches correctly reorders matches list', (
+    testWidgets('onReorderMatches correctly reorders matches listであること', (
       tester,
     ) async {
       final fakeMatchAppService = FakeMatchAppService();
@@ -441,7 +441,7 @@ void main() {
     });
 
     testWidgets(
-      'ReorderableListView widget integration: onReorderItem updates comment order between matches',
+      'ReorderableListView widget integration: onReorderItem updates comment order between matchesであること',
       (tester) async {
         final fakeCommentCommand = FakeCommentCommandService();
 
@@ -526,7 +526,7 @@ void main() {
     );
 
     test(
-      'CommentCommandService.updateCommentOrder saves even without prior added event in memory',
+      'CommentCommandService.updateCommentOrder saves even without prior added event in memoryであること',
       () async {
         MatchCommentModel? savedLocalComment;
         MatchCommentModel? savedRemoteComment;

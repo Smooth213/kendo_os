@@ -61,8 +61,8 @@ void main() {
     );
   }
 
-  group('個人戦の並び順保証テスト（本部公式記録＆閲覧ビュアー共通）', () {
-    testWidgets('① 選手ごとのまとまり（初戦が早い順）＆ 選手内で時系列順に並ぶこと', (tester) async {
+  group('[Widget] 個人戦の並び順保証テスト（本部公式記録＆閲覧ビュアー共通）', () {
+    testWidgets('選手ごとのまとまり（初戦が早い順）＆ 選手内で時系列順に並ぶこと', (tester) async {
       // 山田: 2回戦(order 20), 1回戦(order 5) ※リストには順不同で追加
       // 佐藤: 1回戦(order 12)
       // 期待される順序: 山田1回戦(5) -> 山田2回戦(20) -> 佐藤1回戦(12)
@@ -117,7 +117,7 @@ void main() {
       expect(idxY2 < idxS1, isTrue, reason: '初戦が早い山田がまとまって先');
     });
 
-    testWidgets('② 赤・白の左右が入れ替わっても同一選手として正しくグルーピングされること', (tester) async {
+    testWidgets('赤・白の左右が入れ替わっても同一選手として正しくグルーピングされること', (tester) async {
       // 山田が赤の試合(order 5) と 白の試合(order 18)
       // 外部選手同士の試合(order 2)
       final matches = [
@@ -170,7 +170,7 @@ void main() {
       expect(idxWhite < idxOther, isTrue, reason: '自チーム選手が外部同士より優先');
     });
 
-    testWidgets('③ 同門決勝戦（同門対決）が一番上に飛び出さず、初戦順・時系列順に正しく並ぶこと', (tester) async {
+    testWidgets('同門決勝戦（同門対決）が一番上に飛び出さず、初戦順・時系列順に正しく並ぶこと', (tester) async {
       // 山田: 1回戦(order 5), 2回戦(order 18)
       // 佐藤: 1回戦(order 10), 2回戦(order 22)
       // 決勝: 山田 vs 佐藤 (order 35) ← リストの一番先頭で定義
@@ -255,88 +255,85 @@ void main() {
       expect(idxS1 < idxS2, isTrue, reason: '佐藤の1回戦の後に佐藤の2回戦');
     });
 
-    testWidgets(
-      '④ 閲覧専用ビュアー（ViewerOfficialIndividualListCard）でも同一の並び順が保証されること',
-      (tester) async {
-        final viewerMatches = [
-          const MatchListProjection(
-            id: 'v_final',
-            tournamentId: tournamentId,
-            matchOrder: 35,
-            matchType: 'individual',
-            status: 'finished',
-            redName: '小畠: 山田',
-            whiteName: '小畠: 佐藤',
-            redScore: 2,
-            whiteScore: 1,
-            note: 'ビュアー同門決勝戦',
-          ),
-          const MatchListProjection(
-            id: 'v_sato_1',
-            tournamentId: tournamentId,
-            matchOrder: 10,
-            matchType: 'individual',
-            status: 'finished',
-            redName: '小畠: 佐藤',
-            whiteName: '外部: 鈴木',
-            redScore: 1,
-            whiteScore: 0,
-            note: 'ビュアー佐藤1回戦',
-          ),
-          const MatchListProjection(
-            id: 'v_yamada_1',
-            tournamentId: tournamentId,
-            matchOrder: 5,
-            matchType: 'individual',
-            status: 'finished',
-            redName: '小畠: 山田',
-            whiteName: '外部: 田中',
-            redScore: 2,
-            whiteScore: 0,
-            note: 'ビュアー山田1回戦',
-          ),
-          const MatchListProjection(
-            id: 'v_other',
-            tournamentId: tournamentId,
-            matchOrder: 2,
-            matchType: 'individual',
-            status: 'finished',
-            redName: '外部: 木村',
-            whiteName: '外部: 高橋',
-            redScore: 0,
-            whiteScore: 1,
-            note: 'ビュアー外部試合',
-          ),
-        ];
-
-        await tester.pumpWidget(buildViewerWidget(viewerMatches));
-        await tester.pumpAndSettle();
-
-        final texts = tester
-            .widgetList<Text>(find.byType(Text))
-            .map((w) => w.data ?? '')
-            .toList();
-
-        final idxY1 = texts.indexWhere((t) => t.contains('ビュアー山田1回戦'));
-        final idxFinal = texts.indexWhere((t) => t.contains('ビュアー同門決勝戦'));
-        final idxS1 = texts.indexWhere((t) => t.contains('ビュアー佐藤1回戦'));
-        final idxOther = texts.indexWhere((t) => t.contains('ビュアー外部試合'));
-
-        expect(idxY1 != -1, isTrue);
-        expect(idxFinal != -1, isTrue);
-        expect(idxS1 != -1, isTrue);
-        expect(idxOther != -1, isTrue);
-
-        // 山田1回戦 -> 同門決勝 -> 佐藤1回戦 -> 外部試合
-        expect(idxY1 < idxFinal, isTrue, reason: 'ビュアーでも決勝戦が山田1回戦より後');
-        expect(idxFinal < idxS1, isTrue, reason: 'ビュアーでも初戦が早い山田に同門決勝が帰属');
-        expect(idxS1 < idxOther, isTrue, reason: 'ビュアーでも自チーム試合が外部試合より先');
-      },
-    );
-
-    testWidgets('⑤ 後から追加された試合（初戦が遅い選手）が選手ごとのまとまりとして下に追加されていくこと', (
+    testWidgets('閲覧専用ビュアー（ViewerOfficialIndividualListCard）でも同一の並び順が保証されること', (
       tester,
     ) async {
+      final viewerMatches = [
+        const MatchListProjection(
+          id: 'v_final',
+          tournamentId: tournamentId,
+          matchOrder: 35,
+          matchType: 'individual',
+          status: 'finished',
+          redName: '小畠: 山田',
+          whiteName: '小畠: 佐藤',
+          redScore: 2,
+          whiteScore: 1,
+          note: 'ビュアー同門決勝戦',
+        ),
+        const MatchListProjection(
+          id: 'v_sato_1',
+          tournamentId: tournamentId,
+          matchOrder: 10,
+          matchType: 'individual',
+          status: 'finished',
+          redName: '小畠: 佐藤',
+          whiteName: '外部: 鈴木',
+          redScore: 1,
+          whiteScore: 0,
+          note: 'ビュアー佐藤1回戦',
+        ),
+        const MatchListProjection(
+          id: 'v_yamada_1',
+          tournamentId: tournamentId,
+          matchOrder: 5,
+          matchType: 'individual',
+          status: 'finished',
+          redName: '小畠: 山田',
+          whiteName: '外部: 田中',
+          redScore: 2,
+          whiteScore: 0,
+          note: 'ビュアー山田1回戦',
+        ),
+        const MatchListProjection(
+          id: 'v_other',
+          tournamentId: tournamentId,
+          matchOrder: 2,
+          matchType: 'individual',
+          status: 'finished',
+          redName: '外部: 木村',
+          whiteName: '外部: 高橋',
+          redScore: 0,
+          whiteScore: 1,
+          note: 'ビュアー外部試合',
+        ),
+      ];
+
+      await tester.pumpWidget(buildViewerWidget(viewerMatches));
+      await tester.pumpAndSettle();
+
+      final texts = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data ?? '')
+          .toList();
+
+      final idxY1 = texts.indexWhere((t) => t.contains('ビュアー山田1回戦'));
+      final idxFinal = texts.indexWhere((t) => t.contains('ビュアー同門決勝戦'));
+      final idxS1 = texts.indexWhere((t) => t.contains('ビュアー佐藤1回戦'));
+      final idxOther = texts.indexWhere((t) => t.contains('ビュアー外部試合'));
+
+      expect(idxY1 != -1, isTrue);
+      expect(idxFinal != -1, isTrue);
+      expect(idxS1 != -1, isTrue);
+      expect(idxOther != -1, isTrue);
+
+      // 山田1回戦 -> 同門決勝 -> 佐藤1回戦 -> 外部試合
+      expect(idxY1 < idxFinal, isTrue, reason: 'ビュアーでも決勝戦が山田1回戦より後');
+      expect(idxFinal < idxS1, isTrue, reason: 'ビュアーでも初戦が早い山田に同門決勝が帰属');
+      expect(idxS1 < idxOther, isTrue, reason: 'ビュアーでも自チーム試合が外部試合より先');
+    });
+
+    testWidgets('後から追加された試合（初戦が遅い選手）が選手ごとのまとまりとして下に追加されていくこと', (tester) async {
       // 山田(初戦 order 5)
       // 佐藤(初戦 order 12)
       // 後から追加された自チーム選手「高橋」(初戦 order 28, 2回戦 order 32)

@@ -8,8 +8,8 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/b
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_matches_provider.dart';
 
 void main() {
-  group('🥋 BunaiksenDockMatchesSheet Widget Tests', () {
-    testWidgets('1. ホーム画面と同じ順番（第1試合、第2試合…）で表示され、BunaiksenScoreMarksが描画されること', (
+  group('[Widget] BunaiksenDockMatchesSheet ウィジェットテスト', () {
+    testWidgets('ホーム画面と同じ順番（第1試合、第2試合…）で表示され、BunaiksenScoreMarksが描画されること', (
       tester,
     ) async {
       final mockMatch1 = MatchModel(

@@ -7,8 +7,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ MatchScreen Extracted Components Tests', () {
-    testWidgets('1. MatchHeaderTitle renders matchType and names', (
+  group('[Widget] MatchScreen Extracted Components テスト', () {
+    testWidgets('MatchHeaderTitle renders matchType and namesであること', (
       tester,
     ) async {
       final match = MatchModel(
@@ -33,7 +33,7 @@ void main() {
       expect(find.text('佐藤 vs 鈴木'), findsOneWidget);
     });
 
-    testWidgets('2. MatchContentLayoutBuilder renders portrait layout', (
+    testWidgets('MatchContentLayoutBuilder renders portrait layoutであること', (
       tester,
     ) async {
       await tester.pumpWidget(

@@ -57,7 +57,7 @@ void main() {
     );
   });
 
-  group('🛡️ Viewer Routing Integration Tests', () {
+  group('[Widget] Viewer Routing 統合テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockPlayerRepository mockPlayerRepo;
     late MockSyncEngine mockSyncEngine;
@@ -120,7 +120,7 @@ void main() {
       ).thenAnswer((_) => Future.value());
     });
 
-    testWidgets('1. 通常大会の観客席ルーティング検証：ViewerHomeScreenのみマウントされること', (
+    testWidgets('通常大会の観客席ルーティング検証：ViewerHomeScreenのみマウントされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -191,7 +191,7 @@ void main() {
       expect(find.byType(HomeScreen), findsNothing);
     });
 
-    testWidgets('2. 特設部内戦の観客席ルーティング検証：ViewerBunaiksenHomeScreenのみマウントされること', (
+    testWidgets('特設部内戦の観客席ルーティング検証：ViewerBunaiksenHomeScreenのみマウントされること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -297,7 +297,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('3. 一般観客セッション（PINなし通過）の連動テスト：StartScreenから自動で観客席専用パスへ遷移すること', (
+    testWidgets('一般観客セッション（PINなし通過）の連動テスト：StartScreenから自動で観客席専用パスへ遷移すること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

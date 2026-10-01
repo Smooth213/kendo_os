@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 ProgramViewStateService ユニットテスト', () {
+  group('[Unit] ProgramViewStateService ユニットテスト', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
       ProgramViewStateService.instance.resetForTesting();
@@ -23,7 +23,7 @@ void main() {
       expect(service.getLastPageNumber('prog_1', defaultPage: 5), 5);
     });
 
-    test('プログラムインデックスの保存と即時復元（メモリキャッシュ＆SharedPreferences）', () async {
+    test('プログラムインデックスの保存と即時復元（メモリキャッシュ＆SharedPreferences）こと', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final service = ProgramViewStateService.instance;
@@ -37,7 +37,7 @@ void main() {
       expect(service.getLastProgramIndex('tournament_2', defaultIndex: 0), 0);
     });
 
-    test('PDFページ番号の保存と即時復元（メモリキャッシュ＆SharedPreferences）', () async {
+    test('PDFページ番号の保存と即時復元（メモリキャッシュ＆SharedPreferences）こと', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final service = ProgramViewStateService.instance;
@@ -64,7 +64,7 @@ void main() {
       expect(service.getLastPageNumber('prog_pre'), 4);
     });
 
-    test('空文字キーに対する安全なフォールバック', () {
+    test('空文字キーに対する安全なフォールバックこと', () {
       final service = ProgramViewStateService.instance;
       service.setLastProgramIndex('', 5);
       expect(service.getLastProgramIndex('', defaultIndex: 0), 0);

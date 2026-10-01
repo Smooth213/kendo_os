@@ -67,9 +67,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  group('🥋 【E2E】BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト', () {
+  group('[E2E] 【E2E】BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト', () {
     testWidgets(
-      '【シナリオ1: チーム試合状況カード】BANDボタンタップ ➔ クリップボードコピー ➔ シート展開 ➔ グループ選択起動の完全連携',
+      '【シナリオ1: チーム試合状況カード】BANDボタンタップ  クリップボードコピー  シート展開  グループ選択起動の完全連携こと',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -162,7 +162,7 @@ void main() {
       },
     );
 
-    testWidgets('【シナリオ2: タイムライン個人戦】BANDボタンタップ ➔ 個人戦コピー ➔ コピーのみで閉じるフロー', (
+    testWidgets('【シナリオ2: タイムライン個人戦】BANDボタンタップ  個人戦コピー  コピーのみで閉じるフローこと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -227,7 +227,9 @@ void main() {
       expect(find.text('BANDでLIVE配信・共有'), findsNothing);
     });
 
-    testWidgets('【シナリオ3: 未登録状態】空メッセージ表示 ➔ その場で即時グループ追加ダイアログ展開', (tester) async {
+    testWidgets('【シナリオ3: 未登録状態】空メッセージ表示  その場で即時グループ追加ダイアログ展開こと', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -274,45 +276,46 @@ void main() {
       expect(find.text('グループ名（例: 低学年チーム）'), findsOneWidget);
     });
 
-    testWidgets('【シナリオ4: システム設定画面】BAND設定タイル ➔ 一括管理シート ➔ ダイアログ起動のライフサイクル検証', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 1200);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    testWidgets(
+      '【シナリオ4: システム設定画面】BAND設定タイル  一括管理シート  ダイアログ起動のライフサイクルが正しく検証されること',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            currentDojoIdProvider.overrideWith((ref) => 'dojo_test_e2e'),
-            bandGroupsStreamProvider.overrideWith(
-              (ref) => Stream.value(dummyGroups),
-            ),
-          ],
-          child: const MaterialApp(home: Scaffold(body: BandSettingsTile())),
-        ),
-      );
-      await pumpAnimation(tester);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              currentDojoIdProvider.overrideWith((ref) => 'dojo_test_e2e'),
+              bandGroupsStreamProvider.overrideWith(
+                (ref) => Stream.value(dummyGroups),
+              ),
+            ],
+            child: const MaterialApp(home: Scaffold(body: BandSettingsTile())),
+          ),
+        );
+        await pumpAnimation(tester);
 
-      // 1. 設定タイルにグループ件数が反映されていること
-      expect(find.text('BAND連携・LIVE配信設定'), findsOneWidget);
-      expect(find.text('2件のグループが登録されています（※要BANDアプリ）'), findsOneWidget);
+        // 1. 設定タイルにグループ件数が反映されていること
+        expect(find.text('BAND連携・LIVE配信設定'), findsOneWidget);
+        expect(find.text('2件のグループが登録されています（※要BANDアプリ）'), findsOneWidget);
 
-      // 2. タイルをタップ ➔ 管理シート展開
-      await tester.tap(find.byType(BandSettingsTile));
-      await pumpAnimation(tester);
+        // 2. タイルをタップ ➔ 管理シート展開
+        await tester.tap(find.byType(BandSettingsTile));
+        await pumpAnimation(tester);
 
-      expect(find.text('BANDグループ管理'), findsOneWidget);
-      expect(find.text('低学年チーム'), findsOneWidget);
-      expect(find.text('高学年チーム'), findsOneWidget);
+        expect(find.text('BANDグループ管理'), findsOneWidget);
+        expect(find.text('低学年チーム'), findsOneWidget);
+        expect(find.text('高学年チーム'), findsOneWidget);
 
-      // 3. 追加アイコンボタンをタップ ➔ 新規追加ダイアログが開くこと
-      final addIconBtn = find.byTooltip('新しいBandを追加');
-      expect(addIconBtn, findsOneWidget);
-      await tester.tap(addIconBtn);
-      await pumpAnimation(tester);
+        // 3. 追加アイコンボタンをタップ ➔ 新規追加ダイアログが開くこと
+        final addIconBtn = find.byTooltip('新しいBandを追加');
+        expect(addIconBtn, findsOneWidget);
+        await tester.tap(addIconBtn);
+        await pumpAnimation(tester);
 
-      expect(find.text('新しいBANDグループを追加'), findsOneWidget);
-    });
+        expect(find.text('新しいBANDグループを追加'), findsOneWidget);
+      },
+    );
   });
 }

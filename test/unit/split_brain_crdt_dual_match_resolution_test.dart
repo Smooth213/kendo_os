@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('👁️ 【Phase 6-8/12】オフライン二重更新スプリットブレイン CRDT決定論的マージテスト', () {
-    test('1. 端末A（赤面記録）と端末B（白小手記録）が並行発生後、論理時計順に決定論的マージされること', () {
+  group('[Unit] 【Phase 6-8/12】オフライン二重更新スプリットブレイン CRDT決定論的マージテスト', () {
+    test('端末A（赤面記録）と端末B（白小手記録）が並行発生後、論理時計順に決定論的マージされること', () {
       final baseTime = DateTime(2026, 9, 3, 10, 0, 0);
 
       // 端末Aでの操作（論理時計: 1）

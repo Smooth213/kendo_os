@@ -16,9 +16,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  group('🥋 ルール設定・一括変更・スワイプ編集・確認画面 統一テスト要塞', () {
+  group('[Widget] ルール設定・一括変更・スワイプ編集・確認画面 統一テスト要塞', () {
     testWidgets(
-      '1. MatchRuleSettingForm: 代表戦ON時に代表戦時間・延長時間・延長回数が展開され、時間制も選択できること',
+      'MatchRuleSettingForm: 代表戦ON時に代表戦時間・延長時間・延長回数が展開され、時間制も選択できること',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -154,7 +154,7 @@ void main() {
       },
     );
 
-    testWidgets('2. MatchEditSheet: スワイプ編集で統一ルール設定フォームが表示され操作できること', (
+    testWidgets('MatchEditSheet: スワイプ編集で統一ルール設定フォームが表示され操作できること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1600);
@@ -221,7 +221,7 @@ void main() {
       expect(find.text('🥋 団体戦・代表戦ルール'), findsOneWidget);
     });
 
-    testWidgets('3. RuleInfoBottomSheet: 統一された順序・アイコンでルール確認が表示されること', (
+    testWidgets('RuleInfoBottomSheet: 統一された順序・アイコンでルール確認が表示されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1600);
@@ -296,7 +296,7 @@ void main() {
       expect(find.text('🥋 代表戦'), findsOneWidget);
     });
 
-    testWidgets('4. ワンタップ選択で設定されたルールが反映され未設定ルールがOFFになること', (tester) async {
+    testWidgets('ワンタップ選択で設定されたルールが反映され未設定ルールがOFFになること', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

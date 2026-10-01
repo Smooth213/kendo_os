@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 
 void main() {
-  group('KendoPositionSorter Tests', () {
-    test('toKanjiNumber converts numbers to kanji correctly', () {
+  group('[Unit] KendoPositionSorter テスト', () {
+    test('数値を漢数字へ正しく変換できること', () {
       expect(MatchFormatSetupHelper.toKanjiNumber(1), '一');
       expect(MatchFormatSetupHelper.toKanjiNumber(3), '三');
       expect(MatchFormatSetupHelper.toKanjiNumber(10), '十');
@@ -15,91 +15,88 @@ void main() {
       expect(MatchFormatSetupHelper.toKanjiNumber(25), '二十五');
     });
 
-    test(
-      'generatePositions generates correct positions for various team sizes',
-      () {
-        expect(MatchFormatSetupHelper.generatePositions(3), ['先鋒', '中堅', '大将']);
-        expect(MatchFormatSetupHelper.generatePositions(4), [
-          '先鋒',
-          '次鋒',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(5), [
-          '先鋒',
-          '次鋒',
-          '中堅',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(6), [
-          '先鋒',
-          '次鋒',
-          '四将',
-          '三将',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(7), [
-          '先鋒',
-          '次鋒',
-          '五将',
-          '中堅',
-          '三将',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(8), [
-          '先鋒',
-          '次鋒',
-          '六将',
-          '五将',
-          '四将',
-          '三将',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(9), [
-          '先鋒',
-          '次鋒',
-          '七将',
-          '六将',
-          '中堅',
-          '四将',
-          '三将',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(10), [
-          '先鋒',
-          '次鋒',
-          '八将',
-          '七将',
-          '六将',
-          '五将',
-          '四将',
-          '三将',
-          '副将',
-          '大将',
-        ]);
-        expect(MatchFormatSetupHelper.generatePositions(12), [
-          '先鋒',
-          '次鋒',
-          '十将',
-          '九将',
-          '八将',
-          '七将',
-          '六将',
-          '五将',
-          '四将',
-          '三将',
-          '副将',
-          '大将',
-        ]);
-      },
-    );
+    test('各種チーム人数に対して正しいポジションが生成されること', () {
+      expect(MatchFormatSetupHelper.generatePositions(3), ['先鋒', '中堅', '大将']);
+      expect(MatchFormatSetupHelper.generatePositions(4), [
+        '先鋒',
+        '次鋒',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(5), [
+        '先鋒',
+        '次鋒',
+        '中堅',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(6), [
+        '先鋒',
+        '次鋒',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(7), [
+        '先鋒',
+        '次鋒',
+        '五将',
+        '中堅',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(8), [
+        '先鋒',
+        '次鋒',
+        '六将',
+        '五将',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(9), [
+        '先鋒',
+        '次鋒',
+        '七将',
+        '六将',
+        '中堅',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(10), [
+        '先鋒',
+        '次鋒',
+        '八将',
+        '七将',
+        '六将',
+        '五将',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(MatchFormatSetupHelper.generatePositions(12), [
+        '先鋒',
+        '次鋒',
+        '十将',
+        '九将',
+        '八将',
+        '七将',
+        '六将',
+        '五将',
+        '四将',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+    });
 
-    test('getPositionPriority returns correct priority for positions', () {
+    test('ポジションに応じた正しい優先順位が返却されること', () {
       expect(KendoPositionSorter.getPositionPriority('先鋒'), 10);
       expect(KendoPositionSorter.getPositionPriority('【先鋒】'), 10);
       expect(KendoPositionSorter.getPositionPriority('次鋒'), 20);
@@ -114,7 +111,7 @@ void main() {
       expect(KendoPositionSorter.getPositionPriority(null), 999);
     });
 
-    test('sortMatches sorts scrambled 8-person team matches correctly', () {
+    test('8人制団体戦の順序が正しくソートされること', () {
       final positions = MatchFormatSetupHelper.generatePositions(8);
       // ['先鋒', '次鋒', '六将', '五将', '四将', '三将', '副将', '大将']
       final matches = positions
@@ -134,41 +131,38 @@ void main() {
       expect(sorted.map((m) => m.matchType).toList(), positions);
     });
 
-    test(
-      'sortMatches sorts scrambled 9-person team matches correctly with Chuken',
-      () {
-        final positions = MatchFormatSetupHelper.generatePositions(9);
-        // ['先鋒', '次鋒', '七将', '六将', '中堅', '四将', '三将', '副将', '大将']
-        final matches = positions
-            .map(
-              (p) => MatchModel(
-                id: 'm_$p',
-                order: 0,
-                matchType: p,
-                redName: '赤: $p',
-                whiteName: '白: $p',
-              ),
-            )
-            .toList();
+    test('中堅を含む9人制団体戦の順序が正しくソートされること', () {
+      final positions = MatchFormatSetupHelper.generatePositions(9);
+      // ['先鋒', '次鋒', '七将', '六将', '中堅', '四将', '三将', '副将', '大将']
+      final matches = positions
+          .map(
+            (p) => MatchModel(
+              id: 'm_$p',
+              order: 0,
+              matchType: p,
+              redName: '赤: $p',
+              whiteName: '白: $p',
+            ),
+          )
+          .toList();
 
-        // あえてシャッフル（大将、中堅、先鋒、四将、副将...）
-        final scrambled = [
-          matches[8], // 大将
-          matches[4], // 中堅
-          matches[0], // 先鋒
-          matches[5], // 四将
-          matches[7], // 副将
-          matches[2], // 七将
-          matches[1], // 次鋒
-          matches[6], // 三将
-          matches[3], // 六将
-        ];
-        final sorted = KendoPositionSorter.sortMatches(scrambled);
-        expect(sorted.map((m) => m.matchType).toList(), positions);
-      },
-    );
+      // あえてシャッフル（大将、中堅、先鋒、四将、副将...）
+      final scrambled = [
+        matches[8], // 大将
+        matches[4], // 中堅
+        matches[0], // 先鋒
+        matches[5], // 四将
+        matches[7], // 副将
+        matches[2], // 七将
+        matches[1], // 次鋒
+        matches[6], // 三将
+        matches[3], // 六将
+      ];
+      final sorted = KendoPositionSorter.sortMatches(scrambled);
+      expect(sorted.map((m) => m.matchType).toList(), positions);
+    });
 
-    test('sortMatches sorts scrambled 10-person team matches correctly', () {
+    test('10人制団体戦の順序が正しくソートされること', () {
       final positions = MatchFormatSetupHelper.generatePositions(10);
       final matches = positions
           .map(
@@ -187,7 +181,7 @@ void main() {
       expect(sorted.map((m) => m.matchType).toList(), positions);
     });
 
-    test('sortMatches handles arabic fallback positions correctly', () {
+    test('アラビア数字のフォールバックポジションが正しく処理されること', () {
       final matches = [
         MatchModel(
           id: 'm_taisho',
@@ -222,7 +216,7 @@ void main() {
       expect(sorted.map((m) => m.matchType).toList(), ['先鋒', '6将', '4将', '大将']);
     });
 
-    test('sortMatches sorts scrambled 3-person team matches correctly', () {
+    test('3人制団体戦の順序が正しくソートされること', () {
       // ユーザーの画像にあった「中堅 ➔ 大将 ➔ 先鋒」の乱れを再現
       final chuken = MatchModel(
         id: 'm_chuken',
@@ -255,7 +249,7 @@ void main() {
       expect(sorted.last.redName, contains('久安'));
     });
 
-    test('sortMatches prioritizes position over incorrect order', () {
+    test('不正な順序よりもポジションが優先されてソートされること', () {
       // order がバグで逆順になっていても、剣道ポジション順序が優先されること
       final sempo = MatchModel(
         id: 'm_sempo',
@@ -277,7 +271,7 @@ void main() {
       expect(sorted.last.matchType, '大将');
     });
 
-    test('sortProjections sorts 5-person plus daihyo match correctly', () {
+    test('5人制＋代表戦の投影が正しくソートされること', () {
       final pDaihyo = MatchListProjection(
         id: 'p_daihyo',
         tournamentId: 't1',
@@ -400,49 +394,46 @@ void main() {
       ]);
     });
 
-    test(
-      'resolveMatchPriority extracts position from note or player name if matchType is empty',
-      () {
-        final p1 = MatchListProjection(
-          id: 'p1',
-          tournamentId: 't1',
-          matchOrder: 0,
-          matchType: '',
-          status: 'pending',
-          redName: '道上: 皿田 [大将]',
-          whiteName: '相手: 選手3',
-          redScore: 0,
-          whiteScore: 0,
-          groupName: 'G1',
-          isKachinuki: false,
-          note: '',
-          firstPointSide: '',
-          redPointMarks: [],
-          whitePointMarks: [],
-        );
+    test('matchTypeが空の場合に備考や選手名からポジション優先度を抽出できること', () {
+      final p1 = MatchListProjection(
+        id: 'p1',
+        tournamentId: 't1',
+        matchOrder: 0,
+        matchType: '',
+        status: 'pending',
+        redName: '道上: 皿田 [大将]',
+        whiteName: '相手: 選手3',
+        redScore: 0,
+        whiteScore: 0,
+        groupName: 'G1',
+        isKachinuki: false,
+        note: '',
+        firstPointSide: '',
+        redPointMarks: [],
+        whitePointMarks: [],
+      );
 
-        final p2 = MatchListProjection(
-          id: 'p2',
-          tournamentId: 't1',
-          matchOrder: 0,
-          matchType: '',
-          status: 'pending',
-          redName: '道上: 塚本',
-          whiteName: '相手: 選手1',
-          redScore: 0,
-          whiteScore: 0,
-          groupName: 'G1',
-          isKachinuki: false,
-          note: '第1試合 【先鋒戦】',
-          firstPointSide: '',
-          redPointMarks: [],
-          whitePointMarks: [],
-        );
+      final p2 = MatchListProjection(
+        id: 'p2',
+        tournamentId: 't1',
+        matchOrder: 0,
+        matchType: '',
+        status: 'pending',
+        redName: '道上: 塚本',
+        whiteName: '相手: 選手1',
+        redScore: 0,
+        whiteScore: 0,
+        groupName: 'G1',
+        isKachinuki: false,
+        note: '第1試合 【先鋒戦】',
+        firstPointSide: '',
+        redPointMarks: [],
+        whitePointMarks: [],
+      );
 
-        final sorted = KendoPositionSorter.sortProjections([p1, p2]);
-        expect(sorted.first.id, 'p2'); // 先鋒が最初
-        expect(sorted.last.id, 'p1'); // 大将が後
-      },
-    );
+      final sorted = KendoPositionSorter.sortProjections([p1, p2]);
+      expect(sorted.first.id, 'p2'); // 先鋒が最初
+      expect(sorted.last.id, 'p1'); // 大将が後
+    });
   });
 }

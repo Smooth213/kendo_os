@@ -14,7 +14,7 @@ class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 void main() {
   group(
-    '🛡️ Representative Match Regulation Rescue Guard (Bunaiksen Integration) Tests',
+    '[Unit] Representative Match Regulation Rescue Guard (Bunaiksen Integration) テスト',
     () {
       late MockLocalMatchRepository mockLocalRepo;
 
@@ -26,7 +26,7 @@ void main() {
       });
 
       test(
-        '1. [未開始の代表戦における汚染ステート自動中和] - empty events + corrupted/finished status => waiting',
+        '[未開始の代表戦における汚染ステート自動中和] - empty events + corrupted/finished status => waitingであること',
         () async {
           debugIsWebOverride = true;
           final fakeFirestore = FakeFirebaseFirestore();
@@ -106,7 +106,7 @@ void main() {
       );
 
       test(
-        '2. [打突開始後の代表戦におけるステート保護] - has events + finished status => remains finished',
+        '[打突開始後の代表戦におけるステート保護] - has events + finished status => remains finishedであること',
         () async {
           debugIsWebOverride = true;
           final fakeFirestore = FakeFirebaseFirestore();

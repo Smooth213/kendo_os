@@ -8,7 +8,7 @@ import 'package:kendo_os/shared/presentation/providers/current_user_role_provide
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  group('🔒 Stage2 β - 画面要素のロール別露出規制テスト', () {
+  group('[Widget] Stage2 β - 画面要素のロール別露出規制テスト', () {
     late SharedPreferences prefs;
 
     setUpAll(() async {

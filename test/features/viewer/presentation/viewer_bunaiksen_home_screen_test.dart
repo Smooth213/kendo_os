@@ -57,7 +57,7 @@ class FakeSharePlatform extends Mock
 }
 
 void main() {
-  group('🛡️ ViewerBunaiksenHomeScreen 観客席防衛線・QR大開通自動検証テスト', () {
+  group('[Widget] ViewerBunaiksenHomeScreen 観客席防衛線・QR大開通自動検証テスト', () {
     late MatchModel testMatch;
     final String targetTournamentId = 'bunaiksen_20260620';
     late FakeSharePlatform fakeSharePlatform;
@@ -102,7 +102,7 @@ void main() {
       );
     }
 
-    testWidgets('①-a 【QR直接アクセス時】スタックが無い状態では、物理的に＜ボタンとカレンダーボタンが消滅すること', (
+    testWidgets('-a 【QR直接アクセス時】スタックが無い状態では、物理的に＜ボタンとカレンダーボタンが消滅すること', (
       WidgetTester tester,
     ) async {
       final fakeRouter = FakeGoRouter(mockCanPop: false);
@@ -127,7 +127,7 @@ void main() {
       expect(find.byIcon(Icons.calendar_month), findsNothing);
     });
 
-    testWidgets('①-b 【アプリ内遷移時】通常の画面遷移スタックがある状態では、＜ボタンとカレンダーボタンが正常表示されること', (
+    testWidgets('-b 【アプリ内遷移時】通常の画面遷移スタックがある状態では、＜ボタンとカレンダーボタンが正常表示されること', (
       WidgetTester tester,
     ) async {
       final fakeRouter = FakeGoRouter(mockCanPop: true);
@@ -153,7 +153,7 @@ void main() {
     });
 
     testWidgets(
-      '② 【QRコードURL検証】共有リンクに正しいベータドメイン(kendo-os-beta.web.app)が含まれていること',
+      '【QRコードURL検証】共有リンクに正しいベータドメイン(kendo-os-beta.web.app)が含まれていること',
       (WidgetTester tester) async {
         final fakeRouter = FakeGoRouter(mockCanPop: true);
 
@@ -201,7 +201,7 @@ void main() {
       },
     );
 
-    testWidgets('③ 【専用画面の正常描画】QRから遷移したviewer専用画面にデータが反映され、正常表示されること', (
+    testWidgets('【専用画面の正常描画】QRから遷移したviewer専用画面にデータが反映され、正常表示されること', (
       WidgetTester tester,
     ) async {
       final fakeRouter = FakeGoRouter(mockCanPop: false);
@@ -231,7 +231,7 @@ void main() {
     });
 
     testWidgets(
-      '④ 【UI形状同期検証】試合カードの margin が EdgeInsets.zero であり、操作員画面とサイズが完全一致していること',
+      '【UI形状同期検証】試合カードの margin が EdgeInsets.zero であり、操作員画面とサイズが完全一致していること',
       (WidgetTester tester) async {
         final fakeRouter = FakeGoRouter(mockCanPop: false);
 
@@ -260,7 +260,7 @@ void main() {
     );
 
     testWidgets(
-      '⑤ 【閲覧スコープ防衛検証】試合カードをタップした際、スコア入力画面(/match)ではなく閲覧専用詳細画面(/viewer)へ遷移すること',
+      '【閲覧スコープ防衛検証】試合カードをタップした際、スコア入力画面(/match)ではなく閲覧専用詳細画面(/viewer)へ遷移すること',
       (WidgetTester tester) async {
         final fakeRouter = FakeGoRouter(mockCanPop: false);
 

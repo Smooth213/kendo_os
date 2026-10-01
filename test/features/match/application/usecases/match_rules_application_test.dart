@@ -49,7 +49,7 @@ void main() {
     );
   });
 
-  group('Match Rules Propagation & Application Tests', () {
+  group('[Widget] Match Rules Propagation & Application テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late TournamentModel testTournament;
     late MockLocalMatchRepository mockLocalRepo;
@@ -103,7 +103,7 @@ void main() {
     });
 
     testWidgets(
-      '1. Verification of CategoryRulesScreen bulk-applying new rules to existing incomplete matches',
+      'Verification of CategoryRulesScreen bulk-applying new rules to existing incomplete matchesであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -247,7 +247,7 @@ void main() {
     );
 
     test(
-      '2. bulkUpdateMatchRules command updates specific matches rules in Firestore',
+      'bulkUpdateMatchRules command updates specific matches rules in Firestoreであること',
       () async {
         // Setup matches in Fake Firestore
         final oldRule = const MatchRule(
@@ -350,7 +350,7 @@ void main() {
     );
 
     test(
-      '3. deleteMatch on Web deletes directly from Firestore and updates optimistic UI state',
+      'deleteMatch on Web deletes directly from Firestore and updates optimistic UI stateであること',
       () async {
         // Simulate Web environment
         debugIsWebOverride = true;
@@ -426,7 +426,7 @@ void main() {
     );
 
     test(
-      '4. deleteMatch on Web dynamically updates currentTournamentIdProvider and currentDojoIdProvider from MatchModel when they are empty/incorrect',
+      'deleteMatch on Web dynamically updates currentTournamentIdProvider and currentDojoIdProvider from MatchModel when they are empty/incorrectであること',
       () async {
         // Simulate Web environment
         debugIsWebOverride = true;
@@ -502,7 +502,7 @@ void main() {
     );
 
     test(
-      '5. deleteMatch on Web does NOT overwrite active currentDojoIdProvider when match has default_org',
+      'deleteMatch on Web does NOT overwrite active currentDojoIdProvider when match has default_orgであること',
       () async {
         debugIsWebOverride = true;
         addTearDown(() {
@@ -572,7 +572,7 @@ void main() {
     );
 
     test(
-      '6. Team match creation with substitute player does NOT generate extra match slot for substitute',
+      'Team match creation with substitute player does NOT generate extra match slot for substituteであること',
       () {
         // Team playerNames has 6 players: 5 starters + 1 substitute
         final teamPlayerNames = [
@@ -614,7 +614,7 @@ void main() {
     );
 
     test(
-      '7. Registered team substitute players who are not in active match slots are correctly identified as bench waiting reserve players (teamSubstitutes)',
+      'Registered team substitute players who are not in active match slots are correctly identified as bench waiting reserve players (teamSubstitutes)こと',
       () {
         final teamPlayerNames = [
           '先鋒太郎',
@@ -646,7 +646,7 @@ void main() {
     );
 
     test(
-      '8. Renseikai candidate player chips filter by match category when same team name exists across categories',
+      'Renseikai candidate player chips filter by match category when same team name exists across categoriesであること',
       () {
         final registeredTeams = [
           const TeamModel(
@@ -707,7 +707,7 @@ void main() {
     );
 
     test(
-      '9. Verification that extension match decisions correctly set isEncho flag for score cards and official records',
+      'Verification that extension match decisions correctly set isEncho flag for score cards and official recordsであること',
       () {
         // 1. Regular match finished in regular time (not extension) -> isEncho = false
         final regularFinishedMatch = const MatchModel(
@@ -835,7 +835,7 @@ void main() {
     );
 
     test(
-      '10. Verification that court text and progress header memo are preserved on MatchModel note',
+      'Verification that court text and progress header memo are preserved on MatchModel noteであること',
       () {
         const courtText = '第1試合場';
         const userNote = '準決勝';
@@ -856,7 +856,7 @@ void main() {
     );
 
     test(
-      '11. Verification that MatchEditSheet correctly detects match rule scene preset key for chip selection',
+      'Verification that MatchEditSheet correctly detects match rule scene preset key for chip selectionであること',
       () {
         String detectPresetKey(MatchModel match) {
           final r = match.rule ?? const MatchRule();
@@ -907,7 +907,7 @@ void main() {
     );
 
     test(
-      '12. Verification that Renseikai candidate player chips strictly include only own category team players and reserve players',
+      'Verification that Renseikai candidate player chips strictly include only own category team players and reserve playersであること',
       () {
         final registeredTeams = [
           const TeamModel(
@@ -992,7 +992,7 @@ void main() {
     );
 
     test(
-      '13. Verification that match rule scenes (renseikai, moushiawase, honsen) and hasHantei state are accurately saved and applied across environments',
+      'Verification that match rule scenes (renseikai, moushiawase, honsen) and hasHantei state are accurately saved and applied across environmentsであること',
       () {
         const initialMatch = MatchModel(
           id: 'm13_1',

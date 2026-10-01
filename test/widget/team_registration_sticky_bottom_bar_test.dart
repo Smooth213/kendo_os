@@ -11,39 +11,40 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('TeamRegistrationStickyBottomBar renders properly on page 0', (
-    tester,
-  ) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+  testWidgets(
+    'TeamRegistrationStickyBottomBar renders properly on page 0であること',
+    (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            bottomNavigationBar: TeamRegistrationStickyBottomBar(
-              currentPage: 0,
-              editingTeamId: null,
-              themeColors: themeColors,
-              onPrevious: () {},
-              onPrimaryAction: () {},
-              onFinishToRules: () {},
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              bottomNavigationBar: TeamRegistrationStickyBottomBar(
+                currentPage: 0,
+                editingTeamId: null,
+                themeColors: themeColors,
+                onPrevious: () {},
+                onPrimaryAction: () {},
+                onFinishToRules: () {},
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    expect(find.text('次へ進む'), findsOneWidget);
-    expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
-  });
+      expect(find.text('次へ進む'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
+    },
+  );
 
   testWidgets(
-    'TeamRegistrationStickyBottomBar renders properly on page 2 (inputting)',
+    'TeamRegistrationStickyBottomBar renders properly on page 2 (inputting)こと',
     (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
       final prefs = await SharedPreferences.getInstance();
@@ -77,7 +78,7 @@ void main() {
   );
 
   testWidgets(
-    'TeamRegistrationStickyBottomBar renders properly on page 2 (not inputting)',
+    'TeamRegistrationStickyBottomBar renders properly on page 2 (not inputting)こと',
     (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
       final prefs = await SharedPreferences.getInstance();

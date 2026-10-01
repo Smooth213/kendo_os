@@ -4,7 +4,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('TeamRegistrationOrderStep renders properly', (tester) async {
+  testWidgets('TeamRegistrationOrderStep renders properlyであること', (
+    tester,
+  ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final controller = TextEditingController(text: '赤心館A');
     final focusNode = FocusNode();
@@ -47,7 +49,7 @@ void main() {
     expect(find.text('補欠を追加 (0/4)'), findsOneWidget);
   });
 
-  testWidgets('☀️ ライトモード: 補欠アバターの背景と文字が同化せず、高コントラストで視認できること', (tester) async {
+  testWidgets('ライトモード: 補欠アバターの背景と文字が同化せず、高コントラストで視認できること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final controller = TextEditingController(text: '赤心館A');
     final focusNode = FocusNode();
@@ -111,7 +113,7 @@ void main() {
     expect(subTextStyle.color, equals(const Color(0xFFE65100)));
   });
 
-  testWidgets('🌙 ダークモード: 補欠アバターの背景と文字が同化せず、高コントラストで視認できること', (tester) async {
+  testWidgets('ダークモード: 補欠アバターの背景と文字が同化せず、高コントラストで視認できること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');
     final controller = TextEditingController(text: '赤心館A');
     final focusNode = FocusNode();

@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🛡️ マニュアル完全性＆整合性テスト (Manual Integrity Tests)', () {
+  group('[Unit] マニュアル完全性＆整合性テスト (Manual Integrity テスト)', () {
     const manualsBasePath = 'packages/documentation_runtime/manuals';
     final indexFile = File('$manualsBasePath/manual_search_index.json');
 
-    test('1. manual_search_index.json が存在し、正しいJSON形式でパースできること', () {
+    test('manual_search_index.json が存在し、正しいJSON形式でパースできること', () {
       expect(
         indexFile.existsSync(),
         isTrue,
@@ -26,7 +26,7 @@ void main() {
       );
     });
 
-    test('2. インデックス内の全エントリに対応するMarkdownファイルが実在すること（デッドパス防止）', () {
+    test('【デッドパス防止】インデックス内の全エントリに対応するMarkdownファイルが実在すること', () {
       final list = jsonDecode(indexFile.readAsStringSync()) as List<dynamic>;
 
       for (final entry in list) {
@@ -65,7 +65,7 @@ void main() {
       }
     });
 
-    test('3. 全主要カテゴリのMarkdownファイルが漏れなくインデックスに登録されていること', () {
+    test('全主要カテゴリのMarkdownファイルが漏れなくインデックスに登録されていること', () {
       final list = jsonDecode(indexFile.readAsStringSync()) as List<dynamic>;
       final indexedPaths = list.map((e) => e['path'] as String).toSet();
 
@@ -97,7 +97,7 @@ void main() {
       }
     });
 
-    test('4. 全マニュアルファイルが500行制限を守り、空でないこと（憲法遵守）', () {
+    test('【憲法遵守】全マニュアルファイルが500行制限を守り、空でないこと', () {
       final dir = Directory(manualsBasePath);
       final allMdFiles = dir
           .listSync(recursive: true)
@@ -119,7 +119,7 @@ void main() {
       }
     });
 
-    test('5. 本番マニュアル内の相対Markdownリンクがすべて実在すること（リンク切れ防止）', () {
+    test('【リンク切れ防止】本番マニュアル内の相対Markdownリンクがすべて実在すること', () {
       final categories = [
         'quickstart',
         'recovery',
@@ -170,7 +170,7 @@ void main() {
       }
     });
 
-    test('6. 本番マニュアル内で非推奨語句（スコアラー等）が使用されていないこと（憲法遵守）', () {
+    test('【憲法遵守】本番マニュアル内で非推奨語句（スコアラー等）が使用されていないこと', () {
       final categories = [
         'quickstart',
         'recovery',

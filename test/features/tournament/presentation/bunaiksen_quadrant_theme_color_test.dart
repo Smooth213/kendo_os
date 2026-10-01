@@ -80,7 +80,7 @@ void main() {
     );
   });
 
-  group('🛡️ Bunaiksen Quadrant Theme Color Verification Tests', () {
+  group('[Widget] Bunaiksen Quadrant Theme Color 検証 テスト', () {
     const mockMatch = MatchModel(
       id: 'test_match_01',
       tournamentId: 't1',
@@ -263,7 +263,7 @@ void main() {
     }
 
     testWidgets(
-      '1. 通常運営モード（MatchScreen）：ライトモード下で「インディゴ背景（Colors.indigo.shade600）に白文字」のAppBarカラー検証',
+      '通常運営モード（MatchScreen）：ライトモード下で「インディゴ背景（Colors.indigo.shade600）に白文字」のAppBarカラーが正しく検証されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           buildTestableWidget(
@@ -321,7 +321,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 通常観客モード（ViewerMatchScreen）：ヘッダー配色が運営側インディゴと重複せず、iOSスタイルテキストを維持していること',
+      '通常観客モード（ViewerMatchScreen）：ヘッダー配色が運営側インディゴと重複せず、iOSスタイルテキストを維持していること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           buildTestableWidget(
@@ -350,7 +350,7 @@ void main() {
     );
 
     testWidgets(
-      '3. 部内戦運営モード（BunaiksenHomeScreen）：ライトモード下で「白背景（Colors.white）に臙脂色文字（Color(0xFF8B0000)）」のAppBarカラー検証',
+      '部内戦運営モード（BunaiksenHomeScreen）：ライトモード下で「白背景（Colors.white）に臙脂色文字（Color(0xFF8B0000)）」のAppBarカラーが正しく検証されること',
       (WidgetTester tester) async {
         prefs.setString(
           'kendo_sync_settings',
@@ -382,7 +382,7 @@ void main() {
     );
 
     testWidgets(
-      '4. 部内戦観客モード（ViewerBunaiksenHomeScreen）：通常インディゴ・部内戦運営臙脂と重複しない「千歳緑（Colors.teal.shade700）背景に白文字」の色分け検証 (すりガラスOFF時)',
+      '部内戦観客モード（ViewerBunaiksenHomeScreen）：通常インディゴ・部内戦運営臙脂と重複しない「千歳緑（Colors.teal.shade700）背景に白文字」の色分け検証 (すりガラスOFF時)こと',
       (WidgetTester tester) async {
         // SharedPreferences setup to save enableLiquidGlass as false
         prefs.setString(
@@ -416,7 +416,7 @@ void main() {
     );
 
     testWidgets(
-      '5. 部内戦観客モード（ViewerBunaiksenHomeScreen）：すりガラスON時、背景が透明かつ文字・アイコンがColors.teal.shade700であること',
+      '部内戦観客モード（ViewerBunaiksenHomeScreen）：すりガラスON時、背景が透明かつ文字・アイコンがColors.teal.shade700であること',
       (WidgetTester tester) async {
         // SharedPreferences setup to save enableLiquidGlass as true
         prefs.setString(
@@ -450,7 +450,7 @@ void main() {
     );
 
     testWidgets(
-      '6. 部内戦観客モード（ViewerBunaiksenHomeScreen）：ダークモード時、文字・アイコンがColors.teal.shade300であること',
+      '部内戦観客モード（ViewerBunaiksenHomeScreen）：ダークモード時、文字・アイコンがColors.teal.shade300であること',
       (WidgetTester tester) async {
         prefs.setString(
           'kendo_sync_settings',
@@ -482,7 +482,7 @@ void main() {
     );
 
     testWidgets(
-      '7. カレンダーダイアログテーマ配色検証（ViewerBunaiksenHomeScreen）：ライトモード時はColors.teal.shade700、ダークモード時はColors.teal.shade300に適合すること',
+      'カレンダーダイアログテーマ配色検証（ViewerBunaiksenHomeScreen）：ライトモード時はColors.teal.shade700、ダークモード時はColors.teal.shade300に適合すること',
       (WidgetTester tester) async {
         prefs.setString(
           'kendo_sync_settings',

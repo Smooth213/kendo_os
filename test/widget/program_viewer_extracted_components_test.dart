@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ ProgramViewer Extracted Components Tests', () {
-    test('1. ProgramViewerStrokeEraser detects near strokes correctly', () {
+  group('[Widget] ProgramViewer Extracted Components テスト', () {
+    test('ProgramViewerStrokeEraser detects near strokes correctlyであること', () {
       final points = [const Offset(10.0, 10.0), const Offset(20.0, 20.0)];
 
       expect(
@@ -26,7 +26,7 @@ void main() {
       );
     });
 
-    test('2. ProgramViewerStrokeEraser detects local strokes correctly', () {
+    test('ProgramViewerStrokeEraser detects local strokes correctlyであること', () {
       final xs = [10.0, 20.0];
       final ys = [10.0, 20.0];
 

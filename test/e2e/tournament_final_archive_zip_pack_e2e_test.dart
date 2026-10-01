@@ -33,8 +33,8 @@ class TournamentArchiver {
 }
 
 void main() {
-  group('🚀 【Phase 5-7/10】大会終了 全帳票PDF一括アーカイブ・ZIP化・閲覧専用凍結 E2Eテスト', () {
-    test('1. 大会終了処理時、必要な公式PDF・CSVがすべて揃い、大会ステータスが読み取り専用に凍結されること', () {
+  group('[E2E] 【Phase 5-7/10】大会終了 全帳票PDF一括アーカイブ・ZIP化・閲覧専用凍結 E2Eテスト', () {
+    test('大会終了処理時、必要な公式PDF・CSVがすべて揃い、大会ステータスが読み取り専用に凍結されること', () {
       final archive = TournamentArchiver.createArchivePackage(
         tournamentId: 'tourney_final_2026',
         tournamentName: '全国選抜剣道大会',

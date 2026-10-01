@@ -19,7 +19,7 @@ void main() {
     mockPrefs = await SharedPreferences.getInstance();
   });
 
-  group('🛡️ RoleSelectScreen スワイプバック復帰時グレーアウト防止＆タップ領域厳格保証テスト', () {
+  group('[Widget] RoleSelectScreen スワイプバック復帰時グレーアウト防止＆タップ領域厳格保証テスト', () {
     Widget buildTestApp({List<RouteBase>? extraRoutes}) {
       final router = GoRouter(
         initialLocation: '/role-select',
@@ -59,48 +59,52 @@ void main() {
       );
     }
 
-    testWidgets('1. 全4権限ボタンが常にenabled（onPressed != null）であり、グレーアウトしないことを検証', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestApp());
-      await tester.pumpAndSettle();
+    testWidgets(
+      '全4権限ボタンが常にenabled（onPressed != null）であり、グレーアウトしないことが正しく検証できること',
+      (tester) async {
+        await tester.pumpWidget(buildTestApp());
+        await tester.pumpAndSettle();
 
-      final adminFinder = find.widgetWithText(ElevatedButton, '代表・管理者 (Admin)');
-      final operatorFinder = find.widgetWithText(
-        ElevatedButton,
-        '監督・引率責任者 (Operator)',
-      );
-      final recorderFinder = find.widgetWithText(
-        ElevatedButton,
-        'スコア・記録係 (Recorder)',
-      );
-      final viewerFinder = find.widgetWithText(
-        ElevatedButton,
-        '応援・保護者・選手 (Viewer)',
-      );
-
-      expect(adminFinder, findsOneWidget);
-      expect(operatorFinder, findsOneWidget);
-      expect(recorderFinder, findsOneWidget);
-      expect(viewerFinder, findsOneWidget);
-
-      for (final finder in [
-        adminFinder,
-        operatorFinder,
-        recorderFinder,
-        viewerFinder,
-      ]) {
-        final button = tester.widget<ElevatedButton>(finder);
-        expect(
-          button.onPressed,
-          isNotNull,
-          reason: 'ボタンが無効化（グレーアウト）されていてはならない',
+        final adminFinder = find.widgetWithText(
+          ElevatedButton,
+          '代表・管理者 (Admin)',
         );
-        expect(button.enabled, isTrue);
-      }
-    });
+        final operatorFinder = find.widgetWithText(
+          ElevatedButton,
+          '監督・引率責任者 (Operator)',
+        );
+        final recorderFinder = find.widgetWithText(
+          ElevatedButton,
+          'スコア・記録係 (Recorder)',
+        );
+        final viewerFinder = find.widgetWithText(
+          ElevatedButton,
+          '応援・保護者・選手 (Viewer)',
+        );
 
-    testWidgets('2. 画面遷移後に戻った（スワイプバック・Pop）際も、全ボタンが押下可能状態を維持することを検証', (
+        expect(adminFinder, findsOneWidget);
+        expect(operatorFinder, findsOneWidget);
+        expect(recorderFinder, findsOneWidget);
+        expect(viewerFinder, findsOneWidget);
+
+        for (final finder in [
+          adminFinder,
+          operatorFinder,
+          recorderFinder,
+          viewerFinder,
+        ]) {
+          final button = tester.widget<ElevatedButton>(finder);
+          expect(
+            button.onPressed,
+            isNotNull,
+            reason: 'ボタンが無効化（グレーアウト）されていてはならない',
+          );
+          expect(button.enabled, isTrue);
+        }
+      },
+    );
+
+    testWidgets('画面遷移後に戻った（スワイプバック・Pop）際も、全ボタンが押下可能状態を維持することが正しく検証できること', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestApp());
@@ -157,7 +161,7 @@ void main() {
       expect(find.text('PIN認証: operator'), findsOneWidget);
     });
 
-    testWidgets('3. 各ボタンの配置座標（Bounding Box）が重複せず、56px以上の高さを保持していることを検証', (
+    testWidgets('各ボタンの配置座標（Bounding Box）が重複せず、56px以上の高さを保持していることが正しく検証できること', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestApp());
@@ -198,7 +202,7 @@ void main() {
       );
     });
 
-    testWidgets('4. 連打デバウンス（600ms）が過度な重複遷移を防ぎつつ、時間経過後は正常受付することを検証', (
+    testWidgets('連打デバウンス（600ms）が過度な重複遷移を防ぎつつ、時間経過後は正常受付することが正しく検証できること', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestApp());

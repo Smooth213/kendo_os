@@ -9,8 +9,8 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ MatchUndoHelper Unit Tests', () {
-    test('1. MatchUndoHelper can be instantiated properly', () {
+  group('[Unit] MatchUndoHelper 単体テスト', () {
+    test('MatchUndoHelper can be instantiated properlyであること', () {
       final container = ProviderContainer(
         overrides: [isarProvider.overrideWithValue(null)],
       );
@@ -26,7 +26,7 @@ void main() {
     });
 
     test(
-      '2. executeUndo handles empty events gracefully without throwing',
+      'executeUndo handles empty events gracefully without throwingであること',
       () async {
         final container = ProviderContainer(
           overrides: [isarProvider.overrideWithValue(null)],

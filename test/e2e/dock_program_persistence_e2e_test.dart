@@ -132,9 +132,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('🥋 【E2E】ドックプログラム閲覧位置端末永続化 ＆ 全画面ビューア連携 E2E検証', () {
+  group('[E2E] 【E2E】ドックプログラム閲覧位置端末永続化 ＆ 全画面ビューア連携 E2E検証', () {
     testWidgets(
-      'ドック展開 → ページ送り → ボトムシート終了 → 再展開復元 → 全画面遷移 → 全画面ページ送り → 画面復帰 → 端末再起動後完全復元シナリオ',
+      'ドック展開 → ページ送り → ボトムシート終了 → 再展開復元 → 全画面遷移 → 全画面ページ送り → 画面復帰 → 端末再起動後完全復元シナリオこと',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -302,7 +302,7 @@ void main() {
     );
 
     testWidgets(
-      '【E2E】複数ページ進行後に「最初のページに戻る」をタップ → 1ページ目復帰 ＆ ドック再展開 ＆ 全画面ビューア連携 ＆ アプリ再起動後も1ページ目維持シナリオ',
+      '【E2E】複数ページ進行後に「最初のページに戻る」をタップ → 1ページ目復帰 ＆ ドック再展開 ＆ 全画面ビューア連携 ＆ アプリ再起動後も1ページ目維持シナリオこと',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;

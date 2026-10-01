@@ -79,9 +79,9 @@ void main() {
     },
   );
 
-  group('🛡️ ルール設定デザイン回帰防止テスト要塞（スワイプ編集 ＆ ルール一括変更）', () {
+  group('[Widget] ルール設定デザイン回帰防止テスト要塞（スワイプ編集 ＆ ルール一括変更）', () {
     testWidgets(
-      '1. MatchEditSheet（スワイプ編集）: ルールタブの全カード・トグル・チップがレイアウト崩れ無く表示・操作できること',
+      'MatchEditSheet（スワイプ編集）: ルールタブの全カード・トグル・チップがレイアウト崩れ無く表示・操作できること',
       (tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;
@@ -168,7 +168,7 @@ void main() {
     );
 
     testWidgets(
-      '2. BulkRuleEditSheet（ルール一括変更）: フィルタ・プリセット・全ルール編集・下部実行バーが破綻無く動作すること',
+      'BulkRuleEditSheet（ルール一括変更）: フィルタ・プリセット・全ルール編集・下部実行バーが破綻無く動作すること',
       (tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 2.0;
@@ -222,48 +222,47 @@ void main() {
       },
     );
 
-    testWidgets(
-      '3. テーマ・レスポンシブ崩れ防止: 小画面（幅360px）でもOverflowエラー無くスクロール・操作可能であること',
-      (tester) async {
-        tester.view.physicalSize = const Size(720, 1280);
-        tester.view.devicePixelRatio = 2.0;
-        addTearDown(tester.view.resetPhysicalSize);
+    testWidgets('テーマ・レスポンシブ崩れ防止: 小画面（幅360px）でもOverflowエラー無くスクロール・操作可能であること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(720, 1280);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              tournamentProvider(
-                't_design_test',
-              ).overrideWith((ref) => Stream.value(testTournament)),
-            ],
-            child: MaterialApp(
-              theme: ThemeData.light(),
-              home: Scaffold(
-                body: MatchEditSheet(
-                  matches: [testMatchDantai1, testMatchDantai2],
-                  tournamentId: 't_design_test',
-                  themeColors: AppThemeColors.ofMode(
-                    isDark: false,
-                    mode: 'normal',
-                  ),
-                  initialTabIndex: 2,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            tournamentProvider(
+              't_design_test',
+            ).overrideWith((ref) => Stream.value(testTournament)),
+          ],
+          child: MaterialApp(
+            theme: ThemeData.light(),
+            home: Scaffold(
+              body: MatchEditSheet(
+                matches: [testMatchDantai1, testMatchDantai2],
+                tournamentId: 't_design_test',
+                themeColors: AppThemeColors.ofMode(
+                  isDark: false,
+                  mode: 'normal',
                 ),
+                initialTabIndex: 2,
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Overflowエラーが発生せず正常に描画されていること
-        expect(tester.takeException(), isNull);
+      // Overflowエラーが発生せず正常に描画されていること
+      expect(tester.takeException(), isNull);
 
-        // スクロール操作
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
-        await tester.pumpAndSettle();
+      // スクロール操作
+      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.pumpAndSettle();
 
-        // スクロール後もOverflowエラーが無いこと
-        expect(tester.takeException(), isNull);
-      },
-    );
+      // スクロール後もOverflowエラーが無いこと
+      expect(tester.takeException(), isNull);
+    });
   });
 }

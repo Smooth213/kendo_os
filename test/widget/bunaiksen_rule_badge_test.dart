@@ -64,8 +64,8 @@ Widget _buildTestWidget(MatchRule rule, {bool isTeam = false}) {
 }
 
 void main() {
-  group('🏷️ 部内戦ルールバッジ表示テスト', () {
-    testWidgets('1. デフォルトルール: 3分 / 3本 のみ表示 (延長・判定なし)', (
+  group('[Widget] 部内戦ルールバッジ表示テスト', () {
+    testWidgets('デフォルトルール: 3分 / 3本 のみ表示 (延長・判定なし)こと', (
       WidgetTester tester,
     ) async {
       const rule = MatchRule(
@@ -88,7 +88,7 @@ void main() {
       expect(find.text('判定'), findsNothing);
     });
 
-    testWidgets('2. 1分30秒・1本勝負: 秒も正しく表示される', (WidgetTester tester) async {
+    testWidgets('1分30秒・1本勝負: 秒も正しく表示されること', (WidgetTester tester) async {
       const rule = MatchRule(
         matchTimeMinutes: 1.5,
         isIpponShobu: true,
@@ -104,7 +104,7 @@ void main() {
       expect(find.text('1分30秒 / 1本'), findsOneWidget);
     });
 
-    testWidgets('3. 2分30秒・3本勝負・延長あり: 延長バッジが表示される', (WidgetTester tester) async {
+    testWidgets('2分30秒・3本勝負・延長あり: 延長バッジが表示されること', (WidgetTester tester) async {
       const rule = MatchRule(
         matchTimeMinutes: 2.5,
         isIpponShobu: false,
@@ -120,7 +120,7 @@ void main() {
       expect(find.text('延長'), findsOneWidget);
     });
 
-    testWidgets('4. 延長無制限: 延長∞ バッジが表示される', (WidgetTester tester) async {
+    testWidgets('延長無制限: 延長∞ バッジが表示されること', (WidgetTester tester) async {
       const rule = MatchRule(
         matchTimeMinutes: 3.0,
         isIpponShobu: false,
@@ -137,7 +137,7 @@ void main() {
       expect(find.text('延長'), findsNothing); // 通常延長ではない
     });
 
-    testWidgets('5. 判定あり: 判定バッジが表示される', (WidgetTester tester) async {
+    testWidgets('判定あり: 判定バッジが表示されること', (WidgetTester tester) async {
       const rule = MatchRule(
         matchTimeMinutes: 2.0,
         isIpponShobu: true,
@@ -153,7 +153,7 @@ void main() {
       expect(find.text('判定'), findsOneWidget);
     });
 
-    testWidgets('6. フルルール: 全バッジが同時に表示される', (WidgetTester tester) async {
+    testWidgets('フルルール: 全バッジが同時に表示されること', (WidgetTester tester) async {
       const rule = MatchRule(
         matchTimeMinutes: 3.0,
         isIpponShobu: false,
@@ -172,8 +172,8 @@ void main() {
     });
   });
 
-  group('⚙️ 部内戦ルール設定変更テスト', () {
-    testWidgets('7. ルール変更時にバッジがリアルタイム更新される', (WidgetTester tester) async {
+  group('部内戦ルール設定変更テスト', () {
+    testWidgets('ルール変更時にバッジがリアルタイム更新されること', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -236,7 +236,7 @@ void main() {
       expect(find.text('判定'), findsOneWidget);
     });
 
-    testWidgets('8. アコーディオン展開で設定UIが表示される', (WidgetTester tester) async {
+    testWidgets('アコーディオン展開で設定UIが表示されること', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -271,7 +271,7 @@ void main() {
       expect(find.text('判定'), findsWidgets); // バッジ内とラベル両方
     });
 
-    testWidgets('9. 各種試合時間の分秒表記が正確である', (WidgetTester tester) async {
+    testWidgets('各種試合時間の分秒表記が正確であること', (WidgetTester tester) async {
       // テストケース: matchTimeMinutes → 期待される表示
       final testCases = <double, String>{
         1.0: '1分 / 3本',
@@ -301,7 +301,7 @@ void main() {
       }
     });
 
-    testWidgets('10. バッジが丸付きのContainer(ピルバッジ)スタイルで描画される', (
+    testWidgets('バッジが丸付きのContainer(ピルバッジ)スタイルで描画されること', (
       WidgetTester tester,
     ) async {
       const rule = MatchRule(
@@ -337,8 +337,8 @@ void main() {
     });
   });
 
-  group('🥋 団体戦（isTeam: true）ルール表示テスト', () {
-    testWidgets('11. 団体戦時: 延長・判定が有効なMatchRuleでもバッジに延長・判定が表示されないこと', (
+  group('団体戦（isTeam: true）ルール表示テスト', () {
+    testWidgets('団体戦時: 延長・判定が有効なMatchRuleでもバッジに延長・判定が表示されないこと', (
       WidgetTester tester,
     ) async {
       const rule = MatchRule(
@@ -362,7 +362,7 @@ void main() {
       expect(find.text('判定'), findsNothing);
     });
 
-    testWidgets('12. 団体戦時: アコーディオン展開時も延長戦・判定の設定UIが表示されないこと', (
+    testWidgets('団体戦時: アコーディオン展開時も延長戦・判定の設定UIが表示されないこと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -397,71 +397,70 @@ void main() {
       expect(find.text('判定'), findsNothing);
     });
 
-    testWidgets(
-      '13. BunaiksenSetupScreen: タブ切り替えで個人戦と団体戦の延長・判定表示が連動して切り替わること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1200, 1600);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('BunaiksenSetupScreen: タブ切り替えで個人戦と団体戦の延長・判定表示が連動して切り替わること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              bunaiksenPlayerMasterProvider.overrideWith(
-                (ref) => Stream<List<PlayerModel>>.value([]),
-              ),
-              bunaiksenGuestProvider.overrideWith(
-                (ref) => _FakeBunaiksenGuestNotifier(),
-              ),
-            ],
-            child: MaterialApp(
-              theme: ThemeData(
-                extensions: [
-                  AppThemeColors.ofMode(isDark: false, mode: 'normal'),
-                ],
-              ),
-              home: const BunaiksenSetupScreen(),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            bunaiksenPlayerMasterProvider.overrideWith(
+              (ref) => Stream<List<PlayerModel>>.value([]),
             ),
+            bunaiksenGuestProvider.overrideWith(
+              (ref) => _FakeBunaiksenGuestNotifier(),
+            ),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: const BunaiksenSetupScreen(),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // アコーディオンを展開して判定をONにする
-        await tester.tap(find.text('部内戦ルール設定'));
-        await tester.pumpAndSettle();
+      // アコーディオンを展開して判定をONにする
+      await tester.tap(find.text('部内戦ルール設定'));
+      await tester.pumpAndSettle();
 
-        // 判定スイッチをタップしてONにする
-        final hanteiSwitch = find.byType(Switch);
-        expect(hanteiSwitch, findsOneWidget);
-        await tester.tap(hanteiSwitch);
-        await tester.pumpAndSettle();
+      // 判定スイッチをタップしてONにする
+      final hanteiSwitch = find.byType(Switch);
+      expect(hanteiSwitch, findsOneWidget);
+      await tester.tap(hanteiSwitch);
+      await tester.pumpAndSettle();
 
-        // 個人戦タブ: 判定バッジが表示される
-        expect(find.text('判定'), findsWidgets);
+      // 個人戦タブ: 判定バッジが表示される
+      expect(find.text('判定'), findsWidgets);
 
-        // 団体戦タブをタップ
-        await tester.tap(find.text('団体戦 (紅白戦)'));
-        await tester.pumpAndSettle();
+      // 団体戦タブをタップ
+      await tester.tap(find.text('団体戦 (紅白戦)'));
+      await tester.pumpAndSettle();
 
-        // 団体戦タブ: 判定バッジおよび判定設定UIが非表示になる
-        expect(find.text('判定'), findsNothing);
-        expect(find.text('延長戦'), findsNothing);
+      // 団体戦タブ: 判定バッジおよび判定設定UIが非表示になる
+      expect(find.text('判定'), findsNothing);
+      expect(find.text('延長戦'), findsNothing);
 
-        // 個人戦タブに戻る
-        await tester.tap(find.text('個人戦 (即スタート)'));
-        await tester.pumpAndSettle();
+      // 個人戦タブに戻る
+      await tester.tap(find.text('個人戦 (即スタート)'));
+      await tester.pumpAndSettle();
 
-        // 再び判定が表示される
-        expect(find.text('判定'), findsWidgets);
-        expect(find.text('延長戦'), findsOneWidget);
-      },
-    );
+      // 再び判定が表示される
+      expect(find.text('判定'), findsWidgets);
+      expect(find.text('延長戦'), findsOneWidget);
+    });
   });
 }

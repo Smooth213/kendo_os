@@ -3,8 +3,8 @@ import 'package:kendo_os/admin/presentation/components/master_player_grouping_he
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('MasterPlayerGroupingHelper Tests', () {
-    test('getCategoryName returns correct category for each grade', () {
+  group('[Widget] MasterPlayerGroupingHelper テスト', () {
+    test('getCategoryName returns correct category for each gradeであること', () {
       expect(MasterPlayerGroupingHelper.getCategoryName(-1), '初心者の部');
       expect(MasterPlayerGroupingHelper.getCategoryName(0), '幼年の部');
       expect(MasterPlayerGroupingHelper.getCategoryName(3), '小学生低学年の部');
@@ -14,7 +14,7 @@ void main() {
       expect(MasterPlayerGroupingHelper.getCategoryName(13), '一般の部');
     });
 
-    test('groupPlayers groups by gradeName when mode is 0', () {
+    test('groupPlayers groups by gradeName when mode is 0であること', () {
       final players = [
         PlayerModel(
           id: 'p1',
@@ -51,7 +51,7 @@ void main() {
       expect(grouped['小学5年']!.length, 1);
     });
 
-    test('groupPlayers groups by category when mode is 1', () {
+    test('groupPlayers groups by category when mode is 1であること', () {
       final players = [
         PlayerModel(
           id: 'p1',

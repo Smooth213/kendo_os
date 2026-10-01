@@ -7,9 +7,9 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_table_sections.dart';
 
 void main() {
-  group('🛡️ ViewerOfficialRecordTableSections Widget Tests', () {
+  group('[Widget] ViewerOfficialRecordTableSections ウィジェットテスト', () {
     testWidgets(
-      'ViewerOfficialScoreTableCard renders team title and table properly',
+      'ViewerOfficialScoreTableCard renders team title and table properlyであること',
       (tester) async {
         final matches = [
           const MatchListProjection(
@@ -49,7 +49,7 @@ void main() {
     );
 
     testWidgets(
-      'ViewerOfficialIndividualListCard renders individual match item properly',
+      'ViewerOfficialIndividualListCard renders individual match item properlyであること',
       (tester) async {
         final matches = [
           const MatchListProjection(

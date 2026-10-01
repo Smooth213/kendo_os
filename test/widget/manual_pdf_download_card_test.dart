@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_pdf_download_card.dart';
 
 void main() {
-  group('🛡️ ManualPdfDownloadCard Widget Tests', () {
+  group('[Widget] ManualPdfDownloadCard ウィジェットテスト', () {
     testWidgets(
-      'Renders download card and responds to download and text fallback taps',
+      'Renders download card and responds to download and text fallback tapsであること',
       (tester) async {
         bool downloadPressed = false;
         bool fallbackPressed = false;

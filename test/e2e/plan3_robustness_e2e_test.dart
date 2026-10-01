@@ -13,73 +13,67 @@ import 'package:kendo_os/shared/time/system_time_source.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ 【E2E / 統合シナリオ】プラン3: 堅牢性・同期整合性・データ完全性検証', () {
-    test(
-      '1. [タイマーミリ秒端数精度の完全維持] 30回連続でタイマー開始・停止（はじめ・やめ）を繰り返しても累積ズレが0msであること',
-      () {
-        final baseStartTime = DateTime.utc(2026, 9, 14, 10, 0, 0);
-        var match = const MatchModel(
-          id: 'timer_jitter_test',
-          matchType: '個人戦',
-          redName: '選手赤',
-          whiteName: '選手白',
-          matchTimeMinutes: 3.0, // 3分 = 180,000ms
-          status: 'waiting',
-          accumulatedPauseDurationMs: 0,
+  group('[E2E] 【E2E / 統合シナリオ】プラン3: 堅牢性・同期整合性・データ完全性検証', () {
+    test('[タイマーミリ秒端数精度の完全維持] 30回連続でタイマー開始・停止（はじめ・やめ）を繰り返しても累積ズレが0msであること', () {
+      final baseStartTime = DateTime.utc(2026, 9, 14, 10, 0, 0);
+      var match = const MatchModel(
+        id: 'timer_jitter_test',
+        matchType: '個人戦',
+        redName: '選手赤',
+        whiteName: '選手白',
+        matchTimeMinutes: 3.0, // 3分 = 180,000ms
+        status: 'waiting',
+        accumulatedPauseDurationMs: 0,
+      );
+
+      var currentTime = baseStartTime;
+      int expectedTotalElapsedMs = 0;
+
+      // 30回の「はじめ」「やめ」シミュレーション（各回異なる端数ミリ秒: 例 456ms 経過）
+      for (int i = 1; i <= 30; i++) {
+        // 「はじめ」: タイマー開始
+        match = match.copyWith(
+          status: 'in_progress',
+          timerStartedAt: currentTime,
+          timerPausedAt: null,
         );
 
-        var currentTime = baseStartTime;
-        int expectedTotalElapsedMs = 0;
-
-        // 30回の「はじめ」「やめ」シミュレーション（各回異なる端数ミリ秒: 例 456ms 経過）
-        for (int i = 1; i <= 30; i++) {
-          // 「はじめ」: タイマー開始
-          match = match.copyWith(
-            status: 'in_progress',
-            timerStartedAt: currentTime,
-            timerPausedAt: null,
-          );
-
-          // 試合が 456ms 進行
-          const runDurationMs = 456;
-          currentTime = currentTime.add(
-            const Duration(milliseconds: runDurationMs),
-          );
-          expectedTotalElapsedMs += runDurationMs;
-
-          // 「やめ」: タイマー停止 (Plan 3-① の生ミリ秒加算ロジック)
-          final additionalMs = currentTime
-              .difference(match.timerStartedAt!)
-              .inMilliseconds;
-          final newAccMs = match.accumulatedPauseDurationMs + additionalMs;
-
-          match = match.copyWith(
-            status: 'paused',
-            timerStartedAt: null,
-            timerPausedAt: currentTime,
-            accumulatedPauseDurationMs: newAccMs,
-          );
-
-          // 一時停止状態が 500ms 継続
-          currentTime = currentTime.add(const Duration(milliseconds: 500));
-        }
-
-        // 30回終了後の検証
-        expect(
-          match.accumulatedPauseDurationMs,
-          equals(expectedTotalElapsedMs),
+        // 試合が 456ms 進行
+        const runDurationMs = 456;
+        currentTime = currentTime.add(
+          const Duration(milliseconds: runDurationMs),
         );
-        expect(match.accumulatedPauseDurationMs, equals(30 * 456)); // 13,680ms
-        // 天井秒逆算で発生していた秒ズレが完全にゼロであることを確認
-        final remainingMs = (3 * 60 * 1000) - match.accumulatedPauseDurationMs;
-        expect(
-          match.calculateRemainingSeconds(currentTime),
-          equals((remainingMs / 1000).ceil()),
-        );
-      },
-    );
+        expectedTotalElapsedMs += runDurationMs;
 
-    test('2. [Clock Skew 補正] サーバー時刻オフセットが適用され、正確なサーバー同期時刻が取得できること', () {
+        // 「やめ」: タイマー停止 (Plan 3-① の生ミリ秒加算ロジック)
+        final additionalMs = currentTime
+            .difference(match.timerStartedAt!)
+            .inMilliseconds;
+        final newAccMs = match.accumulatedPauseDurationMs + additionalMs;
+
+        match = match.copyWith(
+          status: 'paused',
+          timerStartedAt: null,
+          timerPausedAt: currentTime,
+          accumulatedPauseDurationMs: newAccMs,
+        );
+
+        // 一時停止状態が 500ms 継続
+        currentTime = currentTime.add(const Duration(milliseconds: 500));
+      }
+
+      // 30回終了後の検証
+      expect(match.accumulatedPauseDurationMs, equals(expectedTotalElapsedMs));
+      expect(match.accumulatedPauseDurationMs, equals(30 * 456)); // 13,680ms
+      // 天井秒逆算で発生していた秒ズレが完全にゼロであることを確認
+      final remainingMs = (3 * 60 * 1000) - match.accumulatedPauseDurationMs;
+      expect(
+        match.calculateRemainingSeconds(currentTime),
+        equals((remainingMs / 1000).ceil()),
+      );
+    });
+
+    test('[Clock Skew 補正] サーバー時刻オフセットが適用され、正確なサーバー同期時刻が取得できること', () {
       final service = ServerClockOffsetService.instance;
       // 5秒端末時計が遅れているシミュレーション (+5,000ms)
       service.setOffset(const Duration(seconds: 5));
@@ -97,7 +91,7 @@ void main() {
     });
 
     test(
-      '3. [CRDT 3者マージ＆LWWタイマー調停] リモート確定・ローカル確定・ローカル未送信の3者が完全ユニークマージされ、タイマーが最新状態に調停されること',
+      '[CRDT 3者マージ＆LWWタイマー調停] リモート確定・ローカル確定・ローカル未送信の3者が完全ユニークマージされ、タイマーが最新状態に調停されること',
       () {
         final now = DateTime.utc(2026, 9, 14, 12, 0, 0);
 
@@ -178,54 +172,49 @@ void main() {
       },
     );
 
-    test(
-      '4. [Web大会切替時のゴースト防止] matchListProvider は現在選択中の大会IDに一致する試合のみを返却すること',
-      () {
-        debugIsWebOverride = true;
-        addTearDown(() => debugIsWebOverride = false);
+    test('[Web大会切替時のゴースト防止] matchListProvider は現在選択中の大会IDに一致する試合のみを返却すること', () {
+      debugIsWebOverride = true;
+      addTearDown(() => debugIsWebOverride = false);
 
-        final container = ProviderContainer();
-        addTearDown(container.dispose);
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-        // Web用メモリキャッシュに大会Aと大会Bの試合が混在している状況をシミュレート
-        const matchA = MatchModel(
-          id: 'm_tourA_1',
-          tournamentId: 'tour_A',
-          matchType: '個人戦',
-          redName: '選手A赤',
-          whiteName: '選手A白',
-        );
-        const matchB = MatchModel(
-          id: 'm_tourB_1',
-          tournamentId: 'tour_B',
-          matchType: '個人戦',
-          redName: '選手B赤',
-          whiteName: '選手B白',
-        );
+      // Web用メモリキャッシュに大会Aと大会Bの試合が混在している状況をシミュレート
+      const matchA = MatchModel(
+        id: 'm_tourA_1',
+        tournamentId: 'tour_A',
+        matchType: '個人戦',
+        redName: '選手A赤',
+        whiteName: '選手A白',
+      );
+      const matchB = MatchModel(
+        id: 'm_tourB_1',
+        tournamentId: 'tour_B',
+        matchType: '個人戦',
+        redName: '選手B赤',
+        whiteName: '選手B白',
+      );
 
-        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
-          matchA,
-          matchB,
-        ];
-        container.read(webCurrentTournamentIdProvider.notifier).state =
-            'tour_A';
+      container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+        matchA,
+        matchB,
+      ];
+      container.read(webCurrentTournamentIdProvider.notifier).state = 'tour_A';
 
-        // 大会Aを選択中
-        final listA = container.read(matchListProvider);
-        expect(listA.length, equals(1));
-        expect(listA.first.id, equals('m_tourA_1'));
+      // 大会Aを選択中
+      final listA = container.read(matchListProvider);
+      expect(listA.length, equals(1));
+      expect(listA.first.id, equals('m_tourA_1'));
 
-        // 大会Bに切替
-        container.read(webCurrentTournamentIdProvider.notifier).state =
-            'tour_B';
-        final listB = container.read(matchListProvider);
-        expect(listB.length, equals(1));
-        expect(listB.first.id, equals('m_tourB_1'));
-      },
-    );
+      // 大会Bに切替
+      container.read(webCurrentTournamentIdProvider.notifier).state = 'tour_B';
+      final listB = container.read(matchListProvider);
+      expect(listB.length, equals(1));
+      expect(listB.first.id, equals('m_tourB_1'));
+    });
 
     test(
-      '5. [FSM有限状態機械] MatchModel.transitionEvent により正当な状態遷移のみが実行され、不正遷移が拒否されること',
+      '[FSM有限状態機械] MatchModel.transitionEvent により正当な状態遷移のみが実行され、不正遷移が拒否されること',
       () {
         var match = const MatchModel(
           id: 'fsm_test_match',

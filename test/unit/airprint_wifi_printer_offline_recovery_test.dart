@@ -18,8 +18,8 @@ class PrinterErrorHandler {
 }
 
 void main() {
-  group('📱 【Phase 2-4/10】AirPrint/Wi-Fiプリンタ オフライン・紙詰まり障害リカバリテスト', () {
-    test('1. プリンタ電源断・オフラインエラー時の適切なガイダンス案内', () {
+  group('[Unit] 【Phase 2-4/10】AirPrint/Wi-Fiプリンタ オフライン・紙詰まり障害リカバリテスト', () {
+    test('プリンタ電源断・オフラインエラー時の適切なガイダンス案内こと', () {
       final error = Exception(
         'Printer is offline or unreachable on local network',
       );
@@ -27,19 +27,19 @@ void main() {
       expect(guidance, contains('プリンターが見つかりません'));
     });
 
-    test('2. 用紙切れ・紙詰まり（Paper Jam）検知時のガイダンス案内', () {
+    test('用紙切れ・紙詰まり（Paper Jam）検知時のガイダンス案内こと', () {
       final error = Exception('Paper jam in tray 1');
       final guidance = PrinterErrorHandler.handlePrintingError(error);
       expect(guidance, contains('用紙切れまたは紙詰まり'));
     });
 
-    test('3. ユーザーキャンセル時の安全な終了ハンドリング', () {
+    test('ユーザーキャンセル時の安全な終了ハンドリングこと', () {
       final error = Exception('User canceled print job');
       final guidance = PrinterErrorHandler.handlePrintingError(error);
       expect(guidance, contains('印刷がキャンセルされました'));
     });
 
-    test('4. 未知の通信例外時のPDFファイル直接保存フォールバック案内', () {
+    test('未知の通信例外時のPDFファイル直接保存フォールバック案内こと', () {
       final error = Exception('Unknown I/O hardware failure 0x80004005');
       final guidance = PrinterErrorHandler.handlePrintingError(error);
       expect(guidance, contains('PDF保存をお試しください'));

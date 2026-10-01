@@ -49,7 +49,7 @@ void main() {
     }
   });
 
-  test('通常のsaveMatchesBulkはIsarとTwinスナップショットへ保存する', () async {
+  test('通常のsaveMatchesBulkはIsarとTwinスナップショットへ保存すること', () async {
     const match = MatchModel(
       id: 'bulk-twin-normal',
       matchType: 'individual',
@@ -66,7 +66,7 @@ void main() {
     expect(recovered?.id, match.id);
   });
 
-  test('skipTwin=trueはIsarへ保存するがTwinスナップショットを作成しない', () async {
+  test('skipTwin=trueはIsarへ保存するがTwinスナップショットを作成しないこと', () async {
     const match = MatchModel(
       id: 'bulk-twin-skipped',
       matchType: 'individual',

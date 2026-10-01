@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/viewer/providers/viewer_tournament_id_search_provider.dart';
 
 void main() {
-  group('webTournamentIdSearchProvider テスト', () {
+  group('[Unit] webTournamentIdSearchProvider テスト', () {
     test('ローカルマッチリストに一致するgroupNameがある場合、そのtournamentIdを返すこと', () async {
       final match = MatchModel(
         id: 'm1',

@@ -52,7 +52,7 @@ void main() {
     ).thenAnswer((_) => Stream.value(const <MatchModel>[]));
   });
 
-  group('🔄 ログイン・認証連動試合同期 (Sync Rebind) 統合検証テスト', () {
+  group('[Unit] ログイン・認証連動試合同期 (Sync Rebind) 統合検証テスト', () {
     test(
       '【同期検証】ログイン成功時（authSessionProvider更新時）に、SyncEngineが自動的にFirestore監視を再バインドすること',
       () async {

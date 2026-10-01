@@ -18,8 +18,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  group('AuthGuard ライフサイクル＆セッション優先判定テスト', () {
-    testWidgets('1. sessionが有効な場合、userがnullでも強制送還されずにchildを描画する', (
+  group('[Widget] AuthGuard ライフサイクル＆セッション優先判定テスト', () {
+    testWidgets('sessionが有効な場合、userがnullでも強制送還されずにchildを描画すること', (
       tester,
     ) async {
       final prefs = await SharedPreferences.getInstance();
@@ -53,7 +53,7 @@ void main() {
       expect(find.byType(RoleSelectScreen), findsNothing);
     });
 
-    testWidgets('2. sessionがnullかつuserがnullの場合、RoleSelectScreenを表示する', (
+    testWidgets('sessionがnullかつuserがnullの場合、RoleSelectScreenを表示すること', (
       tester,
     ) async {
       final prefs = await SharedPreferences.getInstance();

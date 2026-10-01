@@ -212,8 +212,8 @@ void main() {
     );
   }
 
-  group('📸 縦横混在PDF×手書きペン完全同期 Golden＆ピクセル整合性テスト要塞', () {
-    testWidgets('1. 【縦向き用紙 Golden】全画面とボトムシートで用紙上のストローク相対位置・アスペクト比が完全一致すること', (
+  group('[Golden] 縦横混在PDF×手書きペン完全同期 Golden＆ピクセル整合性テスト要塞', () {
+    testWidgets('【縦向き用紙 Golden】全画面とボトムシートで用紙上のストローク相対位置・アスペクト比が完全一致すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);
@@ -299,7 +299,7 @@ void main() {
       expect(painter.sharedStrokes.first.points, equals(centerStroke.points));
     });
 
-    testWidgets('2. 【横向き用紙 Golden】横向きPDFにおいて用紙キャンバスが1414x1000で完全同期すること', (
+    testWidgets('【横向き用紙 Golden】横向きPDFにおいて用紙キャンバスが1414x1000で完全同期すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1024, 768);
@@ -360,7 +360,7 @@ void main() {
       expect(landscapeOverlayFinder, findsOneWidget);
     });
 
-    testWidgets('3. 【マルチデバイス Golden】iPhone・iPad・デスクトップ全端末で用紙とペンの同期構造が不変であること', (
+    testWidgets('【マルチデバイス Golden】iPhone・iPad・デスクトップ全端末で用紙とペンの同期構造が不変であること', (
       tester,
     ) async {
       ProgramViewStateService.instance.resetForTesting();

@@ -32,7 +32,7 @@ void main() {
     registerFallbackValue(LocalStrokeModel());
   });
 
-  group('🛡️ Stroke Pipeline Integration Tests', () {
+  group('[Unit] Stroke Pipeline 統合テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late MockLocalStrokeModelCollection mockCollection;
     late MockIsar mockIsar;
@@ -45,7 +45,7 @@ void main() {
       when(() => mockCollection.put(any())).thenAnswer((_) async => 1);
     });
 
-    test('1. 共有ペン（Shared Stroke）の Firestore 保存・監視の直列ネストパス検証', () async {
+    test('共有ペン（Shared Stroke）の Firestore 保存・監視の直列ネストパスが正しく検証されること', () async {
       final repository = StrokeRepository(
         dojoId: 'dojo_test_123',
         firestore: fakeFirestore,
@@ -88,31 +88,34 @@ void main() {
       expect(list.first.isShared, isTrue);
     });
 
-    test('2. 個人ペン（Local Stroke）のネイティブ環境（!kIsWeb）での Isar 保存フロー検証', () async {
-      // isar を渡すことでネイティブ環境（Isar活性化）をシミュレート
-      final repository = LocalStrokeRepository(
-        mockIsar,
-        dojoId: 'dojo_test_123',
-        deviceId: 'device_mac_999',
-        firestore: fakeFirestore,
-      );
+    test(
+      '個人ペン（Local Stroke）のネイティブ環境（!kIsWeb）での Isar 保存フローが正しく検証されること',
+      () async {
+        // isar を渡すことでネイティブ環境（Isar活性化）をシミュレート
+        final repository = LocalStrokeRepository(
+          mockIsar,
+          dojoId: 'dojo_test_123',
+          deviceId: 'device_mac_999',
+          firestore: fakeFirestore,
+        );
 
-      final localStroke = LocalStrokeModel()
-        ..programId = 'program_test_999'
-        ..pointsX = [100.0, 150.0]
-        ..pointsY = [200.0, 250.0]
-        ..colorValue = Colors.blue.toARGB32()
-        ..strokeWidth = 3.0
-        ..createdAt = DateTime.now();
+        final localStroke = LocalStrokeModel()
+          ..programId = 'program_test_999'
+          ..pointsX = [100.0, 150.0]
+          ..pointsY = [200.0, 250.0]
+          ..colorValue = Colors.blue.toARGB32()
+          ..strokeWidth = 3.0
+          ..createdAt = DateTime.now();
 
-      await repository.addStroke(localStroke);
+        await repository.addStroke(localStroke);
 
-      // Isarに保存されたこと（Mockへのput呼び出し）を検証
-      verify(() => mockCollection.put(localStroke)).called(1);
-    });
+        // Isarに保存されたこと（Mockへのput呼び出し）を検証
+        verify(() => mockCollection.put(localStroke)).called(1);
+      },
+    );
 
     test(
-      '3. 個人ペン（Local Stroke）の Web環境（Isar非活性）での Firestore フォールバック保存・監視・Undo・Clear検証',
+      '個人ペン（Local Stroke）の Web環境（Isar非活性）での Firestore フォールバック保存・監視・Undo・Clearが正しく検証されること',
       () async {
         // isar に null を渡すことで Web環境/Isar非活性のフォールバックをエミュレート
         final repository = LocalStrokeRepository(

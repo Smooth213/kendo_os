@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
-  group('🔒 Zero Trust Security Tests', () {
-    group('1. PermissionService (アクセス認可)', () {
+  group('[Unit] Zero Trust Security テスト', () {
+    group('PermissionService (アクセス認可)', () {
       final permission = PermissionService();
       final viewer = const User(
         id: 'v1',
@@ -31,7 +31,7 @@ void main() {
       });
     });
 
-    group('2. Event Signature (改ざん防止署名)', () {
+    group('Event Signature (改ざん防止署名)', () {
       test('正規のルートで生成されたイベントは検証をパスすること', () {
         final event = ScoreEventLegacyAdapter.fromLegacy(
           side: Side.red,
@@ -64,7 +64,7 @@ void main() {
       // ==========================================
       // ★ あえて仕込んだ「脆弱性検知」テスト
       // ==========================================
-      test('【脆弱性検知】イベントの「技の種類」や「赤白」を改ざんした場合、署名検証に失敗するべき', () {
+      test('【脆弱性検知】イベントの「技の種類」や「赤白」を改ざんした場合、署名検証に失敗すること', () {
         final event = ScoreEventLegacyAdapter.fromLegacy(
           side: Side.red,
           type: PointType.men,

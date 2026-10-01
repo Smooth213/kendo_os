@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
-  group('TimelineCommentSlidableTile テスト', () {
+  group('[Unit] TimelineCommentSlidableTile テスト', () {
     testWidgets('コメントテキストが正確に描画されること', (tester) async {
       final comment = MatchCommentModel(
         id: 'c_100',

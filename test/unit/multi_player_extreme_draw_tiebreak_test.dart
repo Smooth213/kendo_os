@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 
 void main() {
-  group('🥋 【Unit】多人数団体戦 極限境界値・タイブレーク・不戦勝混在テスト', () {
+  group('[Unit] 【Unit】多人数団体戦 極限境界値・タイブレーク・不戦勝混在テスト', () {
     MatchModel createFinishedMatch({
       required String id,
       required int redScore,
@@ -23,7 +23,7 @@ void main() {
       );
     }
 
-    test('1. 7人制・9人制・11人制・21人制: 全ポジション引き分け(0-0)時の完全同点判定と代表戦フラグ判定', () {
+    test('7人制・9人制・11人制・21人制: 全ポジション引き分け(0-0)時の完全同点判定と代表戦フラグ判定こと', () {
       final playerCounts = [7, 9, 11, 21];
 
       for (final count in playerCounts) {
@@ -66,7 +66,7 @@ void main() {
       }
     });
 
-    test('2. 偶数制（6人制・8人制・10人制）: 勝者数同数・総本数同点時のタイブレークアルゴリズム', () {
+    test('偶数制（6人制・8人制・10人制）: 勝者数同数・総本数同点時のタイブレークアルゴリズムこと', () {
       final sixMatches = [
         createFinishedMatch(id: 's1', redScore: 2, whiteScore: 0),
         createFinishedMatch(id: 's2', redScore: 0, whiteScore: 2),
@@ -129,7 +129,7 @@ void main() {
       expect(tenResult.teamWinner, 'red', reason: '勝者数(4>3)が本数(4<5)より優先される');
     });
 
-    test('3. 不戦勝(2-0)と不戦敗(0-2)が複数ポジションで交錯した場合の総本数・勝者数計算', () {
+    test('不戦勝(2-0)と不戦敗(0-2)が複数ポジションで交錯した場合の総本数・勝者数計算こと', () {
       final matches = [
         createFinishedMatch(id: 'f1', redScore: 2, whiteScore: 0),
         createFinishedMatch(id: 'f2', redScore: 0, whiteScore: 2),
@@ -150,7 +150,7 @@ void main() {
       expect(result.teamWinner, 'red', reason: '勝者数同数(3=3)だが総本数(7>6)で赤チーム勝利');
     });
 
-    test('4. 試合途中のステータス混在時: in_progress と allFinished=false の正確性', () {
+    test('試合途中のステータス混在時: in_progress と allFinished=false の正確性こと', () {
       final matches = [
         createFinishedMatch(id: 'p1', redScore: 2, whiteScore: 0),
         const MatchModel(

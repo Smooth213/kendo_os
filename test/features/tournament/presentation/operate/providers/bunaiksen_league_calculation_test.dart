@@ -5,8 +5,8 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
 
 void main() {
-  group('🛡️ STEP 5-3: 部内戦モード・リーグ戦/代表戦計算ロジックの徹底検証テスト', () {
-    test('1. 部内戦の個人リーグ戦（個人名形式、コロンなし）における順位/勝敗集計の検証', () {
+  group('[Unit] 部内戦モード・リーグ戦/代表戦計算ロジックの徹底検証テスト', () {
+    test('部内戦の個人リーグ戦（個人名形式、コロンなし）における順位/勝敗集計が正しく検証できること', () {
       // 3人の総当たり（リーグ戦）をシミュレーション
       // A vs B -> Aの勝ち (2-0)
       // B vs C -> 引き分け (1-1)
@@ -98,7 +98,7 @@ void main() {
       expect(stats[2].rank, 3);
     });
 
-    test('2. BunaiksenHelper を使った独自勝点計算（3/1/0ポイント）の検証', () {
+    test('BunaiksenHelper を使った独自勝点計算（3/1/0ポイント）が正しく検証できること', () {
       final matches = [
         MatchModel(
           id: 'match_a_b',
@@ -150,7 +150,7 @@ void main() {
       expect(pointsC, 1);
     });
 
-    test('3. 代表戦におけるタイマーのカウントアップ/カウントダウン挙動の検証', () {
+    test('代表戦におけるタイマーのカウントアップ/カウントダウン挙動が正しく検証できること', () {
       final now = DateTime(2026, 7, 3, 15, 0, 0);
 
       // A: 時間制限あり (3.0分) の代表戦 -> カウントダウンされるべき

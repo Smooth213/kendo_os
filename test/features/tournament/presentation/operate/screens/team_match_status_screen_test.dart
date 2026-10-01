@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/team_m
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('🥋 チーム試合状況 ロジック＆UI統合テスト要塞', () {
+  group('[Widget] チーム試合状況 ロジック＆UI統合テスト要塞', () {
     final testMatches = [
       // 団体戦第1対戦（先鋒・次鋒・中堅の3試合で1対戦カード）：進行中
       const MatchModel(
@@ -67,7 +67,7 @@ void main() {
     ];
 
     test(
-      '1. calculateTeamProgress: 相手側が赤でも自チーム名を100%正しく認識し、「第2コート (1回戦・第4試合)」を抽出すること',
+      'calculateTeamProgress: 相手側が赤でも自チーム名を100%正しく認識し、「第2コート (1回戦・第4試合)」を抽出すること',
       () {
         final progressList = calculateTeamProgress(
           testMatches,
@@ -98,7 +98,7 @@ void main() {
     );
 
     testWidgets(
-      '2. TeamMatchStatusScreen: UIヘッダー、自チーム名表示、LIVE表示、試合終了バッジ、フィルターが正常に動作すること',
+      'TeamMatchStatusScreen: UIヘッダー、自チーム名表示、LIVE表示、試合終了バッジ、フィルターが正常に動作すること',
       (tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -215,26 +215,25 @@ void main() {
       },
     );
 
-    testWidgets(
-      '3. TeamMatchStatusScreen: tournamentId存在時にプログラムドックアイコンが表示されること',
-      (tester) async {
-        tester.view.physicalSize = const Size(800, 1200);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.resetPhysicalSize);
+    testWidgets('TeamMatchStatusScreen: tournamentId存在時にプログラムドックアイコンが表示されること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [teamProgressListProvider.overrideWithValue([])],
-            child: const MaterialApp(
-              home: TeamMatchStatusScreen(tournamentId: 'tour_test_123'),
-            ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [teamProgressListProvider.overrideWithValue([])],
+          child: const MaterialApp(
+            home: TeamMatchStatusScreen(tournamentId: 'tour_test_123'),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 🥋 フローティングプログラムドックボタンが表示されていること
-        expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
-      },
-    );
+      // 🥋 フローティングプログラムドックボタンが表示されていること
+      expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
+    });
   });
 }

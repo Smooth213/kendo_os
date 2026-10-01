@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/application/services/thermal_power_governor.dart
 import 'package:kendo_os/shared/application/services/thermal_monitor_service.dart';
 
 void main() {
-  group('🔋 【Phase 10: アダプティブ省電力・サーマル冷却】ガバナンステスト', () {
+  group('[Governance] 【Phase 10: アダプティブ省電力・サーマル冷却】ガバナンステスト', () {
     late ThermalPowerGovernor governor;
 
     setUp(() {
@@ -84,7 +84,7 @@ void main() {
       expect(match.calculateRemainingSeconds(t180), equals(0));
     });
 
-    test('CPUウェイクアップ削減率の検証: エコ冷却で80%削減、極限省電力で90%削減', () {
+    test('CPUウェイクアップ削減率の検証: エコ冷却で80%削減、極限省電力で90%削減こと', () {
       const normalTicksPerSec = 1000 / 100; // 10 ticks/sec
       const ecoTicksPerSec = 1000 / 500; // 2 ticks/sec
       const ultraTicksPerSec = 1000 / 1000; // 1 tick/sec

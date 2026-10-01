@@ -7,7 +7,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_overtime_evaluator
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 
 void main() {
-  group('🥋 【Unit】相互同時反則・2-2サドンデス突入＆合議Undo完全復元テスト', () {
+  group('[Unit] 【Unit】相互同時反則・2-2サドンデス突入＆合議Undo完全復元テスト', () {
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0, 0);
 
@@ -15,7 +15,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 相一本(1-1)＋双方反則1回からの相互同時反則発生で2-2同点サドンデス突入判定', () {
+    test('相一本(1-1)＋双方反則1回からの相互同時反則発生で2-2同点サドンデス突入判定こと', () {
       final match = MatchModel(
         id: 'm_simultaneous_hansoku_1',
         tournamentId: 't1',
@@ -106,7 +106,7 @@ void main() {
       );
     });
 
-    test('2. 相互同時反則直後の合議Undoによる反則相殺・スコア完全ロールバック検証', () {
+    test('相互同時反則直後の合議Undoによる反則相殺・スコア完全ロールバックが正しく検証されること', () {
       final match = MatchModel(
         id: 'm_simultaneous_hansoku_undo',
         tournamentId: 't1',

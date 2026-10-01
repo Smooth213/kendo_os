@@ -35,36 +35,39 @@ class FakeSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('🔋 Eco Mode & Battery Auto-Saver Tests', () {
+  group('[Widget] Eco Mode & Battery Auto-Saver テスト', () {
     setUpAll(() async {
       await setupTestFirebase();
     });
 
-    test('Should return isEcoMode=true when enableLiquidGlass is disabled', () {
-      final container = ProviderContainer(
-        overrides: [
-          settingsProvider.overrideWith(
-            () => FakeSettingsNotifier(
-              const SettingsModel(enableLiquidGlass: false),
-            ),
-          ),
-          batteryStateProvider.overrideWith(
-            () => FakeBatteryNotifier(
-              const BatteryStateData(
-                batteryLevel: 100,
-                isInPowerSaveMode: false,
+    test(
+      'Should return isEcoMode=true when enableLiquidGlass is disabledであること',
+      () {
+        final container = ProviderContainer(
+          overrides: [
+            settingsProvider.overrideWith(
+              () => FakeSettingsNotifier(
+                const SettingsModel(enableLiquidGlass: false),
               ),
             ),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+            batteryStateProvider.overrideWith(
+              () => FakeBatteryNotifier(
+                const BatteryStateData(
+                  batteryLevel: 100,
+                  isInPowerSaveMode: false,
+                ),
+              ),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      expect(container.read(isEcoModeProvider), isTrue);
-    });
+        expect(container.read(isEcoModeProvider), isTrue);
+      },
+    );
 
     test(
-      'Should return isEcoMode=true when battery level is low (<= 20%)',
+      'Should return isEcoMode=true when battery level is low (<= 20%)こと',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -92,7 +95,7 @@ void main() {
     );
 
     test(
-      'Should return isEcoMode=true when OS power saver mode is active',
+      'Should return isEcoMode=true when OS power saver mode is activeであること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -120,7 +123,7 @@ void main() {
     );
 
     test(
-      'Should return isEcoMode=false when settings are normal and battery is high',
+      'Should return isEcoMode=false when settings are normal and battery is highであること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -148,7 +151,7 @@ void main() {
     );
 
     testWidgets(
-      'LiquidBackground should render static layout when Eco Mode is active',
+      'LiquidBackground should render static layout when Eco Mode is activeであること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -188,7 +191,7 @@ void main() {
     );
 
     testWidgets(
-      'LiquidBackground should render animated layout with blur when Eco Mode is inactive',
+      'LiquidBackground should render animated layout with blur when Eco Mode is inactiveであること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -234,7 +237,7 @@ void main() {
     );
 
     testWidgets(
-      'SettingsScreen should display Eco Mode switch and toggle settings correctly',
+      'SettingsScreen should display Eco Mode switch and toggle settings correctlyであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
 

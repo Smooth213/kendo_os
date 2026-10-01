@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_battle_card_helper.dart';
 
 void main() {
-  group('KachinukiBattleCardHelper テスト', () {
+  group('[Unit] KachinukiBattleCardHelper テスト', () {
     group('parseName - 選手名パース', () {
       test('役職コロン付きの名前から姓と名を正しく抽出できること', () {
         final res = KachinukiBattleCardHelper.parseName('先鋒:山田 太郎');

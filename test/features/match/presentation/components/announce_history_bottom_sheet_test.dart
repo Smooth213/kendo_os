@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  group('🛡️ AnnounceHistoryBottomSheet Widget Tests', () {
+  group('[Widget] AnnounceHistoryBottomSheet ウィジェットテスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late SharedPreferences prefs;
 
@@ -44,7 +44,7 @@ void main() {
     }
 
     testWidgets(
-      '1. Should show both all and staff notifications in staff room',
+      'Should show both all and staff notifications in staff roomであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -96,7 +96,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Should show only all notifications in non-staff room (viewer)',
+      'Should show only all notifications in non-staff room (viewer)こと',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -148,7 +148,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Tapping unread card should mark it as read and clear pink dot',
+      'Tapping unread card should mark it as read and clear pink dotであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -210,7 +210,7 @@ void main() {
     );
 
     testWidgets(
-      '4. NotificationBellButton should display sakura pink dot if unread notifications exist',
+      'NotificationBellButton should display sakura pink dot if unread notifications existであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -267,7 +267,7 @@ void main() {
       },
     );
 
-    testWidgets('6. 【背景黒化バグ防止】 ライトモード時にボトムシート背景が白（cardBackground）で描画されること', (
+    testWidgets('【背景黒化バグ防止】 ライトモード時にボトムシート背景が白（cardBackground）で描画されること', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(

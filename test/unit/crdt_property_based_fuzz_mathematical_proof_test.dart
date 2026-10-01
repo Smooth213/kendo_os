@@ -55,7 +55,7 @@ class CrdtScoreConvergenceEngine {
 }
 
 void main() {
-  group('🎲 CRDT同期エンジンの数学的無矛盾性証明（Property-Based Testing & Fuzzing）', () {
+  group('[Unit] CRDT同期エンジンの数学的無矛盾性証明（Property-Based Testing & Fuzzing）', () {
     final rng = Random(42); // シード固定で再現性を完全担保
 
     /// ランダムなScoreEventを生成するヘルパー
@@ -88,71 +88,59 @@ void main() {
       );
     }
 
-    test(
-      '1. 【可換性の証明 (Commutativity)】 100通りの順序シャッフルでも最終スコアと状態が100%同一に収束すること',
-      () {
-        // 50件のランダムイベント群を生成
-        final baseEvents = List.generate(50, (i) => generateRandomEvent(i));
-        final canonicalResult = CrdtScoreConvergenceEngine.merge(baseEvents);
-        final canonicalScore = CrdtScoreConvergenceEngine.computeFinalScore(
-          canonicalResult,
-        );
+    test('【可換性の証明 (Commutativity)】 100通りの順序シャッフルでも最終スコアと状態が100%同一に収束すること', () {
+      // 50件のランダムイベント群を生成
+      final baseEvents = List.generate(50, (i) => generateRandomEvent(i));
+      final canonicalResult = CrdtScoreConvergenceEngine.merge(baseEvents);
+      final canonicalScore = CrdtScoreConvergenceEngine.computeFinalScore(
+        canonicalResult,
+      );
 
-        // 100回、ランダムに配列をシャッフルしてマージ
-        for (int trial = 0; trial < 100; trial++) {
-          final shuffled = List<ScoreEvent>.from(baseEvents)..shuffle(rng);
-          final merged = CrdtScoreConvergenceEngine.merge(shuffled);
-          final score = CrdtScoreConvergenceEngine.computeFinalScore(merged);
+      // 100回、ランダムに配列をシャッフルしてマージ
+      for (int trial = 0; trial < 100; trial++) {
+        final shuffled = List<ScoreEvent>.from(baseEvents)..shuffle(rng);
+        final merged = CrdtScoreConvergenceEngine.merge(shuffled);
+        final score = CrdtScoreConvergenceEngine.computeFinalScore(merged);
 
-          // 各イベントのID順序が正準結果と完全一致すること（完全な可換性）
-          expect(merged.length, canonicalResult.length);
-          for (int i = 0; i < merged.length; i++) {
-            expect(merged[i].id, canonicalResult[i].id);
-          }
-
-          // 最終スコアが完全に一致すること
-          expect(score[Side.red], canonicalScore[Side.red]);
-          expect(score[Side.white], canonicalScore[Side.white]);
+        // 各イベントのID順序が正準結果と完全一致すること（完全な可換性）
+        expect(merged.length, canonicalResult.length);
+        for (int i = 0; i < merged.length; i++) {
+          expect(merged[i].id, canonicalResult[i].id);
         }
-      },
-    );
 
-    test(
-      '2. 【結合性の証明 (Associativity)】 (A ∪ B) ∪ C == A ∪ (B ∪ C) が数学的に成立すること',
-      () {
-        final groupA = List.generate(20, (i) => generateRandomEvent(i));
-        final groupB = List.generate(20, (i) => generateRandomEvent(i + 20));
-        final groupC = List.generate(20, (i) => generateRandomEvent(i + 40));
+        // 最終スコアが完全に一致すること
+        expect(score[Side.red], canonicalScore[Side.red]);
+        expect(score[Side.white], canonicalScore[Side.white]);
+      }
+    });
 
-        // パターン1: (A + B) をマージ後、さらに C をマージ
-        final mergeAB = CrdtScoreConvergenceEngine.merge([
-          ...groupA,
-          ...groupB,
-        ]);
-        final leftAssociative = CrdtScoreConvergenceEngine.merge([
-          ...mergeAB,
-          ...groupC,
-        ]);
+    test('【結合性の証明 (Associativity)】 (A ∪ B) ∪ C == A ∪ (B ∪ C) が数学的に成立すること', () {
+      final groupA = List.generate(20, (i) => generateRandomEvent(i));
+      final groupB = List.generate(20, (i) => generateRandomEvent(i + 20));
+      final groupC = List.generate(20, (i) => generateRandomEvent(i + 40));
 
-        // パターン2: (B + C) をマージ後、A とマージ
-        final mergeBC = CrdtScoreConvergenceEngine.merge([
-          ...groupB,
-          ...groupC,
-        ]);
-        final rightAssociative = CrdtScoreConvergenceEngine.merge([
-          ...groupA,
-          ...mergeBC,
-        ]);
+      // パターン1: (A + B) をマージ後、さらに C をマージ
+      final mergeAB = CrdtScoreConvergenceEngine.merge([...groupA, ...groupB]);
+      final leftAssociative = CrdtScoreConvergenceEngine.merge([
+        ...mergeAB,
+        ...groupC,
+      ]);
 
-        // 左右の結合結果が1ビットの狂いもなく完全一致すること
-        expect(leftAssociative.length, rightAssociative.length);
-        for (int i = 0; i < leftAssociative.length; i++) {
-          expect(leftAssociative[i].id, rightAssociative[i].id);
-        }
-      },
-    );
+      // パターン2: (B + C) をマージ後、A とマージ
+      final mergeBC = CrdtScoreConvergenceEngine.merge([...groupB, ...groupC]);
+      final rightAssociative = CrdtScoreConvergenceEngine.merge([
+        ...groupA,
+        ...mergeBC,
+      ]);
 
-    test('3. 【冪等性の証明 (Idempotence)】 重複パケットが何回再送されても結果が1回適用時と不変であること', () {
+      // 左右の結合結果が1ビットの狂いもなく完全一致すること
+      expect(leftAssociative.length, rightAssociative.length);
+      for (int i = 0; i < leftAssociative.length; i++) {
+        expect(leftAssociative[i].id, rightAssociative[i].id);
+      }
+    });
+
+    test('【冪等性の証明 (Idempotence)】 重複パケットが何回再送されても結果が1回適用時と不変であること', () {
       final baseEvents = List.generate(30, (i) => generateRandomEvent(i));
       final originalMerged = CrdtScoreConvergenceEngine.merge(baseEvents);
       final originalScore = CrdtScoreConvergenceEngine.computeFinalScore(
@@ -181,7 +169,7 @@ void main() {
       expect(deduplicatedScore[Side.white], originalScore[Side.white]);
     });
 
-    test('4. 【極限ファジング (Fuzzing)】 同一論理時計の衝突（タイブレーク）が決定論的辞書順で100%解決されること', () {
+    test('【極限ファジング (Fuzzing)】 同一論理時計の衝突（タイブレーク）が決定論的辞書順で100%解決されること', () {
       // 全て同じ論理時計（clock: 10）を持つ競合イベントを複数端末から生成
       final conflictEvents = [
         generateRandomEvent(1, forceClock: 10),

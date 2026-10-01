@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/viewer/painters/league_table_painters.dart';
 
 void main() {
-  group('🎨 League Table Painters Tests (描画レイヤー保護テスト)', () {
-    testWidgets('1. DiagonalLinePainter - 斜め線が例外なく描画されること', (
+  group('[Unit] League Table Painters テスト (描画レイヤー保護テスト)', () {
+    testWidgets('DiagonalLinePainter - 斜め線が例外なく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -34,7 +34,7 @@ void main() {
       );
     });
 
-    testWidgets('2. ResultShapePainter [Win] - 勝ち(◯)が例外なく描画されること', (
+    testWidgets('ResultShapePainter [Win] - 勝ち(◯)が例外なく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -51,7 +51,7 @@ void main() {
       expect(find.byKey(const Key('painter_target')), findsOneWidget);
     });
 
-    testWidgets('3. ResultShapePainter [Loss] - 負け(△)が例外なく描画されること', (
+    testWidgets('ResultShapePainter [Loss] - 負け(△)が例外なく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -68,7 +68,7 @@ void main() {
       expect(find.byKey(const Key('painter_target')), findsOneWidget);
     });
 
-    testWidgets('4. ResultShapePainter [Draw] - 引き分け(✕)が例外なく描画されること', (
+    testWidgets('ResultShapePainter [Draw] - 引き分け()が例外なく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

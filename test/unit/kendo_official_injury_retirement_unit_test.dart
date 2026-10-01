@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🥋 【Phase 1-2/10】全剣連規則第33条 負傷棄権時のスコア算定＆取得本数保全境界値テスト', () {
+  group('[Unit] 【Phase 1-2/10】全剣連規則第33条 負傷棄権時のスコア算定＆取得本数保全境界値テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm_injury',
@@ -22,7 +22,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 赤が1本先取した後に負傷棄権した場合、白に必要勝利本数(2本)が付与され白勝ちとなるが、赤の「メ」は保全されること', () {
+    test('赤が1本先取した後に負傷棄権した場合、白に必要勝利本数(2本)が付与され白勝ちとなるが、赤の「メ」は保全されること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
 
       // 三本勝負（targetIppon: 2）
@@ -79,7 +79,7 @@ void main() {
       expect(result, MatchResultStatus.whiteWin);
     });
 
-    test('2. 一本勝負（代表戦等）で赤が負傷棄権した場合、白に1本のみ付与され即座に白勝ちとなること', () {
+    test('一本勝負（代表戦等）で赤が負傷棄権した場合、白に1本のみ付与され即座に白勝ちとなること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       const ipponRule = MatchRule(matchTimeMinutes: 3.0, isIpponShobu: true);
 

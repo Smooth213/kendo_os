@@ -38,8 +38,8 @@ void main() {
     }
   });
 
-  group('🥋 【パート6】部内戦ドック ➔ 成績・星取表 ➔ 白星/黒星・勝数ランキング集計描画 完全保証テスト', () {
-    testWidgets('部内戦ドック展開 ➔ 成績・星取表タップ ➔ 各選手の勝敗・得本数集計 ＆ 無限勝ち抜き連勝ランキング描画完全保証', (
+  group('[Widget] 【パート6】部内戦ドック  成績・星取表  白星/黒星・勝数ランキング集計描画 完全保証テスト', () {
+    testWidgets('部内戦ドック展開  成績・星取表タップ  各選手の勝敗・得本数集計 ＆ 無限勝ち抜き連勝ランキング描画完全保証こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);
@@ -182,7 +182,7 @@ void main() {
       expect(find.byType(BunaiksenDockStandingsSheet), findsNothing);
     });
 
-    testWidgets('連勝カウンターが存在する場合、勝ち抜き連勝ランキングセクションに連勝バッジが正しく描画される', (
+    testWidgets('連勝カウンターが存在する場合、勝ち抜き連勝ランキングセクションに連勝バッジが正しく描画されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1920);

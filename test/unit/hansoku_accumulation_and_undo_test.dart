@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🥋 反則累積（2回一本/4回二本）＆ Undo連動テスト', () {
+  group('[Unit] 反則累積（2回一本/4回二本）＆ Undo連動テスト', () {
     late KendoRuleEngine ruleEngine;
     late PermissionService permissionService;
     late SystemTimeSource timeSource;
@@ -48,14 +48,14 @@ void main() {
       );
     });
 
-    test('1. 赤の反則1回〜4回累積時の相手一本・二本判定境界値', () {
+    test('赤の反則1回〜4回累積時の相手一本・二本判定境界値こと', () {
       expect(ruleEngine.isHansokuIppon(1), isFalse);
       expect(ruleEngine.isHansokuIppon(2), isTrue); // 2回目で相手一本
       expect(ruleEngine.isHansokuIppon(3), isFalse);
       expect(ruleEngine.isHansokuIppon(4), isTrue); // 4回目で相手二本（勝ち）
     });
 
-    test('2. 赤の反則2回で白に「反」が1本付与され、Undoで取り消されること', () {
+    test('赤の反則2回で白に「反」が1本付与され、Undoで取り消されること', () {
       const rule = MatchRule();
       var match = initialMatch;
 
@@ -107,7 +107,7 @@ void main() {
       expect(whiteDisplaysAfterUndo.any((d) => d.mark == '反'), isFalse);
     });
 
-    test('3. 赤の反則4回で白の二本勝ち確定後、Undoで3回に戻り試合継続状態に復元されること', () {
+    test('赤の反則4回で白の二本勝ち確定後、Undoで3回に戻り試合継続状態に復元されること', () {
       const rule = MatchRule();
       var match = initialMatch;
 

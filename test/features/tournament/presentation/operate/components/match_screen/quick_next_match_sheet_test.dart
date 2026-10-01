@@ -7,9 +7,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 void main() {
-  group('QuickNextMatchSheet Tests', () {
+  group('[Widget] QuickNextMatchSheet テスト', () {
     testWidgets(
-      'Displays team name, position count, and empty memo with placeholder',
+      'Displays team name, position count, and empty memo with placeholderであること',
       (tester) async {
         final currentMatch = MatchModel(
           id: 'match-1',
@@ -78,33 +78,34 @@ void main() {
       },
     );
 
-    testWidgets('Correctly resolves own team when white side is own team', (
-      tester,
-    ) async {
-      final currentMatch = MatchModel(
-        id: 'match-1',
-        redName: '相手チーム : 田中',
-        whiteName: '自チーム (誠道館) : 山田',
-        matchType: '先鋒',
-        order: 0,
-        matchTimeMinutes: 3,
-      );
+    testWidgets(
+      'Correctly resolves own team when white side is own teamであること',
+      (tester) async {
+        final currentMatch = MatchModel(
+          id: 'match-1',
+          redName: '相手チーム : 田中',
+          whiteName: '自チーム (誠道館) : 山田',
+          matchType: '先鋒',
+          order: 0,
+          matchTimeMinutes: 3,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: QuickNextMatchSheet(
-                currentMatch: currentMatch,
-                teamMatches: [currentMatch],
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: QuickNextMatchSheet(
+                  currentMatch: currentMatch,
+                  teamMatches: [currentMatch],
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      // ④ 白側が自チームの場合でも自チーム名が正しく抽出・ハイライトされること
-      expect(find.textContaining('自チーム (誠道館)'), findsWidgets);
-    });
+        // ④ 白側が自チームの場合でも自チーム名が正しく抽出・ハイライトされること
+        expect(find.textContaining('自チーム (誠道館)'), findsWidgets);
+      },
+    );
   });
 }

@@ -29,11 +29,11 @@ void main() {
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
-  group('PDF長名あふれ＆大量試合改ページ 耐久テスト要塞', () {
+  group('[Widget] PDF長名あふれ＆大量試合改ページ 耐久テスト要塞', () {
     const extremeLongDojo = '全日本学生剣道連盟付属武道研修育成国際強化選抜選手育成会東京中央本部道場支部連合会総本部道場';
     const extremeLongPlayer = 'アレクサンダー・クリストファー・ウェリントン三世フェルディナンド';
 
-    test('1. 極長道場名・選手名が含まれても個人戦PDFが例外なく生成される', () async {
+    test('極長道場名・選手名が含まれても個人戦PDFが例外なく生成されること', () async {
       final matches = [
         MatchModel(
           id: 'long-match-1',
@@ -87,7 +87,7 @@ void main() {
       expect(String.fromCharCodes(bytes.sublist(0, 4)), '%PDF');
     });
 
-    test('2. 極長道場名・選手名が含まれても団体戦対戦表PDFが例外なく生成される', () async {
+    test('極長道場名・選手名が含まれても団体戦対戦表PDFが例外なく生成されること', () async {
       final teamMatches = List.generate(5, (i) {
         final positions = ['先鋒', '次鋒', '中堅', '副将', '大将'];
         return MatchModel(
@@ -138,7 +138,7 @@ void main() {
       expect(String.fromCharCodes(bytes.sublist(0, 4)), '%PDF');
     });
 
-    test('3. 100試合超の大量試合データで自動改ページが正常に完了しPDFが生成される', () async {
+    test('100試合超の大量試合データで自動改ページが正常に完了しPDFが生成されること', () async {
       const matchCount = 120;
       final massMatches = List.generate(matchCount, (i) {
         return MatchModel(

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('CsvService ユニットテスト', () {
+  group('[Unit] CsvService ユニットテスト', () {
     test('生成されたCSV文字列が期待通りのフォーマットであること', () {
       // 1. テストデータの作成
       final mockMatch = MatchModel(

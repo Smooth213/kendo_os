@@ -14,10 +14,10 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-  group('🥋 チーム編集・スワイプ操作・UI改善のテスト', () {
+  group('[Widget] チーム編集・スワイプ操作・UI改善のテスト', () {
     // 1. 【添付ファイル１＆４対応】スワイプ編集・削除とオーダー調整ボタン削除
     testWidgets(
-      'MatchFormatTeamSelectionCard: スワイプで編集・削除ボタンが表示され、「オーダーを調整」ボタンは存在しない',
+      'MatchFormatTeamSelectionCard: スワイプで編集・削除ボタンが表示され、「オーダーを調整」ボタンは存在しないこと',
       (tester) async {
         final team = TeamModel(
           id: 'team1',
@@ -84,7 +84,7 @@ void main() {
     );
 
     // 2. 【添付ファイル２対応】「の部」が除外されてコンパクトに表示されること
-    testWidgets('TeamEditBasicFields: 所属部門チップから「の部」が無くコンパクトに表示される', (
+    testWidgets('TeamEditBasicFields: 所属部門チップから「の部」が無くコンパクトに表示されること', (
       tester,
     ) async {
       final controller = TextEditingController(text: 'テストチーム');
@@ -128,7 +128,7 @@ void main() {
     });
 
     // 3. 【添付ファイル３対応】オーダーリストから「✕」と「＞」が削除され、ドラッグハンドルが表示されること
-    testWidgets('TeamEditOrderList: 各行の✕ボタンや＞シェブロンが削除され、ドラッグハンドルが表示される', (
+    testWidgets('TeamEditOrderList: 各行のボタンや＞シェブロンが削除され、ドラッグハンドルが表示されること', (
       tester,
     ) async {
       bool selectCalled = false;
@@ -170,7 +170,7 @@ void main() {
 
     // 4. 選手選択ボトムシート: リアルタイム絞り込み・同カテゴリ優先・助っ人即時登録
     testWidgets(
-      'TeamRegistrationPlayerSelectBottomSheet: リアルタイム絞り込みと同カテゴリ優先、助っ人即時登録',
+      'TeamRegistrationPlayerSelectBottomSheet: リアルタイム絞り込みと同カテゴリ優先、助っ人即時登録こと',
       (tester) async {
         final pLow = PlayerModel(
           id: 'p1',

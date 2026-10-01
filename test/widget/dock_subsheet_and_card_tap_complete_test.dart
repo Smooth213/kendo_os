@@ -49,7 +49,7 @@ void main() {
         });
   });
 
-  group('🥋 ドック内サブシート最前面表示 ＆ チーム試合状況ネスト遷移 完全動作保証テスト', () {
+  group('[Widget] ドック内サブシート最前面表示 ＆ チーム試合状況ネスト遷移 完全動作保証テスト', () {
     late SharedPreferences prefs;
 
     setUp(() async {
@@ -63,7 +63,7 @@ void main() {
       }
     });
 
-    testWidgets('1. システム設定ボトムシート：BAND設定・サーマル・Google解除・ログアウトが最前面で動作すること', (
+    testWidgets('システム設定ボトムシート：BAND設定・サーマル・Google解除・ログアウトが最前面で動作すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 2400);
@@ -180,7 +180,7 @@ void main() {
       expect(find.text('システム設定'), findsOneWidget);
     });
 
-    testWidgets('2. チーム試合状況：BANDボタンでサブシート最前面表示 ＆ 進行中団体戦カード/先鋒タップでネスト遷移', (
+    testWidgets('チーム試合状況：BANDボタンでサブシート最前面表示 ＆ 進行中団体戦カード/先鋒タップでネスト遷移こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 2400);

@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_score_table_card.dart';
 
 void main() {
-  group('🛡️ ViewerBunaiksenScoreTableCard Widget Tests', () {
-    testWidgets('Renders score table card with red and white teams', (
+  group('[Widget] ViewerBunaiksenScoreTableCard ウィジェットテスト', () {
+    testWidgets('Renders score table card with red and white teamsであること', (
       tester,
     ) async {
       final matches = [

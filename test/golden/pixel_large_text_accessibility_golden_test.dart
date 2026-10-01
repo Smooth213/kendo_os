@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/widgets/action_buttons.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('📸 【Golden】文字拡大モード（1.5x / 2.0x）視覚的整合性テスト', () {
-    testWidgets('1. TextScaler 1.5x 環境下での打突アクションボタン群レイアウト整合性', (
+  group('[Golden] 【Golden】文字拡大モード（1.5x / 2.0x）視覚的整合性テスト', () {
+    testWidgets('TextScaler 1.5x 環境下での打突アクションボタン群レイアウト整合性こと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 400);
@@ -92,7 +92,7 @@ void main() {
       expect(find.byType(HoldConfirmButton), findsNWidgets(4));
     });
 
-    testWidgets('2. TextScaler 2.0x 極大文字環境下でのオーバーフロー耐性検証', (
+    testWidgets('TextScaler 2.0x 極大文字環境下でのオーバーフロー耐性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1024, 600);

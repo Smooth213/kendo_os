@@ -10,8 +10,10 @@ import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】部内戦（無限勝ち抜き戦）待機キュー＆連勝バッジ（Streak 🔥）視覚整合性テスト', () {
-    testWidgets('1. 連勝リーダーボード（Top3）＆ Streak 🔥 バッジのレンダリング検証', (tester) async {
+  group('[Golden] 【Golden】部内戦（無限勝ち抜き戦）待機キュー＆連勝バッジ（Streak ）視覚整合性テスト', () {
+    testWidgets('連勝リーダーボード（Top3）＆ Streak  バッジのレンダリングが正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -101,7 +103,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 部内戦待機列キュー (BunaiksenInfiniteTab) レンダリング検証', (tester) async {
+    testWidgets('部内戦待機列キュー (BunaiksenInfiniteTab) レンダリングが正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

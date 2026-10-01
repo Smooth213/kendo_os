@@ -17,8 +17,8 @@ class WaterDropTouchFilter {
 }
 
 void main() {
-  group('🌌 【Phase 9-4/6】雨漏り・汗・水滴ゴーストタップ（誤打突）100%棄却セーフティテスト', () {
-    test('1. 水滴落下（接触半径0.8、圧力0.05）が誤打突と判定されず100%遮断されること', () {
+  group('[Widget] 【Phase 9-4/6】雨漏り・汗・水滴ゴーストタップ（誤打突）100%棄却セーフティテスト', () {
+    test('水滴落下（接触半径0.8、圧力0.05）が誤打突と判定されず100%遮断されること', () {
       final isWaterDropAccepted = WaterDropTouchFilter.isValidHumanTap(
         pressure: 0.05,
         radiusMajor: 0.8,
@@ -28,7 +28,7 @@ void main() {
       expect(isWaterDropAccepted, isFalse);
     });
 
-    test('2. 人間の指による打突ボタン押下（接触半径10.0、圧力0.6）は正常に受理されること', () {
+    test('人間の指による打突ボタン押下（接触半径10.0、圧力0.6）は正常に受理されること', () {
       final isHumanTapAccepted = WaterDropTouchFilter.isValidHumanTap(
         pressure: 0.6,
         radiusMajor: 10.0,
@@ -38,7 +38,9 @@ void main() {
       expect(isHumanTapAccepted, isTrue);
     });
 
-    testWidgets('3. PointerDown/UpEvent による水滴遮断および指タップ受理検証', (tester) async {
+    testWidgets('PointerDown/UpEvent による水滴遮断および指タップ受理が正しく検証されること', (
+      tester,
+    ) async {
       int score = 0;
 
       await tester.pumpWidget(

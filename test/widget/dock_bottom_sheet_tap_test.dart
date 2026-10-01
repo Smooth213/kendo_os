@@ -21,9 +21,9 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('🥋 Dock BottomSheet Tap & Navigation Tests', () {
+  group('[Widget] Dock BottomSheet Tap & Navigation テスト', () {
     testWidgets(
-      'Inside bottom sheet, finished match section navigates to MatchScreen inside sheet',
+      'Inside bottom sheet, finished match section navigates to MatchScreen inside sheetであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         addTearDown(tester.view.resetPhysicalSize);
@@ -141,7 +141,7 @@ void main() {
     );
 
     testWidgets(
-      'Inside bottom sheet, finished team match card navigates to TeamScoreboardScreen inside sheet',
+      'Inside bottom sheet, finished team match card navigates to TeamScoreboardScreen inside sheetであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         addTearDown(tester.view.resetPhysicalSize);
@@ -232,7 +232,7 @@ void main() {
       },
     );
 
-    testWidgets('Outside bottom sheet, card tap navigates via GoRouter', (
+    testWidgets('Outside bottom sheet, card tap navigates via GoRouterであること', (
       WidgetTester tester,
     ) async {
       String? navigatedRoute;
@@ -289,7 +289,7 @@ void main() {
     });
 
     testWidgets(
-      'OfficialRecordScreen export buttons inside FloatingDockSheetManager are tappable',
+      'OfficialRecordScreen export buttons inside FloatingDockSheetManager are tappableであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         addTearDown(tester.view.resetPhysicalSize);

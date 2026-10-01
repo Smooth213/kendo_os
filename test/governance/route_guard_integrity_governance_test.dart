@@ -11,8 +11,8 @@ import 'package:kendo_os/shared/routing/app_router.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🔐 【第20条 ガバナンス監査】ディープリンク・未認証URLルーティング完全性規約', () {
-    test('Rule 1: [静的整合性] ルーティング防壁ファイル群の完全配備規約', () {
+  group('[Governance] 【第20条 ガバナンス監査】ディープリンク・未認証URLルーティング完全性規約', () {
+    test('Rule 1: [静的整合性] ルーティング防壁ファイル群の完全配備規約こと', () {
       final appRouterFile = File('lib/shared/routing/app_router.dart');
       final routeGuardsFile = File('lib/shared/routing/route_guards.dart');
       final routeGuardFile = File('lib/security/route_guard.dart');
@@ -29,7 +29,7 @@ void main() {
       expect(routerContent.contains('initialLocation:'), isTrue);
     });
 
-    test('Rule 2: [未認証・一般観客防御] RouteGuard による特権URL直打ち遮断規約', () {
+    test('Rule 2: [未認証・一般観客防御] RouteGuard による特権URL直打ち遮断規約こと', () {
       final container = ProviderContainer(
         overrides: [currentUserRoleProvider.overrideWithValue(UserRole.viewer)],
       );
@@ -59,7 +59,7 @@ void main() {
       expect(routeGuardContent.contains("return '/role-select'"), isTrue);
     });
 
-    test('Rule 3: [ゼロトラスト・内部遮断] InternalRouteGuard による内部監査・管理画面の強制遮断規約', () {
+    test('Rule 3: [ゼロトラスト・内部遮断] InternalRouteGuard による内部監査・管理画面の強制遮断規約こと', () {
       // 内部画面パスの検知検証
       expect(
         InternalRouteGuard.isInternalPath('/admin/internal/debug'),
@@ -81,7 +81,7 @@ void main() {
       expect(InternalRouteGuard.isInternalPath('/role-select'), isFalse);
     });
 
-    test('Rule 4: [公開ビュアー安全注入] RoleInjector による権限偽装防止＆安全フォールバック規約', () {
+    test('Rule 4: [公開ビュアー安全注入] RoleInjector による権限偽装防止＆安全フォールバック規約こと', () {
       final routeGuardsContent = File(
         'lib/shared/routing/route_guards.dart',
       ).readAsStringSync();

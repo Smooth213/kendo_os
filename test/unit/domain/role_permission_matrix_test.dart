@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
-  group('🛡️ Phase 3-4: セキュリティテスト拡張 (Role/Permission Matrix)', () {
+  group('[Unit] 4: セキュリティテスト拡張 (Role/Permission Matrix)', () {
     late PermissionService permissionService;
 
     setUp(() {

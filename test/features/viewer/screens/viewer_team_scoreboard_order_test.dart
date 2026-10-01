@@ -15,7 +15,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 class MockTournamentRepository extends Mock implements TournamentRepository {}
 
 void main() {
-  group('ViewerTeamScoreboardScreen Order Tests', () {
+  group('[Widget] ViewerTeamScoreboardScreen Order テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late SharedPreferences prefs;
 
@@ -39,7 +39,7 @@ void main() {
     });
 
     testWidgets(
-      'Displays matches in correct kendo position order (先鋒 -> 中堅 -> 大将) even if input is scrambled',
+      'Displays matches in correct kendo position order (先鋒 -> 中堅 -> 大将) even if input is scrambledであること',
       (tester) async {
         // 意図的に「中堅 ➔ 大将 ➔ 先鋒」の乱れた順序でリストを作成
         final chuken = MatchModel(

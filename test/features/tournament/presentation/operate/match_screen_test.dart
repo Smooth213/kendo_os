@@ -17,9 +17,9 @@ import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 
 void main() {
-  group('🛡️ MatchScreen Web Fallback & Render Tests', () {
+  group('[Widget] MatchScreen Web Fallback & Render テスト', () {
     test(
-      '✅ 1. MatchScreen に Web環境用フォールバック (kIsWeb && tournamentId) のパッチが確実に存在すること',
+      'MatchScreen に Web環境用フォールバック (kIsWeb && tournamentId) のパッチが確実に存在すること',
       () {
         // Dart VMテスト環境では kIsWeb=false となるため、ソースコードレベルの静的検証でパッチの存在を証明する
         final file = File(
@@ -50,99 +50,96 @@ void main() {
       },
     );
 
-    testWidgets(
-      '✅ 2. 試合データが存在する場合、無限ロード(ProgressIndicator)にならず正常にレンダリングされること',
-      (WidgetTester tester) async {
-        // ★ 依存する SharedPreferences をモック化して UnimplementedError を回避
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-
-        const mockMatch = MatchModel(
-          id: 'test_match_1',
-          tournamentId: 'tourney_1',
-          matchType: '個人戦',
-          redName: '赤選手',
-          whiteName: '白選手',
-          status: 'waiting',
-        );
-
-        final router = GoRouter(
-          initialLocation: '/match/test_match_1',
-          routes: [
-            GoRoute(
-              path: '/match/:id',
-              builder: (context, state) =>
-                  MatchScreen(matchId: state.pathParameters['id']!),
-            ),
-          ],
-        );
-
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            matchListProvider.overrideWith((ref) => [mockMatch]),
-            matchViewStateProvider('test_match_1').overrideWith(
-              (ref) => MatchViewState(
-                scoreText: '0 - 0',
-                redScore: 0,
-                whiteScore: 0,
-                isEncho: false,
-                winner: null,
-                lastEventText: '',
-                canUndo: false,
-                statusText: '待機中',
-                syncStatus: SyncStatus.synced,
-                isViewOnly: false,
-                isInputLocked: false,
-                isAllDone: false,
-                isTie: false,
-                redCleanName: '赤選手',
-                whiteCleanName: '白選手',
-              ),
-            ),
-            permissionProvider.overrideWith(
-              (ref) => const AppPermissions(
-                isReadOnly: false,
-                canManageTournament: true,
-                canCreateMatch: true,
-                canChangeSettings: true,
-                canDeleteData: true,
-              ),
-            ),
-            isarProvider.overrideWithValue(null),
-          ],
-        );
-
-        await tester.pumpWidget(
-          UncontrolledProviderScope(
-            container: container,
-            child: MaterialApp.router(
-              routerConfig: router,
-              theme: ThemeData.light(),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // MatchScreen が正常にレンダリングされ、無限ロード(クルクル) が表示されないこと
-        expect(find.byType(CircularProgressIndicator), findsNothing);
-        // ヘッダーやテキストが正しく抽出・表示されていることを確認
-        expect(find.text('赤選手 vs 白選手'), findsOneWidget);
-
-        // テストが終わる前に別のWidgetをPumpし、現在の画面をdisposeさせる。
-        // ProviderContainer は UncontrolledProviderScope の外で管理しているため破棄されない。
-        await tester.pumpWidget(const SizedBox());
-        await tester.pumpAndSettle();
-
-        // テスト終了前に手動でコンテナを破棄し、内部のTimer(SyncEngineなど)を確実にキャンセルする
-        container.dispose();
-      },
-    );
-
-    testWidgets('✅ 3. 「観戦URLを共有」ボタンが表示され、タップできること', (
+    testWidgets('試合データが存在する場合、無限ロード(ProgressIndicator)にならず正常にレンダリングされること', (
       WidgetTester tester,
     ) async {
+      // ★ 依存する SharedPreferences をモック化して UnimplementedError を回避
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      const mockMatch = MatchModel(
+        id: 'test_match_1',
+        tournamentId: 'tourney_1',
+        matchType: '個人戦',
+        redName: '赤選手',
+        whiteName: '白選手',
+        status: 'waiting',
+      );
+
+      final router = GoRouter(
+        initialLocation: '/match/test_match_1',
+        routes: [
+          GoRoute(
+            path: '/match/:id',
+            builder: (context, state) =>
+                MatchScreen(matchId: state.pathParameters['id']!),
+          ),
+        ],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          matchListProvider.overrideWith((ref) => [mockMatch]),
+          matchViewStateProvider('test_match_1').overrideWith(
+            (ref) => MatchViewState(
+              scoreText: '0 - 0',
+              redScore: 0,
+              whiteScore: 0,
+              isEncho: false,
+              winner: null,
+              lastEventText: '',
+              canUndo: false,
+              statusText: '待機中',
+              syncStatus: SyncStatus.synced,
+              isViewOnly: false,
+              isInputLocked: false,
+              isAllDone: false,
+              isTie: false,
+              redCleanName: '赤選手',
+              whiteCleanName: '白選手',
+            ),
+          ),
+          permissionProvider.overrideWith(
+            (ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
+            ),
+          ),
+          isarProvider.overrideWithValue(null),
+        ],
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            theme: ThemeData.light(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // MatchScreen が正常にレンダリングされ、無限ロード(クルクル) が表示されないこと
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // ヘッダーやテキストが正しく抽出・表示されていることを確認
+      expect(find.text('赤選手 vs 白選手'), findsOneWidget);
+
+      // テストが終わる前に別のWidgetをPumpし、現在の画面をdisposeさせる。
+      // ProviderContainer は UncontrolledProviderScope の外で管理しているため破棄されない。
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+
+      // テスト終了前に手動でコンテナを破棄し、内部のTimer(SyncEngineなど)を確実にキャンセルする
+      container.dispose();
+    });
+
+    testWidgets('「観戦URLを共有」ボタンが表示され、タップできること', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -227,200 +224,203 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('✅ 4. 選手名タップによるボトムシート表示と、控え（緑）/出場中（オレンジ）の色分け表示、およびスワップ保存のテスト', (
-      WidgetTester tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+    testWidgets(
+      '選手名タップによるボトムシート表示と、控え（緑）/出場中（オレンジ）の色分け表示、およびスワップ保存のが正常に機能すること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
 
-      final fakeAppService = FakeMatchApplicationService();
+        final fakeAppService = FakeMatchApplicationService();
 
-      final mockMatch1 = MatchModel(
-        id: 'match_1',
-        tournamentId: 't1',
-        matchType: '先鋒',
-        redName: 'チームA : 出場 次郎',
-        whiteName: 'チームB : 相手先鋒',
-        groupName: 'チームA vs チームB',
-        category: '小学生高学年の部',
-        status: 'waiting',
-      );
+        final mockMatch1 = MatchModel(
+          id: 'match_1',
+          tournamentId: 't1',
+          matchType: '先鋒',
+          redName: 'チームA : 出場 次郎',
+          whiteName: 'チームB : 相手先鋒',
+          groupName: 'チームA vs チームB',
+          category: '小学生高学年の部',
+          status: 'waiting',
+        );
 
-      final mockMatch2 = MatchModel(
-        id: 'match_2',
-        tournamentId: 't1',
-        matchType: '中堅',
-        redName: 'チームA : 元中堅',
-        whiteName: 'チームB : 相手中堅',
-        groupName: 'チームA vs チームB',
-        category: '小学生高学年の部',
-        status: 'waiting',
-      );
+        final mockMatch2 = MatchModel(
+          id: 'match_2',
+          tournamentId: 't1',
+          matchType: '中堅',
+          redName: 'チームA : 元中堅',
+          whiteName: 'チームB : 相手中堅',
+          groupName: 'チームA vs チームB',
+          category: '小学生高学年の部',
+          status: 'waiting',
+        );
 
-      final p1 = PlayerModel(
-        id: 'p1',
-        lastName: '控え',
-        firstName: '太郎',
-        lastNameKana: 'ひかえ',
-        firstNameKana: 'たろう',
-        grade: 5, // 小学生高学年
-        gender: '男子',
-        organization: 'チームA',
-        isBeginner: false,
-      );
+        final p1 = PlayerModel(
+          id: 'p1',
+          lastName: '控え',
+          firstName: '太郎',
+          lastNameKana: 'ひかえ',
+          firstNameKana: 'たろう',
+          grade: 5, // 小学生高学年
+          gender: '男子',
+          organization: 'チームA',
+          isBeginner: false,
+        );
 
-      final p2 = PlayerModel(
-        id: 'p2',
-        lastName: '出場',
-        firstName: '次郎',
-        lastNameKana: 'しゅつじょう',
-        firstNameKana: 'じろう',
-        grade: 6, // 小学生高学年
-        gender: '男子',
-        organization: 'チームA',
-        isBeginner: false,
-      );
+        final p2 = PlayerModel(
+          id: 'p2',
+          lastName: '出場',
+          firstName: '次郎',
+          lastNameKana: 'しゅつじょう',
+          firstNameKana: 'じろう',
+          grade: 6, // 小学生高学年
+          gender: '男子',
+          organization: 'チームA',
+          isBeginner: false,
+        );
 
-      final p3 = PlayerModel(
-        id: 'p3',
-        lastName: '他カテゴリ',
-        firstName: '三郎',
-        lastNameKana: 'たかてごり',
-        firstNameKana: 'さぶろう',
-        grade: 8, // 中学生の部
-        gender: '男子',
-        organization: 'チームA',
-        isBeginner: false,
-      );
+        final p3 = PlayerModel(
+          id: 'p3',
+          lastName: '他カテゴリ',
+          firstName: '三郎',
+          lastNameKana: 'たかてごり',
+          firstNameKana: 'さぶろう',
+          grade: 8, // 中学生の部
+          gender: '男子',
+          organization: 'チームA',
+          isBeginner: false,
+        );
 
-      final team = TeamModel(
-        id: 'team_a',
-        teamName: 'チームA',
-        tournamentId: 't1',
-        category: '小学生高学年の部',
-        playerNames: const ['出場 次郎', '元中堅', '控え 太郎'],
-      );
+        final team = TeamModel(
+          id: 'team_a',
+          teamName: 'チームA',
+          tournamentId: 't1',
+          category: '小学生高学年の部',
+          playerNames: const ['出場 次郎', '元中堅', '控え 太郎'],
+        );
 
-      final router = GoRouter(
-        initialLocation: '/match/match_2',
-        routes: [
-          GoRoute(
-            path: '/match/:id',
-            builder: (context, state) =>
-                MatchScreen(matchId: state.pathParameters['id']!),
-          ),
-        ],
-      );
+        final router = GoRouter(
+          initialLocation: '/match/match_2',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
 
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          matchListProvider.overrideWith((ref) => [mockMatch1, mockMatch2]),
-          matchViewStateProvider('match_2').overrideWith(
-            (ref) => MatchViewState(
-              scoreText: '0 - 0',
-              redScore: 0,
-              whiteScore: 0,
-              isEncho: false,
-              winner: null,
-              lastEventText: '',
-              canUndo: false,
-              statusText: '待機中',
-              syncStatus: SyncStatus.synced,
-              isViewOnly: false,
-              isInputLocked: false,
-              isAllDone: false,
-              isTie: false,
-              redCleanName: '元中堅',
-              whiteCleanName: '相手中堅',
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => [mockMatch1, mockMatch2]),
+            matchViewStateProvider('match_2').overrideWith(
+              (ref) => MatchViewState(
+                scoreText: '0 - 0',
+                redScore: 0,
+                whiteScore: 0,
+                isEncho: false,
+                winner: null,
+                lastEventText: '',
+                canUndo: false,
+                statusText: '待機中',
+                syncStatus: SyncStatus.synced,
+                isViewOnly: false,
+                isInputLocked: false,
+                isAllDone: false,
+                isTie: false,
+                redCleanName: '元中堅',
+                whiteCleanName: '相手中堅',
+              ),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            playerListProvider.overrideWith(
+              (ref) => Stream.value([p1, p2, p3]),
+            ),
+            registeredTeamsProvider(
+              't1',
+            ).overrideWith((ref) => Stream.value([team])),
+            matchApplicationServiceProvider.overrideWithValue(fakeAppService),
+            isarProvider.overrideWithValue(null),
+          ],
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
             ),
           ),
-          permissionProvider.overrideWith(
-            (ref) => const AppPermissions(
-              isReadOnly: false,
-              canManageTournament: true,
-              canCreateMatch: true,
-              canChangeSettings: true,
-              canDeleteData: true,
-            ),
-          ),
-          playerListProvider.overrideWith((ref) => Stream.value([p1, p2, p3])),
-          registeredTeamsProvider(
-            't1',
-          ).overrideWith((ref) => Stream.value([team])),
-          matchApplicationServiceProvider.overrideWithValue(fakeAppService),
-          isarProvider.overrideWithValue(null),
-        ],
-      );
+        );
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp.router(
-            routerConfig: router,
-            theme: ThemeData.light(),
-          ),
-        ),
-      );
+        await tester.pumpAndSettle();
 
-      await tester.pumpAndSettle();
+        // 赤チーム（自チーム）の選手名をタップしてボトムシートを開く
+        final redNameFinder = find.text('元中堅');
+        expect(redNameFinder, findsOneWidget);
+        await tester.tap(redNameFinder);
+        await tester.pumpAndSettle();
 
-      // 赤チーム（自チーム）の選手名をタップしてボトムシートを開く
-      final redNameFinder = find.text('元中堅');
-      expect(redNameFinder, findsOneWidget);
-      await tester.tap(redNameFinder);
-      await tester.pumpAndSettle();
+        // ボトムシートが開き、名簿が表示されていることを確認
+        expect(find.text('選手名の変更'), findsOneWidget);
+        expect(find.text('補欠登録の選手（タップで交代）'), findsOneWidget);
+        expect(find.text('控え 太郎'), findsOneWidget);
+        expect(find.text('出場中の選手 (交代・スワップ)'), findsOneWidget);
+        expect(find.text('出場 次郎'), findsOneWidget);
 
-      // ボトムシートが開き、名簿が表示されていることを確認
-      expect(find.text('選手名の変更'), findsOneWidget);
-      expect(find.text('補欠登録の選手（タップで交代）'), findsOneWidget);
-      expect(find.text('控え 太郎'), findsOneWidget);
-      expect(find.text('出場中の選手 (交代・スワップ)'), findsOneWidget);
-      expect(find.text('出場 次郎'), findsOneWidget);
+        // 他のカテゴリの選手が表示されていない（折りたたまれている）ことを確認
+        expect(find.text('他カテゴリ 三郎'), findsNothing);
 
-      // 他のカテゴリの選手が表示されていない（折りたたまれている）ことを確認
-      expect(find.text('他カテゴリ 三郎'), findsNothing);
+        // 控え 太郎 をタップして保存するテスト
+        await tester.tap(find.text('控え 太郎'));
+        await tester.pumpAndSettle();
 
-      // 控え 太郎 をタップして保存するテスト
-      await tester.tap(find.text('控え 太郎'));
-      await tester.pumpAndSettle();
+        // ボトムシートが閉じ、saveMatch が呼び出されたことを確認
+        expect(fakeAppService.savedMatches.length, 1);
+        expect(fakeAppService.savedMatches.first.redName, 'チームA : 控え 太郎');
 
-      // ボトムシートが閉じ、saveMatch が呼び出されたことを確認
-      expect(fakeAppService.savedMatches.length, 1);
-      expect(fakeAppService.savedMatches.first.redName, 'チームA : 控え 太郎');
+        // クリアして次のスワップのテスト
+        fakeAppService.savedMatches.clear();
 
-      // クリアして次のスワップのテスト
-      fakeAppService.savedMatches.clear();
+        // 再度ボトムシートを開く
+        await tester.tap(redNameFinder);
+        await tester.pumpAndSettle();
 
-      // 再度ボトムシートを開く
-      await tester.tap(redNameFinder);
-      await tester.pumpAndSettle();
+        // 出場 次郎 をタップしてスマートスワップのテスト
+        await tester.tap(find.text('出場 次郎'));
+        await tester.pumpAndSettle();
 
-      // 出場 次郎 をタップしてスマートスワップのテスト
-      await tester.tap(find.text('出場 次郎'));
-      await tester.pumpAndSettle();
+        // ボトムシートが閉じ、saveMatchesBulk が呼び出され、2つの試合（先鋒と中堅）がスワップされたことを確認
+        expect(fakeAppService.savedMatches.length, 2);
 
-      // ボトムシートが閉じ、saveMatchesBulk が呼び出され、2つの試合（先鋒と中堅）がスワップされたことを確認
-      expect(fakeAppService.savedMatches.length, 2);
+        // 中堅(match_2)には 出場 次郎 が設定される
+        final updatedMatch2 = fakeAppService.savedMatches.firstWhere(
+          (m) => m.id == 'match_2',
+        );
+        expect(updatedMatch2.redName, 'チームA : 出場 次郎');
 
-      // 中堅(match_2)には 出場 次郎 が設定される
-      final updatedMatch2 = fakeAppService.savedMatches.firstWhere(
-        (m) => m.id == 'match_2',
-      );
-      expect(updatedMatch2.redName, 'チームA : 出場 次郎');
+        // 先鋒(match_1)には 元中堅 が設定される
+        final updatedMatch1 = fakeAppService.savedMatches.firstWhere(
+          (m) => m.id == 'match_1',
+        );
+        expect(updatedMatch1.redName, 'チームA : 元中堅');
 
-      // 先鋒(match_1)には 元中堅 が設定される
-      final updatedMatch1 = fakeAppService.savedMatches.firstWhere(
-        (m) => m.id == 'match_1',
-      );
-      expect(updatedMatch1.redName, 'チームA : 元中堅');
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+        container.dispose();
+      },
+    );
 
-      await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
-      container.dispose();
-    });
-
-    testWidgets('✅ 5. 補欠登録選手・同カテゴリ控え選手リストの機能性およびコンパクトデザイン整合性検証のテスト', (
+    testWidgets('補欠登録選手・同カテゴリ控え選手リストの機能性およびコンパクトデザイン整合性検証のが正常に機能すること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);

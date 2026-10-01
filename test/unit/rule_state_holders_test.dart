@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 BulkRuleStateHolder Unit Tests', () {
+  group('[Unit] BulkRuleStateHolder 単体テスト', () {
     test('初期値が正しくセットアップされ、dispose可能であること', () {
       final holder = BulkRuleStateHolder();
       expect(holder.selectedCategoryFilter, 'すべて');
@@ -98,7 +98,7 @@ void main() {
     });
   });
 
-  group('🏆 MatchEditStateHolder Unit Tests', () {
+  group('MatchEditStateHolder 単体テスト', () {
     test('個人戦・団体戦の判定および選手名・チーム名が正しく抽出されること', () {
       final teamMatches = <MatchModel>[
         const MatchModel(
@@ -145,7 +145,7 @@ void main() {
       holder.dispose();
     });
 
-    test('団体戦の初期化時に設定にない延長戦が勝手にONにならないこと（引き分けあり・代表戦決着）', () {
+    test('【引き分けあり・代表戦決着】団体戦の初期化時に設定にない延長戦が勝手にONにならないこと', () {
       final teamMatches = <MatchModel>[
         const MatchModel(
           id: 'tm_1',

@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 
 void main() {
-  group('Player Candidate Integration Tests under Any Dojo Name', () {
+  group('[Widget] Player Candidate 統合テスト under Any Dojo Name', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {
@@ -17,7 +17,7 @@ void main() {
     });
 
     test(
-      '1. Provider level verification - arbitrary dojo name (e.g. 千代田道場)',
+      'Provider level verification - arbitrary dojo name (e.g. 千代田道場)こと',
       () async {
         // 1. Prepare fake Firestore data
         await fakeFirestore
@@ -60,7 +60,7 @@ void main() {
     );
 
     test(
-      '2. Provider level verification - another arbitrary dojo name (e.g. 港武道館)',
+      'Provider level verification - another arbitrary dojo name (e.g. 港武道館)こと',
       () async {
         // 1. Prepare fake Firestore data
         await fakeFirestore
@@ -103,7 +103,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Widget level verification - Bunaiksen Mode (SmartPlayerInput)',
+      'Widget level verification - Bunaiksen Mode (SmartPlayerInput)こと',
       (WidgetTester tester) async {
         // 1. Prepare fake Firestore data
         await fakeFirestore
@@ -176,7 +176,7 @@ void main() {
     );
 
     testWidgets(
-      '4. Widget level verification - Offline / Empty Dojo ID Fallback (Bunaiksen Mode)',
+      'Widget level verification - Offline / Empty Dojo ID Fallback (Bunaiksen Mode)こと',
       (WidgetTester tester) async {
         // 1. Prepare fake Firestore data under default test201
         await fakeFirestore
@@ -251,7 +251,7 @@ void main() {
     );
 
     testWidgets(
-      '5. SmartPlayerInput - Filtering by Category Chips and Sorting (Bunaiksen Mode)',
+      'SmartPlayerInput - Filtering by Category Chips and Sorting (Bunaiksen Mode)こと',
       (WidgetTester tester) async {
         // Set larger screen size to ensure all items are visible without scrolling
         tester.view.physicalSize = const Size(800, 1000);

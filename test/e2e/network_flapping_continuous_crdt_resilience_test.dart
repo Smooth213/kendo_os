@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('🚀 【Phase 5-4/10】激しいネットワークフラッピング（100回接続/切断）CRDT収束 E2Eテスト', () {
-    test('1. 100回のオンライン/オフライン切り替わり下で生成されたスコアイベントが1件も脱落せず時系列順に整列されること', () {
+  group('[E2E] 【Phase 5-4/10】激しいネットワークフラッピング（100回接続/切断）CRDT収束 E2Eテスト', () {
+    test('100回のオンライン/オフライン切り替わり下で生成されたスコアイベントが1件も脱落せず時系列順に整列されること', () {
       final localQueue = <ScoreEvent>[];
       final cloudSyncedList = <ScoreEvent>[];
 

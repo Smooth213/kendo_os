@@ -30,9 +30,9 @@ void main() {
     when(() => mockPlayerRepo.getPlayers()).thenAnswer((_) => Stream.value([]));
   });
 
-  group('🛡️ Design Regression Prevention & Bunaiksen Filter Tests', () {
+  group('[Widget] Design Regression Prevention & Bunaiksen Filter テスト', () {
     testWidgets(
-      '1. Design Regression Prevention: App-wide Dialog (16px) & BottomSheet (20px) Theme Verification',
+      'Design Regression Prevention: App-wide Dialog (16px) & BottomSheet (20px) Themeの検証が行えること',
       (WidgetTester tester) async {
         final dialogShape = RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -63,7 +63,7 @@ void main() {
       },
     );
 
-    testWidgets('2. Bunaiksen Player Select Category Filter Verification', (
+    testWidgets('Bunaiksen Player Select Category Filterの検証が行えること', (
       WidgetTester tester,
     ) async {
       final mockPlayers = [
@@ -155,7 +155,7 @@ void main() {
     });
 
     testWidgets(
-      '3. Verify Bunaiksen Quick Match Player Selection Category Filter (High Grade & Beginner Chips)',
+      'Verify Bunaiksen Quick Match Player Selection Category Filter (High Grade & Beginner Chips)こと',
       (WidgetTester tester) async {
         final mockPlayers = [
           PlayerModel(
@@ -248,7 +248,7 @@ void main() {
     );
 
     testWidgets(
-      '4. Comprehensive Bunaiksen Player Category Filter Unit & Integration Verification (All Categories)',
+      'Comprehensive Bunaiksen Player Category Filter Unit & Integration Verification (All Categories)こと',
       (WidgetTester tester) async {
         final mockAllPlayers = [
           PlayerModel(

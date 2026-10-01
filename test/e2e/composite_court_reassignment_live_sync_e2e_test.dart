@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🏟️ 【複合E2E】コート急遽振替 × タイマー保持 × 観客PWAライブ追従E2Eテスト', () {
+  group('[E2E] 【複合E2E】コート急遽振替 × タイマー保持 × 観客PWAライブ追従E2Eテスト', () {
     test(
       '第1コート進行中試合の第3コートへの急遽振替時に、タイマー絶対時間・スコア・PendingEventsが完全保持され、観客PWAが即時追従すること',
       () async {

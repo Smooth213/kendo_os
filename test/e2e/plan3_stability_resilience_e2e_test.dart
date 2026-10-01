@@ -35,7 +35,7 @@ void main() {
     } catch (_) {}
   });
 
-  group('🛡️ 【Plan 3 E2E】不壊・絶対安定・高耐障害性 総合結合テスト', () {
+  group('[E2E] 【Plan 3 E2E】不壊・絶対安定・高耐障害性 総合結合テスト', () {
     test('E2E-1: 試合操作中にクラッシュが発生しても直前状態が退避され、再開時に復旧できること', () async {
       final activeMatch = MatchModel(
         id: 'e2e-crash-match-1',

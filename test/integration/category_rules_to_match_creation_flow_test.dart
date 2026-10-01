@@ -26,7 +26,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ 部門別ルール設定から試合作成・反映までの完全保証インテグレーションテスト', () {
+  group('[Widget] 部門別ルール設定から試合作成・反映までの完全保証インテグレーションテスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late TournamentModel testTournament;
     late TeamModel testTeamRed;
@@ -193,7 +193,7 @@ void main() {
     }
 
     testWidgets(
-      '1. 【通常団体戦】部門別ルール（2分・代表戦あり無制限・5人制）が試合作成画面にロードされ、正しい設定が試合に反映されること',
+      '【通常団体戦】部門別ルール（2分・代表戦あり無制限・5人制）が試合作成画面にロードされ、正しい設定が試合に反映されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -279,7 +279,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 【遠征マルチシーン】試合作成で「⚔️ 錬成会」「🏆 本戦」「🤝 申し合わせ」を切り替えた際、それぞれの設定が正確に試合モデルへ適用されること',
+      '【遠征マルチシーン】試合作成で「 錬成会」「 本戦」「 申し合わせ」を切り替えた際、それぞれの設定が正確に試合モデルへ適用されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -342,7 +342,7 @@ void main() {
     );
 
     testWidgets(
-      '3. 【上位戦ルール自動判別 & 手動切替】メモ欄に「準決勝」入力で3分上位戦ルールが自動適用され、手動切替で通常戦ルールに戻せること',
+      '【上位戦ルール自動判別 & 手動切替】メモ欄に「準決勝」入力で3分上位戦ルールが自動適用され、手動切替で通常戦ルールに戻せること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -385,7 +385,7 @@ void main() {
       },
     );
 
-    testWidgets('4. 【リーグ団体戦】勝点配分（3/1/0）と同点時代表戦設定が試合モデルに完全に反映されること', (
+    testWidgets('【リーグ団体戦】勝点配分（3/1/0）と同点時代表戦設定が試合モデルに完全に反映されること', (
       WidgetTester tester,
     ) async {
       final leagueRule = testTournament.categoryRules['リーグ団体の部']!;
@@ -409,7 +409,7 @@ void main() {
     });
 
     testWidgets(
-      '5. 【代表戦・代表戦延長・代表戦判定の完全反映検証】代表戦の詳細設定（3分・2分延長1回・判定あり等）が試合モデルおよびレギュレーション表示へ忠実に反映されること',
+      '【代表戦・代表戦延長・代表戦判定の完全反映検証】代表戦の詳細設定（3分・2分延長1回・判定あり等）が試合モデルおよびレギュレーション表示へ忠実に反映されること',
       (WidgetTester tester) async {
         // パターンA: 代表戦あり (3分本戦・3本勝負・2分延長1回・判定あり)
         const customDaihyoRule = MatchRule(
@@ -506,7 +506,7 @@ void main() {
     );
 
     testWidgets(
-      '6. 【個人戦 時間・延長時間・延長回数・判定 完全網羅E2Eテスト】各パラメータの組み合わせが試合モデルおよびレギュレーション表示へ100%正確に反映されること',
+      '【個人戦 時間・延長時間・延長回数・判定 完全網羅E2Eテスト】各パラメータの組み合わせが試合モデルおよびレギュレーション表示へ100%正確に反映されること',
       (WidgetTester tester) async {
         final scenarios = [
           // (試合時間, 延長時間, 延長回数, 無制限フラグ, 判定有無, 期待する時間文字列, 期待する延長文字列, 期待する判定文字列)
@@ -596,7 +596,7 @@ void main() {
     );
 
     testWidgets(
-      '7. 【団体戦代表戦 試合時間・延長時間・延長回数・判定 完全網羅E2Eテスト】各代表戦パラメータの組み合わせが試合モデルおよびレギュレーション表示へ100%正確に反映されること',
+      '【団体戦代表戦 試合時間・延長時間・延長回数・判定 完全網羅E2Eテスト】各代表戦パラメータの組み合わせが試合モデルおよびレギュレーション表示へ100%正確に反映されること',
       (WidgetTester tester) async {
         final scenarios = [
           // (代表戦時間, 代表戦延長あり, 延長回数, 延長時間, 判定有無, 期待される代表戦要約文字列)

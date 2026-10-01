@@ -13,7 +13,7 @@ import 'package:kendo_os/features/band/presentation/providers/band_provider.dart
 // をプロジェクト全体で永久に遮断・検知し、安全なLIVE配信連携を保証します。
 // ============================================================================
 void main() {
-  group('🥋 【ガバナンス 21/21】🛡️ BAND LIVE配信連携・外部直行遷移 ＆ 白紙ブラウザ残留ゼロ規約', () {
+  group('[Governance] 【ガバナンス 21/21】 BAND LIVE配信連携・外部直行遷移 ＆ 白紙ブラウザ残留ゼロ規約', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -47,7 +47,7 @@ void main() {
     // 【静的コードスキャン規約】プロジェクト全域のコード健全性検査
     // ------------------------------------------------------------------------
 
-    test('Rule 1: [静的スキャン] BAND起動・URL変換の責務集約規約（野良起動の完全排除）', () {
+    test('Rule 1: [静的スキャン] BAND起動・URL変換の責務集約規約（野良起動の完全排除）こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -74,7 +74,7 @@ void main() {
     });
 
     test(
-      'Rule 2: [静的スキャン] BAND未対応スキーム（bandapp://n/, bandapp://@）生成の完全排除規約',
+      'Rule 2: [静的スキャン] BAND未対応スキーム（bandapp://n/, bandapp://@）生成の完全排除規約こと',
       () {
         final violations = <String>[];
 
@@ -101,7 +101,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [静的スキャン] LIVE配信不可共有API（bandapp://create/post）への強制リダイレクト排除規約',
+      'Rule 3: [静的スキャン] LIVE配信不可共有API（bandapp://create/post）への強制リダイレクト排除規約こと',
       () {
         final bandProviderFile = File(
           'lib/features/band/presentation/providers/band_provider.dart',
@@ -138,7 +138,7 @@ void main() {
     // ------------------------------------------------------------------------
 
     test(
-      'Rule 4: [動的規約] ネイティブ環境アプリ内ブラウザ（SFSafariViewController）完全排除規約',
+      'Rule 4: [動的規約] ネイティブ環境アプリ内ブラウザ（SFSafariViewController）完全排除規約こと',
       () async {
         BandLauncherHelper.isWebOverride = false;
 
@@ -173,7 +173,7 @@ void main() {
       },
     );
 
-    test('Rule 5: [動的規約] Web環境（iOS PWA）同一コンテキスト直接キック最優先規約', () async {
+    test('Rule 5: [動的規約] Web環境（iOS PWA）同一コンテキスト直接キック最優先規約こと', () async {
       BandLauncherHelper.isWebOverride = true;
 
       String? directKickUrl;
@@ -206,7 +206,7 @@ void main() {
       );
     });
 
-    test('Rule 6: [動的規約] BAND URL正規化＆LIVE配信画面ルート整合性規約', () {
+    test('Rule 6: [動的規約] BAND URL正規化＆LIVE配信画面ルート整合性規約こと', () {
       // 1. 空URLまたはトップURL ➔ 安全に bandapp://
       expect(BandLauncherHelper.convertToBandAppScheme(''), 'bandapp://');
       expect(

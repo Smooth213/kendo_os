@@ -17,9 +17,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ Bulk Rule Edit & Category Rule Presets Integration Tests', () {
+  group('[Widget] Bulk Rule Edit & Category Rule Presets 統合テスト', () {
     test(
-      '1. Verify bulkUpdateMatchRules preserves existing rule teamName and category',
+      'Verify bulkUpdateMatchRules preserves existing rule teamName and categoryであること',
       () async {
         // 既存の自チーム設定を持つ MatchModel を模倣
         final initialRule = const MatchRule(
@@ -74,7 +74,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Verify BulkRuleEditSheet renders Category Rules presets chip and applies selection',
+      'Verify BulkRuleEditSheet renders Category Rules presets chip and applies selectionであること',
       (WidgetTester tester) async {
         final categoryRules = {
           '小学生低学年の部': const CategoryRuleSet(
@@ -155,7 +155,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Verify 2-Stage Selection: Selecting Category dynamically expands Scene Sub-Chips (Honsen, Renseikai, Moushiawase)',
+      'Verify 2-Stage Selection: Selecting Category dynamically expands Scene Sub-Chips (Honsen, Renseikai, Moushiawase)こと',
       (WidgetTester tester) async {
         final categoryRules = {
           '小学生の部': const CategoryRuleSet(
@@ -260,7 +260,7 @@ void main() {
     );
 
     testWidgets(
-      '4. Verify Smart Auto-Reset: Non-applicable rules (e.g. Hantei for Team matches) are automatically turned OFF',
+      'Verify Smart Auto-Reset: Non-applicable rules (e.g. Hantei for Team matches) are automatically turned OFFであること',
       (WidgetTester tester) async {
         final categoryRules = {
           '団体小学生の部': const CategoryRuleSet(
@@ -336,7 +336,7 @@ void main() {
     );
 
     testWidgets(
-      '5. Verify Strict Preset Reset: Rules not enabled in category preset are strictly turned OFF',
+      'Verify Strict Preset Reset: Rules not enabled in category preset are strictly turned OFFであること',
       (WidgetTester tester) async {
         final categoryRules = {
           '完全シンプルルール': const CategoryRuleSet(
@@ -420,7 +420,7 @@ void main() {
     );
 
     testWidgets(
-      '6. Verify Renseikai & Moushiawase Scenes strictly turn OFF personal hantei, extension, and representative match',
+      'Verify Renseikai & Moushiawase Scenes strictly turn OFF personal hantei, extension, and representative matchであること',
       (WidgetTester tester) async {
         final categoryRules = {
           '小学生の部': const CategoryRuleSet(
@@ -514,7 +514,7 @@ void main() {
     );
 
     testWidgets(
-      '7. Verify Full Execution Flow: Tapping Apply Bulk Rule updates target matches and preserves teamName/category',
+      'Verify Full Execution Flow: Tapping Apply Bulk Rule updates target matches and preserves teamName/categoryであること',
       (WidgetTester tester) async {
         final categoryRules = {
           '小学生の部': const CategoryRuleSet(

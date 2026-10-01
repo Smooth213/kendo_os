@@ -24,7 +24,7 @@ void main() {
     );
   }
 
-  group('ScoreTableCard Position Name Visibility Tests', () {
+  group('[Widget] ScoreTableCard Position Name Visibility テスト', () {
     final sampleInfo = const ScoreTableGroupInfo(
       groupName: '道上剣友会A vs 相手チーム',
       headerTitle: '【団体戦】 道上剣友会A vs 相手チーム',
@@ -87,7 +87,7 @@ void main() {
     ];
 
     testWidgets(
-      '1. ダークモード時: ポジション名（先鋒、中堅、大将）が separatorColor ではなく textColor で明瞭に表示されること',
+      'ダークモード時: ポジション名（先鋒、中堅、大将）が separatorColor ではなく textColor で明瞭に表示されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           buildTestableCard(
@@ -138,7 +138,7 @@ void main() {
       },
     );
 
-    testWidgets('2. ライトモード時: ポジション名が textColor (黒) で明瞭に表示されること', (
+    testWidgets('ライトモード時: ポジション名が textColor (黒) で明瞭に表示されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -160,7 +160,7 @@ void main() {
     });
 
     testWidgets(
-      '3. 5人制（先鋒・次鋒・中堅・副将・大将・代表戦）の完全な団体戦スコアテーブルにおける全ポジション名の文字色視認性検証',
+      '5人制（先鋒・次鋒・中堅・副将・大将・代表戦）の完全な団体戦スコアテーブルにおける全ポジション名の文字色視認性が確認できること',
       (WidgetTester tester) async {
         final fivePlayerMatches = [
           const ScoreTableMatchItem(

@@ -5,8 +5,10 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 import 'package:kendo_os/features/viewer/painters/league_table_painters.dart';
 
 void main() {
-  group('BunaiksenLeagueGridCellRenderer Tests', () {
-    testWidgets('renders diagonal blank cell for same team', (tester) async {
+  group('[Widget] BunaiksenLeagueGridCellRenderer テスト', () {
+    testWidgets('renders diagonal blank cell for same teamであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -35,7 +37,7 @@ void main() {
       );
     });
 
-    testWidgets('renders match result cell correctly', (tester) async {
+    testWidgets('renders match result cell correctlyであること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         tournamentId: 't1',

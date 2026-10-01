@@ -9,7 +9,7 @@ import '../../../helpers/event_factory.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('MatchUseCase - イベント駆動版テスト', () {
+  group('[Unit] MatchUseCase - イベント駆動版テスト', () {
     late KendoRuleEngine engine;
     late AddScoreUseCase addScoreUseCase;
     late UndoScoreUseCase undoScoreUseCase;

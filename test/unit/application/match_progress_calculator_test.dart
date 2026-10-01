@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/application/usecases/match_progress_calculator.dart';
 
 void main() {
-  group('MatchProgressCalculator.getCurrentUser', () {
+  group('[Unit] MatchProgressCalculator.getCurrentUser', () {
     test('Firebase未初期化またはオフライン環境でも安全にUserが返ること', () {
       // Firebase未初期化状態でもクラッシュせず、フォールバック値が返ることを確認
       final user = MatchProgressCalculator.getCurrentUser();
@@ -29,7 +29,7 @@ void main() {
       expect(user.id.length, greaterThan(0));
     });
 
-    test('複数回呼び出しても例外が発生しないこと（冪等性）', () {
+    test('【冪等性】複数回呼び出しても例外が発生しないこと', () {
       // 連続呼び出しでもクラッシュしないことを保証
       expect(() {
         for (int i = 0; i < 5; i++) {

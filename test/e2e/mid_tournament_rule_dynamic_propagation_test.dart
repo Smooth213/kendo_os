@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🚀 【Phase 5-3/10】大会途中レギュレーション動的変更・過去試合非汚染伝播 E2Eテスト', () {
-    test('1. 途中でルール変更（4分三本勝負 ➔ 3分一本勝負）時、終了済試合は不変で未実施試合のみ新ルールが適用されること', () {
+  group('[E2E] 【Phase 5-3/10】大会途中レギュレーション動的変更・過去試合非汚染伝播 E2Eテスト', () {
+    test('途中でルール変更（4分三本勝負  3分一本勝負）時、終了済試合は不変で未実施試合のみ新ルールが適用されること', () {
       const originalRule = MatchRule(
         matchTimeMinutes: 4.0,
         isIpponShobu: false,

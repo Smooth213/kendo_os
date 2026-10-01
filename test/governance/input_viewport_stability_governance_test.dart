@@ -27,12 +27,12 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  group('🌐 【第5条 第4項】入力フォーカス時ビューポート安定性・跳ね上がり防止ガバナンス監査', () {
+  group('[Governance] 【第5条 第4項】入力フォーカス時ビューポート安定性・跳ね上がり防止ガバナンス監査', () {
     // -------------------------------------------------------------------------
     // 1. 静的アーキテクチャ規約検証
     // -------------------------------------------------------------------------
     test(
-      '1. [基盤統一TextField] AppTextField のデフォルト scrollPadding が EdgeInsets.zero であること',
+      '[基盤統一TextField] AppTextField のデフォルト scrollPadding が EdgeInsets.zero であること',
       () {
         const field = AppTextField();
         expect(
@@ -45,7 +45,7 @@ void main() {
     );
 
     test(
-      '2. [主要入力モーダル] アナウンス・コメント・道場ID・選手マスタ登録が showAppBottomSheet かつ isScrollControlled: true であること',
+      '[主要入力モーダル] アナウンス・コメント・道場ID・選手マスタ登録が showAppBottomSheet かつ isScrollControlled: true であること',
       () {
         final targets = [
           'lib/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart',
@@ -80,7 +80,7 @@ void main() {
     );
 
     test(
-      '3. [全入力フィールド規約] lib/配下の TextField / TextFormField は AppTextField または scrollPadding: EdgeInsets.zero が保証されていること',
+      '[全入力フィールド規約] lib/配下の TextField / TextFormField は AppTextField または scrollPadding: EdgeInsets.zero が保証されていること',
       () {
         final libDir = Directory('lib');
         final dartFiles = libDir
@@ -128,7 +128,7 @@ void main() {
     );
 
     test(
-      '4. [基盤Scaffold二重リサイズ防止] lib/main.dart のベース Scaffold に resizeToAvoidBottomInset: false が設定されていること',
+      '[基盤Scaffold二重リサイズ防止] lib/main.dart のベース Scaffold に resizeToAvoidBottomInset: false が設定されていること',
       () {
         final mainFile = File('lib/main.dart');
         expect(mainFile.existsSync(), isTrue);
@@ -145,7 +145,7 @@ void main() {
     );
 
     test(
-      '5. [Web/PWAキーボード可視性保証] kIsWeb による viewInsets ゼロ化アンチパターンの混入が 0 件であること',
+      '[Web/PWAキーボード可視性保証] kIsWeb による viewInsets ゼロ化アンチパターンの混入が 0 件であること',
       () {
         final libDir = Directory('lib');
         final dartFiles = libDir
@@ -174,7 +174,7 @@ void main() {
     );
 
     test(
-      '6. [主要入力ボトムシート] キーボード出現時にシート全体を押し上げる Padding (bottom: keyboardHeight / viewInsets) が適用されていること',
+      '[主要入力ボトムシート] キーボード出現時にシート全体を押し上げる Padding (bottom: keyboardHeight / viewInsets) が適用されていること',
       () {
         final targetBottomSheets = [
           'lib/shared/widgets/room_join_qr_dialog.dart',
@@ -213,7 +213,7 @@ void main() {
     // 2. ウィジェット・キーボード出現時跳ね上がり・破綻防止テスト
     // -------------------------------------------------------------------------
     testWidgets(
-      '4. [ウィジェット検証] TimelineUnifiedAnnounceDialog でキーボード出現時 (viewInsets: 320) も画面外へ跳ね上がらず正常表示されること',
+      '[ウィジェット検証] TimelineUnifiedAnnounceDialog でキーボード出現時 (viewInsets: 320) も画面外へ跳ね上がらず正常表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -277,7 +277,7 @@ void main() {
     );
 
     testWidgets(
-      '5. [ウィジェット検証] TimelineEditCommentDialog でキーボード出現時 (viewInsets: 320) も破綻なく正常表示されること',
+      '[ウィジェット検証] TimelineEditCommentDialog でキーボード出現時 (viewInsets: 320) も破綻なく正常表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -333,7 +333,7 @@ void main() {
     );
 
     testWidgets(
-      '6. [ウィジェット検証] RoomJoinQrDialog (道場ID入力) でキーボード出現時 (viewInsets: 320) も正常描画されること',
+      '[ウィジェット検証] RoomJoinQrDialog (道場ID入力) でキーボード出現時 (viewInsets: 320) も正常描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -382,7 +382,7 @@ void main() {
     );
 
     testWidgets(
-      '7. [ウィジェット検証] 外側ベースScaffold配下のAppDialogでキーボード出現時 (viewInsets: 320) も画面上部へ跳ね上がらず正常に画面内に留まること',
+      '[ウィジェット検証] 外側ベースScaffold配下のAppDialogでキーボード出現時 (viewInsets: 320) も画面上部へ跳ね上がらず正常に画面内に留まること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -459,7 +459,7 @@ void main() {
     );
 
     testWidgets(
-      '8. [ウィジェット検証] 外側ベースScaffold配下の通常画面入力欄でキーボード出現時 (viewInsets: 320) も画面外へ跳ね上がらず正常表示されること',
+      '[ウィジェット検証] 外側ベースScaffold配下の通常画面入力欄でキーボード出現時 (viewInsets: 320) も画面外へ跳ね上がらず正常表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -518,7 +518,7 @@ void main() {
     );
 
     testWidgets(
-      '9. [カーソルフォーカス時跳ね上がりゼロ検証] 入力欄をタップしてカーソルを合わせた瞬間にビューポートスクロールオフセットがゼロを維持し、不自然な跳ね上がり変位（ΔY）がゼロであること',
+      '[カーソルフォーカス時跳ね上がりゼロ検証] 入力欄をタップしてカーソルを合わせた瞬間にビューポートスクロールオフセットがゼロを維持し、不自然な跳ね上がり変位（ΔY）がゼロであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -592,7 +592,7 @@ void main() {
     );
 
     testWidgets(
-      '10. [実機画面検証: 大会新規作成] CreateTournamentPage1 の大会名入力欄をタップしてカーソルを合わせた際、見出しおよび入力欄が一切跳ね上がらず正常表示されること',
+      '[実機画面検証: 大会新規作成] CreateTournamentPage1 の大会名入力欄をタップしてカーソルを合わせた際、見出しおよび入力欄が一切跳ね上がらず正常表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -657,7 +657,7 @@ void main() {
     );
 
     testWidgets(
-      '11. [実機画面検証: 大会会場・備考入力] CreateTournamentPage2 の会場名・備考入力欄をタップしてフォーカス移動した際にも跳ね上がらず安定描画されること',
+      '[実機画面検証: 大会会場・備考入力] CreateTournamentPage2 の会場名・備考入力欄をタップしてフォーカス移動した際にも跳ね上がらず安定描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -718,7 +718,7 @@ void main() {
     );
 
     testWidgets(
-      '12. [実機ダイアログ検証: BANDグループ編集] BandGroupEditDialog の名前・URL入力欄にカーソルを合わせた際、ダイアログが画面上部外へ跳ね上がらず中央に保持されること',
+      '[実機ダイアログ検証: BANDグループ編集] BandGroupEditDialog の名前・URL入力欄にカーソルを合わせた際、ダイアログが画面上部外へ跳ね上がらず中央に保持されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;
@@ -785,7 +785,7 @@ void main() {
     );
 
     testWidgets(
-      '13. [フォーム内複数入力欄のフォーカス連続遷移検証] フォーム内の複数入力フィールド間をフォーカス遷移（Tab移動/次へ）した際にもビューポートが跳ね上がらず安定描画されること',
+      '[フォーム内複数入力欄のフォーカス連続遷移検証] フォーム内の複数入力フィールド間をフォーカス遷移（Tab移動/次へ）した際にもビューポートが跳ね上がらず安定描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(390 * 2, 844 * 2);
         tester.view.devicePixelRatio = 2.0;

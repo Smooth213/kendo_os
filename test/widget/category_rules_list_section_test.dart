@@ -6,8 +6,10 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('🛡️ CategoryRulesListSection Widget Tests', () {
-    testWidgets('Renders empty state when no category rules', (tester) async {
+  group('[Widget] CategoryRulesListSection ウィジェットテスト', () {
+    testWidgets('Renders empty state when no category rulesであること', (
+      tester,
+    ) async {
       final tournament = TournamentModel(
         id: 't1',
         organizationId: 'org1',
@@ -43,7 +45,9 @@ void main() {
       expect(find.text('小学生低学年の部'), findsOneWidget);
     });
 
-    testWidgets('Renders categories and trigger callbacks', (tester) async {
+    testWidgets('Renders categories and trigger callbacksであること', (
+      tester,
+    ) async {
       final tournament = TournamentModel(
         id: 't1',
         organizationId: 'org1',

@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/dialogs/add_reserve_player_dialog.dart';
 
 void main() {
-  group('🛡️ AddReservePlayerDialog Widget Tests', () {
+  group('[Widget] AddReservePlayerDialog ウィジェットテスト', () {
     testWidgets(
-      'Renders available players list and select returns player name',
+      'Renders available players list and select returns player nameであること',
       (WidgetTester tester) async {
         String? selectedName;
         await tester.pumpWidget(
@@ -42,7 +42,7 @@ void main() {
       },
     );
 
-    testWidgets('Manual input textfield adds helper player', (
+    testWidgets('Manual input textfield adds helper playerであること', (
       WidgetTester tester,
     ) async {
       String? selectedName;

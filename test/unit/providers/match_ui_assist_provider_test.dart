@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('MatchUIAssistProvider Tests', () {
+  group('[Unit] MatchUIAssistProvider テスト', () {
     test('isMatchViewFlippedProvider のトグル動作が正常であること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);

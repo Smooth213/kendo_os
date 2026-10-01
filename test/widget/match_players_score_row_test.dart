@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
-  group('🛡️ MatchPlayersScoreRow Widget Tests', () {
-    testWidgets('Renders player names and score line correctly', (
+  group('[Widget] MatchPlayersScoreRow ウィジェットテスト', () {
+    testWidgets('Renders player names and score line correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

@@ -7,8 +7,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ TeamScoreboard Extracted Components Tests', () {
-    testWidgets('1. TeamScoreboardTableBuilder builds table rows correctly', (
+  group('[Widget] TeamScoreboard Extracted Components テスト', () {
+    testWidgets('TeamScoreboardTableBuilder builds table rows correctlyであること', (
       tester,
     ) async {
       final headerRow = TeamScoreboardTableBuilder.buildHeaderRow(
@@ -42,7 +42,7 @@ void main() {
       expect(find.text('2 / 1'), findsOneWidget);
     });
 
-    test('2. TeamScoreboardTableBuilder calcPts parses points correctly', () {
+    test('TeamScoreboardTableBuilder calcPts parses points correctlyであること', () {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,
@@ -60,7 +60,7 @@ void main() {
       expect(pts.containsKey('white'), isTrue);
     });
 
-    testWidgets('3. 1本勝ちの公式記録表記テスト（左上に丸囲み技マーク＋全体勝者円）', (tester) async {
+    testWidgets('1本勝ちの公式記録表記テスト（左上に丸囲み技マーク＋全体勝者円）こと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('コ', true)],
         true, // isWinner
@@ -99,7 +99,7 @@ void main() {
       expect(winnerCircle, isNotNull);
     });
 
-    testWidgets('4. 2本勝ちの公式記録表記テスト（左上1本目＋右下2本目＋全体勝者円）', (tester) async {
+    testWidgets('2本勝ちの公式記録表記テスト（左上1本目＋右下2本目＋全体勝者円）こと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('メ', true), TeamPointDisplay('ド', false)],
         true, // isWinner
@@ -127,7 +127,7 @@ void main() {
       );
     });
 
-    testWidgets('5. 不戦勝の公式記録表記テスト（左上◯＋右下◯＋全体勝者円）', (tester) async {
+    testWidgets('不戦勝の公式記録表記テスト（左上◯＋右下◯＋全体勝者円）こと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('◯', false), TeamPointDisplay('◯', false)],
         true, // isWinner
@@ -153,7 +153,7 @@ void main() {
       );
     });
 
-    testWidgets('6. 引き分けの公式記録表記テスト（中央に✕＋勝者円なし）', (tester) async {
+    testWidgets('引き分けの公式記録表記テスト（中央に＋勝者円なし）こと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('メ', true)],
         false, // isWinner

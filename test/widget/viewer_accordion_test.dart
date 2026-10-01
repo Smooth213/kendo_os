@@ -420,9 +420,9 @@ Widget createTestableWidget(
 }
 
 void main() {
-  group('ViewerHomeScreen Accordion Grouping Tests', () {
+  group('[Widget] ViewerHomeScreen Accordion Grouping テスト', () {
     testWidgets(
-      'Verify proper grouping/accordion display in ViewerHomeScreen',
+      'Verify proper grouping/accordion display in ViewerHomeScreenであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 4000);
         tester.view.devicePixelRatio = 1.0;
@@ -486,7 +486,7 @@ void main() {
     );
 
     testWidgets(
-      'Verify own team is prioritized with styling without swapping left/right in ViewerHomeScreen',
+      'Verify own team is prioritized with styling without swapping left/right in ViewerHomeScreenであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 4000);
         tester.view.devicePixelRatio = 1.0;

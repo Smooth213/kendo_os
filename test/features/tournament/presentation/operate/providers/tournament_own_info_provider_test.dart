@@ -26,14 +26,14 @@ void main() {
     registerFallbackValue(<MatchModel>[]);
   });
 
-  group('🥋 大会登録選手に基づく自チーム完全自動認識＆自チーム指定UI テスト要塞', () {
+  group('[Unit] 大会登録選手に基づく自チーム完全自動認識＆自チーム指定UI テスト要塞', () {
     const ownInfo = TournamentOwnInfo(
       ownTeamNames: {'小畠剣道教室'},
       ownPlayerNames: {'小林 奨', '山田 太郎'},
       playerToTeamMap: {'小林 奨': '小畠剣道教室', '山田 太郎': '小畠剣道教室'},
     );
 
-    test('1. TournamentOwnInfo: 登録選手名から自チーム判定およびチーム名解決が高精度に機能すること', () {
+    test('TournamentOwnInfo: 登録選手名から自チーム判定およびチーム名解決が高精度に機能すること', () {
       // 登録選手「小林 奨」は自チーム側
       expect(ownInfo.isOwnSide(teamPart: '', namePart: '小林 奨'), isTrue);
       // 登録チーム「小畠剣道教室」は自チーム側
@@ -45,7 +45,7 @@ void main() {
       expect(ownInfo.resolveTeamForPlayer('皿田 唯人'), isNull);
     });
 
-    test('2. MatchEditStateHolder: 所属が空の場合、自チーム登録選手から所属道場名が自動補完されること', () {
+    test('MatchEditStateHolder: 所属が空の場合、自チーム登録選手から所属道場名が自動補完されること', () {
       const match = MatchModel(
         id: 'm-auto-1',
         matchType: '個人戦',
@@ -62,7 +62,7 @@ void main() {
       expect(state.ownTeamChoice, MatchEditOwnTeamChoice.red);
     });
 
-    test('3. MatchEditStateHolder: 白側が自チーム登録選手の場合、自チーム選択が白になること', () {
+    test('MatchEditStateHolder: 白側が自チーム登録選手の場合、自チーム選択が白になること', () {
       const match = MatchModel(
         id: 'm-auto-2',
         matchType: '個人戦',
@@ -81,7 +81,7 @@ void main() {
       expect(state.whiteTeamController.text, '道上剣友会');
     });
 
-    test('4. MatchEditStateHolder: どちらも自チーム登録でない場合、勝手に赤にせず「none（中立）」になること', () {
+    test('MatchEditStateHolder: どちらも自チーム登録でない場合、勝手に赤にせず「none（中立）」になること', () {
       const match = MatchModel(
         id: 'm-auto-3',
         matchType: '個人戦',
@@ -173,9 +173,7 @@ void main() {
       );
     }
 
-    testWidgets('5. MatchEditSaveHelper: 自チーム指定「白」の保存が正しく反映されること', (
-      tester,
-    ) async {
+    testWidgets('MatchEditSaveHelper: 自チーム指定「白」の保存が正しく反映されること', (tester) async {
       final mockAppService = MockMatchApplicationService();
       List<MatchModel>? savedMatches;
       when(() => mockAppService.saveMatchesBulk(any())).thenAnswer((inv) async {
@@ -208,7 +206,7 @@ void main() {
       expect(savedMatches!.first.rule?.teamName, '道上剣友会');
     });
 
-    testWidgets('6. MatchEditSaveHelper: 自チーム指定「なし（中立）」の保存でteamNameがクリアされること', (
+    testWidgets('MatchEditSaveHelper: 自チーム指定「なし（中立）」の保存でteamNameがクリアされること', (
       tester,
     ) async {
       final mockAppService = MockMatchApplicationService();
@@ -244,7 +242,7 @@ void main() {
     });
 
     testWidgets(
-      '7. MatchEditTeamAndPlayersTab: 自チーム指定ChoiceChipが表示されタップで切り替わること',
+      'MatchEditTeamAndPlayersTab: 自チーム指定ChoiceChipが表示されタップで切り替わること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -302,7 +300,7 @@ void main() {
     );
 
     test(
-      '8. tournamentOwnInfoProvider: 合同チームの他道場助っ人選手は自チームから除外され、登録メンバーのみが自チームとなること',
+      'tournamentOwnInfoProvider: 合同チームの他道場助っ人選手は自チームから除外され、登録メンバーのみが自チームとなること',
       () async {
         final container = ProviderContainer(
           overrides: [

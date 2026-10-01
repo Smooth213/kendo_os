@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 
 void main() {
   testWidgets(
-    'BunaiksenIndividualMatchesList renders player names and match rows',
+    'BunaiksenIndividualMatchesList renders player names and match rowsであること',
     (WidgetTester tester) async {
       final matches = [
         MatchModel(

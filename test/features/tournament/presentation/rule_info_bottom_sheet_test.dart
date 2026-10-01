@@ -38,10 +38,12 @@ void main() {
     );
   }
 
-  group('RuleInfoBottomSheet Strict Rule Isolation Tests (全試合方式の排他ルール検証)', () {
-    testWidgets(
-      '1. トーナメント団体戦: 団体戦ルールのみが表示され、個人戦・リーグ戦・勝ち抜き・錬成会ルールが1つも表示されないこと',
-      (WidgetTester tester) async {
+  group(
+    '[Widget] RuleInfoBottomSheet Strict Rule Isolation テスト (全試合方式の排他ルール検証)',
+    () {
+      testWidgets('トーナメント団体戦: 団体戦ルールのみが表示され、個人戦・リーグ戦・勝ち抜き・錬成会ルールが1つも表示されないこと', (
+        WidgetTester tester,
+      ) async {
         const teamRule = MatchRule(
           matchTimeMinutes: 2.0,
           isRunningTime: false,
@@ -91,12 +93,11 @@ void main() {
         // [絶対に表示されてはならない無関係な項目]
         expect(find.text('リーグ個人戦'), findsNothing);
         expect(find.text('勝ち抜き戦'), findsNothing);
-      },
-    );
+      });
 
-    testWidgets(
-      '2. トーナメント個人戦: 個人戦ルールのみが表示され、団体戦・リーグ戦・勝ち抜き・錬成会ルールが1つも表示されないこと',
-      (WidgetTester tester) async {
+      testWidgets('トーナメント個人戦: 個人戦ルールのみが表示され、団体戦・リーグ戦・勝ち抜き・錬成会ルールが1つも表示されないこと', (
+        WidgetTester tester,
+      ) async {
         const indivRule = MatchRule(
           matchTimeMinutes: 3.0,
           isRunningTime: false,
@@ -137,12 +138,11 @@ void main() {
 
         // 個人戦のため代表戦は非表示
         expect(find.text('🥋 代表戦'), findsNothing);
-      },
-    );
+      });
 
-    testWidgets(
-      '3. リーグ団体戦: リーグ団体戦ルールのみが表示され、トーナメント団体・個人・勝ち抜き・錬成会ルールが表示されないこと',
-      (WidgetTester tester) async {
+      testWidgets('リーグ団体戦: リーグ団体戦ルールのみが表示され、トーナメント団体・個人・勝ち抜き・錬成会ルールが表示されないこと', (
+        WidgetTester tester,
+      ) async {
         const leagueTeamRule = MatchRule(
           matchTimeMinutes: 4.0,
           isRunningTime: true,
@@ -185,278 +185,34 @@ void main() {
         expect(find.text('⏱️ 試合時間'), findsOneWidget);
         expect(find.text('4分 (通し/空回し)'), findsOneWidget);
         expect(find.text('🥋 代表戦'), findsOneWidget);
-      },
-    );
+      });
 
-    testWidgets('4. リーグ個人戦: リーグ個人戦ルールのみが表示され、団体戦・勝ち抜き・錬成会ルールが表示されないこと', (
-      WidgetTester tester,
-    ) async {
-      const leagueIndivRule = MatchRule(
-        matchTimeMinutes: 2.5,
-        isRunningTime: false,
-        isIpponShobu: true,
-        hasHantei: false,
-        enchoCount: 0,
-        isEnchoUnlimited: false,
-        hasRepresentativeMatch: false,
-        isLeague: true,
-        winPoint: 2.0,
-        drawPoint: 1.0,
-        lossPoint: 0.0,
-        positions: ['選手'],
-      );
-
-      const match = MatchModel(
-        id: 'league_indiv_m1',
-        category: '女子個人の部',
-        matchType: 'individual',
-        redName: '高橋',
-        whiteName: '伊藤',
-        rule: leagueIndivRule,
-        note: '[リーグ戦] 予選Aリーグ',
-      );
-
-      await tester.pumpWidget(buildTestableApp(match: match));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('試合レギュレーション確認'), findsOneWidget);
-      expect(find.text('🎯 試合形式'), findsOneWidget);
-      expect(find.text('リーグ個人戦'), findsOneWidget);
-      expect(find.text('⏱️ 試合時間'), findsOneWidget);
-      expect(find.text('2分30秒 (都度ストップ)'), findsOneWidget);
-      expect(find.text('⚔️ 勝負形式'), findsOneWidget);
-      expect(find.text('１本勝負'), findsOneWidget);
-
-      expect(find.text('🥋 代表戦'), findsNothing);
-    });
-
-    testWidgets('5. 勝ち抜き戦: 勝ち抜き戦設定のみが表示され、リーグ・個人戦延長・錬成会ルールが表示されないこと', (
-      WidgetTester tester,
-    ) async {
-      const kachinukiRule = MatchRule(
-        matchTimeMinutes: 3.0,
-        isRunningTime: false,
-        isIpponShobu: false,
-        hasHantei: false,
-        enchoCount: 0,
-        isEnchoUnlimited: false,
-        isKachinuki: true,
-        kachinukiUnlimitedType: '大将対大将',
-        positions: ['先鋒', '中堅', '大将'],
-      );
-
-      const match = MatchModel(
-        id: 'kachinuki_m1',
-        category: '高校男子の部',
-        groupName: '1回戦 第1試合',
-        matchType: '先鋒',
-        redName: 'A高校:木村',
-        whiteName: 'B高校:斎藤',
-        isKachinuki: true,
-        rule: kachinukiRule,
-        note: '勝ち抜き戦',
-      );
-
-      await tester.pumpWidget(buildTestableApp(match: match));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('試合レギュレーション確認'), findsOneWidget);
-      expect(find.text('🎯 試合形式'), findsOneWidget);
-      expect(find.text('勝ち抜き戦'), findsAtLeast(1));
-      expect(find.text('勝ち抜き条件'), findsOneWidget);
-      expect(find.text('大将対大将'), findsOneWidget);
-    });
-
-    testWidgets('6. 錬成会（時間制）: 錬成会ルールのみが表示され、延長・判定・代表戦・リーグ設定が表示されないこと', (
-      WidgetTester tester,
-    ) async {
-      const renseikaiRule = MatchRule(
-        matchTimeMinutes: 2.0,
-        isRunningTime: true,
-        isIpponShobu: false,
-        hasHantei: false,
-        enchoCount: 0,
-        isEnchoUnlimited: false,
-        hasRepresentativeMatch: false,
-        isRenseikai: true,
-        renseikaiType: '時間制',
-        overallTimeMinutes: 30,
-        positions: ['先鋒', '次鋒', '中堅', '副将', '大将'],
-      );
-
-      const match = MatchModel(
-        id: 'renseikai_time_m1',
-        category: '中学練成の部',
-        groupName: '第1会場 錬成A',
-        matchType: '団体戦',
-        redName: '練成チーム1',
-        whiteName: '練成チーム2',
-        rule: renseikaiRule,
-        note: '時間制練成会',
-      );
-
-      await tester.pumpWidget(buildTestableApp(match: match));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('試合レギュレーション確認'), findsOneWidget);
-      expect(find.text('⏱️ 試合時間'), findsOneWidget);
-      expect(find.text('2分 (通し/空回し)'), findsOneWidget);
-      expect(find.text('進行方式'), findsOneWidget);
-      expect(find.text('時間制'), findsOneWidget);
-      expect(find.text('総試合時間'), findsOneWidget);
-      expect(find.text('30分'), findsOneWidget);
-    });
-
-    testWidgets('7. 錬成会（一試合制）: 制限時間が非表示になり、一試合制のみが表示されること', (
-      WidgetTester tester,
-    ) async {
-      const renseikaiRule = MatchRule(
-        matchTimeMinutes: 3.0,
-        isRunningTime: false,
-        isIpponShobu: false,
-        hasHantei: false,
-        enchoCount: 0,
-        isEnchoUnlimited: false,
-        hasRepresentativeMatch: false,
-        isRenseikai: true,
-        renseikaiType: '一試合制',
-        overallTimeMinutes: 0,
-        positions: ['先鋒', '中堅', '大将'],
-      );
-
-      const match = MatchModel(
-        id: 'renseikai_single_m1',
-        category: '高校練成の部',
-        groupName: '第2会場 錬成B',
-        matchType: '団体戦',
-        redName: '練成チーム3',
-        whiteName: '練成チーム4',
-        rule: renseikaiRule,
-        note: '一試合制練成会',
-      );
-
-      await tester.pumpWidget(buildTestableApp(match: match));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('試合レギュレーション確認'), findsOneWidget);
-      expect(find.text('⏱️ 試合時間'), findsOneWidget);
-      expect(find.text('3分 (都度ストップ)'), findsOneWidget);
-      expect(find.text('進行方式'), findsOneWidget);
-      expect(find.text('一試合制'), findsOneWidget);
-      expect(find.text('総試合時間'), findsNothing);
-    });
-
-    testWidgets('8. 団体戦で代表戦なしに設定された場合: 代表戦の個別項目（時間/延長/判定）が非表示になること', (
-      WidgetTester tester,
-    ) async {
-      const noDaihyoRule = MatchRule(
-        matchTimeMinutes: 2.0,
-        isRunningTime: false,
-        isIpponShobu: false,
-        hasHantei: false,
-        enchoCount: 0,
-        isEnchoUnlimited: false,
-        hasRepresentativeMatch: false,
-        positions: ['先鋒', '中堅', '大将'],
-      );
-
-      const match = MatchModel(
-        id: 'no_daihyo_m1',
-        category: '一般の部',
-        groupName: '道上剣友会A vs 相手チーム',
-        matchType: '先鋒',
-        redName: '道上剣友会A:山田',
-        whiteName: '相手チーム:鈴木',
-        rule: noDaihyoRule,
-        note: '',
-      );
-
-      await tester.pumpWidget(buildTestableApp(match: match));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('試合レギュレーション確認'), findsOneWidget);
-      expect(find.text('🥋 代表戦'), findsOneWidget);
-      expect(find.text('なし'), findsAtLeast(1));
-    });
-
-    testWidgets('9. 特設部内戦: bunaiksenモードでもテーマ破綻なく正確なルールが表示されること', (
-      WidgetTester tester,
-    ) async {
-      const bunaiksenRule = MatchRule(
-        matchTimeMinutes: 2.0,
-        isRunningTime: false,
-        isIpponShobu: false,
-        hasHantei: false,
-        enchoCount: 0,
-        isEnchoUnlimited: false,
-        hasRepresentativeMatch: true,
-        positions: ['先鋒', '次鋒', '中堅', '副将', '大将'],
-      );
-
-      const match = MatchModel(
-        id: 'bunaiksen_m1',
-        tournamentId: 'bunaiksen_123',
-        category: '部内戦',
-        groupName: '赤組 vs 白組',
-        matchType: '先鋒',
-        redName: '赤組:田中',
-        whiteName: '白組:渡辺',
-        rule: bunaiksenRule,
-        note: '',
-      );
-
-      await tester.pumpWidget(
-        buildTestableApp(match: match, isDark: true, mode: 'bunaiksen'),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('試合レギュレーション確認'), findsOneWidget);
-      expect(find.text('🎯 試合形式'), findsOneWidget);
-      expect(find.text('団体戦'), findsOneWidget);
-    });
-
-    testWidgets(
-      '10. 【ポジション延長 誤表示回帰防止テスト】旧データや不正なデフォルト値（enchoTimeMinutes=3.0, enchoCount=0）を持つ団体戦データでも「ポジション延長」「延長戦」「判定」が100%非表示であること',
-      (WidgetTester tester) async {
-        const buggyLegacyRule = MatchRule(
-          matchTimeMinutes: 3.0,
+      testWidgets('リーグ個人戦: リーグ個人戦ルールのみが表示され、団体戦・勝ち抜き・錬成会ルールが表示されないこと', (
+        WidgetTester tester,
+      ) async {
+        const leagueIndivRule = MatchRule(
+          matchTimeMinutes: 2.5,
           isRunningTime: false,
-          isIpponShobu: false,
+          isIpponShobu: true,
           hasHantei: false,
-          enchoTimeMinutes: 3.0,
           enchoCount: 0,
           isEnchoUnlimited: false,
-          hasRepresentativeMatch: true,
-          positions: ['先鋒', '中堅', '大将'],
+          hasRepresentativeMatch: false,
+          isLeague: true,
+          winPoint: 2.0,
+          drawPoint: 1.0,
+          lossPoint: 0.0,
+          positions: ['選手'],
         );
 
         const match = MatchModel(
-          id: 'buggy_legacy_m1',
-          category: '一般の部',
-          groupName: 'チームA vs チームB',
-          matchType: '先鋒',
-          redName: 'チームA:選手1',
-          whiteName: 'チームB:選手2',
-          rule: buggyLegacyRule,
-          note: '',
+          id: 'league_indiv_m1',
+          category: '女子個人の部',
+          matchType: 'individual',
+          redName: '高橋',
+          whiteName: '伊藤',
+          rule: leagueIndivRule,
+          note: '[リーグ戦] 予選Aリーグ',
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
@@ -467,10 +223,256 @@ void main() {
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🎯 試合形式'), findsOneWidget);
+        expect(find.text('リーグ個人戦'), findsOneWidget);
+        expect(find.text('⏱️ 試合時間'), findsOneWidget);
+        expect(find.text('2分30秒 (都度ストップ)'), findsOneWidget);
+        expect(find.text('⚔️ 勝負形式'), findsOneWidget);
+        expect(find.text('１本勝負'), findsOneWidget);
+
+        expect(find.text('🥋 代表戦'), findsNothing);
+      });
+
+      testWidgets('勝ち抜き戦: 勝ち抜き戦設定のみが表示され、リーグ・個人戦延長・錬成会ルールが表示されないこと', (
+        WidgetTester tester,
+      ) async {
+        const kachinukiRule = MatchRule(
+          matchTimeMinutes: 3.0,
+          isRunningTime: false,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoCount: 0,
+          isEnchoUnlimited: false,
+          isKachinuki: true,
+          kachinukiUnlimitedType: '大将対大将',
+          positions: ['先鋒', '中堅', '大将'],
+        );
+
+        const match = MatchModel(
+          id: 'kachinuki_m1',
+          category: '高校男子の部',
+          groupName: '1回戦 第1試合',
+          matchType: '先鋒',
+          redName: 'A高校:木村',
+          whiteName: 'B高校:斎藤',
+          isKachinuki: true,
+          rule: kachinukiRule,
+          note: '勝ち抜き戦',
+        );
+
+        await tester.pumpWidget(buildTestableApp(match: match));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('試合レギュレーション確認'), findsOneWidget);
+        expect(find.text('🎯 試合形式'), findsOneWidget);
+        expect(find.text('勝ち抜き戦'), findsAtLeast(1));
+        expect(find.text('勝ち抜き条件'), findsOneWidget);
+        expect(find.text('大将対大将'), findsOneWidget);
+      });
+
+      testWidgets('錬成会（時間制）: 錬成会ルールのみが表示され、延長・判定・代表戦・リーグ設定が表示されないこと', (
+        WidgetTester tester,
+      ) async {
+        const renseikaiRule = MatchRule(
+          matchTimeMinutes: 2.0,
+          isRunningTime: true,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoCount: 0,
+          isEnchoUnlimited: false,
+          hasRepresentativeMatch: false,
+          isRenseikai: true,
+          renseikaiType: '時間制',
+          overallTimeMinutes: 30,
+          positions: ['先鋒', '次鋒', '中堅', '副将', '大将'],
+        );
+
+        const match = MatchModel(
+          id: 'renseikai_time_m1',
+          category: '中学練成の部',
+          groupName: '第1会場 錬成A',
+          matchType: '団体戦',
+          redName: '練成チーム1',
+          whiteName: '練成チーム2',
+          rule: renseikaiRule,
+          note: '時間制練成会',
+        );
+
+        await tester.pumpWidget(buildTestableApp(match: match));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('試合レギュレーション確認'), findsOneWidget);
+        expect(find.text('⏱️ 試合時間'), findsOneWidget);
+        expect(find.text('2分 (通し/空回し)'), findsOneWidget);
+        expect(find.text('進行方式'), findsOneWidget);
+        expect(find.text('時間制'), findsOneWidget);
+        expect(find.text('総試合時間'), findsOneWidget);
+        expect(find.text('30分'), findsOneWidget);
+      });
+
+      testWidgets('錬成会（一試合制）: 制限時間が非表示になり、一試合制のみが表示されること', (
+        WidgetTester tester,
+      ) async {
+        const renseikaiRule = MatchRule(
+          matchTimeMinutes: 3.0,
+          isRunningTime: false,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoCount: 0,
+          isEnchoUnlimited: false,
+          hasRepresentativeMatch: false,
+          isRenseikai: true,
+          renseikaiType: '一試合制',
+          overallTimeMinutes: 0,
+          positions: ['先鋒', '中堅', '大将'],
+        );
+
+        const match = MatchModel(
+          id: 'renseikai_single_m1',
+          category: '高校練成の部',
+          groupName: '第2会場 錬成B',
+          matchType: '団体戦',
+          redName: '練成チーム3',
+          whiteName: '練成チーム4',
+          rule: renseikaiRule,
+          note: '一試合制練成会',
+        );
+
+        await tester.pumpWidget(buildTestableApp(match: match));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('試合レギュレーション確認'), findsOneWidget);
+        expect(find.text('⏱️ 試合時間'), findsOneWidget);
+        expect(find.text('3分 (都度ストップ)'), findsOneWidget);
+        expect(find.text('進行方式'), findsOneWidget);
+        expect(find.text('一試合制'), findsOneWidget);
+        expect(find.text('総試合時間'), findsNothing);
+      });
+
+      testWidgets('団体戦で代表戦なしに設定された場合: 代表戦の個別項目（時間/延長/判定）が非表示になること', (
+        WidgetTester tester,
+      ) async {
+        const noDaihyoRule = MatchRule(
+          matchTimeMinutes: 2.0,
+          isRunningTime: false,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoCount: 0,
+          isEnchoUnlimited: false,
+          hasRepresentativeMatch: false,
+          positions: ['先鋒', '中堅', '大将'],
+        );
+
+        const match = MatchModel(
+          id: 'no_daihyo_m1',
+          category: '一般の部',
+          groupName: '道上剣友会A vs 相手チーム',
+          matchType: '先鋒',
+          redName: '道上剣友会A:山田',
+          whiteName: '相手チーム:鈴木',
+          rule: noDaihyoRule,
+          note: '',
+        );
+
+        await tester.pumpWidget(buildTestableApp(match: match));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('試合レギュレーション確認'), findsOneWidget);
+        expect(find.text('🥋 代表戦'), findsOneWidget);
+        expect(find.text('なし'), findsAtLeast(1));
+      });
+
+      testWidgets('特設部内戦: bunaiksenモードでもテーマ破綻なく正確なルールが表示されること', (
+        WidgetTester tester,
+      ) async {
+        const bunaiksenRule = MatchRule(
+          matchTimeMinutes: 2.0,
+          isRunningTime: false,
+          isIpponShobu: false,
+          hasHantei: false,
+          enchoCount: 0,
+          isEnchoUnlimited: false,
+          hasRepresentativeMatch: true,
+          positions: ['先鋒', '次鋒', '中堅', '副将', '大将'],
+        );
+
+        const match = MatchModel(
+          id: 'bunaiksen_m1',
+          tournamentId: 'bunaiksen_123',
+          category: '部内戦',
+          groupName: '赤組 vs 白組',
+          matchType: '先鋒',
+          redName: '赤組:田中',
+          whiteName: '白組:渡辺',
+          rule: bunaiksenRule,
+          note: '',
+        );
+
+        await tester.pumpWidget(
+          buildTestableApp(match: match, isDark: true, mode: 'bunaiksen'),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('試合レギュレーション確認'), findsOneWidget);
+        expect(find.text('🎯 試合形式'), findsOneWidget);
         expect(find.text('団体戦'), findsOneWidget);
-        expect(find.text('🔄 延長戦'), findsOneWidget);
-        expect(find.text('なし'), findsOneWidget);
-      },
-    );
-  });
+      });
+
+      testWidgets(
+        '【ポジション延長 誤表示回帰防止テスト】旧データや不正なデフォルト値（enchoTimeMinutes=3.0, enchoCount=0）を持つ団体戦データでも「ポジション延長」「延長戦」「判定」が100%非表示であること',
+        (WidgetTester tester) async {
+          const buggyLegacyRule = MatchRule(
+            matchTimeMinutes: 3.0,
+            isRunningTime: false,
+            isIpponShobu: false,
+            hasHantei: false,
+            enchoTimeMinutes: 3.0,
+            enchoCount: 0,
+            isEnchoUnlimited: false,
+            hasRepresentativeMatch: true,
+            positions: ['先鋒', '中堅', '大将'],
+          );
+
+          const match = MatchModel(
+            id: 'buggy_legacy_m1',
+            category: '一般の部',
+            groupName: 'チームA vs チームB',
+            matchType: '先鋒',
+            redName: 'チームA:選手1',
+            whiteName: 'チームB:選手2',
+            rule: buggyLegacyRule,
+            note: '',
+          );
+
+          await tester.pumpWidget(buildTestableApp(match: match));
+          await tester.pumpAndSettle();
+
+          await tester.tap(
+            find.byKey(const ValueKey('open_rule_sheet_button')),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.text('試合レギュレーション確認'), findsOneWidget);
+          expect(find.text('🎯 試合形式'), findsOneWidget);
+          expect(find.text('団体戦'), findsOneWidget);
+          expect(find.text('🔄 延長戦'), findsOneWidget);
+          expect(find.text('なし'), findsOneWidget);
+        },
+      );
+    },
+  );
 }

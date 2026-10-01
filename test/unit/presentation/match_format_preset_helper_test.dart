@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_preset_helper.dart';
 
 void main() {
-  group('MatchFormatPresetHelper テスト', () {
+  group('[Unit] MatchFormatPresetHelper テスト', () {
     test('defaultNoteHistory に主要な対戦名プリセットが含まれていること', () {
       expect(
         MatchFormatPresetHelper.defaultNoteHistory,

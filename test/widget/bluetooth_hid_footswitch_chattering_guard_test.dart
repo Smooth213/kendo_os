@@ -18,8 +18,8 @@ class HidChatteringGuard {
 }
 
 void main() {
-  group('📱 【Phase 2-5/10】Bluetooth HID フットスイッチ チャタリング暴走防止テスト', () {
-    test('1. フットスイッチ接点不良による10ms間隔の連続5回バウンス入力を1回に抑止すること', () {
+  group('[Widget] 【Phase 2-5/10】Bluetooth HID フットスイッチ チャタリング暴走防止テスト', () {
+    test('フットスイッチ接点不良による10ms間隔の連続5回バウンス入力を1回に抑止すること', () {
       final guard = HidChatteringGuard();
       const key = LogicalKeyboardKey.keyM; // 'M' = 面
 
@@ -37,7 +37,7 @@ void main() {
       expect(processedCount, 1);
     });
 
-    test('2. 正常なインターバル（500ms後）の意図的入力は正常に受領されること', () {
+    test('正常なインターバル（500ms後）の意図的入力は正常に受領されること', () {
       final guard = HidChatteringGuard();
       const key = LogicalKeyboardKey.space; // スペース = 時計トグル
 
@@ -47,7 +47,7 @@ void main() {
     });
 
     testWidgets(
-      '3. RawKeyboardListener / KeyboardListener でのハードウェアキー入力防衛Widgetテスト',
+      'RawKeyboardListener / KeyboardListener でのハードウェアキー入力防衛Widgetが正常に機能すること',
       (tester) async {
         int scoreRecorded = 0;
         final guard = HidChatteringGuard();

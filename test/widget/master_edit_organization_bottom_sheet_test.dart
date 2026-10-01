@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
   testWidgets(
-    'MasterEditOrganizationBottomSheet displays fields and update button',
+    'MasterEditOrganizationBottomSheet displays fields and update buttonであること',
     (tester) async {
       final samplePlayer = PlayerModel(
         id: 'p1',

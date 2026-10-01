@@ -8,8 +8,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchListTileCard Widget Tests', () {
-    testWidgets('Renders MatchListTileCard with team and player names', (
+  group('[Widget] MatchListTileCard ウィジェットテスト', () {
+    testWidgets('Renders MatchListTileCard with team and player namesであること', (
       WidgetTester tester,
     ) async {
       const sampleMatch = MatchModel(

@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 
 void main() {
-  group('イベント履歴分割E2E', () {
+  group('[E2E] イベント履歴分割E2E', () {
     late FakeFirebaseFirestore firestore;
     late MatchRepository repository;
 
@@ -14,7 +14,7 @@ void main() {
       repository = MatchRepository(firestore, 'e2e_org', 'e2e_tournament');
     });
 
-    test('長期イベント履歴を分割保存し、再読込後に全件復元して削除できる', () async {
+    test('長期イベント履歴を分割保存し、再読込後に全件復元して削除できること', () async {
       final events = List.generate(
         450,
         (index) => ScoreEvent(

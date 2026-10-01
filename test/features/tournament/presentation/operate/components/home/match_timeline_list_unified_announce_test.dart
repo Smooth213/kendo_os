@@ -13,7 +13,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 class MockCommentCommandService extends Mock implements CommentCommandService {}
 
 void main() {
-  group('🛡️ Unified Announce Dialog Widget Tests', () {
+  group('[Widget] Unified Announce Dialog ウィジェットテスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late SharedPreferences prefs;
     late MockCommentCommandService mockCommentService;
@@ -82,7 +82,7 @@ void main() {
     }
 
     testWidgets(
-      '1. Should post announcement and timeline comment for "all" target',
+      'Should post announcement and timeline comment for "all" targetであること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -140,58 +140,59 @@ void main() {
       },
     );
 
-    testWidgets('2. Should post staff-only announcement and timeline comment', (
-      WidgetTester tester,
-    ) async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          firestoreProvider.overrideWithValue(fakeFirestore),
-          commentCommandProvider.overrideWithValue(mockCommentService),
-        ],
-      );
+    testWidgets(
+      'Should post staff-only announcement and timeline commentであること',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            commentCommandProvider.overrideWithValue(mockCommentService),
+          ],
+        );
 
-      await tester.pumpWidget(
-        createTestTarget(container: container, tournamentId: 'tourney_abc'),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          createTestTarget(container: container, tournamentId: 'tourney_abc'),
+        );
+        await tester.pumpAndSettle();
 
-      // Open Dialog
-      await tester.tap(find.text('Open Unified Dialog'));
-      await tester.pumpAndSettle();
+        // Open Dialog
+        await tester.tap(find.text('Open Unified Dialog'));
+        await tester.pumpAndSettle();
 
-      // Enter body
-      await tester.enterText(
-        find.widgetWithText(TextField, 'アナウンス本文内容'),
-        '審判員は本部に集合してください。',
-      );
-      await tester.pumpAndSettle();
+        // Enter body
+        await tester.enterText(
+          find.widgetWithText(TextField, 'アナウンス本文内容'),
+          '審判員は本部に集合してください。',
+        );
+        await tester.pumpAndSettle();
 
-      // Select Staff Only ChoiceChip
-      await tester.tap(find.text('スタッフ限定'));
-      await tester.pumpAndSettle();
+        // Select Staff Only ChoiceChip
+        await tester.tap(find.text('スタッフ限定'));
+        await tester.pumpAndSettle();
 
-      // Tap Send and Save
-      await tester.tap(find.text('一斉発信して保存'));
-      await tester.pumpAndSettle();
+        // Tap Send and Save
+        await tester.tap(find.text('一斉発信して保存'));
+        await tester.pumpAndSettle();
 
-      // Check SnackBar
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('スタッフ限定業務連絡を発信しました'), findsOneWidget);
+        // Check SnackBar
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(find.text('スタッフ限定業務連絡を発信しました'), findsOneWidget);
 
-      // Verify Firestore document targeting staff
-      final announceSnapshot = await fakeFirestore
-          .collection('announcements')
-          .get();
-      expect(announceSnapshot.docs.length, 1);
-      final docData = announceSnapshot.docs.first.data();
-      expect(docData['title'], '大会本部からのお知らせ');
-      expect(docData['body'], '審判員は本部に集合してください。');
-      expect(docData['target'], 'staff');
+        // Verify Firestore document targeting staff
+        final announceSnapshot = await fakeFirestore
+            .collection('announcements')
+            .get();
+        expect(announceSnapshot.docs.length, 1);
+        final docData = announceSnapshot.docs.first.data();
+        expect(docData['title'], '大会本部からのお知らせ');
+        expect(docData['body'], '審判員は本部に集合してください。');
+        expect(docData['target'], 'staff');
 
-      // Verify Comment command text
-      expect(addedComments.length, 1);
-      expect(addedComments.first['text'], '審判員は本部に集合してください。');
-    });
+        // Verify Comment command text
+        expect(addedComments.length, 1);
+        expect(addedComments.first['text'], '審判員は本部に集合してください。');
+      },
+    );
   });
 }

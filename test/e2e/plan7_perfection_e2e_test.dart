@@ -21,7 +21,7 @@ class MockCommentCommandService extends Mock implements CommentCommandService {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 【Plan 7 E2E】極限最適化・低負荷・絶対安定性 総合結合実証テスト', () {
+  group('[E2E] 【Plan 7 E2E】極限最適化・低負荷・絶対安定性 総合結合実証テスト', () {
     test(
       'E2E-1: 【バックグラウンド不要ストリーム完全解放実証】viewerMatchProjectionProvider および下流プロバイダが autoDispose であり、監視終了後に安全にリソースが解放されること',
       () async {

@@ -4,8 +4,8 @@ import 'package:kendo_os/admin/presentation/components/master_player_tile.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('🛡️ MasterPlayerTile Widget Tests', () {
-    testWidgets('Renders player details correctly', (tester) async {
+  group('[Widget] MasterPlayerTile ウィジェットテスト', () {
+    testWidgets('Renders player details correctlyであること', (tester) async {
       final player = PlayerModel(
         id: 'p1',
         lastName: '山田',
@@ -37,7 +37,7 @@ void main() {
       expect(find.text('初心者'), findsOneWidget);
     });
 
-    testWidgets('Handles selection mode tap', (tester) async {
+    testWidgets('Handles selection mode tapであること', (tester) async {
       final player = PlayerModel(
         id: 'p1',
         lastName: '佐藤',

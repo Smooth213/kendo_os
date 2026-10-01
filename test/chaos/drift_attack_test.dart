@@ -6,8 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 // Detectorが「Fail-closed」を発動するか検証します。
 // ============================================================================
 void main() {
-  group('⚔️ Step 8-2 & 8-3: Drift & Projection Attack', () {
-    test('Semantic Drift Attack Simulation', () {
+  group('[E2E] & 8-3: Drift & Projection Attack', () {
+    test('Semantic Drift Attack Simulationであること', () {
       const expectedWinner = 'red';
       const corruptedWinner = 'white'; // 歴史改ざん
 
@@ -18,7 +18,7 @@ void main() {
       );
     });
 
-    test('Projection Corruption Detection', () {
+    test('Projection Corruption Detectionであること', () {
       final truth = {'red': 2, 'white': 1};
       final corruptedProjection = {'red': 2, 'white': 2}; // 不整合注入
 

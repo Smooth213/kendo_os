@@ -17,7 +17,7 @@ import 'package:kendo_os/features/viewer/presentation/viewer_home_screen.dart'
     as viewer;
 
 void main() {
-  group('🛡️ [Phase 4-V3] 掲示板式3行UI＆4大不具合完全防止・回帰テスト要塞', () {
+  group('[Widget] [Phase 4-V3] 掲示板式3行UI＆4大不具合完全防止・回帰テスト要塞', () {
     MatchModel makeMockMatch({
       required String id,
       required String redName,
@@ -47,7 +47,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 【文字切れ防止】 チーム名が1行目（2行目）に独立し、選手名と分離した全3行構造が正しくレンダリングされること', (
+    testWidgets('【文字切れ防止】 チーム名が1行目（2行目）に独立し、選手名と分離した全3行構造が正しくレンダリングされること', (
       WidgetTester tester,
     ) async {
       final mockMatch = makeMockMatch(
@@ -96,56 +96,55 @@ void main() {
       expect(find.text('皿田 文彬'), findsOneWidget);
     });
 
-    testWidgets(
-      '2. 【名前順同期】 白側の選手名とチーム名の並び順が「名前 : チーム名(小さく)」の順序で正しくパース・同期されていること',
-      (WidgetTester tester) async {
-        final mockMatch = makeMockMatch(
-          id: 'match_002',
-          redName: '亀山クラブ : 道上',
-          whiteName: '広島道場 : 皿田',
-        );
+    testWidgets('【名前順同期】 白側の選手名とチーム名の並び順が「名前 : チーム名(小さく)」の順序で正しくパース・同期されていること', (
+      WidgetTester tester,
+    ) async {
+      final mockMatch = makeMockMatch(
+        id: 'match_002',
+        redName: '亀山クラブ : 道上',
+        whiteName: '広島道場 : 皿田',
+      );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              // ★ 修正: MatchListTileCardが依存する `matchListByTournamentProvider` をオーバーライドする
-              matchListProvider.overrideWith((ref) => [mockMatch]),
-              matchListByTournamentProvider.overrideWith(
-                (ref, id) => Stream.value([mockMatch]),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            // ★ 修正: MatchListTileCardが依存する `matchListByTournamentProvider` をオーバーライドする
+            matchListProvider.overrideWith((ref) => [mockMatch]),
+            matchListByTournamentProvider.overrideWith(
+              (ref, id) => Stream.value([mockMatch]),
+            ),
+            isarProvider.overrideWithValue(null), // ★ Isar未初期化エラーを解決
+            customTeamNamesProvider.overrideWith(
+              (ref) => Stream.value(const <String>[]),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
               ),
-              isarProvider.overrideWithValue(null), // ★ Isar未初期化エラーを解決
-              customTeamNamesProvider.overrideWith(
-                (ref) => Stream.value(const <String>[]),
-              ),
-              permissionProvider.overrideWith(
-                (ref) => const AppPermissions(
-                  isReadOnly: false,
-                  canManageTournament: true,
-                  canCreateMatch: true,
-                  canChangeSettings: true,
-                  canDeleteData: true,
-                ),
-              ),
-            ],
-            child: MaterialApp(
-              theme: ThemeData(splashFactory: NoSplash.splashFactory),
-              home: Scaffold(
-                body: MatchListTileCard(
-                  initialMatch: mockMatch,
-                  isDeletable: false,
-                ),
+            ),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
+            home: Scaffold(
+              body: MatchListTileCard(
+                initialMatch: mockMatch,
+                isDeletable: false,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('皿田'), findsOneWidget);
-        expect(find.text('広島道場'), findsOneWidget);
-      },
-    );
+      expect(find.text('皿田'), findsOneWidget);
+      expect(find.text('広島道場'), findsOneWidget);
+    });
 
     testWidgets(
-      '3. 【スコアなし時空欄化】 一本が1つも決まっていない状態では、中央に余計な「ー」が表示されず完全空欄（SizedBox）になること',
+      '【スコアなし時空欄化】 一本が1つも決まっていない状態では、中央に余計な「ー」が表示されず完全空欄（SizedBox）になること',
       (WidgetTester tester) async {
         final mockMatch = makeMockMatch(
           id: 'match_003',
@@ -193,7 +192,7 @@ void main() {
     );
 
     testWidgets(
-      '4. 【Undoリアクティブ即時反映】 試合中に Undo が実行されてイベントが消去された際、独立WidgetがElementキャッシュをぶち破って0秒で即座にマークを消滅させること',
+      '【Undoリアクティブ即時反映】 試合中に Undo が実行されてイベントが消去された際、独立WidgetがElementキャッシュをぶち破って0秒で即座にマークを消滅させること',
       (WidgetTester tester) async {
         final initialEvent = ScoreEvent(
           id: 'ev_1',
@@ -274,7 +273,7 @@ void main() {
     );
 
     testWidgets(
-      '5. 【全自動合計スコア集約】 団体戦グループ内の各ポジションのスコアが、親アコーディオンのヘッダーへ自動的に 3(5) - 1(2) の形式で正確に合算・表示されること',
+      '【全自動合計スコア集約】 団体戦グループ内の各ポジションのスコアが、親アコーディオンのヘッダーへ自動的に 3(5) - 1(2) の形式で正確に合算・表示されること',
       (WidgetTester tester) async {
         final m1 = makeMockMatch(
           id: 'b1',
@@ -379,7 +378,7 @@ void main() {
       },
     );
 
-    testWidgets('6. 【引き分け表示】 0対0で試合終了した引き分けのとき、中央に「×」が表示されること', (
+    testWidgets('【引き分け表示】 0対0で試合終了した引き分けのとき、中央に「×」が表示されること', (
       WidgetTester tester,
     ) async {
       final mockMatch = makeMockMatch(
@@ -429,7 +428,7 @@ void main() {
       expect(find.text('ー'), findsNothing);
     });
 
-    testWidgets('7. 【引き分け表示】 1対1で試合終了した引き分けのとき、両者のポイントと中央に「×」が表示されること', (
+    testWidgets('【引き分け表示】 1対1で試合終了した引き分けのとき、両者のポイントと中央に「×」が表示されること', (
       WidgetTester tester,
     ) async {
       final eventRed = ScoreEvent(
@@ -497,7 +496,7 @@ void main() {
       expect(find.text('ー'), findsNothing);
     });
 
-    testWidgets('8. 【勝敗表示】 勝敗がついた試合のとき、得点と中央に「ー」が表示されること', (
+    testWidgets('【勝敗表示】 勝敗がついた試合のとき、得点と中央に「ー」が表示されること', (
       WidgetTester tester,
     ) async {
       final eventRed = ScoreEvent(
@@ -557,7 +556,7 @@ void main() {
     });
 
     testWidgets(
-      '9. 【観客用・Undoリアクティブ即時反映】 ViewerMatchListTileCard でも、Undoによるイベント消去が即時反映されること',
+      '【観客用・Undoリアクティブ即時反映】 ViewerMatchListTileCard でも、Undoによるイベント消去が即時反映されること',
       (WidgetTester tester) async {
         final initialEvent = ScoreEvent(
           id: 'ev_1',
@@ -642,79 +641,78 @@ void main() {
       },
     );
 
-    testWidgets(
-      '10. 【3段レイアウト崩れ防止】 MatchListTileCard のメモが1行目と独立した2行目に描画されていること',
-      (WidgetTester tester) async {
-        final mockMatch = makeMockMatch(
-          id: 'match_010',
-          redName: '亀山クラブ : 道上',
-          whiteName: '広島道場 : 皿田',
-          note: '特記メモテスト',
-        );
+    testWidgets('【3段レイアウト崩れ防止】 MatchListTileCard のメモが1行目と独立した2行目に描画されていること', (
+      WidgetTester tester,
+    ) async {
+      final mockMatch = makeMockMatch(
+        id: 'match_010',
+        redName: '亀山クラブ : 道上',
+        whiteName: '広島道場 : 皿田',
+        note: '特記メモテスト',
+      );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              matchListProvider.overrideWith((ref) => [mockMatch]),
-              matchListByTournamentProvider.overrideWith(
-                (ref, id) => Stream.value([mockMatch]),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchListProvider.overrideWith((ref) => [mockMatch]),
+            matchListByTournamentProvider.overrideWith(
+              (ref, id) => Stream.value([mockMatch]),
+            ),
+            isarProvider.overrideWithValue(null),
+            customTeamNamesProvider.overrideWith(
+              (ref) => Stream.value(const <String>[]),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
               ),
-              isarProvider.overrideWithValue(null),
-              customTeamNamesProvider.overrideWith(
-                (ref) => Stream.value(const <String>[]),
-              ),
-              permissionProvider.overrideWith(
-                (ref) => const AppPermissions(
-                  isReadOnly: false,
-                  canManageTournament: true,
-                  canCreateMatch: true,
-                  canChangeSettings: true,
-                  canDeleteData: true,
-                ),
-              ),
-            ],
-            child: MaterialApp(
-              home: Scaffold(
-                body: SingleChildScrollView(
-                  child: MatchListTileCard(
-                    initialMatch: mockMatch,
-                    isDeletable: false,
-                  ),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: MatchListTileCard(
+                  initialMatch: mockMatch,
+                  isDeletable: false,
                 ),
               ),
             ),
           ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 1. メモテキストが画面上に存在することを確認
+      expect(find.textContaining('特記メモテスト'), findsOneWidget);
+
+      // 2. 1行目のRow (コントロール群) を検索し、メモがその中に含まれていないことを検証する
+      final rowFinder = find.descendant(
+        of: find.byType(MatchListTileCard),
+        matching: find.byType(Row),
+      );
+      expect(rowFinder, findsWidgets);
+
+      // Rowのいずれの子孫にも「特記メモテスト」が含まれない（＝1行目に内包されていない）ことを確認
+      for (final rowElement in tester.elementList(rowFinder)) {
+        final noteInRowFinder = find.descendant(
+          of: find.byWidget(rowElement.widget),
+          matching: find.textContaining('特記メモテスト'),
         );
-
-        await tester.pumpAndSettle();
-
-        // 1. メモテキストが画面上に存在することを確認
-        expect(find.textContaining('特記メモテスト'), findsOneWidget);
-
-        // 2. 1行目のRow (コントロール群) を検索し、メモがその中に含まれていないことを検証する
-        final rowFinder = find.descendant(
-          of: find.byType(MatchListTileCard),
-          matching: find.byType(Row),
+        expect(
+          noteInRowFinder.evaluate().isEmpty,
+          isTrue,
+          reason: 'メモは1段目のRowコントロール内部に配置されてはいけない',
         );
-        expect(rowFinder, findsWidgets);
-
-        // Rowのいずれの子孫にも「特記メモテスト」が含まれない（＝1行目に内包されていない）ことを確認
-        for (final rowElement in tester.elementList(rowFinder)) {
-          final noteInRowFinder = find.descendant(
-            of: find.byWidget(rowElement.widget),
-            matching: find.textContaining('特記メモテスト'),
-          );
-          expect(
-            noteInRowFinder.evaluate().isEmpty,
-            isTrue,
-            reason: 'メモは1段目のRowコントロール内部に配置されてはいけない',
-          );
-        }
-      },
-    );
+      }
+    });
 
     testWidgets(
-      '11. 【3段レイアウト崩れ防止】 ViewerMatchListTileCard のメモが1行目と独立した2行目に描画されていること',
+      '【3段レイアウト崩れ防止】 ViewerMatchListTileCard のメモが1行目と独立した2行目に描画されていること',
       (WidgetTester tester) async {
         final mockMatch = makeMockMatch(
           id: 'match_011',
@@ -786,7 +784,7 @@ void main() {
     );
 
     testWidgets(
-      '15. 【検索入力視認性保証テスト】試合リストで検索アイコンを押下した際、入力欄が正しく展開され、テキスト入力可能な状態になること',
+      '【検索入力視認性保証テスト】試合リストで検索アイコンを押下した際、入力欄が正しく展開され、テキスト入力可能な状態になること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1800);
         tester.view.devicePixelRatio = 1.0;

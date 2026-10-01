@@ -37,7 +37,7 @@ void main() {
         });
   });
 
-  group('🥋 ドック内BANDボタン＆子シート検証テスト', () {
+  group('[Widget] ドック内BANDボタン＆子シート検証テスト', () {
     testWidgets('ドックのシステム設定からBAND連携タイルをタップしてグループ管理シートと追加ダイアログが開くこと', (
       tester,
     ) async {

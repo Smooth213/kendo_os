@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('🥋 CategoryRuleMatchHelper 同一カテゴリ複数ルール共存・解決テスト要塞', () {
+  group('[Widget] CategoryRuleMatchHelper 同一カテゴリ複数ルール共存・解決テスト要塞', () {
     late TournamentModel baseTournament;
 
     setUp(() {
@@ -18,7 +18,7 @@ void main() {
       );
     });
 
-    test('1. generateUniqueRuleKey: 同名部門でも種別サフィックスや番号で一意キーが生成されること', () {
+    test('generateUniqueRuleKey: 同名部門でも種別サフィックスや番号で一意キーが生成されること', () {
       final existingRules = <String, CategoryRuleSet>{
         '小学生の部': const CategoryRuleSet(matchType: '団体戦'),
       };
@@ -41,33 +41,30 @@ void main() {
       expect(key2, '小学生の部 (2)');
     });
 
-    test(
-      '2. addCategoryToTournament: 同一カテゴリを2回追加しても上書きされず、2つとも共存して登録されること',
-      () {
-        // 1回目: 小学生の部（団体戦）を追加
-        final (t1, key1, _) = CategoryRuleMatchHelper.addCategoryToTournament(
-          baseTournament,
-          '小学生の部',
-          matchType: '団体戦',
-        );
-        expect(key1, '小学生の部');
-        expect(t1.categoryRules.length, 1);
-        expect(t1.categoryRules.containsKey('小学生の部'), isTrue);
+    test('addCategoryToTournament: 同一カテゴリを2回追加しても上書きされず、2つとも共存して登録されること', () {
+      // 1回目: 小学生の部（団体戦）を追加
+      final (t1, key1, _) = CategoryRuleMatchHelper.addCategoryToTournament(
+        baseTournament,
+        '小学生の部',
+        matchType: '団体戦',
+      );
+      expect(key1, '小学生の部');
+      expect(t1.categoryRules.length, 1);
+      expect(t1.categoryRules.containsKey('小学生の部'), isTrue);
 
-        // 2回目: 再び「小学生の部」を個人戦として追加
-        final (t2, key2, _) = CategoryRuleMatchHelper.addCategoryToTournament(
-          t1,
-          '小学生の部',
-          matchType: '個人戦',
-        );
-        expect(key2, '小学生の部（個人戦）');
-        expect(t2.categoryRules.length, 2);
-        expect(t2.categoryRules.containsKey('小学生の部'), isTrue);
-        expect(t2.categoryRules.containsKey('小学生の部（個人戦）'), isTrue);
-      },
-    );
+      // 2回目: 再び「小学生の部」を個人戦として追加
+      final (t2, key2, _) = CategoryRuleMatchHelper.addCategoryToTournament(
+        t1,
+        '小学生の部',
+        matchType: '個人戦',
+      );
+      expect(key2, '小学生の部（個人戦）');
+      expect(t2.categoryRules.length, 2);
+      expect(t2.categoryRules.containsKey('小学生の部'), isTrue);
+      expect(t2.categoryRules.containsKey('小学生の部（個人戦）'), isTrue);
+    });
 
-    test('3. findRuleSetForMatch: 試合の種別（団体戦/個人戦）に応じて最適なルールが自動解決されること', () {
+    test('findRuleSetForMatch: 試合の種別（団体戦/個人戦）に応じて最適なルールが自動解決されること', () {
       final teamRule = const CategoryRuleSet(
         normalRule: MatchRule(matchTimeMinutes: 3.0),
         matchType: '団体戦',
@@ -103,7 +100,7 @@ void main() {
       expect(matchedIndiv?.matchType, '個人戦');
     });
 
-    test('4. cleanCategoryBaseName: サフィックスを除いた基底部門名が正確に抽出されること', () {
+    test('cleanCategoryBaseName: サフィックスを除いた基底部門名が正確に抽出されること', () {
       expect(CategoryRuleMatchHelper.cleanCategoryBaseName('小学生の部'), '小学生の部');
       expect(
         CategoryRuleMatchHelper.cleanCategoryBaseName('小学生の部（個人戦）'),
@@ -120,7 +117,7 @@ void main() {
     });
 
     test(
-      '5. updateTournamentWithRuleSet & deleteCategoryFromTournament: 特定ルールの更新・削除が独立して行われること',
+      'updateTournamentWithRuleSet & deleteCategoryFromTournament: 特定ルールの更新・削除が独立して行われること',
       () {
         final (t1, _, _) = CategoryRuleMatchHelper.addCategoryToTournament(
           baseTournament,
@@ -166,7 +163,7 @@ void main() {
       },
     );
 
-    test('6. stripNumberSuffix: 番号サフィックスが正しく除去されること', () {
+    test('stripNumberSuffix: 番号サフィックスが正しく除去されること', () {
       expect(CategoryRuleMatchHelper.stripNumberSuffix('小学生の部 (2)'), '小学生の部');
       expect(CategoryRuleMatchHelper.stripNumberSuffix('小学生の部（3）'), '小学生の部');
       expect(CategoryRuleMatchHelper.stripNumberSuffix('小学生の部'), '小学生の部');
@@ -177,7 +174,7 @@ void main() {
     });
 
     test(
-      '7. resolveDisplayCategory & formatDisplayTitle: サブタイトルで見分けがつけば連番削除、重複時は維持されること',
+      'resolveDisplayCategory & formatDisplayTitle: サブタイトルで見分けがつけば連番削除、重複時は維持されること',
       () {
         final rules = <String, CategoryRuleSet>{
           '小学生の部': const CategoryRuleSet(subtitle: '予選リーグ', matchType: '団体戦'),
@@ -246,7 +243,7 @@ void main() {
       },
     );
 
-    test('8. findAllRuleSetsForCategory: 同一部門の複数ルールを漏れなく収集できること', () {
+    test('findAllRuleSetsForCategory: 同一部門の複数ルールを漏れなく収集できること', () {
       final rules = <String, CategoryRuleSet>{
         '小学生の部': const CategoryRuleSet(
           subtitle: '予選リーグ',
@@ -274,7 +271,7 @@ void main() {
       expect(results[1].value.subtitle, '決勝トーナメント');
     });
 
-    test('9. findRuleEntryForMatch: 試合メモ(note)のキーワードに応じて最適なルールが優先選択されること', () {
+    test('findRuleEntryForMatch: 試合メモ(note)のキーワードに応じて最適なルールが優先選択されること', () {
       final rules = <String, CategoryRuleSet>{
         '小学生低学年の部': const CategoryRuleSet(
           subtitle: '予選リーグ',

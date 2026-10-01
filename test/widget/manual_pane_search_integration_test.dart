@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_index_pane.dart';
 
 void main() {
-  group('📖 ManualIndexPane 実データ検索統合Widgetテスト', () {
+  group('[Widget] ManualIndexPane 実データ検索統合Widgetテスト', () {
     late List<dynamic> realIndex;
 
     setUpAll(() {

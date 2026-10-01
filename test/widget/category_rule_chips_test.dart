@@ -5,8 +5,10 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_chips.dart';
 
 void main() {
-  group('🛡️ CategoryRuleChips Widget Tests', () {
-    testWidgets('Renders standard rules chips', (WidgetTester tester) async {
+  group('[Widget] CategoryRuleChips ウィジェットテスト', () {
+    testWidgets('Renders standard rules chipsであること', (
+      WidgetTester tester,
+    ) async {
       final ruleSet = const CategoryRuleSet(
         normalRule: MatchRule(
           matchTimeMinutes: 3.0,
@@ -29,39 +31,40 @@ void main() {
       expect(find.text('⏳ 延長無制限'), findsOneWidget);
     });
 
-    testWidgets('Renders multi-scene chips (renseikai, honsen, moushiawase)', (
-      WidgetTester tester,
-    ) async {
-      final ruleSet = const CategoryRuleSet(
-        isMultiScene: true,
-        useRenseikaiRule: true,
-        useHonsenRule: true,
-        useMoushiawaseRule: true,
-        renseikaiRule: MatchRule(
-          matchTimeMinutes: 2.0,
-          isRunningTime: true,
-          hasHantei: true,
-        ),
-        normalRule: MatchRule(matchTimeMinutes: 4.0, isEnchoUnlimited: true),
-        moushiawaseRule: MatchRule(matchTimeMinutes: 2.0, hasHantei: true),
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CategoryRuleChips(ruleSet: ruleSet, isDark: true),
+    testWidgets(
+      'Renders multi-scene chips (renseikai, honsen, moushiawase)こと',
+      (WidgetTester tester) async {
+        final ruleSet = const CategoryRuleSet(
+          isMultiScene: true,
+          useRenseikaiRule: true,
+          useHonsenRule: true,
+          useMoushiawaseRule: true,
+          renseikaiRule: MatchRule(
+            matchTimeMinutes: 2.0,
+            isRunningTime: true,
+            hasHantei: true,
           ),
-        ),
-      );
+          normalRule: MatchRule(matchTimeMinutes: 4.0, isEnchoUnlimited: true),
+          moushiawaseRule: MatchRule(matchTimeMinutes: 2.0, hasHantei: true),
+        );
 
-      expect(find.text('⚔️ 錬成'), findsOneWidget);
-      expect(find.text('🔄 通し'), findsOneWidget);
-      expect(find.text('🏆 本戦'), findsOneWidget);
-      expect(find.text('⏱️ 4分'), findsOneWidget);
-      expect(find.text('🤝 申合せ'), findsOneWidget);
-    });
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CategoryRuleChips(ruleSet: ruleSet, isDark: true),
+            ),
+          ),
+        );
 
-    testWidgets('Renders advancedRule chips with 1本勝負 badge', (
+        expect(find.text('⚔️ 錬成'), findsOneWidget);
+        expect(find.text('🔄 通し'), findsOneWidget);
+        expect(find.text('🏆 本戦'), findsOneWidget);
+        expect(find.text('⏱️ 4分'), findsOneWidget);
+        expect(find.text('🤝 申合せ'), findsOneWidget);
+      },
+    );
+
+    testWidgets('Renders advancedRule chips with 1本勝負 badgeであること', (
       WidgetTester tester,
     ) async {
       final ruleSet = const CategoryRuleSet(

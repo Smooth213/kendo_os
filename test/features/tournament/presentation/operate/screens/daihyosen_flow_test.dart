@@ -18,8 +18,8 @@ class _FixedTimeSource implements TimeSource {
 }
 
 void main() {
-  group('⚔️ 代表戦・個人戦・勝ち抜き戦 延長戦完全挙動検証テスト', () {
-    test('1. scheduled / waiting 状態からスコア入力＆勝敗決定まで例外なく完了すること', () {
+  group('[Widget] 代表戦・個人戦・勝ち抜き戦 延長戦完全挙動検証テスト', () {
+    test('scheduled / waiting 状態からスコア入力＆勝敗決定まで例外なく完了すること', () {
       // scheduled からのライフサイクル状態の解像
       final state = MatchLifecycleStateLegacyExt.fromLegacyString('scheduled');
       expect(state, equals(MatchLifecycleState.ready));
@@ -46,7 +46,7 @@ void main() {
       expect(completedAgain, equals(MatchLifecycleState.completed));
     });
 
-    test('2. AddScoreUseCase で scheduled 状態の代表戦にスコアが入った際に正しく処理されること', () {
+    test('AddScoreUseCase で scheduled 状態の代表戦にスコアが入った際に正しく処理されること', () {
       final engine = KendoRuleEngine();
       final permission = PermissionService();
       final timeSource = _FixedTimeSource(DateTime(2026, 8, 14, 10, 0));
@@ -82,7 +82,7 @@ void main() {
       expect(updated.redScore, equals(1));
     });
 
-    test('3. 代表戦・通常戦ともに本戦時間内決着は「延長」がつかず、延長突入後に「延長」がつくこと', () {
+    test('代表戦・通常戦ともに本戦時間内決着は「延長」がつかず、延長突入後に「延長」がつくこと', () {
       final now = DateTime(2026, 8, 14, 10, 0);
       // 代表戦（本戦3分内で一本決着）
       final daihyoHonsenMatch = MatchModel(
@@ -119,7 +119,7 @@ void main() {
       expect(MatchCalculatorHelper.isEnchoFromModel(senpoEnchoMatch), isTrue);
     });
 
-    test('4. 団体戦で通常戦延長なしでも、代表戦（2分・延長2分・無制限）で引き分け時に startExtension が返ること', () {
+    test('団体戦で通常戦延長なしでも、代表戦（2分・延長2分・無制限）で引き分け時に startExtension が返ること', () {
       const daihyoRule = MatchRule(
         daihyoMatchTimeMinutes: 2.0,
         daihyoHasExtension: true,
@@ -156,7 +156,7 @@ void main() {
       expect(action, equals(NextMatchAction.startExtension));
     });
 
-    test('5. 代表戦（回数無制限）で複数回の延長戦（1回目、2回目、3回目）が常に startExtension と判定されること', () {
+    test('代表戦（回数無制限）で複数回の延長戦（1回目、2回目、3回目）が常に startExtension と判定されること', () {
       const daihyoRule = MatchRule(
         daihyoHasExtension: true,
         daihyoEnchoCount: -2, // 無制限
@@ -191,7 +191,7 @@ void main() {
       }
     });
 
-    test('6. 代表戦で延長回数上限（2回）に設定されている場合、2回終了後に判定（showHantei）へ正しく移行すること', () {
+    test('代表戦で延長回数上限（2回）に設定されている場合、2回終了後に判定（showHantei）へ正しく移行すること', () {
       const daihyoRule = MatchRule(
         daihyoHasExtension: true,
         daihyoEnchoCount: 2, // 2回上限
@@ -232,7 +232,7 @@ void main() {
       );
     });
 
-    test('7. 代表戦延長突入後のデータ更新（note記録・タイマー初期化秒数）が正しく行われること', () {
+    test('代表戦延長突入後のデータ更新（note記録・タイマー初期化秒数）が正しく行われること', () {
       final now = DateTime(2026, 8, 14, 10, 0);
       const extMins = 2.0;
 
@@ -272,7 +272,7 @@ void main() {
       );
     });
 
-    test('8. 個人戦で設定した延長回数・判定有無が getNextActionOnTie に正確に反映されること', () {
+    test('個人戦で設定した延長回数・判定有無が getNextActionOnTie に正確に反映されること', () {
       const indivRule = MatchRule(
         enchoCount: 1, // 延長1回のみ
         hasHantei: true, // 延長終了後は判定
@@ -310,7 +310,7 @@ void main() {
       expect(action2, equals(NextMatchAction.showHantei));
     });
 
-    test('9. 勝ち抜き戦の大将戦引き分け延長（大将引き分け延長）が正しく動作すること', () {
+    test('勝ち抜き戦の大将戦引き分け延長（大将引き分け延長）が正しく動作すること', () {
       const kachinukiRule = MatchRule(
         isKachinuki: true,
         kachinukiUnlimitedType: '大将引き分け延長',

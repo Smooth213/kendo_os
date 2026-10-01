@@ -19,14 +19,14 @@ int _heavyFibonacci(int n) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🧵 [Phase 4 Performance Governance] 重計算Isolate分離テスト', () {
-    test('1. KendoComputeHelper.run が重計算を正しく実行し結果を返却すること', () async {
+  group('[Governance] [Phase 4 Performance Governance] 重計算Isolate分離テスト', () {
+    test('KendoComputeHelper.run が重計算を正しく実行し結果を返却すること', () async {
       final result = await KendoComputeHelper.run(_heavyFibonacci, 30);
       expect(result, 832040);
     });
 
     test(
-      '2. CsvService.generateCsvBytesAsync が大量試合データを別スレッドでCSVバイナリ化できること',
+      'CsvService.generateCsvBytesAsync が大量試合データを別スレッドでCSVバイナリ化できること',
       () async {
         // 100試合分のモックデータを生成
         final matches = List.generate(
@@ -70,7 +70,7 @@ void main() {
       },
     );
 
-    test('3. KendoComputeHelper による大量JSONシリアライズがデータ欠損なく完了すること', () async {
+    test('KendoComputeHelper による大量JSONシリアライズがデータ欠損なく完了すること', () async {
       final rawList = List.generate(
         200,
         (i) => {

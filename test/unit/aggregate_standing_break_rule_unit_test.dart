@@ -40,8 +40,8 @@ class KendoStandingComparator {
 }
 
 void main() {
-  group('🧪 【Unit 5/5】同率タイブレーク（勝点・勝者数・総本数・代表戦）境界値テスト', () {
-    test('1. 勝数が異なる場合、勝数の多い選手/チームが上位になること', () {
+  group('[Unit] 【Unit 5/5】同率タイブレーク（勝点・勝者数・総本数・代表戦）境界値テスト', () {
+    test('勝数が異なる場合、勝数の多い選手/チームが上位になること', () {
       const s1 = LeagueStanding(playerName: '選手A', wins: 2, pointsFor: 3);
       const s2 = LeagueStanding(playerName: '選手B', wins: 1, pointsFor: 5);
 
@@ -49,7 +49,7 @@ void main() {
       expect(ranked.first.playerName, '選手A');
     });
 
-    test('2. 勝数が同率の場合、総取得本数（pointsFor）が多い選手が上位になること', () {
+    test('勝数が同率の場合、総取得本数（pointsFor）が多い選手が上位になること', () {
       const s1 = LeagueStanding(
         playerName: '選手A',
         wins: 1,
@@ -69,7 +69,7 @@ void main() {
       expect(ranked.first.playerName, '選手B');
     });
 
-    test('3. 勝数・総本数ともに同率の場合、本数差（得失本数差）が優れる選手が上位になること', () {
+    test('勝数・総本数ともに同率の場合、本数差（得失本数差）が優れる選手が上位になること', () {
       const s1 = LeagueStanding(
         playerName: '選手A',
         wins: 1,
@@ -87,7 +87,7 @@ void main() {
       expect(ranked.first.playerName, '選手A');
     });
 
-    test('4. 完全同率（全項目同数）の場合、代表戦（Playoff）判定フラグが成立すること', () {
+    test('完全同率（全項目同数）の場合、代表戦（Playoff）判定フラグが成立すること', () {
       const s1 = LeagueStanding(
         playerName: '選手A',
         wins: 1,

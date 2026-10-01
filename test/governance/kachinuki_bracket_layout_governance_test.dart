@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ 勝ち抜き戦ブラケット描画・スリム化レイアウト ガバナンステスト', () {
-    test('1. KachinukiBracketPainter がPDF準拠スリム寸法パラメータを遵守していること', () {
+  group('[Governance] 勝ち抜き戦ブラケット描画・スリム化レイアウト ガバナンステスト', () {
+    test('KachinukiBracketPainter がPDF準拠スリム寸法パラメータを遵守していること', () {
       final file = File(
         'lib/features/tournament/presentation/components/kachinuki/kachinuki_bracket_painter.dart',
       );
@@ -28,7 +28,7 @@ void main() {
       );
     });
 
-    test('2. KachinukiDrawingHelper に横書き2行自動折り返し描画が実装されていること', () {
+    test('KachinukiDrawingHelper に横書き2行自動折り返し描画が実装されていること', () {
       final file = File(
         'lib/features/tournament/presentation/components/kachinuki/kachinuki_drawing_helper.dart',
       );
@@ -49,7 +49,7 @@ void main() {
       );
     });
 
-    test('3. 公式記録・観戦用カードのコンテナ高さがスリム化（250px）されていること', () {
+    test('公式記録・観戦用カードのコンテナ高さがスリム化（250px）されていること', () {
       final cardFiles = [
         'lib/features/tournament/presentation/components/official_record/official_record_kachinuki_card.dart',
         'lib/features/viewer/components/viewer_kachinuki_record_card.dart',

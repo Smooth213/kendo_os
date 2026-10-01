@@ -10,7 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 import 'package:kendo_os/features/tournament/presentation/operate/screens/team_match_status_screen.dart';
 
 void main() {
-  group('🥋 TeamMatchStatusScreen Sort UI Tests (会場・試合順ソート機能テスト)', () {
+  group('[Widget] TeamMatchStatusScreen Sort UI テスト (会場・試合順ソート機能テスト)', () {
     TeamProgressStatus makeStatus({
       required String teamName,
       required String courtName,

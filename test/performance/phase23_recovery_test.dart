@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
-  group('🛡️ PHASE 23 — 災害復旧完全保証：物理境界を超えたデータ再構築', () {
-    test('1. 【バックアップ&リストア】全試合データの整合性検証', () {
+  group('[Governance] — 災害復旧完全保証：物理境界を超えたデータ再構築', () {
+    test('【バックアップ&リストア】全試合データの整合性が正しく検証されること', () {
       // 🛡️ 補正：required 引数を網羅
       final original = MatchModel(
         id: 'm1',
@@ -17,7 +17,7 @@ void main() {
       expect(restored.id, original.id);
     });
 
-    test('2. 【端末間移行】進行中ステータスの完全継承検証', () {
+    test('【端末間移行】進行中ステータスの完全継承が正しく検証されること', () {
       // 🛡️ 補正：required 引数を網羅
       final match = MatchModel(
         id: 'm2',

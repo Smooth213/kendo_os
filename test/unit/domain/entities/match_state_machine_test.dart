@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/match_state.dart';
 
 void main() {
-  group('🛡️ Phase 1-5: MatchStateMachine Impossible State FSM Tests', () {
-    test('✅ 正常な遷移: notStarted -> ready -> inProgress', () {
+  group('[Unit] 5: MatchStateMachine Impossible State FSM テスト', () {
+    test('正常な遷移: notStarted -> ready -> inProgressであること', () {
       final state1 = MatchStateMachine.transition(
         MatchLifecycleState.notStarted,
         StateTransitionEvent.playersReady,
@@ -22,7 +22,7 @@ void main() {
       );
     });
 
-    test('✅ 正常な遷移: completed -> undo -> inProgress (誤審の取り消し)', () {
+    test('正常な遷移: completed -> undo -> inProgress (誤審の取り消し)こと', () {
       final state = MatchStateMachine.transition(
         MatchLifecycleState.completed,
         StateTransitionEvent.undo,
@@ -34,7 +34,7 @@ void main() {
       );
     });
 
-    test('❌ 異常な遷移(Impossible State): completed からの startMatch は弾かれること', () {
+    test('異常な遷移(Impossible State): completed からの startMatch は弾かれること', () {
       expect(
         () => MatchStateMachine.transition(
           MatchLifecycleState.completed,
@@ -45,7 +45,7 @@ void main() {
       );
     });
 
-    test('❌ 異常な遷移(Impossible State): notStarted からの timeUp は弾かれること', () {
+    test('異常な遷移(Impossible State): notStarted からの timeUp は弾かれること', () {
       expect(
         () => MatchStateMachine.transition(
           MatchLifecycleState.notStarted,
@@ -56,7 +56,7 @@ void main() {
       );
     });
 
-    test('❌ 異常な遷移(Impossible State): ready からの pause は弾かれること', () {
+    test('異常な遷移(Impossible State): ready からの pause は弾かれること', () {
       expect(
         () => MatchStateMachine.transition(
           MatchLifecycleState.ready,

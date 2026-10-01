@@ -2,13 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 
 void main() {
-  group('📱 【Phase 2-2/10】試合中の画面消灯（スリープ）防止 WakeLock 保持・復帰テスト', () {
-    test('1. SettingsModel のデフォルトで sleepPrevent が true（消灯防止有効）であること', () {
+  group('[Unit] 【Phase 2-2/10】試合中の画面消灯（スリープ）防止 WakeLock 保持・復帰テスト', () {
+    test('SettingsModel のデフォルトで sleepPrevent が true（消灯防止有効）であること', () {
       final defaultSettings = SettingsModel();
       expect(defaultSettings.sleepPrevent, isTrue);
     });
 
-    test('2. 試合進行中の WakeLock 状態判定ロジックが安全に true を維持すること', () {
+    test('試合進行中の WakeLock 状態判定ロジックが安全に true を維持すること', () {
       bool shouldKeepScreenOn(bool isProgress, bool prevent) =>
           isProgress && prevent;
 
@@ -19,7 +19,7 @@ void main() {
       expect(shouldKeepScreenOn(false, true), isFalse);
     });
 
-    test('3. 設定トグルによる WakeLock 有効/無効の切り替えの完全性', () {
+    test('設定トグルによる WakeLock 有効/無効の切り替えの完全性こと', () {
       final settings = SettingsModel(sleepPrevent: false);
       expect(settings.sleepPrevent, isFalse);
 

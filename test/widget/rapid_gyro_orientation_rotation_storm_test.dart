@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('👁️ 【Phase 6-3/12】端末高速画面回転ストーム（縦横10回連続変更）耐久テスト', () {
-    testWidgets('1. 縦（400x800）と横（800x400）を10回連続で交互に回転させても、タイマーとスコアが死守されること', (
+  group('[Widget] 【Phase 6-3/12】端末高速画面回転ストーム（縦横10回連続変更）耐久テスト', () {
+    testWidgets('縦（400x800）と横（800x400）を10回連続で交互に回転させても、タイマーとスコアが死守されること', (
       tester,
     ) async {
       addTearDown(tester.view.reset);

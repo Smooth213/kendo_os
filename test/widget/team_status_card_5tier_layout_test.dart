@@ -10,7 +10,7 @@ import '../helpers/test_app.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 TeamStatusCard 5-Tier Layout Tests (チーム試合状況カード5段構造テスト)', () {
+  group('[Widget] TeamStatusCard 5-Tier Layout テスト (チーム試合状況カード5段構造テスト)', () {
     testWidgets('1段目〜5段目の要素およびMatchStatusBadgeが正しく描画されること', (
       WidgetTester tester,
     ) async {
@@ -79,7 +79,7 @@ void main() {
       expect(find.text('選手'), findsOneWidget);
     });
 
-    testWidgets('全試合終了時は「🏁 全試合終了」バッジが描画されること', (WidgetTester tester) async {
+    testWidgets('全試合終了時は「 全試合終了」バッジが描画されること', (WidgetTester tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
       final dummyFinishedMatch = MatchModel(

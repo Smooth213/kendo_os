@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_group_helper.dart';
 
 void main() {
-  group('OfficialRecordGroupHelper Tests', () {
-    test('groupMatchesByCategory correctly groups matches', () {
+  group('[Widget] OfficialRecordGroupHelper テスト', () {
+    test('groupMatchesByCategory correctly groups matchesであること', () {
       final matches = [
         MatchModel(
           id: 'm1',

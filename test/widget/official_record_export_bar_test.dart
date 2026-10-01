@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 void main() {
-  group('🛡️ OfficialRecordExportBar Widget Tests', () {
-    testWidgets('Renders all 3 export buttons and handles callbacks', (
+  group('[Widget] OfficialRecordExportBar ウィジェットテスト', () {
+    testWidgets('Renders all 3 export buttons and handles callbacksであること', (
       WidgetTester tester,
     ) async {
       bool pdfTapped = false;
@@ -40,7 +40,7 @@ void main() {
       expect(csvTapped, isTrue);
     });
 
-    testWidgets('Disables buttons when isExporting is true', (
+    testWidgets('Disables buttons when isExporting is trueであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -57,7 +57,7 @@ void main() {
       expect(pdfButton.enabled, isFalse);
     });
 
-    testWidgets('Hides toggle when hasMultipleCategories is false', (
+    testWidgets('Hides toggle when hasMultipleCategories is falseであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -77,7 +77,7 @@ void main() {
     });
 
     testWidgets(
-      'Shows AppSwitch and switches labels when switch or label is tapped',
+      'Shows AppSwitch and switches labels when switch or label is tappedであること',
       (WidgetTester tester) async {
         OfficialRecordExportScope? selectedScope;
 

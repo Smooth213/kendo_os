@@ -10,7 +10,7 @@ void main() {
   final engine = KendoRuleEngine();
   final random = Random();
 
-  group('🧪 Phase 3-1: Property-based testing (不変条件の自動検証)', () {
+  group('[Unit] 1: Property-based testing (不変条件の自動検証)', () {
     test('10,000回のランダムな試合展開（技・反則・Undo）でも不変条件が絶対に壊れないこと', () {
       for (int i = 0; i < 10000; i++) {
         // 1. ランダムなルールの生成

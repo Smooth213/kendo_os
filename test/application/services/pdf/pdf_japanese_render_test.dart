@@ -8,7 +8,7 @@ import 'package:kendo_os/features/pdf/widgets/pdf_individual_list.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart'; // ★ 追加: 本物のドメインオブジェクト型をロード
 
 void main() {
-  group('🛡️ [Phase 6-2] PDF 日本語レンダリング＆豆腐文字完全防止テスト', () {
+  group('[Unit] [Phase 6-2] PDF 日本語レンダリング＆豆腐文字完全防止テスト', () {
     test('日本語文字列および「×」マークが、pdfエンジンの例外を投げずに100%決定論的にビルドできること', () async {
       final doc = pw.Document();
 

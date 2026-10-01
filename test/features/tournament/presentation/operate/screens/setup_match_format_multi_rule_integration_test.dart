@@ -26,7 +26,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 同一部門の複数ルール全表示および選択ルールの完全適応保証テスト要塞', () {
+  group('[Widget] 同一部門の複数ルール全表示および選択ルールの完全適応保証テスト要塞', () {
     late FakeFirebaseFirestore fakeFirestore;
     late TournamentModel testTournament;
     late TeamModel testTeam;
@@ -177,9 +177,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 同一部門のすべての登録ルールおよびシーンが漏れなくチップとしてUI上に表示されること', (
-      tester,
-    ) async {
+    testWidgets('同一部門のすべての登録ルールおよびシーンが漏れなくチップとしてUI上に表示されること', (tester) async {
       tester.view.physicalSize = const Size(1200, 1800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -229,7 +227,7 @@ void main() {
       expect(find.textContaining('中学生'), findsNothing);
     });
 
-    testWidgets('2. チップ選択切り替えにより、試合時間・延長・各設定値および概要カードが即座かつ正しく適応されること', (
+    testWidgets('チップ選択切り替えにより、試合時間・延長・各設定値および概要カードが即座かつ正しく適応されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1800);
@@ -300,7 +298,7 @@ void main() {
       expect(find.text('1分'), findsOneWidget);
     });
 
-    testWidgets('3. 選択したルールの設定が試合作成（MatchRuleProvider / 次のフロー）へ完全に適応・保存されること', (
+    testWidgets('選択したルールの設定が試合作成（MatchRuleProvider / 次のフロー）へ完全に適応・保存されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1800);
@@ -345,7 +343,7 @@ void main() {
       expect(savedRule.hasHantei, isFalse);
     });
 
-    testWidgets('4. 選択された「予選リーグ」ルールが正しく MatchRuleProvider へ保存されること（対比検証）', (
+    testWidgets('【対比検証】選択された「予選リーグ」ルールが正しく MatchRuleProvider へ保存されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1800);

@@ -41,14 +41,14 @@ final _testBandOverrides = [
 ];
 
 void main() {
-  group('🥋 ドックから開くシステム設定ボトムシート 各種ボタン動作保証テスト', () {
+  group('[Widget] ドックから開くシステム設定ボトムシート 各種ボタン動作保証テスト', () {
     tearDown(() async {
       if (FloatingDockSheetManager.isOpen) {
         await FloatingDockSheetManager.close(immediate: true);
       }
     });
 
-    testWidgets('1. ドックから開いた設定シートで「ログアウト」を押すとダイアログが前面に開き、キャンセルで戻れること', (
+    testWidgets('ドックから開いた設定シートで「ログアウト」を押すとダイアログが前面に開き、キャンセルで戻れること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1000, 1600);
@@ -118,7 +118,7 @@ void main() {
       expect(find.text('システム設定'), findsOneWidget);
     });
 
-    testWidgets('2. ドックから開いた設定シートで「サーマル冷却・省電力制御」を押すと詳細シートが前面に開くこと', (
+    testWidgets('ドックから開いた設定シートで「サーマル冷却・省電力制御」を押すと詳細シートが前面に開くこと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1000, 1600);
@@ -191,7 +191,7 @@ void main() {
       expect(find.text('システム設定'), findsOneWidget);
     });
 
-    testWidgets('3. ドックから開いた設定シートで「BAND連携・LIVE配信設定」を押すとBAND管理シートが前面に開くこと', (
+    testWidgets('ドックから開いた設定シートで「BAND連携・LIVE配信設定」を押すとBAND管理シートが前面に開くこと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1000, 1600);

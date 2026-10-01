@@ -18,7 +18,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('TimelineTieBreakDialog renders properly', (tester) async {
+  testWidgets('TimelineTieBreakDialog renders properlyであること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

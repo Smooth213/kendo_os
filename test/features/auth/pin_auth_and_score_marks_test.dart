@@ -14,8 +14,8 @@ void main() {
     await RenderingSafetyTestHelper.initialize();
   });
 
-  group('🥋 部内戦 スコアマーク（待機中「ー」/ 引き分け「✕」）厳格判定テスト', () {
-    testWidgets('1. 待機中試合（スコア0-0, isFinished: false）は「ー」（Icons.remove）を表示する', (
+  group('[Widget] 部内戦 スコアマーク（待機中「ー」/ 引き分け「」）厳格判定テスト', () {
+    testWidgets('待機中試合（スコア0-0, isFinished: false）は「ー」（Icons.remove）を表示すること', (
       tester,
     ) async {
       final waitMatch = MatchModel(
@@ -45,39 +45,38 @@ void main() {
       expect(find.byIcon(Icons.close), findsNothing);
     });
 
-    testWidgets(
-      '2. 終了した試合（スコア0-0, isFinished: true）は引き分け「✕」（Icons.close）を表示する',
-      (tester) async {
-        final drawMatch = MatchModel(
-          id: 'test_draw_1',
-          redName: '選手A',
-          whiteName: '選手B',
-          redScore: 0,
-          whiteScore: 0,
-          matchType: 'individual',
-          status: 'finished',
-        );
+    testWidgets('終了した試合（スコア0-0, isFinished: true）は引き分け「」（Icons.close）を表示すること', (
+      tester,
+    ) async {
+      final drawMatch = MatchModel(
+        id: 'test_draw_1',
+        redName: '選手A',
+        whiteName: '選手B',
+        redScore: 0,
+        whiteScore: 0,
+        matchType: 'individual',
+        status: 'finished',
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: BunaiksenScoreMarks(
-                match: drawMatch,
-                isDark: false,
-                isFinished: true,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BunaiksenScoreMarks(
+              match: drawMatch,
+              isDark: false,
+              isFinished: true,
             ),
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        expect(find.byIcon(Icons.close), findsOneWidget);
-        expect(find.byIcon(Icons.remove), findsNothing);
-      },
-    );
+      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(Icons.remove), findsNothing);
+    });
 
     testWidgets(
-      '3. 終了した試合（スコア1-1引き分け, isFinished: true）は中央に「✕」（Icons.close）を表示する',
+      '終了した試合（スコア1-1引き分け, isFinished: true）は中央に「」（Icons.close）を表示すること',
       (tester) async {
         final drawWithPointsMatch = MatchModel(
           id: 'test_draw_points_1',
@@ -107,7 +106,7 @@ void main() {
     );
 
     testWidgets(
-      '4. 勝敗ありの試合（スコア2-0, isFinished: true）は中央に「ー」（Icons.remove）を表示する',
+      '勝敗ありの試合（スコア2-0, isFinished: true）は中央に「ー」（Icons.remove）を表示すること',
       (tester) async {
         final wonMatch = MatchModel(
           id: 'test_won_1',
@@ -138,8 +137,8 @@ void main() {
     );
   });
 
-  group('🔐 PinAuthScreen テンキー入力・脱出導線・PIN照合保証テスト', () {
-    testWidgets('1. オンスクリーンテンキーで数字が入力され、バックスペース・クリアが正しく動作する', (tester) async {
+  group('PinAuthScreen テンキー入力・脱出導線・PIN照合保証テスト', () {
+    testWidgets('オンスクリーンテンキーで数字が入力され、バックスペース・クリアが正しく動作すること', (tester) async {
       await tester.pumpWidget(
         RenderingSafetyTestHelper.buildTestWidget(
           child: const PinAuthScreen(role: UserRole.operator),
@@ -178,7 +177,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 脱出導線（戻るボタン・別の権限を選択リンク）が正しく配置されている', (tester) async {
+    testWidgets('脱出導線（戻るボタン・別の権限を選択リンク）が正しく配置されていること', (tester) async {
       await tester.pumpWidget(
         RenderingSafetyTestHelper.buildTestWidget(
           child: const PinAuthScreen(role: UserRole.admin),
@@ -193,7 +192,7 @@ void main() {
       expect(find.text('別の利用権限を選択する'), findsOneWidget);
     });
 
-    test('3. PinGuard によるロール別PINコードの正確性検証', () {
+    test('PinGuard によるロール別PINコードの正確性が正しく検証されること', () {
       expect(PinGuard.validate(UserRole.admin, '9999'), isTrue);
       expect(PinGuard.validate(UserRole.admin, '1234'), isFalse);
 

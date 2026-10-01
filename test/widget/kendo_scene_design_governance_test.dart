@@ -9,8 +9,8 @@ import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🏛️ 試合シーン（本戦・錬成・申合せ）表記＆配色 デザインガバナンス回帰テスト要塞', () {
-    test('1. KendoSceneHelper: 表記および白飛びゼロカラーの定義整合性検証', () {
+  group('[Widget] 試合シーン（本戦・錬成・申合せ）表記＆配色 デザインガバナンス回帰テスト要塞', () {
+    test('KendoSceneHelper: 表記および白飛びゼロカラーの定義整合性が正しく検証されること', () {
       // 1) 表記の完全統一
       expect(KendoSceneHelper.getLabel(KendoMatchScene.honsen), '【本戦】');
       expect(KendoSceneHelper.getLabel(KendoMatchScene.renseikai), '【錬成】');
@@ -62,7 +62,7 @@ void main() {
       expect(darkMoushiawaseColor, const Color(0xFFF472B6));
     });
 
-    testWidgets('2. KendoSceneBadge: 各シーンのバッジが正しく描画され、旧表記が存在しないこと', (
+    testWidgets('KendoSceneBadge: 各シーンのバッジが正しく描画され、旧表記が存在しないこと', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -91,64 +91,63 @@ void main() {
       expect(find.text('【申し合わせ】'), findsNothing);
     });
 
-    testWidgets(
-      '3. CategoryRuleChips & DetailSheet: 統一表記（⚔️ 錬成 / 🤝 申合せ）で開くこと',
-      (tester) async {
-        const multiSceneRule = CategoryRuleSet(
-          matchType: '団体戦',
-          isMultiScene: true,
-          useRenseikaiRule: true,
-          useHonsenRule: true,
-          useMoushiawaseRule: true,
-          renseikaiRule: MatchRule(matchTimeMinutes: 3.0, isRunningTime: true),
-          normalRule: MatchRule(matchTimeMinutes: 3.0),
-          moushiawaseRule: MatchRule(matchTimeMinutes: 2.0),
-        );
+    testWidgets('CategoryRuleChips & DetailSheet: 統一表記（ 錬成 /  申合せ）で開くこと', (
+      tester,
+    ) async {
+      const multiSceneRule = CategoryRuleSet(
+        matchType: '団体戦',
+        isMultiScene: true,
+        useRenseikaiRule: true,
+        useHonsenRule: true,
+        useMoushiawaseRule: true,
+        renseikaiRule: MatchRule(matchTimeMinutes: 3.0, isRunningTime: true),
+        normalRule: MatchRule(matchTimeMinutes: 3.0),
+        moushiawaseRule: MatchRule(matchTimeMinutes: 2.0),
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => Column(
-                  children: [
-                    const CategoryRuleChips(
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Column(
+                children: [
+                  const CategoryRuleChips(
+                    ruleSet: multiSceneRule,
+                    isDark: false,
+                  ),
+                  ElevatedButton(
+                    onPressed: () => CategoryRuleDetailBottomSheet.show(
+                      context,
+                      categoryName: '小学生の部',
                       ruleSet: multiSceneRule,
                       isDark: false,
                     ),
-                    ElevatedButton(
-                      onPressed: () => CategoryRuleDetailBottomSheet.show(
-                        context,
-                        categoryName: '小学生の部',
-                        ruleSet: multiSceneRule,
-                        isDark: false,
-                      ),
-                      child: const Text('OpenSheet'),
-                    ),
-                  ],
-                ),
+                    child: const Text('OpenSheet'),
+                  ),
+                ],
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 一覧バッジの確認
-        expect(find.text('⚔️ 錬成'), findsOneWidget);
-        expect(find.text('🏆 本戦'), findsOneWidget);
-        expect(find.text('🤝 申合せ'), findsOneWidget);
-        expect(find.text('⚔️ 錬成会'), findsNothing);
-        expect(find.text('🤝 申し合わせ'), findsNothing);
+      // 一覧バッジの確認
+      expect(find.text('⚔️ 錬成'), findsOneWidget);
+      expect(find.text('🏆 本戦'), findsOneWidget);
+      expect(find.text('🤝 申合せ'), findsOneWidget);
+      expect(find.text('⚔️ 錬成会'), findsNothing);
+      expect(find.text('🤝 申し合わせ'), findsNothing);
 
-        // ボトムシートを開く
-        await tester.tap(find.text('OpenSheet'));
-        await tester.pumpAndSettle();
+      // ボトムシートを開く
+      await tester.tap(find.text('OpenSheet'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('⚔️ 錬成ルール'), findsOneWidget);
-        expect(find.text('🏆 本戦ルール'), findsOneWidget);
-        expect(find.text('🤝 申合せルール'), findsOneWidget);
-        expect(find.text('⚔️ 錬成会ルール'), findsNothing);
-        expect(find.text('🤝 申し合わせルール'), findsNothing);
-      },
-    );
+      expect(find.text('⚔️ 錬成ルール'), findsOneWidget);
+      expect(find.text('🏆 本戦ルール'), findsOneWidget);
+      expect(find.text('🤝 申合せルール'), findsOneWidget);
+      expect(find.text('⚔️ 錬成会ルール'), findsNothing);
+      expect(find.text('🤝 申し合わせルール'), findsNothing);
+    });
   });
 }

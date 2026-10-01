@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】団体戦オーダー編成（3〜11人制）ピクセル完全性テスト', () {
+  group('[Golden] 【Golden】団体戦オーダー編成（3〜11人制）ピクセル完全性テスト', () {
     Widget buildOrderStepWrapper({
       required int basePlayerCount,
       required int substituteCount,
@@ -119,7 +119,9 @@ void main() {
       );
     }
 
-    testWidgets('1. 7人制オーダー設定: スマホ幅(390px) ライトモード レンダリング検証', (tester) async {
+    testWidgets('7人制オーダー設定: スマホ幅(390px) ライトモード レンダリングが正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(390, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -164,7 +166,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 11人制オーダー設定: タブレット幅(800px) ダークモード レンダリング検証', (tester) async {
+    testWidgets('11人制オーダー設定: タブレット幅(800px) ダークモード レンダリングが正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -194,7 +198,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('3. 3人制オーダー設定: 補欠なし・最小構成のピクセル完全性', (tester) async {
+    testWidgets('3人制オーダー設定: 補欠なし・最小構成のピクセル完全性こと', (tester) async {
       tester.view.physicalSize = const Size(390, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

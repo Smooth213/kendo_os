@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 
 void main() {
   testWidgets(
-    'OrderSetupBaseOrderActionsBar triggers save and load callbacks',
+    'OrderSetupBaseOrderActionsBar triggers save and load callbacksであること',
     (tester) async {
       bool saved = false;
       bool loaded = false;

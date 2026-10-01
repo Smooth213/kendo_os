@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/application/projections/tournament_projection_mapper.dart';
 
 void main() {
-  group('🛡️ STEP 2-1: TournamentProjectionMapper 完全ユニットテスト要塞', () {
+  group('[Unit] TournamentProjectionMapper 完全ユニットテスト要塞', () {
     late TournamentModel fakeTournament;
 
     setUp(() {
@@ -22,7 +22,7 @@ void main() {
       );
     });
 
-    test('1. 【団体戦】団体戦が正しく集計・構築されること', () {
+    test('【団体戦】団体戦が正しく集計・構築されること', () {
       final matches = [
         MatchListProjection(
           id: 'match_001',
@@ -71,7 +71,7 @@ void main() {
       expect(teamProj.result.whitePoints, equals(1));
     });
 
-    test('2. 【リーグ戦】リーグ戦タグが正しく判定・グルーピングされること', () {
+    test('【リーグ戦】リーグ戦タグが正しく判定・グルーピングされること', () {
       final matches = [
         MatchListProjection(
           id: 'match_league_001',
@@ -99,7 +99,7 @@ void main() {
       expect(teamProj.note, contains('[リーグ戦]'));
     });
 
-    test('3. 【個人戦判定】個人戦の設定がマッパーを正常透過すること', () {
+    test('【個人戦判定】個人戦の設定がマッパーを正常透過すること', () {
       final matches = [
         MatchListProjection(
           id: 'match_indiv_001',
@@ -127,7 +127,7 @@ void main() {
       expect(teamProj.isKachinuki, isFalse);
     });
 
-    test('4. 【勝ち抜き】isKachinukiフラグが正しくプロジェクションへ連動すること', () {
+    test('【勝ち抜き】isKachinukiフラグが正しくプロジェクションへ連動すること', () {
       final matches = [
         MatchListProjection(
           id: 'match_kachi_001',
@@ -154,7 +154,7 @@ void main() {
       expect(teamProj.isKachinuki, isTrue);
     });
 
-    test('5. 【SUMMARY】Noteおよびステータス状態が正常に集約されること', () {
+    test('【SUMMARY】Noteおよびステータス状態が正常に集約されること', () {
       final matches = [
         MatchListProjection(
           id: 'match_sum_001',
@@ -182,7 +182,7 @@ void main() {
       expect(teamProj.result.allFinished, isTrue);
     });
 
-    test('6. 【UUID/文字列整合性】groupNameキーが崩れず正確にマッピング保持されること', () {
+    test('【UUID/文字列整合性】groupNameキーが崩れず正確にマッピング保持されること', () {
       const uuidGroupName = '小学生低学年の部_QA-776-XYZ';
       final matches = [
         MatchListProjection(
@@ -210,7 +210,7 @@ void main() {
       expect(projection.categoryToGroupKeys['小学生の部'], contains(uuidGroupName));
     });
 
-    test('7. 【剣道順序正常化】団体戦の試合順序がバラバラでも先鋒〜大将〜代表戦にソートされること', () {
+    test('【剣道順序正常化】団体戦の試合順序がバラバラでも先鋒〜大将〜代表戦にソートされること', () {
       final scrambledMatches = [
         MatchListProjection(
           id: 'm_chuken',

@@ -26,12 +26,12 @@ void main() {
     mockPrefs = await SharedPreferences.getInstance();
   });
 
-  group('🥋 起動後直接ドックからプログラム表示＆リアルタイム更新統合テスト', () {
+  group('[Widget] 起動後直接ドックからプログラム表示＆リアルタイム更新統合テスト', () {
     tearDown(() async {
       await FloatingDockSheetManager.close(immediate: true);
     });
 
-    testWidgets('道場ID未確定（起動直後 default_dojo_room）でも、直接ドックからプログラムを開いて全て表示され、'
+    testWidgets('道場ID未確定（起動直後 default_dojo_room）でも、直接ドックからプログラムを開いて全て表示され、こと'
         'プログラム更新時もリアルタイムに全件反映されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;

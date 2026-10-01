@@ -4,8 +4,8 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_share_di
 import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
-  group('🛡️ ViewerShareDialog Widget Tests', () {
-    testWidgets('Renders QR code and share button', (tester) async {
+  group('[Widget] ViewerShareDialog ウィジェットテスト', () {
+    testWidgets('Renders QR code and share buttonであること', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

@@ -32,8 +32,8 @@ class RateLimiter {
 }
 
 void main() {
-  group('🌐 【Phase 4-7/11】DDoSバースト書き込み連打 レートリミッティングテスト', () {
-    test('1. 秒間100回の連続打突リクエストを浴びせても、最大20回で安全に制限されクラッシュしないこと', () {
+  group('[Unit] 【Phase 4-7/11】DDoSバースト書き込み連打 レートリミッティングテスト', () {
+    test('秒間100回の連続打突リクエストを浴びせても、最大20回で安全に制限されクラッシュしないこと', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final limiter = RateLimiter(maxTokens: 20, initialTime: now);
 
@@ -54,7 +54,7 @@ void main() {
       expect(blockedCount, 80);
     });
 
-    test('2. 1秒経過後にトークンが補充され、再度の操作が正常に許可されること', () {
+    test('1秒経過後にトークンが補充され、再度の操作が正常に許可されること', () {
       final t0 = DateTime(2026, 9, 3, 10, 0, 0);
       final limiter = RateLimiter(maxTokens: 20, initialTime: t0);
 

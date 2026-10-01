@@ -6,9 +6,9 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ OfficialRecordExpeditionSummaryCard Tests', () {
+  group('[Widget] OfficialRecordExpeditionSummaryCard テスト', () {
     testWidgets(
-      '1. OfficialRecordExpeditionSummaryCard renders properly with matches',
+      'OfficialRecordExpeditionSummaryCard renders properly with matchesであること',
       (tester) async {
         final match = MatchModel(
           id: 'm1',
@@ -80,7 +80,7 @@ void main() {
       },
     );
 
-    test('2. ExpeditionStatsCalculator computes wins accurately', () {
+    test('ExpeditionStatsCalculator computes wins accuratelyであること', () {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,

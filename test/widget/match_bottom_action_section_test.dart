@@ -8,8 +8,10 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  group('MatchBottomActionSection Tests', () {
-    testWidgets('shows approved text when isApproved is true', (tester) async {
+  group('[Widget] MatchBottomActionSection テスト', () {
+    testWidgets('shows approved text when isApproved is trueであること', (
+      tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

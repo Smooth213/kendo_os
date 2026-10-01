@@ -32,10 +32,8 @@ void main() {
     timerIsRunning: false,
   );
 
-  group('🛡️ 観客席ビュアー 視認性・コントラスト保証テスト', () {
-    testWidgets('1. 【試合状況画面】ライトモードで赤・白の選手名と技マークが高コントラストで視認できること', (
-      tester,
-    ) async {
+  group('[Widget] 観客席ビュアー 視認性・コントラスト保証テスト', () {
+    testWidgets('【試合状況画面】ライトモードで赤・白の選手名と技マークが高コントラストで視認できること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(
@@ -77,7 +75,7 @@ void main() {
       expect(find.text('2 - 1'), findsOneWidget);
     });
 
-    testWidgets('2. 【試合状況画面】ダークモードで白側選手名が黒潰れせず純白(pureWhite)で読めること', (
+    testWidgets('【試合状況画面】ダークモードで白側選手名が黒潰れせず純白(pureWhite)で読めること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -110,7 +108,7 @@ void main() {
       expect(whiteTextWidget.style?.color, AppKendoColors.pureWhite);
     });
 
-    testWidgets('3. 【部内戦試合カード】ライト・ダークモードでスコアマークの視認性が確保されること', (tester) async {
+    testWidgets('【部内戦試合カード】ライト・ダークモードでスコアマークの視認性が確保されること', (tester) async {
       final match = MatchModel(
         id: 'bm1',
         tournamentId: 'bunaiksen_20260829',
@@ -161,7 +159,7 @@ void main() {
       expect(find.text('㋱コ'), findsOneWidget);
     });
 
-    testWidgets('4. 【部内戦スコアテーブル】団体戦スコアテーブルの視認性が確保されること', (tester) async {
+    testWidgets('【部内戦スコアテーブル】団体戦スコアテーブルの視認性が確保されること', (tester) async {
       final teamMatches = [
         MatchModel(
           id: 'tm1',

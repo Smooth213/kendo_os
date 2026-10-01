@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/application/services/csv_service.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🥋 【E2E】公式記録 複数カテゴリ混在大会 全カテゴリ一括出力フロー完全検証', () {
+  group('[E2E] 【E2E】公式記録 複数カテゴリ混在大会 全カテゴリ一括出力フロー完全検証', () {
     final categories = ['小学生低学年の部', '小学生高学年の部', '中学生の部', '一般の部'];
 
     List<({String categoryName, List<Map<String, dynamic>> groupDataList})>
@@ -49,7 +49,7 @@ void main() {
       }).toList();
     }
 
-    test('1. 4カテゴリ混在データから全カテゴリ一括CSV文字列およびバイト配列が欠損なく生成されること', () async {
+    test('4カテゴリ混在データから全カテゴリ一括CSV文字列およびバイト配列が欠損なく生成されること', () async {
       final allCategoryData = generate4CategoryData();
       expect(allCategoryData.length, 4);
 
@@ -77,7 +77,7 @@ void main() {
       expect(bytes.isNotEmpty, isTrue);
     });
 
-    testWidgets('2. UI上での全カテゴリエクスポートトグル切替・プログレス表示・完了通知のライフサイクル検証', (
+    testWidgets('UI上での全カテゴリエクスポートトグル切替・プログレス表示・完了通知のライフサイクルが正しく検証されること', (
       tester,
     ) async {
       OfficialRecordExportScope currentScope =

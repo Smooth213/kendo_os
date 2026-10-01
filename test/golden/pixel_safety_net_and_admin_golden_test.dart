@@ -107,13 +107,15 @@ void main() {
     );
   }
 
-  group('📸 【Golden】不壊セーフティネット作動画面 ＆ 管理者ダッシュボード ピクセル完全性テスト', () {
+  group('[Golden] 【Golden】不壊セーフティネット作動画面 ＆ 管理者ダッシュボード ピクセル完全性テスト', () {
     final simulatedDetails = FlutterErrorDetails(
       exception: Exception('現場テスト用シミュレーションエラー: Database timeout'),
       stack: StackTrace.current,
     );
 
-    testWidgets('1. セーフティネット作動画面: 通常画面 (1080x1920) ピクセル描画検証', (tester) async {
+    testWidgets('セーフティネット作動画面: 通常画面 (1080x1920) ピクセル描画が正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -137,29 +139,30 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. セーフティネット作動画面: 極小端末 (iPhone SE / 375x667) オーバーフローゼロ検証', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(375, 667);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'セーフティネット作動画面: 極小端末 (iPhone SE / 375x667) オーバーフローゼロが正しく検証されること',
+      (tester) async {
+        tester.view.physicalSize = const Size(375, 667);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        buildSafetyNetView(
-          details: simulatedDetails,
-          size: const Size(375, 667),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          buildSafetyNetView(
+            details: simulatedDetails,
+            size: const Size(375, 667),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('🛡️ KendoOS 不壊セーフティネット作動'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.text('🛡️ KendoOS 不壊セーフティネット作動'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-    testWidgets('3. セーフティネット作動画面: 特大文字（textScaler: 2.0倍）ピクセル崩れゼロ検証', (
+    testWidgets('セーフティネット作動画面: 特大文字（textScaler: 2.0倍）ピクセル崩れゼロが正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -182,7 +185,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('4. 管理者ダッシュボード: 初期レイアウト描画検証 (ObservabilityDashboardScreen)', (
+    testWidgets('管理者ダッシュボード: 初期レイアウト描画検証 (ObservabilityDashboardScreen)こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);

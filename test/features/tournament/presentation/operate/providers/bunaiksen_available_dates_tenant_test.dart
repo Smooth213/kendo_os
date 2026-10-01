@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 void main() {
-  group('🛡️ Bunaiksen Multi-Tenant Isolation & Date Discovery Tests', () {
+  group('[Unit] Bunaiksen Multi-Tenant Isolation & Date Discovery テスト', () {
     late MockLocalMatchRepository mockLocalRepo;
 
     setUp(() {
@@ -24,7 +24,7 @@ void main() {
       ).thenAnswer((_) => Stream.value(<MatchModel>[]));
     });
 
-    test('1. 他道場（別テナント）データの完全隔離 ＆ 1週間以上の過去日付全期間自動点灯アサート', () async {
+    test('他道場（別テナント）データの完全隔離 ＆ 1週間以上の過去日付全期間自動点灯アサートこと', () async {
       final fakeFirestore = FakeFirebaseFirestore();
 
       // ① 自分の道場 (test202) の本日/直近の試合データ

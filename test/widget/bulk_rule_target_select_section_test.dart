@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_target_select_section.dart';
 
 void main() {
-  group('🛡️ BulkRuleTargetSelectSection Widget Tests', () {
-    testWidgets('Renders filters, units and triggers callbacks', (
+  group('[Widget] BulkRuleTargetSelectSection ウィジェットテスト', () {
+    testWidgets('Renders filters, units and triggers callbacksであること', (
       tester,
     ) async {
       String selectedCategory = 'すべて';

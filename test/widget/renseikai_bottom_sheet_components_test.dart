@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_player_input_field.dart';
 
 void main() {
-  group('Renseikai BottomSheet Components Tests', () {
-    test('RenseikaiPlayerCandidateResolver category match logic', () {
+  group('[Widget] Renseikai BottomSheet Components テスト', () {
+    test('RenseikaiPlayerCandidateResolver category match logicであること', () {
       expect(
         RenseikaiPlayerCandidateResolver.isCategoryMatch('小学生低学年の部', '小学生低学年'),
         isTrue,
@@ -16,7 +16,7 @@ void main() {
       );
     });
 
-    testWidgets('RenseikaiPlayerInputField renders choices and field', (
+    testWidgets('RenseikaiPlayerInputField renders choices and fieldであること', (
       tester,
     ) async {
       final ctrl = TextEditingController();

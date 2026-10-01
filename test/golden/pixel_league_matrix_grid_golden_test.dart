@@ -6,8 +6,8 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_grid_table.dart';
 
 void main() {
-  group('📸 【Golden】公式リーグ星取表（対角線／・勝敗記号・勝点）視覚的整合性テスト', () {
-    testWidgets('1. 3チーム総当たりリーグ星取表のレイアウト・対角線セル・勝点集計検証', (
+  group('[Golden] 【Golden】公式リーグ星取表（対角線／・勝敗記号・勝点）視覚的整合性テスト', () {
+    testWidgets('3チーム総当たりリーグ星取表のレイアウト・対角線セル・勝点集計が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1000, 700);

@@ -7,7 +7,7 @@ import 'package:kendo_os/features/match/application/mappers/score_event_legacy_a
 import '../../helpers/test_match_factory.dart';
 
 void main() {
-  group('⏱️ Phase 3-5: パフォーマンステスト (処理速度の限界検証)', () {
+  group('[Unit] 5: パフォーマンステスト (処理速度の限界検証)', () {
     final engine = KendoRuleEngine();
 
     test('1,000件の膨大なイベント履歴の解析が 50ms 以内で完了すること', () {

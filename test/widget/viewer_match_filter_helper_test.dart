@@ -3,9 +3,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_filter_helper.dart';
 
 void main() {
-  group('ViewerMatchFilterHelper Tests', () {
+  group('[Widget] ViewerMatchFilterHelper テスト', () {
     test(
-      'extractActiveMatches correctly separates in_progress and waiting',
+      'extractActiveMatches correctly separates in_progress and waitingであること',
       () {
         final matches = [
           MatchModel(

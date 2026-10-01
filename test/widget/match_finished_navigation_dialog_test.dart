@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchFinishedNavigationDialog Widget Tests', () {
-    testWidgets('Renders all buttons and triggers callbacks accurately', (
+  group('[Widget] MatchFinishedNavigationDialog ウィジェットテスト', () {
+    testWidgets('Renders all buttons and triggers callbacks accuratelyであること', (
       WidgetTester tester,
     ) async {
       bool addRenseikaiClicked = false;
@@ -68,31 +68,35 @@ void main() {
       expect(scoreboardClicked, isTrue);
     });
 
-    testWidgets('Renders bunaiksen home label when tournamentId is bunaiksen', (
-      WidgetTester tester,
-    ) async {
-      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+    testWidgets(
+      'Renders bunaiksen home label when tournamentId is bunaiksenであること',
+      (WidgetTester tester) async {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: false,
+          mode: 'normal',
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData(extensions: [themeColors]),
-          home: Scaffold(
-            body: MatchFinishedNavigationDialog(
-              isRenseikai: false,
-              nextMatchId: null,
-              tournamentId: 'bunaiksen_123',
-              hasGroupName: false,
-              isKachinuki: false,
-              isDark: false,
-              onGoHome: () {},
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(extensions: [themeColors]),
+            home: Scaffold(
+              body: MatchFinishedNavigationDialog(
+                isRenseikai: false,
+                nextMatchId: null,
+                tournamentId: 'bunaiksen_123',
+                hasGroupName: false,
+                isKachinuki: false,
+                isDark: false,
+                onGoHome: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('部内戦ホームに戻る'), findsOneWidget);
-      expect(find.textContaining('次の試合へ進む'), findsNothing);
-      expect(find.text('スコアボードを確認する'), findsNothing);
-    });
+        expect(find.text('部内戦ホームに戻る'), findsOneWidget);
+        expect(find.textContaining('次の試合へ進む'), findsNothing);
+        expect(find.text('スコアボードを確認する'), findsNothing);
+      },
+    );
   });
 }

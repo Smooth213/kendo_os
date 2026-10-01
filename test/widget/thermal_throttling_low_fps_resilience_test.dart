@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('📱 【Phase 2-1/10】40℃猛暑サーマルスロットリング（15FPS低フレームレート）耐久テスト', () {
-    testWidgets('1. 15FPS（約66ms周期）のコマ落ち環境下でも、絶対時間ベースのタイマーが正確に刻まれること', (
+  group('[Widget] 【Phase 2-1/10】40℃猛暑サーマルスロットリング（15FPS低フレームレート）耐久テスト', () {
+    testWidgets('15FPS（約66ms周期）のコマ落ち環境下でも、絶対時間ベースのタイマーが正確に刻まれること', (
       tester,
     ) async {
       final startTime = DateTime(2026, 9, 3, 14, 0, 0);
@@ -42,7 +42,7 @@ void main() {
       expect(currentSeconds, 175);
     });
 
-    testWidgets('2. 低FPS下でのボタンタップがドロップ（フレーム落ち）せず確実に処理されること', (tester) async {
+    testWidgets('低FPS下でのボタンタップがドロップ（フレーム落ち）せず確実に処理されること', (tester) async {
       int tapCount = 0;
 
       await tester.pumpWidget(

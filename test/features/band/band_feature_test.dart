@@ -13,8 +13,8 @@ import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
-  group('BandGroupModel Tests', () {
-    test('toJson and fromJson serialize correctly', () {
+  group('[Widget] BandGroupModel テスト', () {
+    test('toJson and fromJson serialize correctlyであること', () {
       final now = DateTime(2026, 9, 10, 12, 0);
       final model = BandGroupModel(
         id: 'group_1',
@@ -39,37 +39,40 @@ void main() {
     });
   });
 
-  group('BandMatchTextFormatter Tests', () {
-    test('formatFromMatchGroup produces correct text for individual match', () {
-      final match = MatchModel(
-        id: 'match_001',
-        matchType: '個人戦',
-        redName: '山田 太郎 (道上剣友会)',
-        whiteName: '佐藤 次郎 (相手道場)',
-        note: '第1試合場 1回戦 第1試合',
-        tournamentId: 'tourney_1',
-      );
+  group('BandMatchTextFormatter テスト', () {
+    test(
+      'formatFromMatchGroup produces correct text for individual matchであること',
+      () {
+        final match = MatchModel(
+          id: 'match_001',
+          matchType: '個人戦',
+          redName: '山田 太郎 (道上剣友会)',
+          whiteName: '佐藤 次郎 (相手道場)',
+          note: '第1試合場 1回戦 第1試合',
+          tournamentId: 'tourney_1',
+        );
 
-      final text = BandMatchTextFormatter.formatFromMatchGroup(
-        matches: [match],
-        tournamentName: '第45回 記念剣道大会',
-        dojoId: 'dojo_test',
-      );
+        final text = BandMatchTextFormatter.formatFromMatchGroup(
+          matches: [match],
+          tournamentName: '第45回 記念剣道大会',
+          dojoId: 'dojo_test',
+        );
 
-      expect(text, contains('【第45回 記念剣道大会】'));
-      expect(text, contains('第1試合場 1回戦 第1試合'));
-      expect(text, contains('赤: 山田 太郎 (道上剣友会) vs 白: 佐藤 次郎 (相手道場)'));
-      expect(text, contains('▼ リアルタイム速報・スコア詳細'));
-      expect(
-        text,
-        contains(
-          'https://kendo-os-beta.web.app/viewer/match_001?tournamentId=tourney_1&role=viewer&dojoId=dojo_test',
-        ),
-      );
-    });
+        expect(text, contains('【第45回 記念剣道大会】'));
+        expect(text, contains('第1試合場 1回戦 第1試合'));
+        expect(text, contains('赤: 山田 太郎 (道上剣友会) vs 白: 佐藤 次郎 (相手道場)'));
+        expect(text, contains('▼ リアルタイム速報・スコア詳細'));
+        expect(
+          text,
+          contains(
+            'https://kendo-os-beta.web.app/viewer/match_001?tournamentId=tourney_1&role=viewer&dojoId=dojo_test',
+          ),
+        );
+      },
+    );
 
     test(
-      'formatFromMatchGroup produces correct text for team match with live position',
+      'formatFromMatchGroup produces correct text for team match with live positionであること',
       () {
         final m1 = MatchModel(
           id: 'm1',
@@ -111,7 +114,7 @@ void main() {
     );
 
     test(
-      'formatFromMatchGroup produces viewer-kachinuki URL for kachinuki matches',
+      'formatFromMatchGroup produces viewer-kachinuki URL for kachinuki matchesであること',
       () {
         final m1 = MatchModel(
           id: 'm1',
@@ -137,7 +140,7 @@ void main() {
       },
     );
 
-    test('formatFromTeamStatus produces correct text for team progress', () {
+    test('formatFromTeamStatus produces correct text for team progressであること', () {
       final liveMatch = MatchModel(
         id: 'live_1',
         matchType: '団体戦 (中堅)',
@@ -179,8 +182,10 @@ void main() {
     });
   });
 
-  group('BandGroupEditDialog Widget Tests', () {
-    testWidgets('BandGroupEditDialog renders without error', (tester) async {
+  group('BandGroupEditDialog ウィジェットテスト', () {
+    testWidgets('BandGroupEditDialog renders without errorであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -203,7 +208,7 @@ void main() {
     });
 
     testWidgets(
-      'BandGroupSelectSheet opens and can trigger BandGroupEditDialog without error',
+      'BandGroupSelectSheet opens and can trigger BandGroupEditDialog without errorであること',
       (tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -240,7 +245,7 @@ void main() {
     );
   });
 
-  group('Band URL Guarantee Tests (厳格なURL検証)', () {
+  group('Band URL Guarantee テスト (厳格なURL検証)', () {
     test('ユーザー実例: 第2試合場, 3回戦, 2試合目の団体戦URLが viewer-team かつ全パラメータを保持すること', () {
       final match = MatchModel(
         id: 'match_court2_r3_m2',

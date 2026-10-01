@@ -49,7 +49,7 @@ void main() {
     }
   });
 
-  test('一括保存後にIsarレコードが欠落してもTwinから自己修復できる', () async {
+  test('一括保存後にIsarレコードが欠落してもTwinから自己修復できること', () async {
     const match = MatchModel(
       id: 'e2e-twin-recovery',
       tournamentId: 'tournament-e2e',

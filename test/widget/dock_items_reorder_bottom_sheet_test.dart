@@ -16,7 +16,7 @@ Widget createTestWidget({
 }
 
 void main() {
-  group('🔄 DockItemsReorderBottomSheet Widget Tests', () {
+  group('[Widget] DockItemsReorderBottomSheet ウィジェットテスト', () {
     late SharedPreferences prefs;
 
     setUp(() async {

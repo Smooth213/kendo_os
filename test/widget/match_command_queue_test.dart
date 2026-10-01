@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_queue.dart';
 
 void main() {
-  group('🛡️ MatchCommandQueue Unit Tests', () {
-    test('1. DeadLetterQueueNotifier adds, retries, and discards errors', () {
+  group('[Widget] MatchCommandQueue 単体テスト', () {
+    test('DeadLetterQueueNotifier adds, retries, and discards errorsであること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -24,7 +24,7 @@ void main() {
       expect(container.read(deadLetterQueueProvider).isEmpty, true);
     });
 
-    test('2. MatchCommandModel default status is pending', () {
+    test('MatchCommandModel default status is pendingであること', () {
       final cmd = MatchCommandModel(
         id: 'cmd-2',
         type: CommandType.undoLastEvent,

@@ -12,7 +12,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
   testWidgets(
-    'BunaiksenHomeScreen displays today\'s date and "今日の部内戦" by default',
+    'BunaiksenHomeScreen displays today\'s date and "今日の部内戦" by defaultであること',
     (WidgetTester tester) async {
       // 1. Setup mock preferences
       SharedPreferences.setMockInitialValues({});

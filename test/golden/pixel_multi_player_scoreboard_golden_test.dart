@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】多人数団体戦（7人制・8人制・9人制）スコアボード視覚整合性テスト', () {
+  group('[Golden] 【Golden】多人数団体戦（7人制・8人制・9人制）スコアボード視覚整合性テスト', () {
     List<MatchModel> generateTeamMatches({
       required int playerCount,
       required String redTeam,
@@ -137,7 +137,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 7人制（中堅あり）スコアボード: スマホ縦 (390x844) レイアウト整合性検証', (
+    testWidgets('7人制（中堅あり）スコアボード: スマホ縦 (390x844) レイアウト整合性が正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -171,7 +171,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 8人制（中堅なし）スコアボード: タブレット横 (1024x768) レイアウト整合性検証', (
+    testWidgets('8人制（中堅なし）スコアボード: タブレット横 (1024x768) レイアウト整合性が正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1024, 768);
@@ -206,7 +206,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('3. 9人制（中堅あり）スコアボード: タブレット横 (1024x768) レイアウト整合性検証', (
+    testWidgets('9人制（中堅あり）スコアボード: タブレット横 (1024x768) レイアウト整合性が正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1024, 768);

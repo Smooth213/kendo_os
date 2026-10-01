@@ -488,29 +488,28 @@ Widget createTestableWidget(
 }
 
 void main() {
-  group('Viewer Mode Tests (Read-Only & Drawing)', () {
+  group('[Widget] Viewer Mode テスト (Read-Only & Drawing)', () {
     const testTournamentId = 'test_tournament_1';
 
-    testWidgets('1. Read-Only Permission is strictly applied in Viewer Mode', (
-      WidgetTester tester,
-    ) async {
-      final container = ProviderContainer(
-        overrides: [
-          activeRoleProvider.overrideWith((ref) => Role.viewer),
-          // ★ Phase 8: ここでもSettingsProviderをモック化
-          settingsProvider.overrideWith(() => MockSettingsNotifier()),
-        ],
-      );
-      final permissions = container.read(permissionProvider);
+    testWidgets(
+      'Read-Only Permission is strictly applied in Viewer Modeであること',
+      (WidgetTester tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            activeRoleProvider.overrideWith((ref) => Role.viewer),
+            // ★ Phase 8: ここでもSettingsProviderをモック化
+            settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          ],
+        );
+        final permissions = container.read(permissionProvider);
 
-      expect(permissions.isReadOnly, isTrue);
-      expect(permissions.canCreateMatch, isFalse);
-      expect(permissions.canManageTournament, isFalse);
-    });
+        expect(permissions.isReadOnly, isTrue);
+        expect(permissions.canCreateMatch, isFalse);
+        expect(permissions.canManageTournament, isFalse);
+      },
+    );
 
-    testWidgets('1-2. No Edit buttons in ViewerHomeScreen', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('ViewerHomeScreenに編集ボタンが表示されないこと', (WidgetTester tester) async {
       // ★ CI環境でのRenderFlexオーバーフローを防ぐため、画面サイズを十分に確保
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
@@ -535,7 +534,7 @@ void main() {
     });
 
     testWidgets(
-      '2. ViewerHomeScreen displays current status and correctly renders elements',
+      'ViewerHomeScreen displays current status and correctly renders elementsであること',
       (WidgetTester tester) async {
         // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
         tester.view.physicalSize = const Size(1080, 4000);
@@ -567,7 +566,7 @@ void main() {
     );
 
     testWidgets(
-      '3. ViewerOfficialRecordScreen renders header and export buttons',
+      'ViewerOfficialRecordScreen renders header and export buttonsであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 4000);
         tester.view.devicePixelRatio = 1.0;
@@ -600,7 +599,7 @@ void main() {
       },
     );
 
-    testWidgets('4-1. Renders normal Team Match (Table Format)', (
+    testWidgets('Renders normal Team Match (Table Format)こと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 4000);
@@ -627,7 +626,7 @@ void main() {
       expect(find.textContaining('青龍道場', skipOffstage: false), findsWidgets);
     });
 
-    testWidgets('4-2. Renders Kachinuki Match', (WidgetTester tester) async {
+    testWidgets('Renders Kachinuki Matchであること', (WidgetTester tester) async {
       // ★ 画面サイズを縦長にして、リスト下部の勝ち抜き戦が確実に描画されるようにする
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
@@ -653,7 +652,7 @@ void main() {
     });
 
     testWidgets(
-      '4-3. Renders Individual League with SUMMARY (Flat List & Star Table)',
+      'Renders Individual League with SUMMARY (Flat List & Star Table)こと',
       (WidgetTester tester) async {
         // ★ 追加：画面サイズを縦長にして、リスト下部の試合が確実に描画されるようにする
         tester.view.physicalSize = const Size(1080, 4000);
@@ -680,7 +679,7 @@ void main() {
       },
     );
 
-    testWidgets('4-4. 【リーグ個人戦表記】 星取表のヘッダーがチーム名ではなく選手名で描画されること', (
+    testWidgets('【リーグ個人戦表記】 星取表のヘッダーがチーム名ではなく選手名で描画されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 4000);
@@ -708,7 +707,7 @@ void main() {
     });
 
     testWidgets(
-      '5. ViewerMatchScreen fallback renders UI when projection is loading',
+      'ViewerMatchScreen fallback renders UI when projection is loadingであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 4000);
         tester.view.devicePixelRatio = 1.0;
@@ -740,7 +739,7 @@ void main() {
     );
 
     testWidgets(
-      '6. ViewerMatchListTileCard correctly navigates to Scoreboard when "スコア" button is tapped',
+      'ViewerMatchListTileCard correctly navigates to Scoreboard when "スコア" button is tappedであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 4000);
         tester.view.devicePixelRatio = 1.0;
@@ -795,7 +794,7 @@ void main() {
     );
 
     testWidgets(
-      '7. ViewerTeamScoreboardScreen resolves groupName or matchId to tournamentId without errors',
+      'ViewerTeamScoreboardScreen resolves groupName or matchId to tournamentId without errorsであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 1.0;
@@ -829,7 +828,7 @@ void main() {
     // 🛡️ STEP 4-2 要件：Viewer完全網羅（団体・個人・リーグ・勝ち抜き・SUMMARY・ダーク・横画面）
     // UI変更による表示崩れを100%即座に検知する絶対防衛ラインを敷設します。
     // =========================================================================
-    testWidgets('8. 【完全網羅】団体戦・個人戦・リーグ戦・勝ち抜き・SUMMARY表示の統合描画検証', (
+    testWidgets('【完全網羅】団体戦・個人戦・リーグ戦・勝ち抜き・SUMMARY表示の統合描画が正しく検証されること', (
       WidgetTester tester,
     ) async {
       // 画面解像度のシミュレート
@@ -848,7 +847,7 @@ void main() {
       expect(find.byType(ViewerTeamScoreboardScreen), findsOneWidget);
     });
 
-    testWidgets('9. 【マルチ環境】ダークモードおよび横画面（Landscape）におけるレイアウト不変性検証', (
+    testWidgets('【マルチ環境】ダークモードおよび横画面（Landscape）におけるレイアウト不変性が正しく検証されること', (
       WidgetTester tester,
     ) async {
       // 体育館でのタブレット横置き（横画面）を完全再現
@@ -880,7 +879,7 @@ void main() {
     // またはエラーパケットを返却した際にも、Viewerが画面をクラッシュさせず
     // 直前のキャッシュ状態を完全に維持して粘り強く表示し続ける耐久性を証明します。
     // =========================================================================
-    testWidgets('10. 【オフライン】通信切断（ストリームエラー・無通信）でもViewer画面がクラッシュせず表示を維持すること', (
+    testWidgets('【オフライン】通信切断（ストリームエラー・無通信）でもViewer画面がクラッシュせず表示を維持すること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -911,7 +910,7 @@ void main() {
     // PDF生成時の非同期ライフサイクル（キック -> 内部遅延発生 -> UIのフリーズなき正常復帰）
     // の全タイムライン挙動が、設計通り決定論的に完走することを証明します。
     // =========================================================================
-    testWidgets('11. 【PDFボタン】非同期生成時のローディングおよび正常復帰ライフサイクルの検証', (
+    testWidgets('【PDFボタン】非同期生成時のローディングおよび正常復帰ライフサイクルが正しく検証できること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 4000);
@@ -949,7 +948,7 @@ void main() {
     // 【描写検証】ViewerMatchScreenにおける特大レイアウト描画および各画面サイズでのオーバーフロー防止検証
     // =========================================================================
     testWidgets(
-      '12. 【描写検証】ViewerMatchScreenにおける特大レイアウト描画および各画面サイズでのオーバーフロー防止検証',
+      '【描写検証】ViewerMatchScreenにおける特大レイアウト描画および各画面サイズでのオーバーフロー防止が正しく検証されること',
       (WidgetTester tester) async {
         final mockProj = MatchProjection(
           id: 'test_render_match_1',

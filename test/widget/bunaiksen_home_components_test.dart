@@ -6,8 +6,10 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bun
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('BunaiksenHome Components Tests', () {
-    testWidgets('BunaiksenMatchListHeaderBar renders properly', (tester) async {
+  group('[Widget] BunaiksenHome Components テスト', () {
+    testWidgets('BunaiksenMatchListHeaderBar renders properlyであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -29,7 +31,9 @@ void main() {
       expect(find.text('ルール一括変更'), findsOneWidget);
     });
 
-    testWidgets('BunaiksenMatchCard renders match details', (tester) async {
+    testWidgets('BunaiksenMatchCard renders match detailsであること', (
+      tester,
+    ) async {
       const match = MatchModel(
         id: 'm1',
         tournamentId: 'bunaiksen_20260821',

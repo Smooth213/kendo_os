@@ -6,8 +6,8 @@ import 'package:kendo_os/features/pdf/helpers/pdf_page_layout_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ PdfPageLayoutHelper Tests', () {
-    test('1. buildHeader generates header with correct metadata', () {
+  group('[Widget] PdfPageLayoutHelper テスト', () {
+    test('buildHeader generates header with correct metadataであること', () {
       final headerWidget = PdfPageLayoutHelper.buildHeader(
         categoryName: '一般男子',
         tournamentName: '第50回記念大会',
@@ -20,7 +20,7 @@ void main() {
       expect(headerWidget, isA<pw.Widget>());
     });
 
-    test('2. buildContentWidgets generates fallback when list is empty', () {
+    test('buildContentWidgets generates fallback when list is emptyであること', () {
       final ttf = pw.Font.helvetica();
       final ttfBold = pw.Font.helveticaBold();
 

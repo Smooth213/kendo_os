@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    'TeamRegistrationCategoryStep renders categories, chips and handles selection',
+    'TeamRegistrationCategoryStep renders categories, chips and handles selectionであること',
     (WidgetTester tester) async {
       String major = '小学生';
       String minor = '低学年';

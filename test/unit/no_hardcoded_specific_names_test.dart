@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group(
-    '🛡️ Code Quality & Regression Tests: Hardcoded Specific Names Protection',
+    '[Unit] Code Quality & リグレッションテスト: Hardcoded Specific Names Protection',
     () {
       test('lib/ 配下のすべてのDartファイルに特定固有名詞(道上・道上剣友会)が直接ハードコードされていないこと', () {
         final libDir = Directory('lib');

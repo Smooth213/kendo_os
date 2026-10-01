@@ -42,8 +42,8 @@ void main() {
     ),
   ];
 
-  group('🏰 大会ホーム＆チーム試合状況 5段構造レイアウト永続保持テスト要塞', () {
-    testWidgets('1. 大会ホーム（管理画面）で5段構造レイアウトが完全に維持されていること', (
+  group('[Widget] 大会ホーム＆チーム試合状況 5段構造レイアウト永続保持テスト要塞', () {
+    testWidgets('大会ホーム（管理画面）で5段構造レイアウトが完全に維持されていること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -93,7 +93,7 @@ void main() {
       expect(find.text('(0)'), findsWidgets);
     });
 
-    testWidgets('2. 大会ホーム（観客席ビュアー）で5段構造レイアウトが維持され、管理ボタンが非表示であること', (
+    testWidgets('大会ホーム（観客席ビュアー）で5段構造レイアウトが維持され、管理ボタンが非表示であること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -136,7 +136,7 @@ void main() {
       expect(find.text('簡易入力'), findsNothing);
     });
 
-    testWidgets('3. チーム試合状況カードで5段構造レイアウトおよび重複排除・通算集計が完全に維持されていること', (
+    testWidgets('チーム試合状況カードで5段構造レイアウトおよび重複排除・通算集計が完全に維持されていること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

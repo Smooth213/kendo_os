@@ -17,8 +17,8 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('📸 【Golden 1/5】公式スコアボード 打突記号・勝敗バッジ 視覚的境界整合性テスト', () {
-    testWidgets('1. 公式打突記号（メ・コ・先取丸・勝者丸）が厳密なサイズと位置で描画されること', (
+  group('[Golden] 【Golden 1/5】公式スコアボード 打突記号・勝敗バッジ 視覚的境界整合性テスト', () {
+    testWidgets('公式打突記号（メ・コ・先取丸・勝者丸）が厳密なサイズと位置で描画されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1024, 768);
@@ -98,7 +98,7 @@ void main() {
       expect(find.text('田中 武士'), findsOneWidget);
     });
 
-    testWidgets('2. 反則打突・ツキを含むスコアボードの境界整合性', (WidgetTester tester) async {
+    testWidgets('反則打突・ツキを含むスコアボードの境界整合性こと', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1024, 768);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

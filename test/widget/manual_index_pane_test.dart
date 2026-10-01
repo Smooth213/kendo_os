@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_index_pane.dart';
 
 void main() {
-  group('🛡️ ManualIndexPane Widget Tests', () {
-    testWidgets('Renders manual index list and filters items on search', (
+  group('[Widget] ManualIndexPane ウィジェットテスト', () {
+    testWidgets('Renders manual index list and filters items on searchであること', (
       tester,
     ) async {
       final controller = TextEditingController();

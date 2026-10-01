@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_tab_resolver.dart';
 
 void main() {
-  group('EmbeddedManualTabResolver テスト', () {
+  group('[Unit] EmbeddedManualTabResolver テスト', () {
     test('initialTab が指定されている場合、最優先でそのタブインデックスを返すこと', () {
       expect(
         EmbeddedManualTabResolver.resolveInitialTabIndex(initialTab: 0),

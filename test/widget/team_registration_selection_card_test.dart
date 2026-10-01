@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_selection_card.dart';
 
 void main() {
-  group('🛡️ TeamRegistrationSelectionCard Widget Tests', () {
-    testWidgets('Renders selectable player card and handles tap', (
+  group('[Widget] TeamRegistrationSelectionCard ウィジェットテスト', () {
+    testWidgets('Renders selectable player card and handles tapであること', (
       WidgetTester tester,
     ) async {
       bool tapped = false;
@@ -32,7 +32,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('Renders used/helper player card with swap badge', (
+    testWidgets('Renders used/helper player card with swap badgeであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

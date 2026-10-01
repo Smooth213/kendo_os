@@ -8,8 +8,8 @@ import 'package:kendo_os/features/viewer/services/viewer_bunaiksen_export_servic
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ ViewerBunaiksenCategoryContent Widget Tests', () {
-    testWidgets('Renders PDF and Share action buttons and match card', (
+  group('[Widget] ViewerBunaiksenCategoryContent ウィジェットテスト', () {
+    testWidgets('Renders PDF and Share action buttons and match cardであること', (
       tester,
     ) async {
       final matches = [

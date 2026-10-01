@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 
 void main() {
-  group('TimelineStatusMessageSection Tests', () {
-    testWidgets('shows error state when hasError is true', (tester) async {
+  group('[Widget] TimelineStatusMessageSection テスト', () {
+    testWidgets('shows error state when hasError is trueであること', (tester) async {
       const SafeTimelineResult result = (
         entries: [],
         isLoading: false,
@@ -31,7 +31,7 @@ void main() {
       expect(find.text('Network error'), findsOneWidget);
     });
 
-    testWidgets('shows empty search query result', (tester) async {
+    testWidgets('shows empty search query resultであること', (tester) async {
       const SafeTimelineResult result = (
         entries: [],
         isLoading: false,

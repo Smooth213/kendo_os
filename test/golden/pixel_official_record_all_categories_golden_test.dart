@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】公式記録 全カテゴリ一括出力トグル＆要約カード視覚整合性テスト', () {
+  group('[Golden] 【Golden】公式記録 全カテゴリ一括出力トグル＆要約カード視覚整合性テスト', () {
     final sampleMatches = [
       MatchModel(
         id: 'm1',
@@ -33,7 +33,7 @@ void main() {
       ),
     ];
 
-    testWidgets('1. 全カテゴリ一括出力トグル OFF 状態 (個別カテゴリ出力モード)', (tester) async {
+    testWidgets('全カテゴリ一括出力トグル OFF 状態 (個別カテゴリ出力モード)こと', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -92,7 +92,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 全カテゴリ一括出力トグル ON 状態 (全カテゴリ一括出力モード: PDF（全）/ 画像（全）/ CSV（全）)', (
+    testWidgets('全カテゴリ一括出力トグル ON 状態 (全カテゴリ一括出力モード: PDF（全）/ 画像（全）/ CSV（全）)こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);

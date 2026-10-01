@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.d
 import 'test_isar_helper.dart';
 
 void main() {
-  group('🛡️ TestIsarHelper 単体テスト', () {
+  group('[Unit] TestIsarHelper 単体テスト', () {
     test('オープン、クリア、および安全な破棄が正常に行われること', () async {
       final context = await TestIsarHelper.openContext(
         schemas: [

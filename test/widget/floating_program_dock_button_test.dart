@@ -63,7 +63,7 @@ void main() {
     );
   }
 
-  group('🥋 FloatingProgramDockButton ウィジェットテスト', () {
+  group('[Widget] FloatingProgramDockButton ウィジェットテスト', () {
     testWidgets('初期状態で丸型ボタンが表示され、アイコンが存在すること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
@@ -80,7 +80,7 @@ void main() {
       expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
     });
 
-    testWidgets('タップすると流動的スピードダイヤルが展開され、子アイコン群と✕ボタンが表示されること', (tester) async {
+    testWidgets('タップすると流動的スピードダイヤルが展開され、子アイコン群とボタンが表示されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

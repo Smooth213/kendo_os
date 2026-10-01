@@ -93,13 +93,13 @@ void main() {
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
-  group('PdfLeagueTable Widget Tests', () {
-    test('試合リストが空の場合、SizedBoxが返されるべき', () {
+  group('[Unit] PdfLeagueTable ウィジェットテスト', () {
+    test('試合リストが空の場合、SizedBoxが返されること', () {
       final result = PdfLeagueTable.build('空のグループ', [], ttf, ttfBold);
       expect(result, isA<pw.SizedBox>());
     });
 
-    test('個人戦リーグのセルは、取得技を「縦並び(Column)」で表示するべき', () {
+    test('個人戦リーグのセルは、取得技を「縦並び(Column)」で表示すること', () {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -185,7 +185,7 @@ void main() {
       expect((secondMarkWidget as pw.Text).text.toPlainText(), 'コ');
     });
 
-    test('団体戦リーグのセルは、取得本数/勝者数を「縦並び(Column)」で表示するべき', () {
+    test('団体戦リーグのセルは、取得本数/勝者数を「縦並び(Column)」で表示すること', () {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -271,7 +271,7 @@ void main() {
       );
     });
 
-    test('団体戦リーグのセルで引き分け(draw)の場合、例外なく描画が完了するべき', () {
+    test('団体戦リーグのセルで引き分け(draw)の場合、例外なく描画が完了すること', () {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -343,7 +343,7 @@ void main() {
       );
     });
 
-    test('全試合が完了していない(waitingがある)場合、勝敗の図形は描画されないべき', () {
+    test('全試合が完了していない(waitingがある)場合、勝敗の図形は描画されないこと', () {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -388,7 +388,7 @@ void main() {
       );
     });
 
-    test('リーグ戦の勝ち点はMatchRuleに基づいて計算されるべき', () {
+    test('リーグ戦の勝ち点はMatchRuleに基づいて計算されること', () {
       final rule = const MatchRule(
         isLeague: true,
         winPoint: 3,

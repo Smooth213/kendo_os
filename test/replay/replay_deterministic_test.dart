@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/time/system_time_source.dart';
 import '../helpers/test_match_factory.dart';
 
 void main() {
-  group('Phase 2: Replay Deterministic 完全化', () {
+  group('[Unit] Replay Deterministic 完全化', () {
     late KendoRuleEngine engine;
     late PermissionService permission;
     late SystemTimeSource timeSource;
@@ -49,7 +49,7 @@ void main() {
       ).copyWith(logicalClock: clock, timestamp: time);
     }
 
-    test('Step 2-3: Replay fuzz test - ランダム順序でのリプレイ（イベントソートの決定的確認）', () {
+    test('Replay fuzz test - ランダム順序でのリプレイ（イベントソートの決定的確認）こと', () {
       final baseTime = DateTime(2025, 1, 1, 10, 0, 0).toUtc();
       final events = [
         createEvent(
@@ -135,7 +135,7 @@ void main() {
       }
     });
 
-    test('Step 2-4: Undo deterministic test - Undoが混ざった状態での決定性', () {
+    test('Undo deterministic test - Undoが混ざった状態での決定性こと', () {
       final baseTime = DateTime(2025, 1, 1, 10, 0, 0).toUtc();
       var matchTruth = TestMatchFactory.createIndividualMatch(id: 'match-undo');
 

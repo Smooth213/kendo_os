@@ -7,63 +7,64 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_center_battle_card.dart';
 
 void main() {
-  group('🛡️ KachinukiCenterBattleCard Widget Tests', () {
-    testWidgets('Renders ongoing match with VS indicator and player names', (
-      tester,
-    ) async {
-      final match = MatchModel(
-        id: 'm1',
-        tournamentId: 't1',
-        matchType: '勝ち抜き戦',
-        redName: '山田 太郎',
-        whiteName: '佐藤 次郎',
-        status: 'in_progress',
-        isKachinuki: true,
-      );
+  group('[Widget] KachinukiCenterBattleCard ウィジェットテスト', () {
+    testWidgets(
+      'Renders ongoing match with VS indicator and player namesであること',
+      (tester) async {
+        final match = MatchModel(
+          id: 'm1',
+          tournamentId: 't1',
+          matchType: '勝ち抜き戦',
+          redName: '山田 太郎',
+          whiteName: '佐藤 次郎',
+          status: 'in_progress',
+          isKachinuki: true,
+        );
 
-      final engine = KendoRuleEngine();
-      final analysis = engine.analyzeHistory(match.events, match, match.rule);
+        final engine = KendoRuleEngine();
+        final analysis = engine.analyzeHistory(match.events, match, match.rule);
 
-      final uiState = {
-        'match': MatchProjectionMapper.toProjection(match, analysis),
-        'isDone': false,
-        'rStreak': 0,
-        'wStreak': 0,
-        'rName': '山田 太郎',
-        'wName': '佐藤 次郎',
-      };
+        final uiState = {
+          'match': MatchProjectionMapper.toProjection(match, analysis),
+          'isDone': false,
+          'rStreak': 0,
+          'wStreak': 0,
+          'rName': '山田 太郎',
+          'wName': '佐藤 次郎',
+        };
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: KachinukiCenterBattleCard(
-              uiState: uiState,
-              matchNumber: 1,
-              isDark: false,
-              rLasts: ['山田'],
-              wLasts: ['佐藤'],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: KachinukiCenterBattleCard(
+                uiState: uiState,
+                matchNumber: 1,
+                isDark: false,
+                rLasts: ['山田'],
+                wLasts: ['佐藤'],
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('1試合目'), findsOneWidget);
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('山田'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('佐藤'),
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('VS'), findsOneWidget);
-    });
+        expect(find.text('1試合目'), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (w) => w is RichText && w.text.toPlainText().contains('山田'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byWidgetPredicate(
+            (w) => w is RichText && w.text.toPlainText().contains('佐藤'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('VS'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Renders finished match with score and streak badge', (
+    testWidgets('Renders finished match with score and streak badgeであること', (
       tester,
     ) async {
       final match = MatchModel(

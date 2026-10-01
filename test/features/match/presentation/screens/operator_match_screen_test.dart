@@ -7,11 +7,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/widgets/action_buttons.dart';
 
 void main() {
-  group('🛡️ STEP 4-5: 運営スコア入力（打突・反則・処理中ロック）Widgetテスト要塞', () {
+  group('[Widget] 運営スコア入力（打突・反則・処理中ロック）Widgetテスト要塞', () {
     const testMatchId = 'oper_widget_test_001';
 
     testWidgets(
-      '1. 【打突入力表示】ScoreActionPanel が赤・白両サイド正しくレンダリングされ、「メ」等の打突文字が視認できること',
+      '【打突入力表示】ScoreActionPanel が赤・白両サイド正しくレンダリングされ、「メ」等の打突文字が視認できること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
@@ -53,7 +53,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 【コマンドロック防壁】isMatchCommandProcessing が true（書き込み処理中）のとき、ボタンが有効ロック状態をホールドすること',
+      '【コマンドロック防壁】isMatchCommandProcessing が true（書き込み処理中）のとき、ボタンが有効ロック状態をホールドすること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(

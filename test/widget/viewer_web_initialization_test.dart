@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
-  group('🛡️ Web Viewer Screen Initialization Test', () {
-    test('✅ 1. kIsWeb フラグが Web 環境で正しく動作すること', () {
+  group('[Widget] Web Viewer Screen Initialization テスト', () {
+    test('kIsWeb フラグが Web 環境で正しく動作すること', () {
       // This is a sanity check - kIsWeb is a Flutter constant
       // When running tests, it should be true for web tests
       // (This test runs in Flutter test environment which simulates web for these tests)
@@ -17,7 +17,7 @@ void main() {
       );
     });
 
-    test('✅ 2. ViewerHomeScreen が Web 環境用 tournament ID 初期化ロジックを持つこと', () async {
+    test('ViewerHomeScreen が Web 環境用 tournament ID 初期化ロジックを持つこと', () async {
       // This test documents the expected behavior without creating full widgets
       // The actual ViewerHomeScreen should have:
       //
@@ -70,7 +70,7 @@ void main() {
       }
     });
 
-    test('✅ 3. tournament ID が変更時のみ再初期化されること（パフォーマンス最適化）', () {
+    test('【パフォーマンス最適化】tournament ID が変更時のみ再初期化されること', () {
       // Prevent unnecessary provider state updates
 
       const tournament1 = 'tournament_001';
@@ -110,7 +110,7 @@ void main() {
       );
     });
 
-    test('✅ 4. URL query parameter が正しく解析されること', () {
+    test('URL query parameter が正しく解析されること', () {
       // Simulate: /viewer-home/E8EgKaOv2vaR6FZJwjK0?role=viewer&dojoId=test010
 
       // In GoRouter, parameters are provided by:
@@ -129,7 +129,7 @@ void main() {
       expect(params['tournamentId'], isNotEmpty);
     });
 
-    test('✅ 5. Web/Native 判断ロジックが正確に実装されたことを確認', () {
+    test('Web/Native 判断ロジックが正確に実装されたことが確認できること', () {
       // The code should check kIsWeb to determine which provider to use
 
       // For Web:
@@ -173,7 +173,7 @@ void main() {
       }
     });
 
-    test('✅ 6. Firestore 쿼리가 tournament ID로 필터링되는지 확인', () async {
+    test('Firestore 쿼리가 tournament ID로 필터링되는지 확인こと', () async {
       // The matchListByTournamentProvider should query:
       // WHERE tournamentId == tournamentId
 
@@ -198,34 +198,38 @@ void main() {
       );
     });
 
-    test('✅ 7. 再発防止: Web で provider state update が safe lifecycle で起こるか確認', () {
-      // The critical fix: ensure all provider updates happen in safe phases
+    test(
+      '再発防止: Web で provider state update が safe lifecycle で起こるかが確認できること',
+      () {
+        // The critical fix: ensure all provider updates happen in safe phases
 
-      List<String> eventLog = [];
+        List<String> eventLog = [];
 
-      // Simulate unsafe (❌): Provider init phase
-      eventLog.add('provider_init_phase');
-      // ❌ ref.read(other.notifier).state = value; // NOT ALLOWED
+        // Simulate unsafe (❌): Provider init phase
+        eventLog.add('provider_init_phase');
+        // ❌ ref.read(other.notifier).state = value; // NOT ALLOWED
 
-      // Simulate safe (✅): Deferred update
-      Future.delayed(Duration.zero).then((_) {
-        eventLog.add('post_frame_callback_phase');
-        // ✅ ref.read(other.notifier).state = value; // ALLOWED
-      });
+        // Simulate safe (✅): Deferred update
+        Future.delayed(Duration.zero).then((_) {
+          eventLog.add('post_frame_callback_phase');
+          // ✅ ref.read(other.notifier).state = value; // ALLOWED
+        });
 
-      // Provider init should complete before deferred phase
-      eventLog.add('provider_init_complete');
+        // Provider init should complete before deferred phase
+        eventLog.add('provider_init_complete');
 
-      expect(
-        eventLog.indexOf('provider_init_complete') <
-                eventLog.indexOf('post_frame_callback_phase') ||
-            !eventLog.contains('post_frame_callback_phase'),
-        isTrue,
-        reason: 'Provider init must complete before post-frame callback phase',
-      );
-    });
+        expect(
+          eventLog.indexOf('provider_init_complete') <
+                  eventLog.indexOf('post_frame_callback_phase') ||
+              !eventLog.contains('post_frame_callback_phase'),
+          isTrue,
+          reason:
+              'Provider init must complete before post-frame callback phase',
+        );
+      },
+    );
 
-    test('✅ 8. url 파라미터 없이 viewer 홈에 접근 시 기본값으로 동작하는지 확인', () {
+    test('url 파라미터 없이 viewer 홈에 접근 시 기본값으로 동작하는지 확인こと', () {
       // When accessing /viewer-home without parameters
       // Should have sensible defaults
 

@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/application/services/csv_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📊 CsvService Unit Tests', () {
+  group('[Unit] CsvService 単体テスト', () {
     final sampleMatch1 = MatchModel(
       id: 'm1',
       tournamentId: 't1',
@@ -39,7 +39,7 @@ void main() {
       events: [],
     );
 
-    test('generateCsvString produces single category CSV with BOM', () {
+    test('generateCsvString produces single category CSV with BOMであること', () {
       final csv = CsvService.generateCsvString('小学生の部', [
         {
           'groupName': '予選A',
@@ -61,7 +61,7 @@ void main() {
     });
 
     test(
-      'generateMultiCategoryCsvString produces multi-category CSV in order',
+      'generateMultiCategoryCsvString produces multi-category CSV in orderであること',
       () {
         final csv = CsvService.generateMultiCategoryCsvString([
           (
@@ -110,7 +110,7 @@ void main() {
     );
 
     test(
-      'generateMultiCategoryCsvBytesAsync returns valid UTF-8 bytes with BOM',
+      'generateMultiCategoryCsvBytesAsync returns valid UTF-8 bytes with BOMであること',
       () async {
         final bytes = await CsvService.generateMultiCategoryCsvBytesAsync([
           (

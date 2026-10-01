@@ -36,13 +36,13 @@ class VerticalTypesetter {
 }
 
 void main() {
-  group('🌐 【Phase 4-11/11】国際外国人選手名（Smith, Müller等）縦書き縦中横組版テスト', () {
-    test('1. アルファベット名（Smith）が1文字ずつバラバラにならず単語ブロックとして保持されること', () {
+  group('[Unit] 【Phase 4-11/11】国際外国人選手名（Smith, Müller等）縦書き縦中横組版テスト', () {
+    test('アルファベット名（Smith）が1文字ずつバラバラにならず単語ブロックとして保持されること', () {
       final blocks = VerticalTypesetter.typeset('Smith');
       expect(blocks, ['Smith']);
     });
 
-    test('2. ドイツ語ウムラウト（Müller）やフランス語（D\'Artagnan）が欠損せず組版されること', () {
+    test('ドイツ語ウムラウト（Müller）やフランス語（D\'Artagnan）が欠損せず組版されること', () {
       final germanBlocks = VerticalTypesetter.typeset('Müller');
       expect(germanBlocks, ['Müller']);
 
@@ -50,7 +50,7 @@ void main() {
       expect(frenchBlocks, ["D'Artagnan"]);
     });
 
-    test('3. 漢字とアルファベットの混在（例: 剣士 Smith）が正しく縦書き分離されること', () {
+    test('漢字とアルファベットの混在（例: 剣士 Smith）が正しく縦書き分離されること', () {
       final mixedBlocks = VerticalTypesetter.typeset('剣士 Smith');
       expect(mixedBlocks, ['剣', '士', 'Smith']);
     });

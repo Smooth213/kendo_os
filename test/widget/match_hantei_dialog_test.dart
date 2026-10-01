@@ -4,9 +4,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchHanteiDialog Widget Tests', () {
+  group('[Widget] MatchHanteiDialog ウィジェットテスト', () {
     testWidgets(
-      'Renders MatchHanteiDialog and responds to selection (Red, White, Draw, Cancel)',
+      'Renders MatchHanteiDialog and responds to selection (Red, White, Draw, Cancel)こと',
       (WidgetTester tester) async {
         String? selectedResult = 'initial';
 

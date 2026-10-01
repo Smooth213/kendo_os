@@ -9,10 +9,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ Timeline Extracted Components Tests', () {
-    testWidgets('1. TimelineIndividualPlayerCard renders correctly', (
-      tester,
-    ) async {
+  group('[Widget] Timeline Extracted Components テスト', () {
+    testWidgets('TimelineIndividualPlayerCard 正しく描画されること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,
@@ -56,7 +54,7 @@ void main() {
       expect(find.text('終了'), findsOneWidget);
     });
 
-    testWidgets('2. TimelineTeamCard renders header and matches', (
+    testWidgets('TimelineTeamCard renders header and matchesであること', (
       tester,
     ) async {
       final match = MatchModel(

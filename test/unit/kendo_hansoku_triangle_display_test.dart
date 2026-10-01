@@ -14,7 +14,7 @@ import 'package:kendo_os/shared/presentation/widgets/kendo_score_box.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 void main() {
-  group('🥋 反則マーク「△」の表示および先取丸囲み除外テスト', () {
+  group('[Unit] 反則マーク「△」の表示および先取丸囲み除外テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm1',
@@ -30,7 +30,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 赤の反則1回の場合、赤のdisplaysに「△」が追加され、先取フラグはfalseであること', () {
+    test('赤の反則1回の場合、赤のdisplaysに「△」が追加され、先取フラグはfalseであること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final events = [
         ScoreEvent(
@@ -60,7 +60,7 @@ void main() {
       expect(analysis.context.redHansoku, 1);
     });
 
-    test('2. 赤の反則1回後に赤がメンを取った場合、赤のdisplaysは「△」と先取「メ」になること', () {
+    test('赤の反則1回後に赤がメンを取った場合、赤のdisplaysは「△」と先取「メ」になること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final events = [
         ScoreEvent(
@@ -91,7 +91,7 @@ void main() {
       expect(redDisplays[1].isFirstMatchPoint, isTrue); // 試合の最初の一本なので先取となる
     });
 
-    test('3. 赤の反則2回の場合、赤の「△」が消えて白に「反」が1本付与されること', () {
+    test('赤の反則2回の場合、赤の「△」が消えて白に「反」が1本付与されること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final events = [
         ScoreEvent(
@@ -126,7 +126,7 @@ void main() {
       expect(analysis.context.whiteIppon, 1);
     });
 
-    test('4. 赤の反則3回の場合、白に「反」が1本、赤に「△」が1つ付与されること', () {
+    test('赤の反則3回の場合、白に「反」が1本、赤に「△」が1つ付与されること', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final events = [
         ScoreEvent(
@@ -167,7 +167,7 @@ void main() {
       expect(analysis.context.whiteIppon, 1);
     });
 
-    test('5. KendoPointMark: △ および ▲ は isSpecialNonCircle が true であること', () {
+    test('KendoPointMark: △ および ▲ は isSpecialNonCircle が true であること', () {
       const markTriangle = KendoPointMark(mark: '△', isFirst: true);
       const markSolidTriangle = KendoPointMark(mark: '▲', isFirst: true);
       const markMen = KendoPointMark(mark: 'メ', isFirst: true);
@@ -178,7 +178,7 @@ void main() {
     });
 
     test(
-      '6. MatchCalculatorHelper.extractPointsFromProjection で先頭に△があっても次の技に先取フラグが付与されること',
+      'MatchCalculatorHelper.extractPointsFromProjection で先頭に△があっても次の技に先取フラグが付与されること',
       () {
         final proj = MatchListProjection(
           id: 'p1',
@@ -206,7 +206,7 @@ void main() {
       },
     );
 
-    test('7. PdfViewModel.calculatePointsRaw で先頭に△があっても正しく変換されること', () {
+    test('PdfViewModel.calculatePointsRaw で先頭に△があっても正しく変換されること', () {
       final proj = MatchListProjection(
         id: 'p1',
         tournamentId: 't1',
@@ -232,7 +232,7 @@ void main() {
       expect(redPts[1].isFirstOverall, isTrue);
     });
 
-    testWidgets('8. KendoScoreBox(table): △はスコアの左下に小さく表示され、大丸の中に入らないこと', (
+    testWidgets('KendoScoreBox(table): △はスコアの左下に小さく表示され、大丸の中に入らないこと', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -272,7 +272,7 @@ void main() {
     });
 
     testWidgets(
-      '9. TeamScoreboardTableBuilder.buildMatchScoreBox: △はスコアの左下に小さく表示され、大丸の中に入らないこと',
+      'TeamScoreboardTableBuilder.buildMatchScoreBox: △はスコアの左下に小さく表示され、大丸の中に入らないこと',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -313,7 +313,7 @@ void main() {
     );
 
     test(
-      '10. PdfTeamTableCellRenderer.buildPointBox: △が含まれていても正しく描画ウィジェットが構築されること',
+      'PdfTeamTableCellRenderer.buildPointBox: △が含まれていても正しく描画ウィジェットが構築されること',
       () {
         final font = pw.Font.helvetica();
         final widget = PdfTeamTableCellRenderer.buildPointBox(

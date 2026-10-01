@@ -2,10 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/infrastructure/services/manual_markdown_loader_service.dart';
 
 void main() {
-  group('🛡️ ManualMarkdownLoaderService Tests', () {
+  group('[Unit] ManualMarkdownLoaderService テスト', () {
     const service = ManualMarkdownLoaderService();
 
-    test('resolvePath correctly rewrites legacy and shorthand paths', () {
+    test('resolvePath correctly rewrites legacy and shorthand pathsであること', () {
       expect(
         service.resolvePath('docs/manuals/guide.md'),
         'packages/documentation_runtime/manuals/guide.md',

@@ -2,17 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 
 void main() {
-  group('CategoryRuleMatchHelper Tests', () {
-    test('isAdvancedMatchName correctly detects finals and semi-finals', () {
-      expect(CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 決勝戦'), isTrue);
-      expect(
-        CategoryRuleMatchHelper.isAdvancedMatchName('第2コート 準決勝第1試合'),
-        isTrue,
-      );
-      expect(CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 1回戦'), isFalse);
-    });
+  group('[Widget] CategoryRuleMatchHelper テスト', () {
+    test(
+      'isAdvancedMatchName correctly detects finals and semi-finalsであること',
+      () {
+        expect(
+          CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 決勝戦'),
+          isTrue,
+        );
+        expect(
+          CategoryRuleMatchHelper.isAdvancedMatchName('第2コート 準決勝第1試合'),
+          isTrue,
+        );
+        expect(
+          CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 1回戦'),
+          isFalse,
+        );
+      },
+    );
 
-    test('buildMatchRule creates valid MatchRule instance', () {
+    test('buildMatchRule creates valid MatchRule instanceであること', () {
       final rule = CategoryRuleMatchHelper.buildMatchRule(
         category: '一般',
         matchType: '個人戦',

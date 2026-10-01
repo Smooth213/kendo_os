@@ -10,7 +10,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group(
-    '🥋 ViewerTeamScoreboard Contrast & Design System Tests (観客席スコア視認性テスト)',
+    '[Widget] ViewerTeamScoreboard Contrast & Design System テスト (観客席スコア視認性テスト)',
     () {
       testWidgets('ライトモードでヘッダー行および合計行が通常ビュアーと同一の高コントラスト配色で描画されること', (
         WidgetTester tester,

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/application/services/match_persistence_helper.dart';
 
 void main() {
-  group('🛡️ MatchPersistenceHelper Unit Tests', () {
-    test('Can be instantiated properly with Ref', () {
+  group('[Unit] MatchPersistenceHelper 単体テスト', () {
+    test('Can be instantiated properly with Refであること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

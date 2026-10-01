@@ -39,7 +39,7 @@ void main() {
     status: 'in_progress',
   );
 
-  group('⏱️ TimerWidget ライト＆ダークモード視認性コントラスト完全保証テスト', () {
+  group('[Widget] TimerWidget ライト＆ダークモード視認性コントラスト完全保証テスト', () {
     testWidgets('【ライトモード・動作中】赤背景において、テキストおよびアイコンが純白(pureWhite)で描画されること', (
       tester,
     ) async {

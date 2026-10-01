@@ -7,7 +7,7 @@ void main() {
   // compute等を使うためバインディング初期化
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🎨 ImageCompressor ユニットテスト要塞 (自動リサイズ・圧縮 & HEICフォールバック保証)', () {
+  group('[Unit] ImageCompressor ユニットテスト要塞 (自動リサイズ・圧縮 & HEICフォールバック保証)', () {
     test(
       '【正常系】巨大な画像 (3000 x 4000) が、アスペクト比を維持したまま最大解像度2000pxに自動縮小され、バイトサイズが削減されること',
       () async {

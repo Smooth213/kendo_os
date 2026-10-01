@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🌍 【Phase 8-7/7】折りたたみ端末（Foldable）ヒンジ蝶番回避セーフティテスト', () {
-    testWidgets('1. 画面中央のヒンジ（幅20px）を検知し、赤操作盤と白操作盤が左右画面に安全分離配置されること', (
+  group('[Widget] 【Phase 8-7/7】折りたたみ端末（Foldable）ヒンジ蝶番回避セーフティテスト', () {
+    testWidgets('画面中央のヒンジ（幅20px）を検知し、赤操作盤と白操作盤が左右画面に安全分離配置されること', (
       tester,
     ) async {
       addTearDown(tester.view.reset);

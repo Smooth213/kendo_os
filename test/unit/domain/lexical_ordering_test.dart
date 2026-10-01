@@ -27,7 +27,7 @@ double calculateNewOrder(List<double> list, int oldIndex, int newIndex) {
 }
 
 void main() {
-  group('Lexical Ordering Test', () {
+  group('[Unit] Lexical Ordering テスト', () {
     test('先頭への移動: 先頭要素より100.0小さい値が生成されること', () {
       final list = [100.0, 200.0, 300.0, 400.0];
       final newOrder = calculateNewOrder(list, 1, 0);

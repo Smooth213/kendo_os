@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_match_count_helper.dart';
 
 void main() {
-  group('TimelineMatchCountHelper', () {
-    test('個人戦は各マッチを1試合としてカウントする', () {
+  group('[Unit] TimelineMatchCountHelper', () {
+    test('個人戦は各マッチを1試合としてカウントすること', () {
       final matches = [
         const MatchModel(
           id: '1',
@@ -30,7 +30,7 @@ void main() {
       expect(count, equals(3));
     });
 
-    test('団体戦は同一 groupName の複数対戦を1試合としてカウントする', () {
+    test('団体戦は同一 groupName の複数対戦を1試合としてカウントすること', () {
       // 5人制の団体戦1試合（先鋒〜大将）
       final matches = [
         const MatchModel(
@@ -82,7 +82,7 @@ void main() {
       expect(count, equals(1));
     });
 
-    test('複数の団体戦がある場合、団体戦の試合数を正確にカウントする', () {
+    test('複数の団体戦がある場合、団体戦の試合数を正確にカウントすること', () {
       final matches = [
         // 団体戦1（3人制）
         const MatchModel(
@@ -135,7 +135,7 @@ void main() {
       expect(count, equals(2));
     });
 
-    test('団体戦と個人戦が混在する場合、団体戦試合数 + 個人戦試合数 を返す', () {
+    test('団体戦と個人戦が混在する場合、団体戦試合数 + 個人戦試合数 を返すこと', () {
       final matches = [
         // 団体戦1（2対戦）
         const MatchModel(
@@ -172,7 +172,7 @@ void main() {
       expect(count, equals(3));
     });
 
-    test('勝ち抜き戦は団体戦としてカウントされる', () {
+    test('勝ち抜き戦は団体戦としてカウントされること', () {
       final matches = [
         const MatchModel(
           id: 'k1',

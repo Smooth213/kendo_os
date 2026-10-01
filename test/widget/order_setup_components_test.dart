@@ -7,8 +7,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('OrderSetup Components Tests', () {
-    test('OrderSetupMatchGenerator generates matches correctly', () {
+  group('[Widget] OrderSetup Components テスト', () {
+    test('OrderSetupMatchGenerator generates matches correctlyであること', () {
       const rule = MatchRule(
         teamName: '先鋒道場',
         category: '一般男子',
@@ -37,7 +37,9 @@ void main() {
       expect(matches[0].matchType, equals('先鋒'));
     });
 
-    testWidgets('OrderSetupStickyBottomBar renders properly', (tester) async {
+    testWidgets('OrderSetupStickyBottomBar renders properlyであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -56,7 +58,9 @@ void main() {
       expect(find.text('このオーダーで確定して進む'), findsOneWidget);
     });
 
-    testWidgets('OrderSetupReorderableSlotsView renders slots', (tester) async {
+    testWidgets('OrderSetupReorderableSlotsView renders slotsであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

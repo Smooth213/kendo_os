@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 
 void main() {
-  group('🛡️ 【設定・安心感の可視化】サンシャイン高コントラスト＆サーマルバッジ検証テスト', () {
+  group('[Governance] 【設定・安心感の可視化】サンシャイン高コントラスト＆サーマルバッジ検証テスト', () {
     test('サンシャインモードのカラーパレットが直射日光下の最高視認性（純白×漆黒）を満たしていること', () {
       final sunshineColors = AppThemeColors.ofMode(
         isDark: false,
@@ -70,7 +70,7 @@ void main() {
       expect(find.text('省電力'), findsOneWidget);
     });
 
-    testWidgets('3モード全て（⚡ 高速 / 🔋 冷却 / 🌿 省電力）でトグルスイッチ同一サイズ（64x31）で描画されること', (
+    testWidgets('3モード全て（ 高速 /  冷却 /  省電力）でトグルスイッチ同一サイズ（64x31）で描画されること', (
       tester,
     ) async {
       final governor = ThermalPowerGovernor();
@@ -171,7 +171,7 @@ void main() {
       expect(find.byIcon(Icons.bolt_rounded), findsOneWidget);
     });
 
-    testWidgets('SettingsScreen で「外観テーマ」タイルが横1行で美しく描画され、☀️ サンシャインを選択できること', (
+    testWidgets('SettingsScreen で「外観テーマ」タイルが横1行で美しく描画され、 サンシャインを選択できること', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

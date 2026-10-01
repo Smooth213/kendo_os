@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('⚡ 【第9条 ガバナンス監査】UI再描画局所化 ＆ Jank防止規約', () {
+  group('[Governance] 【第9条 ガバナンス監査】UI再描画局所化 ＆ Jank防止規約', () {
     test(
       'Rule 1: [ルート購読局所化] main.dart で settingsProvider を丸ごと購読せず、.select((s) => s.themeMode) で局所化されていること',
       () {
@@ -90,7 +90,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [singleMatchProvider配備] match_screen.dart における singleMatchProvider 局所購読規約',
+      'Rule 3: [singleMatchProvider配備] match_screen.dart における singleMatchProvider 局所購読規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/match_screen.dart',
@@ -213,7 +213,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [極小粒度select] match_score_action_section.dart における leftHanded 極小粒度 select 規約',
+      'Rule 6: [極小粒度select] match_score_action_section.dart における leftHanded 極小粒度 select 規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart',

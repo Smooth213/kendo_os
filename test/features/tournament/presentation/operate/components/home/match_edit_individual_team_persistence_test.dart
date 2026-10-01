@@ -18,7 +18,7 @@ void main() {
     registerFallbackValue(<MatchModel>[]);
   });
 
-  group('🥋 個人戦 試合コメント編集時における所属チーム保持テスト要塞', () {
+  group('[Widget] 個人戦 試合コメント編集時における所属チーム保持テスト要塞', () {
     late MockMatchApplicationService mockMatchAppService;
 
     setUp(() {
@@ -28,7 +28,7 @@ void main() {
       ).thenAnswer((_) async {});
     });
 
-    test('1. MatchEditStateHolder: 個人戦で所属がある場合、所属名と選手名が正しく分離抽出されること', () {
+    test('MatchEditStateHolder: 個人戦で所属がある場合、所属名と選手名が正しく分離抽出されること', () {
       const matchWithAffiliation = MatchModel(
         id: 'm-ind-1',
         matchType: '個人戦',
@@ -49,7 +49,7 @@ void main() {
       expect(state.courtController.text, '第1試合場, 33試合目');
     });
 
-    test('2. MatchEditStateHolder: 個人戦で所属がない場合、空文字のまま保持され赤チーム等のダミーが入らないこと', () {
+    test('MatchEditStateHolder: 個人戦で所属がない場合、空文字のまま保持され赤チーム等のダミーが入らないこと', () {
       const matchWithoutAffiliation = MatchModel(
         id: 'm-ind-2',
         matchType: '個人戦',
@@ -67,7 +67,7 @@ void main() {
       expect(state.whitePlayerControllers.first.text, '皿田 唯人');
     });
 
-    testWidgets('3. MatchEditSaveHelper: 個人戦のコメント編集保存後も所属チームが消失せず保持されること', (
+    testWidgets('MatchEditSaveHelper: 個人戦のコメント編集保存後も所属チームが消失せず保持されること', (
       tester,
     ) async {
       const originalMatch = MatchModel(
@@ -168,7 +168,7 @@ void main() {
       expect(resultMatch.note, contains('編集された新しい詳細コメント'));
     });
 
-    testWidgets('4. MatchEditSaveHelper: 個人エントリー（所属なし）保存時は不要なコロンが付かないこと', (
+    testWidgets('MatchEditSaveHelper: 個人エントリー（所属なし）保存時は不要なコロンが付かないこと', (
       tester,
     ) async {
       const originalMatch = MatchModel(
@@ -260,7 +260,7 @@ void main() {
       expect(resultMatch.whiteName, '皿田 唯人');
     });
 
-    testWidgets('5. MatchEditTeamAndPlayersTab: 個人戦時に所属・道場名ラベルが表示されること', (
+    testWidgets('MatchEditTeamAndPlayersTab: 個人戦時に所属・道場名ラベルが表示されること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

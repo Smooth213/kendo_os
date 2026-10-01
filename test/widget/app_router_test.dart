@@ -2,9 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/routing/app_router.dart';
 
 void main() {
-  group('🛡️ AppRouter Unit Tests', () {
+  group('[Widget] AppRouter 単体テスト', () {
     test(
-      '1. appRouter configuration has valid initial route and routes list',
+      'appRouter configuration has valid initial route and routes listであること',
       () {
         expect(appRouter.configuration.routes.isNotEmpty, true);
       },

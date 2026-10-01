@@ -94,12 +94,12 @@ String deriveMatchTypeFromRule(MatchRule rule, String savedMatchType) {
 }
 
 void main() {
-  group('📋 CategoryRuleSet 表示フラグ (matchType ベース)', () {
+  group('[Unit] CategoryRuleSet 表示フラグ (matchType ベース)', () {
     // ────────────────────────────────────────────────────────
     // 試合形式テキスト
     // ────────────────────────────────────────────────────────
     group('試合形式テキスト (formatText)', () {
-      test('✅ 個人戦 → "個人戦"', () {
+      test('個人戦 → "個人戦"であること', () {
         final ruleSet = CategoryRuleSet(
           matchType: '個人戦',
           normalRule: MatchRule(),
@@ -107,7 +107,7 @@ void main() {
         expect(computeDisplayFlags(ruleSet).formatText, '個人戦');
       });
 
-      test('✅ 団体戦 → "団体戦"', () {
+      test('団体戦 → "団体戦"であること', () {
         final ruleSet = CategoryRuleSet(
           matchType: '団体戦',
           normalRule: MatchRule(hasLeagueDaihyo: true),
@@ -115,7 +115,7 @@ void main() {
         expect(computeDisplayFlags(ruleSet).formatText, '団体戦');
       });
 
-      test('✅ 勝ち抜き戦 → "勝ち抜き戦"', () {
+      test('勝ち抜き戦 → "勝ち抜き戦"であること', () {
         final ruleSet = CategoryRuleSet(
           matchType: '勝ち抜き戦',
           normalRule: MatchRule(isKachinuki: true),
@@ -123,7 +123,7 @@ void main() {
         expect(computeDisplayFlags(ruleSet).formatText, '勝ち抜き戦');
       });
 
-      test('✅ リーグ団体戦 → "リーグ戦（団体）"', () {
+      test('リーグ団体戦 → "リーグ戦（団体）"であること', () {
         final ruleSet = CategoryRuleSet(
           matchType: 'リーグ団体戦',
           normalRule: MatchRule(isLeague: true, hasLeagueDaihyo: true),
@@ -131,7 +131,7 @@ void main() {
         expect(computeDisplayFlags(ruleSet).formatText, 'リーグ戦（団体）');
       });
 
-      test('✅ リーグ個人戦 → "リーグ戦（個人）"', () {
+      test('リーグ個人戦 → "リーグ戦（個人）"であること', () {
         final ruleSet = CategoryRuleSet(
           matchType: 'リーグ個人戦',
           normalRule: MatchRule(isLeague: true),
@@ -139,7 +139,7 @@ void main() {
         expect(computeDisplayFlags(ruleSet).formatText, 'リーグ戦（個人）');
       });
 
-      test('✅ 錬成会 → "錬成会"', () {
+      test('錬成会 → "錬成会"であること', () {
         final ruleSet = CategoryRuleSet(
           matchType: '錬成会',
           normalRule: MatchRule(isRenseikai: true),
@@ -153,7 +153,7 @@ void main() {
     // ────────────────────────────────────────────────────────
     group('セクション表示フラグ', () {
       test(
-        '✅ 個人戦: isTeam=false, isLeague=false, isKachinuki=false, isRenseikai=false',
+        '個人戦: isTeam=false, isLeague=false, isKachinuki=false, isRenseikai=falseであること',
         () {
           final flags = computeDisplayFlags(
             CategoryRuleSet(matchType: '個人戦', normalRule: MatchRule()),
@@ -167,7 +167,7 @@ void main() {
       );
 
       test(
-        '✅ 団体戦: isTeam=true, 代表戦セクション=true (hasRepresentativeMatch=true)',
+        '団体戦: isTeam=true, 代表戦セクション=true (hasRepresentativeMatch=true)こと',
         () {
           final flags = computeDisplayFlags(
             CategoryRuleSet(
@@ -190,7 +190,7 @@ void main() {
         },
       );
 
-      test('✅ 団体戦: 代表戦セクション=false (hasRepresentativeMatch=false)', () {
+      test('団体戦: 代表戦セクション=false (hasRepresentativeMatch=false)こと', () {
         final flags = computeDisplayFlags(
           CategoryRuleSet(
             matchType: '団体戦',
@@ -203,7 +203,7 @@ void main() {
         expect(flags.showDaihyoSection, isFalse);
       });
 
-      test('✅ 勝ち抜き戦: isKachinuki=true, 代表戦セクション=false', () {
+      test('勝ち抜き戦: isKachinuki=true, 代表戦セクション=falseであること', () {
         final flags = computeDisplayFlags(
           CategoryRuleSet(
             matchType: '勝ち抜き戦',
@@ -221,7 +221,7 @@ void main() {
         );
       });
 
-      test('✅ リーグ団体戦: isLeague=true, isTeam=true, 代表戦セクション=false', () {
+      test('リーグ団体戦: isLeague=true, isTeam=true, 代表戦セクション=falseであること', () {
         final flags = computeDisplayFlags(
           CategoryRuleSet(
             matchType: 'リーグ団体戦',
@@ -237,7 +237,7 @@ void main() {
         );
       });
 
-      test('✅ リーグ個人戦: isLeague=true, isTeam=false', () {
+      test('リーグ個人戦: isLeague=true, isTeam=falseであること', () {
         final flags = computeDisplayFlags(
           CategoryRuleSet(
             matchType: 'リーグ個人戦',
@@ -248,7 +248,7 @@ void main() {
         expect(flags.isLeague, isTrue);
       });
 
-      test('✅ 錬成会: isRenseikai=true, isTeam=true, 代表戦セクション=false', () {
+      test('錬成会: isRenseikai=true, isTeam=true, 代表戦セクション=falseであること', () {
         final flags = computeDisplayFlags(
           CategoryRuleSet(
             matchType: '錬成会',
@@ -268,8 +268,8 @@ void main() {
     // ────────────────────────────────────────────────────────
     // Bug 1 リグレッション: positions.length に依存しないこと
     // ────────────────────────────────────────────────────────
-    group('🐛 Bug1 リグレッション: positions.length > 1 に依存しない', () {
-      test('✅ 団体戦でも positions がデフォルト["選手"] のままでも団体戦と正しく判定', () {
+    group('Bug1 リグレッション: positions.length > 1 に依存しない', () {
+      test('団体戦でも positions がデフォルト["選手"] のままでも団体戦と正しく判定こと', () {
         final ruleSet = CategoryRuleSet(
           matchType: '団体戦',
           normalRule: MatchRule(
@@ -288,7 +288,7 @@ void main() {
         expect(flags.showDaihyoSection, isTrue, reason: '代表戦設定セクションが表示されること');
       });
 
-      test('✅ 錬成会でも positions がデフォルトでも錬成会と正しく判定', () {
+      test('錬成会でも positions がデフォルトでも錬成会と正しく判定こと', () {
         final ruleSet = CategoryRuleSet(
           matchType: '錬成会',
           normalRule: MatchRule(isRenseikai: true),
@@ -303,15 +303,15 @@ void main() {
     // ────────────────────────────────────────────────────────
     // Bug 2 リグレッション: 錬成会の matchType 導出
     // ────────────────────────────────────────────────────────
-    group('🐛 Bug2 リグレッション: 錬成会の matchType 導出', () {
-      test('✅ isRenseikai=true のとき matchType は "錬成会" に確定', () {
+    group('Bug2 リグレッション: 錬成会の matchType 導出', () {
+      test('isRenseikai=true のとき matchType は "錬成会" に確定こと', () {
         expect(
           deriveMatchTypeFromRule(MatchRule(isRenseikai: true), ''),
           '錬成会',
         );
       });
 
-      test('✅ isRenseikai=true のとき savedMatchType の値に関わらず "錬成会"', () {
+      test('isRenseikai=true のとき savedMatchType の値に関わらず "錬成会"こと', () {
         // 古いデータで savedMatchType が '個人戦' になっていても上書き
         expect(
           deriveMatchTypeFromRule(MatchRule(isRenseikai: true), '個人戦'),
@@ -319,18 +319,18 @@ void main() {
         );
       });
 
-      test('✅ isRenseikai=false かつ savedMatchType あり → savedMatchType を使う', () {
+      test('isRenseikai=false かつ savedMatchType あり → savedMatchType を使うこと', () {
         expect(deriveMatchTypeFromRule(MatchRule(), '個人戦'), '個人戦');
       });
 
-      test('✅ isKachinuki=true のとき "勝ち抜き戦"', () {
+      test('isKachinuki=true のとき "勝ち抜き戦"こと', () {
         expect(
           deriveMatchTypeFromRule(MatchRule(isKachinuki: true), ''),
           '勝ち抜き戦',
         );
       });
 
-      test('✅ isLeague=true, hasLeagueDaihyo=true のとき "リーグ団体戦"', () {
+      test('isLeague=true, hasLeagueDaihyo=true のとき "リーグ団体戦"こと', () {
         expect(
           deriveMatchTypeFromRule(
             MatchRule(isLeague: true, hasLeagueDaihyo: true),
@@ -340,7 +340,7 @@ void main() {
         );
       });
 
-      test('✅ isLeague=true, hasLeagueDaihyo=false のとき "リーグ個人戦"', () {
+      test('isLeague=true, hasLeagueDaihyo=false のとき "リーグ個人戦"こと', () {
         expect(
           deriveMatchTypeFromRule(
             MatchRule(isLeague: true, hasLeagueDaihyo: false),
@@ -350,14 +350,14 @@ void main() {
         );
       });
 
-      test('✅ hasLeagueDaihyo=true のとき "団体戦"', () {
+      test('hasLeagueDaihyo=true のとき "団体戦"こと', () {
         expect(
           deriveMatchTypeFromRule(MatchRule(hasLeagueDaihyo: true), ''),
           '団体戦',
         );
       });
 
-      test('✅ 全フラグ false かつ savedMatchType 空 → "個人戦"', () {
+      test('全フラグ false かつ savedMatchType 空 → "個人戦"であること', () {
         expect(deriveMatchTypeFromRule(MatchRule(), ''), '個人戦');
       });
     });
@@ -365,8 +365,8 @@ void main() {
     // ────────────────────────────────────────────────────────
     // JSON シリアライズ
     // ────────────────────────────────────────────────────────
-    group('💾 JSON シリアライズ round-trip', () {
-      test('✅ 錬成会: matchType が保持される', () {
+    group('JSON シリアライズ round-trip', () {
+      test('錬成会: matchType が保持されること', () {
         const original = CategoryRuleSet(
           matchType: '錬成会',
           normalRule: MatchRule(isRenseikai: true),
@@ -376,7 +376,7 @@ void main() {
         expect(restored.normalRule.isRenseikai, isTrue);
       });
 
-      test('✅ 団体戦: matchType と代表戦フラグが保持される', () {
+      test('団体戦: matchType と代表戦フラグが保持されること', () {
         const original = CategoryRuleSet(
           matchType: '団体戦',
           normalRule: MatchRule(
@@ -399,7 +399,7 @@ void main() {
         expect(computeDisplayFlags(restored).showDaihyoSection, isTrue);
       });
 
-      test('✅ 勝ち抜き戦: matchType と kachinukiUnlimitedType が保持される', () {
+      test('勝ち抜き戦: matchType と kachinukiUnlimitedType が保持されること', () {
         const original = CategoryRuleSet(
           matchType: '勝ち抜き戦',
           normalRule: MatchRule(
@@ -417,7 +417,7 @@ void main() {
     // ────────────────────────────────────────────────────────
     // 延長戦テキスト
     // ────────────────────────────────────────────────────────
-    group('🕐 延長戦テキスト', () {
+    group('延長戦テキスト', () {
       String enchoText(MatchRule rule) {
         if (rule.isEnchoUnlimited) return 'あり (時間・回数 無制限)';
         if (rule.enchoCount > 0 || rule.enchoTimeMinutes > 0) {
@@ -430,25 +430,25 @@ void main() {
         return 'なし';
       }
 
-      test('✅ 延長戦なし', () {
+      test('延長戦なしこと', () {
         expect(enchoText(MatchRule(enchoCount: 0, enchoTimeMinutes: 0)), 'なし');
       });
 
-      test('✅ 延長戦あり (3分・1回)', () {
+      test('延長戦あり (3分・1回)こと', () {
         expect(
           enchoText(MatchRule(enchoCount: 1, enchoTimeMinutes: 3.0)),
           'あり (3分・1回)',
         );
       });
 
-      test('✅ 延長戦あり (1分30秒・2回)', () {
+      test('延長戦あり (1分30秒・2回)こと', () {
         expect(
           enchoText(MatchRule(enchoCount: 2, enchoTimeMinutes: 1.5)),
           'あり (1分30秒・2回)',
         );
       });
 
-      test('✅ 延長戦無制限', () {
+      test('延長戦無制限こと', () {
         expect(enchoText(MatchRule(isEnchoUnlimited: true)), 'あり (時間・回数 無制限)');
       });
     });

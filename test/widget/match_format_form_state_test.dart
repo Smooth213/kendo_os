@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
 
 void main() {
-  group('MatchFormatFormState Tests', () {
-    test('getCategory returns formatted string correctly', () {
+  group('[Widget] MatchFormatFormState テスト', () {
+    test('getCategory returns formatted string correctlyであること', () {
       final state1 = MatchFormatFormState(
         selectedMajorCategory: '小学生',
         selectedMinorCategory: '高学年',
@@ -19,7 +19,7 @@ void main() {
       expect(state2.getCategory(), '初心者の部');
     });
 
-    test('applyMatchRule updates fields properly', () {
+    test('applyMatchRule updates fields properlyであること', () {
       final state = MatchFormatFormState();
       final rule = MatchRule(
         matchTimeMinutes: 4.0,

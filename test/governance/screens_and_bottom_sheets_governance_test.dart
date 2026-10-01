@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 // メモリ解放・トークン規約・ロール隔離の抜け漏れを恒久的にゼロ保証します。
 // ============================================================================
 void main() {
-  group('🛡️ 全画面・全ドック・全ボトムシート 横断網羅ガバナンス監査', () {
+  group('[Governance] 全画面・全ドック・全ボトムシート 横断網羅ガバナンス監査', () {
     late Directory libDir;
     late List<File> dartFiles;
     late List<File> screenFiles;
@@ -58,7 +58,7 @@ void main() {
     // -------------------------------------------------------------------------
     // 1. 全画面（Screens）横断ガバナンス規約
     // -------------------------------------------------------------------------
-    test('1. 全画面: 生の AppBar 直書きが 0 件であり AppHeader または専用ヘッダーに統一されていること', () {
+    test('全画面: 生の AppBar 直書きが 0 件であり AppHeader または専用ヘッダーに統一されていること', () {
       final violations = <String>[];
       for (final file in screenFiles) {
         if (file.path.endsWith('app_header.dart')) continue;
@@ -75,28 +75,25 @@ void main() {
       );
     });
 
-    test(
-      '2. 全画面: レガシー戻るアイコン（arrow_back）が 0 件であり arrow_back_ios_new に統一されていること',
-      () {
-        final violations = <String>[];
-        for (final file in screenFiles) {
-          final content = file.readAsStringSync();
-          if (RegExp(
-            r'Icons\.arrow_back(?!\w|_ios_new)\b|Icons\.arrow_back_ios\b(?!_new)',
-          ).hasMatch(content)) {
-            violations.add(file.path);
-          }
+    test('全画面: レガシー戻るアイコン（arrow_back）が 0 件であり arrow_back_ios_new に統一されていること', () {
+      final violations = <String>[];
+      for (final file in screenFiles) {
+        final content = file.readAsStringSync();
+        if (RegExp(
+          r'Icons\.arrow_back(?!\w|_ios_new)\b|Icons\.arrow_back_ios\b(?!_new)',
+        ).hasMatch(content)) {
+          violations.add(file.path);
         }
-        expect(
-          violations,
-          isEmpty,
-          reason:
-              '画面内でレガシー戻るアイコンが検出されました。Icons.arrow_back_ios_new に統一してください:\n${violations.join('\n')}',
-        );
-      },
-    );
+      }
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            '画面内でレガシー戻るアイコンが検出されました。Icons.arrow_back_ios_new に統一してください:\n${violations.join('\n')}',
+      );
+    });
 
-    test('3. 全画面: Scaffold 背景色に硬直色 (Colors.*) が直接指定されていないこと', () {
+    test('全画面: Scaffold 背景色に硬直色 (Colors.*) が直接指定されていないこと', () {
       final violations = <String>[];
       for (final file in screenFiles) {
         final content = file.readAsStringSync();
@@ -120,7 +117,7 @@ void main() {
     // 2. 全ボトムシート（BottomSheets）横断ガバナンス規約
     // -------------------------------------------------------------------------
     test(
-      '4. 全ボトムシート: TextEditingController を生成する StatefulWidget は必ず dispose() で破棄していること',
+      '全ボトムシート: TextEditingController を生成する StatefulWidget は必ず dispose() で破棄していること',
       () {
         final violations = <String>[];
         for (final file in sheetFiles) {
@@ -143,7 +140,7 @@ void main() {
     );
 
     test(
-      '5. 全ボトムシート: 生の showModalBottomSheet の直書きが 0 件であり showAppBottomSheet に統一されていること',
+      '全ボトムシート: 生の showModalBottomSheet の直書きが 0 件であり showAppBottomSheet に統一されていること',
       () {
         final violations = <String>[];
         for (final file in sheetFiles) {
@@ -163,7 +160,7 @@ void main() {
     );
 
     test(
-      '6. 全ボトムシート: 生の showDialog / AlertDialog 直書きが 0 件であり AppDialog に統一されていること',
+      '全ボトムシート: 生の showDialog / AlertDialog 直書きが 0 件であり AppDialog に統一されていること',
       () {
         final violations = <String>[];
         for (final file in sheetFiles) {
@@ -183,7 +180,7 @@ void main() {
       },
     );
 
-    test('7. 全ボトムシート: 硬直色 Colors.* 直書きが 0 件であること', () {
+    test('全ボトムシート: 硬直色 Colors.* 直書きが 0 件であること', () {
       final violations = <String>[];
       for (final file in sheetFiles) {
         final content = file.readAsStringSync();
@@ -209,7 +206,7 @@ void main() {
     // -------------------------------------------------------------------------
     // 3. ドック（Floating Docks）機能横断ガバナンス規約
     // -------------------------------------------------------------------------
-    test('8. 全ドック機能: 観戦（Viewer）配下でドック関連コンポーネントが一切参照・配置されていないこと', () {
+    test('全ドック機能: 観戦（Viewer）配下でドック関連コンポーネントが一切参照・配置されていないこと', () {
       final viewerFiles = dartFiles
           .where((f) => f.path.contains('/features/viewer/'))
           .toList();
@@ -230,7 +227,7 @@ void main() {
       );
     });
 
-    test('9. 全ドック機能: 部内戦ドック（BunaiksenDockButton）が通常大会画面から隔離されていること', () {
+    test('全ドック機能: 部内戦ドック（BunaiksenDockButton）が通常大会画面から隔離されていること', () {
       final normalOperateFiles = dartFiles
           .where(
             (f) =>
@@ -257,7 +254,7 @@ void main() {
       );
     });
 
-    test('10. 全ファイル行数: 画面・ドック・ボトムシートのすべてのファイルが500行制限を厳格に順守していること', () {
+    test('全ファイル行数: 画面・ドック・ボトムシートのすべてのファイルが500行制限を厳格に順守していること', () {
       final allUiFiles = {...screenFiles, ...sheetFiles, ...dockFiles}.toList();
       final violations = <String>[];
       for (final file in allUiFiles) {

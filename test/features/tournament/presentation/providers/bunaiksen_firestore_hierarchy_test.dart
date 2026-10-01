@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart'
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
-  group('🛡️ Bunaiksen Firestore Hierarchy Verification Tests', () {
+  group('[Unit] Bunaiksen Firestore Hierarchy 検証 テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {
@@ -17,7 +17,7 @@ void main() {
     });
 
     test(
-      '1. Guest Player registration saves under the correct organization, tournament (date), and guest name subcollection path',
+      'Guest Player registration saves under the correct organization, tournament (date), and guest name subcollection pathであること',
       () async {
         final targetDojoId = 'dojo_chiba_abc';
         final targetDate = DateTime(2026, 7, 3);
@@ -53,7 +53,7 @@ void main() {
     );
 
     test(
-      '2. Practice Match creation saves under the correct organization, tournament (date), and match ID subcollection path',
+      'Practice Match creation saves under the correct organization, tournament (date), and match ID subcollection pathであること',
       () async {
         final targetDojoId = 'dojo_kanagawa_xyz';
         final targetDate = DateTime(2026, 7, 3);

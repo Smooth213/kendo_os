@@ -26,9 +26,9 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('🛡️ Order Drag & Drop Reordering & Bunaiksen Quick Match Tests', () {
+  group('[Widget] Order Drag & Drop Reordering & Bunaiksen Quick Match テスト', () {
     testWidgets(
-      '1. Verify OrderSetupScreen renders ReorderableListView with drag handle icons',
+      'Verify OrderSetupScreen renders ReorderableListView with drag handle iconsであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -60,7 +60,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Verify BunaiksenHomeScreen renders 1-second quick match button',
+      'Verify BunaiksenHomeScreen renders 1-second quick match buttonであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -87,7 +87,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Verify BunaiksenHomeScreen Quick Match Sheet Flow (Default 2min, Stepper +/- & 1-Ippon Format)',
+      'Verify BunaiksenHomeScreen Quick Match Sheet Flow (Default 2min, Stepper +/- & 1-Ippon Format)こと',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

@@ -75,8 +75,8 @@ class TournamentDrawEngine {
 }
 
 void main() {
-  group('🧪 【Unit 3/5】トーナメントシード配置＆同門初戦回避境界値テスト', () {
-    test('1. 8名・16名・32名・128名規模での標準シードスロット配置計算の厳密性', () {
+  group('[Unit] 【Unit 3/5】トーナメントシード配置＆同門初戦回避境界値テスト', () {
+    test('8名・16名・32名・128名規模での標準シードスロット配置計算の厳密性こと', () {
       // 8人トーナメント: 第1シードは前半山、第2シードは後半山
       final slots8 = TournamentDrawEngine.calculateSeedSlots(8);
       expect(slots8.length, 8);
@@ -96,7 +96,7 @@ void main() {
       expect(slots128.toSet().length, 128, reason: 'スロット番号の重複は絶対にあってはならない');
     });
 
-    test('2. 同門道場選手（同一所属2名〜4名）の初戦激突回避アルゴリズム検証', () {
+    test('同門道場選手（同一所属2名〜4名）の初戦激突回避アルゴリズムが正しく検証されること', () {
       final participants = [
         (player: '神武館:佐藤', club: '神武館'),
         (player: '神武館:田中', club: '神武館'),
@@ -130,7 +130,7 @@ void main() {
       expect(shudokanBottom, 1);
     });
 
-    test('3. 奇数人数参加時の不戦勝（Bye）スロット配置整合性', () {
+    test('奇数人数参加時の不戦勝（Bye）スロット配置整合性こと', () {
       // 3名参加で4枠トーナメント ➔ 1枠は空（Bye）
       final participants = [
         (player: '選手A', club: '道場1'),

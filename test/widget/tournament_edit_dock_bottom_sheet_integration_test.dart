@@ -15,7 +15,7 @@ void main() {
     registerFallbackValue(DateTime.now());
   });
 
-  group('🥋 大会情報編集UI ドックボトムシート統合 ＆ 動作保証テスト', () {
+  group('[Widget] 大会情報編集UI ドックボトムシート統合 ＆ 動作保証テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late TournamentModel sampleTournament;
 
@@ -55,7 +55,7 @@ void main() {
       );
     }
 
-    testWidgets('1. ヘッダーカードのメニューから大会編集ドックボトムシートが正常に起動すること', (tester) async {
+    testWidgets('ヘッダーカードのメニューから大会編集ドックボトムシートが正常に起動すること', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -97,7 +97,7 @@ void main() {
       );
     });
 
-    testWidgets('2. ドックボトムシート規格（可変サイズ0.58〜0.95・ドラッグハンドル・キーボード回避）に適合していること', (
+    testWidgets('ドックボトムシート規格（可変サイズ0.58〜0.95・ドラッグハンドル・キーボード回避）に適合していること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -120,9 +120,7 @@ void main() {
       expect(find.text('キャンセル'), findsOneWidget);
     });
 
-    testWidgets('3. 大会情報を編集してヘッダー保存ボタンで正しくリポジトリ更新とシートクローズが行われること', (
-      tester,
-    ) async {
+    testWidgets('大会情報を編集してヘッダー保存ボタンで正しくリポジトリ更新とシートクローズが行われること', (tester) async {
       when(
         () => mockTournamentRepo.updateTournamentDetails(
           any(),
@@ -183,7 +181,7 @@ void main() {
       expect(find.byType(TournamentEditBottomSheet), findsNothing);
     });
 
-    testWidgets('4. 下部固定アクションボタン「大会情報を保存する」でも統合更新が成功すること', (tester) async {
+    testWidgets('下部固定アクションボタン「大会情報を保存する」でも統合更新が成功すること', (tester) async {
       when(
         () => mockTournamentRepo.updateTournamentDetails(
           any(),
@@ -234,7 +232,7 @@ void main() {
       expect(find.byType(TournamentEditBottomSheet), findsNothing);
     });
 
-    testWidgets('5. 大会名が未入力の場合はエラーが表示されリポジトリ更新がブロックされること', (tester) async {
+    testWidgets('大会名が未入力の場合はエラーが表示されリポジトリ更新がブロックされること', (tester) async {
       await tester.pumpWidget(
         buildTestApp(
           child: TournamentEditBottomSheet(tournament: sampleTournament),
@@ -260,7 +258,7 @@ void main() {
       );
     });
 
-    testWidgets('6. 「キャンセル」ボタンで保存されずにボトムシートが正常に破棄されること', (tester) async {
+    testWidgets('「キャンセル」ボタンで保存されずにボトムシートが正常に破棄されること', (tester) async {
       await tester.pumpWidget(
         buildTestApp(
           child: Builder(
@@ -297,7 +295,7 @@ void main() {
       );
     });
 
-    testWidgets('7. 管理権限（canManageTournament）がない場合、メニューボタンが非表示になり編集が開かないこと', (
+    testWidgets('管理権限（canManageTournament）がない場合、メニューボタンが非表示になり編集が開かないこと', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -311,7 +309,7 @@ void main() {
       expect(find.text('大会情報の編集'), findsNothing);
     });
 
-    testWidgets('8. ダークモードおよびカスタムカラーがドックボトムシートに美しく伝播すること', (tester) async {
+    testWidgets('ダークモードおよびカスタムカラーがドックボトムシートに美しく伝播すること', (tester) async {
       const customCard = Color(0xFF1E293B);
       const customText = Color(0xFFF8FAFC);
       const customSubText = Color(0xFF94A3B8);

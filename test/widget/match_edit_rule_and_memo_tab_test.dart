@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    'MatchEditRuleAndMemoTab renders rule summary and switches correctly',
+    'MatchEditRuleAndMemoTab renders rule summary and switches correctlyであること',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;

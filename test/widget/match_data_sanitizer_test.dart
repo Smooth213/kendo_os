@@ -3,9 +3,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_data_sanitizer.dart';
 
 void main() {
-  group('🛡️ MatchDataSanitizer Unit Tests', () {
+  group('[Widget] MatchDataSanitizer 単体テスト', () {
     test(
-      '1. sanitizeFirestoreData correctly maps numbers and nested structures',
+      'sanitizeFirestoreData correctly maps numbers and nested structuresであること',
       () {
         final input = {'order': 1, 'matchTimeMinutes': 4, 'redScore': 2.0};
 
@@ -17,7 +17,7 @@ void main() {
     );
 
     test(
-      '2. healRepresentativeMatch heals corrupted or finished state when events empty',
+      'healRepresentativeMatch heals corrupted or finished state when events emptyであること',
       () {
         final match = MatchModel(
           id: 'm1',

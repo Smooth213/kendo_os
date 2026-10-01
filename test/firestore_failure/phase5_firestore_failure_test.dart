@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 
 void main() {
-  group('🛡️ Phase 5 — Firestore障害耐性·異常系耐久テスト要塞', () {
+  group('[E2E] — Firestore障害耐性·異常系耐久テスト要塞', () {
     late DateTime baseTime;
 
     setUp(() {
@@ -13,7 +13,7 @@ void main() {
     });
 
     test(
-      '1. 【Partial Write】インフラ層の一部が書き込み失敗しても、ローカルドメイン状態(MatchModel)の整合性が破損せず自己防衛されること',
+      '【Partial Write】インフラ層の一部が書き込み失敗しても、ローカルドメイン状態(MatchModel)の整合性が破損せず自己防衛されること',
       () {
         final match = const MatchModel(
           id: 'partial_fail_001',
@@ -28,7 +28,7 @@ void main() {
     );
 
     test(
-      '2. 【Duplicate Event】同一のイベントIDを持つ重複パケットが2回連続で降ってきた場合、ドメイン履歴側で重複が自動パージ(冪等性)されること',
+      '【Duplicate Event】同一のイベントIDを持つ重複パケットが2回連続で降ってきた場合、ドメイン履歴側で重複が自動パージ(冪等性)されること',
       () {
         final duplicateEvent = ScoreEventLegacyAdapter.fromLegacy(
           id: 'dup_ev_001',
@@ -60,7 +60,7 @@ void main() {
     );
 
     test(
-      '3. 【Timestamp逆転】タイムスタンプが古いイベントがネットワーク遅延により後から遅れて到着しても、論理時計規約に基づき正しい歴史に再ソートされること',
+      '【Timestamp逆転】タイムスタンプが古いイベントがネットワーク遅延により後から遅れて到着しても、論理時計規約に基づき正しい歴史に再ソートされること',
       () {
         final firstEvent = ScoreEventLegacyAdapter.fromLegacy(
           id: 'first_logic',
@@ -96,7 +96,7 @@ void main() {
     );
 
     test(
-      '4. 【Offline Resume】3時間の通信断絶中にローカルに蓄積された大量の pending イベントが、オンライン復帰時にバースト破綻せず一括同期されること',
+      '【Offline Resume】3時間の通信断絶中にローカルに蓄積された大量の pending イベントが、オンライン復帰時にバースト破綻せず一括同期されること',
       () {
         final localRepoPendingCount = 150;
         expect(localRepoPendingCount, equals(150));

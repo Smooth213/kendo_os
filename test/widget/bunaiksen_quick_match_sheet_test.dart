@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bun
 
 void main() {
   testWidgets(
-    'BunaiksenQuickMatchSheet renders correctly and handles interaction',
+    'BunaiksenQuickMatchSheet 正しく描画されること and handles interactionであること',
     (WidgetTester tester) async {
       await tester.pumpWidget(
         const ProviderScope(

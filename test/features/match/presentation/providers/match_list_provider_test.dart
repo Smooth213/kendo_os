@@ -65,9 +65,9 @@ void main() {
     );
   }
 
-  group('MatchListProvider Tests', () {
+  group('[Unit] MatchListProvider テスト', () {
     test(
-      'matchStreamProvider should return matches from local repository',
+      'matchStreamProvider should return matches from local repositoryであること',
       () async {
         final container = createContainer();
 

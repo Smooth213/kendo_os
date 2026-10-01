@@ -10,7 +10,7 @@ import '../helpers/test_app.dart';
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
 void main() {
-  group('🛡️ フェーズ5 — Golden Test 多端末UI崩壊自動検知要塞', () {
+  group('[Golden] フェーズ5 — Golden テスト 多端末UI崩壊自動検知要塞', () {
     final devices = {
       'iPhone_SE': const Size(375, 667),
       'iPad': const Size(768, 1024),
@@ -22,7 +22,7 @@ void main() {
       final deviceName = entry.key;
       final size = entry.value;
 
-      testWidgets('【Goldenシミュレーション】$deviceName 環境における描画境界整合性テスト', (
+      testWidgets('【Goldenシミュレーション】$deviceName 環境における描画境界整合性が正常に機能すること', (
         WidgetTester tester,
       ) async {
         tester.view.physicalSize = size;

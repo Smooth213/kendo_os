@@ -30,10 +30,8 @@ MatchProjection _makeTestProjection({
 }
 
 void main() {
-  group('📸 【Golden 3/5】勝ち上がりトーナメントツリー 描画＆境界整合性テスト', () {
-    testWidgets('1. 8名規模トーナメントツリーの描画整合性（Lightモード）', (
-      WidgetTester tester,
-    ) async {
+  group('[Golden] 【Golden 3/5】勝ち上がりトーナメントツリー 描画＆境界整合性テスト', () {
+    testWidgets('8名規模トーナメントツリーの描画整合性（Lightモード）こと', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -88,9 +86,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. 16名規模トーナメントツリーの描画整合性（Darkモード）', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('16名規模トーナメントツリーの描画整合性（Darkモード）こと', (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1400, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());

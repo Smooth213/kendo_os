@@ -20,7 +20,7 @@ void main() {
     await setupTestFirebase();
   });
 
-  group('🛡️ QRコード遷移ビュアー Firestore権限エラー耐性テスト', () {
+  group('[Widget] QRコード遷移ビュアー Firestore権限エラー耐性テスト', () {
     const testTournamentId = 'test_tournament_qr_123';
     const testBunaiksenId = 'bunaiksen_20260919';
 

@@ -29,8 +29,8 @@ void main() {
   // ──────────────────────────────────────────────
   // 延長突入判定テスト
   // ──────────────────────────────────────────────
-  group('KendoOvertimeEvaluator.shouldEnterEncho', () {
-    test('時間切れ・同点・延長許可あり → 延長に入る', () {
+  group('[Unit] KendoOvertimeEvaluator.shouldEnterEncho', () {
+    test('時間切れ・同点・延長許可あり → 延長に入ること', () {
       final result = KendoOvertimeEvaluator.shouldEnterEncho(
         ctx: drawTimeUpCtx,
         allowsEncho: true,
@@ -39,7 +39,7 @@ void main() {
       expect(result, isTrue);
     });
 
-    test('延長許可なし → 延長に入らない', () {
+    test('延長許可なし → 延長に入らないこと', () {
       final result = KendoOvertimeEvaluator.shouldEnterEncho(
         ctx: drawTimeUpCtx,
         allowsEncho: false,
@@ -48,7 +48,7 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('時間切れでない → 延長に入らない', () {
+    test('時間切れでない → 延長に入らないこと', () {
       final notTimeUpCtx = MatchContext(
         redIppon: 1,
         whiteIppon: 1,
@@ -66,7 +66,7 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('勝敗がついている場合 → 延長に入らない', () {
+    test('勝敗がついている場合 → 延長に入らないこと', () {
       final redWinCtx = MatchContext(
         redIppon: 2,
         whiteIppon: 0,
@@ -84,7 +84,7 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('判定イベントがある場合 → 延長に入らない（判定で決着済み）', () {
+    test('【判定で決着済み】判定イベントがある場合 → 延長に入らないこと', () {
       final events = [_hanteiEvent(Side.red)];
       final result = KendoOvertimeEvaluator.shouldEnterEncho(
         ctx: drawTimeUpCtx,
@@ -95,7 +95,7 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('キャンセル済みの判定イベントは無視される → 延長に入れる', () {
+    test('キャンセル済みの判定イベントは無視される → 延長に入れること', () {
       final events = [_hanteiEvent(Side.red, isCanceled: true)];
       final result = KendoOvertimeEvaluator.shouldEnterEncho(
         ctx: drawTimeUpCtx,
@@ -162,7 +162,7 @@ void main() {
       expect(result.targetIppon, 2); // 変化なし
     });
 
-    test('補正後も元のイプポン数は保持される', () {
+    test('補正後も元のイプポン数は保持されること', () {
       final ctx = MatchContext(
         redIppon: 1,
         whiteIppon: 1,
@@ -204,7 +204,7 @@ void main() {
       );
     }
 
-    test('全試合終了・赤が多数勝利 → isAllDone=true, isTie=false', () {
+    test('全試合終了・赤が多数勝利 → isAllDone=true, isTie=falseであること', () {
       final matches = [
         makeMatch(id: 'm1', status: 'finished', red: 2, white: 0),
         makeMatch(id: 'm2', status: 'approved', red: 1, white: 1),
@@ -214,7 +214,7 @@ void main() {
       expect(status.isTie, isFalse);
     });
 
-    test('全試合引き分け（勝数・本数とも同数） → isTie=true', () {
+    test('全試合引き分け（勝数・本数とも同数） → isTie=trueであること', () {
       final matches = [
         makeMatch(id: 'm1', status: 'finished', red: 1, white: 1),
         makeMatch(id: 'm2', status: 'finished', red: 0, white: 0),
@@ -224,7 +224,7 @@ void main() {
       expect(status.isTie, isTrue);
     });
 
-    test('勝数も本数も引き分け → isTie=true（代表戦ルールへ進む）', () {
+    test('勝数も本数も引き分け → isTie=true（代表戦ルールへ進む）こと', () {
       final matches = [
         makeMatch(id: 'm1', status: 'finished', red: 1, white: 0),
         makeMatch(id: 'm2', status: 'finished', red: 0, white: 1),
@@ -234,7 +234,7 @@ void main() {
       expect(status.isTie, isTrue); // 勝数1-1・本数1-1 → 完全引き分け
     });
 
-    test('試合が進行中 → isAllDone=false', () {
+    test('試合が進行中 → isAllDone=falseであること', () {
       final matches = [
         makeMatch(id: 'm1', status: 'in_progress', red: 0, white: 0),
       ];
@@ -270,7 +270,7 @@ void main() {
       );
     }
 
-    test('試合が進行中 → isAllDone=false', () {
+    test('試合が進行中 → isAllDone=falseであること', () {
       final match = makeKachinukiMatch(
         status: 'in_progress',
         red: 0,
@@ -286,7 +286,7 @@ void main() {
       expect(status.isAllDone, isFalse);
     });
 
-    test('赤が勝利し白の選手が全員消化 → isAllDone=true', () {
+    test('赤が勝利し白の選手が全員消化 → isAllDone=trueであること', () {
       final match = makeKachinukiMatch(
         status: 'finished',
         red: 3,
@@ -302,7 +302,7 @@ void main() {
       expect(status.isAllDone, isTrue);
     });
 
-    test('白が勝利し赤の選手が全員消化 → isAllDone=true', () {
+    test('白が勝利し赤の選手が全員消化 → isAllDone=trueであること', () {
       final match = makeKachinukiMatch(
         status: 'finished',
         red: 1,
@@ -318,7 +318,7 @@ void main() {
       expect(status.isAllDone, isTrue);
     });
 
-    test('大将戦まで進んで引き分け → isAllDone=true, isTie=true', () {
+    test('大将戦まで進んで引き分け → isAllDone=true, isTie=trueであること', () {
       final match = makeKachinukiMatch(
         status: 'finished',
         red: 2,

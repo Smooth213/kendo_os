@@ -4,8 +4,10 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bul
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ BulkRuleDetailSettingCards Widget Tests', () {
-    testWidgets('Renders cards and triggers change callbacks', (tester) async {
+  group('[Widget] BulkRuleDetailSettingCards ウィジェットテスト', () {
+    testWidgets('Renders cards and triggers change callbacksであること', (
+      tester,
+    ) async {
       double matchTime = 3.0;
       bool isIpponShobu = false;
       bool hasExtension = false;

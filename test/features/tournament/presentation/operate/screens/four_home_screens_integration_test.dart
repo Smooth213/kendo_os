@@ -44,7 +44,7 @@ void main() {
     );
   });
 
-  group('🛡️ Four Home Screens Integration Tests', () {
+  group('[Widget] Four Home Screens 統合テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockPlayerRepository mockPlayerRepo;
     late MockSyncEngine mockSyncEngine;
@@ -103,7 +103,7 @@ void main() {
       ).thenAnswer((_) => Future.value([]));
     });
 
-    testWidgets('1. 運営用 通常大会ホーム (HomeScreen) - ネイティブ＆Webシミュレーション表示検証', (
+    testWidgets('運営用 通常大会ホーム (HomeScreen) - ネイティブ＆Webシミュレーション表示が正しく検証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1800);
@@ -172,7 +172,7 @@ void main() {
       expect(find.text('相手選手'), findsWidgets);
     });
 
-    testWidgets('2. 運営用 特設部内戦ホーム (BunaiksenHomeScreen) - 自動流し込み＆描画検証', (
+    testWidgets('運営用 特設部内戦ホーム (BunaiksenHomeScreen) - 自動流し込み＆描画が正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -239,7 +239,7 @@ void main() {
       expect(find.text('部内二郎'), findsOneWidget);
     });
 
-    testWidgets('3. 観客用 通常大会ホーム (ViewerHomeScreen) - 簡略化UI＆文字切れ防止検証', (
+    testWidgets('観客用 通常大会ホーム (ViewerHomeScreen) - 簡略化UI＆文字切れ防止が正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -296,7 +296,7 @@ void main() {
     });
 
     testWidgets(
-      '4. 観客用 特設部内戦ホーム (ViewerBunaiksenHomeScreen) - カード完全表示＆バインドKey検証',
+      '観客用 特設部内戦ホーム (ViewerBunaiksenHomeScreen) - カード完全表示＆バインドKeyが正しく検証されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -376,7 +376,7 @@ void main() {
       },
     );
 
-    testWidgets('5. セーフガード検証: DojoId/TournamentIdが未定の状態でもクラッシュしないこと', (
+    testWidgets('セーフガード検証: DojoId/TournamentIdが未定の状態でもクラッシュしないこと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -414,7 +414,7 @@ void main() {
       expect(find.byType(HomeScreen), findsOneWidget);
     });
 
-    testWidgets('6. ネイティブ環境におけるFirestoreからIsarへの流し込み（自動署名ヒーリング）検証', (
+    testWidgets('ネイティブ環境におけるFirestoreからIsarへの流し込み（自動署名ヒーリング）が正しく検証されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -505,7 +505,7 @@ void main() {
     });
 
     testWidgets(
-      '7. 本部ホーム画面の「観客・保護者側の画面を確認 (Viewer)」ボタンから観客用ホーム画面へ遷移し、完全に観客用ビュアーと一致した状態（閲覧専用）で表示されること',
+      '本部ホーム画面の「観客・保護者側の画面を確認 (Viewer)」ボタンから観客用ホーム画面へ遷移し、完全に観客用ビュアーと一致した状態（閲覧専用）で表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1800);
         tester.view.devicePixelRatio = 1.0;

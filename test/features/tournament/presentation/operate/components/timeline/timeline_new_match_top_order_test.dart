@@ -9,8 +9,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 
 void main() {
-  group('🥋 【大会ホーム一覧】後から追加した新しい対戦・おかわりの対戦が最上位に来る保証テスト', () {
-    testWidgets('1. 団体戦で後から追加した対戦カード（orderが大きい試合）が一番上に表示されること', (tester) async {
+  group('[Widget] 【大会ホーム一覧】後から追加した新しい対戦・おかわりの対戦が最上位に来る保証テスト', () {
+    testWidgets('団体戦で後から追加した対戦カード（orderが大きい試合）が一番上に表示されること', (tester) async {
       // 1試合目（最初に追加: order 1000）
       const initialMatches = [
         MatchModel(
@@ -106,7 +106,7 @@ void main() {
       expect(posExtra.dy, lessThan(posInitial.dy)); // y座標が小さい＝より上にある
     });
 
-    testWidgets('2. 個人戦で後から追加した試合（おかわり試合）が一番上に表示されること', (tester) async {
+    testWidgets('個人戦で後から追加した試合（おかわり試合）が一番上に表示されること', (tester) async {
       // 皿田 脩人の1試合目（最初: order 100）
       const indiv1 = MatchModel(
         id: 'indiv_1',

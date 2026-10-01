@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  group('🛡️ 【第6条 ガバナンス監査】大会情報編集UI ドックボトムシート統合 ＆ 旧ダイアログ排除規約', () {
+  group('[Governance] 【第6条 ガバナンス監査】大会情報編集UI ドックボトムシート統合 ＆ 旧ダイアログ排除規約', () {
     final libDir = Directory('lib');
 
     test(

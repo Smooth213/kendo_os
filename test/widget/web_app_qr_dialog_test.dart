@@ -22,7 +22,7 @@ class _FakeSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('Webアプリ版QRコード ダイアログ＆設定画面連携テスト', () {
+  group('[Widget] Webアプリ版QRコード ダイアログ＆設定画面連携テスト', () {
     testWidgets('WebAppQrDialog 単体表示テスト - URLとQRコードが表示されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

@@ -26,7 +26,7 @@ void main() {
     } catch (_) {}
   });
 
-  group('EmergencyCrashPreserver Tests', () {
+  group('[Unit] EmergencyCrashPreserver テスト', () {
     test('アクティブ試合が登録されている場合、クラッシュ退避と復旧が正常に行われること', () async {
       final match = MatchModel(
         id: 'crash-test-match-999',

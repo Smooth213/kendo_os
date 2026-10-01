@@ -5,8 +5,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/buna
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 
 void main() {
-  group('⚔️ 【Composite E2E】部内戦（勝ち残り戦）動的途中エントリー ＆ 負傷棄権 ＆ 連勝記録即時更新', () {
-    test('1. 待機キュー運用・連勝進行・途中負傷棄権・動的エントリー追加・連勝リセットのフルサイクル検証', () async {
+  group('[E2E] 【Composite E2E】部内戦（勝ち残り戦）動的途中エントリー ＆ 負傷棄権 ＆ 連勝記録即時更新', () {
+    test('待機キュー運用・連勝進行・途中負傷棄権・動的エントリー追加・連勝リセットのフルサイクルが正しく検証されること', () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

@@ -7,8 +7,8 @@ import 'package:kendo_os/features/tournament/presentation/components/kachinuki/k
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ Kachinuki Bracket Painter Tests', () {
-    test('1. PlayerSpan stores fields correctly', () {
+  group('[Widget] Kachinuki Bracket Painter テスト', () {
+    test('PlayerSpan stores fields correctlyであること', () {
       final span = PlayerSpan('A道場 : 佐藤', '佐藤', '佐', 0, 1);
       expect(span.rawName, 'A道場 : 佐藤');
       expect(span.lastName, '佐藤');
@@ -17,7 +17,7 @@ void main() {
       expect(span.endIndex, 1);
     });
 
-    test('2. KachinukiBracketPainter shouldRepaint works', () {
+    test('KachinukiBracketPainter shouldRepaint worksであること', () {
       final p1 = KachinukiBracketPainter(matches: [], isDark: false);
       final p2 = KachinukiBracketPainter(matches: [], isDark: true);
       expect(p2.shouldRepaint(p1), isTrue);
@@ -27,7 +27,7 @@ void main() {
     });
 
     test(
-      '3. KachinukiDrawingHelper.drawTeamNameHorizontal executes without error',
+      'KachinukiDrawingHelper.drawTeamNameHorizontal executes without errorであること',
       () {
         final recorder = ui.PictureRecorder();
         final canvas = Canvas(recorder);

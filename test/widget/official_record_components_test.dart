@@ -6,8 +6,8 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_score_table_builder.dart';
 
 void main() {
-  group('OfficialRecord Components Tests', () {
-    testWidgets('OfficialRecordScoreTableBuilder renders score table', (
+  group('[Widget] OfficialRecord Components テスト', () {
+    testWidgets('OfficialRecordScoreTableBuilder renders score tableであること', (
       tester,
     ) async {
       const match = MatchModel(
@@ -40,7 +40,7 @@ void main() {
       expect(find.textContaining('先鋒チーム vs 相手チーム'), findsOneWidget);
     });
 
-    testWidgets('OfficialRecordLeagueSection renders league title', (
+    testWidgets('OfficialRecordLeagueSection renders league titleであること', (
       tester,
     ) async {
       const match = MatchModel(

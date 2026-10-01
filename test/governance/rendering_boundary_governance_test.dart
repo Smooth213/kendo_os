@@ -7,9 +7,9 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🎨 【第10条 ガバナンス監査】レンダリング負荷隔離 ＆ RepaintBoundary最適化規約', () {
+  group('[Governance] 【第10条 ガバナンス監査】レンダリング負荷隔離 ＆ RepaintBoundary最適化規約', () {
     test(
-      'Rule 1: [打突ボタン描画隔離＆先行触覚] action_buttons.dart における打突ボタンの RepaintBoundary 配置＆先行触覚ゼロ遅延規約',
+      'Rule 1: [打突ボタン描画隔離＆先行触覚] action_buttons.dart における打突ボタンの RepaintBoundary 配置＆先行触覚ゼロ遅延規約こと',
       () {
         final file = File('lib/shared/widgets/action_buttons.dart');
         expect(file.existsSync(), isTrue);
@@ -43,7 +43,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [スコア操作パネル描画隔離] match_score_action_section.dart および match_screen.dart の主要セクション RepaintBoundary 隔離規約',
+      'Rule 2: [スコア操作パネル描画隔離] match_score_action_section.dart および match_screen.dart の主要セクション RepaintBoundary 隔離規約こと',
       () {
         final actionFile = File(
           'lib/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart',
@@ -174,7 +174,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [カード・ドック描画隔離] トーナメント表・巨大テーブル・ドックシートにおける RepaintBoundary 隔離規約',
+      'Rule 6: [カード・ドック描画隔離] トーナメント表・巨大テーブル・ドックシートにおける RepaintBoundary 隔離規約こと',
       () {
         final tournamentListFile = File(
           'lib/features/tournament/presentation/operate/screens/tournament_list_screen.dart',

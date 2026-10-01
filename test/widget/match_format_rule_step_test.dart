@@ -26,7 +26,7 @@ void main() {
     infoColor: Colors.blue,
   );
 
-  testWidgets('MatchFormatRuleStep renders correctly', (tester) async {
+  testWidgets('MatchFormatRuleStep 正しく描画されること', (tester) async {
     final courtCtrl = TextEditingController(text: '第1コート');
     final noteCtrl = TextEditingController();
 

@@ -9,9 +9,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/team
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🔀 【第21条 ガバナンス監査】現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約', () {
+  group('[Governance] 【第21条 ガバナンス監査】現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約', () {
     test(
-      'Rule 1: [コート変更データ不変性] MatchModel のコート振替時におけるタイマー・スコア・イベント履歴の完全保持規約',
+      'Rule 1: [コート変更データ不変性] MatchModel のコート振替時におけるタイマー・スコア・イベント履歴の完全保持規約こと',
       () {
         final now = DateTime(2026, 9, 27, 10, 0, 0);
         final initialEvents = [
@@ -61,7 +61,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [コートパース＆優先度ソート整合性] team_progress_helper.dart & team_progress_sort_helper.dart 規約',
+      'Rule 2: [コートパース＆優先度ソート整合性] team_progress_helper.dart & team_progress_sort_helper.dart 規約こと',
       () {
         // ヘルパーによる文字列抽出検証
         final court1 = TeamProgressHelper.extractCourtAndRoundDisplay(
@@ -116,7 +116,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [ライトスルー永続化規約] match_persistence_helper.dart & local_match_repository.dart によるコート変更の即時反映規約',
+      'Rule 3: [ライトスルー永続化規約] match_persistence_helper.dart & local_match_repository.dart によるコート変更の即時反映規約こと',
       () {
         final persistenceHelperFile = File(
           'lib/features/match/application/services/match_persistence_helper.dart',
@@ -144,18 +144,21 @@ void main() {
       },
     );
 
-    test('Rule 4: [試合編集タブ・UIプリセット規約] match_edit_court_and_group_tab.dart 規約', () {
-      final tabFile = File(
-        'lib/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart',
-      );
-      expect(tabFile.existsSync(), isTrue);
-      final tabContent = tabFile.readAsStringSync();
+    test(
+      'Rule 4: [試合編集タブ・UIプリセット規約] match_edit_court_and_group_tab.dart 規約こと',
+      () {
+        final tabFile = File(
+          'lib/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart',
+        );
+        expect(tabFile.existsSync(), isTrue);
+        final tabContent = tabFile.readAsStringSync();
 
-      expect(tabContent.contains('courtPresets'), isTrue);
-      expect(tabContent.contains('第1試合場'), isTrue);
-      expect(tabContent.contains('第2試合場'), isTrue);
-      expect(tabContent.contains('第3試合場'), isTrue);
-      expect(tabContent.contains('onClearCourt'), isTrue);
-    });
+        expect(tabContent.contains('courtPresets'), isTrue);
+        expect(tabContent.contains('第1試合場'), isTrue);
+        expect(tabContent.contains('第2試合場'), isTrue);
+        expect(tabContent.contains('第3試合場'), isTrue);
+        expect(tabContent.contains('onClearCourt'), isTrue);
+      },
+    );
   });
 }

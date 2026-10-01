@@ -29,8 +29,8 @@ class XssSanitizer {
 }
 
 void main() {
-  group('🌐 【Phase 4-6/11】XSS・HTML/スクリプトインジェクション・BiDi文字無害化テスト', () {
-    test('1. <script>alert("XSS")</script> が安全にエスケープされること', () {
+  group('[Unit] 【Phase 4-6/11】XSS・HTML/スクリプトインジェクション・BiDi文字無害化テスト', () {
+    test('<script>alert("XSS")</script> が安全にエスケープされること', () {
       const maliciousName = '<script>alert("XSS")</script>';
       final safeName = XssSanitizer.sanitize(maliciousName);
 
@@ -39,14 +39,14 @@ void main() {
       expect(safeName.contains('&quot;XSS&quot;'), isTrue);
     });
 
-    test('2. 偽装リンク javascript:evil() が無害化されること', () {
+    test('偽装リンク javascript:evil() が無害化されること', () {
       const evilPayload = 'javascript:document.cookie';
       final safePayload = XssSanitizer.sanitize(evilPayload);
 
       expect(safePayload.startsWith('blocked:'), isTrue);
     });
 
-    test('3. テキスト反転Unicodeスプーフィング文字が除去されること', () {
+    test('テキスト反転Unicodeスプーフィング文字が除去されること', () {
       // U+202E: Right-to-Left Override
       const spoofedName = '選手A\u202E反転攻撃';
       final cleanedName = XssSanitizer.sanitize(spoofedName);

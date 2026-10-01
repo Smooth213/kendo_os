@@ -76,7 +76,7 @@ void main() {
     );
   });
 
-  group('SettingsNotifier 監査ログ発行テスト', () {
+  group('[Unit] SettingsNotifier 監査ログ発行テスト', () {
     test('セキュリティレベルを変更した際にステートが正しく更新されること', () async {
       final notifier = container.read(settingsProvider.notifier);
 

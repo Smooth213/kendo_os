@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('🛡️ PHASE 18 — フルE2E要塞：大会運営シナリオ', () {
-    test('1. 【大会作成E2E】大会作成から保存・復元までの整合性検証', () async {
+  group('[E2E] — フルE2E要塞：大会運営シナリオ', () {
+    test('【大会作成E2E】大会作成から保存・復元までの整合性が正しく検証されること', () async {
       final tournament = TournamentModel(
         id: 'e2e_t_001',
         name: '春季大会',
@@ -16,7 +16,7 @@ void main() {
       expect(tournament.id, equals('e2e_t_001'));
     });
 
-    test('2. 【抽選ロジックE2E】選手登録➔抽選実行➔対戦表生成までが数学的に整合すること', () async {
+    test('【抽選ロジックE2E】選手登録抽選実行対戦表生成までが数学的に整合すること', () async {
       final matches = <MatchModel>[
         MatchModel(
           id: 'm1',
@@ -36,7 +36,7 @@ void main() {
       expect(matches.length, equals(2));
     });
 
-    test('3. 【試合進行E2E】開始➔得点(一本)➔終了➔承認のステート遷移が完全であること', () async {
+    test('【試合進行E2E】開始得点(一本)終了承認のステート遷移が完全であること', () async {
       final match = MatchModel(
         id: 'm1',
         matchType: '個人戦',

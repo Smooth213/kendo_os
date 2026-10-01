@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_team_life_card.dart';
 
 void main() {
-  group('🛡️ KachinukiTeamLifeCard Widget Tests', () {
-    testWidgets('Renders team names, title, and shields correctly', (
+  group('[Widget] KachinukiTeamLifeCard ウィジェットテスト', () {
+    testWidgets('Renders team names, title, and shields correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -32,7 +32,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders in dark mode with styled shields without assertion errors',
+      'Renders in dark mode with styled shields without assertion errorsであること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(

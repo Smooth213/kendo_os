@@ -14,7 +14,7 @@ void main() {
     registerFallbackValue(DateTime.now());
   });
 
-  group('TournamentEditBottomSheet 網羅テスト', () {
+  group('[Unit] TournamentEditBottomSheet 網羅テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late TournamentModel sampleTournament;
 
@@ -39,7 +39,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 初期値（大会名、会場、メモ、日付）が正常に描画されること', (tester) async {
+    testWidgets('初期値（大会名、会場、メモ、日付）が正常に描画されること', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
           child: TournamentEditBottomSheet(
@@ -62,7 +62,7 @@ void main() {
       expect(find.text('大会情報を保存する'), findsOneWidget);
     });
 
-    testWidgets('2. 大会名が空の場合はバリデーションエラーが表示され保存されないこと', (tester) async {
+    testWidgets('大会名が空の場合はバリデーションエラーが表示され保存されないこと', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
           child: TournamentEditBottomSheet(tournament: sampleTournament),
@@ -93,7 +93,7 @@ void main() {
       );
     });
 
-    testWidgets('3. 大会名・会場・メモを編集してヘッダー「保存」ボタンで正常に更新されること', (tester) async {
+    testWidgets('大会名・会場・メモを編集してヘッダー「保存」ボタンで正常に更新されること', (tester) async {
       when(
         () => mockTournamentRepo.updateTournamentDetails(
           any(),
@@ -158,7 +158,7 @@ void main() {
       expect(find.text('第50回 全日本選手権'), findsNothing);
     });
 
-    testWidgets('4. 下部固定アクションボタン「大会情報を保存する」でも正常に保存されること', (tester) async {
+    testWidgets('下部固定アクションボタン「大会情報を保存する」でも正常に保存されること', (tester) async {
       when(
         () => mockTournamentRepo.updateTournamentDetails(
           any(),
@@ -212,7 +212,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('5. 「キャンセル」ボタンを押した際、保存されずにボトムシートが閉じること', (tester) async {
+    testWidgets('「キャンセル」ボタンを押した際、保存されずにボトムシートが閉じること', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
           child: Builder(
@@ -254,7 +254,7 @@ void main() {
       expect(find.text('大会情報の編集'), findsNothing);
     });
 
-    testWidgets('6. 開催年月日タップで日付選択ダイアログが起動すること', (tester) async {
+    testWidgets('開催年月日タップで日付選択ダイアログが起動すること', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
           child: TournamentEditBottomSheet(tournament: sampleTournament),

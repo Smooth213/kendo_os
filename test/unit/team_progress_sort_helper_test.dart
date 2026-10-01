@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_sort_helper.dart';
 
 void main() {
-  group('🥋 TeamProgressSortHelper Unit Tests', () {
+  group('[Unit] TeamProgressSortHelper 単体テスト', () {
     TeamProgressStatus makeStatus({
       required String teamName,
       required String courtName,
@@ -37,7 +37,7 @@ void main() {
       );
     }
 
-    test('extractCourtNumber correctly resolves court indices', () {
+    test('extractCourtNumber correctly resolves court indicesであること', () {
       expect(
         TeamProgressSortHelper.extractCourtNumber(
           makeStatus(teamName: 'A', courtName: '第1コート (1回戦・第1試合)'),
@@ -70,7 +70,7 @@ void main() {
       );
     });
 
-    test('extractMatchOrder correctly resolves match order indices', () {
+    test('extractMatchOrder correctly resolves match order indicesであること', () {
       expect(
         TeamProgressSortHelper.extractMatchOrder(
           makeStatus(teamName: 'A', courtName: '第1コート (1回戦・第3試合)'),
@@ -105,7 +105,7 @@ void main() {
     });
 
     test(
-      'sortTeams by court orders teams by court number then match order',
+      'sortTeams by court orders teams by court number then match orderであること',
       () {
         final teamA = makeStatus(teamName: '道場A', courtName: '第2コート (第1試合)');
         final teamB = makeStatus(teamName: '道場B', courtName: '第1コート (第2試合)');
@@ -127,7 +127,7 @@ void main() {
       },
     );
 
-    test('sortTeams by matchOrder orders teams by match sequence', () {
+    test('sortTeams by matchOrder orders teams by match sequenceであること', () {
       final teamA = makeStatus(teamName: '道場A', courtName: '第1コート (第3試合)');
       final teamB = makeStatus(teamName: '道場B', courtName: '第2コート (第1試合)');
       final teamC = makeStatus(teamName: '道場C', courtName: '第1コート (第1試合)');
@@ -148,7 +148,7 @@ void main() {
     });
 
     test(
-      'sortTeams by status orders live matches first, then waiting, then finished',
+      'sortTeams by status orders live matches first, then waiting, then finishedであること',
       () {
         final teamLive = makeStatus(
           teamName: 'LIVE道場',

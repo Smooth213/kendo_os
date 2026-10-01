@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/domain/match_calculator/match_calculation_models.dart';
 
 void main() {
-  group('🏛️ 試合数計算機 ガバナンス＆設計憲法テスト', () {
+  group('[Governance] 試合数計算機 ガバナンス＆設計憲法テスト', () {
     test('【ガバナンス第2条】calculator配下の全ファイルが500行未満であること', () {
       final calculatorDir = Directory(
         'lib/features/tournament/presentation/components/bunaiksen/calculator',

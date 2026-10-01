@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('1. 部門別ルール設定 (CategoryRuleSet) のテスト', () {
+  group('[Unit] 部門別ルール設定 (CategoryRuleSet) のテスト', () {
     test('【マルチシーン】本戦ルールなし (useHonsenRule = false) の設定が正しく保持されること', () {
       const ruleSet = CategoryRuleSet(
         isMultiScene: true,
@@ -48,7 +48,7 @@ void main() {
     });
   });
 
-  group('2. 対戦成績サマリー (Expedition Summary) の集計ロジック検証', () {
+  group('対戦成績サマリー (Expedition Summary) の集計ロジック検証', () {
     // 判定用ヘルパー (official_record_screen.dart の isMatchPlayed と同等)
     bool isMatchPlayed(MatchModel m) {
       if (m.status == 'finished') return true;

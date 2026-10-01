@@ -51,7 +51,7 @@ void main() {
         });
   });
 
-  group('🛡️ 【ガバナンス監査 18/18】ドックボトムシート サブシート最前面表示 ＆ ネスト遷移 永久保証テスト', () {
+  group('[Governance] 【ガバナンス監査 18/18】ドックボトムシート サブシート最前面表示 ＆ ネスト遷移 永久保証テスト', () {
     late SharedPreferences prefs;
 
     setUp(() async {
@@ -69,7 +69,7 @@ void main() {
     // 1. 静的コード規約ガード（リグレッション防止）
     // =========================================================================
     test(
-      '1. [静的規約] TeamStatusCard で FloatingDockSheetManager.close() が呼ばれていないこと',
+      '[静的規約] TeamStatusCard で FloatingDockSheetManager.close() が呼ばれていないこと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/components/court_status/team_status_card.dart',
@@ -89,7 +89,7 @@ void main() {
     );
 
     test(
-      '2. [静的規約] app_bottom_sheet.dart / app_dialog.dart に DockSheetScope 判定が存在すること',
+      '[静的規約] app_bottom_sheet.dart / app_dialog.dart に DockSheetScope 判定が存在すること',
       () {
         final sheetFile = File('lib/shared/widgets/app_bottom_sheet.dart');
         final dialogFile = File('lib/shared/widgets/app_dialog.dart');
@@ -113,7 +113,7 @@ void main() {
       },
     );
 
-    test('3. [静的規約] settings_screen.dart にボトムシート用 Navigator が存在すること', () {
+    test('[静的規約] settings_screen.dart にボトムシート用 Navigator が存在すること', () {
       final file = File(
         'lib/features/tournament/presentation/operate/settings_screen.dart',
       );
@@ -130,9 +130,7 @@ void main() {
     // =========================================================================
     // 2. 動的ウィジェット検証：ドックシート内からの showAppBottomSheet / showAppDialog
     // =========================================================================
-    testWidgets('4. [動的検証] DockSheetScope 内のモーダル呼び出しが最前面で動作すること', (
-      tester,
-    ) async {
+    testWidgets('[動的検証] DockSheetScope 内のモーダル呼び出しが最前面で動作すること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -203,7 +201,7 @@ void main() {
     // =========================================================================
     // 3. システム設定ドックシート：全サブモーダル・ダイアログ最前面表示＆復帰
     // =========================================================================
-    testWidgets('5. [システム設定] BAND設定・サーマル・Google解除・ログアウトが最前面で動作すること', (
+    testWidgets('[システム設定] BAND設定・サーマル・Google解除・ログアウトが最前面で動作すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 2400);
@@ -324,7 +322,7 @@ void main() {
     // =========================================================================
     // 4. チーム試合状況ドックシート：ネスト遷移＆アンマウント禁止
     // =========================================================================
-    testWidgets('6. [チーム試合状況] BANDサブシート最前面表示 ＆ カードタップ時ネスト遷移（アンマウント防止）', (
+    testWidgets('[チーム試合状況] BANDサブシート最前面表示 ＆ カードタップ時ネスト遷移（アンマウント防止）こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 2400);

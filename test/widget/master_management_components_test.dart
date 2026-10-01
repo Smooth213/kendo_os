@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('MasterManagement Components Tests', () {
+  group('[Widget] MasterManagement Components テスト', () {
     final player = PlayerModel(
       id: 'p1',
       lastName: '山田',
@@ -17,7 +17,7 @@ void main() {
       organization: '練馬道場',
     );
 
-    testWidgets('MasterOrganizationHeaderBar renders correctly in light mode', (
+    testWidgets('MasterOrganizationHeaderBar 正しく描画されること in light modeであること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -46,7 +46,7 @@ void main() {
       expect(find.text('カテゴリ別'), findsOneWidget);
     });
 
-    testWidgets('MasterOrganizationHeaderBar renders correctly in dark mode', (
+    testWidgets('MasterOrganizationHeaderBar 正しく描画されること in dark modeであること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');

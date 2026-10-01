@@ -3,7 +3,7 @@ import 'package:kendo_os/features/tournament/domain/share_import/tournament_team
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
 
 void main() {
-  group('TournamentTextParser Tests', () {
+  group('[Unit] TournamentTextParser テスト', () {
     const kuroseSampleText = '''
 黒瀬杯争奪剣道大会
 西日本選抜　第38回　黒瀬杯争奪剣道大会

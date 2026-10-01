@@ -12,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('ViewerGroupMatchCard renders group title and match list', (
+  testWidgets('ViewerGroupMatchCard renders group title and match listであること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

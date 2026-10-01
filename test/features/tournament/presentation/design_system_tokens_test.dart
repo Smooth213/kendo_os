@@ -7,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  group('🛡️ Design System & Color Tokens Verification Tests', () {
-    test('1. AppThemeColors - モード別カラーパレット検証', () {
+  group('[Widget] Design System & Color Tokens 検証 テスト', () {
+    test('AppThemeColors - モード別カラーパレットが正しく検証されること', () {
       // Light Mode
       final normalLight = AppThemeColors.ofMode(isDark: false, mode: 'normal');
       expect(normalLight.primaryAccent, Colors.indigo.shade700);
@@ -56,7 +56,9 @@ void main() {
       expect(bunaiksenViewerDark.primaryAccent, Colors.purple.shade300);
     });
 
-    testWidgets('2. SettingsScreen カード角丸（16dp）検証', (WidgetTester tester) async {
+    testWidgets('SettingsScreen カード角丸（16dp）が正しく検証されること', (
+      WidgetTester tester,
+    ) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

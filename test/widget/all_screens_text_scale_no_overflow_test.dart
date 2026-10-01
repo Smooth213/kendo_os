@@ -61,7 +61,7 @@ void main() {
     );
   });
 
-  group('🥋 KendoOS 全画面・全サイズ文字切れ＆省略（...）完全防止テスト', () {
+  group('[Widget] KendoOS 全画面・全サイズ文字切れ＆省略（...）完全防止テスト', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockPlayerRepository mockPlayerRepo;
     late MockSyncEngine mockSyncEngine;
@@ -234,7 +234,7 @@ void main() {
     // =========================================================================
     // 1. 全主要画面（Pages）の文字拡大テスト
     // =========================================================================
-    testWidgets('1-1. スタート画面 (StartScreen): 全文字サイズで文字切れ・例外ゼロ', (tester) async {
+    testWidgets('スタート画面 (StartScreen): 全文字サイズで文字切れ・例外ゼロこと', (tester) async {
       await testWidgetWithTextScalers(
         tester: tester,
         widget: const StartScreen(),
@@ -242,7 +242,7 @@ void main() {
       );
     });
 
-    testWidgets('1-2. 権限選択画面 (RoleSelectScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('権限選択画面 (RoleSelectScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -252,9 +252,7 @@ void main() {
       );
     });
 
-    testWidgets('1-3. PIN認証画面 (PinAuthScreen): 全文字サイズで文字切れ・例外ゼロ', (
-      tester,
-    ) async {
+    testWidgets('PIN認証画面 (PinAuthScreen): 全文字サイズで文字切れ・例外ゼロこと', (tester) async {
       await testWidgetWithTextScalers(
         tester: tester,
         widget: const PinAuthScreen(role: UserRole.operator),
@@ -262,7 +260,7 @@ void main() {
       );
     });
 
-    testWidgets('1-4. 設定画面 (SettingsScreen): 全文字サイズで文字切れ・例外ゼロ', (tester) async {
+    testWidgets('設定画面 (SettingsScreen): 全文字サイズで文字切れ・例外ゼロこと', (tester) async {
       await testWidgetWithTextScalers(
         tester: tester,
         widget: const SettingsScreen(),
@@ -270,7 +268,7 @@ void main() {
       );
     });
 
-    testWidgets('1-5. 大会一覧画面 (TournamentListScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('大会一覧画面 (TournamentListScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -280,7 +278,7 @@ void main() {
       );
     });
 
-    testWidgets('1-6. 大会ホーム画面 (HomeScreen): 全文字サイズで文字切れ・例外ゼロ', (tester) async {
+    testWidgets('大会ホーム画面 (HomeScreen): 全文字サイズで文字切れ・例外ゼロこと', (tester) async {
       await testWidgetWithTextScalers(
         tester: tester,
         widget: const HomeScreen(tournamentId: 'test_tourney_id'),
@@ -288,7 +286,7 @@ void main() {
       );
     });
 
-    testWidgets('1-7. 部内戦ホーム画面 (BunaiksenHomeScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('部内戦ホーム画面 (BunaiksenHomeScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -298,7 +296,7 @@ void main() {
       );
     });
 
-    testWidgets('1-8. 観客ホーム画面 (ViewerHomeScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('観客ホーム画面 (ViewerHomeScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -308,20 +306,19 @@ void main() {
       );
     });
 
-    testWidgets(
-      '1-9. 観客用部内戦ホーム (ViewerBunaiksenHomeScreen): 全文字サイズで文字切れ・例外ゼロ',
-      (tester) async {
-        await testWidgetWithTextScalers(
-          tester: tester,
-          widget: const ViewerBunaiksenHomeScreen(
-            tournamentId: 'test_tourney_id',
-          ),
-          screenName: 'ViewerBunaiksenHomeScreen',
-        );
-      },
-    );
+    testWidgets('観客用部内戦ホーム (ViewerBunaiksenHomeScreen): 全文字サイズで文字切れ・例外ゼロこと', (
+      tester,
+    ) async {
+      await testWidgetWithTextScalers(
+        tester: tester,
+        widget: const ViewerBunaiksenHomeScreen(
+          tournamentId: 'test_tourney_id',
+        ),
+        screenName: 'ViewerBunaiksenHomeScreen',
+      );
+    });
 
-    testWidgets('1-10. 新規試合作成画面 (NewMatchScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('新規試合作成画面 (NewMatchScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -331,7 +328,7 @@ void main() {
       );
     });
 
-    testWidgets('1-11. 試合形式設定画面 (SetupMatchFormatScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('試合形式設定画面 (SetupMatchFormatScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -341,7 +338,7 @@ void main() {
       );
     });
 
-    testWidgets('1-12. 部門ルール画面 (CategoryRulesScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('部門ルール画面 (CategoryRulesScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -351,7 +348,7 @@ void main() {
       );
     });
 
-    testWidgets('1-13. マスター管理画面 (MasterManagementScreen): 全文字サイズで文字切れ・例外ゼロ', (
+    testWidgets('マスター管理画面 (MasterManagementScreen): 全文字サイズで文字切れ・例外ゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -364,32 +361,30 @@ void main() {
     // =========================================================================
     // 2. ボトムシート・ドック・重要コンポーネントの文字拡大テスト
     // =========================================================================
-    testWidgets(
-      '2-1. ドックボトムシートヘッダー (DockBottomSheetHeader): 特大時もボタン押し出し・文字切れゼロ',
-      (tester) async {
-        await testWidgetWithTextScalers(
-          tester: tester,
-          widget: const DockBottomSheetHeader(
-            title: '大会プログラム・部内戦詳細成績カルテ',
-            icon: Icons.menu_book_rounded,
-          ),
-          screenName: 'DockBottomSheetHeader',
-        );
-      },
-    );
+    testWidgets('ドックボトムシートヘッダー (DockBottomSheetHeader): 特大時もボタン押し出し・文字切れゼロこと', (
+      tester,
+    ) async {
+      await testWidgetWithTextScalers(
+        tester: tester,
+        widget: const DockBottomSheetHeader(
+          title: '大会プログラム・部内戦詳細成績カルテ',
+          icon: Icons.menu_book_rounded,
+        ),
+        screenName: 'DockBottomSheetHeader',
+      );
+    });
 
-    testWidgets(
-      '2-2. AppBar標準ヘッダー (AppHeader): 長文タイトルでもFittedBoxで綺麗に収まり文字切れゼロ',
-      (tester) async {
-        await testWidgetWithTextScalers(
-          tester: tester,
-          widget: const AppHeader(title: '2026/09/24 過去の大会 (西日本選抜少年剣道大会アーカイブ)'),
-          screenName: 'AppHeader',
-        );
-      },
-    );
+    testWidgets('AppBar標準ヘッダー (AppHeader): 長文タイトルでもFittedBoxで綺麗に収まり文字切れゼロこと', (
+      tester,
+    ) async {
+      await testWidgetWithTextScalers(
+        tester: tester,
+        widget: const AppHeader(title: '2026/09/24 過去の大会 (西日本選抜少年剣道大会アーカイブ)'),
+        screenName: 'AppHeader',
+      );
+    });
 
-    testWidgets('2-3. 試合チームヘッダー行 (MatchTeamHeaderRow): 左右長文チーム名でも重ならず全文表示', (
+    testWidgets('試合チームヘッダー行 (MatchTeamHeaderRow): 左右長文チーム名でも重ならず全文表示こと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -403,29 +398,28 @@ void main() {
       );
     });
 
-    testWidgets(
-      '2-4. 試合選手・スコア行 (MatchPlayersScoreRow): 左右長文選手名でもスコアと干渉せず全文表示',
-      (tester) async {
-        await testWidgetWithTextScalers(
-          tester: tester,
-          widget: const MatchPlayersScoreRow(
-            redName: '岡山備前: 長谷川健太郎',
-            whiteName: '広島南: 佐々木小次郎',
-            isRedOwn: true,
-            isWhiteOwn: false,
-            redPoints: [],
-            whitePoints: [],
-            isDraw: false,
-            textColor: Colors.black,
-            subTextColor: Colors.grey,
-          ),
-          screenName: 'MatchPlayersScoreRow',
-        );
-      },
-    );
+    testWidgets('試合選手・スコア行 (MatchPlayersScoreRow): 左右長文選手名でもスコアと干渉せず全文表示こと', (
+      tester,
+    ) async {
+      await testWidgetWithTextScalers(
+        tester: tester,
+        widget: const MatchPlayersScoreRow(
+          redName: '岡山備前: 長谷川健太郎',
+          whiteName: '広島南: 佐々木小次郎',
+          isRedOwn: true,
+          isWhiteOwn: false,
+          redPoints: [],
+          whitePoints: [],
+          isDraw: false,
+          textColor: Colors.black,
+          subTextColor: Colors.grey,
+        ),
+        screenName: 'MatchPlayersScoreRow',
+      );
+    });
 
     testWidgets(
-      '2-5. 大会情報ヘッダー (TournamentHeaderCard): 長文会場名でもFittedBoxで綺麗に全文収まる',
+      '大会情報ヘッダー (TournamentHeaderCard): 長文会場名でもFittedBoxで綺麗に全文収まること',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -435,34 +429,33 @@ void main() {
       },
     );
 
-    testWidgets(
-      '2-6. 対戦履歴カードリスト (ExpeditionCardResultList): 長文試合場・進行見出しでも全文表示',
-      (tester) async {
-        await testWidgetWithTextScalers(
-          tester: tester,
-          widget: ExpeditionCardResultList(
-            cardResults: [
-              ExpeditionCardResult(
-                cardTitle: '第7試合場, 4回戦, 第23試合目 (予選トーナメント)',
-                opponentTeamName: '倉敷少年剣道クラブ旭東中学校',
-                myWins: 3,
-                myPoints: 5,
-                oppWins: 1,
-                oppPoints: 2,
-                isWin: true,
-                isDraw: false,
-                resultType: 'team',
-                scene: '1回戦',
-              ),
-            ],
-            isDark: false,
-          ),
-          screenName: 'ExpeditionCardResultList',
-        );
-      },
-    );
+    testWidgets('対戦履歴カードリスト (ExpeditionCardResultList): 長文試合場・進行見出しでも全文表示こと', (
+      tester,
+    ) async {
+      await testWidgetWithTextScalers(
+        tester: tester,
+        widget: ExpeditionCardResultList(
+          cardResults: [
+            ExpeditionCardResult(
+              cardTitle: '第7試合場, 4回戦, 第23試合目 (予選トーナメント)',
+              opponentTeamName: '倉敷少年剣道クラブ旭東中学校',
+              myWins: 3,
+              myPoints: 5,
+              oppWins: 1,
+              oppPoints: 2,
+              isWin: true,
+              isDraw: false,
+              resultType: 'team',
+              scene: '1回戦',
+            ),
+          ],
+          isDark: false,
+        ),
+        screenName: 'ExpeditionCardResultList',
+      );
+    });
 
-    testWidgets('2-7. 試合編集シート (MatchEditSheet): タブ「コート・メモ」等全文字サイズで文字切れゼロ', (
+    testWidgets('試合編集シート (MatchEditSheet): タブ「コート・メモ」等全文字サイズで文字切れゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(
@@ -477,7 +470,7 @@ void main() {
     });
 
     testWidgets(
-      '2-8. コート計算機形式選択 (MatchCalculatorFormatSelector): 「複数リーグ総当たり」等ボタン文字切れゼロ',
+      'コート計算機形式選択 (MatchCalculatorFormatSelector): 「複数リーグ総当たり」等ボタン文字切れゼロこと',
       (tester) async {
         final notifier = MatchCalculatorNotifier();
         await testWidgetWithTextScalers(
@@ -491,7 +484,7 @@ void main() {
       },
     );
 
-    testWidgets('2-9. 観客用表示設定シート (ViewerSettingsBottomSheet): 全設定タイルで文字切れゼロ', (
+    testWidgets('観客用表示設定シート (ViewerSettingsBottomSheet): 全設定タイルで文字切れゼロこと', (
       tester,
     ) async {
       await testWidgetWithTextScalers(

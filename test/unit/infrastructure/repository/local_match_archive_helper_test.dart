@@ -37,8 +37,8 @@ void main() {
     await isarContext?.clear();
   });
 
-  group('LocalMatchArchiveHelper Tests', () {
-    test('イベント数が上限以下の場合はアーカイブ分割せずそのまま保持する', () async {
+  group('[Unit] LocalMatchArchiveHelper テスト', () {
+    test('イベント数が上限以下の場合はアーカイブ分割せずそのまま保持すること', () async {
       final match = MatchModel(
         id: 'small_match',
         matchType: '個人戦',

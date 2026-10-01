@@ -23,7 +23,7 @@ void main() {
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
-  group('🚀 【E2E 3/5】試合開始直前 選手急遽差替・オーダー変更 完全保証E2Eテスト', () {
+  group('[E2E] 【E2E 3/5】試合開始直前 選手急遽差替・オーダー変更 完全保証E2Eテスト', () {
     test('先鋒戦の直前差替において、過去の試合を汚染せず新選手名が帳票・PDFまで一貫波及すること', () async {
       // 1. 過去に終了した第1試合（この対戦成績は絶対に書き換わってはならない）
       final historicalMatch = MatchModel(

@@ -4,9 +4,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ HomeScreenQrDialog Widget Tests', () {
+  group('[Widget] HomeScreenQrDialog ウィジェットテスト', () {
     testWidgets(
-      'Renders HomeScreenQrDialog with shareUrl and responds to close button',
+      'Renders HomeScreenQrDialog with shareUrl and responds to close buttonであること',
       (WidgetTester tester) async {
         bool isClosed = false;
 

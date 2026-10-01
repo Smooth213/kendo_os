@@ -54,8 +54,8 @@ void main() {
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
-  group('PdfIndividualList Widget Tests', () {
-    test('引き分けの試合で正しい引き分け記号「×」が表示されるべき', () {
+  group('[Unit] PdfIndividualList ウィジェットテスト', () {
+    test('引き分けの試合で正しい引き分け記号「×」が表示されること', () {
       final matches = [
         createMockMatch(
           id: 'm1',
@@ -82,7 +82,7 @@ void main() {
       expect(drawSymbolText.text.toPlainText(), '×');
     });
 
-    test('ヘッダータイトルが正しく生成されるべき', () {
+    test('ヘッダータイトルが正しく生成されること', () {
       // Case 1: Normal individual match
       final matches1 = [
         createMockMatch(id: 'm1', redName: '選手A', whiteName: '選手B'),

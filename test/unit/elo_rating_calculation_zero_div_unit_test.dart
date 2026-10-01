@@ -37,8 +37,8 @@ class KendoEloRatingCalculator {
 }
 
 void main() {
-  group('🥋 【Phase 1-10/10】選手強さレーティング（Elo）ゼロ除算・極限差・決定論的丸めテスト', () {
-    test('1. 同等レーティング同士（1500 vs 1500）の勝ち負け・引き分けでの対称性', () {
+  group('[Unit] 【Phase 1-10/10】選手強さレーティング（Elo）ゼロ除算・極限差・決定論的丸めテスト', () {
+    test('同等レーティング同士（1500 vs 1500）の勝ち負け・引き分けでの対称性こと', () {
       final winResult = KendoEloRatingCalculator.calculateNewRatings(
         ratingA: 1500.0,
         ratingB: 1500.0,
@@ -58,7 +58,7 @@ void main() {
       expect(drawResult.newRatingB, 1500.0);
     });
 
-    test('2. 極端なレーティング差（4000 vs 100）での指数オーバーフロー・NaN・無限大ゼロ保証', () {
+    test('極端なレーティング差（4000 vs 100）での指数オーバーフロー・NaN・無限大ゼロ保証こと', () {
       final extremeResult = KendoEloRatingCalculator.calculateNewRatings(
         ratingA: 4000.0,
         ratingB: 100.0,
@@ -73,7 +73,7 @@ void main() {
       expect(extremeResult.newRatingB, greaterThanOrEqualTo(100.0)); // 下限保証
     });
 
-    test('3. 下限クランプ（100.0）による負のレーティング・ゼロ除算の完全防止', () {
+    test('下限クランプ（100.0）による負のレーティング・ゼロ除算の完全防止こと', () {
       final loseResult = KendoEloRatingCalculator.calculateNewRatings(
         ratingA: 100.0,
         ratingB: 3000.0,

@@ -25,9 +25,9 @@ void main() {
     order: 1.0,
   );
 
-  group('🥋 リーグ戦ヘッダー 統一バッジ ＆ 26pxボタン 永続保持テスト要塞', () {
+  group('[Widget] リーグ戦ヘッダー 統一バッジ ＆ 26pxボタン 永続保持テスト要塞', () {
     testWidgets(
-      '1. 管理画面（TimelineLeagueTeamMatchHeader）でMatchStatusBadgeと26pxボタンが描画されること',
+      '管理画面（TimelineLeagueTeamMatchHeader）でMatchStatusBadgeと26pxボタンが描画されること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -71,7 +71,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 観客席画面（ViewerLeagueMatchupTile）でMatchStatusBadgeとスコアボタンが描画されること',
+      '観客席画面（ViewerLeagueMatchupTile）でMatchStatusBadgeとスコアボタンが描画されること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,

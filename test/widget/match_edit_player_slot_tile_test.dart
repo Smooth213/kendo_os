@@ -4,9 +4,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ MatchEditPlayerSlotTile Widget Tests', () {
+  group('[Widget] MatchEditPlayerSlotTile ウィジェットテスト', () {
     testWidgets(
-      'Renders position label, red and white player fields with text',
+      'Renders position label, red and white player fields with textであること',
       (WidgetTester tester) async {
         final redController = TextEditingController(text: '山田 太郎');
         final whiteController = TextEditingController(text: '佐藤 次郎');
@@ -42,7 +42,7 @@ void main() {
     );
 
     testWidgets(
-      'Renders in dark mode with styled backgrounds without assertion errors',
+      'Renders in dark mode with styled backgrounds without assertion errorsであること',
       (WidgetTester tester) async {
         final redController = TextEditingController();
         final whiteController = TextEditingController();

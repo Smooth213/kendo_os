@@ -6,39 +6,40 @@ import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('TeamRegistrationConfirmStep renders properly with empty list', (
-    tester,
-  ) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+  testWidgets(
+    'TeamRegistrationConfirmStep renders properly with empty listであること',
+    (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData.light().copyWith(extensions: [themeColors]),
-        home: Scaffold(
-          body: TeamRegistrationConfirmStep(
-            registeredTeamsAsync: const AsyncValue.data([]),
-            playerCount: 5,
-            selectedCategory: '小学生高学年の部',
-            teamName: '赤心館A',
-            matchType: '団体戦（5人制）',
-            tempSelectedPlayers: const {0: '選手1', 1: '選手2'},
-            themeColors: themeColors,
-            onEditTeam: (_) {},
-            onDeleteTeam: (_) {},
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(extensions: [themeColors]),
+          home: Scaffold(
+            body: TeamRegistrationConfirmStep(
+              registeredTeamsAsync: const AsyncValue.data([]),
+              playerCount: 5,
+              selectedCategory: '小学生高学年の部',
+              teamName: '赤心館A',
+              matchType: '団体戦（5人制）',
+              tempSelectedPlayers: const {0: '選手1', 1: '選手2'},
+              themeColors: themeColors,
+              onEditTeam: (_) {},
+              onDeleteTeam: (_) {},
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    expect(find.text('登録済みチーム (0)'), findsOneWidget);
-    expect(find.text('カードタップで直接オーダーを編集できます'), findsOneWidget);
-    expect(find.text('小学生高学年の部 : 赤心館A'), findsOneWidget);
-    expect(find.textContaining('まだ登録されたチームはありません'), findsOneWidget);
-  });
+      expect(find.text('登録済みチーム (0)'), findsOneWidget);
+      expect(find.text('カードタップで直接オーダーを編集できます'), findsOneWidget);
+      expect(find.text('小学生高学年の部 : 赤心館A'), findsOneWidget);
+      expect(find.textContaining('まだ登録されたチームはありません'), findsOneWidget);
+    },
+  );
 
-  testWidgets('TeamRegistrationConfirmStep renders properly with teams', (
+  testWidgets('TeamRegistrationConfirmStep renders properly with teamsであること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

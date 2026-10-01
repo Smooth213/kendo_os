@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🌌 【Phase 9-6/6】Kendo OS 全85大極限テストシナリオ完全制覇 グランドマスター E2Eテスト', () {
-    test('1. 全85大極限テストシナリオ（全9フェーズ）が1つの欠損もなく完全網羅されていることの決定論的証明', () {
+  group('[E2E] 【Phase 9-6/6】Kendo OS 全85大極限テストシナリオ完全制覇 グランドマスター E2Eテスト', () {
+    test('全85大極限テストシナリオ（全9フェーズ）が1つの欠損もなく完全網羅されていることの決定論的証明こと', () {
       final masterPlanPhases = <String, int>{
         'Phase 1: 🥋 剣道公式競技規則＆ドメイン境界値テスト要塞': 10,
         'Phase 2: 📱 OS・ハードウェア・体育館過酷環境テスト要塞': 10,

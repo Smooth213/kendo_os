@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/widgets/expandable_notes_view.dart';
 
 void main() {
-  group('ExpandableNotesView Widget Tests', () {
+  group('[Widget] ExpandableNotesView ウィジェットテスト', () {
     testWidgets('短いメモの場合は展開ボタンが表示されないこと', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(

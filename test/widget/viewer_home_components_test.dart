@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_category_section_list.dart';
 
 void main() {
-  group('ViewerHome Components Tests', () {
-    testWidgets('ViewerCategorySectionList renders categories and teams', (
+  group('[Widget] ViewerHome Components テスト', () {
+    testWidgets('ViewerCategorySectionList renders categories and teamsであること', (
       tester,
     ) async {
       const match = MatchModel(

@@ -5,42 +5,43 @@ import 'package:kendo_os/shared/widgets/action_buttons.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('🛡️ Action Buttons Test', () {
-    testWidgets('HoldConfirmButton displays circular indicator on long press', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HoldConfirmButton(
-              label: 'メ',
-              color: Colors.blue,
-              textColor: Colors.white, // 必須引数を追加
-              disabled: false, // 必須引数を追加
-              onConfirm: () {},
+  group('[Widget] Action Buttons テスト', () {
+    testWidgets(
+      'HoldConfirmButton displays circular indicator on long pressであること',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: HoldConfirmButton(
+                label: 'メ',
+                color: Colors.blue,
+                textColor: Colors.white, // 必須引数を追加
+                disabled: false, // 必須引数を追加
+                onConfirm: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // 長押しを開始
-      final gesture = await tester.startGesture(
-        tester.getCenter(find.byType(HoldConfirmButton)),
-      );
-      await tester.pump(const Duration(milliseconds: 100)); // ゲージが出現するまでの時間
+        // 長押しを開始
+        final gesture = await tester.startGesture(
+          tester.getCenter(find.byType(HoldConfirmButton)),
+        );
+        await tester.pump(const Duration(milliseconds: 100)); // ゲージが出現するまでの時間
 
-      // CircularProgressIndicator がツリーにあるか確認
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        // CircularProgressIndicator がツリーにあるか確認
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      // 指を離す
-      await gesture.up();
-      await tester.pumpAndSettle();
+        // 指を離す
+        await gesture.up();
+        await tester.pumpAndSettle();
 
-      // インジケーターが消滅したことを確認
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-    });
+        // インジケーターが消滅したことを確認
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      },
+    );
 
-    testWidgets('HoldConfirmButton does not trigger when disabled', (
+    testWidgets('HoldConfirmButton does not trigger when disabledであること', (
       WidgetTester tester,
     ) async {
       bool isConfirmed = false;
@@ -77,46 +78,47 @@ void main() {
       expect(isConfirmed, isFalse, reason: '無効化されている場合はonConfirmが呼ばれてはいけません');
     });
 
-    testWidgets('HoldConfirmButton triggers onConfirm after full duration', (
-      WidgetTester tester,
-    ) async {
-      bool isConfirmed = false;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: HoldConfirmButton(
-              label: 'メ',
-              color: Colors.blue,
-              textColor: Colors.white,
-              disabled: false,
-              onConfirm: () {
-                isConfirmed = true;
-              },
+    testWidgets(
+      'HoldConfirmButton triggers onConfirm after full durationであること',
+      (WidgetTester tester) async {
+        bool isConfirmed = false;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: HoldConfirmButton(
+                label: 'メ',
+                color: Colors.blue,
+                textColor: Colors.white,
+                disabled: false,
+                onConfirm: () {
+                  isConfirmed = true;
+                },
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // 長押しを開始して、完了時間(350ms)まで一気に進める
-      final gesture = await tester.startGesture(
-        tester.getCenter(find.byType(HoldConfirmButton)),
-      );
+        // 長押しを開始して、完了時間(350ms)まで一気に進める
+        final gesture = await tester.startGesture(
+          tester.getCenter(find.byType(HoldConfirmButton)),
+        );
 
-      // ジェスチャーをWidgetツリーに認識させてアニメーションを開始させるためのpump
-      await tester.pump();
+        // ジェスチャーをWidgetツリーに認識させてアニメーションを開始させるためのpump
+        await tester.pump();
 
-      // 350msちょうどだとフレームの境界で完了判定にならないことがあるため、
-      // アニメーションの完了時間を確実に超えるように余裕を持たせて時間を進める
-      await tester.pump(const Duration(milliseconds: 500));
-      await tester.pump(); // Listenerの処理（onConfirmとsetState）を反映させる
+        // 350msちょうどだとフレームの境界で完了判定にならないことがあるため、
+        // アニメーションの完了時間を確実に超えるように余裕を持たせて時間を進める
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(); // Listenerの処理（onConfirmとsetState）を反映させる
 
-      expect(isConfirmed, isTrue, reason: '長押し完了時にonConfirmが呼ばれる必要があります');
+        expect(isConfirmed, isTrue, reason: '長押し完了時にonConfirmが呼ばれる必要があります');
 
-      await gesture.up(); // 指を離す
-      await tester.pumpAndSettle();
-    });
+        await gesture.up(); // 指を離す
+        await tester.pumpAndSettle();
+      },
+    );
 
-    testWidgets('ScoreActionPanel has no overlapping artifacts', (
+    testWidgets('ScoreActionPanel has no overlapping artifactsであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -159,7 +161,7 @@ void main() {
     });
 
     testWidgets(
-      'Text inside HoldConfirmButton is precisely centered vertically and horizontally',
+      'Text inside HoldConfirmButton is precisely centered vertically and horizontallyであること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(

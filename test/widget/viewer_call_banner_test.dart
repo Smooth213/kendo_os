@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_call_banner.dart';
 
 void main() {
-  testWidgets('ViewerCallBanner renders in-progress and waiting matches', (
+  testWidgets('ViewerCallBanner renders in-progress and waiting matchesであること', (
     tester,
   ) async {
     final match1 = MatchModel(

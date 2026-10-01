@@ -23,7 +23,7 @@ void main() {
     order: 1.0,
   );
 
-  group('🥋 部内戦試合カード MatchStatusBadge 統合テスト', () {
+  group('[Widget] 部内戦試合カード MatchStatusBadge 統合テスト', () {
     testWidgets('観客席部内戦カードでMatchStatusBadge（LIVE）が描画されること', (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 

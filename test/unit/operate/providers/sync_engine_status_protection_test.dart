@@ -21,9 +21,9 @@ class FakeRebuildMatchFromEventsUseCase
 }
 
 void main() {
-  group('🛡️ SyncEngine Status Protection Tests (同期時のステータス巻き戻り保護テスト)', () {
+  group('[Unit] SyncEngine Status Protection テスト (同期時のステータス巻き戻り保護テスト)', () {
     test(
-      '1. Drift Monitor時: 再計算ロジックがステータスを初期化しても、元の確定ステータス(finished)が維持・保護されること',
+      'Drift Monitor時: 再計算ロジックがステータスを初期化しても、元の確定ステータス(finished)が維持・保護されること',
       () {
         // 1. テストデータの準備: ユーザーが確定させた(finished)状態の試合
         const originalStatus = 'finished';
@@ -61,7 +61,7 @@ void main() {
       },
     );
 
-    test('2. CRDTマージ時: 退避したステータスが正しく復元されること', () {
+    test('CRDTマージ時: 退避したステータスが正しく復元されること', () {
       const originalStatus = 'approved';
       final remoteMatch = MatchModel(
         id: 'test-match-456',

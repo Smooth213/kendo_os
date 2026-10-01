@@ -18,7 +18,7 @@ void main() {
     );
   }
 
-  group('🧮 BunaiksenDockCalculatorSheet Widget Tests', () {
+  group('[Widget] BunaiksenDockCalculatorSheet ウィジェットテスト', () {
     testWidgets('初期表示で計算機シートの要素（タイトル・サマリー・形式・基本設定・アコーディオン）が描画されること', (
       tester,
     ) async {

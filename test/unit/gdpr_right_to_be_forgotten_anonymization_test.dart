@@ -25,8 +25,8 @@ class GdprAnonymizer {
 }
 
 void main() {
-  group('🌐 【Phase 4-9/11】GDPR忘れられる権利 選手不可逆匿名化＆対戦成績整合性テスト', () {
-    test('1. 選手退会時に個人特定情報（氏名・道場）が不可逆ハッシュに置換され復元不可能になること', () {
+  group('[Unit] 【Phase 4-9/11】GDPR忘れられる権利 選手不可逆匿名化＆対戦成績整合性テスト', () {
+    test('選手退会時に個人特定情報（氏名・道場）が不可逆ハッシュに置換され復元不可能になること', () {
       final anon = GdprAnonymizer.anonymizePlayer(
         playerId: 'player_secret_guid_12345',
         originalName: '山田 太郎',
@@ -43,7 +43,7 @@ void main() {
       expect(anon.isDeleted, isTrue);
     });
 
-    test('2. 匿名化後も過去の対戦履歴（スコア・勝敗結果）の数値整合性が崩れないこと', () {
+    test('匿名化後も過去の対戦履歴（スコア・勝敗結果）の数値整合性が崩れないこと', () {
       // 匿名化前の試合データ
       final matchData = {
         'matchId': 'm_001',

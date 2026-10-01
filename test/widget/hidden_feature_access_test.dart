@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/config/runtime_mode.dart';
 import 'package:kendo_os/shared/routing/match_router.dart';
 
 void main() {
-  group('🛡️ [Phase 1] Feature Flag 完全統制セキュリティ検証テスト', () {
+  group('[Widget] [Phase 1] Feature Flag 完全統制セキュリティ検証テスト', () {
     testWidgets('フラグがOFFの際、開発者用システム画面への直接URLアクセス（DeepLink）が物理拒否されること', (
       WidgetTester tester,
     ) async {

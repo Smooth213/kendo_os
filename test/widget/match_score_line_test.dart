@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
-  group('🛡️ MatchScoreLine Widget Tests', () {
-    testWidgets('Renders empty space when no points and not draw', (
+  group('[Widget] MatchScoreLine ウィジェットテスト', () {
+    testWidgets('Renders empty space when no points and not drawであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -27,7 +27,7 @@ void main() {
       expect(find.text('×'), findsNothing);
     });
 
-    testWidgets('Renders score marks with dash separator correctly', (
+    testWidgets('Renders score marks with dash separator correctlyであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -51,7 +51,7 @@ void main() {
       expect(find.text('×'), findsNothing);
     });
 
-    testWidgets('Renders draw mark × correctly when 0-0 finished', (
+    testWidgets('Renders draw mark × correctly when 0-0 finishedであること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

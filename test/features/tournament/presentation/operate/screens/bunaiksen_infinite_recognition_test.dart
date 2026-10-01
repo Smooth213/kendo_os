@@ -53,7 +53,7 @@ class FakeSyncEngine implements SyncEngine {
 }
 
 void main() {
-  group('🛡️ STEP 5-2: 部内戦・無限勝ち抜き認識＆確定フローの徹底検証要塞', () {
+  group('[Widget] 部内戦・無限勝ち抜き認識＆確定フローの徹底検証要塞', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({
         'kendo_sync_settings': '{"confirmBehavior":"single"}',
@@ -61,7 +61,7 @@ void main() {
     });
 
     testWidgets(
-      'Case 1: 部内戦 + 無限勝ち抜きの場合、ボタンに「確定・部内戦ホームへ」と表示され、タップすると無限次試合ダイアログが出る',
+      'Case 1: 部内戦 + 無限勝ち抜きの場合、ボタンに「確定・部内戦ホームへ」と表示され、タップすると無限次試合ダイアログが出ること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -155,7 +155,7 @@ void main() {
     );
 
     testWidgets(
-      'Case 2: 公式大会 + 無限勝ち抜きの場合、ボタンに「確定・大会ホームへ」と表示され、タップすると無限次試合ダイアログが出る',
+      'Case 2: 公式大会 + 無限勝ち抜きの場合、ボタンに「確定・大会ホームへ」と表示され、タップすると無限次試合ダイアログが出ること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -217,7 +217,7 @@ void main() {
     );
 
     testWidgets(
-      'Case 3: 部内戦 + 通常試合の場合、ボタンに「確定・部内戦ホームへ」と表示され、タップしても無限次試合ダイアログは出ない',
+      'Case 3: 部内戦 + 通常試合の場合、ボタンに「確定・部内戦ホームへ」と表示され、タップしても無限次試合ダイアログは出ないこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;

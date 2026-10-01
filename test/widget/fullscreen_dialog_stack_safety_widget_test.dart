@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 void main() {
-  group('🎨 【Widget 4/5】多重ダイアログ・モーダルスタック完全安全耐久テスト', () {
+  group('[Widget] 【Widget 4/5】多重ダイアログ・モーダルスタック完全安全耐久テスト', () {
     testWidgets('多重に展開されたダイアログスタックで連続Popが発生しても、例外なく安全にルート画面へ復帰すること', (
       WidgetTester tester,
     ) async {

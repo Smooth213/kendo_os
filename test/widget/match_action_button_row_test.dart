@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 void main() {
-  group('MatchActionButtonRow Widget Tests', () {
-    testWidgets('renders button with label and responds to single tap', (
+  group('[Widget] MatchActionButtonRow ウィジェットテスト', () {
+    testWidgets('renders button with label and responds to single tapであること', (
       tester,
     ) async {
       bool actionTriggered = false;
@@ -32,7 +32,7 @@ void main() {
       expect(actionTriggered, isTrue);
     });
 
-    testWidgets('responds to double tap when confirmBehavior is double', (
+    testWidgets('responds to double tap when confirmBehavior is doubleであること', (
       tester,
     ) async {
       bool actionTriggered = false;

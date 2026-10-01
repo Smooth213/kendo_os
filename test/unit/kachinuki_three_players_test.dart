@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('🥋 勝ち抜き戦（3人制 / 5人制）包括的ドメイン・進行ユニットテスト', () {
+  group('[Unit] 勝ち抜き戦（3人制 / 5人制）包括的ドメイン・進行ユニットテスト', () {
     final roster = [
       PlayerModel(
         id: 'p1',
@@ -37,7 +37,7 @@ void main() {
       ),
     ];
 
-    test('1. 3人制勝ち抜き戦の自動判定およびスロット（先鋒・中堅・大将）割り当て検証', () {
+    test('3人制勝ち抜き戦の自動判定およびスロット（先鋒・中堅・大将）割り当てが正しく検証されること', () {
       final team3 = const ParsedTeamOrder(
         teamName: '道上剣友会（勝ち抜き）',
         category: '小学生高学年の部',
@@ -67,7 +67,7 @@ void main() {
       expect(names, equals(['佐藤 太郎', '鈴木 次郎', '高橋 三郎']));
     });
 
-    test('2. 5人制勝ち抜き戦の自動判定およびスロット割り当て検証', () {
+    test('5人制勝ち抜き戦の自動判定およびスロット割り当てが正しく検証されること', () {
       final team5 = const ParsedTeamOrder(
         teamName: '道上剣友会（勝ち抜き）',
         category: '小学生高学年の部',
@@ -91,7 +91,7 @@ void main() {
       expect(slots, equals(['先鋒', '次鋒', '中堅', '副将', '大将']));
     });
 
-    test('3. テキストパーサーによるセクションおよびチーム形式検出（3人制・5人制）', () {
+    test('テキストパーサーによるセクションおよびチーム形式検出（3人制・5人制）こと', () {
       // セクション見出しの検出
       expect(
         TournamentTextParserHelper.detectSectionMatchType('【3人制勝ち抜き戦の部】'),
@@ -125,7 +125,7 @@ void main() {
       );
     });
 
-    test('4. OrderSetupMatchGeneratorによる3人制勝ち抜き戦の初期試合生成と待機選手検証', () {
+    test('OrderSetupMatchGeneratorによる3人制勝ち抜き戦の初期試合生成と待機選手が正しく検証されること', () {
       const rule = MatchRule(
         isKachinuki: true,
         matchTimeMinutes: 3.0,
@@ -161,7 +161,7 @@ void main() {
       expect(bout1.whiteRemaining, equals(['白隊 : 白中堅', '白隊 : 白大将']));
     });
 
-    test('5. 3人制勝ち抜き戦の試合進行・勝者残留・敗者交代・大将戦決着の繰り上げ処理検証', () {
+    test('3人制勝ち抜き戦の試合進行・勝者残留・敗者交代・大将戦決着の繰り上げ処理が正しく検証されること', () {
       final domainService = MatchDomainService();
       const rule = MatchRule(
         isKachinuki: true,

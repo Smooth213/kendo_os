@@ -11,7 +11,7 @@ import '../helpers/test_isar_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🔋 [Phase 5 Performance Governance] DB・I/O バッチ最適化テスト', () {
+  group('[Governance] [Phase 5 Performance Governance] DB・I/O バッチ最適化テスト', () {
     TestIsarContext? isarContext;
     late Isar isar;
     late LocalMatchRepository repository;
@@ -34,7 +34,7 @@ void main() {
       await isarContext?.clear();
     });
 
-    test('1. saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること', () async {
+    test('saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること', () async {
       final matches = List.generate(
         50,
         (i) => MatchModel(
@@ -64,46 +64,43 @@ void main() {
       expect(match25.order, 26);
     });
 
-    test(
-      '2. saveMatchesBulk: 既存エンティティが存在する場合に既存IDを引き継いで重複なく上書き更新されること',
-      () async {
-        final initialMatches = List.generate(
-          20,
-          (i) => MatchModel(
-            id: 'overwrite_match_$i',
-            tournamentId: 't_overwrite',
-            category: '一般',
-            order: i + 1,
-            redName: '元選手_$i',
-            whiteName: '白選手_$i',
-            matchType: '個人戦',
-            status: 'ongoing',
-            redScore: 0,
-          ),
-        );
+    test('saveMatchesBulk: 既存エンティティが存在する場合に既存IDを引き継いで重複なく上書き更新されること', () async {
+      final initialMatches = List.generate(
+        20,
+        (i) => MatchModel(
+          id: 'overwrite_match_$i',
+          tournamentId: 't_overwrite',
+          category: '一般',
+          order: i + 1,
+          redName: '元選手_$i',
+          whiteName: '白選手_$i',
+          matchType: '個人戦',
+          status: 'ongoing',
+          redScore: 0,
+        ),
+      );
 
-        await repository.saveMatchesBulk(initialMatches);
-        expect(await isar.matchEntitys.count(), 20);
+      await repository.saveMatchesBulk(initialMatches);
+      expect(await isar.matchEntitys.count(), 20);
 
-        // スコアを更新して再度一括保存
-        final updatedMatches = initialMatches
-            .map((m) => m.copyWith(redScore: 2, status: 'finished'))
-            .toList();
+      // スコアを更新して再度一括保存
+      final updatedMatches = initialMatches
+          .map((m) => m.copyWith(redScore: 2, status: 'finished'))
+          .toList();
 
-        await repository.saveMatchesBulk(updatedMatches);
+      await repository.saveMatchesBulk(updatedMatches);
 
-        // 件数は20件のままであること（重複なし）
-        expect(await isar.matchEntitys.count(), 20);
+      // 件数は20件のままであること（重複なし）
+      expect(await isar.matchEntitys.count(), 20);
 
-        // 更新後の値が反映されていること
-        final updated0 = await repository.getMatch('overwrite_match_0');
-        expect(updated0!.redScore, 2);
-        expect(updated0.status, 'finished');
-      },
-    );
+      // 更新後の値が反映されていること
+      final updated0 = await repository.getMatch('overwrite_match_0');
+      expect(updated0!.redScore, 2);
+      expect(updated0.status, 'finished');
+    });
 
     test(
-      '3. markMatchesAsSynced: 複数試合の同期ステートを一括putAllでSyncState.syncedへ移行できること',
+      'markMatchesAsSynced: 複数試合の同期ステートを一括putAllでSyncState.syncedへ移行できること',
       () async {
         final matches = List.generate(
           10,

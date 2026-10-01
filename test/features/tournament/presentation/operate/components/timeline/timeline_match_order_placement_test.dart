@@ -10,8 +10,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
 void main() {
-  group('Timeline Match Placement & Sorting Tests', () {
-    test('① チームカード内の対戦枠: 新しく作成した対戦カード（グループ）が最上位（先頭）に配置されること', () {
+  group('[Widget] Timeline Match Placement & Sorting テスト', () {
+    test('チームカード内の対戦枠: 新しく作成した対戦カード（グループ）が最上位（先頭）に配置されること', () {
       // 先に作られた団体戦グループ (group_1, order: 0)
       final group1Matches = [
         const MatchModel(
@@ -69,7 +69,7 @@ void main() {
       expect(classified.sortedGroups.last.key, 'group_1');
     });
 
-    testWidgets('② 団体戦アコーディオン内: 先鋒〜大将の後に、代表戦および追加試合が正しく後方に追加されること', (
+    testWidgets('団体戦アコーディオン内: 先鋒〜大将の後に、代表戦および追加試合が正しく後方に追加されること', (
       tester,
     ) async {
       final matches = [

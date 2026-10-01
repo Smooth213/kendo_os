@@ -12,7 +12,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('TimelineSummaryInputDialog renders properly', (tester) async {
+  testWidgets('TimelineSummaryInputDialog renders properlyであること', (
+    tester,
+  ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

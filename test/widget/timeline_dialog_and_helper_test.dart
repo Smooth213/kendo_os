@@ -9,36 +9,41 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
-  group('Timeline Components & Helper Tests', () {
-    test('TimelineLeagueTitleHelper generates descriptive title correctly', () {
-      final matches = [
-        const MatchModel(
-          id: 'm1',
-          tournamentId: 't1',
-          order: 1,
-          redName: 'Aチーム',
-          whiteName: 'Bチーム',
-          matchType: 'team',
-        ),
-        const MatchModel(
-          id: 'm2',
-          tournamentId: 't1',
-          order: 2,
-          redName: 'Bチーム',
-          whiteName: 'Cチーム',
-          matchType: 'team',
-        ),
-      ];
+  group('[Widget] Timeline Components & Helper テスト', () {
+    test(
+      'TimelineLeagueTitleHelper generates descriptive title correctlyであること',
+      () {
+        final matches = [
+          const MatchModel(
+            id: 'm1',
+            tournamentId: 't1',
+            order: 1,
+            redName: 'Aチーム',
+            whiteName: 'Bチーム',
+            matchType: 'team',
+          ),
+          const MatchModel(
+            id: 'm2',
+            tournamentId: 't1',
+            order: 2,
+            redName: 'Bチーム',
+            whiteName: 'Cチーム',
+            matchType: 'team',
+          ),
+        ];
 
-      final title = TimelineLeagueTitleHelper.generateDescriptiveLeagueTitle(
-        matches,
-        ['Aチーム'],
-      );
-      expect(title, contains('Aチーム'));
-      expect(title, contains('3チームリーグ'));
-    });
+        final title = TimelineLeagueTitleHelper.generateDescriptiveLeagueTitle(
+          matches,
+          ['Aチーム'],
+        );
+        expect(title, contains('Aチーム'));
+        expect(title, contains('3チームリーグ'));
+      },
+    );
 
-    testWidgets('TimelineRenameTeamSheet renders properly', (tester) async {
+    testWidgets('TimelineRenameTeamSheet renders properlyであること', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -59,7 +64,7 @@ void main() {
       expect(find.text('一括修正して統合する'), findsOneWidget);
     });
 
-    testWidgets('TimelineInnerCommentWidget renders text properly', (
+    testWidgets('TimelineInnerCommentWidget renders text properlyであること', (
       tester,
     ) async {
       const comment = MatchCommentModel(

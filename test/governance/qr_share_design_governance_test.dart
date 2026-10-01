@@ -16,7 +16,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🥋 【第8条 ガバナンス 3/3】🔗 QRコード共有UIデザイン統一永続保証規約', () {
+  group('[Governance] 【第8条 ガバナンス 3/3】 QRコード共有UIデザイン統一永続保証規約', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -30,7 +30,7 @@ void main() {
           .toList();
     });
 
-    test('Rule 1: 生の QrImageView 直接配置の排除と統一コンポーネント限定規約', () {
+    test('Rule 1: 生の QrImageView 直接配置の排除と統一コンポーネント限定規約こと', () {
       final allowedFiles = {
         'lib/shared/widgets/qr_share_dialog.dart',
         'lib/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart',
@@ -62,7 +62,7 @@ void main() {
       );
     });
 
-    test('Rule 2: 全てのQR共有ダイアログが QrShareDialog を利用していることの構造監査', () {
+    test('Rule 2: 全てのQR共有ダイアログが QrShareDialog を利用していることの構造監査こと', () {
       final shareDialogFiles = [
         'lib/features/tournament/presentation/operate/components/home/home_screen_qr_dialog.dart',
         'lib/features/tournament/presentation/operate/components/settings/web_app_qr_dialog.dart',
@@ -147,7 +147,7 @@ void main() {
     );
 
     testWidgets(
-      'Rule 3-2: 各種ダイアログ（HomeScreenQrDialog, WebAppQrDialog, BunaiksenShareDialog, ViewerShareDialog）の描画完全性',
+      'Rule 3-2: 各種ダイアログ（HomeScreenQrDialog, WebAppQrDialog, BunaiksenShareDialog, ViewerShareDialog）の描画完全性こと',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -173,7 +173,7 @@ void main() {
     );
 
     test(
-      'Rule 4: ViewerQrBottomSheet がURL表示バー・コピー・共有ボタン・QRカード装飾を完備していることの静的監査',
+      'Rule 4: ViewerQrBottomSheet がURL表示バー・コピー・共有ボタン・QRカード装飾を完備していることの静的監査こと',
       () {
         final sheetFile = dartFiles.firstWhere(
           (f) => f.path

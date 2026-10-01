@@ -10,8 +10,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cre
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_sticky_bottom_action.dart';
 
 void main() {
-  group('CreateTournament Components Tests', () {
-    testWidgets('renders CreateTournamentDynamicHeader correctly', (
+  group('[Widget] CreateTournament Components テスト', () {
+    testWidgets('renders CreateTournamentDynamicHeader correctlyであること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -25,7 +25,7 @@ void main() {
       expect(find.text('大会を新規作成'), findsOneWidget);
     });
 
-    testWidgets('renders CreateTournamentPage1 correctly', (tester) async {
+    testWidgets('renders CreateTournamentPage1 correctlyであること', (tester) async {
       final nameCtrl = TextEditingController(text: '剣道大会');
       await tester.pumpWidget(
         MaterialApp(
@@ -43,7 +43,7 @@ void main() {
       expect(find.text('2026年08月21日'), findsOneWidget);
     });
 
-    testWidgets('renders CreateTournamentPage2 correctly', (tester) async {
+    testWidgets('renders CreateTournamentPage2 correctlyであること', (tester) async {
       final venueCtrl = TextEditingController(text: '武道館');
       final noteCtrl = TextEditingController(text: 'メモ');
       await tester.pumpWidget(
@@ -61,7 +61,7 @@ void main() {
       expect(find.text('開催場所とメモを\n入力してください'), findsOneWidget);
     });
 
-    testWidgets('renders CreateTournamentStickyBottomAction correctly', (
+    testWidgets('renders CreateTournamentStickyBottomAction correctlyであること', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

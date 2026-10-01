@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/auth/application/google_auth_service.dart';
 
 void main() {
-  group('🥋 GoogleAuthService Unit Tests', () {
+  group('[Unit] GoogleAuthService 単体テスト', () {
     test('未認証・未連携時のプロバイダ初期値が安全に判定されること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);

@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🥋 【Phase 1-4/10】審判合議による直前の一本取り消し（Undo）＆タイマー巻き戻しテスト', () {
+  group('[Unit] 【Phase 1-4/10】審判合議による直前の一本取り消し（Undo）＆タイマー巻き戻しテスト', () {
     late KendoRuleEngine ruleEngine;
     final startTime = DateTime(2026, 9, 3, 10, 0, 0);
 
@@ -25,7 +25,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 赤面宣告 ➔ 審判合議によるUndoイベント付与で、赤面が完全に無効化され0-0に戻ること', () {
+    test('赤面宣告  審判合議によるUndoイベント付与で、赤面が完全に無効化され0-0に戻ること', () {
       // 1. 赤面イベント
       final scoreEvent = ScoreEvent(
         id: 'ev_men_1',
@@ -70,7 +70,7 @@ void main() {
       expect(analysisAfter.context.whiteIppon, 0);
     });
 
-    test('2. タイマー手動修正（残り時間巻き戻し・進め）で絶対時間が正しく再計算されること', () {
+    test('タイマー手動修正（残り時間巻き戻し・進め）で絶対時間が正しく再計算されること', () {
       // 初期状態: 3分（180秒）
       expect(initialMatch.calculateRemainingSeconds(startTime), 180);
 

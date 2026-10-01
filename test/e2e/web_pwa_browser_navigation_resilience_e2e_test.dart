@@ -4,7 +4,7 @@ import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
-  group('🌐 【E2E】Web/PWA ブラウザ操作耐久（リロード・戻る復元）E2Eテスト', () {
+  group('[E2E] 【E2E】Web/PWA ブラウザ操作耐久（リロード・戻る復元）E2Eテスト', () {
     const tournamentKey = 'kendo_os_active_tournament_id';
     const dojoKey = 'kendo_os_active_dojo_id';
 
@@ -18,7 +18,7 @@ void main() {
       PwaStorage.removeItem(dojoKey);
     });
 
-    test('1. 試合スコア入力中のブラウザリロード（F5）後のアクティブ大会・道場空間の完全復元', () {
+    test('試合スコア入力中のブラウザリロード（F5）後のアクティブ大会・道場空間の完全復元こと', () {
       // ユーザーが入力中にブラウザを誤ってリロードしたケースをシミュレート
       PwaStorage.setItem(tournamentKey, 'tournament_pwa_resilience_100');
       PwaStorage.setItem(dojoKey, 'dojo_pwa_space_200');
@@ -36,7 +36,7 @@ void main() {
       expect(syncContext.organizationId, 'dojo_pwa_space_200');
     });
 
-    test('2. ブラウザ戻る・進むナビゲーション時のURLパラメータ・エンコード復元耐久性', () {
+    test('ブラウザ戻る・進むナビゲーション時のURLパラメータ・エンコード復元耐久性こと', () {
       const groupTitle = '中学女子 決勝トーナメント【第2試合場】';
       final encodedUrl = Uri.parse(
         'https://kendo-os.web.app/operate/timeline?group=${Uri.encodeComponent(groupTitle)}&tid=t_navigation_test',

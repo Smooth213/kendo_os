@@ -19,14 +19,14 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('🥋 ドックボトムシート タップ操作＆子モーダル前面表示 実動作テスト', () {
+  group('[Widget] ドックボトムシート タップ操作＆子モーダル前面表示 実動作テスト', () {
     tearDown(() async {
       if (FloatingDockSheetManager.isOpen) {
         await FloatingDockSheetManager.close(immediate: true);
       }
     });
 
-    testWidgets('1. 大会ホームのドックから設定を開き、全ボタンがタップ可能で最前面に開くこと', (tester) async {
+    testWidgets('大会ホームのドックから設定を開き、全ボタンがタップ可能で最前面に開くこと', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -155,7 +155,7 @@ void main() {
       expect(find.text('システム設定'), findsOneWidget);
     });
 
-    testWidgets('2. 部内戦ホーム（BunaiksenHomeScreen）のドックから設定を開き、同様に動作すること', (
+    testWidgets('部内戦ホーム（BunaiksenHomeScreen）のドックから設定を開き、同様に動作すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 2400);

@@ -29,7 +29,7 @@ jobs:
       - name: 📦 依存パッケージの解決
         run: flutter pub get
 
-      - name: 🛡️ 全17大ガバナンス監査の完全実行 (Unified Governance Runner 1/17 〜 17/17)
+      - name: 🛡️ 全23大ガバナンス監査の完全実行 (Unified Governance Runner 1/23 〜 23/23)
         run: python3 scripts/run_all_governance.py
 
       - name: 🧹 Dartコード・警告の全自動修復 (自動フォーマット & リント修復)

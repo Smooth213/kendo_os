@@ -7,8 +7,8 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ LargeViewerScoreboard Tests', () {
-    testWidgets('1. LargeViewerScoreboard renders correctly', (tester) async {
+  group('[Widget] LargeViewerScoreboard テスト', () {
+    testWidgets('LargeViewerScoreboard 正しく描画されること', (tester) async {
       final proj = MatchProjection(
         id: 'm1',
         tournamentId: 't1',

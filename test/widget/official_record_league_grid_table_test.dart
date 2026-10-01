@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 
 void main() {
   testWidgets(
-    'OfficialRecordLeagueGridTable renders league grid table correctly',
+    'OfficialRecordLeagueGridTable renders league grid table correctlyであること',
     (WidgetTester tester) async {
       const rule = MatchRule(isLeague: true, matchTimeMinutes: 3.0);
 

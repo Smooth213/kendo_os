@@ -8,7 +8,7 @@ import 'package:kendo_os/features/match/domain/services/match_domain_service.dar
 import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_battle_card_helper.dart';
 
 void main() {
-  group('🥋 【Composite E2E】勝ち抜き戦 5人抜き全勝スイープ ＆ 大将引き分け代表戦 フルライフサイクル検証', () {
+  group('[E2E] 【Composite E2E】勝ち抜き戦 5人抜き全勝スイープ ＆ 大将引き分け代表戦 フルライフサイクル検証', () {
     late MatchDomainService domainService;
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0, 0);
@@ -18,7 +18,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. [全勝スイープE2E] 先鋒1名による5人抜き達成・連勝バッジ・公式記録投影ライフサイクル', () {
+    test('[全勝スイープE2E] 先鋒1名による5人抜き達成・連勝バッジ・公式記録投影ライフサイクルこと', () {
       const rule = MatchRule(
         isKachinuki: true,
         matchTimeMinutes: 3.0,
@@ -148,7 +148,7 @@ void main() {
       expect(totalWhitePts, equals(0));
     });
 
-    test('2. [大将延長代表戦E2E] 先鋒〜副将相引き分け→大将戦相引き分け→大将延長戦完全決着ライフサイクル', () {
+    test('[大将延長代表戦E2E] 先鋒〜副将相引き分け→大将戦相引き分け→大将延長戦完全決着ライフサイクルこと', () {
       const rule = MatchRule(
         isKachinuki: true,
         matchTimeMinutes: 3.0,

@@ -3,11 +3,11 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/match_strategy.dart';
 
 void main() {
-  group('🛡️ MatchStrategy (試合ルールブック) の自動テスト', () {
+  group('[Unit] MatchStrategy (試合ルールブック) の自動テスト', () {
     // ==========================================
     // 1. 個人戦のテスト
     // ==========================================
-    group('🗡️ 個人戦 (IndividualMatchStrategy)', () {
+    group('個人戦 (IndividualMatchStrategy)', () {
       test('【延長あり/回数1回】0回目の同点は「延長戦(startExtension)」へ進むこと', () {
         const match = MatchModel(
           id: '1',
@@ -57,7 +57,7 @@ void main() {
     // ==========================================
     // 2. 団体戦のテスト
     // ==========================================
-    group('🛡️ 団体戦 (TeamMatchStrategy)', () {
+    group('団体戦 (TeamMatchStrategy)', () {
       test('通常のポジション（先鋒など）での同点は即「引き分け終了(finishMatch)」となること', () {
         const match = MatchModel(
           id: '3',
@@ -98,7 +98,7 @@ void main() {
     // ==========================================
     // 3. 勝ち抜き戦のテスト
     // ==========================================
-    group('⚔️ 勝ち抜き戦 (KachinukiStrategy)', () {
+    group('勝ち抜き戦 (KachinukiStrategy)', () {
       test('大将同士ではない同点は、両者退場のため「引き分け終了(finishMatch)」となること', () {
         const match = MatchModel(
           id: '5',

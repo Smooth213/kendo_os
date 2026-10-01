@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_markdown_view.dart';
 
 void main() {
-  group('🛡️ ManualMarkdownView Widget Tests', () {
-    testWidgets('Renders markdown content correctly', (tester) async {
+  group('[Widget] ManualMarkdownView ウィジェットテスト', () {
+    testWidgets('Renders markdown content correctlyであること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -22,7 +22,7 @@ void main() {
       expect(find.text('これはテスト本文です。'), findsOneWidget);
     });
 
-    testWidgets('Renders loading indicator when isLoading is true', (
+    testWidgets('Renders loading indicator when isLoading is trueであること', (
       tester,
     ) async {
       await tester.pumpWidget(

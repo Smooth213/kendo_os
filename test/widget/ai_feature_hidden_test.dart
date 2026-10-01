@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/application/services/ai_help_service.dart';
 
 void main() {
-  group('🛡️ [Phase 4] AI Runtime 完全封鎖検証テスト', () {
+  group('[Widget] [Phase 4] AI Runtime 完全封鎖検証テスト', () {
     test('【ガバナンス監査】BetaFeatureFlags.showAiFeatures が厳格に false に固定されていること', () {
       expect(BetaFeatureFlags.showAiFeatures, false);
     });

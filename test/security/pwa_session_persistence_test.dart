@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dar
 import '../helpers/test_app.dart';
 
 void main() {
-  group('🔒 Phase 14 - PWA実運用セッション永続化＆タイムアウト防衛テスト', () {
+  group('[Security] PWA実運用セッション永続化＆タイムアウト防衛テスト', () {
     late ProviderContainer container;
 
     setUpAll(() async {

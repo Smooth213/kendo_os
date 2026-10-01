@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🚀 【E2E 1/5】完全オフライン ➔ 体育館Wi-Fi復旧 ➔ クラウド同期 実践E2Eテスト', () {
+  group('[E2E] 【E2E 1/5】完全オフライン  体育館Wi-Fi復旧  クラウド同期 実践E2Eテスト', () {
     test('完全オフラインで10試合消化後、オンライン復帰時に全イベントが論理時計順に整列して同期収束すること', () async {
       final startTime = DateTime(2026, 9, 3, 9, 0, 0);
 

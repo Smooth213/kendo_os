@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🌌 【Phase 9-3/6】審判員ワイヤレスヘッドセット・インカム音声トランシーバー Widgetテスト', () {
-    testWidgets('1. PTT（Push-To-Talk）押下でのマイクON/OFF切り替えと発話中インジケーター表示', (
+  group('[Widget] 【Phase 9-3/6】審判員ワイヤレスヘッドセット・インカム音声トランシーバー Widgetテスト', () {
+    testWidgets('PTT（Push-To-Talk）押下でのマイクON/OFF切り替えと発話中インジケーター表示こと', (
       tester,
     ) async {
       bool isMicActive = false;

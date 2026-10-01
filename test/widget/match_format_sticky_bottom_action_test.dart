@@ -27,7 +27,7 @@ void main() {
     infoColor: Colors.blue,
   );
 
-  testWidgets('MatchFormatStickyBottomAction renders page 0 correctly', (
+  testWidgets('MatchFormatStickyBottomAction renders page 0 correctlyであること', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -57,33 +57,34 @@ void main() {
     expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
   });
 
-  testWidgets('MatchFormatStickyBottomAction renders last page correctly', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+  testWidgets(
+    'MatchFormatStickyBottomAction renders last page correctlyであること',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData(extensions: const [dummyThemeColors]),
-          home: Scaffold(
-            body: MatchFormatStickyBottomAction(
-              currentPage: 1,
-              isLastPage: true,
-              themeColors: dummyThemeColors,
-              onPrevious: () {},
-              onNextOrComplete: () {},
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData(extensions: const [dummyThemeColors]),
+            home: Scaffold(
+              body: MatchFormatStickyBottomAction(
+                currentPage: 1,
+                isLastPage: true,
+                themeColors: dummyThemeColors,
+                onPrevious: () {},
+                onNextOrComplete: () {},
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(GlassButton), findsOneWidget);
-    expect(find.text('このルールで枠を作成'), findsOneWidget);
-    expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
-  });
+      expect(find.byType(GlassButton), findsOneWidget);
+      expect(find.text('このルールで枠を作成'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    },
+  );
 }

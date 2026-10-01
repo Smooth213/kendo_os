@@ -4,8 +4,8 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_mini_log_undo_section.dart';
 
 void main() {
-  group('🛡️ MatchMiniLogUndoSection Widget Tests', () {
-    testWidgets('Renders empty history state when no valid events', (
+  group('[Widget] MatchMiniLogUndoSection ウィジェットテスト', () {
+    testWidgets('Renders empty history state when no valid eventsであること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -25,7 +25,9 @@ void main() {
       expect(find.text('操作履歴なし'), findsOneWidget);
     });
 
-    testWidgets('Renders events and triggers onUndo callback', (tester) async {
+    testWidgets('Renders events and triggers onUndo callbackであること', (
+      tester,
+    ) async {
       bool undoTriggered = false;
       final events = [
         ScoreEvent(

@@ -18,7 +18,7 @@ void main() {
     registerFallbackValue(<MatchModel>[]);
   });
 
-  group('🥋 勝ち抜き戦 選手オーダー編集・複数試合連動更新テスト', () {
+  group('[Widget] 勝ち抜き戦 選手オーダー編集・複数試合連動更新テスト', () {
     late MockMatchApplicationService mockMatchAppService;
 
     setUp(() {
@@ -28,7 +28,7 @@ void main() {
       ).thenAnswer((_) async {});
     });
 
-    test('1. MatchEditStateHolder: 待機中の1試合のみでも先鋒〜大将の5人オーダーが正しく復元されること', () {
+    test('MatchEditStateHolder: 待機中の1試合のみでも先鋒〜大将の5人オーダーが正しく復元されること', () {
       const kachinukiMatch = MatchModel(
         id: 'k-1',
         isKachinuki: true,
@@ -81,7 +81,7 @@ void main() {
     });
 
     testWidgets(
-      '2. MatchEditSaveHelper: 待機中の勝ち抜き戦で全員の名前を変更して保存した際、先鋒および待機リストが正しく更新されること',
+      'MatchEditSaveHelper: 待機中の勝ち抜き戦で全員の名前を変更して保存した際、先鋒および待機リストが正しく更新されること',
       (tester) async {
         const kachinukiMatch = MatchModel(
           id: 'k-1',
@@ -203,147 +203,145 @@ void main() {
       },
     );
 
-    testWidgets(
-      '3. 進行中の勝ち抜き戦で先鋒が勝ち抜いて2試合に登場している場合、先鋒の名前変更が2対戦とも自動連動して更新されること',
-      (tester) async {
-        // 第1試合: 山田 (勝ち) vs 佐藤 (負け) -> 終了
-        const match1 = MatchModel(
-          id: 'k-1',
-          isKachinuki: true,
-          matchType: '先鋒',
-          status: 'finished',
-          order: 1.0,
-          redName: '道上剣友会A : 山田',
-          whiteName: '五剣会八幡支部A : 佐藤',
-          redScore: 2,
-          whiteScore: 0,
-          redRemaining: ['道上剣友会A : 鈴木', '道上剣友会A : 田中'],
-          whiteRemaining: ['五剣会八幡支部A : 伊藤', '五剣会八幡支部A : 中村'],
-          rule: MatchRule(isKachinuki: true, positions: ['先鋒', '中堅', '大将']),
-        );
+    testWidgets('進行中の勝ち抜き戦で先鋒が勝ち抜いて2試合に登場している場合、先鋒の名前変更が2対戦とも自動連動して更新されること', (
+      tester,
+    ) async {
+      // 第1試合: 山田 (勝ち) vs 佐藤 (負け) -> 終了
+      const match1 = MatchModel(
+        id: 'k-1',
+        isKachinuki: true,
+        matchType: '先鋒',
+        status: 'finished',
+        order: 1.0,
+        redName: '道上剣友会A : 山田',
+        whiteName: '五剣会八幡支部A : 佐藤',
+        redScore: 2,
+        whiteScore: 0,
+        redRemaining: ['道上剣友会A : 鈴木', '道上剣友会A : 田中'],
+        whiteRemaining: ['五剣会八幡支部A : 伊藤', '五剣会八幡支部A : 中村'],
+        rule: MatchRule(isKachinuki: true, positions: ['先鋒', '中堅', '大将']),
+      );
 
-        // 第2試合: 山田 (勝ち残り) vs 伊藤 (次鋒登場) -> 進行中
-        const match2 = MatchModel(
-          id: 'k-2',
-          isKachinuki: true,
-          matchType: '勝ち抜き戦',
-          status: 'in_progress',
-          order: 1.1,
-          redName: '道上剣友会A : 山田',
-          whiteName: '五剣会八幡支部A : 伊藤',
-          redRemaining: ['道上剣友会A : 鈴木', '道上剣友会A : 田中'],
-          whiteRemaining: ['五剣会八幡支部A : 中村'],
-          rule: MatchRule(isKachinuki: true, positions: ['先鋒', '中堅', '大将']),
-        );
+      // 第2試合: 山田 (勝ち残り) vs 伊藤 (次鋒登場) -> 進行中
+      const match2 = MatchModel(
+        id: 'k-2',
+        isKachinuki: true,
+        matchType: '勝ち抜き戦',
+        status: 'in_progress',
+        order: 1.1,
+        redName: '道上剣友会A : 山田',
+        whiteName: '五剣会八幡支部A : 伊藤',
+        redRemaining: ['道上剣友会A : 鈴木', '道上剣友会A : 田中'],
+        whiteRemaining: ['五剣会八幡支部A : 中村'],
+        rule: MatchRule(isKachinuki: true, positions: ['先鋒', '中堅', '大将']),
+      );
 
-        final state = MatchEditStateHolder([match1, match2]);
+      final state = MatchEditStateHolder([match1, match2]);
 
-        // 第1試合から先鋒〜大将の3名が復元されていること
-        expect(state.redPlayerControllers.length, 3);
-        expect(state.redPlayerControllers[0].text, '山田');
+      // 第1試合から先鋒〜大将の3名が復元されていること
+      expect(state.redPlayerControllers.length, 3);
+      expect(state.redPlayerControllers[0].text, '山田');
 
-        // ユーザーが先鋒「山田」を「エース木村」に変更
-        state.redPlayerControllers[0].text = 'エース木村';
+      // ユーザーが先鋒「山田」を「エース木村」に変更
+      state.redPlayerControllers[0].text = 'エース木村';
 
-        List<MatchModel>? savedMatches;
-        when(() => mockMatchAppService.saveMatchesBulk(any())).thenAnswer((
-          invocation,
-        ) async {
-          savedMatches =
-              invocation.positionalArguments.first as List<MatchModel>;
-        });
+      List<MatchModel>? savedMatches;
+      when(() => mockMatchAppService.saveMatchesBulk(any())).thenAnswer((
+        invocation,
+      ) async {
+        savedMatches = invocation.positionalArguments.first as List<MatchModel>;
+      });
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              matchApplicationServiceProvider.overrideWithValue(
-                mockMatchAppService,
-              ),
-            ],
-            child: MaterialApp(
-              theme: ThemeData(
-                extensions: [
-                  AppThemeColors.ofMode(isDark: false, mode: 'operate'),
-                ],
-              ),
-              home: Consumer(
-                builder: (context, ref, child) {
-                  return Scaffold(
-                    body: ElevatedButton(
-                      onPressed: () {
-                        MatchEditSaveHelper.executeSave(
-                          context: context,
-                          ref: ref,
-                          matches: [match1, match2],
-                          isDantai: state.isDantai,
-                          isSwapped: state.isSwapped,
-                          initialOwnIsRed: state.initialOwnIsRed,
-                          ownTeamChoice: state.ownTeamChoice,
-                          groupInput: '',
-                          redTeamInput: state.redTeamController.text.trim(),
-                          whiteTeamInput: state.whiteTeamController.text.trim(),
-                          courtInput: '',
-                          selectedPresetKey: state.selectedPresetKey,
-                          selectedPresetRule: state.selectedPresetRule,
-                          matchTime: state.matchTime,
-                          isRunningTime: state.isRunningTime,
-                          isIpponShobu: state.isIpponShobu,
-                          hasExtension: state.hasExtension,
-                          enchoTime: state.enchoTime,
-                          enchoCount: state.enchoCount,
-                          isEnchoUnlimited: state.isEnchoUnlimited,
-                          hasHantei: state.hasHantei,
-                          hasRepresentativeMatch: state.hasRepresentativeMatch,
-                          isDaihyoIpponShobu: state.isDaihyoIpponShobu,
-                          daihyoMatchTime: state.daihyoMatchTime,
-                          daihyoHasExtension: state.daihyoHasExtension,
-                          daihyoEnchoTime: state.daihyoEnchoTime,
-                          daihyoEnchoCount: state.daihyoEnchoCount,
-                          isDaihyoEnchoUnlimited: state.isDaihyoEnchoUnlimited,
-                          daihyoHasHantei: state.daihyoHasHantei,
-                          renseikaiType: state.renseikaiType,
-                          overallTimeMinutes: 30,
-                          isKachinuki: state.isKachinuki,
-                          kachinukiUnlimitedType: state.kachinukiUnlimitedType,
-                          isLeague: state.isLeague,
-                          winPoint: state.winPoint,
-                          lossPoint: state.lossPoint,
-                          drawPoint: state.drawPoint,
-                          userNote: '',
-                          status: state.status,
-                          redPlayerControllers: state.redPlayerControllers,
-                          whitePlayerControllers: state.whitePlayerControllers,
-                          initialRedPlayers: state.initialRedPlayers,
-                          initialWhitePlayers: state.initialWhitePlayers,
-                        );
-                      },
-                      child: const Text('Save'),
-                    ),
-                  );
-                },
-              ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchApplicationServiceProvider.overrideWithValue(
+              mockMatchAppService,
+            ),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'operate'),
+              ],
+            ),
+            home: Consumer(
+              builder: (context, ref, child) {
+                return Scaffold(
+                  body: ElevatedButton(
+                    onPressed: () {
+                      MatchEditSaveHelper.executeSave(
+                        context: context,
+                        ref: ref,
+                        matches: [match1, match2],
+                        isDantai: state.isDantai,
+                        isSwapped: state.isSwapped,
+                        initialOwnIsRed: state.initialOwnIsRed,
+                        ownTeamChoice: state.ownTeamChoice,
+                        groupInput: '',
+                        redTeamInput: state.redTeamController.text.trim(),
+                        whiteTeamInput: state.whiteTeamController.text.trim(),
+                        courtInput: '',
+                        selectedPresetKey: state.selectedPresetKey,
+                        selectedPresetRule: state.selectedPresetRule,
+                        matchTime: state.matchTime,
+                        isRunningTime: state.isRunningTime,
+                        isIpponShobu: state.isIpponShobu,
+                        hasExtension: state.hasExtension,
+                        enchoTime: state.enchoTime,
+                        enchoCount: state.enchoCount,
+                        isEnchoUnlimited: state.isEnchoUnlimited,
+                        hasHantei: state.hasHantei,
+                        hasRepresentativeMatch: state.hasRepresentativeMatch,
+                        isDaihyoIpponShobu: state.isDaihyoIpponShobu,
+                        daihyoMatchTime: state.daihyoMatchTime,
+                        daihyoHasExtension: state.daihyoHasExtension,
+                        daihyoEnchoTime: state.daihyoEnchoTime,
+                        daihyoEnchoCount: state.daihyoEnchoCount,
+                        isDaihyoEnchoUnlimited: state.isDaihyoEnchoUnlimited,
+                        daihyoHasHantei: state.daihyoHasHantei,
+                        renseikaiType: state.renseikaiType,
+                        overallTimeMinutes: 30,
+                        isKachinuki: state.isKachinuki,
+                        kachinukiUnlimitedType: state.kachinukiUnlimitedType,
+                        isLeague: state.isLeague,
+                        winPoint: state.winPoint,
+                        lossPoint: state.lossPoint,
+                        drawPoint: state.drawPoint,
+                        userNote: '',
+                        status: state.status,
+                        redPlayerControllers: state.redPlayerControllers,
+                        whitePlayerControllers: state.whitePlayerControllers,
+                        initialRedPlayers: state.initialRedPlayers,
+                        initialWhitePlayers: state.initialWhitePlayers,
+                      );
+                    },
+                    child: const Text('Save'),
+                  ),
+                );
+              },
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Save'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
 
-        expect(savedMatches, isNotNull);
-        expect(savedMatches!.length, 2);
+      expect(savedMatches, isNotNull);
+      expect(savedMatches!.length, 2);
 
-        // 第1試合（終了済）の赤選手名が「エース木村」に更新されていること
-        expect(savedMatches![0].redName, '道上剣友会A: エース木村');
-        expect(savedMatches![0].status, 'finished'); // ステータスが保持されていること
+      // 第1試合（終了済）の赤選手名が「エース木村」に更新されていること
+      expect(savedMatches![0].redName, '道上剣友会A: エース木村');
+      expect(savedMatches![0].status, 'finished'); // ステータスが保持されていること
 
-        // 第2試合（進行中）の赤選手名も連動して「エース木村」に自動更新されていること！
-        expect(savedMatches![1].redName, '道上剣友会A: エース木村');
-        expect(savedMatches![1].status, 'in_progress'); // ステータスが保持されていること
-      },
-    );
+      // 第2試合（進行中）の赤選手名も連動して「エース木村」に自動更新されていること！
+      expect(savedMatches![1].redName, '道上剣友会A: エース木村');
+      expect(savedMatches![1].status, 'in_progress'); // ステータスが保持されていること
+    });
 
     testWidgets(
-      '4. 勝ち抜き戦フルライフサイクル保証テスト: 待機中に編集したオーダーで試合が開始・進行し、勝ち抜いた選手の勝ち残りおよび敗者の次選手登場が完璧に機能すること',
+      '勝ち抜き戦フルライフサイクル保証テスト: 待機中に編集したオーダーで試合が開始・進行し、勝ち抜いた選手の勝ち残りおよび敗者の次選手登場が完璧に機能すること',
       (tester) async {
         // 1. 初期状態: 待機中の第1試合
         const initialMatch = MatchModel(

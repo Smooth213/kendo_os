@@ -20,7 +20,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const MatchCommentModel(id: '', text: ''));
   });
-  group('📢 TimelineUnifiedAnnounceDialog Tests', () {
+  group('[Widget] TimelineUnifiedAnnounceDialog テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
     late MockLocalCommentRepository mockLocalCommentRepo;
     late MockCommentRepository mockCommentRepo;
@@ -39,7 +39,7 @@ void main() {
     });
 
     testWidgets(
-      '1. 「🔕 通知なし」を選択して保存した場合、Firestoreの announcements には追加されずコメントのみが保存されること',
+      '「 通知なし」を選択して保存した場合、Firestoreの announcements には追加されずコメントのみが保存されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -122,7 +122,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 「📢 全員」または「🔒 スタッフ」を選択して保存した場合は、Firestoreの announcements とコメントの双方が作成されること',
+      '「 全員」または「 スタッフ」を選択して保存した場合は、Firestoreの announcements とコメントの双方が作成されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -196,7 +196,7 @@ void main() {
     );
 
     testWidgets(
-      '3. 「🔒 スタッフ限定」を選択して保存した場合は、target: "staff" として Firestore に保存されること',
+      '「 スタッフ限定」を選択して保存した場合は、target: "staff" として Firestore に保存されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -262,7 +262,7 @@ void main() {
     );
 
     testWidgets(
-      '4. 【文字切れ・はみ出しゼロ保証】 320x568 の小型端末サイズでも3つの選択肢がOverflowなく完全に描画されること',
+      '【文字切れ・はみ出しゼロ保証】 320x568 の小型端末サイズでも3つの選択肢がOverflowなく完全に描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;

@@ -72,8 +72,8 @@ void main() {
     );
   });
 
-  group('🛡️ MatchApplicationService - テナントID自動割り当てテスト', () {
-    test('✅ organizationIdが default_org の場合、現在の道場IDに上書きされて保存されること', () async {
+  group('[Unit] MatchApplicationService - テナントID自動割り当てテスト', () {
+    test('organizationIdが default_org の場合、現在の道場IDに上書きされて保存されること', () async {
       final service = container.read(matchApplicationServiceProvider);
 
       const match = MatchModel(
@@ -98,7 +98,7 @@ void main() {
       );
     });
 
-    test('✅ organizationIdが 空文字 の場合、現在の道場IDに上書きされて保存されること', () async {
+    test('organizationIdが 空文字 の場合、現在の道場IDに上書きされて保存されること', () async {
       final service = container.read(matchApplicationServiceProvider);
 
       const match = MatchModel(
@@ -123,7 +123,7 @@ void main() {
       );
     });
 
-    test('✅ 一括保存(saveMatchesBulk)時も、各試合のテナントIDが正しく判定・上書きされること', () async {
+    test('一括保存(saveMatchesBulk)時も、各試合のテナントIDが正しく判定・上書きされること', () async {
       final service = container.read(matchApplicationServiceProvider);
 
       final matches = [

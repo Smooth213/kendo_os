@@ -6,8 +6,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bul
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ BulkRulePresetCard Widget Tests', () {
-    testWidgets('Renders category chips and scene sub chips correctly', (
+  group('[Widget] BulkRulePresetCard ウィジェットテスト', () {
+    testWidgets('Renders category chips and scene sub chips correctlyであること', (
       WidgetTester tester,
     ) async {
       String? selectedCat;
@@ -61,7 +61,7 @@ void main() {
       expect(selectedScene, 'renseikai');
     });
 
-    testWidgets('Renders category chips with subtitle and resolves (2)', (
+    testWidgets('Renders category chips with subtitle and resolves (2)こと', (
       WidgetTester tester,
     ) async {
       final categoryRules = {
@@ -101,7 +101,7 @@ void main() {
       expect(find.text('小学生の部 (予選リーグ)'), findsOneWidget);
     });
 
-    testWidgets('Renders empty widget when categoryRules is empty', (
+    testWidgets('Renders empty widget when categoryRules is emptyであること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');

@@ -26,8 +26,8 @@ class AudioPeakNormalizer {
 }
 
 void main() {
-  group('📱 【Phase 2-7/10】体育館PA音響出力音圧ノーマライズ＆クリッピング防止テスト', () {
-    test('1. PAアンプ接続モード（isPaAmplifierMode: true）で音割れ防止リミット（0.88）が適用されること', () {
+  group('[Unit] 【Phase 2-7/10】体育館PA音響出力音圧ノーマライズ＆クリッピング防止テスト', () {
+    test('PAアンプ接続モード（isPaAmplifierMode: true）で音割れ防止リミット（0.88）が適用されること', () {
       final safeVolume = AudioPeakNormalizer.normalizeVolume(
         rawGain: 1.2, // 過大入力
         isPaAmplifierMode: true,
@@ -36,7 +36,7 @@ void main() {
       expect(safeVolume, 0.88);
     });
 
-    test('2. ミュート（マナーモード等）時の完全ゼロ（0.0）保証', () {
+    test('ミュート（マナーモード等）時の完全ゼロ（0.0）保証こと', () {
       final mutedVolume = AudioPeakNormalizer.normalizeVolume(
         rawGain: 0.9,
         isPaAmplifierMode: false,
@@ -45,7 +45,7 @@ void main() {
       expect(mutedVolume, 0.0);
     });
 
-    test('3. 同時発声（ブザー音0.8 + 打突コール0.5）時のミックスリミッターによる1.0超過防止', () {
+    test('同時発声（ブザー音0.8 + 打突コール0.5）時のミックスリミッターによる1.0超過防止こと', () {
       final mixed = AudioPeakNormalizer.limitMixedGain([0.8, 0.5]);
       expect(mixed, 1.0); // 1.3にならず1.0でクランプ
     });

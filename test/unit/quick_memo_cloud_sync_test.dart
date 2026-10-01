@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group(
-    '🥋 QuickMemoStorageService Cloud Sync & Backward Compatibility Tests',
+    '[Unit] QuickMemoStorageService Cloud Sync & Backward Compatibility テスト',
     () {
       setUp(() {
         SharedPreferences.setMockInitialValues({});
@@ -34,7 +34,7 @@ void main() {
         expect(strokeMemo.isNotEmpty, isTrue);
       });
 
-      test('未連携時（ローカル単体環境）でも保存と復元が完全に動作すること（後方互換性100%保証）', () async {
+      test('【後方互換性100%保証】未連携時（ローカル単体環境）でも保存と復元が完全に動作すること', () async {
         final service = QuickMemoStorageService.instance;
         const tournamentId = 'tourney_test_123';
 

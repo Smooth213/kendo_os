@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('🥋 【E2E】団体戦 同点→代表戦（1本勝負）指名・決着E2Eテスト', () {
+  group('[E2E] 【E2E】団体戦 同点→代表戦（1本勝負）指名・決着E2Eテスト', () {
     late KendoRuleEngine ruleEngine;
     late PermissionService permissionService;
     late SystemTimeSource timeSource;
@@ -32,7 +32,7 @@ void main() {
       );
     });
 
-    test('1. 5人制団体戦で勝者数・総取得本数が完全に同点となるシナリオの集計', () {
+    test('5人制団体戦で勝者数・総取得本数が完全に同点となるシナリオの集計こと', () {
       // 先鋒: 赤一本勝ち (1-0)
       // 次鋒: 白一本勝ち (0-1)
       // 中堅: 引き分け (0-0)
@@ -67,7 +67,7 @@ void main() {
       expect(needsRepresentative, isTrue);
     });
 
-    test('2. 代表戦の自動生成と時間無制限一本勝負（一本先取で即時決着）の完全フロー', () {
+    test('代表戦の自動生成と時間無制限一本勝負（一本先取で即時決着）の完全フローこと', () {
       // 代表戦のルール定義（一本勝負）
       const repRule = MatchRule(
         isIpponShobu: true,

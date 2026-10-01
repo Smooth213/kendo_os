@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('📸 【Phase 3-6/11】外字・旧字体 豆腐（□）ゼロ描画 Goldenテスト', () {
-    testWidgets('1. 代表的な旧字体・異体字が豆腐（文字化け□）にならず正常にレンダリングされること', (tester) async {
+  group('[Golden] 【Phase 3-6/11】外字・旧字体 豆腐（□）ゼロ描画 Goldenテスト', () {
+    testWidgets('代表的な旧字体・異体字が豆腐（文字化け□）にならず正常にレンダリングされること', (tester) async {
       tester.view.physicalSize = const Size(800, 400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);

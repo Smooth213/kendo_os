@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 void main() {
-  group('Bunaiksen Providers Dojo and Date Isolation / Sync Tests', () {
+  group('[Unit] Bunaiksen Providers Dojo and Date Isolation / Sync テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {
@@ -15,7 +15,7 @@ void main() {
     });
 
     test(
-      'Guest players Firestore synchronization, date change and Dojo ID change isolation',
+      'Guest players Firestore synchronization, date change and Dojo ID change isolationであること',
       () async {
         final container = ProviderContainer(
           overrides: [

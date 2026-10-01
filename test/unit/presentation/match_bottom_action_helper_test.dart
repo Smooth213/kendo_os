@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 void main() {
-  group('MatchBottomActionHelper テスト', () {
+  group('[Unit] MatchBottomActionHelper テスト', () {
     group('getConfirmButtonLabel', () {
       test('引き分けかつ真の団体戦の場合、「記録確定・星取表へ」を返すこと', () {
         final label = MatchBottomActionHelper.getConfirmButtonLabel(

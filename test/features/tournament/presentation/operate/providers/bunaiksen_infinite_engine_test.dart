@@ -8,9 +8,9 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('🛡️ BunaiksenInfiniteEngine Score carry-over & Rotation Tests', () {
+  group('[Unit] BunaiksenInfiniteEngine Score carry-over & Rotation テスト', () {
     test(
-      'Verify that next generated match resets all events, scores, and timer states',
+      'Verify that next generated match resets all events, scores, and timer statesであること',
       () async {
         final container = ProviderContainer();
 
@@ -91,7 +91,7 @@ void main() {
     );
 
     test(
-      'Verify that KendoRuleEngine does not evaluate an in-progress infinite kachinuki match as a tie',
+      'Verify that KendoRuleEngine does not evaluate an in-progress infinite kachinuki match as a tieであること',
       () {
         final engine = KendoRuleEngine();
         final rule = const MatchRule(
@@ -140,7 +140,7 @@ void main() {
     );
 
     test(
-      'Verify queue restoration on return to list / break after win or draw',
+      'Verify queue restoration on return to list / break after win or drawであること',
       () async {
         // --- Scenario 1: Red Wins ---
         {

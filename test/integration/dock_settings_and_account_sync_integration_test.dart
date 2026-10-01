@@ -81,8 +81,8 @@ void main() {
     );
   }
 
-  group('🥋 【パート2】ドック ➔ システム設定 ➔ 設定値変更・Google同期/解除・BAND・ログアウト保証', () {
-    testWidgets('1. 大会ホームドックから設定を開き、設定トグル変更がsettingsProviderに即時反映されること', (
+  group('[Widget] 【パート2】ドック  システム設定  設定値変更・Google同期/解除・BAND・ログアウト保証', () {
+    testWidgets('大会ホームドックから設定を開き、設定トグル変更がsettingsProviderに即時反映されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);
@@ -159,7 +159,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('2. 部内戦ドックからも同一の設定画面が開き、Google連携中表示・解除ダイアログフローが動作すること', (
+    testWidgets('部内戦ドックからも同一の設定画面が開き、Google連携中表示・解除ダイアログフローが動作すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);
@@ -225,7 +225,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('3. 設定内のBAND連携タイルタップでBANDグループ管理画面が開くこと', (tester) async {
+    testWidgets('設定内のBAND連携タイルタップでBANDグループ管理画面が開くこと', (tester) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -268,7 +268,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('4. 設定内のログアウトタップで確認ダイアログが表示されること', (tester) async {
+    testWidgets('設定内のログアウトタップで確認ダイアログが表示されること', (tester) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

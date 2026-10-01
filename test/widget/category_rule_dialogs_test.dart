@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_dialogs.dart';
 
 void main() {
-  testWidgets('CategoryRuleDialogs bulk apply dialog renders correctly', (
+  testWidgets('CategoryRuleDialogs bulk apply dialog 正しく描画されること', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -31,7 +31,7 @@ void main() {
     expect(find.text('適用しない（新規試合のみ）'), findsOneWidget);
   });
 
-  testWidgets('CategoryRuleDialogs delete category dialog renders correctly', (
+  testWidgets('CategoryRuleDialogs delete category dialog 正しく描画されること', (
     tester,
   ) async {
     await tester.pumpWidget(

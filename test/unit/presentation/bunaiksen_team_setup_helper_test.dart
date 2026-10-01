@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bun
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('BunaiksenTeamSetupHelper テスト', () {
+  group('[Unit] BunaiksenTeamSetupHelper テスト', () {
     final p1 = PlayerModel(
       id: 'p1',
       lastName: 'A',

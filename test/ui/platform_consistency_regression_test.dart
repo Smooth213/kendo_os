@@ -10,9 +10,9 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 
 void main() {
-  group('🛡️ Platform Consistency & Zero Trust Regression Tests', () {
+  group('[Widget] Platform Consistency & Zero Trust リグレッションテスト', () {
     testWidgets(
-      '✅ [Web/Native共通] ローカルキャッシュ(SharedPreferences)が空の環境でも、PIN認証済みのAdminセッションがあればフル機能のUIが描画されること',
+      '[Web/Native共通] ローカルキャッシュ(SharedPreferences)が空の環境でも、PIN認証済みのAdminセッションがあればフル機能のUIが描画されること',
       (WidgetTester tester) async {
         // Webブラウザでの初回アクセスや、シークレットモードを模倣するため、ローカルキャッシュを完全に空にする
         SharedPreferences.setMockInitialValues({});
@@ -60,7 +60,7 @@ void main() {
     );
 
     testWidgets(
-      '✅ [Web/Native共通] Viewerセッションの場合は、管理者ボタンが完全に秘匿され、観客用UIのみが提供されること(Zero Trust)',
+      '【Zero Trust】[Web/Native共通] Viewerセッションの場合は、管理者ボタンが完全に秘匿され、観客用UIのみが提供されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

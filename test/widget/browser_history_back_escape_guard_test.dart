@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🌐 【Phase 4-1/11】ブラウザ「戻る」ボタン誤押下 PopScope 画面離脱阻止テスト', () {
-    testWidgets('1. 試合進行中にブラウザの戻る操作が起きても PopScope が離脱を阻止すること', (tester) async {
+  group('[Widget] 【Phase 4-1/11】ブラウザ「戻る」ボタン誤押下 PopScope 画面離脱阻止テスト', () {
+    testWidgets('試合進行中にブラウザの戻る操作が起きても PopScope が離脱を阻止すること', (tester) async {
       bool confirmDialogShown = false;
       bool isMatchInProgress = true;
 
@@ -34,7 +34,7 @@ void main() {
       expect(find.text('第1コート 試合進行中'), findsOneWidget);
     });
 
-    testWidgets('2. 試合終了後（isMatchInProgress: false）は安全に戻ることができること', (
+    testWidgets('試合終了後（isMatchInProgress: false）は安全に戻ることができること', (
       tester,
     ) async {
       await tester.pumpWidget(

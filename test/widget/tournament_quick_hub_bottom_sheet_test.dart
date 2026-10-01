@@ -76,8 +76,8 @@ void main() {
     );
   }
 
-  group('🥋 TournamentQuickHubBottomSheet ウィジェットテスト', () {
-    testWidgets('シート展開時に全7つの主要機能項目が表示されること（スタッフモード）', (tester) async {
+  group('[Widget] TournamentQuickHubBottomSheet ウィジェットテスト', () {
+    testWidgets('【スタッフモード】シート展開時に全7つの主要機能項目が表示されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

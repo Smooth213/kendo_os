@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_search_app_bar_title.dart';
 
 void main() {
-  group('🛡️ ManualSearchAppBarTitle Widget Tests', () {
-    testWidgets('Renders normal title when isSearching is false', (
+  group('[Widget] ManualSearchAppBarTitle ウィジェットテスト', () {
+    testWidgets('Renders normal title when isSearching is falseであること', (
       tester,
     ) async {
       final controller = TextEditingController();
@@ -27,7 +27,7 @@ void main() {
       expect(find.byType(TextField), findsNothing);
     });
 
-    testWidgets('Renders search input when isSearching is true', (
+    testWidgets('Renders search input when isSearching is trueであること', (
       tester,
     ) async {
       final controller = TextEditingController();

@@ -14,7 +14,7 @@ import 'package:kendo_os/shared/widgets/app_text_field.dart';
 // 適正な薄いグレー（hintColor / subTextColor / 透過グレー等）で表示されることを永久保証します。
 // ==============================================================================
 void main() {
-  group('🛡️ [第3条 ガバナンス規約] 全画面ヒントテキスト視認性・適正グレー保証テスト', () {
+  group('[Governance] [第3条 ガバナンス規約] 全画面ヒントテキスト視認性・適正グレー保証テスト', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -31,49 +31,46 @@ void main() {
     // --------------------------------------------------------------------------
     // 1. 静的コード解析規約: lib/ 全域での hintStyle 不透明純白・純黒の直書きゼロ保証
     // --------------------------------------------------------------------------
-    test(
-      '1. [静的規約] 全Dartファイルで hintStyle への不透明純白(0xFFFFFFFF/white)・純黒の直接指定が0件であること',
-      () {
-        final violations = <String>[];
+    test('[静的規約] 全Dartファイルで hintStyle への不透明純白(0xFFFFFFFF/white)・純黒の直接指定が0件であること', () {
+      final violations = <String>[];
 
-        final whiteRegex = RegExp(
-          r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFFFFFFFF|Colors\.white\b)',
-        );
-        final blackRegex = RegExp(
-          r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFF000000|Colors\.black\b)',
-        );
+      final whiteRegex = RegExp(
+        r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFFFFFFFF|Colors\.white\b)',
+      );
+      final blackRegex = RegExp(
+        r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFF000000|Colors\.black\b)',
+      );
 
-        for (final file in dartFiles) {
-          final content = file.readAsStringSync();
+      for (final file in dartFiles) {
+        final content = file.readAsStringSync();
 
-          if (whiteRegex.hasMatch(content)) {
-            violations.add(
-              '${file.path}: hintStyle に不透明純白(0xFFFFFFFF / Colors.white)が指定されています',
-            );
-          }
-          if (blackRegex.hasMatch(content)) {
-            violations.add(
-              '${file.path}: hintStyle に不透明純黒(0xFF000000 / Colors.black)が指定されています',
-            );
-          }
+        if (whiteRegex.hasMatch(content)) {
+          violations.add(
+            '${file.path}: hintStyle に不透明純白(0xFFFFFFFF / Colors.white)が指定されています',
+          );
         }
+        if (blackRegex.hasMatch(content)) {
+          violations.add(
+            '${file.path}: hintStyle に不透明純黒(0xFF000000 / Colors.black)が指定されています',
+          );
+        }
+      }
 
-        expect(
-          violations,
-          isEmpty,
-          reason:
-              'ヒントテキストの文字色に不透明な純白または純黒が指定されているため、'
-              'ダークモードでの白飛び（入力文字と同化）やライトモードでの黒潰れが発生します。\n'
-              'デザインシステムの themeColors.hintColor または適正なグレー系トークンを使用してください。\n'
-              '違反ファイル:\n${violations.join('\n')}',
-        );
-      },
-    );
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'ヒントテキストの文字色に不透明な純白または純黒が指定されているため、'
+            'ダークモードでの白飛び（入力文字と同化）やライトモードでの黒潰れが発生します。\n'
+            'デザインシステムの themeColors.hintColor または適正なグレー系トークンを使用してください。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
 
     // --------------------------------------------------------------------------
     // 2. デザインシステムトークン規約: ライト/ダーク両モードの hintColor が適正グレーであること
     // --------------------------------------------------------------------------
-    test('2. [トークン規約] AppThemeColors の hintColor がライト/ダークともに適正なグレー色であること', () {
+    test('[トークン規約] AppThemeColors の hintColor がライト/ダークともに適正なグレー色であること', () {
       for (final mode in ['normal', 'combat', 'zen']) {
         final lightColors = AppThemeColors.ofMode(isDark: false, mode: mode);
         final darkColors = AppThemeColors.ofMode(isDark: true, mode: mode);
@@ -111,7 +108,7 @@ void main() {
     // 3. 動的ウィジェット規約: AppTextField がライト/ダーク両モードで hintColor を自動適用すること
     // --------------------------------------------------------------------------
     testWidgets(
-      '3. [ウィジェット規約] AppTextField のデフォルトヒント色がライト/ダークともに hintColor であること',
+      '[ウィジェット規約] AppTextField のデフォルトヒント色がライト/ダークともに hintColor であること',
       (tester) async {
         for (final isDark in [false, true]) {
           final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -152,7 +149,7 @@ void main() {
     // 4. 動的画面規約: MatchEditCourtAndGroupTab の入力欄がライト/ダークともに適正グレーであること
     // --------------------------------------------------------------------------
     testWidgets(
-      '4. [画面規約] MatchEditCourtAndGroupTab 全入力欄のヒント色がライト/ダークともに適正グレーであること',
+      '[画面規約] MatchEditCourtAndGroupTab 全入力欄のヒント色がライト/ダークともに適正グレーであること',
       (tester) async {
         for (final isDark in [false, true]) {
           final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -201,7 +198,7 @@ void main() {
     // 5. 動的画面規約: MatchEditTeamAndPlayersTab の入力欄がライト/ダークともに適正グレーであること
     // --------------------------------------------------------------------------
     testWidgets(
-      '5. [画面規約] MatchEditTeamAndPlayersTab 全入力欄のヒント色がライト/ダークともに適正グレーであること',
+      '[画面規約] MatchEditTeamAndPlayersTab 全入力欄のヒント色がライト/ダークともに適正グレーであること',
       (tester) async {
         for (final isDark in [false, true]) {
           final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -267,7 +264,7 @@ void main() {
     // 6. 動的画面規約: 大会作成画面 (Page1 / Page2) のヒント色がライト/ダークともに適正グレーであること
     // --------------------------------------------------------------------------
     testWidgets(
-      '6. [画面規約] 大会作成画面 (Page1 & Page2) 全入力欄のヒント色がライト/ダークともに適正グレーであること',
+      '[画面規約] 大会作成画面 (Page1 & Page2) 全入力欄のヒント色がライト/ダークともに適正グレーであること',
       (tester) async {
         for (final isDark in [false, true]) {
           final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');

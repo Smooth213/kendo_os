@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_p
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('⏱️ DockTimerNotifier Unit Tests', () {
+  group('[Unit] DockTimerNotifier 単体テスト', () {
     late ProviderContainer container;
 
     setUp(() {

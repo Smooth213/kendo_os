@@ -65,12 +65,12 @@ String _loadPdfServiceSource() {
 // Tests
 // --------------------------------------------------------------------------
 void main() {
-  group('🛡️ Web PDF印刷 ポップアップブロック対策保護テスト', () {
+  group('[Unit] Web PDF印刷 ポップアップブロック対策保護テスト', () {
     // ──────────────────────────────────────────────────────────────
     // 経路選択ロジック（純粋関数）
     // ──────────────────────────────────────────────────────────────
-    group('🔀 経路選択ロジック (resolvePdfPrintRoute)', () {
-      test('✅ Web環境では webDownload 経路が選ばれる', () {
+    group('経路選択ロジック (resolvePdfPrintRoute)', () {
+      test('Web環境では webDownload 経路が選ばれること', () {
         expect(
           resolvePdfPrintRoute(isWeb: true),
           PdfPrintRoute.webDownload,
@@ -80,7 +80,7 @@ void main() {
         );
       });
 
-      test('✅ ネイティブ環境では nativePrintPreview 経路が選ばれる', () {
+      test('ネイティブ環境では nativePrintPreview 経路が選ばれること', () {
         expect(
           resolvePdfPrintRoute(isWeb: false),
           PdfPrintRoute.nativePrintPreview,
@@ -88,7 +88,7 @@ void main() {
         );
       });
 
-      test('✅ 現在の実行環境（ネイティブテスト）では nativePrintPreview が選ばれる', () {
+      test('現在の実行環境（ネイティブテスト）では nativePrintPreview が選ばれること', () {
         // テストランナー自体はネイティブ(非Web)なので kIsWeb == false
         expect(
           resolvePdfPrintRoute(isWeb: kIsWeb),
@@ -97,7 +97,7 @@ void main() {
         );
       });
 
-      test('✅ Web/ネイティブで異なる経路が選ばれる（相互排他）', () {
+      test('【相互排他】Web/ネイティブで異なる経路が選ばれること', () {
         final webRoute = resolvePdfPrintRoute(isWeb: true);
         final nativeRoute = resolvePdfPrintRoute(isWeb: false);
         expect(
@@ -111,16 +111,16 @@ void main() {
     // ──────────────────────────────────────────────────────────────
     // ファイル名・MIME タイプ
     // ──────────────────────────────────────────────────────────────
-    group('📄 PDFファイル名・MIMEタイプ', () {
-      test('✅ ファイル名が正しく生成される（小学生の部）', () {
+    group('PDFファイル名・MIMEタイプ', () {
+      test('【小学生の部】ファイル名が正しく生成されること', () {
         expect(buildPdfFileName('小学生の部'), '公式記録_小学生の部.pdf');
       });
 
-      test('✅ ファイル名が正しく生成される（一般の部）', () {
+      test('【一般の部】ファイル名が正しく生成されること', () {
         expect(buildPdfFileName('一般の部'), '公式記録_一般の部.pdf');
       });
 
-      test('✅ MIMEタイプが application/pdf である', () {
+      test('MIMEタイプが application/pdf であること', () {
         expect(pdfMimeType, 'application/pdf');
       });
     });
@@ -128,14 +128,14 @@ void main() {
     // ──────────────────────────────────────────────────────────────
     // ソースコード解析テスト（回帰防止）
     // ──────────────────────────────────────────────────────────────
-    group('🔬 ソースコード解析（回帰防止）', () {
+    group('ソースコード解析（回帰防止）', () {
       late String source;
 
       setUpAll(() {
         source = _loadPdfServiceSource();
       });
 
-      test('✅ printOfficialRecord が kIsWeb 分岐を持つ', () {
+      test('printOfficialRecord が kIsWeb 分岐を持つこと', () {
         expect(
           source,
           contains('if (kIsWeb)'),
@@ -145,7 +145,7 @@ void main() {
         );
       });
 
-      test('✅ Web経路で downloadFileWeb を呼んでいる', () {
+      test('Web経路で downloadFileWeb を呼んでいること', () {
         expect(
           source,
           contains('download_helper.downloadFileWeb('),
@@ -155,7 +155,7 @@ void main() {
         );
       });
 
-      test('✅ Web経路で application/pdf MIME タイプを指定している', () {
+      test('Web経路で application/pdf MIME タイプを指定していること', () {
         expect(
           source,
           contains("'application/pdf'"),
@@ -163,7 +163,7 @@ void main() {
         );
       });
 
-      test('✅ download_helper のインポートが存在する（条件付きインポート）', () {
+      test('【条件付きインポート】download_helper のインポートが存在すること', () {
         expect(
           source,
           contains('file_download_helper'),
@@ -171,7 +171,7 @@ void main() {
         );
       });
 
-      test('✅ ネイティブ用 else 節に Printing.layoutPdf がある', () {
+      test('ネイティブ用 else 節に Printing.layoutPdf があること', () {
         expect(
           source,
           contains('Printing.layoutPdf('),
@@ -181,7 +181,7 @@ void main() {
         );
       });
 
-      test('✅ printOfficialRecord メソッドが存在する', () {
+      test('printOfficialRecord メソッドが存在すること', () {
         expect(
           source,
           contains('static Future<void> printOfficialRecord('),
@@ -189,7 +189,7 @@ void main() {
         );
       });
 
-      test('❌ 【回帰検知】kIsWeb 分岐が消えていないこと', () {
+      test('【回帰検知】kIsWeb 分岐が消えていないこと', () {
         // 旧バージョンのコード（修正前）では kIsWeb 分岐なしで
         // Printing.layoutPdf を呼んでいた。これに戻っていないことを確認。
         final kIsWebCount = 'kIsWeb'.allMatches(source).length;
@@ -206,8 +206,8 @@ void main() {
     // ──────────────────────────────────────────────────────────────
     // ポップアップブロックが発動する条件の知識テスト（仕様文書）
     // ──────────────────────────────────────────────────────────────
-    group('📚 ポップアップブロック仕様の知識テスト', () {
-      test('✅ 非同期PDF生成後のウィンドウ開放はポップアップブロック対象になる', () {
+    group('ポップアップブロック仕様の知識テスト', () {
+      test('非同期PDF生成後のウィンドウ開放はポップアップブロック対象になること', () {
         // ブラウザのポップアップブロックはユーザーの直接操作（タップ等）から
         // 切り離された非同期タイミングでのウィンドウ開放をブロックする。
         //
@@ -226,7 +226,7 @@ void main() {
         );
       });
 
-      test('✅ ネイティブではポップアップブロックが存在しないため layoutPdf を使用', () {
+      test('ネイティブではポップアップブロックが存在しないため layoutPdf を使用こと', () {
         // iOS/Android/macOS ネイティブアプリにはブラウザのポップアップブロックが
         // 存在しないため Printing.layoutPdf を安全に使用できる。
         final nativeRoute = resolvePdfPrintRoute(isWeb: false);
@@ -237,7 +237,7 @@ void main() {
         );
       });
 
-      test('✅ Webでの印刷フローはダウンロード→ブラウザ印刷で完結する', () {
+      test('Webでの印刷フローはダウンロード→ブラウザ印刷で完結すること', () {
         // downloadFileWeb が PDF を提供し、ユーザーはブラウザの標準機能で印刷する。
         // MIME タイプが application/pdf であることで、ブラウザは
         // 正しくPDFとして扱いプレビュー・印刷を提供する。
@@ -245,7 +245,7 @@ void main() {
         expect(resolvePdfPrintRoute(isWeb: true), PdfPrintRoute.webDownload);
       });
 
-      test('✅ マニュアルPDFはポップアップブロックの影響を受けない（資産読み込みが高速）', () {
+      test('【資産読み込みが高速】マニュアルPDFはポップアップブロックの影響を受けないこと', () {
         // embedded_manual_screen.dart はアセットから高速に読み込むため
         // ユーザーのタップから短時間で layoutPdf が呼ばれ、
         // ポップアップブロックが発動しない。

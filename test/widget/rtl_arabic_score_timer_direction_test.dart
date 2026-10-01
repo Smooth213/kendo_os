@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🌍 【Phase 8-2/7】RTL（右横書きアラビア語）ロケール下 スコア・タイマー方向保護テスト', () {
-    testWidgets('1. RTL環境下でもタイマー（03:00）の数字並びが逆転せず、赤白のスコア表示が保たれること', (
+  group('[Widget] 【Phase 8-2/7】RTL（右横書きアラビア語）ロケール下 スコア・タイマー方向保護テスト', () {
+    testWidgets('RTL環境下でもタイマー（03:00）の数字並びが逆転せず、赤白のスコア表示が保たれること', (
       tester,
     ) async {
       await tester.pumpWidget(

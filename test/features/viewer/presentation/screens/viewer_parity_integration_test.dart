@@ -48,7 +48,7 @@ void main() {
     );
   });
 
-  group('🛡️ 観客用ビュアー完全一致（Parity）検証テスト要塞', () {
+  group('[Widget] 観客用ビュアー完全一致（Parity）検証テスト要塞', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockPlayerRepository mockPlayerRepo;
     late MockSyncEngine mockSyncEngine;
@@ -167,7 +167,7 @@ void main() {
     }
 
     testWidgets(
-      '1. 【ホーム画面の完全一致】 本部から「観客・保護者側の画面を確認 (Viewer)」を押下して到達した画面と、QRコードから直接入った観客画面が100%同一UI・権限であること',
+      '【ホーム画面の完全一致】 本部から「観客・保護者側の画面を確認 (Viewer)」を押下して到達した画面と、QRコードから直接入った観客画面が100%同一UI・権限であること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1800);
         tester.view.devicePixelRatio = 1.0;
@@ -232,7 +232,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 【大会プログラム画面の完全一致】 本部プレビュー時でも「大会プログラム」タイトルとなり、追加FAB・削除ゴミ箱アイコンが完全に消去されていること',
+      '【大会プログラム画面の完全一致】 本部プレビュー時でも「大会プログラム」タイトルとなり、追加FAB・削除ゴミ箱アイコンが完全に消去されていること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1800);
         tester.view.devicePixelRatio = 1.0;
@@ -278,7 +278,7 @@ void main() {
     );
 
     testWidgets(
-      '3. 【プログラム描画ツールの完全一致】 観客プレビュー時でも共有ペン（ピンク・黄）が非表示となり、個人ペン（青・黒）のみ提供されること',
+      '【プログラム描画ツールの完全一致】 観客プレビュー時でも共有ペン（ピンク・黄）が非表示となり、個人ペン（青・黒）のみ提供されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -316,7 +316,7 @@ void main() {
     );
 
     testWidgets(
-      '4. 【公式戦記録画面の完全一致】 本部から観客用公式戦記録を開いた際、成績サマリーが非表示となり、部門別タブと高コントラスト出力ボタンのみ表示されること',
+      '【公式戦記録画面の完全一致】 本部から観客用公式戦記録を開いた際、成績サマリーが非表示となり、部門別タブと高コントラスト出力ボタンのみ表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1800);
         tester.view.devicePixelRatio = 1.0;

@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import '../../../helpers/event_factory.dart';
 
 void main() {
-  group('KendoRuleEngine - Event Driven Score Tests', () {
+  group('[Unit] KendoRuleEngine - Event Driven Score テスト', () {
     late KendoRuleEngine engine;
     late MatchModel dummyMatch;
     late MatchRule dummyRule;

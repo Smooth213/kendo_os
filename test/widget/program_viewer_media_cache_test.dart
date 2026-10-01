@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 
 void main() {
-  group('🛡️ ProgramViewerMediaCache Unit Tests', () {
+  group('[Widget] ProgramViewerMediaCache 単体テスト', () {
     test(
-      '1. ProgramViewerMediaCache handles placeholder image sizes',
+      'ProgramViewerMediaCache handles placeholder image sizesであること',
       () async {
         final cache = ProgramViewerMediaCache();
         final size = await cache.getCachedImageSize(
@@ -15,7 +15,7 @@ void main() {
       },
     );
 
-    test('2. ProgramViewerMediaCache handles empty URL', () async {
+    test('ProgramViewerMediaCache handles empty URLであること', () async {
       final cache = ProgramViewerMediaCache();
       final size = await cache.getCachedImageSize('');
       expect(size, const Size(400, 600));

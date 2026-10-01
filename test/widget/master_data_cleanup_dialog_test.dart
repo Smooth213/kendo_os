@@ -123,8 +123,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('MasterDataCleanupDialog 動作保証テスト要塞', () {
-    testWidgets('1. ダイアログ表示: タイトルおよび3つの管理オプションが表示されること', (tester) async {
+  group('[Widget] MasterDataCleanupDialog 動作保証テスト要塞', () {
+    testWidgets('ダイアログ表示: タイトルおよび3つの管理オプションが表示されること', (tester) async {
       await openDialog(tester);
 
       expect(find.text('データとストレージ管理'), findsOneWidget);
@@ -134,7 +134,7 @@ void main() {
       expect(find.text('閉じる'), findsOneWidget);
     });
 
-    testWidgets('2. キャッシュの削除: 実行タップで画像キャッシュがクリアされ成功通知が表示されること', (tester) async {
+    testWidgets('キャッシュの削除: 実行タップで画像キャッシュがクリアされ成功通知が表示されること', (tester) async {
       await openDialog(tester);
 
       // キャッシュクリアの「実行」ボタンを検索
@@ -150,7 +150,7 @@ void main() {
       expect(find.text('データとストレージ管理'), findsNothing);
     });
 
-    testWidgets('3. JSON書き出し: 試合データがJSONファイルとして正しく保存・共有されること', (tester) async {
+    testWidgets('JSON書き出し: 試合データがJSONファイルとして正しく保存・共有されること', (tester) async {
       final dummyMatch = MatchModel(
         id: 'test-match-123',
         matchType: 'individual',
@@ -191,7 +191,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     });
 
-    testWidgets('4. 古いデータの削除: 警告モーダルを経て1年以上前の大会・試合のみが削除されること', (tester) async {
+    testWidgets('古いデータの削除: 警告モーダルを経て1年以上前の大会・試合のみが削除されること', (tester) async {
       final repo = TournamentRepository(
         dojoId: 'test-dojo',
         firestore: fakeFirestore,
@@ -311,7 +311,7 @@ void main() {
       expect(recentMatchDoc.exists, isTrue);
     });
 
-    testWidgets('5. 古いデータの削除: 対象がない場合は「見つかりませんでした」と表示されること', (tester) async {
+    testWidgets('古いデータの削除: 対象がない場合は「見つかりませんでした」と表示されること', (tester) async {
       final repo = TournamentRepository(
         dojoId: 'test-dojo',
         firestore: fakeFirestore,

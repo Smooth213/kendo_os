@@ -199,7 +199,7 @@ void main() {
     );
   }
 
-  group('🥋 プログラム管理 vs ボトムシート: 縦・横・縦横混在PDFにおけるペン完全同期検証テスト', () {
+  group('[Widget] プログラム管理 vs ボトムシート: 縦・横・縦横混在PDFにおけるペン完全同期検証テスト', () {
     const testPdfUrl = 'https://example.com/tournament_mixed.pdf';
     final mixedProgram = ProgramModel(
       id: 'mixed-prog-1',
@@ -236,7 +236,7 @@ void main() {
     );
 
     testWidgets(
-      '1. 縦向きページ（p0）: 全画面とボトムシートでキャンバスが 1000x1414 で完全一致し、ペンが同じ位置に重畳されること',
+      '縦向きページ（p0）: 全画面とボトムシートでキャンバスが 1000x1414 で完全一致し、ペンが同じ位置に重畳されること',
       (tester) async {
         when(
           () => mockProgramRepo.watchPrograms(any()),
@@ -336,7 +336,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 横向きページ（p1）: 全画面とボトムシートでキャンバスが 1414x1000 で完全一致し、ペンが同じ位置に重畳されること',
+      '横向きページ（p1）: 全画面とボトムシートでキャンバスが 1414x1000 で完全一致し、ペンが同じ位置に重畳されること',
       (tester) async {
         when(
           () => mockProgramRepo.watchPrograms(any()),
@@ -459,7 +459,7 @@ void main() {
       },
     );
 
-    testWidgets('3. 縦横混在ファイルにおけるストロークのページ分離: p0のペンがp1に漏れず、各用紙に正しく描画されること', (
+    testWidgets('縦横混在ファイルにおけるストロークのページ分離: p0のペンがp1に漏れず、各用紙に正しく描画されること', (
       tester,
     ) async {
       when(

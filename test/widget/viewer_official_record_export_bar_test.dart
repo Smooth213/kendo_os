@@ -7,8 +7,8 @@ import 'package:kendo_os/shared/application/projections/tournament_projection.da
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('🛡️ ViewerOfficialRecordExportBar Widget Tests', () {
-    testWidgets('Renders PDF and Image export buttons properly', (
+  group('[Widget] ViewerOfficialRecordExportBar ウィジェットテスト', () {
+    testWidgets('Renders PDF and Image export buttons properlyであること', (
       tester,
     ) async {
       final proj = TournamentProjection(

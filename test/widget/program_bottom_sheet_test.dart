@@ -77,7 +77,7 @@ void main() {
     );
   }
 
-  group('🥋 ProgramBottomSheet ウィジェットテスト', () {
+  group('[Widget] ProgramBottomSheet ウィジェットテスト', () {
     testWidgets('プログラム未登録時に空メッセージが表示されること', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;

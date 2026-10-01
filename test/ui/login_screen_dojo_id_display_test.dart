@@ -9,9 +9,9 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 
 void main() {
-  group('🛡️ Dojo ID Display & Dark Mode Regression Tests', () {
+  group('[Widget] Dojo ID Display & Dark Mode リグレッションテスト', () {
     testWidgets(
-      '1. Verify active Dojo ID is clearly displayed on LoginScreen (Light & Dark Mode)',
+      'Verify active Dojo ID is clearly displayed on LoginScreen (Light & Dark Mode)こと',
       (WidgetTester tester) async {
         const testDojoId = 'tokyo_kendo_dojo_2026';
 
@@ -54,7 +54,7 @@ void main() {
     );
 
     testWidgets(
-      '2. Verify 2-line Dojo ID card on RoleSelectScreen without overflow (Light & Dark Mode)',
+      'Verify 2-line Dojo ID card on RoleSelectScreen without overflow (Light & Dark Mode)こと',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -105,7 +105,7 @@ void main() {
     );
 
     testWidgets(
-      '3. 【新権限名称検証】 RoleSelectScreen に「代表・管理者」「監督・引率責任者」「スコア・記録係」「応援・保護者・選手」が表示されること',
+      '【新権限名称検証】 RoleSelectScreen に「代表・管理者」「監督・引率責任者」「スコア・記録係」「応援・保護者・選手」が表示されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

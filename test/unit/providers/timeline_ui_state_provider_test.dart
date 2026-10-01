@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 
 void main() {
-  group('🥋 Timeline UI State Provider Tests', () {
+  group('[Unit] Timeline UI State Provider テスト', () {
     test(
       'selectedCategoryFilterProvider の初期値は null であり、カテゴリー変更・リセットが動作すること',
       () {

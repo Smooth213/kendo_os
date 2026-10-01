@@ -42,12 +42,12 @@ void _expectNoText(String text) =>
 // ─────────────────────────────────────────────────────────────
 
 void main() {
-  group('🛡️ MatchRuleSummaryCard 全形式表示テスト', () {
+  group('[Widget] MatchRuleSummaryCard 全形式表示テスト', () {
     // ================================================================
     // 個人戦
     // ================================================================
     group('個人戦', () {
-      testWidgets('1. 試合時間・勝負方式が表示される', (tester) async {
+      testWidgets('試合時間・勝負方式が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(matchType: '個人戦', matchTime: 2.0, isIpponShobu: false),
         );
@@ -57,7 +57,7 @@ void main() {
         _expectText('三本勝負');
       });
 
-      testWidgets('2. 延長戦・判定が表示される', (tester) async {
+      testWidgets('延長戦・判定が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '個人戦',
@@ -70,7 +70,7 @@ void main() {
         _expectText('あり');
       });
 
-      testWidgets('3. 延長なし・判定なしが正しく表示される', (tester) async {
+      testWidgets('延長なし・判定なしが正しく表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '個人戦',
@@ -83,19 +83,19 @@ void main() {
         _expectText('なし');
       });
 
-      testWidgets('4. 団体戦・代表戦設定は表示されない', (tester) async {
+      testWidgets('団体戦・代表戦設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '個人戦'));
         _expectNoText('団体戦・代表戦設定');
         _expectNoText('代表戦');
       });
 
-      testWidgets('5. リーグ設定は表示されない', (tester) async {
+      testWidgets('リーグ設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '個人戦'));
         _expectNoText('リーグ戦設定');
         _expectNoText('勝点配分');
       });
 
-      testWidgets('6. 勝ち抜き設定は表示されない', (tester) async {
+      testWidgets('勝ち抜き設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '個人戦'));
         _expectNoText('勝ち抜き戦設定');
         _expectNoText('無制限条件');
@@ -106,7 +106,7 @@ void main() {
     // 団体戦
     // ================================================================
     group('団体戦', () {
-      testWidgets('7. 試合時間・勝負方式が表示される', (tester) async {
+      testWidgets('試合時間・勝負方式が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(matchType: '団体戦', matchTime: 3.0, isIpponShobu: true),
         );
@@ -116,13 +116,13 @@ void main() {
         _expectText('一本勝負');
       });
 
-      testWidgets('8. 延長戦・判定は表示されない', (tester) async {
+      testWidgets('延長戦・判定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '団体戦'));
         _expectNoText('延長戦');
         _expectNoText('判定');
       });
 
-      testWidgets('9. 団体戦・代表戦設定が表示される（代表戦あり）', (tester) async {
+      testWidgets('【代表戦あり】団体戦・代表戦設定が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '団体戦',
@@ -145,7 +145,7 @@ void main() {
         _expectText('あり（無制限）');
       });
 
-      testWidgets('10. 代表戦なしの場合、代表戦詳細は表示されない', (tester) async {
+      testWidgets('代表戦なしの場合、代表戦詳細は表示されないこと', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '団体戦',
@@ -159,7 +159,7 @@ void main() {
         _expectNoText('代表戦延長');
       });
 
-      testWidgets('11. リーグ設定・勝ち抜き設定は表示されない', (tester) async {
+      testWidgets('リーグ設定・勝ち抜き設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '団体戦'));
         _expectNoText('リーグ戦設定');
         _expectNoText('勝ち抜き戦設定');
@@ -170,13 +170,13 @@ void main() {
     // リーグ個人戦
     // ================================================================
     group('リーグ個人戦', () {
-      testWidgets('12. 試合時間・勝負方式が表示される', (tester) async {
+      testWidgets('試合時間・勝負方式が表示されること', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: 'リーグ個人戦'));
         _expectText('試合時間');
         _expectText('勝負方式');
       });
 
-      testWidgets('13. 延長戦・判定が表示される', (tester) async {
+      testWidgets('延長戦・判定が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: 'リーグ個人戦',
@@ -188,7 +188,7 @@ void main() {
         _expectText('判定');
       });
 
-      testWidgets('14. リーグ戦設定（勝点配分）が表示される', (tester) async {
+      testWidgets('リーグ戦設定（勝点配分）が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: 'リーグ個人戦',
@@ -202,13 +202,13 @@ void main() {
         _expectText('負: 0点');
       });
 
-      testWidgets('15. 団体戦・代表戦設定は表示されない', (tester) async {
+      testWidgets('団体戦・代表戦設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: 'リーグ個人戦'));
         _expectNoText('団体戦・代表戦設定');
         _expectNoText('同点時代表戦');
       });
 
-      testWidgets('16. 勝ち抜き設定は表示されない', (tester) async {
+      testWidgets('勝ち抜き設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: 'リーグ個人戦'));
         _expectNoText('勝ち抜き戦設定');
       });
@@ -218,19 +218,19 @@ void main() {
     // リーグ団体戦
     // ================================================================
     group('リーグ団体戦', () {
-      testWidgets('17. 試合時間・勝負方式が表示される', (tester) async {
+      testWidgets('試合時間・勝負方式が表示されること', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: 'リーグ団体戦'));
         _expectText('試合時間');
         _expectText('勝負方式');
       });
 
-      testWidgets('18. 延長戦・判定は表示されない', (tester) async {
+      testWidgets('延長戦・判定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: 'リーグ団体戦'));
         _expectNoText('延長戦');
         _expectNoText('判定');
       });
 
-      testWidgets('19. リーグ戦設定（勝点配分・同点時代表戦）が表示される', (tester) async {
+      testWidgets('リーグ戦設定（勝点配分・同点時代表戦）が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: 'リーグ団体戦',
@@ -254,7 +254,7 @@ void main() {
         _expectText('あり（無制限）');
       });
 
-      testWidgets('20. 同点時代表戦なしの場合、代表戦詳細は表示されない', (tester) async {
+      testWidgets('同点時代表戦なしの場合、代表戦詳細は表示されないこと', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: 'リーグ団体戦',
@@ -267,7 +267,7 @@ void main() {
         _expectNoText('代表戦延長');
       });
 
-      testWidgets('21. 団体戦・代表戦設定セクション（通常）は表示されない', (tester) async {
+      testWidgets('団体戦・代表戦設定セクション（通常）は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: 'リーグ団体戦'));
         _expectNoText('団体戦・代表戦設定');
         _expectNoText('勝ち抜き戦設定');
@@ -278,19 +278,19 @@ void main() {
     // 勝ち抜き戦
     // ================================================================
     group('勝ち抜き戦', () {
-      testWidgets('22. 試合時間・勝負方式が表示される', (tester) async {
+      testWidgets('試合時間・勝負方式が表示されること', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '勝ち抜き戦'));
         _expectText('試合時間');
         _expectText('勝負方式');
       });
 
-      testWidgets('23. 延長戦・判定は表示されない', (tester) async {
+      testWidgets('延長戦・判定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '勝ち抜き戦'));
         _expectNoText('延長戦');
         _expectNoText('判定');
       });
 
-      testWidgets('24. 勝ち抜き戦設定（無制限条件）が表示される', (tester) async {
+      testWidgets('勝ち抜き戦設定（無制限条件）が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '勝ち抜き戦',
@@ -302,7 +302,7 @@ void main() {
         _expectText('大将対大将');
       });
 
-      testWidgets('25. 無制限条件が空の場合はデフォルト値「大将対大将」が表示される', (tester) async {
+      testWidgets('無制限条件が空の場合はデフォルト値「大将対大将」が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '勝ち抜き戦',
@@ -312,7 +312,7 @@ void main() {
         _expectText('大将対大将');
       });
 
-      testWidgets('26. 団体戦・代表戦設定・リーグ設定は表示されない', (tester) async {
+      testWidgets('団体戦・代表戦設定・リーグ設定は表示されないこと', (tester) async {
         await tester.pumpWidget(_buildCard(matchType: '勝ち抜き戦'));
         _expectNoText('団体戦・代表戦設定');
         _expectNoText('リーグ戦設定');
@@ -323,7 +323,7 @@ void main() {
     // 共通仕様：値のフォーマット
     // ================================================================
     group('値のフォーマット', () {
-      testWidgets('27. ランニングタイムが正しく表示される', (tester) async {
+      testWidgets('ランニングタイムが正しく表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '個人戦',
@@ -334,7 +334,7 @@ void main() {
         _expectText('ランニング');
       });
 
-      testWidgets('28. 都度ストップが正しく表示される', (tester) async {
+      testWidgets('都度ストップが正しく表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '個人戦',
@@ -345,7 +345,7 @@ void main() {
         _expectText('都度ストップ');
       });
 
-      testWidgets('29. 延長戦「あり（◯分）」が正しく表示される', (tester) async {
+      testWidgets('延長戦「あり（◯分）」が正しく表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '個人戦',
@@ -358,7 +358,7 @@ void main() {
         _expectText('あり（1.5分）');
       });
 
-      testWidgets('30. 代表戦時間「◯分」が正しく表示される', (tester) async {
+      testWidgets('代表戦時間「◯分」が正しく表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '団体戦',

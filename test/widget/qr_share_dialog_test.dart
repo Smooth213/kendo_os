@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/widgets/qr_share_dialog.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
-  group('🥋 QrShareDialog Widget Tests', () {
+  group('[Widget] QrShareDialog ウィジェットテスト', () {
     testWidgets('タイトル・説明・QRコード・URL・各ボタンが正常に描画されること', (tester) async {
       bool isClosed = false;
       const testUrl = 'https://kendo-os-beta.web.app/viewer-home/test_tour_999';

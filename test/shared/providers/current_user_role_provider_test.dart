@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/presentation/providers/current_user_role_provide
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
-  group('🛡️ currentUserRoleProvider 完全ハイブリッド同期検証テスト', () {
+  group('[Unit] currentUserRoleProvider 完全ハイブリッド同期検証テスト', () {
     late ProviderContainer container;
 
     setUp(() {

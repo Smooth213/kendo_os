@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_lookup_helper.dart';
 
 void main() {
-  group('CategoryRuleLookupHelper Tests', () {
+  group('[Widget] CategoryRuleLookupHelper テスト', () {
     test('cleanCategoryBaseName: 種別サフィックスや数字サフィックスを除去できること', () {
       expect(
         CategoryRuleLookupHelper.cleanCategoryBaseName('小学生の部（個人戦）'),
@@ -21,7 +21,7 @@ void main() {
       expect(CategoryRuleLookupHelper.cleanCategoryBaseName('一般の部'), '一般の部');
     });
 
-    test('findRuleSetForMatch: 団体戦・個人戦・勝ち抜き戦に応じたルールセット解決', () {
+    test('findRuleSetForMatch: 団体戦・個人戦・勝ち抜き戦に応じたルールセット解決こと', () {
       final teamRule = const CategoryRuleSet(
         normalRule: MatchRule(matchTimeMinutes: 3.0),
         matchType: '団体戦',
@@ -66,7 +66,7 @@ void main() {
       expect(matchedKachinuki?.matchType, '勝ち抜き戦');
     });
 
-    test('findRuleEntryForMatch: note のサブタイトルやキーワードから適切なエントリを解決', () {
+    test('findRuleEntryForMatch: note のサブタイトルやキーワードから適切なエントリを解決こと', () {
       final prelimRule = const CategoryRuleSet(
         subtitle: '予選リーグ',
         normalRule: MatchRule(matchTimeMinutes: 2.0),

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/viewer/components/official_record_action_button.dart';
 
 void main() {
-  group('🛡️ OfficialRecordActionButton Widget Tests', () {
-    testWidgets('Renders icon and label, triggers onTap callback', (
+  group('[Widget] OfficialRecordActionButton ウィジェットテスト', () {
+    testWidgets('Renders icon and label, triggers onTap callbackであること', (
       WidgetTester tester,
     ) async {
       bool tapped = false;

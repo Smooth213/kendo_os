@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('🔒 現場安全弁 - 道場ルームID重複チェック＆警告ダイアログ検証テスト', () {
+  group('[Widget] 現場安全弁 - 道場ルームID重複チェック＆警告ダイアログ検証テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {

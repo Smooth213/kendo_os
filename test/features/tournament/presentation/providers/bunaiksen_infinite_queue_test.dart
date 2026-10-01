@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 
 void main() {
-  group('🛡️ Bunaiksen Infinite Queue Notifier Verification Tests', () {
+  group('[Unit] Bunaiksen Infinite Queue Notifier 検証 テスト', () {
     late ProviderContainer container;
     late BunaiksenInfiniteQueueNotifier queueNotifier;
 
@@ -16,13 +16,13 @@ void main() {
       container.dispose();
     });
 
-    test('1. Initial queue state is empty', () {
+    test('Initial queue state is emptyであること', () {
       final state = container.read(bunaiksenInfiniteQueueProvider);
       expect(state, isEmpty);
     });
 
     test(
-      '2. Adding players appends them to the end and prevents duplicates',
+      'Adding players appends them to the end and prevents duplicatesであること',
       () {
         queueNotifier.addPlayer('山田 太郎');
         expect(container.read(bunaiksenInfiniteQueueProvider), ['山田 太郎']);
@@ -43,7 +43,7 @@ void main() {
     );
 
     test(
-      '3. Removing players (leaving) removes them without disturbing other players\' order',
+      'Removing players (leaving) removes them without disturbing other players\' orderであること',
       () {
         queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
 
@@ -61,19 +61,22 @@ void main() {
       },
     );
 
-    test('4. Moving a player to the last position preserves other orders', () {
-      queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
+    test(
+      'Moving a player to the last position preserves other ordersであること',
+      () {
+        queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
 
-      queueNotifier.moveToLast('佐藤');
-      expect(container.read(bunaiksenInfiniteQueueProvider), [
-        '山田',
-        '田中',
-        '鈴木',
-        '佐藤',
-      ]);
-    });
+        queueNotifier.moveToLast('佐藤');
+        expect(container.read(bunaiksenInfiniteQueueProvider), [
+          '山田',
+          '田中',
+          '鈴木',
+          '佐藤',
+        ]);
+      },
+    );
 
-    test('5. Shuffling the queue preserves all elements and count', () {
+    test('Shuffling the queue preserves all elements and countであること', () {
       final originalList = ['山田', '佐藤', '田中', '鈴木', '高橋'];
       queueNotifier.setPlayers(originalList);
 
@@ -84,7 +87,7 @@ void main() {
       expect(shuffledList, containsAll(originalList));
     });
 
-    test('6. Reordering via Drag and Drop works correctly for both directions', () {
+    test('Reordering via Drag and Drop works correctly for both directionsであること', () {
       // Yamada (0), Sato (1), Tanaka (2), Suzuki (3)
       queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
 
@@ -110,7 +113,7 @@ void main() {
       ]);
     });
 
-    test('7. PopFirst retrieves and removes the front player', () {
+    test('PopFirst retrieves and removes the front playerであること', () {
       queueNotifier.setPlayers(['山田', '佐藤', '田中']);
 
       final first = queueNotifier.popFirst();

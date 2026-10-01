@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/home_s
 
 void main() {
   testWidgets(
-    'OfficialRecordIndividualMatchesList renders individual matches list correctly',
+    'OfficialRecordIndividualMatchesList renders individual matches list correctlyであること',
     (WidgetTester tester) async {
       final matches = [
         const MatchModel(

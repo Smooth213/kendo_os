@@ -16,7 +16,7 @@ class MockTournamentRepository extends Mock implements TournamentRepository {}
 class MockSyncEngine extends Mock implements SyncEngine {}
 
 void main() {
-  group('🛡️ 【過去の大会 (アーカイブ) 高速化＆無限ローディング防止 保証テスト】', () {
+  group('[Widget] 【過去の大会 (アーカイブ) 高速化＆無限ローディング防止 保証テスト】', () {
     late MockTournamentRepository mockTournamentRepo;
     late MockSyncEngine mockSyncEngine;
 
@@ -50,7 +50,7 @@ void main() {
       );
     }
 
-    testWidgets('1. 【即時表示保証】過去の大会が正常に取得され、ローディング待機なく一覧が表示されること', (
+    testWidgets('【即時表示保証】過去の大会が正常に取得され、ローディング待機なく一覧が表示されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -104,54 +104,53 @@ void main() {
       expect(callCount, 1);
     });
 
-    testWidgets(
-      '2. 【Rebuild耐性・通信ループ防止】画面が連続で再描画されても無駄な再フェッチが発生せずキャッシュが維持されること',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+    testWidgets('【Rebuild耐性・通信ループ防止】画面が連続で再描画されても無駄な再フェッチが発生せずキャッシュが維持されること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        final mockTournaments = [
-          TournamentModel(
-            id: 'archived_test_cache',
-            name: 'キャッシュ検証大会',
-            date: DateTime(2025, 1, 10),
-            venue: '東京武道館',
-            categories: const [],
-            organizationId: 'org_1',
-          ),
-        ];
+      final mockTournaments = [
+        TournamentModel(
+          id: 'archived_test_cache',
+          name: 'キャッシュ検証大会',
+          date: DateTime(2025, 1, 10),
+          venue: '東京武道館',
+          categories: const [],
+          organizationId: 'org_1',
+        ),
+      ];
 
-        int callCount = 0;
-        when(() => mockTournamentRepo.getArchivedTournaments()).thenAnswer((
-          _,
-        ) async {
-          callCount++;
-          return mockTournaments;
-        });
+      int callCount = 0;
+      when(() => mockTournamentRepo.getArchivedTournaments()).thenAnswer((
+        _,
+      ) async {
+        callCount++;
+        return mockTournaments;
+      });
 
-        await tester.pumpWidget(
-          createTestApp(
-            prefs: prefs,
-            child: const TournamentListScreen(isArchive: true),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        createTestApp(
+          prefs: prefs,
+          child: const TournamentListScreen(isArchive: true),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(callCount, 1);
-        expect(find.text('キャッシュ検証大会'), findsOneWidget);
+      expect(callCount, 1);
+      expect(find.text('キャッシュ検証大会'), findsOneWidget);
 
-        // 画面の連続リビルドを模倣（10回連続で pump 実行）
-        for (int i = 0; i < 10; i++) {
-          await tester.pump(const Duration(milliseconds: 50));
-        }
+      // 画面の連続リビルドを模倣（10回連続で pump 実行）
+      for (int i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
 
-        // Rebuildされても通信回数は 1 のままであること（通信ループの完全根絶を検証）
-        expect(callCount, 1);
-        expect(find.text('キャッシュ検証大会'), findsOneWidget);
-      },
-    );
+      // Rebuildされても通信回数は 1 のままであること（通信ループの完全根絶を検証）
+      expect(callCount, 1);
+      expect(find.text('キャッシュ検証大会'), findsOneWidget);
+    });
 
-    testWidgets('3. 【Empty State検証】過去大会が0件の場合、透かしアイコンと適切な案内メッセージが表示されること', (
+    testWidgets('【Empty State検証】過去大会が0件の場合、透かしアイコンと適切な案内メッセージが表示されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -173,7 +172,7 @@ void main() {
       expect(find.text('終了した大会がここにアーカイブされます。'), findsOneWidget);
     });
 
-    testWidgets('4. 【Pull to Refresh検証】引っ張って更新時にキャッシュが安全に無効化され最新データに更新されること', (
+    testWidgets('【Pull to Refresh検証】引っ張って更新時にキャッシュが安全に無効化され最新データに更新されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -242,7 +241,7 @@ void main() {
       expect(find.text('新規追加された過去大会'), findsOneWidget);
     });
 
-    testWidgets('5. 【エラーハンドリング】通信失敗時にエラーメッセージが崩れず表示されること', (
+    testWidgets('【エラーハンドリング】通信失敗時にエラーメッセージが崩れず表示されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

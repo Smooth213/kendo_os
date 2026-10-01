@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    'OrderSetupLeagueParticipantsSection renders league participants list',
+    'OrderSetupLeagueParticipantsSection renders league participants listであること',
     (WidgetTester tester) async {
       final participants = ['自チーム', '相手チームA'];
       final teamOrders = <String, List<String>>{

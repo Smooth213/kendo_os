@@ -21,9 +21,9 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('🛡️ OrderSetupScreen Keyboard Avoidance Layout Tests', () {
+  group('[Widget] OrderSetupScreen Keyboard Avoidance Layout テスト', () {
     testWidgets(
-      '1. Bottom button area should remain visible when text input is focused to allow confirmation',
+      'Bottom button area should remain visible when text input is focused to allow confirmationであること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

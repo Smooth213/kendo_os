@@ -5,9 +5,9 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_painter.dart';
 
 void main() {
-  group('🛡️ PDF Kachinuki Painter Color Verification Tests', () {
+  group('[Unit] PDF Kachinuki Painter Color 検証 テスト', () {
     test(
-      '1. Verify Red team uses PdfColors.red700 and Red player name uses PdfColors.black',
+      'Verify Red team uses PdfColors.red700 and Red player name uses PdfColors.blackであること',
       () {
         final ttf = pw.Font.helvetica();
         final ttfBold = pw.Font.helveticaBold();
@@ -141,7 +141,7 @@ void main() {
       },
     );
 
-    test('2. 長いチーム名（昇龍館一福道場A）でも横書き全文字が生成されFittedBoxで枠内に収まる', () async {
+    test('長いチーム名（昇龍館一福道場A）でも横書き全文字が生成されFittedBoxで枠内に収まること', () async {
       final ttf = pw.Font.helvetica();
       final ttfBold = pw.Font.helveticaBold();
 
@@ -235,7 +235,7 @@ void main() {
       expect(bytes, isNotEmpty);
     });
 
-    test('3. 改ページ発生時にタイトルとスコア表が分断されず同一ページに保持される', () async {
+    test('改ページ発生時にタイトルとスコア表が分断されず同一ページに保持されること', () async {
       final ttf = pw.Font.helvetica();
       final ttfBold = pw.Font.helveticaBold();
 
@@ -282,7 +282,7 @@ void main() {
       expect(pdf.document.pdfPageList.pages.length, equals(2));
     });
 
-    test('4. 1ページ（A4）に3試合が改ページされず確実に収まること', () async {
+    test('1ページ（A4）に3試合が改ページされず確実に収まること', () async {
       final ttf = pw.Font.helvetica();
       final ttfBold = pw.Font.helveticaBold();
 
@@ -345,7 +345,7 @@ void main() {
       );
     });
 
-    test('5. 通常団体戦に準拠し、名字のみ縦書き表示＆同姓選手時の頭文字表示が正しく機能すること', () async {
+    test('通常団体戦に準拠し、名字のみ縦書き表示＆同姓選手時の頭文字表示が正しく機能すること', () async {
       final ttf = pw.Font.helvetica();
       final ttfBold = pw.Font.helveticaBold();
 

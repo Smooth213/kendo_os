@@ -54,8 +54,8 @@ void main() {
   // ─────────────────────────────────────────────────────────
   // Step 1: スクロール先読みキャッシュ検証
   // ─────────────────────────────────────────────────────────
-  group('Step1: スクロール先読みキャッシュ (cacheExtent)', () {
-    test('1-1. cacheExtent値が正しく計算できること（1500.0, 1000.0）', () {
+  group('[Governance] スクロール先読みキャッシュ (cacheExtent)', () {
+    test('【1500.0, 1000.0】1. cacheExtent値が正しく計算できること', () {
       const double tournamentListCacheExtent = 1500.0;
       const double categoryListCacheExtent = 1000.0;
 
@@ -74,7 +74,7 @@ void main() {
       expect(tournamentListCacheExtent, greaterThan(categoryListCacheExtent));
     });
 
-    test('1-2. program_management_screen の itemExtent が妥当な値であること', () {
+    test('program_management_screen の itemExtent が妥当な値であること', () {
       // program_management_screen は itemExtent: 68.0 を設定済み
       const double programListItemExtent = 68.0;
 
@@ -87,7 +87,7 @@ void main() {
   // ─────────────────────────────────────────────────────────
   // Step 2-A: KachinukiBracketPainter.shouldRepaint の検証
   // ─────────────────────────────────────────────────────────
-  group('Step2-A: KachinukiBracketPainter.shouldRepaint (Web/Native共通)', () {
+  group('-A: KachinukiBracketPainter.shouldRepaint (Web/Native共通)', () {
     // ref は paint() 内でのみ使われるため、shouldRepaint のテストでは null で代用
 
     test('2A-1. 同一データのリストが渡された場合は false を返すこと', () {
@@ -235,7 +235,7 @@ void main() {
   // ─────────────────────────────────────────────────────────
   // Step 2-B: StrokePainter の shouldRepaint ロジック検証
   // ─────────────────────────────────────────────────────────
-  group('Step2-B: StrokePainter.shouldRepaint ロジック (Web/Native共通)', () {
+  group('-B: StrokePainter.shouldRepaint ロジック (Web/Native共通)', () {
     test('2B-1. 同一ストロークリスト参照では false を返すこと', () {
       final strokes = [_makeStroke('stroke-1')];
       final checker = _StrokePainterLogic(
@@ -326,8 +326,8 @@ void main() {
   // ─────────────────────────────────────────────────────────
   // Step 3: Debounce バッチ処理の検証
   // ─────────────────────────────────────────────────────────
-  group('Step3: デバウンスバッチ処理 (Web/Native共通)', () {
-    test('3-1. 50ms以内の連続イベントは1回にまとめて処理されること', () async {
+  group('デバウンスバッチ処理 (Web/Native共通)', () {
+    test('50ms以内の連続イベントは1回にまとめて処理されること', () async {
       int callCount = 0;
       Timer? debounceTimer;
 
@@ -350,7 +350,7 @@ void main() {
       expect(callCount, equals(1), reason: '50ms以内の連続イベントは1回のみ実行される');
     });
 
-    test('3-2. 50msを超える間隔のイベントは独立して処理されること', () async {
+    test('50msを超える間隔のイベントは独立して処理されること', () async {
       int callCount = 0;
       Timer? debounceTimer;
 
@@ -369,7 +369,7 @@ void main() {
       expect(callCount, equals(2), reason: '50msを超える間隔のイベントは独立して処理される');
     });
 
-    test('3-3. Web環境でIsarがnullの場合もデバウンス処理の型安全性が保たれること', () {
+    test('Web環境でIsarがnullの場合もデバウンス処理の型安全性が保たれること', () {
       // LocalMatchRepositoryのnullガードを検証するダミーロジック
       const bool isarIsNull = true; // Web環境シミュレーション
 

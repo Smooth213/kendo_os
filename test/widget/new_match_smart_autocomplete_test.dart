@@ -4,8 +4,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/new
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ NewMatchSmartAutocomplete Widget Tests', () {
-    testWidgets('Renders text field with label and icons', (
+  group('[Widget] NewMatchSmartAutocomplete ウィジェットテスト', () {
+    testWidgets('Renders text field with label and iconsであること', (
       WidgetTester tester,
     ) async {
       final controller = TextEditingController();
@@ -32,7 +32,7 @@ void main() {
       expect(find.byIcon(Icons.arrow_drop_down), findsOneWidget);
     });
 
-    testWidgets('Shows suggestions on tap and selects an item', (
+    testWidgets('Shows suggestions on tap and selects an itemであること', (
       WidgetTester tester,
     ) async {
       final controller = TextEditingController();

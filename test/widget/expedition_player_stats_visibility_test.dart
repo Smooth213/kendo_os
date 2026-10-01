@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 void main() {
-  group('ExpeditionPlayerStatsSection 視認性テスト', () {
+  group('[Widget] ExpeditionPlayerStatsSection 視認性テスト', () {
     final Map<String, DetailedPlayerStats> sampleStats = {
       '恵木 春陽': DetailedPlayerStats()
         ..win = 1
@@ -46,7 +46,7 @@ void main() {
         ..hansoku = 0,
     };
 
-    testWidgets('ダークモードでの選択タブと取得本数の視認性テスト', (tester) async {
+    testWidgets('ダークモードでの選択タブと取得本数の視認性が正常に機能すること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
@@ -86,7 +86,7 @@ void main() {
       expect(points9Text.style?.color, equals(const Color(0xFF60A5FA)));
     });
 
-    testWidgets('ライトモードでの取得本数の視認性テスト', (tester) async {
+    testWidgets('ライトモードでの取得本数の視認性が正常に機能すること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.light(),

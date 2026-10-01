@@ -7,7 +7,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_overtime_evaluator
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 
 void main() {
-  group('🥋 【Unit】全剣連試合規則第34条 延長戦・反則サドンデス完全判定テスト', () {
+  group('[Unit] 【Unit】全剣連試合規則第34条 延長戦・反則サドンデス完全判定テスト', () {
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0, 0);
 
@@ -15,7 +15,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('1. 本戦反則（△1回）が延長戦へ持ち越され、延長戦での追加反則で相手に一本が付与されてサドンデス決着すること', () {
+    test('本戦反則（△1回）が延長戦へ持ち越され、延長戦での追加反則で相手に一本が付与されてサドンデス決着すること', () {
       final match = MatchModel(
         id: 'm_encho_1',
         tournamentId: 't1',
@@ -75,7 +75,7 @@ void main() {
       expect(result, MatchResultStatus.whiteWin);
     });
 
-    test('2. 本戦で反則2回（相手に一本付与）後に取り返して1-1で延長突入した場合、次の反則累積計算が正しく機能すること', () {
+    test('本戦で反則2回（相手に一本付与）後に取り返して1-1で延長突入した場合、次の反則累積計算が正しく機能すること', () {
       final match = MatchModel(
         id: 'm_encho_2',
         tournamentId: 't1',
@@ -162,7 +162,7 @@ void main() {
       expect(result, MatchResultStatus.whiteWin);
     });
 
-    test('3. shouldEnterEncho が判定（Hantei）イベント存在時に延長突入を確実に抑止すること', () {
+    test('shouldEnterEncho が判定（Hantei）イベント存在時に延長突入を確実に抑止すること', () {
       final ctx = MatchContext(
         redIppon: 0,
         whiteIppon: 0,

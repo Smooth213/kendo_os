@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🧪 【Unit 2/5】多言語・国際化ロケールフォールバック境界値テスト', () {
+  group('[Unit] 【Unit 2/5】多言語・国際化ロケールフォールバック境界値テスト', () {
     const supportedLocales = [Locale('ja', 'JP'), Locale('en', 'US')];
     const defaultLocale = Locale('ja', 'JP');
 
@@ -17,7 +17,7 @@ void main() {
       return defaultLocale;
     }
 
-    test('1. サポート対象言語（日本語・英語）が完全に一致・解決されること', () {
+    test('サポート対象言語（日本語・英語）が完全に一致・解決されること', () {
       expect(
         resolveLocale(const Locale('ja', 'JP'), supportedLocales),
         const Locale('ja', 'JP'),
@@ -36,7 +36,7 @@ void main() {
       );
     });
 
-    test('2. 未知の国際ロケール（仏・独・中・韓・西・アラビア語）で日本語へ安全にフォールバックすること', () {
+    test('未知の国際ロケール（仏・独・中・韓・西・アラビア語）で日本語へ安全にフォールバックすること', () {
       final exoticLocales = [
         const Locale('fr', 'FR'), // フランス
         const Locale('de', 'DE'), // ドイツ
@@ -57,7 +57,7 @@ void main() {
       }
     });
 
-    test('3. null や未定義ロケールが渡された場合でも例外なくデフォルトを返すこと', () {
+    test('null や未定義ロケールが渡された場合でも例外なくデフォルトを返すこと', () {
       expect(resolveLocale(null, supportedLocales), defaultLocale);
       expect(
         resolveLocale(const Locale('und'), supportedLocales),

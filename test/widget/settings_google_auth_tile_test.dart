@@ -5,7 +5,7 @@ import 'package:kendo_os/features/auth/application/google_auth_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_google_auth_tile.dart';
 
 void main() {
-  group('🥋 SettingsGoogleAuthTile UI Tests', () {
+  group('[Widget] SettingsGoogleAuthTile UI テスト', () {
     testWidgets('未連携時: 「Googleアカウント連携」および「連携する」ボタンが表示されること', (
       WidgetTester tester,
     ) async {

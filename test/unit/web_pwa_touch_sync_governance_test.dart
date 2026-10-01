@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('🛡️ iOS PWA WebKit タッチ座標同期（ステルスTouchSync）ガバナンステスト (web/index.html)', () {
+  group('[Unit] iOS PWA WebKit タッチ座標同期（ステルスTouchSync）ガバナンステスト (web/index.html)', () {
     late String indexHtmlContent;
 
     setUpAll(() {
@@ -12,7 +12,7 @@ void main() {
     });
 
     test(
-      '1. iOS PWA エッジ・トゥ・エッジ全画面モード（black-translucent & viewport-fit=cover）が設定されていること',
+      'iOS PWA エッジ・トゥ・エッジ全画面モード（black-translucent & viewport-fit=cover）が設定されていること',
       () {
         expect(
           indexHtmlContent.contains(
@@ -40,7 +40,7 @@ void main() {
     );
 
     test(
-      '2. WebKit 起動直後タッチ座標ズレ防止 TouchSync v4.0 Perfect Snap 物理スナップシステムが確実に実装されていること',
+      'WebKit 起動直後タッチ座標ズレ防止 TouchSync v4.0 Perfect Snap 物理スナップシステムが確実に実装されていること',
       () {
         // 🛡️ TouchSync v4.0 の物理座標スナップロジックが確実に index.html に存在することを物理防衛
         expect(
@@ -73,7 +73,7 @@ void main() {
       },
     );
 
-    test('3. UIデザインを汚すデバッグ用HUDが画面上に描画されていないこと（完全ステルス保証）', () {
+    test('【完全ステルス保証】UIデザインを汚すデバッグ用HUDが画面上に描画されていないこと', () {
       expect(
         indexHtmlContent.contains('kendo-touch-hud'),
         isFalse,
@@ -82,7 +82,7 @@ void main() {
     });
 
     test(
-      '4. 【動的振る舞い検証】Node.js環境でWebKit誤加算(+54px)バグを注入し、物理スナップが100%機能することを検証',
+      '【動的振る舞い検証】Node.js環境でWebKit誤加算(+54px)バグを注入し、物理スナップが100%機能することが正しく検証できること',
       () {
         final result = Process.runSync('node', [
           'test/unit/test_ios_pwa_touch_sync_simulation.js',
@@ -101,7 +101,7 @@ void main() {
       },
     );
 
-    test('5. 待機時タイマー沈黙＆イベント駆動化規約 (setInterval禁止＆preload保証)', () {
+    test('待機時タイマー沈黙＆イベント駆動化規約 (setInterval禁止＆preload保証)こと', () {
       expect(
         indexHtmlContent.contains('setInterval(resetScroll'),
         isFalse,
@@ -119,7 +119,7 @@ void main() {
       );
     });
 
-    test('6. 体育館誤リロード・誤離脱防止 beforeunload ガード規約', () {
+    test('体育館誤リロード・誤離脱防止 beforeunload ガード規約こと', () {
       expect(
         indexHtmlContent.contains('window.setBeforeUnloadActive'),
         isTrue,

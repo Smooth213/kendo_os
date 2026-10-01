@@ -29,8 +29,8 @@ class FakeBunaiksenGuestNotifier extends StateNotifier<List<String>>
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('🛡️ Bunaiksen Setup Extracted Components Tests', () {
-    testWidgets('1. BunaiksenRuleSettingsCard renders expansion tile', (
+  group('[Widget] Bunaiksen Setup Extracted Components テスト', () {
+    testWidgets('BunaiksenRuleSettingsCard renders expansion tileであること', (
       tester,
     ) async {
       final rule = MatchRule(matchTimeMinutes: 2.0, isIpponShobu: false);
@@ -57,7 +57,7 @@ void main() {
       expect(find.text('部内戦ルール設定'), findsOneWidget);
     });
 
-    testWidgets('2. BunaiksenSetupScreen renders properly with all tabs', (
+    testWidgets('BunaiksenSetupScreen renders properly with all tabsであること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1600);

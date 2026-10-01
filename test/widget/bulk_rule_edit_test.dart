@@ -13,7 +13,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('BulkRuleEditSheet Widget Tests', () {
+  group('[Widget] BulkRuleEditSheet ウィジェットテスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {
@@ -21,7 +21,7 @@ void main() {
     });
 
     testWidgets(
-      '1. Render options, checkboxes, filters, and update successfully',
+      'Render options, checkboxes, filters, and update successfullyであること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1600);
         tester.view.devicePixelRatio = 1.0;

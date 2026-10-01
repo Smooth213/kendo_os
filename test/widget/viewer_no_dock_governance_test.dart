@@ -26,9 +26,9 @@ void main() {
   final edgeMatches = RenderingSafetyTestHelper.createEdgeCaseMatches();
   final edgeComments = RenderingSafetyTestHelper.createTestComments();
 
-  group('🛡️ 【セキュリティ＆ロール露出規制】閲覧専用ビュアー フローティングドック完全排除保証テスト', () {
+  group('[Widget] 【セキュリティ＆ロール露出規制】閲覧専用ビュアー フローティングドック完全排除保証テスト', () {
     testWidgets(
-      '1. 静的コード規約: lib/features/viewer/ 配下に FloatingProgramDockButton が一切存在しないこと',
+      '静的コード規約: lib/features/viewer/ 配下に FloatingProgramDockButton が一切存在しないこと',
       (tester) async {
         final viewerDir = Directory('lib/features/viewer');
         expect(viewerDir.existsSync(), isTrue);
@@ -59,7 +59,7 @@ void main() {
     );
 
     testWidgets(
-      '2. 閲覧専用全7画面で FloatingProgramDockButton および BunaiksenDockButton が画面上に物理排除されていること（findsNothing）',
+      '【findsNothing】閲覧専用全7画面で FloatingProgramDockButton および BunaiksenDockButton が画面上に物理排除されていること',
       (tester) async {
         final viewerScreens = <Widget>[
           const ViewerHomeScreen(tournamentId: testTournamentId),
@@ -101,7 +101,7 @@ void main() {
       },
     );
 
-    testWidgets('3. ViewerHomeScreen のヘッダー部にお知らせベルアイコンおよびメニューが復元されていること', (
+    testWidgets('ViewerHomeScreen のヘッダー部にお知らせベルアイコンおよびメニューが復元されていること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -122,7 +122,7 @@ void main() {
     });
 
     testWidgets(
-      '4. ViewerSettingsBottomSheet に「省エネモード」「サーマル冷却」「サンシャイン」が正しく描画されること',
+      'ViewerSettingsBottomSheet に「省エネモード」「サーマル冷却」「サンシャイン」が正しく描画されること',
       (tester) async {
         await tester.pumpWidget(
           RenderingSafetyTestHelper.buildTestWidget(

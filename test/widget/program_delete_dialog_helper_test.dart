@@ -15,7 +15,7 @@ class MockProgramRepository extends Fake implements ProgramRepository {
 }
 
 void main() {
-  group('🛡️ ProgramDeleteDialogHelper Tests', () {
+  group('[Widget] ProgramDeleteDialogHelper テスト', () {
     final programs = [
       ProgramModel(
         id: 'p1',
@@ -35,49 +35,50 @@ void main() {
       ),
     ];
 
-    testWidgets('confirmSingleDelete shows dialog and executes on confirm', (
-      tester,
-    ) async {
-      final mockRepo = MockProgramRepository();
+    testWidgets(
+      'confirmSingleDelete shows dialog and executes on confirmであること',
+      (tester) async {
+        final mockRepo = MockProgramRepository();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [programRepositoryProvider.overrideWithValue(mockRepo)],
-          child: MaterialApp(
-            home: Scaffold(
-              body: Consumer(
-                builder: (context, ref, child) {
-                  return ElevatedButton(
-                    onPressed: () {
-                      ProgramDeleteDialogHelper.confirmSingleDelete(
-                        context: context,
-                        ref: ref,
-                        program: programs[0],
-                      );
-                    },
-                    child: const Text('削除ボタン'),
-                  );
-                },
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [programRepositoryProvider.overrideWithValue(mockRepo)],
+            child: MaterialApp(
+              home: Scaffold(
+                body: Consumer(
+                  builder: (context, ref, child) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        ProgramDeleteDialogHelper.confirmSingleDelete(
+                          context: context,
+                          ref: ref,
+                          program: programs[0],
+                        );
+                      },
+                      child: const Text('削除ボタン'),
+                    );
+                  },
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('削除ボタン'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('削除ボタン'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('プログラムの削除'), findsOneWidget);
-      expect(find.text('「進行表1」を削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
+        expect(find.text('プログラムの削除'), findsOneWidget);
+        expect(find.text('「進行表1」を削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
 
-      await tester.tap(find.text('削除'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('削除'));
+        await tester.pumpAndSettle();
 
-      expect(mockRepo.deletedIds, contains('p1'));
-    });
+        expect(mockRepo.deletedIds, contains('p1'));
+      },
+    );
 
     testWidgets(
-      'confirmBulkDelete shows dialog and deletes selected items on confirm',
+      'confirmBulkDelete shows dialog and deletes selected items on confirmであること',
       (tester) async {
         final mockRepo = MockProgramRepository();
         bool onDeletedCalled = false;

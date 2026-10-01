@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('🗂️ 【ガバナンス監査 17/18】CategoryRule 独立ルール設定フォールバック安全規約テスト', () {
+  group('[Governance] 【ガバナンス監査 17/18】CategoryRule 独立ルール設定フォールバック安全規約テスト', () {
     final defaultTournament = TournamentModel(
       id: 'tour_test_1',
       organizationId: 'dojo_1',
@@ -33,7 +33,7 @@ void main() {
       },
     );
 
-    test('1. 未設定・無効カテゴリフォールバック規約: 未知の部門でもクラッシュせず安全にフォールバックすること', () {
+    test('未設定・無効カテゴリフォールバック規約: 未知の部門でもクラッシュせず安全にフォールバックすること', () {
       // 存在しないカテゴリ
       final result1 = CategoryRuleMatchHelper.findRuleSetForMatch(
         defaultTournament.categoryRules,
@@ -56,7 +56,7 @@ void main() {
       expect(fallbackRule.isEnchoUnlimited, false);
     });
 
-    test('2. 部門削除後の既存試合フォールバック規約: 部門削除後も試合モデルの整合性が保全されること', () {
+    test('部門削除後の既存試合フォールバック規約: 部門削除後も試合モデルの整合性が保全されること', () {
       // '小学生の部' を削除
       final updatedTournament =
           CategoryRuleMatchHelper.deleteCategoryFromTournament(
@@ -89,7 +89,7 @@ void main() {
       expect(appliedRule, isNotNull);
     });
 
-    test('3. 延長方式・ルール変更整合性規約: 延長無制限 ↔ 有制限切り替えが安全に行えること', () {
+    test('延長方式・ルール変更整合性規約: 延長無制限 ↔ 有制限切り替えが安全に行えること', () {
       const normalRule = MatchRule(
         matchTimeMinutes: 3.0,
         hasHantei: false,
@@ -117,7 +117,7 @@ void main() {
       expect(hanteiRule.isEnchoUnlimited, isFalse);
     });
 
-    test('4. 上位戦スマート判定規約: 準決勝・決勝等のキーワードで特別ルールが的確に選択されること', () {
+    test('上位戦スマート判定規約: 準決勝・決勝等のキーワードで特別ルールが的確に選択されること', () {
       final ruleSet = defaultTournament.categoryRules['小学生の部']!;
       expect(ruleSet.useAdvancedRule, isTrue);
 
@@ -147,7 +147,7 @@ void main() {
     });
 
     test(
-      '5. 形式混同防止安全規約: 同一部門名で個人戦・団体戦・勝ち抜き戦が併存しても、対象形式に合致するルールセットが厳格かつ安全に解決されること',
+      '形式混同防止安全規約: 同一部門名で個人戦・団体戦・勝ち抜き戦が併存しても、対象形式に合致するルールセットが厳格かつ安全に解決されること',
       () {
         const teamRule = CategoryRuleSet(
           normalRule: MatchRule(matchTimeMinutes: 3.0),
@@ -198,7 +198,7 @@ void main() {
     );
 
     test(
-      '6. 上位戦ルール未設定時の安全保全規約: 上位戦ルールが無効（OFF）な場合、試合名が決勝等であっても上位戦ルールに誤適用・フォールバックせず通常戦ルールが保全されること',
+      '上位戦ルール未設定時の安全保全規約: 上位戦ルールが無効（OFF）な場合、試合名が決勝等であっても上位戦ルールに誤適用・フォールバックせず通常戦ルールが保全されること',
       () {
         final tournamentWithNoAdvanced = TournamentModel(
           id: 'tour_no_adv',
@@ -229,7 +229,7 @@ void main() {
       },
     );
 
-    test('7. 勝負方式（1本勝負）設定整合性規約: 先取本数1本指定時に1本勝負フラグおよびルール実体が完全に同期・保全されること', () {
+    test('勝負方式（1本勝負）設定整合性規約: 先取本数1本指定時に1本勝負フラグおよびルール実体が完全に同期・保全されること', () {
       final rule = CategoryRuleMatchHelper.buildMatchRule(
         category: '中学生の部',
         matchType: '個人戦',

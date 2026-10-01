@@ -8,7 +8,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('📸 【Golden】遠征記録サマリーカード ピクセル完全性テスト', () {
+  group('[Golden] 【Golden】遠征記録サマリーカード ピクセル完全性テスト', () {
     final sampleMatches = [
       MatchModel(
         id: 'exp_m1',
@@ -71,7 +71,9 @@ void main() {
       );
     }
 
-    testWidgets('1. スマホ幅(390px) ライトモード: 展開状態の勝率・勝数・本数サマリー描画検証', (tester) async {
+    testWidgets('スマホ幅(390px) ライトモード: 展開状態の勝率・勝数・本数サマリー描画が正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(390, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -91,7 +93,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2. タブレット幅(800px) ダークモード: 折りたたみ状態のピクセル完全性検証', (tester) async {
+    testWidgets('タブレット幅(800px) ダークモード: 折りたたみ状態のピクセル完全性が正しく検証されること', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

@@ -6,9 +6,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('🛡️ TeamRegistration Components Widget Tests', () {
+  group('[Widget] TeamRegistration Components ウィジェットテスト', () {
     testWidgets(
-      'TeamRegistrationAppBar renders back button and manual button',
+      'TeamRegistrationAppBar renders back button and manual buttonであること',
       (tester) async {
         bool backPressed = false;
 
@@ -27,7 +27,7 @@ void main() {
     );
 
     testWidgets(
-      'TeamRegistrationDynamicHeader renders header title and progress',
+      'TeamRegistrationDynamicHeader renders header title and progressであること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -51,7 +51,7 @@ void main() {
     );
 
     testWidgets(
-      'TeamRegistrationAutocompleteField renders text field with suggestions',
+      'TeamRegistrationAutocompleteField renders text field with suggestionsであること',
       (tester) async {
         final controller = TextEditingController();
         final focusNode = FocusNode();
