@@ -28,15 +28,22 @@ class QuickMemoTextView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final viewInsetsBottom = MediaQuery.of(context).viewInsets.bottom;
+    final paddingBottom = MediaQuery.of(context).padding.bottom;
+    final toolbarBottom = viewInsetsBottom > 0
+        ? viewInsetsBottom + AppSpacing.sm
+        : paddingBottom + AppSpacing.md;
+    final textFieldBottom = toolbarBottom + 54.0;
+
     return Stack(
       children: [
         Positioned.fill(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.lg,
               AppSpacing.lg,
-              80,
+              textFieldBottom,
             ),
             child: AppTextField(
               controller: controller,
@@ -63,9 +70,7 @@ class QuickMemoTextView extends StatelessWidget {
         Positioned(
           left: AppSpacing.md,
           right: AppSpacing.md,
-          bottom: MediaQuery.of(context).viewInsets.bottom > 0
-              ? MediaQuery.of(context).viewInsets.bottom + AppSpacing.sm
-              : MediaQuery.of(context).padding.bottom + AppSpacing.md,
+          bottom: toolbarBottom,
           child: Center(
             child: QuickMemoTextToolbar(
               themeColors: themeColors,

@@ -48,6 +48,7 @@ flutter test test/governance/design_system_governance_test.dart \
              test/widget/all_screens_text_scale_no_overflow_test.dart \
              test/governance/cross_platform_parity_governance_test.dart \
              test/governance/input_viewport_stability_governance_test.dart \
+             test/governance/bottom_sheet_keyboard_tracking_governance_test.dart \
              test/governance/ui_rebuild_governance_test.dart \
              test/governance/rendering_boundary_governance_test.dart \
              test/governance/list_virtualization_governance_test.dart \
@@ -143,6 +144,8 @@ flutter test test/governance/design_system_governance_test.dart \
               test/e2e/composite_p2p_offline_cloud_blackout_streaming_e2e_test.dart \
               test/governance/program_view_state_governance_test.dart \
               test/e2e/dock_program_persistence_e2e_test.dart \
+              test/e2e/dock_quick_memo_zoom_and_sheet_expansion_e2e_test.dart \
+              test/widget/quick_memo_zoom_and_keyboard_test.dart \
               test/governance/test_naming_convention_governance_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""

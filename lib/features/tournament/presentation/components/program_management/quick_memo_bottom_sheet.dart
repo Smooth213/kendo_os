@@ -56,8 +56,15 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
   @override
   void initState() {
     super.initState();
+    _textFocusNode.addListener(_handleFocusChange);
     _loadSavedData();
     _subscribeCloudUpdates();
+  }
+
+  void _handleFocusChange() {
+    if (_textFocusNode.hasFocus && mounted) {
+      DockSheetScope.of(context)?.expand();
+    }
   }
 
   @override
@@ -120,6 +127,7 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
 
   @override
   void dispose() {
+    _textFocusNode.removeListener(_handleFocusChange);
     _memoSubscription?.cancel();
     _saveData();
     _textController.dispose();
@@ -346,6 +354,7 @@ class _QuickMemoBottomSheetState extends State<QuickMemoBottomSheet> {
               _saveData();
               if (mode == QuickMemoMode.text) {
                 _textFocusNode.requestFocus();
+                DockSheetScope.of(context)?.expand();
               } else {
                 _textFocusNode.unfocus();
               }

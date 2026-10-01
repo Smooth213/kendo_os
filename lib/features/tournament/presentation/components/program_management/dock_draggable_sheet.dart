@@ -88,6 +88,19 @@ class _DockDraggableSheetState extends State<DockDraggableSheet>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    if (keyboardOpen && _currentHeightFactor < 0.70) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _currentHeightFactor < 0.70) {
+          _expand();
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _animController.dispose();
     _scrollController.dispose();

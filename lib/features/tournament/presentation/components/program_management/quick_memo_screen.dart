@@ -7,15 +7,13 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_storage_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_tab_bar.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_view.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 export 'quick_memo_canvas_painter.dart';
 export 'quick_memo_tab_bar.dart';
@@ -369,64 +367,20 @@ class _QuickMemoScreenState extends State<QuickMemoScreen> {
                     },
                   ),
                 // テキストモード
-                if (_mode == QuickMemoMode.text) ...[
-                  Positioned.fill(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        AppSpacing.lg,
-                        AppSpacing.lg,
-                        80, // 下部ツールバーの余白
-                      ),
-                      child: AppTextField(
-                        controller: _textController,
-                        focusNode: _textFocusNode,
-                        maxLines: null,
-                        expands: true,
-                        style: TextStyle(
-                          fontSize: AppFontSize.body,
-                          color: themeColors.textColor,
-                          height: 1.6,
-                        ),
-                        hintText: 'ここに試合メモ・連絡事項・確認事項を入力できます...',
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        onChanged: (_) {
-                          setState(() {});
-                          _saveData();
-                        },
-                      ),
-                    ),
+                if (_mode == QuickMemoMode.text)
+                  QuickMemoTextView(
+                    controller: _textController,
+                    focusNode: _textFocusNode,
+                    themeColors: themeColors,
+                    isDark: isDark,
+                    onChanged: () {
+                      setState(() {});
+                      _saveData();
+                    },
+                    onInsertTimestamp: _insertTimestamp,
+                    onCopy: _copyText,
+                    onClear: _clearAll,
                   ),
-                  // 下部クイックアクションバー（テキスト用: 時刻挿入・コピー・全消去・文字数）
-                  Positioned(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                        ? MediaQuery.of(context).viewInsets.bottom +
-                              AppSpacing.sm
-                        : MediaQuery.of(context).padding.bottom + AppSpacing.md,
-                    child: Center(
-                      child: QuickMemoTextToolbar(
-                        themeColors: themeColors,
-                        isDark: isDark,
-                        charCount: _textController.text.length,
-                        onInsertTimestamp: _insertTimestamp,
-                        onCopy: _textController.text.isNotEmpty
-                            ? _copyText
-                            : null,
-                        onClear: _textController.text.isNotEmpty
-                            ? _clearAll
-                            : null,
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

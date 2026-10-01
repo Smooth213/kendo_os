@@ -17,6 +17,7 @@ SUB_AUDITS = [
     ("③ iOS PWA タッチ座標同期＆ロール選択画面規約", ["python3", "scripts/check_ios_pwa_touch_sync_governance.py"]),
     ("④ 入力フォーカス時ビューポート安定性・跳ね上がり防止保証規約", ["python3", "scripts/check_input_viewport_stability_governance.py"]),
     ("⑤ Web境界・ネイティブ直接import遮断規約", ["python3", "scripts/check_web_native_import_isolation_governance.py"]),
+    ("⑥ 全ボトムシート・キーボード追従＆自動全開視認性保証規約", ["python3", "scripts/check_bottom_sheet_keyboard_tracking_governance.py"]),
 ]
 
 def main():
