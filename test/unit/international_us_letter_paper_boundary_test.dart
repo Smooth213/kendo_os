@@ -20,7 +20,7 @@ class PaperSizeScaler {
 }
 
 void main() {
-  group('[Unit] 【Phase 9-2/6】北米 US Letter 用紙規格 下見切れ防止自動スケーリングテスト', () {
+  group('[Unit] 北米 US Letter 用紙規格 下見切れ防止自動スケーリングテスト', () {
     test('A4縦向け帳票が US Letter 印刷時にスケール率 0.94 に自動縮小され、下部マージンが確保されること', () {
       final scaleFactor = PaperSizeScaler.calculateScaleFactor(
         isUsLetter: true,

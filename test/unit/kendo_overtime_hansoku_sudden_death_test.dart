@@ -7,7 +7,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_overtime_evaluator
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 
 void main() {
-  group('[Unit] 【Unit】全剣連試合規則第34条 延長戦・反則サドンデス完全判定テスト', () {
+  group('[Unit] 全剣連試合規則第34条 延長戦・反則サドンデス完全判定テスト', () {
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0, 0);
 
@@ -162,7 +162,7 @@ void main() {
       expect(result, MatchResultStatus.whiteWin);
     });
 
-    test('shouldEnterEncho が判定（Hantei）イベント存在時に延長突入を確実に抑止すること', () {
+    test('延長突入判定関数（shouldEnterEncho）が判定イベント存在時に延長突入を確実に抑止すること', () {
       final ctx = MatchContext(
         redIppon: 0,
         whiteIppon: 0,

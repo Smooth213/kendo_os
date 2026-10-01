@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('【TeamRegistrationCategoryStep】部門一覧およびチップが表示され選択が処理されること', (
+  testWidgets('TeamRegistrationCategoryStepにおいて 部門一覧およびチップが表示され選択が処理されること', (
     WidgetTester tester,
   ) async {
     String major = '小学生';

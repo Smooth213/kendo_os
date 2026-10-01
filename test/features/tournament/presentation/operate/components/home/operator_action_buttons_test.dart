@@ -141,7 +141,7 @@ void main() {
       });
 
       testWidgets(
-        '【文字切れ・はみ出しゼロ保証】 320x568の小型画面でもRenderFlex Overflowなく描画されること',
+        '文字切れ・はみ出しゼロ保証において 320x568の小型画面でもRenderFlex Overflowなく描画されること',
         (WidgetTester tester) async {
           tester.view.physicalSize = const Size(320, 568);
           tester.view.devicePixelRatio = 1.0;

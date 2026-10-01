@@ -15,7 +15,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('0の状態で赤が途中棄権  白に不戦勝2本が付与され、スコア白2-赤0で白の勝ちこと', () {
+    test('スコア0の状態で赤が途中棄権したとき白に不戦勝2本が付与され、スコア白2-赤0で白の勝ちとなること', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'fusen1',
@@ -54,7 +54,7 @@ void main() {
       expect(analysis.displays[Side.red]!.isEmpty, isTrue);
     });
 
-    test('赤がメン1本先取後、赤が途中棄権  白に2本付与され白2-赤1で白の勝ち（赤の先取点は維持）こと', () {
+    test('赤の先取点は維持において赤がメン1本先取後、赤が途中棄権 白に2本付与され白2-赤1で白の勝ちとなること', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'e1',
@@ -99,7 +99,7 @@ void main() {
       expect(analysis.displays[Side.white]![1].mark, '◯');
     });
 
-    test('白がコテ1本先取後、赤が途中棄権  白に不足分の1本のみ追加付与され白2-赤0で白の勝ちこと', () {
+    test('白がコテ1本先取後、赤が途中棄権 白に不足分の1本のみ追加付与され白2-赤0で白の勝ちとなること', () {
       final events = [
         ScoreEventLegacyAdapter.fromLegacy(
           id: 'e1',

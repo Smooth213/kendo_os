@@ -34,9 +34,7 @@ void main() {
     ).thenAnswer((_) => Stream.value(<TeamModel>[]));
   });
 
-  testWidgets('MatchPlayerNameEditBottomSheet renders properlyであること', (
-    tester,
-  ) async {
+  testWidgets('選手名編集ボトムシートが正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

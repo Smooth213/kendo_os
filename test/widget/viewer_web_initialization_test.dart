@@ -70,7 +70,7 @@ void main() {
       }
     });
 
-    test('【パフォーマンス最適化】tournament ID が変更時のみ再初期化されること', () {
+    test('パフォーマンス最適化において tournament ID が変更時のみ再初期化されること', () {
       // Prevent unnecessary provider state updates
 
       const tournament1 = 'tournament_001';

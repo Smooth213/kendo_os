@@ -30,7 +30,7 @@ class LocalP2PRebuilder {
 }
 
 void main() {
-  group('[E2E] 【Phase 7-1/8】クラウド全損 Local P2P メガ復元 E2Eテスト', () {
+  group('[E2E] クラウド全損 Local P2P メガ復元 E2Eテスト', () {
     test('クラウドが完全死滅しても、コート1・コート2端末のローカルダンプ突合で大会データが100%復元されること', () {
       // コート1端末のローカルDBダンプ
       final court1Dump = {

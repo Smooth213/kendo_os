@@ -9,9 +9,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
   group('[Widget] MatchBottomActionSection テスト', () {
-    testWidgets('shows approved text when isApproved is trueであること', (
-      tester,
-    ) async {
+    testWidgets('承認済み状態のテキストが正しく表示されること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

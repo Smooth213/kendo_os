@@ -7,9 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 
 void main() {
   group('[Widget] OfficialRecord Components テスト', () {
-    testWidgets('OfficialRecordScoreTableBuilder renders score tableであること', (
-      tester,
-    ) async {
+    testWidgets('公式記録スコアテーブルが正しく描画されること', (tester) async {
       const match = MatchModel(
         id: 'm1',
         tournamentId: 't1',
@@ -40,9 +38,7 @@ void main() {
       expect(find.textContaining('先鋒チーム vs 相手チーム'), findsOneWidget);
     });
 
-    testWidgets('OfficialRecordLeagueSection renders league titleであること', (
-      tester,
-    ) async {
+    testWidgets('公式記録リーグセクションにリーグタイトルが正しく描画されること', (tester) async {
       const match = MatchModel(
         id: 'm1',
         tournamentId: 't1',

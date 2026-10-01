@@ -4,7 +4,7 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_match_fi
 
 void main() {
   group('[Widget] ViewerMatchFilterHelper テスト', () {
-    test('【extractActiveMatches】進行中と待機中の試合が正しく分離されること', () {
+    test('extractActiveMatchesにおいて 進行中と待機中の試合が正しく分離されること', () {
       final matches = [
         MatchModel(
           id: 'm1',

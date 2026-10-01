@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('[Governance] 【ガバナンス監査 17/18】CategoryRule 独立ルール設定フォールバック安全規約テスト', () {
+  group('[Governance] ガバナンス監査 17/18において CategoryRule 独立ルール設定フォールバック安全規約テスト', () {
     final defaultTournament = TournamentModel(
       id: 'tour_test_1',
       organizationId: 'dojo_1',

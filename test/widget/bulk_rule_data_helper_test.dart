@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bul
 
 void main() {
   group('[Widget] BulkRuleDataHelper 単体テスト', () {
-    test('【BulkRuleDataHelper】試合形式が正しく解決されること', () {
+    test('BulkRuleDataHelperにおいて 試合形式が正しく解決されること', () {
       final teamMatch = MatchModel(
         id: 'm1',
         matchType: '団体戦',
@@ -30,7 +30,7 @@ void main() {
       expect(BulkRuleDataHelper.getResolvedType(leagueMatch), 'リーグ個人戦');
     });
 
-    test('BulkRuleDataHelper groups matches into units correctlyであること', () {
+    test('一括ルールデータヘルパーにより試合がユニット単位へ正しくグループ化されること', () {
       final matches = [
         MatchModel(
           id: 'm1',

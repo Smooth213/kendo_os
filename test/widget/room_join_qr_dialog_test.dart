@@ -41,7 +41,7 @@ void main() {
       );
     }
 
-    testWidgets('【新規作成ケース】クラウド上にIDが実在しない場合、正常にコレクションが初期創設され直結すること', (
+    testWidgets('新規作成ケースにおいて クラウド上にIDが実在しない場合、正常にコレクションが初期創設され直結すること', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(
@@ -89,7 +89,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('【重複ガードケース】既に他者が使用中のIDを入力した場合、警告ダイアログが露出し無断上書きをブロックすること', (
+    testWidgets('重複ガードケースにおいて 既に他者が使用中のIDを入力した場合、警告ダイアログが露出し無断上書きをブロックすること', (
       WidgetTester tester,
     ) async {
       // 事前条件：クラウド上に既に「tokyo_dojo」という部屋が実在している状態を作る
@@ -142,7 +142,7 @@ void main() {
     });
 
     testWidgets(
-      '【はみ出し防止ケース】超小型画面サイズ（高さ380px）でも RenderFlex のはみ出しエラー（Overflow）が発生しないこと',
+      'はみ出し防止ケースにおいて 超小型画面サイズ（高さ380px）でも RenderFlex のはみ出しエラー（Overflow）が発生しないこと',
       (WidgetTester tester) async {
         // 画面のテスト表面サイズを、はみ出しバグが起きた超小型サイズ (幅320, 高さ380) に強制設定
         await tester.binding.setSurfaceSize(const Size(320, 380));
@@ -171,7 +171,7 @@ void main() {
       },
     );
 
-    testWidgets('【ダークモード視認性保証テスト】ダークモード時、説明文・注意書き・キャンセルボタンが黒潰れせず視認可能であること', (
+    testWidgets('ダークモード視認性保証テストにおいて ダークモード時、説明文・注意書き・キャンセルボタンが黒潰れせず視認可能こと', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(
@@ -219,7 +219,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('【ライトモード視認性保証テスト】ライトモード時、説明文・注意書き・ボタンが適切に視認可能であること', (
+    testWidgets('ライトモード視認性保証テストにおいて ライトモード時、説明文・注意書き・ボタンが適切に視認可能こと', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(
@@ -245,7 +245,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('【重複警告ダイアログ視認性保証テスト】ダークモード時、重複警告ポップアップ内の警告メッセージが黒潰れしないこと', (
+    testWidgets('重複警告ダイアログ視認性保証テストにおいて ダークモード時、重複警告ポップアップ内の警告メッセージが黒潰れしないこと', (
       WidgetTester tester,
     ) async {
       // 事前データ登録
@@ -284,7 +284,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('【履歴サジェスト視認性保証テスト】ライトモード時、過去の履歴サジェストが黒潰れせず高コントラストで視認できること', (
+    testWidgets('履歴サジェスト視認性保証テストにおいて ライトモード時、過去の履歴サジェストが黒潰れせず高コントラストで視認できること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({
@@ -332,7 +332,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('【Web描画消失防止テスト】BackdropFilter が使用されず、安全な不透明背景コンテナで描画されること', (
+    testWidgets('Web描画消失防止テストにおいて BackdropFilter が使用されず、安全な不透明背景コンテナで描画されること', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(
@@ -354,7 +354,7 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('【キーボード跳ね上がり防止テスト】カーソルフォーカス時、ダイアログが画面外に跳ね上がらず安定して表示されること', (
+    testWidgets('キーボード跳ね上がり防止テストにおいて カーソルフォーカス時、ダイアログが画面外に跳ね上がらず安定して表示されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -416,7 +416,7 @@ void main() {
     });
 
     testWidgets(
-      '【小型画面（iPhone SE等）保証テスト】極小ビューポート＋キーボード出現時でも跳ね上がらず正常入力＆接続できること',
+      '小型画面（iPhone SE等）保証テストにおいて 極小ビューポート＋キーボード出現時でも跳ね上がらず正常入力＆接続できること',
       (WidgetTester tester) async {
         // iPhone SE等の小型画面サイズ（375 x 667）
         tester.view.physicalSize = const Size(375, 667);
@@ -480,7 +480,7 @@ void main() {
       },
     );
 
-    testWidgets('【反復フォーカス開閉テスト】キーボードの開閉を連続で繰り返しても位置ズレ・跳ね上がりが累積しないこと', (
+    testWidgets('反復フォーカス開閉テストにおいて キーボードの開閉を連続で繰り返しても位置ズレ・跳ね上がりが累積しないこと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844);
@@ -533,7 +533,7 @@ void main() {
     });
 
     testWidgets(
-      '【構造的跳ね上がり防止テスト】Dialogではなく画面下部アンカーのBottomSheetとして稼働し、OverlayPortalが存在しないこと',
+      '構造的跳ね上がり防止テストにおいて Dialogではなく画面下部アンカーのBottomSheetとして稼働し、OverlayPortalが存在しないこと',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
@@ -562,7 +562,7 @@ void main() {
       },
     );
 
-    testWidgets('【履歴チップからの安全上書き入力テスト】履歴タップで即座に正確入力され接続できること', (
+    testWidgets('履歴チップからの安全上書き入力テストにおいて 履歴タップで即座に正確入力され接続できること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({

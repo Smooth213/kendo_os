@@ -178,7 +178,7 @@ void main() {
   }
 
   group('[Widget] MatchTimelineList Sorting テスト', () {
-    testWidgets('個人戦の並び替え (_onReorderInnerTimeline)こと', (
+    testWidgets('_onReorderInnerTimelineにおいて個人戦の並び替えこと', (
       WidgetTester tester,
     ) async {
       // 抽出された個別試合アコーディオン（個人戦）に入る
@@ -244,7 +244,9 @@ void main() {
       ); // 降順ソートのため先頭への移動は remaining.first (m3: 30.0) + 100.0
     });
 
-    testWidgets('団体戦の並び替え (_onReorderTimeline)こと', (WidgetTester tester) async {
+    testWidgets('_onReorderTimelineにおいて団体戦の並び替えこと', (
+      WidgetTester tester,
+    ) async {
       // 外側のReorderableListViewでの並び替え
       final matches = [
         createMockMatch(
@@ -322,7 +324,7 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, -90.0);
     });
 
-    testWidgets('リーグ個人戦の並び替え (_onReorderInnerTimeline)こと', (
+    testWidgets('_onReorderInnerTimelineにおいてリーグ個人戦の並び替えこと', (
       WidgetTester tester,
     ) async {
       final matches = [
@@ -387,7 +389,9 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, 130.0);
     });
 
-    testWidgets('リーグ団体戦の並び替え不可仕様の確認 (Column固定)こと', (WidgetTester tester) async {
+    testWidgets('Column固定においてリーグ団体戦の並び替え不可仕様の確認こと', (
+      WidgetTester tester,
+    ) async {
       final matches = [
         createMockMatch(
           id: 'm1_1',
@@ -652,7 +656,7 @@ void main() {
       expect(find.text('決定戦の形式を選択'), findsNothing);
     });
 
-    testWidgets('団体戦のオーダー直前変更（ドラッグ＆ドロップ・控え選手交代）こと', (
+    testWidgets('ドラッグ＆ドロップ・控え選手交代において団体戦のオーダー直前変更こと', (
       WidgetTester tester,
     ) async {
       // 団体戦の試合データを作成
@@ -794,7 +798,7 @@ void main() {
       expect(updatedSecondMatch.redName, '白虎剣友会 : 山田 太郎');
     });
 
-    testWidgets('団体戦のオーダー直前変更（マスタ外・助っ人手動追加）こと', (WidgetTester tester) async {
+    testWidgets('マスタ外・助っ人手動追加において団体戦のオーダー直前変更こと', (WidgetTester tester) async {
       // 団体戦の試合データを作成
       final matches = [
         createMockMatch(
@@ -1016,43 +1020,40 @@ void main() {
       expect(find.text('⚙️ 試合ルールの一括変更'), findsNothing);
     });
 
-    testWidgets(
-      'matchCommandProvider.deleteMatch on Web preserves currentDojoIdProviderであること',
-      (WidgetTester tester) async {
-        debugIsWebOverride = true;
-        addTearDown(() {
-          debugIsWebOverride = false;
-        });
+    testWidgets('Web環境での試合削除時にアクティブな道場IDが保持されること', (WidgetTester tester) async {
+      debugIsWebOverride = true;
+      addTearDown(() {
+        debugIsWebOverride = false;
+      });
 
-        final matches = [
-          createMockMatch(
-            id: 'm1',
-            category: '一般',
-            groupName: '',
-            matchType: '個人戦',
-            order: 1.0,
-            redName: '赤選手',
-            whiteName: '白選手',
-          ),
-        ];
+      final matches = [
+        createMockMatch(
+          id: 'm1',
+          category: '一般',
+          groupName: '',
+          matchType: '個人戦',
+          order: 1.0,
+          redName: '赤選手',
+          whiteName: '白選手',
+        ),
+      ];
 
-        await tester.pumpWidget(buildTestableWidget(matches));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(buildTestableWidget(matches));
+      await tester.pumpAndSettle();
 
-        final element = tester.element(find.byType(MatchTimelineList));
-        final container = ProviderScope.containerOf(element);
+      final element = tester.element(find.byType(MatchTimelineList));
+      final container = ProviderScope.containerOf(element);
 
-        // Verify initial dojo id state
-        final initialDojoId = container.read(currentDojoIdProvider);
+      // Verify initial dojo id state
+      final initialDojoId = container.read(currentDojoIdProvider);
 
-        // Execute deleteMatch via matchCommandProvider
-        await container.read(matchCommandProvider).deleteMatch('m1');
-        await tester.pumpAndSettle();
+      // Execute deleteMatch via matchCommandProvider
+      await container.read(matchCommandProvider).deleteMatch('m1');
+      await tester.pumpAndSettle();
 
-        // Verify that currentDojoIdProvider is preserved and NOT wiped to default_org
-        expect(container.read(currentDojoIdProvider), equals(initialDojoId));
-      },
-    );
+      // Verify that currentDojoIdProvider is preserved and NOT wiped to default_org
+      expect(container.read(currentDojoIdProvider), equals(initialDojoId));
+    });
 
     testWidgets('団体戦 vs 個人戦のヘッダーコメント表示＆ダークモード文字色視認性が正しく検証されること', (
       WidgetTester tester,
@@ -1206,7 +1207,7 @@ void main() {
     });
 
     testWidgets(
-      '【視認性保証テスト】MatchListTileCard の中央スコアセパレーター（ー）および引き分けマーク（）が黒潰れ(0x8A000000)せず、高コントラストな subTextColor で描画されること',
+      '視認性保証テストにおいて MatchListTileCard の中央スコアセパレーター（ー）および引き分けマーク（）が黒潰れ(0x8A000000)せず、高コントラストな subTextColor で描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2000);
         tester.view.devicePixelRatio = 1.0;
@@ -1315,7 +1316,7 @@ void main() {
     );
 
     testWidgets(
-      '【Null check operator 回帰テスト】見出しコメント（MatchCommentModel）が存在する場合に ReorderableListView がクラッシュせず正常描画されること',
+      'Null check operator 回帰テストにおいて 見出しコメント（MatchCommentModel）が存在する場合に ReorderableListView がクラッシュせず正常描画されること',
       (tester) async {
         final List<MatchModel> matches = [
           createMockMatch(

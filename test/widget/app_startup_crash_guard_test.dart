@@ -64,7 +64,7 @@ void main() {
       },
     );
 
-    testWidgets('その他のエラー([core/no-app]等)発生時は、通常のエラー原因と詳細スタックが描画されること', (
+    testWidgets('その他のエラー(core/no-appに関して、等)発生時は、通常のエラー原因と詳細スタックが描画されること', (
       WidgetTester tester,
     ) async {
       final Exception mockFatalError = Exception(

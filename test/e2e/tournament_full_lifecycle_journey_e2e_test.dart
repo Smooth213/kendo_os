@@ -12,7 +12,7 @@ import 'package:pdf/widgets.dart' as pw;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[E2E] 【E2E】大会ライフサイクル完全貫通ジャーニーE2Eテスト', () {
+  group('[E2E] 大会ライフサイクル完全貫通ジャーニーE2Eテスト', () {
     test('大会作成〜試合進行〜結果承認〜公式記録PDF〜観客共有の完全貫通ジャーニーこと', () async {
       // 1. 大会の作成
       final tournament = TournamentModel(

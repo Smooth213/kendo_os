@@ -27,7 +27,7 @@ void main() {
       status: 'waiting',
     );
 
-    test('ViewerMatchScreen Webインデックス未作成エラー根治パッチの存在を検証 (静的コード解析)こと', () {
+    test('静的コード解析においてViewerMatchScreen Webインデックス未作成エラー根治パッチの存在を検証こと', () {
       final file = File(
         'lib/features/viewer/presentation/viewer_match_screen.dart',
       );

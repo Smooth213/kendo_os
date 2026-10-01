@@ -29,7 +29,7 @@ class AdminHostManager {
 }
 
 void main() {
-  group('[E2E] 【Phase 5-6/10】大会本部端末電池切れ サブ端末へのAdminホスト権限引き継ぎ E2Eテスト', () {
+  group('[E2E] 大会本部端末電池切れ サブ端末へのAdminホスト権限引き継ぎ E2Eテスト', () {
     test('旧端末（iPad A）から新端末（iPad B）へPIN引き継ぎ実行後、旧端末が降格し新端末がAdminに昇格すること', () {
       final manager = AdminHostManager(
         initialAdminDevice: 'ipad_hq_primary',

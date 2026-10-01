@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('[Unit] — PWA/Web耐久・ブラウザカオス耐性テスト要塞', () {
+  group('[Unit] PWA/Web耐久・ブラウザカオス耐性テスト要塞', () {
     late DateTime baseTime;
 
     setUp(() {
@@ -11,7 +11,7 @@ void main() {
     });
 
     test(
-      '【IndexedDB容量超過・破損】ブラウザストレージが容量上限(QuotaExceeded)またはキャッシュ破損を起こしても、メモリ内の不変ドメイン状態がクラッシュせず安全に維持されること',
+      'IndexedDB容量超過・破損において ブラウザストレージが容量上限(QuotaExceeded)またはキャッシュ破損を起こしても、メモリ内の不変ドメイン状態がクラッシュせず安全に維持されること',
       () {
         final match = const MatchModel(
           id: 'web_quota_001',
@@ -26,7 +26,7 @@ void main() {
     );
 
     test(
-      '【ServiceWorker競合】新旧のServiceWorkerがブラウザキャッシュ上で一時的に混在し、同一イベントが異なる経由で2回検知されても、論理クロックの同一性により重複履歴が完全にマージ排除されること',
+      'ServiceWorker競合において 新旧のServiceWorkerがブラウザキャッシュ上で一時的に混在し、同一イベントが異なる経由で2回検知されても、論理クロックの同一性により重複履歴が完全にマージ排除されること',
       () {
         final swOldPacket = ScoreEvent(
           id: 'sw_conflict_ev',
@@ -63,7 +63,7 @@ void main() {
     );
 
     test(
-      '【Multi-tab同時入力】記録員が誤って2つのブラウザタブを開き、双方から同時に異なるスコアイベントが入力されても、論理時計ソート契約により歴史が確定的一本化すること',
+      'Multi-tab同時入力において 記録員が誤って2つのブラウザタブを開き、双方から同時に異なるスコアイベントが入力されても、論理時計ソート契約により歴史が確定的一本化すること',
       () {
         final eventFromTab1 = ScoreEvent(
           id: 'tab1_men',

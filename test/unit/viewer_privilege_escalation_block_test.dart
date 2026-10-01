@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 
 void main() {
-  group('[Unit] 【Phase 4-8/11】一般観客（Viewer）ゼロトラスト権限昇格（直叩き）遮断テスト', () {
-    test('Viewer 権限（Role.viewer）はスコア編集・Undo・試合作成・ロックの全権限が厳格に false であること', () {
+  group('[Unit] 一般観客（Viewer）ゼロトラスト権限昇格（直叩き）遮断テスト', () {
+    test('Viewer 権限（Role.viewer）はスコア編集・Undo・試合作成・ロックの全権限が厳格に falseこと', () {
       final viewerPerms = PermissionFactory.from(Role.viewer);
 
       expect(viewerPerms.canEditScore, isFalse);
@@ -13,7 +13,7 @@ void main() {
       expect(viewerPerms.isReadOnly, isTrue);
     });
 
-    test('Viewer ユーザーによる特権操作（スコア入力API）呼び出しのゼロトラスト遮断こと', () {
+    test('Viewerユーザーによる特権スコア入力API呼び出しがゼロトラスト規約により厳格に遮断されること', () {
       const viewerUser = User(
         id: 'viewer_guest_01',
         role: Role.viewer,

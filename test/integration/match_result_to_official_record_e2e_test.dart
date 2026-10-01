@@ -19,7 +19,7 @@ void main() {
     }
 
     testWidgets(
-      '【打突部位の正確な記録】面(メ)・小手(コ)・胴(ド)・突き(ツ)および先取サークルマークがPointBoxに忠実に描画されること',
+      '打突部位の正確な記録において 面(メ)・小手(コ)・胴(ド)・突き(ツ)および先取サークルマークがPointBoxに忠実に描画されること',
       (WidgetTester tester) async {
         final redPoints = [
           const PointMark(mark: 'メ', isFirst: true),
@@ -71,7 +71,7 @@ void main() {
       },
     );
 
-    testWidgets('【反則累積と反則による一本】1反則(▲)から2反則(▲▲)で相手に「反」が1本付与されスコアに加算されること', (
+    testWidgets('反則累積と反則による一本において 1反則(▲)から2反則(▲▲)で相手に「反」が1本付与されスコアに加算されること', (
       WidgetTester tester,
     ) async {
       // 白側が2反則を犯し、赤側に「反」が1本入ったケース
@@ -92,50 +92,55 @@ void main() {
       expect(find.text('反'), findsOneWidget);
     });
 
-    testWidgets('【延長戦での決着部位】本戦0-0引き分け後の延長戦で「延メ」により決着し、延長バッジと技マークが正しく記録されること', (
-      WidgetTester tester,
-    ) async {
-      final matchItem = ScoreTableMatchItem(
-        id: 'item_1',
-        matchType: '個人戦',
-        redName: '道上:皿田',
-        whiteName: '相手:選手A',
-        redScore: 1,
-        whiteScore: 0,
-        isFinished: true,
-        isEncho: true,
-        redPoints: const [PointMark(mark: 'メ', isFirst: true)],
-        whitePoints: const [],
-      );
+    testWidgets(
+      '延長戦での決着部位において 本戦0-0引き分け後の延長戦で「延メ」により決着し、延長バッジと技マークが正しく記録されること',
+      (WidgetTester tester) async {
+        final matchItem = ScoreTableMatchItem(
+          id: 'item_1',
+          matchType: '個人戦',
+          redName: '道上:皿田',
+          whiteName: '相手:選手A',
+          redScore: 1,
+          whiteScore: 0,
+          isFinished: true,
+          isEncho: true,
+          redPoints: const [PointMark(mark: 'メ', isFirst: true)],
+          whitePoints: const [],
+        );
 
-      final groupInfo = const ScoreTableGroupInfo(
-        groupName: '個人トーナメント',
-        headerTitle: '個人選手権 決勝',
-        sideLabelRed: '紅',
-        sideLabelWhite: '白',
-        redWins: 1,
-        whiteWins: 0,
-        redTotalPoints: 1,
-        whiteTotalPoints: 0,
-        teamWinner: 'red',
-        allFinished: true,
-        isSummary: false,
-      );
+        final groupInfo = const ScoreTableGroupInfo(
+          groupName: '個人トーナメント',
+          headerTitle: '個人選手権 決勝',
+          sideLabelRed: '紅',
+          sideLabelWhite: '白',
+          redWins: 1,
+          whiteWins: 0,
+          redTotalPoints: 1,
+          whiteTotalPoints: 0,
+          teamWinner: 'red',
+          allFinished: true,
+          isSummary: false,
+        );
 
-      await tester.pumpWidget(
-        createTestApp(
-          ScoreTableCard(info: groupInfo, matches: [matchItem], isDark: false),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          createTestApp(
+            ScoreTableCard(
+              info: groupInfo,
+              matches: [matchItem],
+              isDark: false,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('延'), findsOneWidget);
-      expect(find.text('長'), findsOneWidget);
-      expect(find.text('メ'), findsOneWidget);
-      expect(find.text('勝'), findsOneWidget);
-    });
+        expect(find.text('延'), findsOneWidget);
+        expect(find.text('長'), findsOneWidget);
+        expect(find.text('メ'), findsOneWidget);
+        expect(find.text('勝'), findsOneWidget);
+      },
+    );
 
-    testWidgets('【判定勝ちと不戦勝】判定勝ち「判」および不戦勝「不 (◯◯)」が勝数・本数に正確に算入されること', (
+    testWidgets('判定勝ちと不戦勝において 判定勝ち「判」および不戦勝「不 (◯◯)」が勝数・本数に正確に算入されること', (
       WidgetTester tester,
     ) async {
       final matchHantei = ScoreTableMatchItem(
@@ -199,7 +204,7 @@ void main() {
     });
 
     testWidgets(
-      '【団体戦5人制 スコアテーブル完全整合性】全ポジションの技マーク（メ・コ・ド・反）と勝敗・本数合算が1ミリの狂いもなく同期されること',
+      '団体戦5人制 スコアテーブル完全整合性において 全ポジションの技マーク（メ・コ・ド・反）と勝敗・本数合算が1ミリの狂いもなく同期されること',
       (WidgetTester tester) async {
         final matches = [
           ScoreTableMatchItem(
@@ -309,7 +314,7 @@ void main() {
     );
 
     testWidgets(
-      '【代表戦スコア非合算原則（全剣連規程最重要）】同点同本数(2勝3本 - 2勝3本)から代表戦で紅組がメで勝利した際、チーム合計は2(3)-2(3)のまま維持され勝者のみ紅組となること',
+      '代表戦スコア非合算原則（全剣連規程最重要）において 同点同本数(2勝3本 - 2勝3本)から代表戦で紅組がメで勝利した際、チーム合計は2(3)-2(3)のまま維持され勝者のみ紅組となること',
       (WidgetTester tester) async {
         final matchesWithDaihyo = [
           ScoreTableMatchItem(
@@ -422,7 +427,7 @@ void main() {
       },
     );
 
-    testWidgets('【公式記録・試合モデル完全同期】MatchModelの打突・反則・勝敗属性がドメイン不変条件と完全一致すること', (
+    testWidgets('公式記録・試合モデル完全同期において MatchModelの打突・反則・勝敗属性がドメイン不変条件と完全一致すること', (
       WidgetTester tester,
     ) async {
       const standardRule = MatchRule(
@@ -447,55 +452,56 @@ void main() {
       expect(sampleMatch.rule?.positions.length, equals(5));
     });
 
-    testWidgets('【延長戦への反則持ち越し】本戦の反則(▲)が延長戦へ持ち越され、延長戦での追加反則により反則決着(相手に反)となること', (
-      WidgetTester tester,
-    ) async {
-      // 本戦で白1反則、延長戦で白2反則目となり、赤に「反」が入り試合終了
-      final enchoHansokuMatch = ScoreTableMatchItem(
-        id: 'm_encho_hansoku',
-        matchType: '個人戦',
-        redName: '道上:皿田',
-        whiteName: '相手:選手B',
-        redScore: 1,
-        whiteScore: 0,
-        isFinished: true,
-        isEncho: true,
-        redPoints: const [PointMark(mark: '反', isFirst: true)],
-        whitePoints: const [],
-      );
+    testWidgets(
+      '延長戦への反則持ち越しにおいて 本戦の反則(▲)が延長戦へ持ち越され、延長戦での追加反則により反則決着(相手に反)となること',
+      (WidgetTester tester) async {
+        // 本戦で白1反則、延長戦で白2反則目となり、赤に「反」が入り試合終了
+        final enchoHansokuMatch = ScoreTableMatchItem(
+          id: 'm_encho_hansoku',
+          matchType: '個人戦',
+          redName: '道上:皿田',
+          whiteName: '相手:選手B',
+          redScore: 1,
+          whiteScore: 0,
+          isFinished: true,
+          isEncho: true,
+          redPoints: const [PointMark(mark: '反', isFirst: true)],
+          whitePoints: const [],
+        );
 
-      final groupInfo = const ScoreTableGroupInfo(
-        groupName: '準々決勝',
-        headerTitle: '個人選手権 準々決勝',
-        sideLabelRed: '道上剣友会',
-        sideLabelWhite: '相手道場',
-        redWins: 1,
-        whiteWins: 0,
-        redTotalPoints: 1,
-        whiteTotalPoints: 0,
-        teamWinner: 'red',
-        allFinished: true,
-        isSummary: false,
-      );
+        final groupInfo = const ScoreTableGroupInfo(
+          groupName: '準々決勝',
+          headerTitle: '個人選手権 準々決勝',
+          sideLabelRed: '道上剣友会',
+          sideLabelWhite: '相手道場',
+          redWins: 1,
+          whiteWins: 0,
+          redTotalPoints: 1,
+          whiteTotalPoints: 0,
+          teamWinner: 'red',
+          allFinished: true,
+          isSummary: false,
+        );
 
-      await tester.pumpWidget(
-        createTestApp(
-          ScoreTableCard(
-            info: groupInfo,
-            matches: [enchoHansokuMatch],
-            isDark: false,
+        await tester.pumpWidget(
+          createTestApp(
+            ScoreTableCard(
+              info: groupInfo,
+              matches: [enchoHansokuMatch],
+              isDark: false,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('延'), findsOneWidget);
-      expect(find.text('長'), findsOneWidget);
-      expect(find.text('反'), findsOneWidget);
-      expect(find.text('1\n--\n1'), findsOneWidget);
-    });
+        expect(find.text('延'), findsOneWidget);
+        expect(find.text('長'), findsOneWidget);
+        expect(find.text('反'), findsOneWidget);
+        expect(find.text('1\n--\n1'), findsOneWidget);
+      },
+    );
 
-    testWidgets('【先取からの逆転勝利】紅組が先取(◯メ)後に白組がコ・ドを連取し、白組の2-1逆転勝利として完全描画されること', (
+    testWidgets('先取からの逆転勝利において 紅組が先取(◯メ)後に白組がコ・ドを連取し、白組の2-1逆転勝利として完全描画されること', (
       WidgetTester tester,
     ) async {
       final comebackMatch = ScoreTableMatchItem(
@@ -547,7 +553,7 @@ void main() {
     });
 
     testWidgets(
-      '【1-1引き分け vs 0-0引き分けの本数差】1-1ドローは総本数に双方+1加算、0-0ドローは総本数+0加算として正確に計算されること',
+      '引き分け本数差の検証において、1-1ドローは総本数に双方+1加算、0-0ドローは総本数+0加算として正確に計算されること',
       (WidgetTester tester) async {
         final matchDraw1 = ScoreTableMatchItem(
           id: 'draw_1',
@@ -606,7 +612,7 @@ void main() {
     );
 
     testWidgets(
-      '【複数ポジション欠員（不戦勝・不戦敗混在）】欠員枠に「◯◯」が入り、相手に各2本(計4本)が自動加算されて本数差勝敗が確定すること',
+      '複数ポジション欠員（不戦勝・不戦敗混在）において 欠員枠に「◯◯」が入り、相手に各2本(計4本)が自動加算されて本数差勝敗が確定すること',
       (WidgetTester tester) async {
         final matchesWithAbsentees = [
           ScoreTableMatchItem(
@@ -711,7 +717,7 @@ void main() {
     );
 
     testWidgets(
-      '【1試合中4反則による反則二本負け】1試合中に4回反則した場合、相手に「反」「反」の2本が入り2-0で試合が終了すること',
+      '1試合中4反則による反則二本負けにおいて 1試合中に4回反則した場合、相手に「反」「反」の2本が入り2-0で試合が終了すること',
       (WidgetTester tester) async {
         final hansoku2Match = ScoreTableMatchItem(
           id: 'm_hansoku_4',

@@ -5,9 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchOperateActionButtonsGrid ウィジェットテスト', () {
-    testWidgets('all 4 ボタン一覧 and triggers callbacksが正しく描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('全4ボタン一覧が表示されコールバックが正常に実行されること', (WidgetTester tester) async {
       bool shareClicked = false;
       bool restoreClicked = false;
       bool checkScoreClicked = false;
@@ -62,9 +60,7 @@ void main() {
       expect(checkRuleClicked, isTrue);
     });
 
-    testWidgets('Disables restore button when isViewOnly is trueであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('閲覧専用モード時は復元ボタンが無効化されること', (WidgetTester tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
       await tester.pumpWidget(

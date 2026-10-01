@@ -61,7 +61,7 @@ void main() {
       );
     });
 
-    testWidgets('CategoryRulesScreen list and edit rules flowであること', (
+    testWidgets('CategoryRulesScreen list and edit rules flowこと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1600);
@@ -139,7 +139,7 @@ void main() {
     });
 
     testWidgets(
-      'SetupMatchFormatScreen dynamic category rules load and auto/manual round toggleであること',
+      'SetupMatchFormatScreen dynamic category rules load and auto/manual round toggleこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -227,7 +227,7 @@ void main() {
       },
     );
 
-    testWidgets('CategoryRulesScreen detailed rule sheet popup on tapであること', (
+    testWidgets('CategoryRulesScreen detailed rule sheet popup on tapこと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1600);
@@ -294,7 +294,7 @@ void main() {
     });
 
     testWidgets(
-      '【マルチシーン選択ルール回帰防止テスト】チェックを入れていないルールシーン（錬成会OFF、本戦ON、申し合わせON）は一覧カードに表示されず、選択されたルールのみが表示されること',
+      'マルチシーン選択ルール回帰防止テストにおいて チェックを入れていないルールシーン（錬成会OFF、本戦ON、申し合わせON）は一覧カードに表示されず、選択されたルールのみが表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -380,7 +380,7 @@ void main() {
     );
 
     testWidgets(
-      '【部門ルール詳細ボトムシート排他検証テスト】団体戦部門タップ時のボトムシートにおいて「反則」「延長戦」「判定」が表示されず、設定された団体戦ルールのみが表示されること',
+      '部門ルール詳細ボトムシート排他検証テストにおいて 団体戦部門タップ時のボトムシートにおいて「反則」「延長戦」「判定」が表示されず、設定された団体戦ルールのみが表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -477,7 +477,7 @@ void main() {
     );
 
     testWidgets(
-      '【部門ルール詳細ボトムシート排他検証テスト】個人戦部門タップ時のボトムシートにおいて「延長戦」「判定」が表示され、「反則」「代表戦」が表示されないこと',
+      '部門ルール詳細ボトムシート排他検証テストにおいて 個人戦部門タップ時のボトムシートにおいて「延長戦」「判定」が表示され、「反則」「代表戦」が表示されないこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -565,7 +565,7 @@ void main() {
     );
 
     testWidgets(
-      '【部門ルール詳細ボトムシート排他検証テスト】勝ち抜き戦部門タップ時のボトムシートにおいて「勝ち抜き戦設定」「無制限条件」が表示され、「反則」「代表戦」「延長戦」「判定」が表示されないこと',
+      '部門ルール詳細ボトムシート排他検証テストにおいて 勝ち抜き戦部門タップ時のボトムシートにおいて「勝ち抜き戦設定」「無制限条件」が表示され、「反則」「代表戦」「延長戦」「判定」が表示されないこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -650,7 +650,7 @@ void main() {
     );
 
     testWidgets(
-      '【部門ルール詳細ボトムシート排他検証テスト】錬成会部門タップ時のボトムシートにおいて「錬成会」「進行方式」が表示され、「勝負形式」「反則」「代表戦」「延長戦」「判定」が表示されないこと',
+      '部門ルール詳細ボトムシート排他検証テストにおいて 錬成会部門タップ時のボトムシートにおいて「錬成会」「進行方式」が表示され、「勝負形式」「反則」「代表戦」「延長戦」「判定」が表示されないこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -737,7 +737,7 @@ void main() {
     );
 
     testWidgets(
-      '【マルチシーンボトムシート排他検証テスト】チェックを外したシーン（錬成会OFF）はボトムシート内にセクションが表示されず、チェックONの「本戦」「申し合わせ」のみが表示されること',
+      'マルチシーンボトムシート排他検証テストにおいて チェックを外したシーン（錬成会OFF）はボトムシート内にセクションが表示されず、チェックONの「本戦」「申し合わせ」のみが表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;

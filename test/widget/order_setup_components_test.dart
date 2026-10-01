@@ -8,7 +8,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] OrderSetup Components テスト', () {
-    test('OrderSetupMatchGenerator generates matches correctlyであること', () {
+    test('オーダー設定マッチジェネレーターにより試合が正しく生成されること', () {
       const rule = MatchRule(
         teamName: '先鋒道場',
         category: '一般男子',
@@ -37,9 +37,7 @@ void main() {
       expect(matches[0].matchType, equals('先鋒'));
     });
 
-    testWidgets('OrderSetupStickyBottomBar renders properlyであること', (
-      tester,
-    ) async {
+    testWidgets('オーダー設定ボトムバーが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -58,9 +56,7 @@ void main() {
       expect(find.text('このオーダーで確定して進む'), findsOneWidget);
     });
 
-    testWidgets('OrderSetupReorderableSlotsView renders slotsであること', (
-      tester,
-    ) async {
+    testWidgets('オーダー設定の並び替え可能スロットが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

@@ -17,7 +17,7 @@ import 'package:kendo_os/features/match/domain/match_context.dart';
 // ============================================================================
 void main() {
   group('[Unit] カテゴリ1: 部内戦ルールのテスト', () {
-    test('【3分・延長なし】部内戦の基本ルールが正しく定義されていること', () {
+    test('3分・延長なしにおいて 部内戦の基本ルールが正しく定義されていること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

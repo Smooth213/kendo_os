@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 6-5/12】30人超巨大勝ち抜き戦 スムーズ仮想スクロール Widgetテスト', () {
+  group('[Widget] 30人超巨大勝ち抜き戦 スムーズ仮想スクロール Widgetテスト', () {
     testWidgets('30人勝ち抜き戦リストが仮想化スクロール（ListView.builder）で軽快に最下部までスクロールできること', (
       tester,
     ) async {

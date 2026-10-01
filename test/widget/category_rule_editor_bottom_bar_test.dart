@@ -11,7 +11,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('【CategoryRuleEditorBottomBar】各種ボタンが描画されタップが正常に動作すること', (
+  testWidgets('CategoryRuleEditorBottomBarにおいて 各種ボタンが描画されタップが正常に動作すること', (
     tester,
   ) async {
     bool saved = false;

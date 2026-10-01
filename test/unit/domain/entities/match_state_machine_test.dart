@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/match_state.dart';
 
 void main() {
   group('[Unit] 5: MatchStateMachine Impossible State FSM テスト', () {
-    test('正常な遷移: notStarted -> ready -> inProgressであること', () {
+    test('正常な遷移: notStarted -> ready -> inProgressこと', () {
       final state1 = MatchStateMachine.transition(
         MatchLifecycleState.notStarted,
         StateTransitionEvent.playersReady,
@@ -22,7 +22,7 @@ void main() {
       );
     });
 
-    test('正常な遷移: completed -> undo -> inProgress (誤審の取り消し)こと', () {
+    test('誤審の取り消しにおいて正常な遷移: completed -> undo -> inProgressこと', () {
       final state = MatchStateMachine.transition(
         MatchLifecycleState.completed,
         StateTransitionEvent.undo,
@@ -71,7 +71,7 @@ void main() {
     // ★ Phase 4 ホットフィックス：計算異常値（Infinity / NaN）によるProjectionフリーズ再発防止テスト
     // =========================================================================
     test(
-      '【ガバナンス監査】時間計算で Infinity や NaN が発生しても toInt() クラッシュを起こさず安全に 0 を返却すること',
+      'ガバナンス監査において 時間計算で Infinity や NaN が発生しても toInt() クラッシュを起こさず安全に 0 を返却すること',
       () {
         // 1. 通常値でのモデル作成（試合時間などを設定）
         final match = MatchModel(

@@ -72,7 +72,7 @@ void main() {
 
   group('[Widget] MatchListTileCard 自チーム・自選手表示保証テスト（UI描画色検証）', () {
     testWidgets(
-      '【合同チーム助っ人 vs 自道場選手】個人戦で他道場助っ人は通常色、自道場正規選手のみ自チーム色(0xFFD97706)となること',
+      '合同チーム助っ人 vs 自道場選手において 個人戦で他道場助っ人は通常色、自道場正規選手のみ自チーム色(0xFFD97706)となること',
       (WidgetTester tester) async {
         // 合同チーム「連合A」に自道場選手「皿田 脩人」と、手入力の他道場助っ人選手「他道場 助っ人」が所属
         final teams = [
@@ -146,7 +146,7 @@ void main() {
       },
     );
 
-    testWidgets('【自道場正規選手同士の同門対決】両者とも自チーム色(0xFFD97706)で強調表示されること', (
+    testWidgets('自道場正規選手同士の同門対決において 両者とも自チーム色(0xFFD97706)で強調表示されること', (
       WidgetTester tester,
     ) async {
       final teams = [
@@ -218,7 +218,7 @@ void main() {
       expect(whiteText.style?.color, const Color(0xFFD97706));
     });
 
-    testWidgets('【他道場選手同士の対戦】どちらも自チーム色(0xFFD97706)にならないこと', (
+    testWidgets('他道場選手同士の対戦において どちらも自チーム色(0xFFD97706)にならないこと', (
       WidgetTester tester,
     ) async {
       final teams = [
@@ -281,7 +281,7 @@ void main() {
       expect(whiteText.style?.color, isNot(const Color(0xFFD97706)));
     });
 
-    testWidgets('【団体戦】自チーム名が自チーム色(0xFFD97706)で強調表示されること', (
+    testWidgets('団体戦において 自チーム名が自チーム色(0xFFD97706)で強調表示されること', (
       WidgetTester tester,
     ) async {
       final teams = [
@@ -348,7 +348,7 @@ void main() {
       expect(whiteTeamWidget.style?.fontWeight, AppFontWeight.medium);
     });
 
-    testWidgets('【個人戦登録選手】大会設定で個人戦として自チーム登録された選手が自チーム色となること', (
+    testWidgets('個人戦登録選手において 大会設定で個人戦として自チーム登録された選手が自チーム色となること', (
       WidgetTester tester,
     ) async {
       final teams = [

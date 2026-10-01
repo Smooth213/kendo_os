@@ -231,7 +231,7 @@ void main() {
       expect(find.byType(ProgramStrokeLayer), findsOneWidget);
     });
 
-    testWidgets('InteractiveViewer により拡大縮小（ズーム）が有効であること', (tester) async {
+    testWidgets('InteractiveViewer により拡大縮小（ズーム）が有効こと', (tester) async {
       tester.view.physicalSize = const Size(800, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

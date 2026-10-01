@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 void main() {
   group('[Widget] KachinukiSpanBuilder 単体テスト', () {
-    test('【parseName】formatted and normal namesが適切に処理されること', () {
+    test('parseNameにおいて formatted and normal namesが適切に処理されること', () {
       expect(KachinukiSpanBuilder.parseName('青龍館: 山田 太郎'), {
         'last': '山田',
         'first': '太郎',
@@ -13,7 +13,7 @@ void main() {
       expect(KachinukiSpanBuilder.parseName('(欠員)'), {'last': '', 'first': ''});
     });
 
-    test('buildSpans generates correct spans for continuous matchesであること', () {
+    test('連続試合に対して正しいスパンが生成されること', () {
       final matches = [
         MatchProjection(
           id: 'm1',

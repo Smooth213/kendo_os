@@ -26,7 +26,7 @@ void main() {
     ttfBold = pw.Font.ttf(fontBoldData.buffer.asByteData());
   });
 
-  group('[Golden] 【Golden 5/5】PDF公式記録帳票 印刷レイアウト・ページ整合性テスト', () {
+  group('[Golden] Golden 5/5において PDF公式記録帳票 印刷レイアウト・ページ整合性テスト', () {
     test('A4縦（Portrait）個人戦公式記録帳票のレイアウト整合性こと', () async {
       final matches = List.generate(
         10,

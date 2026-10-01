@@ -21,7 +21,7 @@ void main() {
       container.dispose();
     });
 
-    test('【セッション寿命検証】Adminロールでログインした際、有効期限が仕様通り「30分間」に厳格制限されていること', () {
+    test('セッション寿命検証において Adminロールでログインした際、有効期限が仕様通り「30分間」に厳格制限されていること', () {
       final notifier = container.read(authSessionProvider.notifier);
 
       // Adminロールでセッション創設
@@ -37,7 +37,7 @@ void main() {
     });
 
     test(
-      '【セッション寿命検証】Operator/Recorderでログインした際、終日運営に耐える「12時間」の寿命が割り当てられること',
+      'セッション寿命検証において Operator/Recorderでログインした際、終日運営に耐える「12時間」の寿命が割り当てられること',
       () {
         final notifier = container.read(authSessionProvider.notifier);
 
@@ -57,7 +57,7 @@ void main() {
       },
     );
 
-    test('【iPad放置対策】有効期限切れセッションが正しく判定されること', () {
+    test('iPad放置対策において 有効期限切れセッションが正しく判定されること', () {
       // 意図的に「過去に期限が切れたセッション」をインメモリに注入
       final now = DateTime.now();
       final expiredSession = UserSession(
@@ -74,7 +74,7 @@ void main() {
       expect(currentSession!.isExpired, isTrue);
     });
 
-    test('【改ざん水際阻止】セッションエンティティのバージョン不一致を正確に検知できること', () {
+    test('改ざん水際阻止において セッションエンティティのバージョン不一致を正確に検知できること', () {
       // 不正なJSONデータ構造（セッションバージョンがレガシー、または改ざんされたケース）
       final malformedJson = {
         'role': 'admin',

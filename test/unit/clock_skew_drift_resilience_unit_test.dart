@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[Unit] 【Unit 4/5】時計逆行（Clock Skew）・ドリフト・極限時間耐久テスト', () {
+  group('[Unit] Unit 4/5において 時計逆行（Clock Skew）・ドリフト・極限時間耐久テスト', () {
     final startTime = DateTime(2026, 9, 3, 10, 0, 0); // 10:00:00
     const matchMinutes = 3.0; // 180秒試合
 

@@ -5,29 +5,26 @@ import 'package:kendo_os/admin/presentation/components/master_player_edit_bottom
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  testWidgets(
-    'MasterPlayerEditBottomSheet displays player registration fieldsであること',
-    (tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: MasterPlayerEditBottomSheet(cloudDojoName: 'テスト道場'),
-            ),
+  testWidgets('選手編集ボトムシートに選手登録フィールド群が正しく描画されること', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: MasterPlayerEditBottomSheet(cloudDojoName: 'テスト道場'),
           ),
         ),
-      );
+      ),
+    );
 
-      expect(find.text('新しい選手を登録'), findsOneWidget);
-      expect(find.text('名字'), findsOneWidget);
-      expect(find.text('名前'), findsOneWidget);
-      expect(find.text('男子'), findsOneWidget);
-      expect(find.text('女子'), findsOneWidget);
-      expect(find.text('保存して登録'), findsOneWidget);
-    },
-  );
+    expect(find.text('新しい選手を登録'), findsOneWidget);
+    expect(find.text('名字'), findsOneWidget);
+    expect(find.text('名前'), findsOneWidget);
+    expect(find.text('男子'), findsOneWidget);
+    expect(find.text('女子'), findsOneWidget);
+    expect(find.text('保存して登録'), findsOneWidget);
+  });
 
-  testWidgets('【MasterPlayerEditBottomSheet】既存選手の情報とともに編集モードが表示されること', (
+  testWidgets('MasterPlayerEditBottomSheetにおいて 既存選手の情報とともに編集モードが表示されること', (
     tester,
   ) async {
     final player = PlayerModel(

@@ -5,7 +5,7 @@ void main() {
   group('[Unit] ManualMarkdownLoaderService テスト', () {
     const service = ManualMarkdownLoaderService();
 
-    test('【resolvePath】レガシーパスおよび省略形パスが正しく書き換えられること', () {
+    test('resolvePathにおいて レガシーパスおよび省略形パスが正しく書き換えられること', () {
       expect(
         service.resolvePath('docs/manuals/guide.md'),
         'packages/documentation_runtime/manuals/guide.md',

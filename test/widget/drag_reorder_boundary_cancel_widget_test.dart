@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 3-4/11】ドラッグ並び替え中断・画面外キャンセル時の順序ロールバックテスト', () {
+  group('[Widget] ドラッグ並び替え中断・画面外キャンセル時の順序ロールバックテスト', () {
     testWidgets('ReorderableListView でのドラッグ中にポインタがキャンセルされた場合、元の順序が完全保持されること', (
       tester,
     ) async {

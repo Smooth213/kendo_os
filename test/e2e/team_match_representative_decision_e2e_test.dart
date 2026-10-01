@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/domain/entities/role_permission.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('[E2E] 【E2E】団体戦 同点→代表戦（1本勝負）指名・決着E2Eテスト', () {
+  group('[E2E] 団体戦 同点→代表戦（1本勝負）指名・決着E2Eテスト', () {
     late KendoRuleEngine ruleEngine;
     late PermissionService permissionService;
     late SystemTimeSource timeSource;

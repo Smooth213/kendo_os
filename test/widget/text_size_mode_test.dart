@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 
 void main() {
-  testWidgets('【SettingsModel】textSizeModeが含まれ正しく更新されること', (tester) async {
+  testWidgets('SettingsModelにおいて textSizeModeが含まれ正しく更新されること', (tester) async {
     const settings = SettingsModel();
     expect(settings.textSizeMode, 'normal');
 
@@ -16,9 +16,7 @@ void main() {
     expect(extraLargeSettings.textSizeMode, 'extraLarge');
   });
 
-  testWidgets('SettingsScreen displays text size selectorであること', (
-    tester,
-  ) async {
+  testWidgets('設定画面に文字サイズ選択セレクターが表示されること', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: Scaffold(body: SettingsScreen())),

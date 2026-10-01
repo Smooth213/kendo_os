@@ -4,7 +4,7 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_match_li
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('【ViewerMatchListSearchBar】検索ボタンおよびソートボタンが正しく描画されること', (
+  testWidgets('ViewerMatchListSearchBarにおいて 検索ボタンおよびソートボタンが正しく描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

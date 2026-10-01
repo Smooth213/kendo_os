@@ -4,42 +4,39 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_league_t
 
 void main() {
   group('[Widget] ViewerLeagueTitleHelper テスト', () {
-    test(
-      'generateDescriptiveLeagueTitle generates title for team leagueであること',
-      () {
-        final matches = [
-          MatchModel(
-            id: 'm1',
-            tournamentId: 't1',
-            redName: 'Aチーム',
-            whiteName: 'Bチーム',
-            matchType: '団体戦',
-          ),
-          MatchModel(
-            id: 'm2',
-            tournamentId: 't1',
-            redName: 'Aチーム',
-            whiteName: 'Cチーム',
-            matchType: '団体戦',
-          ),
-          MatchModel(
-            id: 'm3',
-            tournamentId: 't1',
-            redName: 'Bチーム',
-            whiteName: 'Cチーム',
-            matchType: '団体戦',
-          ),
-        ];
+    test('団体リーグ戦用のタイトルが正しく生成されること', () {
+      final matches = [
+        MatchModel(
+          id: 'm1',
+          tournamentId: 't1',
+          redName: 'Aチーム',
+          whiteName: 'Bチーム',
+          matchType: '団体戦',
+        ),
+        MatchModel(
+          id: 'm2',
+          tournamentId: 't1',
+          redName: 'Aチーム',
+          whiteName: 'Cチーム',
+          matchType: '団体戦',
+        ),
+        MatchModel(
+          id: 'm3',
+          tournamentId: 't1',
+          redName: 'Bチーム',
+          whiteName: 'Cチーム',
+          matchType: '団体戦',
+        ),
+      ];
 
-        final title = ViewerLeagueTitleHelper.generateDescriptiveLeagueTitle(
-          matches,
-          ['Aチーム'],
-        );
+      final title = ViewerLeagueTitleHelper.generateDescriptiveLeagueTitle(
+        matches,
+        ['Aチーム'],
+      );
 
-        expect(title, contains('Aチーム'));
-        expect(title, contains('3チームリーグ'));
-        expect(title, contains('全3試合'));
-      },
-    );
+      expect(title, contains('Aチーム'));
+      expect(title, contains('3チームリーグ'));
+      expect(title, contains('全3試合'));
+    });
   });
 }

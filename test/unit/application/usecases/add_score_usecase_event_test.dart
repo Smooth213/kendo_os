@@ -10,7 +10,7 @@ import 'package:kendo_os/features/match/application/mappers/score_event_legacy_a
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('[Unit] AddScoreUseCase - Event Driven Update', () {
+  group('[Unit] AddScoreUseCase イベント駆動更新テスト', () {
     late KendoRuleEngine engine;
     late AddScoreUseCase usecase;
     late User testUser; // ★ 追加

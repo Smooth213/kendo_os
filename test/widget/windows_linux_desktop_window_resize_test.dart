@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 8-6/7】デスクトップ（Win/Mac/Linux）ウィンドウ極端リサイズ耐久テスト', () {
+  group('[Widget] デスクトップ（Win/Mac/Linux）ウィンドウ極端リサイズ耐久テスト', () {
     testWidgets('ウルトラワイド（1920x600）および極小（400x300）でもスコア盤が崩壊せずリキッド配置されること', (
       tester,
     ) async {

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualMarkdownView ウィジェットテスト', () {
-    testWidgets('Renders markdown content correctlyであること', (tester) async {
+    testWidgets('マークダウンコンテンツが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -22,7 +22,7 @@ void main() {
       expect(find.text('これはテスト本文です。'), findsOneWidget);
     });
 
-    testWidgets('【isLoading is true】読み込み中 indicatorが正しく描画されること', (
+    testWidgets('isLoading is trueにおいて 読み込み中 indicatorが正しく描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(

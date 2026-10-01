@@ -4,9 +4,7 @@ import 'package:kendo_os/features/viewer/components/viewer_vertical_player_name_
 
 void main() {
   group('[Widget] ViewerVerticalPlayerNameCell ウィジェットテスト', () {
-    testWidgets('Renders simple vertical text charactersであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('縦書き文字が正しく描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

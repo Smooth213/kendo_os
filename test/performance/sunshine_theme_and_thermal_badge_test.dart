@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/thermal_status_badge.dart';
 
 void main() {
-  group('[Governance] 【設定・安心感の可視化】サンシャイン高コントラスト＆サーマルバッジ検証テスト', () {
+  group('[Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト', () {
     test('サンシャインモードのカラーパレットが直射日光下の最高視認性（純白×漆黒）を満たしていること', () {
       final sunshineColors = AppThemeColors.ofMode(
         isDark: false,
@@ -70,7 +70,7 @@ void main() {
       expect(find.text('省電力'), findsOneWidget);
     });
 
-    testWidgets('3モード全て（ 高速 /  冷却 /  省電力）でトグルスイッチ同一サイズ（64x31）で描画されること', (
+    testWidgets('3モード全て（ 高速 / 冷却 / 省電力）でトグルスイッチ同一サイズ（64x31）で描画されること', (
       tester,
     ) async {
       final governor = ThermalPowerGovernor();
@@ -147,7 +147,7 @@ void main() {
       expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsNothing);
     });
 
-    testWidgets('ライトモード白背景時でも通常モードのバッジがくっきりと視認可能であること', (tester) async {
+    testWidgets('ライトモード白背景時でも通常モードのバッジがくっきりと視認可能こと', (tester) async {
       final governor = ThermalPowerGovernor(); // normal モード
 
       await tester.pumpWidget(

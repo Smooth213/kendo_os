@@ -26,7 +26,7 @@ class AudioPeakNormalizer {
 }
 
 void main() {
-  group('[Unit] 【Phase 2-7/10】体育館PA音響出力音圧ノーマライズ＆クリッピング防止テスト', () {
+  group('[Unit] 体育館PA音響出力音圧ノーマライズ＆クリッピング防止テスト', () {
     test('PAアンプ接続モード（isPaAmplifierMode: true）で音割れ防止リミット（0.88）が適用されること', () {
       final safeVolume = AudioPeakNormalizer.normalizeVolume(
         rawGain: 1.2, // 過大入力

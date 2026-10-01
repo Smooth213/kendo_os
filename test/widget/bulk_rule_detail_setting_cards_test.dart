@@ -5,9 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] BulkRuleDetailSettingCards ウィジェットテスト', () {
-    testWidgets('cards and triggers change callbacksが正しく描画されること', (
-      tester,
-    ) async {
+    testWidgets('カード群が表示され変更コールバックが正しく実行されること', (tester) async {
       double matchTime = 3.0;
       bool isIpponShobu = false;
       bool hasExtension = false;
@@ -66,7 +64,7 @@ void main() {
     });
 
     testWidgets(
-      '【ダークモード視認性保証テスト】ダークモード時、カード背景色が灰色に濁らず、テキストとのコントラストが確保されていること',
+      'ダークモード視認性保証テストにおいて ダークモード時、カード背景色が灰色に濁らず、テキストとのコントラストが確保されていること',
       (tester) async {
         final controller = TextEditingController(text: '30');
 
@@ -136,7 +134,7 @@ void main() {
       },
     );
 
-    testWidgets('【ライトモード視認性保証テスト】ライトモード時、適切な背景と文字色で描画されること', (tester) async {
+    testWidgets('ライトモード視認性保証テストにおいて ライトモード時、適切な背景と文字色で描画されること', (tester) async {
       final controller = TextEditingController(text: '30');
 
       await tester.pumpWidget(

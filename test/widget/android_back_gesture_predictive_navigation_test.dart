@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 8-5/7】Android 14/15 予測型「戻る」ジェスチャー安全ハンドリングテスト', () {
+  group('[Widget] Android 14/15 予測型「戻る」ジェスチャー安全ハンドリングテスト', () {
     testWidgets('予測型戻るジェスチャー時、試合進行中画面が誤終了せず確認モーダルでガードされること', (tester) async {
       bool isGuardActive = true;
       bool exitBlocked = false;

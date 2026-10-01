@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 
 void main() {
   group('[Widget] MatchTeamHeaderRow テスト', () {
-    testWidgets('Highlights red team when isRedOwn is trueであること', (
-      tester,
-    ) async {
+    testWidgets('自チームが赤の場合に赤チームがハイライト表示されること', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -29,9 +27,7 @@ void main() {
       expect(whiteText.style?.color, const Color(0xFF000000));
     });
 
-    testWidgets('Highlights white team when isWhiteOwn is trueであること', (
-      tester,
-    ) async {
+    testWidgets('自チームが白の場合に白チームがハイライト表示されること', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

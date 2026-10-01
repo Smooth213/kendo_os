@@ -7,9 +7,9 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第10条 ガバナンス監査】レンダリング負荷隔離 ＆ RepaintBoundary最適化規約', () {
+  group('[Governance] 第10条 ガバナンス監査において レンダリング負荷隔離 ＆ RepaintBoundary最適化規約', () {
     test(
-      'Rule 1: [打突ボタン描画隔離＆先行触覚] action_buttons.dart における打突ボタンの RepaintBoundary 配置＆先行触覚ゼロ遅延規約こと',
+      '打突ボタン描画隔離＆先行触覚に関して、 action_buttons.dart における打突ボタンの RepaintBoundary 配置＆先行触覚ゼロ遅延規約こと',
       () {
         final file = File('lib/shared/widgets/action_buttons.dart');
         expect(file.existsSync(), isTrue);
@@ -43,7 +43,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [スコア操作パネル描画隔離] match_score_action_section.dart および match_screen.dart の主要セクション RepaintBoundary 隔離規約こと',
+      'スコア操作パネル描画隔離に関して、 match_score_action_section.dart および match_screen.dart の主要セクション RepaintBoundary 隔離規約こと',
       () {
         final actionFile = File(
           'lib/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart',
@@ -88,7 +88,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [タイムライン描画隔離] match_timeline_list.dart で RepaintBoundary によるチームカード描画隔離がなされていること',
+      'タイムライン描画隔離に関して、 match_timeline_list.dart で RepaintBoundary によるチームカード描画隔離がなされていること',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/components/home/match_timeline_list.dart',
@@ -111,7 +111,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [観戦画面描画隔離] viewer_category_section_list.dart で RepaintBoundary による描画隔離および ViewerTeamGroupingHelper が配備されていること',
+      '観戦画面描画隔離に関して、 viewer_category_section_list.dart で RepaintBoundary による描画隔離および ViewerTeamGroupingHelper が配備されていること',
       () {
         final file = File(
           'lib/features/viewer/presentation/components/viewer_category_section_list.dart',
@@ -141,7 +141,7 @@ void main() {
     );
 
     testWidgets(
-      'Rule 5: [LiquidBackground静止モード] match_screen.dart で isAnimated: false となり AnimatedBuilder をバイパスすること',
+      'LiquidBackground静止モードに関して、 match_screen.dart で isAnimated: false となり AnimatedBuilder をバイパスすること',
       (tester) async {
         await tester.pumpWidget(
           const ProviderScope(
@@ -173,69 +173,66 @@ void main() {
       },
     );
 
-    test(
-      'Rule 6: [カード・ドック描画隔離] トーナメント表・巨大テーブル・ドックシートにおける RepaintBoundary 隔離規約こと',
-      () {
-        final tournamentListFile = File(
-          'lib/features/tournament/presentation/operate/screens/tournament_list_screen.dart',
-        );
-        final scoreTableFile = File(
-          'lib/shared/widgets/match_tables/score_table_card.dart',
-        );
-        final indivCardFile = File(
-          'lib/shared/widgets/match_tables/individual_list_card.dart',
-        );
-        final leagueCardFile = File(
-          'lib/shared/widgets/match_tables/league_grid_card.dart',
-        );
-        final dockSheetFile = File(
-          'lib/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart',
-        );
+    test('カード・ドック描画隔離に関して、 トーナメント表・巨大テーブル・ドックシートにおける RepaintBoundary 隔離規約こと', () {
+      final tournamentListFile = File(
+        'lib/features/tournament/presentation/operate/screens/tournament_list_screen.dart',
+      );
+      final scoreTableFile = File(
+        'lib/shared/widgets/match_tables/score_table_card.dart',
+      );
+      final indivCardFile = File(
+        'lib/shared/widgets/match_tables/individual_list_card.dart',
+      );
+      final leagueCardFile = File(
+        'lib/shared/widgets/match_tables/league_grid_card.dart',
+      );
+      final dockSheetFile = File(
+        'lib/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart',
+      );
 
-        expect(tournamentListFile.existsSync(), isTrue);
-        expect(scoreTableFile.existsSync(), isTrue);
-        expect(indivCardFile.existsSync(), isTrue);
-        expect(leagueCardFile.existsSync(), isTrue);
-        expect(dockSheetFile.existsSync(), isTrue);
+      expect(tournamentListFile.existsSync(), isTrue);
+      expect(scoreTableFile.existsSync(), isTrue);
+      expect(indivCardFile.existsSync(), isTrue);
+      expect(leagueCardFile.existsSync(), isTrue);
+      expect(dockSheetFile.existsSync(), isTrue);
 
-        expect(
-          tournamentListFile.readAsStringSync().contains(
-            '// ⚡ 【Plan 1-3】RepaintBoundaryによるリストアイテム描画カリング＆GPU再ラスタライズ防止',
-          ),
-          isTrue,
-        );
-        expect(
-          scoreTableFile.readAsStringSync().contains(
-            '// ⚡ 【Plan 1-3】RepaintBoundaryによる巨大スコアテーブルカードの描画キャッシュとラスタライズ分離',
-          ),
-          isTrue,
-        );
-        expect(
-          indivCardFile.readAsStringSync().contains(
-            '// ⚡ 【Plan 1-3】RepaintBoundaryによる個人戦リストカードの描画キャッシュとラスタライズ分離',
-          ),
-          isTrue,
-        );
-        expect(
-          leagueCardFile.readAsStringSync().contains(
-            '// ⚡ 【Plan 1-3】RepaintBoundaryによるリーグ戦グリッドカードの描画分離',
-          ),
-          isTrue,
-        );
+      expect(
+        tournamentListFile.readAsStringSync().contains(
+          '// ⚡ 【Plan 1-3】RepaintBoundaryによるリストアイテム描画カリング＆GPU再ラスタライズ防止',
+        ),
+        isTrue,
+      );
+      expect(
+        scoreTableFile.readAsStringSync().contains(
+          '// ⚡ 【Plan 1-3】RepaintBoundaryによる巨大スコアテーブルカードの描画キャッシュとラスタライズ分離',
+        ),
+        isTrue,
+      );
+      expect(
+        indivCardFile.readAsStringSync().contains(
+          '// ⚡ 【Plan 1-3】RepaintBoundaryによる個人戦リストカードの描画キャッシュとラスタライズ分離',
+        ),
+        isTrue,
+      );
+      expect(
+        leagueCardFile.readAsStringSync().contains(
+          '// ⚡ 【Plan 1-3】RepaintBoundaryによるリーグ戦グリッドカードの描画分離',
+        ),
+        isTrue,
+      );
 
-        final dockContent = dockSheetFile.readAsStringSync();
-        expect(
-          dockContent.contains(
-                'RepaintBoundary(\n                      child: Builder(',
-              ) ||
-              dockContent.contains('RepaintBoundary(child: Builder(') ||
-              (dockContent.contains('RepaintBoundary') &&
-                  dockContent.contains('widget.builder')),
-          isTrue,
-          reason:
-              'dock_draggable_sheet.dart でコンテンツエリアが RepaintBoundary で囲まれていること',
-        );
-      },
-    );
+      final dockContent = dockSheetFile.readAsStringSync();
+      expect(
+        dockContent.contains(
+              'RepaintBoundary(\n                      child: Builder(',
+            ) ||
+            dockContent.contains('RepaintBoundary(child: Builder(') ||
+            (dockContent.contains('RepaintBoundary') &&
+                dockContent.contains('widget.builder')),
+        isTrue,
+        reason:
+            'dock_draggable_sheet.dart でコンテンツエリアが RepaintBoundary で囲まれていること',
+      );
+    });
   });
 }

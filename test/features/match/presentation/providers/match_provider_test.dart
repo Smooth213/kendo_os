@@ -171,8 +171,8 @@ void main() {
     container.dispose();
   });
 
-  group('[Unit] MatchProvider - Step 3-1: 初期状態の検証', () {
-    test('currentMatchIdProvider の初期値は null であること', () {
+  group('[Unit] MatchProvider - 初期状態の検証', () {
+    test('currentMatchIdProvider の初期値は nullこと', () {
       final matchId = container.read(currentMatchIdProvider);
       expect(matchId, isNull);
     });
@@ -193,7 +193,7 @@ void main() {
     });
   });
 
-  group('MatchProvider - Step 3-2: 状態遷移の検証', () {
+  group('MatchProvider - 状態遷移の検証', () {
     test('processScoreEvent を呼び出した際、正しく保存処理と監査ログが実行されること', () async {
       final match = TestMatchFactory.createIndividualMatch(id: 'match-123');
       container.read(mockMatchListProvider.notifier).state = [match];
@@ -266,7 +266,7 @@ void main() {
     });
   });
 
-  group('MatchProvider - Step 3-3: rebuild最適化の検証', () {
+  group('MatchProvider - rebuild最適化の検証', () {
     test('.select() により、監視対象外のプロパティ変更では通知が飛ばないこと', () {
       final notifier = container.read(settingsProvider.notifier);
       int callCount = 0;
@@ -292,7 +292,7 @@ void main() {
     });
   });
 
-  group('MatchProvider - Step 3-4: 同時操作・競合の防止', () {
+  group('MatchProvider - 同時操作・競合の防止', () {
     test('データ保存時に競合エラーが発生した場合、上位に例外が伝播すること', () async {
       final match = TestMatchFactory.createIndividualMatch();
       container.read(mockMatchListProvider.notifier).state = [match];
@@ -368,7 +368,7 @@ void main() {
       ).called(1);
     });
 
-    test('【二重保存の防止】addIppon を呼び出した際、DB保存(saveMatch)が1回しか呼ばれないこと', () async {
+    test('二重保存の防止において addIppon を呼び出した際、DB保存(saveMatch)が1回しか呼ばれないこと', () async {
       final match = TestMatchFactory.createIndividualMatch(
         id: 'match-add-ippon',
       );

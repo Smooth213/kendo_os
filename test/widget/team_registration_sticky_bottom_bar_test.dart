@@ -11,7 +11,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('【TeamRegistrationStickyBottomBar】ページ0で適切に描画されること', (
+  testWidgets('TeamRegistrationStickyBottomBarにおいて ページ0で適切に描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -42,7 +42,7 @@ void main() {
     expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
   });
 
-  testWidgets('【TeamRegistrationStickyBottomBar】ページ2（入力中）で適切に描画されること', (
+  testWidgets('TeamRegistrationStickyBottomBarにおいて ページ2（入力中）で適切に描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -75,7 +75,7 @@ void main() {
     expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
   });
 
-  testWidgets('【TeamRegistrationStickyBottomBar】ページ2（未入力）で適切に描画されること', (
+  testWidgets('TeamRegistrationStickyBottomBarにおいて ページ2（未入力）で適切に描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

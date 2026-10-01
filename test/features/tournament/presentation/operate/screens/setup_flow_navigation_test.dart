@@ -68,7 +68,7 @@ void main() {
     });
 
     testWidgets(
-      'TeamRegistrationScreen completed button navigates to CategoryRulesScreen with query paramであること',
+      'TeamRegistrationScreen completed button navigates to CategoryRulesScreen with query paramこと',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -146,7 +146,7 @@ void main() {
     );
 
     testWidgets(
-      '【CategoryRulesScreen】初期設定時（isFromSetup=true）に設定ボタンが描画されホームへ遷移すること',
+      'CategoryRulesScreenにおいて 初期設定時（isFromSetup=true）に設定ボタンが描画されホームへ遷移すること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -216,117 +216,111 @@ void main() {
       },
     );
 
-    testWidgets(
-      'CategoryRulesScreen skip button navigates to home when isFromSetup=trueであること',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+    testWidgets('セットアップ経由の場合に部門ルール画面のスキップボタンでホームに遷移すること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        final router = GoRouter(
-          initialLocation:
-              '/tournament/test_tournament_123/category-rules?isFromSetup=true',
-          routes: [
-            GoRoute(
-              path: '/tournament/:id/category-rules',
-              builder: (context, state) {
-                final isFromSetup =
-                    state.uri.queryParameters['isFromSetup'] == 'true';
-                return CategoryRulesScreen(
-                  tournamentId: state.pathParameters['id']!,
-                  isFromSetup: isFromSetup,
-                );
-              },
-            ),
-            GoRoute(
-              path: '/home/:id',
-              builder: (context, state) =>
-                  Scaffold(body: Text('Home: ${state.pathParameters['id']}')),
-            ),
-          ],
-        );
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              settingsProvider.overrideWith(() => MockSettingsNotifier()),
-              currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-              tournamentRepositoryProvider.overrideWithValue(
-                mockTournamentRepo,
-              ),
-              tournamentProvider(
-                'test_tournament_123',
-              ).overrideWith((ref) => Stream.value(mockTournament)),
-              matchListByTournamentProvider(
-                'test_tournament_123',
-              ).overrideWith((ref) => Stream.value([])),
-            ],
-            child: MaterialApp.router(routerConfig: router),
+      final router = GoRouter(
+        initialLocation:
+            '/tournament/test_tournament_123/category-rules?isFromSetup=true',
+        routes: [
+          GoRoute(
+            path: '/tournament/:id/category-rules',
+            builder: (context, state) {
+              final isFromSetup =
+                  state.uri.queryParameters['isFromSetup'] == 'true';
+              return CategoryRulesScreen(
+                tournamentId: state.pathParameters['id']!,
+                isFromSetup: isFromSetup,
+              );
+            },
           ),
-        );
-
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
-
-        // Tap skip button in AppBar
-        await tester.tap(find.text('スキップ'));
-        await tester.pumpAndSettle();
-
-        // Verify it redirected to home
-        expect(find.text('Home: test_tournament_123'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'CategoryRulesScreen does NOT show setup UI elements when isFromSetup=falseであること',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-
-        final router = GoRouter(
-          initialLocation: '/tournament/test_tournament_123/category-rules',
-          routes: [
-            GoRoute(
-              path: '/tournament/:id/category-rules',
-              builder: (context, state) {
-                final isFromSetup =
-                    state.uri.queryParameters['isFromSetup'] == 'true';
-                return CategoryRulesScreen(
-                  tournamentId: state.pathParameters['id']!,
-                  isFromSetup: isFromSetup,
-                );
-              },
-            ),
-          ],
-        );
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              settingsProvider.overrideWith(() => MockSettingsNotifier()),
-              currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-              tournamentRepositoryProvider.overrideWithValue(
-                mockTournamentRepo,
-              ),
-              tournamentProvider(
-                'test_tournament_123',
-              ).overrideWith((ref) => Stream.value(mockTournament)),
-              matchListByTournamentProvider(
-                'test_tournament_123',
-              ).overrideWith((ref) => Stream.value([])),
-            ],
-            child: MaterialApp.router(routerConfig: router),
+          GoRoute(
+            path: '/home/:id',
+            builder: (context, state) =>
+                Scaffold(body: Text('Home: ${state.pathParameters['id']}')),
           ),
-        );
+        ],
+      );
 
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            settingsProvider.overrideWith(() => MockSettingsNotifier()),
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+            tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
+            tournamentProvider(
+              'test_tournament_123',
+            ).overrideWith((ref) => Stream.value(mockTournament)),
+            matchListByTournamentProvider(
+              'test_tournament_123',
+            ).overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
 
-        // Setup specific UI elements should NOT be rendered
-        expect(find.text('スキップ'), findsNothing);
-        expect(find.text('設定を完了して大会ホームへ進む'), findsNothing);
-      },
-    );
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+
+      // Tap skip button in AppBar
+      await tester.tap(find.text('スキップ'));
+      await tester.pumpAndSettle();
+
+      // Verify it redirected to home
+      expect(find.text('Home: test_tournament_123'), findsOneWidget);
+    });
+
+    testWidgets('通常表示時に部門ルール画面のセットアップ用UI要素が表示されないこと', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final router = GoRouter(
+        initialLocation: '/tournament/test_tournament_123/category-rules',
+        routes: [
+          GoRoute(
+            path: '/tournament/:id/category-rules',
+            builder: (context, state) {
+              final isFromSetup =
+                  state.uri.queryParameters['isFromSetup'] == 'true';
+              return CategoryRulesScreen(
+                tournamentId: state.pathParameters['id']!,
+                isFromSetup: isFromSetup,
+              );
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            settingsProvider.overrideWith(() => MockSettingsNotifier()),
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+            tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
+            tournamentProvider(
+              'test_tournament_123',
+            ).overrideWith((ref) => Stream.value(mockTournament)),
+            matchListByTournamentProvider(
+              'test_tournament_123',
+            ).overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+
+      // Setup specific UI elements should NOT be rendered
+      expect(find.text('スキップ'), findsNothing);
+      expect(find.text('設定を完了して大会ホームへ進む'), findsNothing);
+    });
   });
 }

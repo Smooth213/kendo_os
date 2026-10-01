@@ -11,9 +11,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cre
 
 void main() {
   group('[Widget] CreateTournament Components テスト', () {
-    testWidgets('renders CreateTournamentDynamicHeader correctlyであること', (
-      tester,
-    ) async {
+    testWidgets('大会作成ダイナミックヘッダーが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -25,7 +23,7 @@ void main() {
       expect(find.text('大会を新規作成'), findsOneWidget);
     });
 
-    testWidgets('renders CreateTournamentPage1 correctlyであること', (tester) async {
+    testWidgets('大会作成第1ページが正しく描画されること', (tester) async {
       final nameCtrl = TextEditingController(text: '剣道大会');
       await tester.pumpWidget(
         MaterialApp(
@@ -43,7 +41,7 @@ void main() {
       expect(find.text('2026年08月21日'), findsOneWidget);
     });
 
-    testWidgets('renders CreateTournamentPage2 correctlyであること', (tester) async {
+    testWidgets('大会作成第2ページが正しく描画されること', (tester) async {
       final venueCtrl = TextEditingController(text: '武道館');
       final noteCtrl = TextEditingController(text: 'メモ');
       await tester.pumpWidget(
@@ -61,9 +59,7 @@ void main() {
       expect(find.text('開催場所とメモを\n入力してください'), findsOneWidget);
     });
 
-    testWidgets('renders CreateTournamentStickyBottomAction correctlyであること', (
-      tester,
-    ) async {
+    testWidgets('大会作成ボトムアクションが正しく描画されること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

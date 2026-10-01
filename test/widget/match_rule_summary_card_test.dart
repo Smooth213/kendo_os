@@ -122,7 +122,7 @@ void main() {
         _expectNoText('判定');
       });
 
-      testWidgets('【代表戦あり】団体戦・代表戦設定が表示されること', (tester) async {
+      testWidgets('代表戦ありにおいて 団体戦・代表戦設定が表示されること', (tester) async {
         await tester.pumpWidget(
           _buildCard(
             matchType: '団体戦',

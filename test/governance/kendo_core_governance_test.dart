@@ -9,11 +9,11 @@ import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart'
 import 'package:pdf/widgets.dart' as pw;
 
 void main() {
-  group('[Governance] 【kendo OS 3大コアガバナンス＆スコア表示 完全自動監査テスト】', () {
+  group('[Governance] kendo OS 3大コアガバナンス＆スコア表示 完全自動監査テストにおいて', () {
     // =========================================================================
     // 1. 道場名・選手名パース＆表示ガバナンス
     // =========================================================================
-    test('【名前パース規約】コロン・括弧の全角半角が完全正規化され、団体/個人表示が決定論的に生成されること', () {
+    test('名前パース規約において コロン・括弧の全角半角が完全正規化され、団体/個人表示が決定論的に生成されること', () {
       // 団体戦: コロン区切り
       expect(KendoEntityNameParser.extractTeamName('道上剣友会A: 皿田'), '道上剣友会A');
       expect(KendoEntityNameParser.extractPlayerName('道上剣友会A: 皿田'), '皿田');
@@ -48,7 +48,7 @@ void main() {
     // =========================================================================
     // 2. 試合シーン・カテゴリバッジガバナンス
     // =========================================================================
-    testWidgets('【シーンバッジ規約】本戦・錬成・申合せ・部内戦が自動判別され公式カラーとラベルで描画されること', (
+    testWidgets('シーンバッジ規約において 本戦・錬成・申合せ・部内戦が自動判別され公式カラーとラベルで描画されること', (
       tester,
     ) async {
       // 錬成会バッジ
@@ -85,7 +85,9 @@ void main() {
     // =========================================================================
     // 3. 試合結果・ステータスタグガバナンス
     // =========================================================================
-    testWidgets('【結果タグ規約】延長・代表戦・不戦勝・引き分けが統一デザインタグとして描画されること', (tester) async {
+    testWidgets('結果タグ規約において 延長・代表戦・不戦勝・引き分けが統一デザインタグとして描画されること', (
+      tester,
+    ) async {
       // 延長タグ
       await tester.pumpWidget(
         const MaterialApp(
@@ -120,7 +122,7 @@ void main() {
     // =========================================================================
     // 4. 剣道スコア表示・PDFガバナンス
     // =========================================================================
-    testWidgets('【スコア表示規約】Table斜め配置・先取丸囲み・勝者丸が100%規約適合すること', (tester) async {
+    testWidgets('スコア表示規約において Table斜め配置・先取丸囲み・勝者丸が100%規約適合すること', (tester) async {
       const points = [
         KendoPointMark(mark: 'メ', isFirst: true),
         KendoPointMark(mark: 'コ', isFirst: false),
@@ -157,7 +159,7 @@ void main() {
       expect(positionedWidgets[1].right, isNotNull);
     });
 
-    test('【PDF描画規約】PDF出力側でも25px勝者円および境界クリアランスが遵守されていること', () {
+    test('PDF描画規約において PDF出力側でも25px勝者円および境界クリアランスが遵守されていること', () {
       final fontBold = pw.Font.helveticaBold();
       final pts = [PdfPointData('コ', true), PdfPointData('ツ', false)];
 

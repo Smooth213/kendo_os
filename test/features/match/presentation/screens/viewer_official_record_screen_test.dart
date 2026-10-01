@@ -47,7 +47,7 @@ class MockTournamentProjection implements TournamentProjection {
 }
 
 void main() {
-  testWidgets('【ViewerOfficialRecordScreen】empty cell for "欠員"が表示されること', (
+  testWidgets('ViewerOfficialRecordScreenにおいて empty cell for "欠員"が表示されること', (
     WidgetTester tester,
   ) async {
     final matches = [
@@ -136,7 +136,7 @@ void main() {
   });
 
   testWidgets(
-    '【ViewerOfficialRecordScreen】initial for same last namesが表示されること',
+    'ViewerOfficialRecordScreenにおいて initial for same last namesが表示されること',
     (WidgetTester tester) async {
       final matches = [
         MatchListProjection(
@@ -342,115 +342,114 @@ void main() {
     },
   );
 
-  testWidgets(
-    'ViewerOfficialRecordScreen matches should be sorted by matchOrderであること',
-    (WidgetTester tester) async {
-      final matches = [
-        MatchListProjection(
-          id: 'm2',
-          tournamentId: 'test-tournament',
-          groupName: 'groupA',
-          redName: 'チームA:山田花子',
-          whiteName: 'チームB:鈴木二',
-          redScore: 0,
-          whiteScore: 0,
-          matchType: '大将',
-          status: 'finished',
-          matchOrder: 2, // order is larger
-          note: '',
-          isKachinuki: false,
-          firstPointSide: '',
-          redPointMarks: const [],
-          whitePointMarks: const [],
-        ),
-        MatchListProjection(
-          id: 'm1',
-          tournamentId: 'test-tournament',
-          groupName: 'groupA',
-          redName: 'チームA:山田太郎',
-          whiteName: 'チームB:佐藤一',
-          redScore: 0,
-          whiteScore: 0,
-          matchType: '先鋒',
-          status: 'finished',
-          matchOrder: 1, // order is smaller
-          note: '',
-          isKachinuki: false,
-          firstPointSide: '',
-          redPointMarks: const [],
-          whitePointMarks: const [],
-        ),
-      ];
-
-      final teamMatchProjection = TeamMatchProjection(
+  testWidgets('観客用公式記録画面の試合一覧が試合順序（matchOrder）でソートされること', (
+    WidgetTester tester,
+  ) async {
+    final matches = [
+      MatchListProjection(
+        id: 'm2',
+        tournamentId: 'test-tournament',
         groupName: 'groupA',
-        redTeamName: 'チームA',
-        whiteTeamName: 'チームB',
-        matchType: '団体戦',
+        redName: 'チームA:山田花子',
+        whiteName: 'チームB:鈴木二',
+        redScore: 0,
+        whiteScore: 0,
+        matchType: '大将',
+        status: 'finished',
+        matchOrder: 2, // order is larger
         note: '',
-        matches: matches,
         isKachinuki: false,
-        isLeague: false,
-        result: TeamMatchResult(
-          teamWinner: 'draw',
-          redWins: 0,
-          whiteWins: 0,
-          redPoints: 0,
-          whitePoints: 0,
-          allFinished: true,
-          isTie: true,
-          hasDaihyo: false,
+        firstPointSide: '',
+        redPointMarks: const [],
+        whitePointMarks: const [],
+      ),
+      MatchListProjection(
+        id: 'm1',
+        tournamentId: 'test-tournament',
+        groupName: 'groupA',
+        redName: 'チームA:山田太郎',
+        whiteName: 'チームB:佐藤一',
+        redScore: 0,
+        whiteScore: 0,
+        matchType: '先鋒',
+        status: 'finished',
+        matchOrder: 1, // order is smaller
+        note: '',
+        isKachinuki: false,
+        firstPointSide: '',
+        redPointMarks: const [],
+        whitePointMarks: const [],
+      ),
+    ];
+
+    final teamMatchProjection = TeamMatchProjection(
+      groupName: 'groupA',
+      redTeamName: 'チームA',
+      whiteTeamName: 'チームB',
+      matchType: '団体戦',
+      note: '',
+      matches: matches,
+      isKachinuki: false,
+      isLeague: false,
+      result: TeamMatchResult(
+        teamWinner: 'draw',
+        redWins: 0,
+        whiteWins: 0,
+        redPoints: 0,
+        whitePoints: 0,
+        allFinished: true,
+        isTie: true,
+        hasDaihyo: false,
+      ),
+      leagueStandings: [],
+    );
+
+    final tournamentProjection = MockTournamentProjection(
+      teamMatches: {'groupA': teamMatchProjection},
+      categoryToGroupKeys: {
+        '一般': ['groupA'],
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          viewerTournamentProjectionProvider(
+            'test-tournament',
+          ).overrideWithValue(AsyncValue.data(tournamentProjection)),
+          customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          settingsProvider.overrideWith(() => MockSettingsNotifier()),
+          tournamentProvider(
+            'test-tournament',
+          ).overrideWith((ref) => Stream.value(null)),
+        ],
+        child: const MaterialApp(
+          home: ViewerOfficialRecordScreen(tournamentId: 'test-tournament'),
         ),
-        leagueStandings: [],
-      );
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      final tournamentProjection = MockTournamentProjection(
-        teamMatches: {'groupA': teamMatchProjection},
-        categoryToGroupKeys: {
-          '一般': ['groupA'],
-        },
-      );
+    final tableWidget = tester.widget<Table>(find.byType(Table).first);
+    final headerRow = tableWidget.children[0];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            viewerTournamentProjectionProvider(
-              'test-tournament',
-            ).overrideWithValue(AsyncValue.data(tournamentProjection)),
-            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-            tournamentProvider(
-              'test-tournament',
-            ).overrideWith((ref) => Stream.value(null)),
-          ],
-          child: const MaterialApp(
-            home: ViewerOfficialRecordScreen(tournamentId: 'test-tournament'),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+    final firstMatchText =
+        (((headerRow.children[1] as Container).child as Center).child
+                    as Padding)
+                .child
+            as Text;
+    final secondMatchText =
+        (((headerRow.children[2] as Container).child as Center).child
+                    as Padding)
+                .child
+            as Text;
 
-      final tableWidget = tester.widget<Table>(find.byType(Table).first);
-      final headerRow = tableWidget.children[0];
-
-      final firstMatchText =
-          (((headerRow.children[1] as Container).child as Center).child
-                      as Padding)
-                  .child
-              as Text;
-      final secondMatchText =
-          (((headerRow.children[2] as Container).child as Center).child
-                      as Padding)
-                  .child
-              as Text;
-
-      expect(firstMatchText.data, '先鋒');
-      expect(secondMatchText.data, '大将');
-    },
-  );
+    expect(firstMatchText.data, '先鋒');
+    expect(secondMatchText.data, '大将');
+  });
 
   testWidgets(
-    '【ViewerOfficialRecordScreen】NEVER display "成績サマリー" (観客専用仕様)すること',
+    'ViewerOfficialRecordScreenにおいて NEVER display "成績サマリー" (観客専用仕様)すること',
     (WidgetTester tester) async {
       final teamMatchProjection = TeamMatchProjection(
         groupName: 'groupA',
@@ -525,7 +524,7 @@ void main() {
   );
 
   testWidgets(
-    '【ViewerOfficialRecordScreen】category tabs correctly (小学生の部 / 中学生の部 / 一般の部)が表示されること',
+    'ViewerOfficialRecordScreenにおいて category tabs correctly (小学生の部 / 中学生の部 / 一般の部)が表示されること',
     (WidgetTester tester) async {
       TeamMatchProjection makeTeamMatch(String groupName, String cat) =>
           TeamMatchProjection(
@@ -610,7 +609,7 @@ void main() {
   );
 
   testWidgets(
-    'ViewerOfficialRecordExportBar maintains visible テキスト and high contrast in Dark Mode (no whiteout)こと',
+    'no whiteoutにおいてViewerOfficialRecordExportBar maintains visible テキスト and high contrast in Dark Modeこと',
     (WidgetTester tester) async {
       TeamMatchProjection makeTeamMatch(String groupName) =>
           TeamMatchProjection(

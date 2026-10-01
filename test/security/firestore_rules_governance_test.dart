@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Security] 【ガバナンス第4条】Firestore セキュリティルール＆ロール権限 監査テスト', () {
+  group('[Security] ガバナンス第4条において Firestore セキュリティルール＆ロール権限 監査テスト', () {
     late String rulesContent;
 
     setUpAll(() {

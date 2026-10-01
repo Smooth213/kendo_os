@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/utils/payload_compression_helper.dart';
 
 void main() {
-  group('[Governance] 【Phase 9: 通信パケット・同期ペイロード極小化】Gzip 圧縮・解凍ガバナンステスト', () {
+  group('[Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト', () {
     late List<Map<String, dynamic>> dummyTournamentMatches;
 
     setUp(() {
@@ -96,7 +96,7 @@ void main() {
       );
     });
 
-    test('【Zero Data Loss】Gzip 圧縮・解凍のラウンドトリップでデータが 100% 完全復元されること', () {
+    test('Zero Data Lossにおいて Gzip 圧縮・解凍のラウンドトリップでデータが 100% 完全復元されること', () {
       final jsonString = jsonEncode(dummyTournamentMatches);
 
       // 文字列の圧縮・解凍
@@ -130,7 +130,7 @@ void main() {
       expect(decompressed, equals(Uint8List.fromList(rawBytes)));
     });
 
-    test('【Firestore/WebSocket用】Base64 シリアライズ / デシリアライズが完全一致すること', () {
+    test('Firestore/WebSocket用において Base64 シリアライズ / デシリアライズが完全一致すること', () {
       final jsonString = jsonEncode(dummyTournamentMatches.take(10).toList());
 
       final base64Gzip = PayloadCompressionHelper.compressToBase64(jsonString);

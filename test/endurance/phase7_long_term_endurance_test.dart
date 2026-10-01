@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('[E2E] — 長時間運営耐久・経時ストレステスト要塞', () {
+  group('[E2E] 長時間運営耐久・経時ストレステスト要塞', () {
     late DateTime baseTime;
 
     setUp(() {
@@ -11,7 +11,7 @@ void main() {
     });
 
     test(
-      '【連続タイマー12時間】12時間（43,200秒）が丸ごと経過した極限コンテキストにおいても、経過Msの絶対逆算プロジェクションにオーバーフローや型丸めバグが発生しないこと',
+      '連続タイマー12時間において 12時間（43,200秒）が丸ごと経過した極限コンテキストにおいても、経過Msの絶対逆算プロジェクションにオーバーフローや型丸めバグが発生しないこと',
       () {
         final match = MatchModel(
           id: 'endurance_timer_12h',
@@ -31,7 +31,7 @@ void main() {
     );
 
     test(
-      '【Memory Leak構造監視】10,000回連続でスコアイベントの copyWith 追記を繰り返しても、ドメイン状態が非破壊原則(Immutable)を守り、ヒープの異常増殖やリスナーリークを起こさないこと',
+      'Memory Leak構造監視において 10,000回連続でスコアイベントの copyWith 追記を繰り返しても、ドメイン状態が非破壊原則(Immutable)を守り、ヒープの異常増殖やリスナーリークを起こさないこと',
       () {
         var match = const MatchModel(
           id: 'leak_test',
@@ -62,7 +62,7 @@ void main() {
     );
 
     test(
-      '【Suspend/Resume 100回往復】アプリのバックグラウンド（停泊）とフォアグラウンド（復帰）の往復が100回連続で発生しても、キャッシュ汚染を起こさずドメインの絶対時間から残り秒数が決定論的に再計算され続けること',
+      'Suspend/Resume 100回往復において アプリのバックグラウンド（停泊）とフォアグラウンド（復帰）の往復が100回連続で発生しても、キャッシュ汚染を起こさずドメインの絶対時間から残り秒数が決定論的に再計算され続けること',
       () {
         final match = MatchModel(
           id: 'suspend_resume_100',

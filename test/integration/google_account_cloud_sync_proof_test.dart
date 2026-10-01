@@ -46,7 +46,7 @@ void main() {
   });
 
   group('[Unit] Googleアカウント連携データ完全同期・証明テスト (全7大項目・マルチデバイスシミュレーション)', () {
-    test('【Phase 1〜4】端末Aで全7項目を設定  クラウド保持  端末Bで完全復元  双方向マージを完全証明こと', () async {
+    test('端末Aで全7項目を設定 クラウド保持 端末Bで完全復元 双方向マージを完全証明こと', () async {
       // -----------------------------------------------------------------------
       // [端末Aのセットアップ]
       // -----------------------------------------------------------------------
@@ -312,7 +312,7 @@ void main() {
       containerB.dispose();
     });
 
-    test('【Phase 5】Google未連携（ゲスト端末C）時は他人のクラウドデータが一切漏洩・混入しないこと', () async {
+    test('Google未連携（ゲスト端末C）時は他人のクラウドデータが一切漏洩・混入しないこと', () async {
       SharedPreferences.setMockInitialValues({});
       final prefsC = await SharedPreferences.getInstance();
 

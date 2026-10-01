@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 
 void main() {
   group('[Widget] MatchMiniLogUndoSection ウィジェットテスト', () {
-    testWidgets('【no valid events】empty history stateが正しく描画されること', (
+    testWidgets('no valid eventsにおいて empty history stateが正しく描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -25,9 +25,7 @@ void main() {
       expect(find.text('操作履歴なし'), findsOneWidget);
     });
 
-    testWidgets('events and triggers onUndo callbackが正しく描画されること', (
-      tester,
-    ) async {
+    testWidgets('イベント一覧が表示されUndoコールバックが正しく実行されること', (tester) async {
       bool undoTriggered = false;
       final events = [
         ScoreEvent(

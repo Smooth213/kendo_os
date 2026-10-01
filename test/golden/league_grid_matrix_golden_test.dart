@@ -6,8 +6,8 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_grid_table.dart';
 
 void main() {
-  group('[Golden] 【Golden 4/5】公式星取り表（リーグ性格子マトリクス）視覚的境界整合性テスト', () {
-    testWidgets('3チーム総当たりリーグ戦 格子マトリクスの描画整合性（Lightモード）こと', (
+  group('[Golden] Golden 4/5において 公式星取り表（リーグ性格子マトリクス）視覚的境界整合性テスト', () {
+    testWidgets('Lightモードにおいて3チーム総当たりリーグ戦 格子マトリクスの描画整合性こと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1000, 700);
@@ -92,7 +92,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('4チームリーグ戦 格子マトリクスの描画整合性（Darkモード）こと', (
+    testWidgets('Darkモードにおいて4チームリーグ戦 格子マトリクスの描画整合性こと', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 800);

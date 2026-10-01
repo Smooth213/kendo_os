@@ -35,7 +35,7 @@ void main() {
   }
 
   group('[Widget] Refactored MatchRule Sections ウィジェットテスト', () {
-    testWidgets('MatchRuleTimeSection: 試合時間・進行形式・計測方式・勝負形式が操作可能であること', (
+    testWidgets('MatchRuleTimeSection: 試合時間・進行形式・計測方式・勝負形式が操作可能こと', (
       WidgetTester tester,
     ) async {
       double matchTime = 3.0;
@@ -225,7 +225,7 @@ void main() {
       expect(find.text('代表戦の延長戦を行う'), findsOneWidget);
     });
 
-    testWidgets('MatchRuleSpecialSection: 勝ち抜き戦・リーグ勝ち点が設定可能であること', (
+    testWidgets('MatchRuleSpecialSection: 勝ち抜き戦・リーグ勝ち点が設定可能こと', (
       WidgetTester tester,
     ) async {
       bool isKachinuki = true;

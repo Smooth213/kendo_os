@@ -64,7 +64,7 @@ class DualDisplayRouter extends StatelessWidget {
 }
 
 void main() {
-  group('[Widget] 【Phase 2-6/10】HDMIデュアルディスプレイ（外部電光掲示板＆手元操作）完全分離テスト', () {
+  group('[Widget] HDMIデュアルディスプレイ（外部電光掲示板＆手元操作）完全分離テスト', () {
     testWidgets('外部HDMIモニター（isExternalDisplay: true）には操作ボタンが一切描画されないこと', (
       tester,
     ) async {

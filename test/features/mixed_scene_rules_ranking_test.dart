@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 
 void main() {
   group('[Unit] 混合ルール・変則リーグ戦 集計整合性テスト要塞', () {
-    test('【変則勝ち点】勝3/分1/負0 点ルールにおいて、勝ち点  勝者数  総本数 で厳密に順位が確定すること', () {
+    test('変則勝ち点において 勝3/分1/負0 点ルールにおいて、勝ち点 勝者数 総本数 で厳密に順位が確定すること', () {
       const rule = MatchRule(
         winPoint: 3.0,
         drawPoint: 1.0,
@@ -103,7 +103,7 @@ void main() {
       expect(standings[2].customPoints, 1.0);
     });
 
-    test('【同率同勝ち点タイブレーク】勝ち点が同じ場合、勝者数  総取得本数 で差が判定されること', () {
+    test('同率同勝ち点タイブレークにおいて 勝ち点が同じ場合、勝者数 総取得本数 で差が判定されること', () {
       const rule = MatchRule(winPoint: 3.0, drawPoint: 1.0, lossPoint: 0.0);
 
       // チームXとチームYが共に1勝1敗（勝ち点3.0）だが、
@@ -184,7 +184,7 @@ void main() {
     });
 
     test(
-      '【シーン混合＆集計除外】countForStandings=false や練習試合（moushiawase）の除外フィルタリングこと',
+      'シーン混合＆集計除外において countForStandings=false や練習試合（moushiawase）の除外フィルタリングこと',
       () {
         const rule = MatchRule(winPoint: 3.0, drawPoint: 1.0, lossPoint: 0.0);
 

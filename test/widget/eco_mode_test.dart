@@ -40,7 +40,7 @@ void main() {
       await setupTestFirebase();
     });
 
-    test('【enableLiquidGlass is disabled】isEcoMode=trueが返却されること', () {
+    test('enableLiquidGlass is disabledにおいて isEcoMode=trueが返却されること', () {
       final container = ProviderContainer(
         overrides: [
           settingsProvider.overrideWith(
@@ -63,7 +63,7 @@ void main() {
       expect(container.read(isEcoModeProvider), isTrue);
     });
 
-    test('【battery level is low (<= 20%)】isEcoMode=trueが返却されること', () async {
+    test('battery level is low (<= 20%)において isEcoMode=trueが返却されること', () async {
       final container = ProviderContainer(
         overrides: [
           settingsProvider.overrideWith(
@@ -88,7 +88,7 @@ void main() {
       expect(container.read(isEcoModeProvider), isTrue);
     });
 
-    test('【OS power saver mode is active】isEcoMode=trueが返却されること', () async {
+    test('OS power saver mode is activeにおいて isEcoMode=trueが返却されること', () async {
       final container = ProviderContainer(
         overrides: [
           settingsProvider.overrideWith(
@@ -111,7 +111,7 @@ void main() {
     });
 
     test(
-      '【settings are normal and battery is high】isEcoMode=falseが返却されること',
+      'settings are normal and battery is highにおいて isEcoMode=falseが返却されること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -138,9 +138,7 @@ void main() {
       },
     );
 
-    testWidgets('【LiquidBackground】static layout when Eco Mode is activeが描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('省電力モード有効時に静的レイアウトが描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -177,54 +175,53 @@ void main() {
       expect(find.text('エコモード'), findsOneWidget);
     });
 
-    testWidgets(
-      '【LiquidBackground】animated layout with blur when Eco Mode is inactiveが描画されること',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              settingsProvider.overrideWith(
-                () => FakeSettingsNotifier(
-                  const SettingsModel(enableLiquidGlass: true),
-                ),
-              ),
-              batteryStateProvider.overrideWith(
-                () => FakeBatteryNotifier(
-                  const BatteryStateData(
-                    batteryLevel: 85,
-                    isInPowerSaveMode: false,
-                  ), // Normal battery -> No Eco Mode
-                ),
-              ),
-            ],
-            child: const MaterialApp(
-              home: LiquidBackground(
-                child: Text('Content inside LiquidBackground'),
+    testWidgets('省電力モード無効時にブラー付きアニメーションレイアウトが描画されること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(
+              () => FakeSettingsNotifier(
+                const SettingsModel(enableLiquidGlass: true),
               ),
             ),
+            batteryStateProvider.overrideWith(
+              () => FakeBatteryNotifier(
+                const BatteryStateData(
+                  batteryLevel: 85,
+                  isInPowerSaveMode: false,
+                ), // Normal battery -> No Eco Mode
+              ),
+            ),
+          ],
+          child: const MaterialApp(
+            home: LiquidBackground(
+              child: Text('Content inside LiquidBackground'),
+            ),
           ),
-        );
+        ),
+      );
 
-        // Let microtasks run and re-pump to render target state after future resolves
-        await tester.pump();
+      // Let microtasks run and re-pump to render target state after future resolves
+      await tester.pump();
 
-        // Verify that the child is built
-        expect(find.text('Content inside LiquidBackground'), findsOneWidget);
+      // Verify that the child is built
+      expect(find.text('Content inside LiquidBackground'), findsOneWidget);
 
-        // In Normal Mode, AnimatedBuilder and Positioned orbs must be rendered (BackdropFilter replaced by RadialGradient for battery efficiency)
-        expect(
-          find.descendant(
-            of: find.byType(LiquidBackground),
-            matching: find.byType(AnimatedBuilder),
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('エコモード'), findsNothing);
-      },
-    );
+      // In Normal Mode, AnimatedBuilder and Positioned orbs must be rendered (BackdropFilter replaced by RadialGradient for battery efficiency)
+      expect(
+        find.descendant(
+          of: find.byType(LiquidBackground),
+          matching: find.byType(AnimatedBuilder),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('エコモード'), findsNothing);
+    });
 
     testWidgets(
-      '【SettingsScreen】Eco Mode switch and toggle settings correctlyが表示されること',
+      'SettingsScreenにおいて Eco Mode switch and toggle settings correctlyが表示されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
 

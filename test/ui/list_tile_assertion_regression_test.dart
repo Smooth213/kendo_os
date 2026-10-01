@@ -39,8 +39,8 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('[Widget] UIエラー・リグレッションテスト: ListTile Material Assertion', () {
-    testWidgets('[Bad Pattern] 色付きDecoratedBoxが直接ListTileをラップすると例外が発生すること', (
+  group('[Widget] UIエラー・リグレッションテスト: ListTileのMaterial例外アサーション回避', () {
+    testWidgets('アンチパターンとして色付きDecoratedBoxが直接ListTileをラップすると例外が発生すること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -67,7 +67,7 @@ void main() {
       );
     });
 
-    testWidgets('[Good Pattern] 中間に透明なMaterialを挟むことで例外を回避できること', (
+    testWidgets('推奨パターンとして中間に透明なMaterialを挟むことで例外を回避できること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

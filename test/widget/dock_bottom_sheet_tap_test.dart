@@ -23,7 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   group('[Widget] Dock BottomSheet Tap & Navigation テスト', () {
     testWidgets(
-      'Inside bottom sheet, finished match section navigates to MatchScreen inside sheetであること',
+      'Inside bottom sheet, finished match section navigates to MatchScreen inside sheetこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         addTearDown(tester.view.resetPhysicalSize);
@@ -141,7 +141,7 @@ void main() {
     );
 
     testWidgets(
-      'Inside bottom sheet, finished team match card navigates to TeamScoreboardScreen inside sheetであること',
+      'Inside bottom sheet, finished team match card navigates to TeamScoreboardScreen inside sheetこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         addTearDown(tester.view.resetPhysicalSize);
@@ -232,7 +232,7 @@ void main() {
       },
     );
 
-    testWidgets('Outside bottom sheet, card tap navigates via GoRouterであること', (
+    testWidgets('Outside bottom sheet, card tap navigates via GoRouterこと', (
       WidgetTester tester,
     ) async {
       String? navigatedRoute;
@@ -289,7 +289,7 @@ void main() {
     });
 
     testWidgets(
-      'OfficialRecordScreen export buttons inside FloatingDockSheetManager are tappableであること',
+      'OfficialRecordScreen export buttons inside FloatingDockSheetManager are tappableこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         addTearDown(tester.view.resetPhysicalSize);

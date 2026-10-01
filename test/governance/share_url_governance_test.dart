@@ -47,8 +47,8 @@ void main() {
     _FakeSharePlatform.instance.reset();
   });
 
-  group('[Governance] 【ガバナンス 20/20】 観客用共有URL・ルーティング・パラメータ整合性規約', () {
-    test('Rule 1: 公式Webビュアーホスト(kendo-os-beta.web.app)完全準拠規約こと', () {
+  group('[Governance] ガバナンス 20/20において 観客用共有URL・ルーティング・パラメータ整合性規約', () {
+    test('公式Webビュアーホスト(kendo-os-beta.web.app)完全準拠規約こと', () {
       final sampleMatch = MatchModel(
         id: 'gov_m1',
         matchType: '個人戦',
@@ -69,7 +69,7 @@ void main() {
       expect(uri.host, 'kendo-os-beta.web.app');
     });
 
-    test('Rule 2: AppRouter 正規ルート実在保証規約こと', () {
+    test('AppRouter 正規ルート実在保証規約こと', () {
       final definedRoutes = appRouter.configuration.routes
           .whereType<GoRoute>()
           .map((r) => r.path)
@@ -92,7 +92,7 @@ void main() {
       }
     });
 
-    test('Rule 3: 必須クエリパラメータ (role=viewer, dojoId, tournamentId) 完全保持規約こと', () {
+    test('必須クエリパラメータ (role=viewer, dojoId, tournamentId) 完全保持規約こと', () {
       final match = MatchModel(
         id: 'gov_m_team',
         matchType: '団体戦 (先鋒)',
@@ -115,7 +115,7 @@ void main() {
       expect(uri.queryParameters['tournamentId'], 'gov_tourney_123');
     });
 
-    test('Rule 4: 団体戦・個人戦・勝ち抜き戦 ルーティング厳格分離規約こと', () {
+    test('団体戦・個人戦・勝ち抜き戦 ルーティング厳格分離規約こと', () {
       final dantaiMatch = MatchModel(
         id: 'm_dantai',
         matchType: '団体戦 (中堅)',
@@ -183,7 +183,7 @@ void main() {
       expect(kojinUri.path, '/viewer/m_kojin_99');
     });
 
-    testWidgets('Rule 5: 部内戦専用ビュアーホーム (bunaiksen-viewer-home) 完全自動分岐規約こと', (
+    testWidgets('部内戦専用ビュアーホーム (bunaiksen-viewer-home) 完全自動分岐規約こと', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -211,7 +211,7 @@ void main() {
       expect(uri.queryParameters['dojoId'], 'dojo_bunaiksen');
     });
 
-    test('Rule 6: 野良URL・パラメータ欠落URL排除 lib/ コードスキャン規約こと', () {
+    test('野良URL・パラメータ欠落URL排除 lib/ コードスキャン規約こと', () {
       final libDir = Directory('lib');
       final dartFiles = libDir
           .listSync(recursive: true)
@@ -244,7 +244,7 @@ void main() {
       }
     });
 
-    test('Rule 7-1: ShareService 団体戦・個人戦 URL生成保証こと', () async {
+    test('ShareService 団体戦・個人戦 URL生成が保証されること', () async {
       final container = ProviderContainer(
         overrides: [currentDojoIdProvider.overrideWith((ref) => 'dojo_gov')],
       );
@@ -275,9 +275,7 @@ void main() {
       expect(serviceUri.queryParameters['tournamentId'], 't_gov_01');
     });
 
-    testWidgets('Rule 7-2: P2pBroadcastDialog クラウドフォールバックURL生成保証こと', (
-      tester,
-    ) async {
+    testWidgets('P2pBroadcastDialog クラウドフォールバックURL生成が保証されること', (tester) async {
       final teamMatch = MatchModel(
         id: 'team_01',
         matchType: '団体戦 (先鋒)',

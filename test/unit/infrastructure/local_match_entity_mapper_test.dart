@@ -5,46 +5,43 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_entity_map
 
 void main() {
   group('[Unit] LocalMatchEntityMapper テスト', () {
-    test(
-      'eventToEntity & entityToEvent correctly converts ScoreEventであること',
-      () {
-        final now = DateTime(2026, 9, 3, 10, 0, 0);
-        final event = ScoreEvent(
-          id: 'ev-1',
-          side: Side.red,
-          strikeType: StrikeType.men,
-          timestamp: now,
-          userId: 'user-1',
-          sequence: 1,
-          isUndo: false,
-          isRestore: false,
-          deviceId: 'device-1',
-          logicalClock: 42,
-          signature: 'sig-abc',
-        );
+    test('eventToEntity & entityToEvent correctly converts ScoreEventこと', () {
+      final now = DateTime(2026, 9, 3, 10, 0, 0);
+      final event = ScoreEvent(
+        id: 'ev-1',
+        side: Side.red,
+        strikeType: StrikeType.men,
+        timestamp: now,
+        userId: 'user-1',
+        sequence: 1,
+        isUndo: false,
+        isRestore: false,
+        deviceId: 'device-1',
+        logicalClock: 42,
+        signature: 'sig-abc',
+      );
 
-        final entity = LocalMatchEntityMapper.eventToEntity(event);
-        expect(entity.id, 'ev-1');
-        expect(entity.side, Side.red);
-        expect(entity.type, PointType.men);
-        expect(entity.timestamp, now);
-        expect(entity.userId, 'user-1');
-        expect(entity.sequence, 1);
-        expect(entity.logicalClock, 42);
-        expect(entity.signature, 'sig-abc');
+      final entity = LocalMatchEntityMapper.eventToEntity(event);
+      expect(entity.id, 'ev-1');
+      expect(entity.side, Side.red);
+      expect(entity.type, PointType.men);
+      expect(entity.timestamp, now);
+      expect(entity.userId, 'user-1');
+      expect(entity.sequence, 1);
+      expect(entity.logicalClock, 42);
+      expect(entity.signature, 'sig-abc');
 
-        final restoredEvent = LocalMatchEntityMapper.entityToEvent(entity);
-        expect(restoredEvent.id, event.id);
-        expect(restoredEvent.side, Side.red);
-        expect(restoredEvent.strikeType, StrikeType.men);
-        expect(restoredEvent.sequence, event.sequence);
-        expect(restoredEvent.logicalClock, event.logicalClock);
-        expect(restoredEvent.signature, event.signature);
-      },
-    );
+      final restoredEvent = LocalMatchEntityMapper.entityToEvent(entity);
+      expect(restoredEvent.id, event.id);
+      expect(restoredEvent.side, Side.red);
+      expect(restoredEvent.strikeType, StrikeType.men);
+      expect(restoredEvent.sequence, event.sequence);
+      expect(restoredEvent.logicalClock, event.logicalClock);
+      expect(restoredEvent.signature, event.signature);
+    });
 
     test(
-      '【双方向変換】toEntityおよびtoModelによりsnapshots and events付きのMatchModelが正しく変換されること',
+      '双方向変換において toEntityおよびtoModelによりsnapshots and events付きのMatchModelが正しく変換されること',
       () {
         final now = DateTime(2026, 9, 3, 11, 0, 0);
         final model = MatchModel(

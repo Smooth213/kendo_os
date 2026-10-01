@@ -68,7 +68,7 @@ void main() {
       expect(find.text('代表戦時間'), findsOneWidget);
     });
 
-    testWidgets('【provided】subtitle and commentが正しく描画されること', (
+    testWidgets('providedにおいて subtitle and commentが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final ruleSet = const CategoryRuleSet(

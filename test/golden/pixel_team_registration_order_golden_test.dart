@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Golden] 【Golden】団体戦オーダー編成（3〜11人制）ピクセル完全性テスト', () {
+  group('[Golden] 団体戦オーダー編成（3〜11人制）ピクセル完全性テスト', () {
     Widget buildOrderStepWrapper({
       required int basePlayerCount,
       required int substituteCount,

@@ -13,8 +13,8 @@ import 'package:kendo_os/shared/time/system_time_source.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[E2E] 【E2E / 統合シナリオ】プラン3: 堅牢性・同期整合性・データ完全性検証', () {
-    test('[タイマーミリ秒端数精度の完全維持] 30回連続でタイマー開始・停止（はじめ・やめ）を繰り返しても累積ズレが0msであること', () {
+  group('[E2E] E2E / 統合シナリオにおいて プラン3: 堅牢性・同期整合性・データ完全性検証', () {
+    test('タイマーミリ秒端数精度の完全維持に関して、30回連続でタイマー開始・停止（はじめ・やめ）を繰り返しても累積ズレが0msこと', () {
       final baseStartTime = DateTime.utc(2026, 9, 14, 10, 0, 0);
       var match = const MatchModel(
         id: 'timer_jitter_test',
@@ -73,7 +73,7 @@ void main() {
       );
     });
 
-    test('[Clock Skew 補正] サーバー時刻オフセットが適用され、正確なサーバー同期時刻が取得できること', () {
+    test('Clock Skew 補正に関して、サーバー時刻オフセットが適用され、正確なサーバー同期時刻が取得できること', () {
       final service = ServerClockOffsetService.instance;
       // 5秒端末時計が遅れているシミュレーション (+5,000ms)
       service.setOffset(const Duration(seconds: 5));
@@ -91,7 +91,7 @@ void main() {
     });
 
     test(
-      '[CRDT 3者マージ＆LWWタイマー調停] リモート確定・ローカル確定・ローカル未送信の3者が完全ユニークマージされ、タイマーが最新状態に調停されること',
+      'CRDT 3者マージ＆LWWタイマー調停に関して、リモート確定・ローカル確定・ローカル未送信の3者が完全ユニークマージされ、タイマーが最新状態に調停されること',
       () {
         final now = DateTime.utc(2026, 9, 14, 12, 0, 0);
 
@@ -172,49 +172,54 @@ void main() {
       },
     );
 
-    test('[Web大会切替時のゴースト防止] matchListProvider は現在選択中の大会IDに一致する試合のみを返却すること', () {
-      debugIsWebOverride = true;
-      addTearDown(() => debugIsWebOverride = false);
+    test(
+      'Web大会切替時のゴースト防止に関して、matchListProvider は現在選択中の大会IDに一致する試合のみを返却すること',
+      () {
+        debugIsWebOverride = true;
+        addTearDown(() => debugIsWebOverride = false);
 
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      // Web用メモリキャッシュに大会Aと大会Bの試合が混在している状況をシミュレート
-      const matchA = MatchModel(
-        id: 'm_tourA_1',
-        tournamentId: 'tour_A',
-        matchType: '個人戦',
-        redName: '選手A赤',
-        whiteName: '選手A白',
-      );
-      const matchB = MatchModel(
-        id: 'm_tourB_1',
-        tournamentId: 'tour_B',
-        matchType: '個人戦',
-        redName: '選手B赤',
-        whiteName: '選手B白',
-      );
+        // Web用メモリキャッシュに大会Aと大会Bの試合が混在している状況をシミュレート
+        const matchA = MatchModel(
+          id: 'm_tourA_1',
+          tournamentId: 'tour_A',
+          matchType: '個人戦',
+          redName: '選手A赤',
+          whiteName: '選手A白',
+        );
+        const matchB = MatchModel(
+          id: 'm_tourB_1',
+          tournamentId: 'tour_B',
+          matchType: '個人戦',
+          redName: '選手B赤',
+          whiteName: '選手B白',
+        );
 
-      container.read(webCurrentTournamentMatchesProvider.notifier).state = [
-        matchA,
-        matchB,
-      ];
-      container.read(webCurrentTournamentIdProvider.notifier).state = 'tour_A';
+        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+          matchA,
+          matchB,
+        ];
+        container.read(webCurrentTournamentIdProvider.notifier).state =
+            'tour_A';
 
-      // 大会Aを選択中
-      final listA = container.read(matchListProvider);
-      expect(listA.length, equals(1));
-      expect(listA.first.id, equals('m_tourA_1'));
+        // 大会Aを選択中
+        final listA = container.read(matchListProvider);
+        expect(listA.length, equals(1));
+        expect(listA.first.id, equals('m_tourA_1'));
 
-      // 大会Bに切替
-      container.read(webCurrentTournamentIdProvider.notifier).state = 'tour_B';
-      final listB = container.read(matchListProvider);
-      expect(listB.length, equals(1));
-      expect(listB.first.id, equals('m_tourB_1'));
-    });
+        // 大会Bに切替
+        container.read(webCurrentTournamentIdProvider.notifier).state =
+            'tour_B';
+        final listB = container.read(matchListProvider);
+        expect(listB.length, equals(1));
+        expect(listB.first.id, equals('m_tourB_1'));
+      },
+    );
 
     test(
-      '[FSM有限状態機械] MatchModel.transitionEvent により正当な状態遷移のみが実行され、不正遷移が拒否されること',
+      'FSM有限状態機械に関して、MatchModel.transitionEvent により正当な状態遷移のみが実行され、不正遷移が拒否されること',
       () {
         var match = const MatchModel(
           id: 'fsm_test_match',

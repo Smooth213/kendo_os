@@ -11,7 +11,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('【Google連携判定】Googleプロバイダが存在する場合のみ連携UIDとして認識されること', () {
+    test('Google連携判定において Googleプロバイダが存在する場合のみ連携UIDとして認識されること', () {
       // AuthService / QuickMemoStorageService / ReadAnnouncementsNotifier 共通判定ロジック
       bool isGoogleLinked(List<String> providerIds, bool isAnonymous) {
         if (isAnonymous) return false;
@@ -31,7 +31,7 @@ void main() {
       expect(isGoogleLinked(['password'], false), isFalse);
     });
 
-    test('【Webセッション維持ガバナンス】Googleログイン済みユーザーに対して匿名ログインによる上書きが発生しないこと', () {
+    test('Webセッション維持ガバナンスにおいて Googleログイン済みユーザーに対して匿名ログインによる上書きが発生しないこと', () {
       // AppBootstrapHelper.ensureAuthenticated の保護条件:
       // currentUser != null && !currentUser.isAnonymous のときは signInAnonymously() をスキップする
       bool shouldSkipAnonymousSignIn({
@@ -63,7 +63,7 @@ void main() {
     });
 
     test(
-      '【クイックペン極限座標テスト】四隅・画面端（800x1000キャンバス）の描画データが100%欠損なくシリアライズ・復元されること',
+      'クイックペン極限座標テストにおいて 四隅・画面端（800x1000キャンバス）の描画データが100%欠損なくシリアライズ・復元されること',
       () {
         const baseWidth = 800.0;
         const baseHeight = 1000.0;
@@ -127,7 +127,7 @@ void main() {
       },
     );
 
-    test('【クイックペン負荷耐久テスト】大量のストローク（100本）と多数の座標点でもJSONシリアライズと完全性が保たれること', () {
+    test('クイックペン負荷耐久テストにおいて 大量のストローク（100本）と多数の座標点でもJSONシリアライズと完全性が保たれること', () {
       final List<MemoStroke> complexStrokes = [];
       for (int i = 0; i < 100; i++) {
         complexStrokes.add(
@@ -157,7 +157,7 @@ void main() {
     });
 
     test(
-      '【ストレージ保存＆全消去テスト】QuickMemoStorageService で保存・読み込み・消去が安全に動作すること',
+      'ストレージ保存＆全消去テストにおいて QuickMemoStorageService で保存・読み込み・消去が安全に動作すること',
       () async {
         final service = QuickMemoStorageService.instance;
         const testTournamentId = 'tourney_safe_test_999';

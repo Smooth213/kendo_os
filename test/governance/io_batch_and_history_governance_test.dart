@@ -7,9 +7,9 @@ import 'package:kendo_os/shared/infrastructure/repository/match_event_cloud_code
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第15条 ガバナンス監査】データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約', () {
+  group('[Governance] 第15条 ガバナンス監査において データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約', () {
     test(
-      'Rule 1: [マイクロバッチング] local_match_repository.dart の saveMatchBatched / flushMicroBatch 規約こと',
+      'マイクロバッチングに関して、 local_match_repository.dart の saveMatchBatched / flushMicroBatch 規約こと',
       () {
         final file = File(
           'lib/shared/infrastructure/repository/local_match_repository.dart',
@@ -22,7 +22,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [単一writeTxnアトミック化] saveMatchWithPendingCommand ＆ savePendingCommandsBulk 規約こと',
+      '単一writeTxnアトミック化に関して、 saveMatchWithPendingCommand ＆ savePendingCommandsBulk 規約こと',
       () {
         final repoFile = File(
           'lib/shared/infrastructure/repository/local_match_repository.dart',
@@ -56,7 +56,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [クラウド同期バッチ化] sync_provider.dart で未同期試合の取得が並列化され、saveMatchesBulk で一括反映されていること',
+      'クラウド同期バッチ化に関して、 sync_provider.dart で未同期試合の取得が並列化され、saveMatchesBulk で一括反映されていること',
       () {
         final syncFile = File(
           'lib/features/tournament/presentation/operate/providers/sync_provider.dart',
@@ -74,7 +74,7 @@ void main() {
       },
     );
 
-    test('Rule 4: [Isar DB最適化＆空Txn根絶] 128MB MMAP、3世代緊急バックアップ、空Txn根絶規約こと', () {
+    test('Isar DB最適化＆空Txn根絶に関して、 128MB MMAP、3世代緊急バックアップ、空Txn根絶規約こと', () {
       final startupFile = File('lib/bootstrap/app_startup.dart');
       expect(startupFile.existsSync(), isTrue);
       expect(
@@ -108,7 +108,7 @@ void main() {
     });
 
     test(
-      'Rule 5: [毒薬コマンド自律パージ＆滞留防止] SyncEngine 自律パージ ＆ deletePendingCommandsForMatches 規約こと',
+      '毒薬コマンド自律パージ＆滞留防止に関して、 SyncEngine 自律パージ ＆ deletePendingCommandsForMatches 規約こと',
       () {
         final syncEngineFile = File(
           'lib/shared/infrastructure/repository/sync_engine.dart',
@@ -148,7 +148,7 @@ void main() {
       },
     );
 
-    test('Rule 6: [長期イベント履歴チャンク分割] チャンク分割・全件完全復元・孤立チャンク防止規約こと', () {
+    test('長期イベント履歴チャンク分割に関して、 チャンク分割・全件完全復元・孤立チャンク防止規約こと', () {
       expect(MatchEventCloudCodec.hotEventLimit, 200);
       expect(MatchEventCloudCodec.archiveChunkSize, 200);
 

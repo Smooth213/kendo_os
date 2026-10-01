@@ -4,9 +4,9 @@ import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/features/tournament/presentation/screens/standings_screen.dart';
 
 void main() {
-  group('[Governance] — 大規模性能試験・パフォーマンスゲート要塞', () {
+  group('[Governance] 大規模性能試験・パフォーマンスゲート要塞', () {
     test(
-      '【Projection性能】3000試合の巨大データ配列に対するメモリ検索・フィルタリング構築時間が、Performance Gate規定の「200ms」未満で高速完了すること',
+      'Projection性能において 3000試合の巨大データ配列に対するメモリ検索・フィルタリング構築時間が、Performance Gate規定の「200ms」未満で高速完了すること',
       () {
         final massiveMatches = List.generate(
           3000,
@@ -37,7 +37,7 @@ void main() {
     );
 
     test(
-      '【PDF性能】100ページの巨大プログラム冊子が読み込まれた際、メタデータの展開およびビューポート計算の内部プロセスタイムが、規定の「2sec (2000ms)」未満に収まること',
+      'PDF性能において 100ページの巨大プログラム冊子が読み込まれた際、メタデータの展開およびビューポート計算の内部プロセスタイムが、規定の「2sec (2000ms)」未満に収まること',
       () {
         final largePdfProgram = ProgramModel(
           id: 'perf_pdf_001',
@@ -64,7 +64,7 @@ void main() {
     );
 
     test(
-      '【リーグ表性能】50チーム（総当たり最大1225総当たりセッション）規模の巨大集計マトリクスにおいて、勝率および順位計算のフォーマット処理が「200ms」未満で完了すること',
+      'リーグ表性能において 50チーム（総当たり最大1225総当たりセッション）規模の巨大集計マトリクスにおいて、勝率および順位計算のフォーマット処理が「200ms」未満で完了すること',
       () {
         final massiveStats = List.generate(
           50,

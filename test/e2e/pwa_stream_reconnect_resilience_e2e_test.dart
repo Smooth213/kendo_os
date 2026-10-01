@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/time/server_clock_offset_service.dart';
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('[E2E] 【E2E】Web/PWA Viewer スリープ復帰・時計スキュー補正・最新状態再同期耐障害性テスト', () {
+  group('[E2E] Web/PWA Viewer スリープ復帰・時計スキュー補正・最新状態再同期耐障害性テスト', () {
     test(
       '端末スリープ中の切断と5秒の時計スキュー発生後、復帰時にServerClockOffsetが補正され、最新プロジェクション状態へ即時収束すること',
       () async {

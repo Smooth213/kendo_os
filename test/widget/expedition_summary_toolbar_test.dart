@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('[Widget] 【Widget】ExpeditionSummaryToolbar 表示・インタラクションテスト', () {
+  group('[Widget] ExpeditionSummaryToolbar 表示・インタラクションテスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     final summaryData = ExpeditionSummaryData(
@@ -31,7 +31,7 @@ void main() {
       cardResults: const [],
     );
 
-    testWidgets('詳細分析ボタンが表示され、teamsListが1個以下のときはチームドロップダウンが非表示であること', (
+    testWidgets('詳細分析ボタンが表示され、teamsListが1個以下のときはチームドロップダウンが非表示こと', (
       tester,
     ) async {
       await tester.pumpWidget(

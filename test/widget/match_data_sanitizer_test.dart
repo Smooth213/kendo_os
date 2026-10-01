@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 
 void main() {
   group('[Widget] MatchDataSanitizer 単体テスト', () {
-    test('【sanitizeFirestoreData】数値およびネスト構造が正しくマッピングされること', () {
+    test('sanitizeFirestoreDataにおいて 数値およびネスト構造が正しくマッピングされること', () {
       final input = {'order': 1, 'matchTimeMinutes': 4, 'redScore': 2.0};
 
       final sanitized = MatchDataSanitizer.sanitizeFirestoreData(input);
@@ -13,22 +13,19 @@ void main() {
       expect(sanitized['redScore'], 2);
     });
 
-    test(
-      'healRepresentativeMatch heals corrupted or finished state when events emptyであること',
-      () {
-        final match = MatchModel(
-          id: 'm1',
-          matchType: '代表戦',
-          redName: 'red',
-          whiteName: 'white',
-          status: 'finished',
-          events: const [],
-        );
+    test('イベントが空の場合に代表戦の破損または終了状態が修復されること', () {
+      final match = MatchModel(
+        id: 'm1',
+        matchType: '代表戦',
+        redName: 'red',
+        whiteName: 'white',
+        status: 'finished',
+        events: const [],
+      );
 
-        final healed = MatchDataSanitizer.healRepresentativeMatch(match);
-        expect(healed.status, 'waiting');
-        expect(healed.timerStartedAt, null);
-      },
-    );
+      final healed = MatchDataSanitizer.healRepresentativeMatch(match);
+      expect(healed.status, 'waiting');
+      expect(healed.timerStartedAt, null);
+    });
   });
 }

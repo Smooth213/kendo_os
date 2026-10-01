@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/dia
 
 void main() {
   group('[Widget] AddReservePlayerDialog ウィジェットテスト', () {
-    testWidgets('available 選手一覧 list and select returns 選手 nameが正しく描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('選択可能な選手一覧が表示され選手名が正常に返却されること', (WidgetTester tester) async {
       String? selectedName;
       await tester.pumpWidget(
         MaterialApp(
@@ -41,7 +39,7 @@ void main() {
       expect(selectedName, equals('鈴木'));
     });
 
-    testWidgets('Manual input textfield adds helper playerであること', (
+    testWidgets('Manual input textfield adds helper playerこと', (
       WidgetTester tester,
     ) async {
       String? selectedName;

@@ -13,7 +13,7 @@ import 'package:kendo_os/features/band/presentation/providers/band_provider.dart
 // をプロジェクト全体で永久に遮断・検知し、安全なLIVE配信連携を保証します。
 // ============================================================================
 void main() {
-  group('[Governance] 【ガバナンス 21/21】 BAND LIVE配信連携・外部直行遷移 ＆ 白紙ブラウザ残留ゼロ規約', () {
+  group('[Governance] ガバナンス 21/21において BAND LIVE配信連携・外部直行遷移 ＆ 白紙ブラウザ残留ゼロ規約', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -47,7 +47,7 @@ void main() {
     // 【静的コードスキャン規約】プロジェクト全域のコード健全性検査
     // ------------------------------------------------------------------------
 
-    test('Rule 1: [静的スキャン] BAND起動・URL変換の責務集約規約（野良起動の完全排除）こと', () {
+    test('野良起動の完全排除において静的スキャンに関して、BAND起動およびURL変換の責務集約規約が遵守されていること', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -73,35 +73,32 @@ void main() {
       );
     });
 
-    test(
-      'Rule 2: [静的スキャン] BAND未対応スキーム（bandapp://n/, bandapp://@）生成の完全排除規約こと',
-      () {
-        final violations = <String>[];
+    test('静的スキャンに関して、BAND未対応スキーム生成の完全排除規約が遵守されていること', () {
+      final violations = <String>[];
 
-        for (final file in dartFiles) {
-          final content = file.readAsStringSync();
-          // BANDアプリで「現在ご利用いただけません」エラーとなる未対応スキームの生成・置換を検知
-          if (content.contains('bandapp://n/') ||
-              content.contains('bandapp://@') ||
-              content.contains("'bandapp://n/'") ||
-              content.contains('"bandapp://n/"')) {
-            violations.add(file.path);
-          }
+      for (final file in dartFiles) {
+        final content = file.readAsStringSync();
+        // BANDアプリで「現在ご利用いただけません」エラーとなる未対応スキームの生成・置換を検知
+        if (content.contains('bandapp://n/') ||
+            content.contains('bandapp://@') ||
+            content.contains("'bandapp://n/'") ||
+            content.contains('"bandapp://n/"')) {
+          violations.add(file.path);
         }
+      }
 
-        expect(
-          violations,
-          isEmpty,
-          reason:
-              'BANDアプリで「現在ご利用いただけません」エラーを誘発する未対応スキーム（bandapp://n/ 等）が検出されました。\n'
-              '招待URLは Universal Link（https://band.us/n/...）として維持しなければなりません。\n'
-              '違反ファイル:\n${violations.join('\n')}',
-        );
-      },
-    );
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'BANDアプリで「現在ご利用いただけません」エラーを誘発する未対応スキーム（bandapp://n/ 等）が検出されました。\n'
+            '招待URLは Universal Link（https://band.us/n/...）として維持しなければなりません。\n'
+            '違反ファイル:\n${violations.join('\n')}',
+      );
+    });
 
     test(
-      'Rule 3: [静的スキャン] LIVE配信不可共有API（bandapp://create/post）への強制リダイレクト排除規約こと',
+      '静的スキャンに関して、 LIVE配信不可共有API（bandapp://create/post）への強制リダイレクト排除規約こと',
       () {
         final bandProviderFile = File(
           'lib/features/band/presentation/providers/band_provider.dart',
@@ -137,43 +134,40 @@ void main() {
     // 【動的規約】実行時におけるブラウザ残留防止＆URL正規化整合性規約
     // ------------------------------------------------------------------------
 
-    test(
-      'Rule 4: [動的規約] ネイティブ環境アプリ内ブラウザ（SFSafariViewController）完全排除規約こと',
-      () async {
-        BandLauncherHelper.isWebOverride = false;
+    test('動的規約に関して、 ネイティブ環境アプリ内ブラウザ（SFSafariViewController）完全排除規約こと', () async {
+      BandLauncherHelper.isWebOverride = false;
 
-        Uri? capturedUri;
-        LaunchMode? capturedMode;
+      Uri? capturedUri;
+      LaunchMode? capturedMode;
 
-        BandLauncherHelper.urlLauncherAdvancedOverride =
-            (uri, mode, {webOnlyWindowName}) async {
-              capturedUri = uri;
-              capturedMode = mode;
-              return true;
-            };
+      BandLauncherHelper.urlLauncherAdvancedOverride =
+          (uri, mode, {webOnlyWindowName}) async {
+            capturedUri = uri;
+            capturedMode = mode;
+            return true;
+          };
 
-        final testCases = [
-          'https://band.us/n/invite_test_123',
-          'https://band.us/@dojo_sample',
-          'https://band.us/band/88776655',
-          '',
-        ];
+      final testCases = [
+        'https://band.us/n/invite_test_123',
+        'https://band.us/@dojo_sample',
+        'https://band.us/band/88776655',
+        '',
+      ];
 
-        for (final url in testCases) {
-          await BandLauncherHelper.launchBandUrl(url);
-          expect(capturedUri, isNotNull);
-          expect(
-            capturedMode,
-            LaunchMode.externalApplication,
-            reason:
-                'ネイティブ環境で $url を起動する際、SFSafariViewController / Chrome Custom Tabs の残留を防ぐため、'
-                'LaunchMode.externalApplication が厳格に適用されなければなりません。',
-          );
-        }
-      },
-    );
+      for (final url in testCases) {
+        await BandLauncherHelper.launchBandUrl(url);
+        expect(capturedUri, isNotNull);
+        expect(
+          capturedMode,
+          LaunchMode.externalApplication,
+          reason:
+              'ネイティブ環境で $url を起動する際、SFSafariViewController / Chrome Custom Tabs の残留を防ぐため、'
+              'LaunchMode.externalApplication が厳格に適用されなければなりません。',
+        );
+      }
+    });
 
-    test('Rule 5: [動的規約] Web環境（iOS PWA）同一コンテキスト直接キック最優先規約こと', () async {
+    test('動的規約に関して、 Web環境（iOS PWA）同一コンテキスト直接キック最優先規約こと', () async {
       BandLauncherHelper.isWebOverride = true;
 
       String? directKickUrl;
@@ -206,7 +200,7 @@ void main() {
       );
     });
 
-    test('Rule 6: [動的規約] BAND URL正規化＆LIVE配信画面ルート整合性規約こと', () {
+    test('動的規約に関して、 BAND URL正規化＆LIVE配信画面ルート整合性規約こと', () {
       // 1. 空URLまたはトップURL ➔ 安全に bandapp://
       expect(BandLauncherHelper.convertToBandAppScheme(''), 'bandapp://');
       expect(

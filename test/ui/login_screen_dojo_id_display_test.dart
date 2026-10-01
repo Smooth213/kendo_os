@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.d
 
 void main() {
   group('[Widget] 道場ID表示 ＆ ダークモード・リグレッションテスト', () {
-    testWidgets('【LoginScreen】ライト・ダーク両モードでアクティブな道場IDが明確に表示されること', (
+    testWidgets('LoginScreenにおいて ライト・ダーク両モードでアクティブな道場IDが明確に表示されること', (
       WidgetTester tester,
     ) async {
       const testDojoId = 'tokyo_kendo_dojo_2026';
@@ -48,58 +48,59 @@ void main() {
       expect(find.text(testDojoId), findsOneWidget);
     });
 
-    testWidgets('【RoleSelectScreen】ライト・ダーク両モードで道場IDカードが2行でオーバーフローなく表示されること', (
-      WidgetTester tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      const testDojoId = 'test204';
+    testWidgets(
+      'RoleSelectScreenにおいて ライト・ダーク両モードで道場IDカードが2行でオーバーフローなく表示されること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        const testDojoId = 'test204';
 
-      // Light Mode Test on RoleSelectScreen
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            currentDojoIdProvider.overrideWith((ref) => testDojoId),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-          ],
-          child: MaterialApp(
-            theme: ThemeData.light(),
-            home: const RoleSelectScreen(),
+        // Light Mode Test on RoleSelectScreen
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => testDojoId),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.light(),
+              home: const RoleSelectScreen(),
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
-      expect(find.text(testDojoId), findsOneWidget);
-      expect(find.text('変更'), findsOneWidget);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
+        expect(find.text(testDojoId), findsOneWidget);
+        expect(find.text('変更'), findsOneWidget);
 
-      // Dark Mode Test on RoleSelectScreen
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            currentDojoIdProvider.overrideWith((ref) => testDojoId),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-          ],
-          child: MaterialApp(
-            theme: ThemeData.dark(),
-            home: const RoleSelectScreen(),
+        // Dark Mode Test on RoleSelectScreen
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => testDojoId),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.dark(),
+              home: const RoleSelectScreen(),
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
-      expect(find.text(testDojoId), findsOneWidget);
-      expect(find.text('変更'), findsOneWidget);
-    });
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
+        expect(find.text(testDojoId), findsOneWidget);
+        expect(find.text('変更'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-      '【新権限名称検証】 RoleSelectScreen に「代表・管理者」「監督・引率責任者」「スコア・記録係」「応援・保護者・選手」が表示されること',
+      '新権限名称検証において RoleSelectScreen に「代表・管理者」「監督・引率責任者」「スコア・記録係」「応援・保護者・選手」が表示されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

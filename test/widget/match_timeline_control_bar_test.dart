@@ -5,55 +5,56 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/hom
 
 void main() {
   group('[Widget] MatchTimelineControlBar ウィジェットテスト', () {
-    testWidgets('【search is not visible】search and sort buttonsが正しく描画されること', (
-      tester,
-    ) async {
-      bool isSearchVisible = false;
-      String searchQuery = '';
-      bool isSortAscending = true;
+    testWidgets(
+      'search is not visibleにおいて search and sort buttonsが正しく描画されること',
+      (tester) async {
+        bool isSearchVisible = false;
+        String searchQuery = '';
+        bool isSortAscending = true;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: StatefulBuilder(
-              builder: (context, setState) {
-                return MatchTimelineControlBar(
-                  isSearchVisible: isSearchVisible,
-                  searchQuery: searchQuery,
-                  isSortAscending: isSortAscending,
-                  isReadOnlyUI: false,
-                  allMatches: [
-                    MatchModel(
-                      id: 'test_m1',
-                      matchType: '個人戦',
-                      redName: '選手A',
-                      whiteName: '選手B',
-                    ),
-                  ],
-                  isDark: false,
-                  onSearchVisibilityChanged: (val) =>
-                      setState(() => isSearchVisible = val),
-                  onSearchQueryChanged: (val) =>
-                      setState(() => searchQuery = val),
-                  onToggleSort: () =>
-                      setState(() => isSortAscending = !isSortAscending),
-                  onToggleExpandAll: () {},
-                  onBulkRuleEdit: () {},
-                );
-              },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) {
+                  return MatchTimelineControlBar(
+                    isSearchVisible: isSearchVisible,
+                    searchQuery: searchQuery,
+                    isSortAscending: isSortAscending,
+                    isReadOnlyUI: false,
+                    allMatches: [
+                      MatchModel(
+                        id: 'test_m1',
+                        matchType: '個人戦',
+                        redName: '選手A',
+                        whiteName: '選手B',
+                      ),
+                    ],
+                    isDark: false,
+                    onSearchVisibilityChanged: (val) =>
+                        setState(() => isSearchVisible = val),
+                    onSearchQueryChanged: (val) =>
+                        setState(() => searchQuery = val),
+                    onToggleSort: () =>
+                        setState(() => isSortAscending = !isSortAscending),
+                    onToggleExpandAll: () {},
+                    onBulkRuleEdit: () {},
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('試合リスト'), findsOneWidget);
-      expect(find.text('ルール一括変更'), findsOneWidget);
-      expect(find.text('カテゴリ昇順'), findsOneWidget);
+        expect(find.text('試合リスト'), findsOneWidget);
+        expect(find.text('ルール一括変更'), findsOneWidget);
+        expect(find.text('カテゴリ昇順'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.search));
-      await tester.pump();
+        await tester.tap(find.byIcon(Icons.search));
+        await tester.pump();
 
-      expect(isSearchVisible, true);
-    });
+        expect(isSearchVisible, true);
+      },
+    );
   });
 }

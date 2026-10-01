@@ -26,7 +26,7 @@ void main() {
     });
 
     test(
-      'SnackBar: 生の ScaffoldMessenger.of(context).showSnackBar の直書きが全アプリで 0 件であること',
+      'SnackBar: 生の ScaffoldMessenger.of(context).showSnackBar の直書きが全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -51,7 +51,7 @@ void main() {
       },
     );
 
-    test('ModalBottomSheet: 生の showModalBottomSheet の直書きが全アプリで 0 件であること', () {
+    test('ModalBottomSheet: 生の showModalBottomSheet の直書きが全アプリで 0 件こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -75,7 +75,7 @@ void main() {
     });
 
     test(
-      'Chip シリーズ: 生の Chip / ChoiceChip / ActionChip / FilterChip の直書きが全アプリで 0 件であること',
+      'Chip シリーズ: 生の Chip / ChoiceChip / ActionChip / FilterChip の直書きが全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -358,7 +358,7 @@ void main() {
     );
 
     test(
-      '背景色反転バグ防止: backgroundColor / fillColor / surfaceTintColor / cardColor への textColor (黒) 誤用が全アプリで 0 件であること',
+      '背景色反転バグ防止: backgroundColor / fillColor / surfaceTintColor / cardColor への textColor (黒) 誤用が全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -393,7 +393,7 @@ void main() {
     );
 
     test(
-      'ダークモード文字消失防止: ダークモード時 (isDark: true) のプロパティ色への黒透過色 (0x33000000, 0x8A000000, 0xDE000000) 直接指定が全アプリで 0 件であること',
+      'ダークモード文字消失防止: ダークモード時 (isDark: true) のプロパティ色への黒透過色 (0x33000000, 0x8A000000, 0xDE000000) 直接指定が全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -425,7 +425,7 @@ void main() {
       },
     );
 
-    test('チップ同色視認性保証: buildChip 等での背景色と文字色の完全同色指定が全アプリで 0 件であること', () {
+    test('チップ同色視認性保証: buildChip 等での背景色と文字色の完全同色指定が全アプリで 0 件こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -453,7 +453,7 @@ void main() {
     });
 
     test(
-      '硬直色 (Colors.white / black / red 等) 防止: UIコンポーネントにおける Flutter 組み込み Colors.* 直書きが全アプリで 0 件であること',
+      '硬直色 (Colors.white / black / red 等) 防止: UIコンポーネントにおける Flutter 組み込み Colors.* 直書きが全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -495,7 +495,7 @@ void main() {
     );
 
     test(
-      'フォントサイズ生数値指定防止: UIコンポーネントにおける fontSize: 直数値 (10, 12, 14, 16 等) の直接指定が全アプリで 0 件であること',
+      'フォントサイズ生数値指定防止: UIコンポーネントにおける fontSize: 直数値 (10, 12, 14, 16 等) の直接指定が全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -532,7 +532,7 @@ void main() {
     );
 
     test(
-      '黄色文字低コントラスト防止: 白背景カードや要約欄における TextStyle 内での ipponGold (純黄色) 文字色の直接使用が全アプリで 0 件であること',
+      '黄色文字低コントラスト防止: 白背景カードや要約欄における TextStyle 内での ipponGold (純黄色) 文字色の直接使用が全アプリで 0 件こと',
       () {
         final violations = <String>[];
 
@@ -579,7 +579,7 @@ void main() {
     );
 
     test(
-      '[5大監視 1] チップ文字・背景同色化防止: チップコンポーネント及び buildChip 内で背景色と文字色が同色または低コントラスト指定されるパターンの完全監視こと',
+      '5大監視 1に関して、チップ文字・背景同色化防止: チップコンポーネント及び buildChip 内で背景色と文字色が同色または低コントラスト指定されるパターンの完全監視こと',
       () {
         final violations = <String>[];
 
@@ -620,7 +620,7 @@ void main() {
     );
 
     test(
-      '[5大監視 2] ライトモード時 カード/ボタン/アコーディオン背景黒化防止: collapsedBackgroundColor や Card/Container の color への textColor (黒) 割り当ての完全監視こと',
+      '5大監視 2に関して、ライトモード時 カード/ボタン/アコーディオン背景黒化防止: collapsedBackgroundColor や Card/Container の color への textColor (黒) 割り当ての完全監視こと',
       () {
         final violations = <String>[];
 
@@ -660,7 +660,7 @@ void main() {
     );
 
     test(
-      '[5大監視 3] ダークモード時 文字の黒透過同化防止: ダークモード分岐時や共通TextStyle内での黒色系(0x8A000000等)の文字色直接指定の完全監視こと',
+      '5大監視 3に関して、ダークモード時 文字の黒透過同化防止: ダークモード分岐時や共通TextStyle内での黒色系(0x8A000000等)の文字色直接指定の完全監視こと',
       () {
         final violations = <String>[];
 
@@ -700,7 +700,7 @@ void main() {
     );
 
     test(
-      '[5大監視 4] 大会記録 サマリー黄色文字視認性低下防止: 公式記録・ビューアー・サマリーにおける ipponGold の文字色直接使用の完全監視こと',
+      '5大監視 4に関して、大会記録 サマリー黄色文字視認性低下防止: 公式記録・ビューアー・サマリーにおける ipponGold の文字色直接使用の完全監視こと',
       () {
         final violations = <String>[];
 
@@ -749,7 +749,7 @@ void main() {
     );
 
     test(
-      '[5大監視 5] PDFボタン・アクションボタン背景色・アイコン統一監視: 生の ElevatedButton.styleFrom(primary/backgroundColor: 硬直色) 直書きの排除と統一デザインの保証こと',
+      '5大監視 5に関して、PDFボタン・アクションボタン背景色・アイコン統一監視: 生の ElevatedButton.styleFrom(primary/backgroundColor: 硬直色) 直書きの排除と統一デザインの保証こと',
       () {
         final violations = <String>[];
 
@@ -790,7 +790,7 @@ void main() {
     );
 
     test(
-      '[新死角監視 1] 透過修飾 (.withValues() / .withOpacity()) を含むライトモード背景色への textColor(黒) 誤用防止こと',
+      '新死角監視 1に関して、透過修飾 (.withValues() / .withOpacity()) を含むライトモード背景色への textColor(黒) 誤用防止こと',
       () {
         final violations = <String>[];
 
@@ -828,7 +828,7 @@ void main() {
       },
     );
 
-    test('[新死角監視 2] DropdownButton / ピル型コンテナにおける背景色と文字色・アイコンの同色化防止こと', () {
+    test('新死角監視 2に関して、DropdownButton / ピル型コンテナにおける背景色と文字色・アイコンの同色化防止こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -861,7 +861,7 @@ void main() {
       );
     });
 
-    test('[新死角監視 3] ボタンにおける背景色とアイコン・文字色の同色アクセント潰れ防止こと', () {
+    test('新死角監視 3に関して、ボタンにおける背景色とアイコン・文字色の同色アクセント潰れ防止こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -896,7 +896,7 @@ void main() {
     });
 
     test(
-      '[新死角監視 4] アコーディオン（ExpansionTile / ExpansionTileThemeData）のダーク/ライトモード背景色・文字色テーマ完全保護監視こと',
+      '新死角監視 4に関して、アコーディオン（ExpansionTile / ExpansionTileThemeData）のダーク/ライトモード背景色・文字色テーマ完全保護監視こと',
       () {
         final violations = <String>[];
 
@@ -955,7 +955,7 @@ void main() {
       },
     );
 
-    test('[新死角監視 5] TextStyle / Text における separatorColor (枠線色) の文字色誤用防止こと', () {
+    test('新死角監視 5に関して、TextStyle / Text における separatorColor (枠線色) の文字色誤用防止こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -989,7 +989,7 @@ void main() {
       );
     });
 
-    test('[新死角監視 6] スコアボード・選手名・取得部位における低コントラスト・暗色文字色指定の完全防止監視こと', () {
+    test('新死角監視 6に関して、スコアボード・選手名・取得部位における低コントラスト・暗色文字色指定の完全防止監視こと', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -1020,7 +1020,7 @@ void main() {
       );
     });
 
-    test('[iOS標準化] 生の Switch 直書きが 0 件であり AppSwitch に統一されていること', () {
+    test('iOS標準化に関して、生の Switch 直書きが 0 件であり AppSwitch に統一されていること', () {
       final violations = <String>[];
 
       for (final file in dartFiles) {
@@ -1044,7 +1044,7 @@ void main() {
     });
 
     test(
-      '[iOS標準化] レガシー戻るアイコン (Icons.arrow_back / Icons.arrow_back_ios) が 0 件であり Icons.arrow_back_ios_new に統一されていること',
+      'iOS標準化に関して、レガシー戻るアイコン (Icons.arrow_back / Icons.arrow_back_ios) が 0 件であり Icons.arrow_back_ios_new に統一されていること',
       () {
         final violations = <String>[];
 
@@ -1068,7 +1068,7 @@ void main() {
     );
 
     test(
-      '[iOS標準化] レガシー共有アイコン (Icons.share) が 0 件であり Icons.ios_share に統一されていること',
+      'iOS標準化に関して、レガシー共有アイコン (Icons.share) が 0 件であり Icons.ios_share に統一されていること',
       () {
         final violations = <String>[];
 
@@ -1090,7 +1090,7 @@ void main() {
     );
 
     test(
-      '[AppBar文字切れ防止] AppHeader の actions にタイトルの幅を圧迫する巨大ボタン (ElevatedButton.icon) が直書きされていないこと',
+      'AppBar文字切れ防止に関して、AppHeader の actions にタイトルの幅を圧迫する巨大ボタン (ElevatedButton.icon) が直書きされていないこと',
       () {
         final violations = <String>[];
 
@@ -1118,7 +1118,7 @@ void main() {
     );
 
     test(
-      '[視認性保証] クリップボード取り込みボタンとして生の amber アイコンが直書きされず ClipboardImportButton に統一されていること',
+      '視認性保証に関して、クリップボード取り込みボタンとして生の amber アイコンが直書きされず ClipboardImportButton に統一されていること',
       () {
         final violations = <String>[];
 
@@ -1146,7 +1146,7 @@ void main() {
     );
 
     test(
-      '[汎用視認性保証] ボタン (styleFrom / ButtonStyle) における背景色 (backgroundColor) と文字色 (foregroundColor) の同色・同一指定防止こと',
+      '汎用視認性保証に関して、ボタン (styleFrom / ButtonStyle) における背景色 (backgroundColor) と文字色 (foregroundColor) の同色・同一指定防止こと',
       () {
         final violations = <String>[];
 
@@ -1216,7 +1216,7 @@ void main() {
     );
 
     test(
-      '[汎用視認性保証] CircleAvatar における背景色 (backgroundColor) とアイコン・文字色 (color) の同色・同一指定防止こと',
+      '汎用視認性保証に関して、CircleAvatar における背景色 (backgroundColor) とアイコン・文字色 (color) の同色・同一指定防止こと',
       () {
         final violations = <String>[];
 
@@ -1286,7 +1286,7 @@ void main() {
     );
 
     test(
-      '[QRコード共有統一] 生の QrImageView 直接配置が 0 件であり QrShareDialog または ViewerQrBottomSheet に統一されていること',
+      'QRコード共有統一に関して、生の QrImageView 直接配置が 0 件であり QrShareDialog または ViewerQrBottomSheet に統一されていること',
       () {
         final allowedFiles = {
           'lib/shared/widgets/qr_share_dialog.dart',
@@ -1321,7 +1321,7 @@ void main() {
     );
 
     test(
-      '[全画面ヒントテキスト視認性] hintStyle における不透明純白(0xFFFFFFFF/white)および純黒(0xFF000000/black)指定の完全防止こと',
+      '全画面ヒントテキスト視認性に関して、hintStyle における不透明純白(0xFFFFFFFF/white)および純黒(0xFF000000/black)指定の完全防止こと',
       () {
         final violations = <String>[];
         final whiteRegex = RegExp(

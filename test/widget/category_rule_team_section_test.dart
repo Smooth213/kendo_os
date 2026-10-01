@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('CategoryRuleTeamSection renders daihyo settingsであること', (
-    tester,
-  ) async {
+  testWidgets('部門ルール団体戦セクションに代表戦設定が正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     await tester.pumpWidget(

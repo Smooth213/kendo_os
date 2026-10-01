@@ -11,7 +11,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
-  testWidgets('【BunaiksenHomeScreen】初期状態で本日の日付および「今日の部内戦」が表示されること', (
+  testWidgets('BunaiksenHomeScreenにおいて 初期状態で本日の日付および「今日の部内戦」が表示されること', (
     WidgetTester tester,
   ) async {
     // 1. Setup mock preferences

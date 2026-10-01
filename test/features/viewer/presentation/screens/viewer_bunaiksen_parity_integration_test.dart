@@ -112,7 +112,7 @@ void main() {
       );
     }
 
-    testWidgets('【本部  ボタン押下  観客席画面への完全遷移検証】こと'
+    testWidgets('本部 ボタン押下 観客席画面への完全遷移検証においてこと'
         '本部ホームからプレビューを開いた際、QR直リンクと同一の ViewerBunaiksenHomeScreen が描画されること', (
       WidgetTester tester,
     ) async {
@@ -194,7 +194,7 @@ void main() {
       expect(find.byType(SlidableAction), findsNothing);
     });
 
-    testWidgets('【観客画面の専用機能パリティ検証】こと'
+    testWidgets('観客画面の専用機能パリティ検証においてこと'
         '観客席画面において、表示設定・共有・成績一覧の各アクションが正常に利用可能であること', (
       WidgetTester tester,
     ) async {

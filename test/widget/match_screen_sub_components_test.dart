@@ -12,7 +12,7 @@ void main() {
   });
 
   group('[Widget] MatchScreen Sub Components テスト', () {
-    testWidgets('【MatchViewOnlyNoticeBanner】警告バナーおよび切替ボタンが描画されること', (
+    testWidgets('MatchViewOnlyNoticeBannerにおいて 警告バナーおよび切替ボタンが描画されること', (
       tester,
     ) async {
       bool claimed = false;
@@ -38,7 +38,9 @@ void main() {
       expect(claimed, isTrue);
     });
 
-    testWidgets('【MatchDaihyoOverlay】ボタンが描画されコールバックが呼び出されること', (tester) async {
+    testWidgets('MatchDaihyoOverlayにおいて ボタンが描画されコールバックが呼び出されること', (
+      tester,
+    ) async {
       final prefs = await SharedPreferences.getInstance();
       bool selected = false;
       await tester.pumpWidget(

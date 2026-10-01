@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 6-11/12】iframe外部Web埋め込み レスポンシブアスペクト比適応テスト', () {
+  group('[Widget] iframe外部Web埋め込み レスポンシブアスペクト比適応テスト', () {
     testWidgets('親コンテナの横幅伸縮に応じて 16:9 アスペクト比が死守され、はみ出しなく適応すること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

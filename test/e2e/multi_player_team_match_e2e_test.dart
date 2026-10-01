@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 
 void main() {
-  group('[E2E] 【E2E】多人数団体戦（8人制・9人制）生成・整列・代表戦ライフサイクル完全検証', () {
+  group('[E2E] 多人数団体戦（8人制・9人制）生成・整列・代表戦ライフサイクル完全検証', () {
     test('8人制団体戦（偶数・中堅なし）: 試合作成からソート・勝敗集計のライフサイクルこと', () {
       final redTeam = '東京道場A';
       final redMembers = [
@@ -99,7 +99,7 @@ void main() {
       expect(redWins > whiteWins, isTrue, reason: '赤チームの勝利');
     });
 
-    test('9人制団体戦（奇数・中央中堅あり）: 同点  代表戦発生時の整列と決着E2Eライフサイクルこと', () {
+    test('9人制団体戦（奇数・中央中堅あり）: 同点 代表戦発生時の整列と決着E2Eライフサイクルこと', () {
       final redTeam = '神奈川道場';
       final whiteTeam = '愛知武道館';
 

@@ -97,7 +97,7 @@ void main() {
         );
       });
 
-      test('【相互排他】Web/ネイティブで異なる経路が選ばれること', () {
+      test('相互排他において Web/ネイティブで異なる経路が選ばれること', () {
         final webRoute = resolvePdfPrintRoute(isWeb: true);
         final nativeRoute = resolvePdfPrintRoute(isWeb: false);
         expect(
@@ -112,15 +112,15 @@ void main() {
     // ファイル名・MIME タイプ
     // ──────────────────────────────────────────────────────────────
     group('PDFファイル名・MIMEタイプ', () {
-      test('【小学生の部】ファイル名が正しく生成されること', () {
+      test('小学生の部において ファイル名が正しく生成されること', () {
         expect(buildPdfFileName('小学生の部'), '公式記録_小学生の部.pdf');
       });
 
-      test('【一般の部】ファイル名が正しく生成されること', () {
+      test('一般の部において ファイル名が正しく生成されること', () {
         expect(buildPdfFileName('一般の部'), '公式記録_一般の部.pdf');
       });
 
-      test('MIMEタイプが application/pdf であること', () {
+      test('MIMEタイプが application/pdfこと', () {
         expect(pdfMimeType, 'application/pdf');
       });
     });
@@ -163,7 +163,7 @@ void main() {
         );
       });
 
-      test('【条件付きインポート】download_helper のインポートが存在すること', () {
+      test('条件付きインポートにおいて download_helper のインポートが存在すること', () {
         expect(
           source,
           contains('file_download_helper'),
@@ -189,7 +189,7 @@ void main() {
         );
       });
 
-      test('【回帰検知】kIsWeb 分岐が消えていないこと', () {
+      test('回帰検知において kIsWeb 分岐が消えていないこと', () {
         // 旧バージョンのコード（修正前）では kIsWeb 分岐なしで
         // Printing.layoutPdf を呼んでいた。これに戻っていないことを確認。
         final kIsWebCount = 'kIsWeb'.allMatches(source).length;
@@ -245,7 +245,7 @@ void main() {
         expect(resolvePdfPrintRoute(isWeb: true), PdfPrintRoute.webDownload);
       });
 
-      test('【資産読み込みが高速】マニュアルPDFはポップアップブロックの影響を受けないこと', () {
+      test('資産読み込みが高速において マニュアルPDFはポップアップブロックの影響を受けないこと', () {
         // embedded_manual_screen.dart はアセットから高速に読み込むため
         // ユーザーのタップから短時間で layoutPdf が呼ばれ、
         // ポップアップブロックが発動しない。

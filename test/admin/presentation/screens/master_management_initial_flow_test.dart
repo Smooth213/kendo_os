@@ -87,7 +87,7 @@ void main() {
       expect(find.text('道場名を登録する'), findsOneWidget);
     });
 
-    testWidgets('道場名登録後：Empty UIバイパスと空一覧画面へのダイレクト遷移検証（StateErrorクラッシュ防止）こと', (
+    testWidgets('StateErrorクラッシュ防止において道場名登録後：Empty UIバイパスと空一覧画面へのダイレクト遷移検証こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

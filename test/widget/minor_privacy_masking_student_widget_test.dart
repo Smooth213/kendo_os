@@ -26,7 +26,7 @@ class MinorPrivacyFormatter {
 }
 
 void main() {
-  group('[Widget] 【Phase 3-11/11】未成年選手実名保護プライバシーマスキング Widgetテスト', () {
+  group('[Widget] 未成年選手実名保護プライバシーマスキング Widgetテスト', () {
     testWidgets('プライバシー保護モード有効時、フルネームが隠蔽され実名が画面上に一切漏洩しないこと', (tester) async {
       const realNameRed = '佐藤 健太郎';
       const realNameWhite = '鈴木 一朗太';

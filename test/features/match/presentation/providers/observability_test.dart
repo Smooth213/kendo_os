@@ -112,7 +112,7 @@ void main() {
     });
 
     test(
-      '【二次災害防止】UI描画サイクル中にエラーを検知(recordError)しても、状態更新によるクラッシュ(StateError)を引き起こさないこと',
+      '二次災害防止において UI描画サイクル中にエラーを検知(recordError)しても、状態更新によるクラッシュ(StateError)を引き起こさないこと',
       () async {
         final metricsService = container.read(metricsProvider);
 

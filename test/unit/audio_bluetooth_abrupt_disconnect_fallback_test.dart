@@ -25,27 +25,24 @@ class AudioOutputFallbackManager {
 }
 
 void main() {
-  group(
-    '[Unit] 【Phase 6-4/12】試合終了ブザー鳴動中 Bluetoothスピーカー急断 端末内蔵スピーカー自動フォールバックテスト',
-    () {
-      test('外部BTスピーカー切断時、即座に本体スピーカーへ切り替わりブザー鳴動状態が維持されること', () {
-        final audioManager = AudioOutputFallbackManager(
-          isBluetoothConnected: true,
-        );
+  group('[Unit] 試合終了ブザー鳴動中 Bluetoothスピーカー急断 端末内蔵スピーカー自動フォールバックテスト', () {
+    test('外部BTスピーカー切断時、即座に本体スピーカーへ切り替わりブザー鳴動状態が維持されること', () {
+      final audioManager = AudioOutputFallbackManager(
+        isBluetoothConnected: true,
+      );
 
-        // ブザー鳴動開始
-        audioManager.playMatchEndBuzzer();
-        expect(audioManager.currentActiveOutput, 'Bluetooth_PA_Speaker');
-        expect(audioManager.isPlayingAlert, isTrue);
+      // ブザー鳴動開始
+      audioManager.playMatchEndBuzzer();
+      expect(audioManager.currentActiveOutput, 'Bluetooth_PA_Speaker');
+      expect(audioManager.isPlayingAlert, isTrue);
 
-        // 🚨 Bluetoothスピーカーが電池切れで突然切断！
-        audioManager.onBluetoothDisconnected();
+      // 🚨 Bluetoothスピーカーが電池切れで突然切断！
+      audioManager.onBluetoothDisconnected();
 
-        // 0.1秒で本体内蔵スピーカーへフォールバックし、ブザー鳴動が維持されること
-        expect(audioManager.currentActiveOutput, 'Device_Internal_Speaker');
-        expect(audioManager.isPlayingAlert, isTrue);
-        expect(audioManager.isBluetoothConnected, isFalse);
-      });
-    },
-  );
+      // 0.1秒で本体内蔵スピーカーへフォールバックし、ブザー鳴動が維持されること
+      expect(audioManager.currentActiveOutput, 'Device_Internal_Speaker');
+      expect(audioManager.isPlayingAlert, isTrue);
+      expect(audioManager.isBluetoothConnected, isFalse);
+    });
+  });
 }

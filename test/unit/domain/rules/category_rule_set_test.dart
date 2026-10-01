@@ -4,15 +4,15 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('[Unit] CategoryRuleSet & TournamentModel Serialization テスト', () {
-    test('CategoryRuleSet defaults are initialized correctlyであること', () {
+  group('[Unit] CategoryRuleSetおよびTournamentModel シリアライズテスト', () {
+    test('CategoryRuleSetのデフォルト値が正しく初期化されること', () {
       const ruleSet = CategoryRuleSet();
       expect(ruleSet.useAdvancedRule, isFalse);
       expect(ruleSet.normalRule.matchTimeMinutes, equals(3.0));
       expect(ruleSet.advancedRule.matchTimeMinutes, equals(3.0));
     });
 
-    test('CategoryRuleSet serializes and deserializes correctlyであること', () {
+    test('CategoryRuleSetのシリアライズおよびデシリアライズが正しく行えること', () {
       final ruleSet = CategoryRuleSet(
         normalRule: const MatchRule(matchTimeMinutes: 2.0, hasHantei: true),
         advancedRule: const MatchRule(
@@ -32,7 +32,7 @@ void main() {
       expect(decoded.advancedRule.isEnchoUnlimited, isTrue);
     });
 
-    test('【TournamentModel】後方互換性のため空のcategoryRulesが適切に処理されること', () {
+    test('TournamentModelにおいて 後方互換性のため空のcategoryRulesが適切に処理されること', () {
       final tournament = TournamentModel(
         id: 'test_id',
         organizationId: 'org_123',
@@ -47,39 +47,36 @@ void main() {
       expect(decoded.categoryRules, isEmpty);
     });
 
-    test(
-      'TournamentModel serializes and deserializes categoryRules map correctlyであること',
-      () {
-        final ruleSet = CategoryRuleSet(
-          normalRule: const MatchRule(matchTimeMinutes: 1.5),
-          advancedRule: const MatchRule(matchTimeMinutes: 3.0),
-          useAdvancedRule: true,
-        );
+    test('TournamentModelのcategoryRulesマップのシリアライズおよびデシリアライズが正しく行えること', () {
+      final ruleSet = CategoryRuleSet(
+        normalRule: const MatchRule(matchTimeMinutes: 1.5),
+        advancedRule: const MatchRule(matchTimeMinutes: 3.0),
+        useAdvancedRule: true,
+      );
 
-        final tournament = TournamentModel(
-          id: 'test_id',
-          organizationId: 'org_123',
-          name: 'Test Tournament',
-          date: DateTime.now(),
-          venue: 'Test Venue',
-          categoryRules: {'小学生低学年の部': ruleSet},
-        );
+      final tournament = TournamentModel(
+        id: 'test_id',
+        organizationId: 'org_123',
+        name: 'Test Tournament',
+        date: DateTime.now(),
+        venue: 'Test Venue',
+        categoryRules: {'小学生低学年の部': ruleSet},
+      );
 
-        final json = tournament.toJson();
-        final decoded = TournamentModel.fromJson(json);
+      final json = tournament.toJson();
+      final decoded = TournamentModel.fromJson(json);
 
-        expect(decoded.categoryRules, isNotEmpty);
-        expect(decoded.categoryRules.containsKey('小学生低学年の部'), isTrue);
+      expect(decoded.categoryRules, isNotEmpty);
+      expect(decoded.categoryRules.containsKey('小学生低学年の部'), isTrue);
 
-        final decodedRuleSet = decoded.categoryRules['小学生低学年の部']!;
-        expect(decodedRuleSet.useAdvancedRule, isTrue);
-        expect(decodedRuleSet.normalRule.matchTimeMinutes, equals(1.5));
-        expect(decodedRuleSet.advancedRule.matchTimeMinutes, equals(3.0));
-      },
-    );
+      final decodedRuleSet = decoded.categoryRules['小学生低学年の部']!;
+      expect(decodedRuleSet.useAdvancedRule, isTrue);
+      expect(decodedRuleSet.normalRule.matchTimeMinutes, equals(1.5));
+      expect(decodedRuleSet.advancedRule.matchTimeMinutes, equals(3.0));
+    });
   });
 
-  group('[Unit] 上位回戦（準決勝・決勝等）のキーワード検知分析テスト', () {
+  group('上位回戦（準決勝・決勝等）のキーワード検知分析テスト', () {
     bool isAdvancedMatch(String note) {
       final cleanNote = note.toLowerCase();
       final keywords = [
@@ -105,7 +102,7 @@ void main() {
       return keywords.any((kw) => cleanNote.contains(kw));
     }
 
-    test('Identifies advanced matches correctlyであること', () {
+    test('進行中の試合を正しく特定できること', () {
       expect(isAdvancedMatch('準決勝 第1試合'), isTrue);
       expect(isAdvancedMatch('Aコート 決勝'), isTrue);
       expect(isAdvancedMatch('3位決定戦'), isTrue);
@@ -116,7 +113,7 @@ void main() {
       expect(isAdvancedMatch('予選リーグ Aブロック'), isFalse);
     });
 
-    test('Identifies advanced matches with custom keywords correctlyであること', () {
+    test('カスタムキーワードによる進行中試合の特定が正しく行えること', () {
       bool isAdvancedMatchWithCustom(String note, List<String> customKeywords) {
         final cleanNote = note.toLowerCase().trim();
         final keywords = customKeywords

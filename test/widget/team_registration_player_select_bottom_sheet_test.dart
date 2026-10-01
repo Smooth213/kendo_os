@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    '【TeamRegistrationPlayerSelectBottomSheet】選手一覧が描画され選択が正常に処理されること',
+    'TeamRegistrationPlayerSelectBottomSheetにおいて 選手一覧が描画され選択が正常に処理されること',
     (WidgetTester tester) async {
       final p1 = PlayerModel(
         id: 'p1',

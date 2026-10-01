@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('【OrderSetupMatchupConfigSection】紅白オプションおよび対戦相手入力欄が描画されること', (
+  testWidgets('OrderSetupMatchupConfigSectionにおいて 紅白オプションおよび対戦相手入力欄が描画されること', (
     WidgetTester tester,
   ) async {
     final controller = TextEditingController(text: '相手剣道クラブ');

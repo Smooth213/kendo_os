@@ -18,7 +18,7 @@ void main() {
       container.dispose();
     });
 
-    test('初期状態は3分(180秒)のカウントダウンで停止中であること', () {
+    test('初期状態は3分(180秒)のカウントダウンで停止中こと', () {
       final state = container.read(dockTimerProvider);
       expect(state.mode, DockTimerMode.countdown);
       expect(state.initialSeconds, 180);

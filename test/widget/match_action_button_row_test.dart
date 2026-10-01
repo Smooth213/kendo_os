@@ -32,9 +32,7 @@ void main() {
       expect(actionTriggered, isTrue);
     });
 
-    testWidgets('responds to double tap when confirmBehavior is doubleであること', (
-      tester,
-    ) async {
+    testWidgets('確認動作がダブルタップ設定時にダブルタップへ応答すること', (tester) async {
       bool actionTriggered = false;
 
       await tester.pumpWidget(

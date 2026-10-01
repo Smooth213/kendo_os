@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/domain/share_import/tournament_text
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
-  group('[E2E] 【E2E】クリップボード取り込み  個人戦トーナメント生成  試合進行・優勝決定 完全フローE2Eテスト', () {
+  group('[E2E] クリップボード取り込み 個人戦トーナメント生成 試合進行・優勝決定 完全フローE2Eテスト', () {
     test('ユーザー指定の複数人個人戦テキストを取り込み、部門正規化・トーナメント編成・試合進行・優勝決定まで貫通すること', () {
       // ── Step 1: クリップボード取り込みテキストの定義 ──
       const rawClipboardText = '''

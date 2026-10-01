@@ -4,48 +4,45 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 
 void main() {
   group('[Widget] OrderSetupPositionSlot ウィジェットテスト', () {
-    testWidgets(
-      'position slot with 選手 name, change ボタン, and handles vacantが正しく描画されること',
-      (WidgetTester tester) async {
-        bool tapped = false;
-        bool vacantTapped = false;
-        String opponent = '田中 次郎';
+    testWidgets('選手名・変更ボタン・空枠スロットが正しく描画されること', (WidgetTester tester) async {
+      bool tapped = false;
+      bool vacantTapped = false;
+      String opponent = '田中 次郎';
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: OrderSetupPositionSlot(
-                  key: const ValueKey('slot_0'),
-                  index: 0,
-                  posName: '先鋒',
-                  playerName: '佐藤 太郎',
-                  teamName: '東京剣道クラブ',
-                  isSelected: true,
-                  onTap: () => tapped = true,
-                  isDark: false,
-                  showOpponentField: true,
-                  opponentPlayerName: opponent,
-                  onOpponentChanged: (val) => opponent = val,
-                  onVacantPressed: () => vacantTapped = true,
-                ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: OrderSetupPositionSlot(
+                key: const ValueKey('slot_0'),
+                index: 0,
+                posName: '先鋒',
+                playerName: '佐藤 太郎',
+                teamName: '東京剣道クラブ',
+                isSelected: true,
+                onTap: () => tapped = true,
+                isDark: false,
+                showOpponentField: true,
+                opponentPlayerName: opponent,
+                onOpponentChanged: (val) => opponent = val,
+                onVacantPressed: () => vacantTapped = true,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('東京剣道クラブ : 先鋒'), findsOneWidget);
-        expect(find.text('佐藤 太郎'), findsOneWidget);
-        expect(find.text('変更'), findsOneWidget);
-        expect(find.text('対戦相手 (先鋒)'), findsOneWidget);
-        expect(find.text('欠員'), findsOneWidget);
+      expect(find.text('東京剣道クラブ : 先鋒'), findsOneWidget);
+      expect(find.text('佐藤 太郎'), findsOneWidget);
+      expect(find.text('変更'), findsOneWidget);
+      expect(find.text('対戦相手 (先鋒)'), findsOneWidget);
+      expect(find.text('欠員'), findsOneWidget);
 
-        await tester.tap(find.text('変更'));
-        expect(tapped, isTrue);
+      await tester.tap(find.text('変更'));
+      expect(tapped, isTrue);
 
-        await tester.tap(find.text('欠員'));
-        expect(vacantTapped, isTrue);
-      },
-    );
+      await tester.tap(find.text('欠員'));
+      expect(vacantTapped, isTrue);
+    });
   });
 }

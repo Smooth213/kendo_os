@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 void main() {
   group('[Widget] OfficialRecordExportBar ウィジェットテスト', () {
-    testWidgets('all 3 export ボタン一覧 and handles callbacksが正しく描画されること', (
+    testWidgets('3つのエクスポートボタン一覧が描画されコールバックが正しく動作すること', (
       WidgetTester tester,
     ) async {
       bool pdfTapped = false;
@@ -40,9 +40,7 @@ void main() {
       expect(csvTapped, isTrue);
     });
 
-    testWidgets('Disables buttons when isExporting is trueであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('エクスポート実行中は各ボタンが無効化されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -57,9 +55,7 @@ void main() {
       expect(pdfButton.enabled, isFalse);
     });
 
-    testWidgets('Hides toggle when hasMultipleCategories is falseであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('複数部門が存在しない場合はトグルが非表示になること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -76,7 +72,7 @@ void main() {
       expect(find.text('PDF'), findsOneWidget);
     });
 
-    testWidgets('【AppSwitch】スイッチまたはラベルのタップ時にラベルが切り替わること', (
+    testWidgets('AppSwitchにおいて スイッチまたはラベルのタップ時にラベルが切り替わること', (
       WidgetTester tester,
     ) async {
       OfficialRecordExportScope? selectedScope;

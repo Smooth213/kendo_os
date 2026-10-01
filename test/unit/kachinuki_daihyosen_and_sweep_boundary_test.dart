@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_overtime_evaluator
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart';
 
 void main() {
-  group('[Unit] 【Unit】勝ち抜き戦・5人抜きスイープ＆大将延長代表戦 境界値テスト', () {
+  group('[Unit] 勝ち抜き戦・5人抜きスイープ＆大将延長代表戦 境界値テスト', () {
     late MatchDomainService domainService;
 
     setUp(() {

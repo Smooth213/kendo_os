@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 
 void main() {
   group('[Widget] ProgramViewerControls ウィジェットテスト', () {
-    testWidgets('tool ボタン and triggers onTapが正しく描画されること', (
+    testWidgets('ツールボタンが表示されタップ時にコールバックが正常に実行されること', (
       WidgetTester tester,
     ) async {
       bool tapped = false;
@@ -31,7 +31,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('pen option ボタン and triggers onTapが正しく描画されること', (
+    testWidgets('ペンオプションボタンが表示されタップ時にコールバックが正常に実行されること', (
       WidgetTester tester,
     ) async {
       bool optionTapped = false;

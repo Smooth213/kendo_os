@@ -5,7 +5,7 @@ void main() {
   group('[Unit] ViewerBunaiksenExportService テスト', () {
     const service = ViewerBunaiksenExportService();
 
-    test('Service can be instantiatedであること', () {
+    test('サービスのインスタンスが正常に生成できること', () {
       expect(service, isNotNull);
     });
   });

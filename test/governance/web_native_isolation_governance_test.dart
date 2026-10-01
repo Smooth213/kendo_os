@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Governance] 【ガバナンス第5条】Web境界・ネイティブ直接import遮断 監査テスト', () {
+  group('[Governance] ガバナンス第5条において Web境界・ネイティブ直接import遮断 監査テスト', () {
     final isolatedDirs = ['lib/features/match', 'lib/features/viewer'];
 
     test(

@@ -15,11 +15,11 @@ void main() {
   const allCandidateTypes =
       TournamentTeamAutoRegisterService.candidateMatchTypes;
 
-  group('[Governance] 【第1条 ガバナンス監査 ⑤】全試合形式（勝ち抜き戦・リーグ戦含む）編集選択＆完全整合性保証規約', () {
+  group('[Governance] 第1条 ガバナンス監査 ⑤において 全試合形式（勝ち抜き戦・リーグ戦含む）編集選択＆完全整合性保証規約', () {
     // =========================================================================
-    // Rule 1: [静的スキャン] 不完全な matchType ハードコードの禁止
+    // [静的スキャン] 不完全な matchType ハードコードの禁止
     // =========================================================================
-    test('Rule 1: [静的スキャン] チーム編集・取り込み関連クラスで不完全な試合形式リストがハードコードされていないこと', () {
+    test('静的スキャンに関して、 チーム編集・取り込み関連クラスで不完全な試合形式リストがハードコードされていないこと', () {
       final targetFiles = [
         'lib/features/tournament/presentation/operate/components/team_registration/team_edit_bottom_sheet.dart',
         'lib/features/tournament/presentation/components/share_import/share_import_edit_sheets.dart',
@@ -61,10 +61,10 @@ void main() {
     });
 
     // =========================================================================
-    // Rule 2: [UI監査] 共有インポートシート (ShareImportTeamSection) の試合形式編集検証
+    // [UI監査] 共有インポートシート (ShareImportTeamSection) の試合形式編集検証
     // =========================================================================
     testWidgets(
-      'Rule 2: [UI監査] ShareImportTeamSection で全9形式がボトムシートに表示され、タップで選択更新されること',
+      'UI監査に関して、 ShareImportTeamSection で全9形式がボトムシートに表示され、タップで選択更新されること',
       (tester) async {
         final team = const ParsedTeamOrder(
           teamName: '道上剣友会',
@@ -118,10 +118,10 @@ void main() {
     );
 
     // =========================================================================
-    // Rule 3: [UI監査] 大会作成プレビュー (CreateTournamentImportTeamsCard) の試合形式編集検証
+    // [UI監査] 大会作成プレビュー (CreateTournamentImportTeamsCard) の試合形式編集検証
     // =========================================================================
     testWidgets(
-      'Rule 3: [UI監査] CreateTournamentImportTeamsCard で全9形式が表示され、タップで更新されること',
+      'UI監査に関して、 CreateTournamentImportTeamsCard で全9形式が表示され、タップで更新されること',
       (tester) async {
         final teams = [
           const ParsedTeamOrder(
@@ -182,58 +182,53 @@ void main() {
     );
 
     // =========================================================================
-    // Rule 4: [UI監査] チーム編集基本フィールド (TeamEditBasicFields) の全形式表示と切り替え
+    // [UI監査] チーム編集基本フィールド (TeamEditBasicFields) の全形式表示と切り替え
     // =========================================================================
-    testWidgets(
-      'Rule 4: [UI監査] TeamEditBasicFields において全9形式が描画され、タップ切り替えが動作すること',
-      (tester) async {
-        final controller = TextEditingController(text: '道上剣友会B');
-        String selectedType = '個人戦';
+    testWidgets('UI監査に関して、 TeamEditBasicFields において全9形式が描画され、タップ切り替えが動作すること', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: '道上剣友会B');
+      String selectedType = '個人戦';
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: TeamEditBasicFields(
-                teamNameController: controller,
-                selectedCategory: '小学生',
-                matchType: selectedType,
-                candidateCategories: const ['小学生'],
-                matchTypes: allCandidateTypes,
-                themeColors: themeColors,
-                borderColor: Colors.grey,
-                onCategoryChanged: (_) {},
-                onMatchTypeChanged: (type) => selectedType = type,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TeamEditBasicFields(
+              teamNameController: controller,
+              selectedCategory: '小学生',
+              matchType: selectedType,
+              candidateCategories: const ['小学生'],
+              matchTypes: allCandidateTypes,
+              themeColors: themeColors,
+              borderColor: Colors.grey,
+              onCategoryChanged: (_) {},
+              onMatchTypeChanged: (type) => selectedType = type,
             ),
           ),
-        );
+        ),
+      );
 
-        // 全9形式が描画されていること
-        for (final type in allCandidateTypes) {
-          expect(
-            find.text(type),
-            findsOneWidget,
-            reason: 'フィールドに $type が存在すること',
-          );
-        }
+      // 全9形式が描画されていること
+      for (final type in allCandidateTypes) {
+        expect(find.text(type), findsOneWidget, reason: 'フィールドに $type が存在すること');
+      }
 
-        // 「勝ち抜き戦（5人制）」をタップ
-        await tester.tap(find.text('勝ち抜き戦（5人制）'));
-        await tester.pump();
-        expect(selectedType, equals('勝ち抜き戦（5人制）'));
+      // 「勝ち抜き戦（5人制）」をタップ
+      await tester.tap(find.text('勝ち抜き戦（5人制）'));
+      await tester.pump();
+      expect(selectedType, equals('勝ち抜き戦（5人制）'));
 
-        // 「リーグ個人戦」をタップ
-        await tester.tap(find.text('リーグ個人戦'));
-        await tester.pump();
-        expect(selectedType, equals('リーグ個人戦'));
-      },
-    );
+      // 「リーグ個人戦」をタップ
+      await tester.tap(find.text('リーグ個人戦'));
+      await tester.pump();
+      expect(selectedType, equals('リーグ個人戦'));
+    });
 
     // =========================================================================
-    // Rule 5: [UI監査] チーム新規登録ウィザード (TeamRegistrationCategoryStep) の全形式網羅検証
+    // [UI監査] チーム新規登録ウィザード (TeamRegistrationCategoryStep) の全形式網羅検証
     // =========================================================================
     test(
-      'Rule 5: [UI監査] TeamRegistrationCategoryStep の main + extra で全9形式が完全に網羅されていること',
+      'UI監査に関して、 TeamRegistrationCategoryStep の main + extra で全9形式が完全に網羅されていること',
       () {
         final combined = [
           ...TeamRegistrationCategoryStep.mainMatchTypes,
@@ -251,9 +246,9 @@ void main() {
     );
 
     // =========================================================================
-    // Rule 6: [ドメイン整合性監査] 全形式に対するスロット数と自動判定の整合性検証
+    // [ドメイン整合性監査] 全形式に対するスロット数と自動判定の整合性検証
     // =========================================================================
-    test('Rule 6: [ドメイン整合性] 全9形式それぞれに対して基準スロットおよび自動判定が決定論的に動作すること', () {
+    test('ドメイン整合性に関して、 全9形式それぞれに対して基準スロットおよび自動判定が決定論的に動作すること', () {
       // 0. 旧形式の正規化検証
       expect(
         TournamentTeamAutoRegisterService.normalizeMatchType('勝ち抜き戦'),
@@ -364,9 +359,9 @@ void main() {
     });
 
     // =========================================================================
-    // Rule 7: [個人戦永続保証] クリップボードインポートおよび自動登録プレビューで個人戦が確実に認識・展開されること
+    // [個人戦永続保証] クリップボードインポートおよび自動登録プレビューで個人戦が確実に認識・展開されること
     // =========================================================================
-    testWidgets('Rule 7: [個人戦永続保証] 個人戦テキストのインポートおよび自動登録プレビューで個人戦が確実に適応されること', (
+    testWidgets('個人戦永続保証に関して、 個人戦テキストのインポートおよび自動登録プレビューで個人戦が確実に適応されること', (
       tester,
     ) async {
       const sample = '''
@@ -411,10 +406,10 @@ void main() {
     });
 
     // =========================================================================
-    // Rule 8: [全カテゴリ判別保証] 個人戦を含む全カテゴリのインポート・自動判別・プレビュー保証
+    // [全カテゴリ判別保証] 個人戦を含む全カテゴリのインポート・自動判別・プレビュー保証
     // =========================================================================
     testWidgets(
-      'Rule 8: [全カテゴリ判別保証] クリップボードインポートおよび自動登録プレビューにおいて全カテゴリが正確に判別され描画されること',
+      '全カテゴリ判別保証に関して、 クリップボードインポートおよび自動登録プレビューにおいて全カテゴリが正確に判別され描画されること',
       (tester) async {
         const allCategorySample = '''
 第30回 全日本選抜剣道大会

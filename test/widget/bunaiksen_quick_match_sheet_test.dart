@@ -4,9 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_quick_match_sheet.dart';
 
 void main() {
-  testWidgets('BunaiksenQuickMatchSheet 正しく描画されること and handles interactionこと', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('部内戦クイックマッチシートが正しく描画され操作が処理できること', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(

@@ -10,7 +10,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Unit] MatchUndoHelper 単体テスト', () {
-    test('MatchUndoHelper can be instantiated properlyであること', () {
+    test('MatchUndoHelperのインスタンスが正常に生成できること', () {
       final container = ProviderContainer(
         overrides: [isarProvider.overrideWithValue(null)],
       );
@@ -25,7 +25,7 @@ void main() {
       expect(helper, isNotNull);
     });
 
-    test('【executeUndo】空イベント時に例外をスローせず安全に処理されること', () async {
+    test('executeUndoにおいて 空イベント時に例外をスローせず安全に処理されること', () async {
       final container = ProviderContainer(
         overrides: [isarProvider.overrideWithValue(null)],
       );

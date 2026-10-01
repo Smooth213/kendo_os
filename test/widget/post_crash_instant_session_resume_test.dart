@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 6-12/12】OS強制終了（クラッシュ）後 即時セッション復帰ダイアログ Widgetテスト', () {
+  group('[Widget] OS強制終了（クラッシュ）後 即時セッション復帰ダイアログ Widgetテスト', () {
     testWidgets('クラッシュ直後の起動時に未完了セッションを検知し、復帰ボタン押下で直前の試合画面へ復帰すること', (
       tester,
     ) async {

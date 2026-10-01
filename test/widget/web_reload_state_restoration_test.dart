@@ -22,7 +22,7 @@ void main() {
     });
 
     test(
-      '【PwaStorage永続化】ブラウザリロード（ProviderContainer再構築）後も大会ID・道場IDが完全復元されること',
+      'PwaStorage永続化において ブラウザリロード（ProviderContainer再構築）後も大会ID・道場IDが完全復元されること',
       () {
         // 1. リロード前の状態をシミュレート
         PwaStorage.setItem(
@@ -48,7 +48,7 @@ void main() {
       },
     );
 
-    test('【URLクエリ/エンコード復元】URL経由で日本語グループ名・IDがリロード時に安全にデコードされること', () {
+    test('URLクエリ/エンコード復元において URL経由で日本語グループ名・IDがリロード時に安全にデコードされること', () {
       const rawGroupName = '一般男子 1回戦【第1コート】';
       final encodedUri = Uri.parse(
         'https://kendo-os.web.app/viewer/team-scoreboard/${Uri.encodeComponent(rawGroupName)}?tournamentId=t-param-777',
@@ -74,7 +74,7 @@ void main() {
       expect(decodedGroupName.contains('第1コート'), isTrue);
     });
 
-    test('【タブ復帰/オフライン復元】試合進行中にタブが再アクティブ化されてもスコアとタイマー状態が保全されること', () {
+    test('タブ復帰/オフライン復元において 試合進行中にタブが再アクティブ化されてもスコアとタイマー状態が保全されること', () {
       final inFlightMatch = MatchModel(
         id: 'match-web-restore-001',
         tournamentId: 't-web-restore',
@@ -116,7 +116,7 @@ void main() {
     });
 
     test(
-      '【ServiceWorker重複・順不同注入】リロード直後に重複または順不同で到着したスコアイベントが論理時計順に正しく収束すること',
+      'ServiceWorker重複・順不同注入において リロード直後に重複または順不同で到着したスコアイベントが論理時計順に正しく収束すること',
       () {
         final ev1 = ScoreEvent(
           id: 'ev-clock-1',

@@ -103,7 +103,7 @@ void main() {
     });
 
     testWidgets(
-      'Verification of CategoryRulesScreen bulk-applying new rules to existing incomplete matchesであること',
+      'Verification of CategoryRulesScreen bulk-applying new rules to existing incomplete matchesこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1600);
         tester.view.devicePixelRatio = 1.0;
@@ -246,110 +246,104 @@ void main() {
       },
     );
 
-    test(
-      'bulkUpdateMatchRules command updates specific matches rules in Firestoreであること',
-      () async {
-        // Setup matches in Fake Firestore
-        final oldRule = const MatchRule(
-          matchTimeMinutes: 1.5,
-          hasHantei: false,
-        );
-        final m1 = MatchModel(
-          id: 'bulk_match_1',
-          tournamentId: 'test_tournament_rules',
-          category: '小学生の部',
-          matchType: '個人戦',
-          redName: '赤1',
-          whiteName: '白1',
-          status: 'waiting',
-          matchTimeMinutes: 1.5,
-          rule: oldRule,
-          organizationId: 'test_dojo_id',
-        );
-        final m2 = MatchModel(
-          id: 'bulk_match_2',
-          tournamentId: 'test_tournament_rules',
-          category: '小学生の部',
-          matchType: '個人戦',
-          redName: '赤2',
-          whiteName: '白2',
-          status: 'waiting',
-          matchTimeMinutes: 1.5,
-          rule: oldRule,
-          organizationId: 'test_dojo_id',
-        );
+    test('Firestore内で特定試合のルールが一括更新されること', () async {
+      // Setup matches in Fake Firestore
+      final oldRule = const MatchRule(matchTimeMinutes: 1.5, hasHantei: false);
+      final m1 = MatchModel(
+        id: 'bulk_match_1',
+        tournamentId: 'test_tournament_rules',
+        category: '小学生の部',
+        matchType: '個人戦',
+        redName: '赤1',
+        whiteName: '白1',
+        status: 'waiting',
+        matchTimeMinutes: 1.5,
+        rule: oldRule,
+        organizationId: 'test_dojo_id',
+      );
+      final m2 = MatchModel(
+        id: 'bulk_match_2',
+        tournamentId: 'test_tournament_rules',
+        category: '小学生の部',
+        matchType: '個人戦',
+        redName: '赤2',
+        whiteName: '白2',
+        status: 'waiting',
+        matchTimeMinutes: 1.5,
+        rule: oldRule,
+        organizationId: 'test_dojo_id',
+      );
 
-        await fakeFirestore
-            .collection('organizations')
-            .doc('test_dojo_id')
-            .collection('tournaments')
-            .doc('test_tournament_rules')
-            .collection('matches')
-            .doc(m1.id)
-            .set(m1.toJson());
+      await fakeFirestore
+          .collection('organizations')
+          .doc('test_dojo_id')
+          .collection('tournaments')
+          .doc('test_tournament_rules')
+          .collection('matches')
+          .doc(m1.id)
+          .set(m1.toJson());
 
-        await fakeFirestore
-            .collection('organizations')
-            .doc('test_dojo_id')
-            .collection('tournaments')
-            .doc('test_tournament_rules')
-            .collection('matches')
-            .doc(m2.id)
-            .set(m2.toJson());
+      await fakeFirestore
+          .collection('organizations')
+          .doc('test_dojo_id')
+          .collection('tournaments')
+          .doc('test_tournament_rules')
+          .collection('matches')
+          .doc(m2.id)
+          .set(m2.toJson());
 
-        // Setup Riverpod container with fake repository overrides
-        final container = ProviderContainer(
-          overrides: [
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-            currentTournamentIdProvider.overrideWith(
-              (ref) => 'test_tournament_rules',
-            ),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-            matchListByTournamentProvider('test_tournament_rules').overrideWith(
-              (ref) {
-                return Stream.value([m1, m2]);
-              },
-            ),
-            matchListProvider.overrideWith((ref) => [m1, m2]),
-            matchStreamProvider.overrideWith((ref) => Stream.value([m1, m2])),
-            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
-          ],
-        );
+      // Setup Riverpod container with fake repository overrides
+      final container = ProviderContainer(
+        overrides: [
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+          currentTournamentIdProvider.overrideWith(
+            (ref) => 'test_tournament_rules',
+          ),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+          matchListByTournamentProvider('test_tournament_rules').overrideWith((
+            ref,
+          ) {
+            return Stream.value([m1, m2]);
+          }),
+          matchListProvider.overrideWith((ref) => [m1, m2]),
+          matchStreamProvider.overrideWith((ref) => Stream.value([m1, m2])),
+          localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+        ],
+      );
 
-        // Force instantiation of matchListProvider to keep matches in state cache
-        container.read(matchListByTournamentProvider('test_tournament_rules'));
+      // Force instantiation of matchListProvider to keep matches in state cache
+      container.read(matchListByTournamentProvider('test_tournament_rules'));
 
-        final newRule = const MatchRule(
-          matchTimeMinutes: 3.5,
-          enchoTimeMinutes: 2.0,
-          hasHantei: true,
-        );
+      final newRule = const MatchRule(
+        matchTimeMinutes: 3.5,
+        enchoTimeMinutes: 2.0,
+        hasHantei: true,
+      );
 
-        // Execute bulkUpdateMatchRules on bulk_match_1 only
-        await container
-            .read(matchCommandProvider)
-            .bulkUpdateMatchRules(
-              targetMatchIds: ['bulk_match_1'],
-              newRule: newRule,
-            );
+      // Execute bulkUpdateMatchRules on bulk_match_1 only
+      await container
+          .read(matchCommandProvider)
+          .bulkUpdateMatchRules(
+            targetMatchIds: ['bulk_match_1'],
+            newRule: newRule,
+          );
 
-        final captured = verify(
-          () => mockLocalRepo.saveMatchesBulk(captureAny()),
-        ).captured;
-        final savedMatches = captured.last as List<MatchModel>;
+      final captured = verify(
+        () => mockLocalRepo.saveMatchesBulk(captureAny()),
+      ).captured;
+      final savedMatches = captured.last as List<MatchModel>;
 
-        final match1 = savedMatches.firstWhere((m) => m.id == 'bulk_match_1');
-        expect(match1.matchTimeMinutes, 3.5);
-        expect(match1.extensionTimeMinutes, 2.0);
-        expect(match1.rule?.matchTimeMinutes, 3.5);
+      final match1 = savedMatches.firstWhere((m) => m.id == 'bulk_match_1');
+      expect(match1.matchTimeMinutes, 3.5);
+      expect(match1.extensionTimeMinutes, 2.0);
+      expect(match1.rule?.matchTimeMinutes, 3.5);
 
-        // Verify that bulk_match_2 is NOT updated
-        final match2 = savedMatches.where((m) => m.id == 'bulk_match_2');
-        expect(match2, isEmpty);
-      },
-    );
+      // Verify that bulk_match_2 is NOT updated
+      final match2 = savedMatches.where((m) => m.id == 'bulk_match_2');
+      expect(match2, isEmpty);
+    });
 
-    test('【deleteMatch】Web環境でFirestoreから直接削除され楽観的UI更新が行われること', () async {
+    test('deleteMatchにおいて Web環境でFirestoreから直接削除され楽観的UI更新が行われること', () async {
       // Simulate Web environment
       debugIsWebOverride = true;
       addTearDown(() {
@@ -422,7 +416,7 @@ void main() {
       expect(snap.exists, isFalse);
     });
 
-    test('【deleteMatch】Web環境でプロバイダ情報が不足時にMatchModelから動的補完されること', () async {
+    test('deleteMatchにおいて Web環境でプロバイダ情報が不足時にMatchModelから動的補完されること', () async {
       // Simulate Web environment
       debugIsWebOverride = true;
       addTearDown(() {
@@ -495,75 +489,72 @@ void main() {
       expect(snap.exists, isFalse);
     });
 
-    test(
-      'deleteMatch on Web does NOT overwrite active currentDojoIdProvider when match has default_orgであること',
-      () async {
-        debugIsWebOverride = true;
-        addTearDown(() {
-          debugIsWebOverride = false;
-        });
+    test('Web環境での試合削除時にアクティブな道場IDが上書きされないこと', () async {
+      debugIsWebOverride = true;
+      addTearDown(() {
+        debugIsWebOverride = false;
+      });
 
-        const matchWithDefaultOrg = MatchModel(
-          id: 'delete_default_org_match',
-          tournamentId: 'my_active_tournament',
-          matchType: '個人戦',
-          status: 'waiting',
-          redName: '赤',
-          whiteName: '白',
-          organizationId: 'default_org',
-        );
+      const matchWithDefaultOrg = MatchModel(
+        id: 'delete_default_org_match',
+        tournamentId: 'my_active_tournament',
+        matchType: '個人戦',
+        status: 'waiting',
+        redName: '赤',
+        whiteName: '白',
+        organizationId: 'default_org',
+      );
 
-        await fakeFirestore
-            .collection('organizations')
-            .doc('my_active_dojo')
-            .collection('tournaments')
-            .doc('my_active_tournament')
-            .collection('matches')
-            .doc(matchWithDefaultOrg.id)
-            .set(matchWithDefaultOrg.toJson());
+      await fakeFirestore
+          .collection('organizations')
+          .doc('my_active_dojo')
+          .collection('tournaments')
+          .doc('my_active_tournament')
+          .collection('matches')
+          .doc(matchWithDefaultOrg.id)
+          .set(matchWithDefaultOrg.toJson());
 
-        final container = ProviderContainer(
-          overrides: [
-            currentDojoIdProvider.overrideWith((ref) => 'my_active_dojo'),
-            currentTournamentIdProvider.overrideWith(
-              (ref) => 'my_active_tournament',
-            ),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-            matchRepositoryProvider.overrideWith((ref) {
-              final dojoId = ref.watch(currentDojoIdProvider);
-              final tournamentId = ref.watch(currentTournamentIdProvider);
-              return MatchRepository(fakeFirestore, dojoId, tournamentId);
-            }),
-          ],
-        );
+      final container = ProviderContainer(
+        overrides: [
+          currentDojoIdProvider.overrideWith((ref) => 'my_active_dojo'),
+          currentTournamentIdProvider.overrideWith(
+            (ref) => 'my_active_tournament',
+          ),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+          matchRepositoryProvider.overrideWith((ref) {
+            final dojoId = ref.watch(currentDojoIdProvider);
+            final tournamentId = ref.watch(currentTournamentIdProvider);
+            return MatchRepository(fakeFirestore, dojoId, tournamentId);
+          }),
+        ],
+      );
 
-        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
-          matchWithDefaultOrg,
-        ];
+      container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+        matchWithDefaultOrg,
+      ];
 
-        await container
-            .read(matchCommandProvider)
-            .deleteMatch('delete_default_org_match');
+      await container
+          .read(matchCommandProvider)
+          .deleteMatch('delete_default_org_match');
 
-        // Verify currentDojoIdProvider is NOT wiped to 'default_org'
-        expect(container.read(currentDojoIdProvider), 'my_active_dojo');
-        expect(
-          container.read(currentTournamentIdProvider),
-          'my_active_tournament',
-        );
+      // Verify currentDojoIdProvider is NOT wiped to 'default_org'
+      expect(container.read(currentDojoIdProvider), 'my_active_dojo');
+      expect(
+        container.read(currentTournamentIdProvider),
+        'my_active_tournament',
+      );
 
-        // Verify match was deleted from active dojo path in Firestore
-        final snap = await fakeFirestore
-            .collection('organizations')
-            .doc('my_active_dojo')
-            .collection('tournaments')
-            .doc('my_active_tournament')
-            .collection('matches')
-            .doc('delete_default_org_match')
-            .get();
-        expect(snap.exists, isFalse);
-      },
-    );
+      // Verify match was deleted from active dojo path in Firestore
+      final snap = await fakeFirestore
+          .collection('organizations')
+          .doc('my_active_dojo')
+          .collection('tournaments')
+          .doc('my_active_tournament')
+          .collection('matches')
+          .doc('delete_default_org_match')
+          .get();
+      expect(snap.exists, isFalse);
+    });
 
     test(
       'チーム 試合 creation with substitute 選手 does NOT generate extra 試合 slot for substituteこと',
@@ -607,7 +598,7 @@ void main() {
       },
     );
 
-    test('【選手登録】試合枠外の登録控え選手がベンチ待機補欠（teamSubstitutes）として識別されること', () {
+    test('選手登録において 試合枠外の登録控え選手がベンチ待機補欠（teamSubstitutes）として識別されること', () {
       final teamPlayerNames = [
         '先鋒太郎',
         '次鋒次郎',
@@ -634,68 +625,65 @@ void main() {
       expect(teamSubstitutes.contains('大将五郎'), isFalse);
     });
 
-    test(
-      'Renseikai candidate player chips filter by match category when same team name exists across categoriesであること',
-      () {
-        final registeredTeams = [
-          const TeamModel(
-            id: 't_elem',
-            tournamentId: 'tour1',
-            category: '小学生の部',
-            teamName: '道上剣友会',
-            playerNames: ['小学生先鋒', '小学生次鋒', '小学生中堅', '小学生副将', '小学生大将', '小学生補欠'],
-          ),
-          const TeamModel(
-            id: 't_jhs',
-            tournamentId: 'tour1',
-            category: '中学生の部',
-            teamName: '道上剣友会',
-            playerNames: ['中学生先鋒', '中学生次鋒', '中学生中堅', '中学生副将', '中学生大将', '中学生補欠'],
-          ),
-        ];
+    test('同名チームが複数部門に存在する場合でも部門別に候補選手チップが正しく絞り込まれること', () {
+      final registeredTeams = [
+        const TeamModel(
+          id: 't_elem',
+          tournamentId: 'tour1',
+          category: '小学生の部',
+          teamName: '道上剣友会',
+          playerNames: ['小学生先鋒', '小学生次鋒', '小学生中堅', '小学生副将', '小学生大将', '小学生補欠'],
+        ),
+        const TeamModel(
+          id: 't_jhs',
+          tournamentId: 'tour1',
+          category: '中学生の部',
+          teamName: '道上剣友会',
+          playerNames: ['中学生先鋒', '中学生次鋒', '中学生中堅', '中学生副将', '中学生大将', '中学生補欠'],
+        ),
+      ];
 
-        const matchCat = '小学生の部';
-        const targetTeamName = '道上剣友会';
+      const matchCat = '小学生の部';
+      const targetTeamName = '道上剣友会';
 
-        // Filter registeredTeams by teamName AND category matching matchCat
-        final elemTeamData = registeredTeams.firstWhere(
-          (t) {
-            final nameMatch =
-                t.teamName.trim() == targetTeamName ||
-                targetTeamName.contains(t.teamName.trim()) ||
-                t.teamName.trim().contains(targetTeamName);
-            if (!nameMatch) return false;
-            if (matchCat.isNotEmpty && t.category.isNotEmpty) {
-              return t.category.trim() == matchCat ||
-                  matchCat.contains(t.category.trim()) ||
-                  t.category.trim().contains(matchCat);
-            }
-            return true;
-          },
-          orElse: () => const TeamModel(
-            id: '',
-            tournamentId: '',
-            category: '',
-            teamName: '',
-            matchType: '',
-            playerNames: [],
-          ),
-        );
+      // Filter registeredTeams by teamName AND category matching matchCat
+      final elemTeamData = registeredTeams.firstWhere(
+        (t) {
+          final nameMatch =
+              t.teamName.trim() == targetTeamName ||
+              targetTeamName.contains(t.teamName.trim()) ||
+              t.teamName.trim().contains(targetTeamName);
+          if (!nameMatch) return false;
+          if (matchCat.isNotEmpty && t.category.isNotEmpty) {
+            return t.category.trim() == matchCat ||
+                matchCat.contains(t.category.trim()) ||
+                t.category.trim().contains(matchCat);
+          }
+          return true;
+        },
+        orElse: () => const TeamModel(
+          id: '',
+          tournamentId: '',
+          category: '',
+          teamName: '',
+          matchType: '',
+          playerNames: [],
+        ),
+      );
 
-        final candidates = elemTeamData.playerNames
-            .where((n) => n.isNotEmpty)
-            .toList();
+      final candidates = elemTeamData.playerNames
+          .where((n) => n.isNotEmpty)
+          .toList();
 
-        // Verify ONLY elementary school team players (including reserve) are in candidates
-        expect(candidates.length, equals(6));
-        expect(candidates.contains('小学生先鋒'), isTrue);
-        expect(candidates.contains('小学生補欠'), isTrue);
-        expect(candidates.contains('中学生先鋒'), isFalse);
-        expect(candidates.contains('中学生補欠'), isFalse);
-      },
-    );
+      // Verify ONLY elementary school team players (including reserve) are in candidates
+      expect(candidates.length, equals(6));
+      expect(candidates.contains('小学生先鋒'), isTrue);
+      expect(candidates.contains('小学生補欠'), isTrue);
+      expect(candidates.contains('中学生先鋒'), isFalse);
+      expect(candidates.contains('中学生補欠'), isFalse);
+    });
 
-    test('【延長判定】スコアカードおよび公式記録用で正しくisEnchoフラグが設定されること', () {
+    test('延長判定において スコアカードおよび公式記録用で正しくisEnchoフラグが設定されること', () {
       // 1. Regular match finished in regular time (not extension) -> isEncho = false
       final regularFinishedMatch = const MatchModel(
         id: 'm1',
@@ -815,7 +803,7 @@ void main() {
     });
 
     test(
-      'Verification that court text and progress header memo are preserved on MatchModel noteであること',
+      'Verification that court text and progress header memo are preserved on MatchModel noteこと',
       () {
         const courtText = '第1試合場';
         const userNote = '準決勝';
@@ -835,7 +823,7 @@ void main() {
       },
     );
 
-    test('【MatchEditSheet】チップ選択用の試合ルール・シーンプリセットキーが正しく検知されること', () {
+    test('MatchEditSheetにおいて チップ選択用の試合ルール・シーンプリセットキーが正しく検知されること', () {
       String detectPresetKey(MatchModel match) {
         final r = match.rule ?? const MatchRule();
         if (r.isRenseikai ||
@@ -884,7 +872,7 @@ void main() {
     });
 
     test(
-      'Verification that Renseikai candidate player chips strictly include only own category team players and reserve playersであること',
+      'Verification that Renseikai candidate player chips strictly include only own category team players and reserve playersこと',
       () {
         final registeredTeams = [
           const TeamModel(

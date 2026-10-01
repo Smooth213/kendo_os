@@ -6,8 +6,10 @@ import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart'
 import 'package:pdf/widgets.dart' as pw;
 
 void main() {
-  group('[Governance] 【剣道公式スコア表示ガバナンス・自動監査テスト】', () {
-    testWidgets('【Tableバリアント】1本目が左上、2本目が右下に配置され、勝者丸が描画されること', (tester) async {
+  group('[Governance] 剣道公式スコア表示ガバナンス・自動監査テストにおいて', () {
+    testWidgets('Tableバリアントにおいて 1本目が左上、2本目が右下に配置され、勝者丸が描画されること', (
+      tester,
+    ) async {
       const points = [
         KendoPointMark(mark: 'メ', isFirst: true),
         KendoPointMark(mark: 'コ', isFirst: false),
@@ -76,7 +78,7 @@ void main() {
       expect(circleContainers.isNotEmpty, isTrue);
     });
 
-    testWidgets('【先取丸囲み規約】有効打突の先取は丸囲みされ、反則(反)・不戦勝(◯)・引き分け(×)は丸囲みされないこと', (
+    testWidgets('先取丸囲み規約において 有効打突の先取は丸囲みされ、反則(反)・不戦勝(◯)・引き分け(×)は丸囲みされないこと', (
       tester,
     ) async {
       const menFirst = KendoPointMark(mark: 'メ', isFirst: true);
@@ -165,7 +167,9 @@ void main() {
       expect(drawCircle.isEmpty, isTrue);
     });
 
-    testWidgets('【Inlineバリアント】チーム試合状況・タイムライン用インライン行が正常描画されること', (tester) async {
+    testWidgets('Inlineバリアントにおいて チーム試合状況・タイムライン用インライン行が正常描画されること', (
+      tester,
+    ) async {
       const points = [
         KendoPointMark(mark: 'ド', isFirst: true),
         KendoPointMark(mark: 'ツ', isFirst: false),
@@ -188,7 +192,9 @@ void main() {
       expect(find.text('ツ'), findsOneWidget);
     });
 
-    testWidgets('【Scoreboardバリアント】スコア入力盤用特大モードが60pxで描画されること', (tester) async {
+    testWidgets('Scoreboardバリアントにおいて スコア入力盤用特大モードが60pxで描画されること', (
+      tester,
+    ) async {
       const point = KendoPointMark(mark: 'メ', isFirst: true);
 
       await tester.pumpWidget(
@@ -208,7 +214,7 @@ void main() {
       expect(badgeContainer.constraints?.maxHeight, 60.0);
     });
 
-    test('【PDF描画規約】PDF出力側でも25px勝者円および境界クリアランスが遵守されていること', () {
+    test('PDF描画規約において PDF出力側でも25px勝者円および境界クリアランスが遵守されていること', () {
       final fontBold = pw.Font.helveticaBold();
       final pts = [PdfPointData('コ', true), PdfPointData('ツ', false)];
 

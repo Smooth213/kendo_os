@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 
 void main() {
   group('[Widget] MatchFormatFormState テスト', () {
-    test('getCategory returns formatted string correctlyであること', () {
+    test('フォーマットされた部門文字列が正しく返却されること', () {
       final state1 = MatchFormatFormState(
         selectedMajorCategory: '小学生',
         selectedMinorCategory: '高学年',
@@ -19,7 +19,7 @@ void main() {
       expect(state2.getCategory(), '初心者の部');
     });
 
-    test('applyMatchRule updates fields properlyであること', () {
+    test('ルール適用により各フィールドが正しく更新されること', () {
       final state = MatchFormatFormState();
       final rule = MatchRule(
         matchTimeMinutes: 4.0,

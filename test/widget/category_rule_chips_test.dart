@@ -6,9 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryRuleChips ウィジェットテスト', () {
-    testWidgets('Renders standard rules chipsであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('標準ルールチップが正しく描画されること', (WidgetTester tester) async {
       final ruleSet = const CategoryRuleSet(
         normalRule: MatchRule(
           matchTimeMinutes: 3.0,

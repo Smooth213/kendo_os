@@ -11,7 +11,7 @@ import '../helpers/test_isar_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] [Phase 5 Performance Governance] DB・I/O バッチ最適化テスト', () {
+  group('[Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト', () {
     TestIsarContext? isarContext;
     late Isar isar;
     late LocalMatchRepository repository;

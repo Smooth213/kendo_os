@@ -7,7 +7,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] PdfPageLayoutHelper テスト', () {
-    test('buildHeader generates header with correct metadataであること', () {
+    test('buildHeaderが正しいメタデータを含むヘッダーを生成すること', () {
       final headerWidget = PdfPageLayoutHelper.buildHeader(
         categoryName: '一般男子',
         tournamentName: '第50回記念大会',
@@ -20,7 +20,7 @@ void main() {
       expect(headerWidget, isA<pw.Widget>());
     });
 
-    test('buildContentWidgets generates fallback when list is emptyであること', () {
+    test('リストが空のときにフォールバックウィジェットが生成されること', () {
       final ttf = pw.Font.helvetica();
       final ttfBold = pw.Font.helveticaBold();
 

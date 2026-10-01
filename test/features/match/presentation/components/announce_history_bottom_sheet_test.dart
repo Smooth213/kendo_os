@@ -206,65 +206,64 @@ void main() {
       expect(updatedSnapshot.data()?['isRead'], isFalse);
     });
 
-    testWidgets(
-      'NotificationBellButton should display sakura pink dot if unread notifications existであること',
-      (WidgetTester tester) async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+    testWidgets('未読通知が存在する場合に通知ベルボタンに桜ピンクのドットが表示されること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        // Render NotificationBellButton directly
-        await tester.pumpWidget(
-          UncontrolledProviderScope(
-            container: container,
-            child: const MaterialApp(
-              home: Scaffold(
-                body: NotificationBellButton(
-                  tournamentId: 'tourney_999',
-                  isStaffRoom: true,
-                ),
+      // Render NotificationBellButton directly
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: Scaffold(
+              body: NotificationBellButton(
+                tournamentId: 'tourney_999',
+                isStaffRoom: true,
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. Initial State: No unread documents
-        final badgeDotFinder = find.byWidgetPredicate((widget) {
-          if (widget is Container && widget.decoration is BoxDecoration) {
-            final boxDec = widget.decoration as BoxDecoration;
-            return boxDec.color == const Color(0xFFFF69B4) &&
-                boxDec.shape == BoxShape.circle;
-          }
-          return false;
-        });
+      // 1. Initial State: No unread documents
+      final badgeDotFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final boxDec = widget.decoration as BoxDecoration;
+          return boxDec.color == const Color(0xFFFF69B4) &&
+              boxDec.shape == BoxShape.circle;
+        }
+        return false;
+      });
 
-        expect(badgeDotFinder, findsNothing);
+      expect(badgeDotFinder, findsNothing);
 
-        // 2. Add unread document
-        await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_999',
-          'title': '新着通知',
-          'body': '未読のアナウンスがあります。',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'all',
-          'isRead': false,
-        });
+      // 2. Add unread document
+      await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_999',
+        'title': '新着通知',
+        'body': '未読のアナウンスがあります。',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'all',
+        'isRead': false,
+      });
 
-        // Trigger stream update
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+      // Trigger stream update
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
-        // 3. Dot should appear
-        expect(badgeDotFinder, findsOneWidget);
-      },
-    );
+      // 3. Dot should appear
+      expect(badgeDotFinder, findsOneWidget);
+    });
 
-    testWidgets('【背景黒化バグ防止】 ライトモード時にボトムシート背景が白（cardBackground）で描画されること', (
+    testWidgets('背景黒化バグ防止において ライトモード時にボトムシート背景が白（cardBackground）で描画されること', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(

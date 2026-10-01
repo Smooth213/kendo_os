@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchStatusBadge ウィジェットテスト', () {
-    testWidgets('【isPlaying is true】試合中 (LIVE)が正しく描画されること', (
+    testWidgets('isPlaying is trueにおいて 試合中 (LIVE)が正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -26,7 +26,7 @@ void main() {
       expect(find.text('試合中 (LIVE)'), findsOneWidget);
     });
 
-    testWidgets('【isFinished is true】終了が正しく描画されること', (
+    testWidgets('isFinished is trueにおいて 終了が正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -47,7 +47,9 @@ void main() {
       expect(find.text('終了'), findsOneWidget);
     });
 
-    testWidgets('【試合 is pending】待機中が正しく描画されること', (WidgetTester tester) async {
+    testWidgets('試合 is pendingにおいて 待機中が正しく描画されること', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(
@@ -66,7 +68,7 @@ void main() {
       expect(find.text('⏳ 待機中'), findsOneWidget);
     });
 
-    testWidgets('【provided】customFinishedText ( 全試合終了)が正しく描画されること', (
+    testWidgets('providedにおいて customFinishedText ( 全試合終了)が正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

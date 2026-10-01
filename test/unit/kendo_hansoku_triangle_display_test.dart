@@ -30,7 +30,7 @@ void main() {
       ruleEngine = KendoRuleEngine();
     });
 
-    test('赤の反則1回の場合、赤のdisplaysに「△」が追加され、先取フラグはfalseであること', () {
+    test('赤の反則1回の場合、赤のdisplaysに「△」が追加され、先取フラグはfalseこと', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final events = [
         ScoreEvent(
@@ -167,7 +167,7 @@ void main() {
       expect(analysis.context.whiteIppon, 1);
     });
 
-    test('KendoPointMark: △ および ▲ は isSpecialNonCircle が true であること', () {
+    test('KendoPointMark: △ および ▲ は isSpecialNonCircle が trueこと', () {
       const markTriangle = KendoPointMark(mark: '△', isFirst: true);
       const markSolidTriangle = KendoPointMark(mark: '▲', isFirst: true);
       const markMen = KendoPointMark(mark: 'メ', isFirst: true);

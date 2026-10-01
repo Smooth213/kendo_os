@@ -24,7 +24,7 @@ class ClipboardSanitizer {
 }
 
 void main() {
-  group('[Unit] 【Phase 8-4/7】OSクリップボード貼り付け HTML・制御文字サニタイズテスト', () {
+  group('[Unit] OSクリップボード貼り付け HTML・制御文字サニタイズテスト', () {
     test('リッチテキストHTML（<span style=...>佐藤</span>）がプレーンテキスト「佐藤」へ変換されること', () {
       const richHtml =
           '<b style="color:red"><span onclick="evil()">佐藤 健</span></b>';

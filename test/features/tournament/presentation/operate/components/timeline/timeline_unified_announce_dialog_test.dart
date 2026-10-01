@@ -262,7 +262,7 @@ void main() {
     );
 
     testWidgets(
-      '【文字切れ・はみ出しゼロ保証】 320x568 の小型端末サイズでも3つの選択肢がOverflowなく完全に描画されること',
+      '文字切れ・はみ出しゼロ保証において 320x568 の小型端末サイズでも3つの選択肢がOverflowなく完全に描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;

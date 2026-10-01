@@ -141,9 +141,7 @@ void main() {
     // ① 文字色：テーマに応じた onSurface カラー
     // ────────────────────────────────────────
     group('TextFormField 文字色', () {
-      testWidgets('ライトモード: 入力文字色が onSurface（ほぼ黒）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ライトモードで入力文字色がほぼ黒となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: false,
@@ -167,9 +165,7 @@ void main() {
         );
       });
 
-      testWidgets('ダークモード: 入力文字色が onSurface（ほぼ白）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ダークモードで入力文字色がほぼ白となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: true,
@@ -193,7 +189,7 @@ void main() {
         );
       });
 
-      testWidgets('【ヒント色は同じグレー】3. ライト/ダークで onSurface の色が異なること', (
+      testWidgets('ヒント色検証としてライトおよびダークで onSurface の色が異なること', (
         WidgetTester tester,
       ) async {
         final lightOnSurface = ThemeData.light().colorScheme.onSurface;
@@ -365,9 +361,7 @@ void main() {
     // ③ 入力エリア背景色
     // ────────────────────────────────────────
     group('タイトル入力エリア背景色', () {
-      testWidgets('ライトモード: 背景色が indigo.shade50（薄紫）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ライトモードで背景色が薄紫となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: false,
@@ -388,9 +382,7 @@ void main() {
         );
       });
 
-      testWidgets('ダークモード: 背景色が #1C1C2E（暗い紺色）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ダークモードで背景色が暗い紺色となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: true,
@@ -416,9 +408,7 @@ void main() {
     // ④ ファイルリストタイルのダーク対応
     // ────────────────────────────────────────
     group('ファイルリストタイル', () {
-      testWidgets('ライトモード: タイルの tileColor は null（テーマ依存）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ライトモードでタイルの背景色がテーマ依存となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: false,
@@ -439,9 +429,7 @@ void main() {
         );
       });
 
-      testWidgets('ダークモード: タイルの tileColor が #1C1C1E（暗色）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ダークモードでタイルの背景色が暗色となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: true,
@@ -462,7 +450,7 @@ void main() {
         );
       });
 
-      testWidgets('ライトモード: 選択ハイライトが indigo.shade50 であること', (
+      testWidgets('ライトモード: 選択ハイライトが indigo.shade50こと', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -485,9 +473,7 @@ void main() {
         );
       });
 
-      testWidgets('ダークモード: 選択ハイライトが indigo.shade900（半透明）であること', (
-        WidgetTester tester,
-      ) async {
+      testWidgets('ダークモードで選択ハイライトが半透明となること', (WidgetTester tester) async {
         await tester.pumpWidget(
           _buildDialogContent(
             isDark: true,

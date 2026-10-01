@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 6-1/12】CUD（カラーユニバーサルデザイン）P型・D型色覚赤白形状判別テスト', () {
-    testWidgets('赤白スコア表示が色のみに依存せず、アイコン形状（▲と△）およびラベルで確実に識別可能であること', (
-      tester,
-    ) async {
+  group('[Widget] CUD（カラーユニバーサルデザイン）P型・D型色覚赤白形状判別テスト', () {
+    testWidgets('赤白スコア表示が色のみに依存せず、アイコン形状（▲と△）およびラベルで確実に識別可能こと', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

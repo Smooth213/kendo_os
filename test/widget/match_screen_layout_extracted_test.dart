@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] MatchScreen Extracted Components テスト', () {
-    testWidgets('【MatchHeaderTitle】試合形式および選手名が正しく描画されること', (tester) async {
+    testWidgets('MatchHeaderTitleにおいて 試合形式および選手名が正しく描画されること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,
@@ -31,9 +31,7 @@ void main() {
       expect(find.text('佐藤 vs 鈴木'), findsOneWidget);
     });
 
-    testWidgets('MatchContentLayoutBuilder renders portrait layoutであること', (
-      tester,
-    ) async {
+    testWidgets('縦画面レイアウトが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

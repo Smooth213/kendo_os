@@ -6,7 +6,7 @@ void main() {
   group(
     '[Widget] OrderSetupMatchGenerator via OrderSetupExecutionHelper テスト',
     () {
-      test('【generateMatches】個人戦の有効な試合一覧が正しく生成されること', () {
+      test('generateMatchesにおいて 個人戦の有効な試合一覧が正しく生成されること', () {
         final rule = MatchRule(category: '小学生低学年の部');
 
         final matches = OrderSetupMatchGenerator.generateMatches(

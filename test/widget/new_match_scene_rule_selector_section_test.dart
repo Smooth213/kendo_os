@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/new
 
 void main() {
   group('[Widget] NewMatchSceneRuleSelectorSection ウィジェットテスト', () {
-    testWidgets('default 3 scene ルール cards and handles selectionが正しく描画されること', (
-      tester,
-    ) async {
+    testWidgets('デフォルト3つのシーンルールカードが描画され選択が正常に処理されること', (tester) async {
       String selectedScene = 'honsen';
 
       await tester.pumpWidget(

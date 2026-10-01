@@ -27,7 +27,7 @@ class CourtEmergencyController extends ChangeNotifier {
 }
 
 void main() {
-  group('[E2E] 【Phase 2-10/10】体育館地震・火災 本部一斉緊急中断＆避難画面ブロードキャストE2Eテスト', () {
+  group('[E2E] 体育館地震・火災 本部一斉緊急中断＆避難画面ブロードキャストE2Eテスト', () {
     testWidgets('本部緊急避難指令受信時、1秒以内にタイマー強制停止＆全コート警告画面オーバーレイこと', (tester) async {
       final controller = CourtEmergencyController();
 

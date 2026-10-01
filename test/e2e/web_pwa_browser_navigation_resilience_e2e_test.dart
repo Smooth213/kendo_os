@@ -4,7 +4,7 @@ import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
-  group('[E2E] 【E2E】Web/PWA ブラウザ操作耐久（リロード・戻る復元）E2Eテスト', () {
+  group('[E2E] Web/PWA ブラウザ操作耐久（リロード・戻る復元）E2Eテスト', () {
     const tournamentKey = 'kendo_os_active_tournament_id';
     const dojoKey = 'kendo_os_active_dojo_id';
 

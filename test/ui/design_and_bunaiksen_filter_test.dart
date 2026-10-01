@@ -31,41 +31,38 @@ void main() {
   });
 
   group('[Widget] デザインリグレッション防止 ＆ 部内戦フィルター機能テスト', () {
-    testWidgets(
-      'Design Regression Prevention: App-wide Dialog (16px) & BottomSheet (20px) Themeの検証が行えること',
-      (WidgetTester tester) async {
-        final dialogShape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        );
-        final bottomSheetShape = const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        );
-
-        final testTheme = ThemeData(
-          brightness: Brightness.dark,
-          useMaterial3: true,
-          dialogTheme: DialogThemeData(shape: dialogShape),
-          bottomSheetTheme: BottomSheetThemeData(shape: bottomSheetShape),
-        );
-
-        // Verify DialogTheme shape has 16px corner radius
-        expect(
-          (testTheme.dialogTheme.shape as RoundedRectangleBorder).borderRadius,
-          BorderRadius.circular(16),
-        );
-
-        // Verify BottomSheetTheme shape has 20px top corner radius
-        expect(
-          (testTheme.bottomSheetTheme.shape as RoundedRectangleBorder)
-              .borderRadius,
-          const BorderRadius.vertical(top: Radius.circular(20)),
-        );
-      },
-    );
-
-    testWidgets('Bunaiksen Player Select Category Filterの検証が行えること', (
+    testWidgets('アプリ全体のダイアログおよびボトムシートの角丸テーマが正常に検証できること', (
       WidgetTester tester,
     ) async {
+      final dialogShape = RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      );
+      final bottomSheetShape = const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      );
+
+      final testTheme = ThemeData(
+        brightness: Brightness.dark,
+        useMaterial3: true,
+        dialogTheme: DialogThemeData(shape: dialogShape),
+        bottomSheetTheme: BottomSheetThemeData(shape: bottomSheetShape),
+      );
+
+      // Verify DialogTheme shape has 16px corner radius
+      expect(
+        (testTheme.dialogTheme.shape as RoundedRectangleBorder).borderRadius,
+        BorderRadius.circular(16),
+      );
+
+      // Verify BottomSheetTheme shape has 20px top corner radius
+      expect(
+        (testTheme.bottomSheetTheme.shape as RoundedRectangleBorder)
+            .borderRadius,
+        const BorderRadius.vertical(top: Radius.circular(20)),
+      );
+    });
+
+    testWidgets('部内戦選手選択の部門フィルター機能が正しく検証できること', (WidgetTester tester) async {
       final mockPlayers = [
         PlayerModel(
           id: '1',
@@ -154,7 +151,7 @@ void main() {
       expect(find.byType(SmartPlayerInput), findsOneWidget);
     });
 
-    testWidgets('【部内戦】クイックマッチ選手選択の部門フィルター（高学年・低学年チップ）が正しく機能すること', (
+    testWidgets('部内戦において クイックマッチ選手選択の部門フィルター（高学年・低学年チップ）が正しく機能すること', (
       WidgetTester tester,
     ) async {
       final mockPlayers = [
@@ -246,113 +243,110 @@ void main() {
       expect(find.text('中学生 次郎'), findsNothing);
     });
 
-    testWidgets(
-      'Comprehensive Bunaiksen Player Category Filter Unit & Integration Verification (All Categories)こと',
-      (WidgetTester tester) async {
-        final mockAllPlayers = [
-          PlayerModel(
-            id: 'younen',
-            lastName: '幼年',
-            firstName: '花子',
-            lastNameKana: 'ようねん',
-            firstNameKana: 'はなこ',
-            grade: 0,
-          ),
-          PlayerModel(
-            id: 'teigakunen',
-            lastName: '低学年',
-            firstName: '一郎',
-            lastNameKana: 'ていがくねん',
-            firstNameKana: 'いちろう',
-            grade: 2,
-          ),
-          PlayerModel(
-            id: 'kougakunen',
-            lastName: '高学年',
-            firstName: '二郎',
-            lastNameKana: 'こうがくねん',
-            firstNameKana: 'じろう',
-            grade: 5,
-          ),
-          PlayerModel(
-            id: 'chuugaku',
-            lastName: '中学生',
-            firstName: '三郎',
-            lastNameKana: 'ちゅうがく',
-            firstNameKana: 'さぶろう',
-            grade: 8,
-          ),
-          PlayerModel(
-            id: 'koukou',
-            lastName: '高校生',
-            firstName: '四郎',
-            lastNameKana: 'こうこう',
-            firstNameKana: 'しろう',
-            grade: 11,
-          ),
-          PlayerModel(
-            id: 'ippan',
-            lastName: '一般',
-            firstName: '五郎',
-            lastNameKana: 'いっぱん',
-            firstNameKana: 'ごろう',
-            grade: 14,
-          ),
-        ];
+    testWidgets('部内戦の全選手部門フィルター機能が統合検証できること', (WidgetTester tester) async {
+      final mockAllPlayers = [
+        PlayerModel(
+          id: 'younen',
+          lastName: '幼年',
+          firstName: '花子',
+          lastNameKana: 'ようねん',
+          firstNameKana: 'はなこ',
+          grade: 0,
+        ),
+        PlayerModel(
+          id: 'teigakunen',
+          lastName: '低学年',
+          firstName: '一郎',
+          lastNameKana: 'ていがくねん',
+          firstNameKana: 'いちろう',
+          grade: 2,
+        ),
+        PlayerModel(
+          id: 'kougakunen',
+          lastName: '高学年',
+          firstName: '二郎',
+          lastNameKana: 'こうがくねん',
+          firstNameKana: 'じろう',
+          grade: 5,
+        ),
+        PlayerModel(
+          id: 'chuugaku',
+          lastName: '中学生',
+          firstName: '三郎',
+          lastNameKana: 'ちゅうがく',
+          firstNameKana: 'さぶろう',
+          grade: 8,
+        ),
+        PlayerModel(
+          id: 'koukou',
+          lastName: '高校生',
+          firstName: '四郎',
+          lastNameKana: 'こうこう',
+          firstNameKana: 'しろう',
+          grade: 11,
+        ),
+        PlayerModel(
+          id: 'ippan',
+          lastName: '一般',
+          firstName: '五郎',
+          lastNameKana: 'いっぱん',
+          firstNameKana: 'ごろう',
+          grade: 14,
+        ),
+      ];
 
-        when(
-          () => mockPlayerRepo.getPlayers(),
-        ).thenAnswer((_) => Stream.value(mockAllPlayers));
+      when(
+        () => mockPlayerRepo.getPlayers(),
+      ).thenAnswer((_) => Stream.value(mockAllPlayers));
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              currentDojoIdProvider.overrideWith((ref) => 'test204'),
-              playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-              isarProvider.overrideWithValue(null),
-              dojoRoomSyncProvider.overrideWith((ref) {}),
-            ],
-            child: const MaterialApp(home: BunaiksenHomeScreen()),
-          ),
-        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            currentDojoIdProvider.overrideWith((ref) => 'test204'),
+            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+            isarProvider.overrideWithValue(null),
+            dojoRoomSyncProvider.overrideWith((ref) {}),
+          ],
+          child: const MaterialApp(home: BunaiksenHomeScreen()),
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 1. クイック対戦 ➔ 名簿シート起動
-        await tester.tap(find.text('クイック対戦を始める'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('選手A'));
-        await tester.pumpAndSettle();
+      // 1. クイック対戦 ➔ 名簿シート起動
+      await tester.tap(find.text('クイック対戦を始める'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('選手A'));
+      await tester.pumpAndSettle();
 
-        // 2. 「幼年」フィルターを検証
-        await tester.tap(find.text('幼年'));
-        await tester.pumpAndSettle();
-        expect(find.text('幼年 花子'), findsOneWidget);
-        expect(find.text('低学年 一郎'), findsNothing);
+      // 2. 「幼年」フィルターを検証
+      await tester.tap(find.text('幼年'));
+      await tester.pumpAndSettle();
+      expect(find.text('幼年 花子'), findsOneWidget);
+      expect(find.text('低学年 一郎'), findsNothing);
 
-        // 3. 「低学年」フィルターを検証
-        await tester.tap(find.text('低学年'));
-        await tester.pumpAndSettle();
-        expect(find.text('低学年 一郎'), findsOneWidget);
-        expect(find.text('幼年 花子'), findsNothing);
+      // 3. 「低学年」フィルターを検証
+      await tester.tap(find.text('低学年'));
+      await tester.pumpAndSettle();
+      expect(find.text('低学年 一郎'), findsOneWidget);
+      expect(find.text('幼年 花子'), findsNothing);
 
-        // 4. 「中学生」フィルターを検証
-        await tester.tap(find.text('中学生'));
-        await tester.pumpAndSettle();
-        expect(find.text('中学生 三郎'), findsOneWidget);
-        expect(find.text('低学年 一郎'), findsNothing);
+      // 4. 「中学生」フィルターを検証
+      await tester.tap(find.text('中学生'));
+      await tester.pumpAndSettle();
+      expect(find.text('中学生 三郎'), findsOneWidget);
+      expect(find.text('低学年 一郎'), findsNothing);
 
-        // 5. 「一般」フィルターを検証
-        await tester.ensureVisible(find.text('一般'));
-        await tester.tap(find.text('一般'));
-        await tester.pumpAndSettle();
-        expect(find.text('一般 五郎'), findsOneWidget);
-        expect(find.text('中学生 三郎'), findsNothing);
-      },
-    );
+      // 5. 「一般」フィルターを検証
+      await tester.ensureVisible(find.text('一般'));
+      await tester.tap(find.text('一般'));
+      await tester.pumpAndSettle();
+      expect(find.text('一般 五郎'), findsOneWidget);
+      expect(find.text('中学生 三郎'), findsNothing);
+    });
   });
 }

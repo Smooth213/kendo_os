@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 
 void main() {
   group('[Widget] BunaiksenTeamScoreTableRowBuilder テスト', () {
-    testWidgets('renders teamResultCell correctlyであること', (tester) async {
+    testWidgets('チーム結果セルが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -22,7 +22,7 @@ void main() {
       expect(find.text('負'), findsOneWidget);
     });
 
-    testWidgets('renders summaryCell correctlyであること', (tester) async {
+    testWidgets('サマリーセルが正しく描画されること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         tournamentId: 't1',

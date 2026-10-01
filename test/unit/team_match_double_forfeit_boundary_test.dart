@@ -8,7 +8,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 
 void main() {
-  group('[Unit] 【Unit】団体戦 極限境界・両者同時棄権・相討ち反則失格フォールバック判定テスト', () {
+  group('[Unit] 団体戦 極限境界・両者同時棄権・相討ち反則失格フォールバック判定テスト', () {
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0, 0);
 

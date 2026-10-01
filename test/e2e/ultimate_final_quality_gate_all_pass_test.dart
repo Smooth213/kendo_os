@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[E2E] 【Phase 5-10/10】第2期52シナリオ到達・全14大監査総合品質ゲート完全突破 E2Eテスト', () {
+  group('[E2E] 第2期52シナリオ到達・全14大監査総合品質ゲート完全突破 E2Eテスト', () {
     test(
       '全14大ガバナンス監査基準（行数・Null Safety・Freezed・アーキテクチャ）の適合性の決定論的が正しく検証されること',
       () {

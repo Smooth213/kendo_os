@@ -39,7 +39,7 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('【試合一覧 is empty】empty widgetが正しく描画されること', (tester) async {
+    testWidgets('試合一覧 is emptyにおいて empty widgetが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

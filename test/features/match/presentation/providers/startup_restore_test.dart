@@ -8,7 +8,7 @@ void main() {
   // 🛡️ Phase 4 - STEP 4-2 テスト要件：startup_restore_test
   // 回線断起動、途中クラッシュ、Safari再読込、iPadスリープ復帰時にも画面維持ができるかを検証
   // =========================================================================
-  group('[Unit] [Governance Quality Assurance] Isar Startup Restore テスト', () {
+  group('[Unit] Governance Quality Assuranceに関して、Isar Startup Restore テスト', () {
     test('回線ゼロ（Firestore応答なし）の状態でも、Isarキャッシュから即座に前回状態が復元されること', () async {
       final container = ProviderContainer(
         overrides: [

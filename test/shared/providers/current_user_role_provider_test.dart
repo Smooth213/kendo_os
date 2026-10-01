@@ -18,7 +18,7 @@ void main() {
     });
 
     test(
-      '【バグ修正検証】PIN入力等でローカルセッションがAdminに昇格した場合、クラウド側がViewerの初期パケットを流してきてもAdminを死守すること',
+      'バグ修正検証において PIN入力等でローカルセッションがAdminに昇格した場合、クラウド側がViewerの初期パケットを流してきてもAdminを死守すること',
       () {
         final dojoId = container.read(currentDojoIdProvider);
 
@@ -33,7 +33,7 @@ void main() {
       },
     );
 
-    test('【同期検証】手動セッションがない、または一般状態の時のみ、クラウド側の権限パケットに自動追従すること', () {
+    test('同期検証において 手動セッションがない、または一般状態の時のみ、クラウド側の権限パケットに自動追従すること', () {
       final dojoId = container.read(currentDojoIdProvider);
       container
           .read(authSessionProvider.notifier)

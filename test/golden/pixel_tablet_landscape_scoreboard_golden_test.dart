@@ -17,7 +17,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('[Golden] 【Golden】本部・大型ディスプレイ用横画面（1920×1080）視覚的整合性テスト', () {
+  group('[Golden] 本部・大型ディスプレイ用横画面（1920×1080）視覚的整合性テスト', () {
     testWidgets('フルHD (1920x1080) 横画面における公式スコアボード・大画面描画が正しく検証されること', (
       WidgetTester tester,
     ) async {

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Widget 5/5】試合順ドラッグ＆ドロップ並替・キャンセル耐久テスト', () {
+  group('[Widget] Widget 5/5において 試合順ドラッグ＆ドロップ並替・キャンセル耐久テスト', () {
     testWidgets('ReorderableListView での試合並び替えが例外なく実行され、順序が確定すること', (
       WidgetTester tester,
     ) async {

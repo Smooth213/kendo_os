@@ -53,9 +53,9 @@ void main() {
     }
   });
 
-  group('[Widget] 【パート1】ドック  チーム状況  スコア入力  スコア＆親画面反映 統合シナリオテスト', () {
+  group('[Widget] パート1において ドック チーム状況 スコア入力 スコア＆親画面反映 統合シナリオテスト', () {
     testWidgets(
-      'ドック展開  試合状況開く  チームカードタップ  MatchScreenで「メ」入力  スコア1-0反映  戻るでチーム状況カードに連動反映こと',
+      'ドック展開 試合状況開く チームカードタップ MatchScreenで「メ」入力 スコア1-0反映 戻るでチーム状況カードに連動反映こと',
       (tester) async {
         tester.view.physicalSize = const Size(1200, 2400);
         tester.view.devicePixelRatio = 1.0;

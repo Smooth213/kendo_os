@@ -75,7 +75,7 @@ class TournamentDrawEngine {
 }
 
 void main() {
-  group('[Unit] 【Unit 3/5】トーナメントシード配置＆同門初戦回避境界値テスト', () {
+  group('[Unit] Unit 3/5において トーナメントシード配置＆同門初戦回避境界値テスト', () {
     test('8名・16名・32名・128名規模での標準シードスロット配置計算の厳密性こと', () {
       // 8人トーナメント: 第1シードは前半山、第2シードは後半山
       final slots8 = TournamentDrawEngine.calculateSeedSlots(8);

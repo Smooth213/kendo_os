@@ -11,7 +11,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('【MatchEditRuleAndMemoTab】ルール概要が描画され切り替えが正常に行えること', (
+  testWidgets('MatchEditRuleAndMemoTabにおいて ルール概要が描画され切り替えが正常に行えること', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(800, 1600);

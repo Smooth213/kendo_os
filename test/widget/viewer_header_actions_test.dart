@@ -10,7 +10,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] ViewerHeaderActions ウィジェットテスト', () {
-    testWidgets('【ViewerHomeHeaderActions】QR共有ボタンが描画されダイアログが正しく開くこと', (
+    testWidgets('ViewerHomeHeaderActionsにおいて QR共有ボタンが描画されダイアログが正しく開くこと', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -49,7 +49,7 @@ void main() {
       expect(find.byType(ViewerShareDialog), findsOneWidget);
     });
 
-    testWidgets('【ViewerBunaiksenHeaderActions】カレンダーボタンが描画され詳細メニューが開くこと', (
+    testWidgets('ViewerBunaiksenHeaderActionsにおいて カレンダーボタンが描画され詳細メニューが開くこと', (
       tester,
     ) async {
       await tester.pumpWidget(

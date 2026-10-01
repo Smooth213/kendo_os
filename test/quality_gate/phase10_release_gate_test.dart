@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Unit] — リリース品質ゲート・最終防衛線アサーション要塞', () {
+  group('[Unit] リリース品質ゲート・最終防衛線アサーション要塞', () {
     test(
-      '【Coverage Gate】全てのリリース対象コード領域が、ロードマップ指定の最低カバレッジ目標値を100%満たす設計契約であること',
+      'Coverage Gateにおいて 全てのリリース対象コード領域が、ロードマップ指定の最低カバレッジ目標値を100%満たす設計契約こと',
       () {
         final coverageMetrics = {
           'domain': 0.95,
@@ -20,7 +20,7 @@ void main() {
     );
 
     test(
-      '【Performance Gate】3000試合のProjection構築(<200ms)および大規模PDFインデックス解析(<2sec)のタイムスレッショルドを厳格ロックしていること',
+      'Performance Gateにおいて 3000試合のProjection構築(<200ms)および大規模PDFインデックス解析(<2sec)のタイムスレッショルドを厳格ロックしていること',
       () {
         const maxProjectionBuildTimeMs = 200;
         const maxPdfRenderTimeMs = 2000;
@@ -31,7 +31,7 @@ void main() {
     );
 
     test(
-      '【Offline Gate】ネット完全断絶（地方体育館環境）コンテキストにおいても、UIフリーズを起こさずスタンドアロン進行を継続可能であること',
+      'Offline Gateにおいて ネット完全断絶（地方体育館環境）コンテキストにおいても、UIフリーズを起こさずスタンドアロン進行を継続可能こと',
       () {
         const offlineOperationAllowed = true;
         expect(offlineOperationAllowed, isTrue);

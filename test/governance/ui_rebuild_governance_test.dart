@@ -6,9 +6,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第9条 ガバナンス監査】UI再描画局所化 ＆ Jank防止規約', () {
+  group('[Governance] 第9条 ガバナンス監査において UI再描画局所化 ＆ Jank防止規約', () {
     test(
-      'Rule 1: [ルート購読局所化] main.dart で settingsProvider を丸ごと購読せず、.select((s) => s.themeMode) で局所化されていること',
+      'ルート購読局所化に関して、 main.dart で settingsProvider を丸ごと購読せず、.select((s) => s.themeMode) で局所化されていること',
       () {
         final mainFile = File('lib/main.dart');
         expect(mainFile.existsSync(), isTrue);
@@ -33,7 +33,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [動的ProviderScope排除] match_screen.dart の build() 内で動的 ProviderScope が生成されず、MatchScoreboard へ直接プロパティ注入されていること',
+      '動的ProviderScope排除に関して、 match_screen.dart の build() 内で動的 ProviderScope が生成されず、MatchScoreboard へ直接プロパティ注入されていること',
       () {
         final screenFile = File(
           'lib/features/tournament/presentation/operate/match_screen.dart',
@@ -90,7 +90,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [singleMatchProvider配備] match_screen.dart における singleMatchProvider 局所購読規約こと',
+      'singleMatchProvider配備に関して、 match_screen.dart における singleMatchProvider 局所購読規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/match_screen.dart',
@@ -108,7 +108,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [Rebuild Storm根絶] ListEqualityWrapper が要素同一リストの等価性を担保し、リスナー再通知を抑止すること',
+      'Rebuild Storm根絶に関して、 ListEqualityWrapper が要素同一リストの等価性を担保し、リスナー再通知を抑止すること',
       () {
         final listFile = File(
           'lib/features/tournament/presentation/operate/providers/match_list_provider.dart',
@@ -169,7 +169,7 @@ void main() {
     );
 
     test(
-      'Rule 5: [スコアボード局所購読] スコアボード画面で matchListProvider の無差別 ref.watch が禁止され、select シグネチャ購読されていること',
+      'スコアボード局所購読に関して、 スコアボード画面で matchListProvider の無差別 ref.watch が禁止され、select シグネチャ購読されていること',
       () {
         final teamScoreboard = File(
           'lib/features/tournament/presentation/operate/team_scoreboard_screen.dart',
@@ -213,7 +213,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [極小粒度select] match_score_action_section.dart における leftHanded 極小粒度 select 規約こと',
+      '極小粒度selectに関して、 match_score_action_section.dart における leftHanded 極小粒度 select 規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart',

@@ -20,49 +20,46 @@ void main() {
       noteController.dispose();
     });
 
-    testWidgets(
-      'コート and round preset チップ一覧 and triggers selectionが正しく描画されること',
-      (tester) async {
-        String toggledPreset = '';
-        bool cleared = false;
+    testWidgets('コートおよび回戦プリセットチップが表示され選択が正しく動作すること', (tester) async {
+      String toggledPreset = '';
+      bool cleared = false;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchEditCourtAndGroupTab(
-                themeColors: themeColors,
-                courtController: courtController,
-                noteController: noteController,
-                isDark: false,
-                textColor: Colors.black87,
-                onToggleHeadingPreset: (preset) {
-                  toggledPreset = preset;
-                },
-                onClearCourt: () {
-                  cleared = true;
-                },
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchEditCourtAndGroupTab(
+              themeColors: themeColors,
+              courtController: courtController,
+              noteController: noteController,
+              isDark: false,
+              textColor: Colors.black87,
+              onToggleHeadingPreset: (preset) {
+                toggledPreset = preset;
+              },
+              onClearCourt: () {
+                cleared = true;
+              },
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('試合場・進行見出しの一括設定'), findsOneWidget);
-        expect(find.text('第1試合場'), findsOneWidget);
-        expect(find.text('1回戦'), findsOneWidget);
-        expect(find.text('決勝戦'), findsOneWidget);
+      expect(find.text('試合場・進行見出しの一括設定'), findsOneWidget);
+      expect(find.text('第1試合場'), findsOneWidget);
+      expect(find.text('1回戦'), findsOneWidget);
+      expect(find.text('決勝戦'), findsOneWidget);
 
-        await tester.tap(find.text('決勝戦'));
-        await tester.pump();
-        expect(toggledPreset, '決勝戦');
+      await tester.tap(find.text('決勝戦'));
+      await tester.pump();
+      expect(toggledPreset, '決勝戦');
 
-        await tester.tap(find.text('クリア'));
-        await tester.pump();
-        expect(cleared, isTrue);
-      },
-    );
+      await tester.tap(find.text('クリア'));
+      await tester.pump();
+      expect(cleared, isTrue);
+    });
 
     testWidgets(
-      'Tapping comma chip and comma button inserts comma correctlyであること',
+      'Tapping comma chip and comma button inserts comma correctlyこと',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -97,7 +94,7 @@ void main() {
       },
     );
 
-    testWidgets('Hint text color is subdued with hintColor in dark modeであること', (
+    testWidgets('Hint text color is subdued with hintColor in dark modeこと', (
       tester,
     ) async {
       final darkColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');

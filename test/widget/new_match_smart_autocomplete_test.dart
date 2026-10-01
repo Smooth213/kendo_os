@@ -32,7 +32,7 @@ void main() {
       expect(find.byIcon(Icons.arrow_drop_down), findsOneWidget);
     });
 
-    testWidgets('Shows suggestions on tap and selects an itemであること', (
+    testWidgets('Shows suggestions on tap and selects an itemこと', (
       WidgetTester tester,
     ) async {
       final controller = TextEditingController();

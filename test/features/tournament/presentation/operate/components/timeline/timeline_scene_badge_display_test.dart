@@ -8,9 +8,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 
 void main() {
-  group('[Widget] 【大会ホーム一覧】選んだルールに応じた【錬成】・【申合せ】バッジ表示完全保証テスト', () {
+  group('[Widget] 大会ホーム一覧において 選んだルールに応じた錬成において ・申合せにおいて バッジ表示完全保証テスト', () {
     testWidgets(
-      '団体戦・勝ち抜き戦カード（TimelineMatchGroupCard）の左上に【錬成】・【申合せ】バッジが表示されること',
+      '団体戦・勝ち抜き戦カード（TimelineMatchGroupCard）の左上に錬成において ・申合せにおいて バッジが表示されること',
       (tester) async {
         // 錬成会団体戦
         final renseiGroup = [
@@ -88,7 +88,7 @@ void main() {
     );
 
     testWidgets(
-      '個人戦カード（TimelineIndividualPlayerCard）のサブタイトルに【錬成】・【申合せ】が表示されること',
+      '個人戦カード（TimelineIndividualPlayerCard）のサブタイトルに錬成において ・申合せにおいて が表示されること',
       (tester) async {
         final renseiIndivMatches = [
           const MatchModel(
@@ -159,7 +159,7 @@ void main() {
     );
 
     testWidgets(
-      'リーグ団体戦ヘッダー（TimelineLeagueTeamMatchHeader）に【錬成】・【申合せ】バッジが表示されること',
+      'リーグ団体戦ヘッダー（TimelineLeagueTeamMatchHeader）に錬成において ・申合せにおいて バッジが表示されること',
       (tester) async {
         final leagueBouts = [
           const MatchModel(

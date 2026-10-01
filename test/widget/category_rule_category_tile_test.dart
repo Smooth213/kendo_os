@@ -6,9 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryRuleCategoryTile ウィジェットテスト', () {
-    testWidgets('部門 name and triggers onShowRuleDetail on tapが正しく描画されること', (
-      tester,
-    ) async {
+    testWidgets('部門名が表示されタップ時にルール詳細コールバックが正しく実行されること', (tester) async {
       bool detailCalled = false;
       bool editCalled = false;
       bool deleteCalled = false;

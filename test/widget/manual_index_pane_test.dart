@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualIndexPane ウィジェットテスト', () {
-    testWidgets('manual index list and filters items on searchが正しく描画されること', (
-      tester,
-    ) async {
+    testWidgets('マニュアル目次リストが表示され検索時にアイテムが正しく絞り込まれること', (tester) async {
       final controller = TextEditingController();
       String searchQuery = '';
       String selectedFile = '';

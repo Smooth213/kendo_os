@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 
 void main() {
-  group('[Widget] 【大会ホーム一覧】後から追加した新しい対戦・おかわりの対戦が最上位に来る保証テスト', () {
+  group('[Widget] 大会ホーム一覧において 後から追加した新しい対戦・おかわりの対戦が最上位に来る保証テスト', () {
     testWidgets('団体戦で後から追加した対戦カード（orderが大きい試合）が一番上に表示されること', (tester) async {
       // 1試合目（最初に追加: order 1000）
       const initialMatches = [

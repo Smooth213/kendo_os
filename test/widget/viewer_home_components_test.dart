@@ -5,7 +5,7 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_category
 
 void main() {
   group('[Widget] ViewerHome Components テスト', () {
-    testWidgets('【ViewerCategorySectionList】部門一覧およびチーム一覧が正しく描画されること', (
+    testWidgets('ViewerCategorySectionListにおいて 部門一覧およびチーム一覧が正しく描画されること', (
       tester,
     ) async {
       const match = MatchModel(

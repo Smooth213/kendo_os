@@ -6,7 +6,9 @@ import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('【TeamRegistrationConfirmStep】空リスト時に適切に描画されること', (tester) async {
+  testWidgets('TeamRegistrationConfirmStepにおいて 空リスト時に適切に描画されること', (
+    tester,
+  ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     await tester.pumpWidget(
@@ -36,7 +38,7 @@ void main() {
     expect(find.textContaining('まだ登録されたチームはありません'), findsOneWidget);
   });
 
-  testWidgets('【TeamRegistrationConfirmStep】チーム一覧とともに適切に描画されること', (
+  testWidgets('TeamRegistrationConfirmStepにおいて チーム一覧とともに適切に描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

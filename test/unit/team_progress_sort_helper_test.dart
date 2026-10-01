@@ -37,7 +37,7 @@ void main() {
       );
     }
 
-    test('【extractCourtNumber】コート番号インデックスが正しく解決されること', () {
+    test('extractCourtNumberにおいて コート番号インデックスが正しく解決されること', () {
       expect(
         TeamProgressSortHelper.extractCourtNumber(
           makeStatus(teamName: 'A', courtName: '第1コート (1回戦・第1試合)'),
@@ -70,7 +70,7 @@ void main() {
       );
     });
 
-    test('【extractMatchOrder】試合順インデックスが正しく解決されること', () {
+    test('extractMatchOrderにおいて 試合順インデックスが正しく解決されること', () {
       expect(
         TeamProgressSortHelper.extractMatchOrder(
           makeStatus(teamName: 'A', courtName: '第1コート (1回戦・第3試合)'),
@@ -104,30 +104,27 @@ void main() {
       );
     });
 
-    test(
-      'sortTeams by court orders teams by court number then match orderであること',
-      () {
-        final teamA = makeStatus(teamName: '道場A', courtName: '第2コート (第1試合)');
-        final teamB = makeStatus(teamName: '道場B', courtName: '第1コート (第2試合)');
-        final teamC = makeStatus(teamName: '道場C', courtName: '第1コート (第1試合)');
-        final teamD = makeStatus(teamName: '道場D', courtName: 'コート未指定');
+    test('試合順の前にコート番号順でチームが正常にソートされること', () {
+      final teamA = makeStatus(teamName: '道場A', courtName: '第2コート (第1試合)');
+      final teamB = makeStatus(teamName: '道場B', courtName: '第1コート (第2試合)');
+      final teamC = makeStatus(teamName: '道場C', courtName: '第1コート (第1試合)');
+      final teamD = makeStatus(teamName: '道場D', courtName: 'コート未指定');
 
-        final sorted = TeamProgressSortHelper.sortTeams([
-          teamA,
-          teamB,
-          teamC,
-          teamD,
-        ], TeamSortType.court);
+      final sorted = TeamProgressSortHelper.sortTeams([
+        teamA,
+        teamB,
+        teamC,
+        teamD,
+      ], TeamSortType.court);
 
-        // 第1コート第1試合 -> 第1コート第2試合 -> 第2コート第1試合 -> コート未指定
-        expect(sorted[0].teamName, '道場C');
-        expect(sorted[1].teamName, '道場B');
-        expect(sorted[2].teamName, '道場A');
-        expect(sorted[3].teamName, '道場D');
-      },
-    );
+      // 第1コート第1試合 -> 第1コート第2試合 -> 第2コート第1試合 -> コート未指定
+      expect(sorted[0].teamName, '道場C');
+      expect(sorted[1].teamName, '道場B');
+      expect(sorted[2].teamName, '道場A');
+      expect(sorted[3].teamName, '道場D');
+    });
 
-    test('sortTeams by matchOrder orders teams by match sequenceであること', () {
+    test('試合順序のシーケンス順にチームが正常にソートされること', () {
       final teamA = makeStatus(teamName: '道場A', courtName: '第1コート (第3試合)');
       final teamB = makeStatus(teamName: '道場B', courtName: '第2コート (第1試合)');
       final teamC = makeStatus(teamName: '道場C', courtName: '第1コート (第1試合)');
@@ -147,35 +144,32 @@ void main() {
       expect(sorted[3].teamName, '道場A'); // 第1コート第3試合
     });
 
-    test(
-      'sortTeams by status orders live matches first, then waiting, then finishedであること',
-      () {
-        final teamLive = makeStatus(
-          teamName: 'LIVE道場',
-          courtName: '第2コート (第4試合)',
-          hasLive: true,
-        );
-        final teamWaiting = makeStatus(
-          teamName: '待機道場',
-          courtName: '第1コート (第1試合)',
-          hasLive: false,
-        );
-        final teamFinished = makeStatus(
-          teamName: '終了道場',
-          courtName: '第1コート (第2試合)',
-          isFinished: true,
-        );
+    test('進行中・待機中・終了済みの優先順序でチームが正常にソートされること', () {
+      final teamLive = makeStatus(
+        teamName: 'LIVE道場',
+        courtName: '第2コート (第4試合)',
+        hasLive: true,
+      );
+      final teamWaiting = makeStatus(
+        teamName: '待機道場',
+        courtName: '第1コート (第1試合)',
+        hasLive: false,
+      );
+      final teamFinished = makeStatus(
+        teamName: '終了道場',
+        courtName: '第1コート (第2試合)',
+        isFinished: true,
+      );
 
-        final sorted = TeamProgressSortHelper.sortTeams([
-          teamFinished,
-          teamWaiting,
-          teamLive,
-        ], TeamSortType.status);
+      final sorted = TeamProgressSortHelper.sortTeams([
+        teamFinished,
+        teamWaiting,
+        teamLive,
+      ], TeamSortType.status);
 
-        expect(sorted[0].teamName, 'LIVE道場');
-        expect(sorted[1].teamName, '待機道場');
-        expect(sorted[2].teamName, '終了道場');
-      },
-    );
+      expect(sorted[0].teamName, 'LIVE道場');
+      expect(sorted[1].teamName, '待機道場');
+      expect(sorted[2].teamName, '終了道場');
+    });
   });
 }

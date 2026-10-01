@@ -11,9 +11,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('ViewerQuickActionButtons renders buttons correctlyであること', (
-    tester,
-  ) async {
+  testWidgets('観客用クイックアクションボタンが正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

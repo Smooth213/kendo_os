@@ -8,7 +8,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 
 void main() {
   group('[Unit] コメント管理およびWeb用通信設定（QUIC対策）の検証テスト', () {
-    test('FirestoreのWeb用自動ロングポーリング設定が正しく定義可能であること', () {
+    test('FirestoreのWeb用自動ロングポーリング設定が正しく定義可能こと', () {
       const settings = Settings(
         persistenceEnabled: true,
         cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,

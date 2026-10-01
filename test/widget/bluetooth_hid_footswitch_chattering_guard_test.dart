@@ -18,7 +18,7 @@ class HidChatteringGuard {
 }
 
 void main() {
-  group('[Widget] 【Phase 2-5/10】Bluetooth HID フットスイッチ チャタリング暴走防止テスト', () {
+  group('[Widget] Bluetooth HID フットスイッチ チャタリング暴走防止テスト', () {
     test('フットスイッチ接点不良による10ms間隔の連続5回バウンス入力を1回に抑止すること', () {
       final guard = HidChatteringGuard();
       const key = LogicalKeyboardKey.keyM; // 'M' = 面

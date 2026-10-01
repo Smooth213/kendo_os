@@ -16,7 +16,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('[Widget] 【Widget 3/5】高コントラスト＆アクセシビリティ（文字200%拡大）耐久テスト', () {
+  group('[Widget] Widget 3/5において 高コントラスト＆アクセシビリティ（文字200%拡大）耐久テスト', () {
     testWidgets('システム文字サイズ200%拡大（TextScaler 2.0）下でも赤白スコアが視認可能でエラーなく描画されること', (
       WidgetTester tester,
     ) async {

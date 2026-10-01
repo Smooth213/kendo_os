@@ -73,7 +73,7 @@ void main() {
       },
     );
 
-    test('【完全ステルス保証】UIデザインを汚すデバッグ用HUDが画面上に描画されていないこと', () {
+    test('完全ステルス保証において UIデザインを汚すデバッグ用HUDが画面上に描画されていないこと', () {
       expect(
         indexHtmlContent.contains('kendo-touch-hud'),
         isFalse,
@@ -82,7 +82,7 @@ void main() {
     });
 
     test(
-      '【動的振る舞い検証】Node.js環境でWebKit誤加算(+54px)バグを注入し、物理スナップが100%機能することが正しく検証できること',
+      '動的振る舞い検証において Node.js環境でWebKit誤加算(+54px)バグを注入し、物理スナップが100%機能することが正しく検証できること',
       () {
         final result = Process.runSync('node', [
           'test/unit/test_ios_pwa_touch_sync_simulation.js',
@@ -101,7 +101,7 @@ void main() {
       },
     );
 
-    test('待機時タイマー沈黙＆イベント駆動化規約 (setInterval禁止＆preload保証)こと', () {
+    test('待機時のタイマーが沈黙しイベント駆動化規約が保証されること', () {
       expect(
         indexHtmlContent.contains('setInterval(resetScroll'),
         isFalse,

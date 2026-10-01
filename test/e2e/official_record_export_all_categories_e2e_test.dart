@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/application/services/csv_service.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('[E2E] 【E2E】公式記録 複数カテゴリ混在大会 全カテゴリ一括出力フロー完全検証', () {
+  group('[E2E] 公式記録 複数カテゴリ混在大会 全カテゴリ一括出力フロー完全検証', () {
     final categories = ['小学生低学年の部', '小学生高学年の部', '中学生の部', '一般の部'];
 
     List<({String categoryName, List<Map<String, dynamic>> groupDataList})>

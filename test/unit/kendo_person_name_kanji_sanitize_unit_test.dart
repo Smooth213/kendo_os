@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/utils/text_sanitizer.dart';
 
 void main() {
-  group('[Unit] 【Phase 1-6/10】剣道選手名・道場名における外字・旧字体サニタイズ＆JSON完全一致テスト', () {
+  group('[Unit] 剣道選手名・道場名における外字・旧字体サニタイズ＆JSON完全一致テスト', () {
     test('代表的な旧字体・異体字・外字が欠損・文字化けせず保持されること', () {
       final rareNames = [
         '髙橋 龍之介', // はしご高
@@ -27,7 +27,7 @@ void main() {
       }
     });
 
-    test('外字・旧字体を含む選手情報がJSONシリアライズ・デシリアライズで完全等価であること', () {
+    test('外字・旧字体を含む選手情報がJSONシリアライズ・デシリアライズで完全等価こと', () {
       final originalData = {
         'playerName': '髙橋 神之介',
         'dojoName': '修道館（﨑陽）',
@@ -42,7 +42,7 @@ void main() {
       expect(decodedData['rank'], '五段');
     });
 
-    test('前後の不可視文字・制御文字・全角スペースの除去と純粋性保証こと', () {
+    test('前後の不可視文字・制御文字・全角スペースが除去され純粋性が保証されること', () {
       const dirtyInput = "　\t\n 髙橋　健三 \r\n　";
       final cleaned = TextSanitizer.clean(dirtyInput);
       expect(cleaned, '髙橋健三');

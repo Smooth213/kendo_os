@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 
 void main() {
-  group('[Unit] 【Unit】多人数団体戦 極限境界値・タイブレーク・不戦勝混在テスト', () {
+  group('[Unit] 多人数団体戦 極限境界値・タイブレーク・不戦勝混在テスト', () {
     MatchModel createFinishedMatch({
       required String id,
       required int redScore,

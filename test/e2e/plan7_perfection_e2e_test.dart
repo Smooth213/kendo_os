@@ -21,9 +21,9 @@ class MockCommentCommandService extends Mock implements CommentCommandService {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[E2E] 【Plan 7 E2E】極限最適化・低負荷・絶対安定性 総合結合実証テスト', () {
+  group('[E2E] Plan 7 E2Eにおいて 極限最適化・低負荷・絶対安定性 総合結合実証テスト', () {
     test(
-      'E2E-1: 【バックグラウンド不要ストリーム完全解放実証】viewerMatchProjectionProvider および下流プロバイダが autoDispose であり、監視終了後に安全にリソースが解放されること',
+      'E2E-1: バックグラウンド不要ストリーム完全解放実証において viewerMatchProjectionProvider および下流プロバイダが autoDispose であり、監視終了後に安全にリソースが解放されること',
       () async {
         final container = ProviderContainer();
 
@@ -70,7 +70,7 @@ void main() {
     );
 
     testWidgets(
-      'E2E-2: 【PIN再認証ダイアログ・ライフサイクル完全破棄実証】CriticalActionGuard でPINダイアログを開き、入力・認証後にダイアログが破棄され、コントローラーが確実に解放されること',
+      'E2E-2: PIN再認証ダイアログ・ライフサイクル完全破棄実証において CriticalActionGuard でPINダイアログを開き、入力・認証後にダイアログが破棄され、コントローラーが確実に解放されること',
       (WidgetTester tester) async {
         bool verifiedCalled = false;
 
@@ -123,7 +123,7 @@ void main() {
     );
 
     testWidgets(
-      'E2E-3: 【一斉発信ダイアログ・popアニメーション安全破棄実証】TimelineUnifiedAnnounceDialog が pop アニメーション後も used after being disposed 例外なく正常終了すること',
+      'E2E-3: 一斉発信ダイアログ・popアニメーション安全破棄実証において TimelineUnifiedAnnounceDialog が pop アニメーション後も used after being disposed 例外なく正常終了すること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -213,7 +213,7 @@ void main() {
     );
 
     testWidgets(
-      'E2E-4: 【UIレンダリング境界隔離実証】DockDraggableSheet で RepaintBoundary が正しく配置されていること',
+      'E2E-4: UIレンダリング境界隔離実証において DockDraggableSheet で RepaintBoundary が正しく配置されていること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(

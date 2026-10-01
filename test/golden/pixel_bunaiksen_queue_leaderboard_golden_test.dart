@@ -10,8 +10,8 @@ import 'package:kendo_os/shared/widgets/infinite_streak_leaderboard.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Golden] 【Golden】部内戦（無限勝ち抜き戦）待機キュー＆連勝バッジ（Streak ）視覚整合性テスト', () {
-    testWidgets('連勝リーダーボード（Top3）＆ Streak  バッジのレンダリングが正しく検証されること', (
+  group('[Golden] 部内戦（無限勝ち抜き戦）待機キュー＆連勝バッジ（Streak ）視覚整合性テスト', () {
+    testWidgets('連勝リーダーボード（Top3）＆ Streak バッジのレンダリングが正しく検証されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 800);

@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   testWidgets(
-    '【MatchFormatHeadingAndNoteSection】プリセットチップおよびテキストフィールドが描画されること',
+    'MatchFormatHeadingAndNoteSectionにおいて プリセットチップおよびテキストフィールドが描画されること',
     (tester) async {
       final courtCtrl = TextEditingController(text: '第1試合場');
       final noteCtrl = TextEditingController(text: '特記事項なし');

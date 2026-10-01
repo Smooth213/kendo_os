@@ -17,7 +17,7 @@ void main() {
     });
 
     test(
-      'Provider level verification - arbitrary dojo name (e.g. 千代田道場)こと',
+      'e.g. 千代田道場においてProvider level verification - arbitrary dojo nameこと',
       () async {
         // 1. Prepare fake Firestore data
         await fakeFirestore
@@ -60,7 +60,7 @@ void main() {
     );
 
     test(
-      'Provider level verification - another arbitrary dojo name (e.g. 港武道館)こと',
+      'e.g. 港武道館においてProvider level verification - another arbitrary dojo nameこと',
       () async {
         // 1. Prepare fake Firestore data
         await fakeFirestore
@@ -103,7 +103,7 @@ void main() {
     );
 
     testWidgets(
-      'Widget level verification - Bunaiksen Mode (SmartPlayerInput)こと',
+      'SmartPlayerInputにおいてWidget level verification - Bunaiksen Modeこと',
       (WidgetTester tester) async {
         // 1. Prepare fake Firestore data
         await fakeFirestore
@@ -176,7 +176,7 @@ void main() {
     );
 
     testWidgets(
-      'Widget level verification - Offline / Empty Dojo ID Fallback (Bunaiksen Mode)こと',
+      'Bunaiksen ModeにおいてWidget level verification - Offline / Empty Dojo ID Fallbackこと',
       (WidgetTester tester) async {
         // 1. Prepare fake Firestore data under default test201
         await fakeFirestore
@@ -251,7 +251,7 @@ void main() {
     );
 
     testWidgets(
-      'SmartPlayerInput - Filtering by 部門 チップ一覧 and Sorting (部内戦 Mode)こと',
+      '部内戦 ModeにおいてSmartPlayerInput - Filtering by 部門 チップ一覧 and Sortingこと',
       (WidgetTester tester) async {
         // Set larger screen size to ensure all items are visible without scrolling
         tester.view.physicalSize = const Size(800, 1000);

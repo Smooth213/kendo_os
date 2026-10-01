@@ -5,31 +5,32 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Governance] 第23条 テスト設計・タイトル命名規約 ＆ テストスイート整合性ガバナンステスト', () {
-    // ① 装飾絵文字の検出正規表現
+    // ① 装飾絵文字の検出正規表現（ドメイン記号 ◯△▲㋙℃、外字 𠮷髙﨑德 等は除外）
     final emojiRegex = RegExp(
       r'[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{FE0F}\u{203C}\u{2049}\u{2139}]',
       unicode: true,
     );
+    const allowedSpecialChars = '◯△▲㋙℃𠮷髙﨑德';
 
-    // ② 先頭連番正規表現
+    // ② 先頭連番・ナンバリング正規表現
     final numberingRegex = RegExp(
-      r'^(?:\d+[\.\-:\s]+\s*|\d+-\d+[\.\-:\s]*\s*|[①-⑳]\s*|\[\d+\]\s*|#\d+\s*|Step\s*\d+(?:-\d+)?[:\.\s]*|Phase\s*\d+[:\s\-]*)',
+      r'(?:^\s*\d+[\.\-:\s]+\s*|^\s*[①-⑳]\s*|^\s*\[\d+\]\s*|^\s*#\d+\s*|\bPhase\s*[\d\.\-\/]+|\bStep\s*[\d\.\-\/]+|&\s*\d+[\-\.]\d+|\bRule\s*\d+[:\s\-]|\bPart\s*\d+[:\s\-]|\bNo\.\s*\d+)',
       caseSensitive: false,
     );
 
-    // ③ 「〜べき」および二重語尾
-    final bekiRegex = RegExp(r'べき[、。\s]*$');
-    final doubleKotoRegex = RegExp(r'(?:ことこと|であることこと|であることであること)');
-
-    // ④ 英語構文タイトル正規表現
-    final englishClauseRegex = RegExp(
-      r'\b(renders|displays|updates|preserves|handles|resolves|orders|extracts|sorts|calculates|formats|triggers|returns|swaps|applies|expands|contains|creates|deletes|fetches|loads|parses|validates|verifies|verify|should\s+not|should\s+show|when\s+tapped)\b',
-      caseSensitive: false,
-    );
-
-    // ⑤ 最上位種別タグ正規表現
+    // ③ 括弧検出
     final tagRegex = RegExp(
       r'^\[(Unit|Widget|Governance|Golden|E2E|Security)\]',
+    );
+
+    // ④ 文末表現正規表現
+    final doubleKotoRegex = RegExp(r'(?:ことこと|であることこと|ことであること)$');
+    final bracketKotoRegex = RegExp(r'[\)）]こと$');
+
+    // ⑤ 英語構文タイトル正規表現
+    final englishClauseRegex = RegExp(
+      r'\b(renders|displays|updates|preserves|handles|resolves|orders|extracts|sorts|calculates|formats|triggers|returns|swaps|applies|expands|contains|creates|deletes|fetches|loads|parses|validates|verifies|verify|should|when\s+tapped|initial\s+state|default\s+state|can\s+be|fails\s+to|throws|emits)\b',
+      caseSensitive: false,
     );
 
     final callRegex = RegExp(
@@ -85,15 +86,24 @@ void main() {
           .toList();
     }
 
-    test('【①装飾絵文字排除】test配下のすべてのテストおよびグループ名に装飾絵文字が含まれていないこと', () {
+    test('装飾絵文字排除規約において test配下のすべてのテストおよびグループ名に装飾絵文字が含まれていないこと', () {
       final files = getTestFiles();
       final violations = <String>[];
 
       for (final f in files) {
         final items = extractTestItems(f.readAsStringSync(), f.path);
         for (final item in items) {
-          if (emojiRegex.hasMatch(item.title)) {
-            violations.add('${item.filePath}: ${item.fnName}("${item.title}")');
+          final badEmojis = item.title.runes
+              .map(String.fromCharCode)
+              .where(
+                (c) =>
+                    emojiRegex.hasMatch(c) && !allowedSpecialChars.contains(c),
+              )
+              .toList();
+          if (badEmojis.isNotEmpty) {
+            violations.add(
+              '${item.filePath}: ${item.fnName}("${item.title}") -> $badEmojis',
+            );
           }
         }
       }
@@ -105,7 +115,7 @@ void main() {
       );
     });
 
-    test('【②連番排除】test配下のすべてのテストタイトルの先頭に連番やナンバリングが存在しないこと', () {
+    test('テスト連番排除規約において test配下のすべてのテストタイトルの先頭に連番やナンバリングが存在しないこと', () {
       final files = getTestFiles();
       final violations = <String>[];
 
@@ -128,7 +138,64 @@ void main() {
       );
     });
 
-    test('【③文末統一＆文法規約】末尾が「こと」で終わり、「〜べき」や二重語尾が存在しないこと', () {
+    test('括弧排除規約において 最上位種別タグ以外の隅付き括弧および角括弧が完全に排除されていること', () {
+      final files = getTestFiles();
+      final violations = <String>[];
+
+      for (final f in files) {
+        final items = extractTestItems(f.readAsStringSync(), f.path);
+        var hasTopGroup = false;
+        for (final item in items) {
+          final cleanTitle = item.title.trim();
+          var isTopGroup = false;
+          if (item.fnName == 'group' && !hasTopGroup) {
+            hasTopGroup = true;
+            isTopGroup = true;
+          }
+
+          // 【】はグループ・テスト問わず完全禁止
+          if (cleanTitle.contains('【') || cleanTitle.contains('】')) {
+            violations.add(
+              '${item.filePath}: ${item.fnName}("$cleanTitle") -> contains 【】',
+            );
+            continue;
+          }
+
+          // [] のチェック
+          if (item.fnName != 'group') {
+            if (cleanTitle.contains('[') || cleanTitle.contains(']')) {
+              violations.add(
+                '${item.filePath}: ${item.fnName}("$cleanTitle") -> contains []',
+              );
+            }
+          } else {
+            if (isTopGroup) {
+              final withoutTag = cleanTitle.replaceFirst(tagRegex, '').trim();
+              if (withoutTag.contains('[') || withoutTag.contains(']')) {
+                violations.add(
+                  '${item.filePath}: group("$cleanTitle") -> contains internal []',
+                );
+              }
+            } else {
+              if (cleanTitle.contains('[') || cleanTitle.contains(']')) {
+                violations.add(
+                  '${item.filePath}: sub-group("$cleanTitle") -> contains []',
+                );
+              }
+            }
+          }
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            '最上位種別タグ以外の【】または[]を含むテストが存在します:\n${violations.take(10).join('\n')}',
+      );
+    });
+
+    test('文末統一＆文法規約において 末尾が「こと」で終わり、「〜べき」や二重語尾が存在しないこと', () {
       final files = getTestFiles();
       final violations = <String>[];
 
@@ -137,9 +204,13 @@ void main() {
         for (final item in items) {
           if (item.fnName != 'group') {
             final cleanTitle = item.title.trim();
+            final cleanedForBeki = cleanTitle
+                .replaceAll('べき等', '')
+                .replaceAll('「〜べき」', '');
             if (!cleanTitle.endsWith('こと') ||
-                bekiRegex.hasMatch(cleanTitle) ||
-                doubleKotoRegex.hasMatch(cleanTitle)) {
+                cleanedForBeki.contains('べき') ||
+                doubleKotoRegex.hasMatch(cleanTitle) ||
+                bracketKotoRegex.hasMatch(cleanTitle)) {
               violations.add('${item.filePath}: ${item.fnName}("$cleanTitle")');
             }
           }
@@ -150,11 +221,11 @@ void main() {
         violations,
         isEmpty,
         reason:
-            '文末が「こと」でないか、「〜べき」または二重語尾を含むテストが存在します:\n${violations.take(10).join('\n')}',
+            '文末が「こと」でないか、「〜べき」、二重語尾、または括弧直後の「こと」を含むテストが存在します:\n${violations.take(10).join('\n')}',
       );
     });
 
-    test('【④英文タイトル排除】英文主体のテストタイトルが存在せず日本語に統一されていること', () {
+    test('英文タイトル排除規約において 英文主体のテストタイトルが存在せず日本語に統一されていること', () {
       final files = getTestFiles();
       final violations = <String>[];
 
@@ -163,12 +234,15 @@ void main() {
         for (final item in items) {
           if (item.fnName != 'group') {
             final cleanTitle = item.title.trim();
-            // ひらがな文字数が5文字未満かつ英語の動詞・述語を含む場合は英文タイトルと判定
             final hiraganaMatches = RegExp(
               r'[\u3040-\u309F]',
             ).allMatches(cleanTitle);
-            if (hiraganaMatches.length < 5 &&
-                englishClauseRegex.hasMatch(cleanTitle)) {
+            if ((hiraganaMatches.length < 6 &&
+                    englishClauseRegex.hasMatch(cleanTitle)) ||
+                cleanTitle.startsWith('should') ||
+                cleanTitle.startsWith('can ') ||
+                cleanTitle.startsWith('renders') ||
+                cleanTitle.startsWith('verify')) {
               violations.add('${item.filePath}: ${item.fnName}("$cleanTitle")');
             }
           }
@@ -183,7 +257,7 @@ void main() {
     });
 
     test(
-      '【⑤種別タグ】最上位groupが規約タグ([Unit], [Widget], [Governance], [Golden], [E2E], [Security])で始まっていること',
+      'テスト種別タグ規約において 最上位groupが規約タグ（Unit・Widget・Governance・Golden・E2E・Security）で始まっていること',
       () {
         final files = getTestFiles();
         final violations = <String>[];
@@ -203,7 +277,7 @@ void main() {
           violations,
           isEmpty,
           reason:
-              '最上位groupに許可された種別タグが付与されていません:\n${violations.take(10).join('\n')}',
+              '最上位groupが規約タグで始まっていないファイルが存在します:\n${violations.take(10).join('\n')}',
         );
       },
     );

@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Unit] BulkRuleStateHolder 単体テスト', () {
-    test('初期値が正しくセットアップされ、dispose可能であること', () {
+    test('初期値が正しくセットアップされ、dispose可能こと', () {
       final holder = BulkRuleStateHolder();
       expect(holder.selectedCategoryFilter, 'すべて');
       expect(holder.selectedTypeFilter, 'すべて');
@@ -145,7 +145,7 @@ void main() {
       holder.dispose();
     });
 
-    test('【引き分けあり・代表戦決着】団体戦の初期化時に設定にない延長戦が勝手にONにならないこと', () {
+    test('引き分けあり・代表戦決着において 団体戦の初期化時に設定にない延長戦が勝手にONにならないこと', () {
       final teamMatches = <MatchModel>[
         const MatchModel(
           id: 'tm_1',

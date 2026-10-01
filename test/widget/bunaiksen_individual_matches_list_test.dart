@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_individual_matches_list.dart';
 
 void main() {
-  testWidgets('【BunaiksenIndividualMatchesList】選手名および試合行が正しく描画されること', (
+  testWidgets('BunaiksenIndividualMatchesListにおいて 選手名および試合行が正しく描画されること', (
     WidgetTester tester,
   ) async {
     final matches = [

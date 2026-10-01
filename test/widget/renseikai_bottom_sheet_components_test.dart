@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 
 void main() {
   group('[Widget] Renseikai BottomSheet Components テスト', () {
-    test('RenseikaiPlayerCandidateResolver category match logicであること', () {
+    test('RenseikaiPlayerCandidateResolver category match logicこと', () {
       expect(
         RenseikaiPlayerCandidateResolver.isCategoryMatch('小学生低学年の部', '小学生低学年'),
         isTrue,
@@ -16,7 +16,7 @@ void main() {
       );
     });
 
-    testWidgets('【RenseikaiPlayerInputField】選択肢および入力欄が正しく描画されること', (
+    testWidgets('RenseikaiPlayerInputFieldにおいて 選択肢および入力欄が正しく描画されること', (
       tester,
     ) async {
       final ctrl = TextEditingController();

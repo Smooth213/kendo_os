@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/team
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_provider.dart';
 
 void main() {
-  group('[Unit] 【完全保証】チーム試合状況 全試合形式判定＆対戦カード展開テスト要塞', () {
+  group('[Unit] 完全保証において チーム試合状況 全試合形式判定＆対戦カード展開テスト要塞', () {
     group('試合形式判定・対戦見出しの精密性保証（誤判定ゼロ保証）', () {
       test('トーナメント団体戦（先鋒〜大将）が絶対に「リーグ団体戦」と誤判定されず「団体戦：」となること', () {
         const matchSenpo = MatchModel(
@@ -127,62 +127,65 @@ void main() {
         expect(title, '勝ち抜き戦：道上勝抜隊 vs 炎陽塾');
       });
 
-      test('錬成会・申合せモードやおかわりの追加試合（matchScene/rule）で正しく【錬成】・【申合せ】が付与されること', () {
-        // ① 錬成会モードから追加されたおかわり試合（noteに明示文字列がなくてもmatchSceneで判定）
-        const matchRenseiScene = MatchModel(
-          id: 'rensei_extra_1',
-          groupName: 'group_rensei_extra',
-          matchType: '先鋒戦',
-          redName: '道上剣友会',
-          whiteName: '相手チームA',
-          status: 'waiting',
-          matchScene: 'renseikai',
-          category: '小学生の部',
-          order: 1.0,
-        );
+      test(
+        '錬成会・申合せモードやおかわりの追加試合（matchScene/rule）で正しく錬成において ・申合せにおいて が付与されること',
+        () {
+          // ① 錬成会モードから追加されたおかわり試合（noteに明示文字列がなくてもmatchSceneで判定）
+          const matchRenseiScene = MatchModel(
+            id: 'rensei_extra_1',
+            groupName: 'group_rensei_extra',
+            matchType: '先鋒戦',
+            redName: '道上剣友会',
+            whiteName: '相手チームA',
+            status: 'waiting',
+            matchScene: 'renseikai',
+            category: '小学生の部',
+            order: 1.0,
+          );
 
-        final titleRensei = TeamProgressHelper.extractTeamMatchupTitle(
-          matchRenseiScene,
-          includeScenePrefix: true,
-        );
-        expect(titleRensei, '【錬成】団体戦：道上剣友会 vs 相手チームA');
+          final titleRensei = TeamProgressHelper.extractTeamMatchupTitle(
+            matchRenseiScene,
+            includeScenePrefix: true,
+          );
+          expect(titleRensei, '【錬成】団体戦：道上剣友会 vs 相手チームA');
 
-        // ② 申合せモードから追加されたおかわり試合
-        const matchMoushiawaseScene = MatchModel(
-          id: 'moushiawase_extra_1',
-          matchType: '個人戦',
-          redName: '道上: 皿田 脩人',
-          whiteName: 'ライバル道場: 相手 B',
-          status: 'in_progress',
-          matchScene: 'moushiawase',
-          category: '小学生個人の部',
-          order: 2.0,
-        );
+          // ② 申合せモードから追加されたおかわり試合
+          const matchMoushiawaseScene = MatchModel(
+            id: 'moushiawase_extra_1',
+            matchType: '個人戦',
+            redName: '道上: 皿田 脩人',
+            whiteName: 'ライバル道場: 相手 B',
+            status: 'in_progress',
+            matchScene: 'moushiawase',
+            category: '小学生個人の部',
+            order: 2.0,
+          );
 
-        final titleMoushiawase = TeamProgressHelper.extractTeamMatchupTitle(
-          matchMoushiawaseScene,
-          includeScenePrefix: true,
-        );
-        expect(titleMoushiawase, '【申合せ】個人戦：皿田 脩人（道上） vs 相手 B（ライバル道場）');
+          final titleMoushiawase = TeamProgressHelper.extractTeamMatchupTitle(
+            matchMoushiawaseScene,
+            includeScenePrefix: true,
+          );
+          expect(titleMoushiawase, '【申合せ】個人戦：皿田 脩人（道上） vs 相手 B（ライバル道場）');
 
-        // ③ note に「錬成会」「申合せ」が含まれる場合も確実に付与
-        const matchRenseiNote = MatchModel(
-          id: 'rensei_note_1',
-          matchType: '団体戦',
-          redName: '道上剣友会',
-          whiteName: '相手チームC',
-          status: 'finished',
-          note: '【錬成会】第2試合場',
-          category: '小学生の部',
-          order: 3.0,
-        );
+          // ③ note に「錬成会」「申合せ」が含まれる場合も確実に付与
+          const matchRenseiNote = MatchModel(
+            id: 'rensei_note_1',
+            matchType: '団体戦',
+            redName: '道上剣友会',
+            whiteName: '相手チームC',
+            status: 'finished',
+            note: '【錬成会】第2試合場',
+            category: '小学生の部',
+            order: 3.0,
+          );
 
-        final titleNote = TeamProgressHelper.extractTeamMatchupTitle(
-          matchRenseiNote,
-          includeScenePrefix: true,
-        );
-        expect(titleNote, '【錬成】団体戦：道上剣友会 vs 相手チームC');
-      });
+          final titleNote = TeamProgressHelper.extractTeamMatchupTitle(
+            matchRenseiNote,
+            includeScenePrefix: true,
+          );
+          expect(titleNote, '【錬成】団体戦：道上剣友会 vs 相手チームC');
+        },
+      );
     });
 
     group('対戦カード完全展開（全試合漏れゼロ保証）', () {

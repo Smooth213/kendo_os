@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/application/services/sound_service.dart';
 class MockSoundService extends Mock implements SoundService {}
 
 void main() {
-  group('[Unit] 【Unit 1/5】TTS音声合成・アナウンスコール境界値テスト', () {
+  group('[Unit] Unit 1/5において TTS音声合成・アナウンスコール境界値テスト', () {
     late MockSoundService mockSoundService;
 
     setUp(() {
@@ -21,7 +21,7 @@ void main() {
       when(() => mockSoundService.playFinishFanfare()).thenAnswer((_) async {});
     });
 
-    test('赤面・白小手・反則のTTS音声読み上げ文字列生成が正確であること', () {
+    test('赤面・白小手・反則のTTS音声読み上げ文字列生成が正確こと', () {
       // 赤・面
       MatchSoundHelper.playAddIpponSound(
         soundService: mockSoundService,
@@ -45,7 +45,7 @@ void main() {
       verify(() => mockSoundService.speak('白、コ！')).called(1);
     });
 
-    test('取り消し（Undo）および時間切れコールが正確であること', () {
+    test('取り消し（Undo）および時間切れコールが正確こと', () {
       MatchSoundHelper.playUndoSound(
         soundService: mockSoundService,
         audioFeedbackMode: 'voice',

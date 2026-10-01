@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 7-5/8】審判員交代・スコア修正 4桁PINロック改ざん防止 Widgetテスト', () {
+  group('[Widget] 審判員交代・スコア修正 4桁PINロック改ざん防止 Widgetテスト', () {
     testWidgets('正しいPIN（1234）入力時のみ審判交代が許可され、不正PIN（9999）は拒絶されること', (
       tester,
     ) async {

@@ -33,7 +33,7 @@ void main() {
   );
 
   group(
-    '[Governance] [Phase 3 Performance Governance] RepaintBoundary 描画境界分離テスト',
+    '[Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト',
     () {
       testWidgets('MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること', (
         tester,

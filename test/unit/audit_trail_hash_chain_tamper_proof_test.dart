@@ -42,7 +42,7 @@ bool verifyChain(List<AuditLogBlock> blocks) {
 }
 
 void main() {
-  group('[Unit] 【Phase 6-10/12】監査ログハッシュチェーン 事後改ざん不可逆検知テスト', () {
+  group('[Unit] 監査ログハッシュチェーン 事後改ざん不可逆検知テスト', () {
     test('正常なハッシュチェーンが検証に合格すること', () {
       final chain = <AuditLogBlock>[];
 
@@ -60,7 +60,7 @@ void main() {
       expect(verifyChain(chain), isTrue);
     });
 
-    test('過去ログ（赤面  赤胴）が改ざんされた場合、即座に不一致が検知されること', () {
+    test('過去ログ（赤面 赤胴）が改ざんされた場合、即座に不一致が検知されること', () {
       final chain = <AuditLogBlock>[];
       chain.add(AuditLogBlock(index: 0, action: '大会開始', prevHash: '0'));
       chain.add(

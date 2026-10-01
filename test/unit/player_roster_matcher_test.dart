@@ -48,7 +48,7 @@ void main() {
       ),
     ];
 
-    test('【皿田 脩人、皿田脩人、皿田　脩人】スペース揺れがあっても完全一致すること', () {
+    test('皿田 脩人、皿田脩人、皿田 脩人において スペース揺れがあっても完全一致すること', () {
       final res1 = PlayerRosterMatcher.matchPlayer(
         rawName: '皿田脩人',
         roster: roster,
@@ -72,7 +72,7 @@ void main() {
       expect(res3.resolvedName, '皿田 脩人');
     });
 
-    test('【塚本、久安】苗字のみの場合、名簿で一意ならその選手を採用すること', () {
+    test('塚本、久安において 苗字のみの場合、名簿で一意ならその選手を採用すること', () {
       final res1 = PlayerRosterMatcher.matchPlayer(
         rawName: '塚本',
         roster: roster,
@@ -89,7 +89,7 @@ void main() {
       expect(res2.resolvedName, '久安 智也');
     });
 
-    test('【佐藤】同姓の選手が複数いる場合、カテゴリから学年を賢く推定すること', () {
+    test('佐藤において 同姓の選手が複数いる場合、カテゴリから学年を賢く推定すること', () {
       // 低学年の部 → 佐藤 太郎（小2）
       final resLow = PlayerRosterMatcher.matchPlayer(
         rawName: '佐藤',

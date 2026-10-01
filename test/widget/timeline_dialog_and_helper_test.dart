@@ -10,40 +10,35 @@ import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
   group('[Widget] Timeline Components & Helper テスト', () {
-    test(
-      'TimelineLeagueTitleHelper generates descriptive title correctlyであること',
-      () {
-        final matches = [
-          const MatchModel(
-            id: 'm1',
-            tournamentId: 't1',
-            order: 1,
-            redName: 'Aチーム',
-            whiteName: 'Bチーム',
-            matchType: 'team',
-          ),
-          const MatchModel(
-            id: 'm2',
-            tournamentId: 't1',
-            order: 2,
-            redName: 'Bチーム',
-            whiteName: 'Cチーム',
-            matchType: 'team',
-          ),
-        ];
+    test('TimelineLeagueTitleHelperが説明的タイトルを正しく生成すること', () {
+      final matches = [
+        const MatchModel(
+          id: 'm1',
+          tournamentId: 't1',
+          order: 1,
+          redName: 'Aチーム',
+          whiteName: 'Bチーム',
+          matchType: 'team',
+        ),
+        const MatchModel(
+          id: 'm2',
+          tournamentId: 't1',
+          order: 2,
+          redName: 'Bチーム',
+          whiteName: 'Cチーム',
+          matchType: 'team',
+        ),
+      ];
 
-        final title = TimelineLeagueTitleHelper.generateDescriptiveLeagueTitle(
-          matches,
-          ['Aチーム'],
-        );
-        expect(title, contains('Aチーム'));
-        expect(title, contains('3チームリーグ'));
-      },
-    );
+      final title = TimelineLeagueTitleHelper.generateDescriptiveLeagueTitle(
+        matches,
+        ['Aチーム'],
+      );
+      expect(title, contains('Aチーム'));
+      expect(title, contains('3チームリーグ'));
+    });
 
-    testWidgets('TimelineRenameTeamSheet renders properlyであること', (
-      tester,
-    ) async {
+    testWidgets('タイムラインチーム名変更シートが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -64,9 +59,7 @@ void main() {
       expect(find.text('一括修正して統合する'), findsOneWidget);
     });
 
-    testWidgets('TimelineInnerCommentWidget renders text properlyであること', (
-      tester,
-    ) async {
+    testWidgets('タイムライン内部コメントが正しく描画されること', (tester) async {
       const comment = MatchCommentModel(
         id: 'c1',
         tournamentId: 't1',

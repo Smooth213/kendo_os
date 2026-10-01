@@ -8,9 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] MatchPlayer Roster Components テスト', () {
-    testWidgets('MatchPlayerSelectionCard renders sub player correctlyであること', (
-      tester,
-    ) async {
+    testWidgets('選手選択カードに補員選手が正しく描画されること', (tester) async {
       final player = PlayerModel(
         id: 'p1',
         lastName: '高橋',
@@ -44,7 +42,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('【MatchPlayerRosterListSection】出場選手および補欠選手が正しく表示されること', (
+    testWidgets('MatchPlayerRosterListSectionにおいて 出場選手および補欠選手が正しく表示されること', (
       tester,
     ) async {
       final p1 = PlayerModel(

@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualQuickGuideTabView ウィジェットテスト', () {
-    testWidgets('Renders ManualQuickGuideTabView structure correctlyであること', (
-      tester,
-    ) async {
+    testWidgets('マニュアルクイックガイドタブビューが正しく描画されること', (tester) async {
       bool printTapped = false;
       bool shareTapped = false;
 

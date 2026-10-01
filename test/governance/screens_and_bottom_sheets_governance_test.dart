@@ -180,7 +180,7 @@ void main() {
       },
     );
 
-    test('全ボトムシート: 硬直色 Colors.* 直書きが 0 件であること', () {
+    test('全ボトムシート: 硬直色 Colors.* 直書きが 0 件こと', () {
       final violations = <String>[];
       for (final file in sheetFiles) {
         final content = file.readAsStringSync();

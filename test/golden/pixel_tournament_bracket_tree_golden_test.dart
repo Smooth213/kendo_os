@@ -30,7 +30,7 @@ MatchProjection _makeTestProjection({
 }
 
 void main() {
-  group('[Golden] 【Golden】トーナメント表（山型ツリー線画・シード配置）視覚的整合性テスト', () {
+  group('[Golden] トーナメント表（山型ツリー線画・シード配置）視覚的整合性テスト', () {
     testWidgets('トーナメントツリー山型ブラケット線画およびシード選手表示が正しく検証されること', (
       WidgetTester tester,
     ) async {

@@ -10,39 +10,36 @@ import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
   group('[Widget] MatchRewindService 単体テスト', () {
-    test(
-      'executeRewind returns initialMatch if targetVersion >= validEvents.lengthであること',
-      () {
-        final match = MatchModel(
-          id: 'm1',
-          matchType: '個人戦',
-          redName: '山田',
-          whiteName: '佐藤',
-          events: const [],
-        );
+    test('対象バージョンが有効イベント数以上のときは初期試合状態が返却されること', () {
+      final match = MatchModel(
+        id: 'm1',
+        matchType: '個人戦',
+        redName: '山田',
+        whiteName: '佐藤',
+        events: const [],
+      );
 
-        final result = MatchRewindService.executeRewind(
-          initialMatch: match,
-          targetVersion: 0,
-          currentUser: const User(
-            id: 'u1',
-            role: Role.admin,
-            organizationId: 'o1',
-          ),
-          rule: const MatchRule(),
-          addScore: AddScoreUseCase(
-            KendoRuleEngine(),
-            PermissionService(),
-            SystemTimeSource(),
-          ),
-        );
+      final result = MatchRewindService.executeRewind(
+        initialMatch: match,
+        targetVersion: 0,
+        currentUser: const User(
+          id: 'u1',
+          role: Role.admin,
+          organizationId: 'o1',
+        ),
+        rule: const MatchRule(),
+        addScore: AddScoreUseCase(
+          KendoRuleEngine(),
+          PermissionService(),
+          SystemTimeSource(),
+        ),
+      );
 
-        expect(result.id, 'm1');
-      },
-    );
+      expect(result.id, 'm1');
+    });
 
     test(
-      'executeRewind appends undo events to roll back to targetVersionであること',
+      'executeRewind appends undo events to roll back to targetVersionこと',
       () {
         final now = DateTime.now();
         final match = MatchModel(

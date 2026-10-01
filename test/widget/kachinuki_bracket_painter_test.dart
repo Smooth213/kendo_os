@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] Kachinuki Bracket Painter テスト', () {
-    test('PlayerSpan stores fields correctlyであること', () {
+    test('PlayerSpan stores fields correctlyこと', () {
       final span = PlayerSpan('A道場 : 佐藤', '佐藤', '佐', 0, 1);
       expect(span.rawName, 'A道場 : 佐藤');
       expect(span.lastName, '佐藤');
@@ -17,7 +17,7 @@ void main() {
       expect(span.endIndex, 1);
     });
 
-    test('KachinukiBracketPainter shouldRepaint worksであること', () {
+    test('KachinukiBracketPainter shouldRepaint worksこと', () {
       final p1 = KachinukiBracketPainter(matches: [], isDark: false);
       final p2 = KachinukiBracketPainter(matches: [], isDark: true);
       expect(p2.shouldRepaint(p1), isTrue);
@@ -27,7 +27,7 @@ void main() {
     });
 
     test(
-      'KachinukiDrawingHelper.drawTeamNameHorizontal executes without errorであること',
+      'KachinukiDrawingHelper.drawTeamNameHorizontal executes without errorこと',
       () {
         final recorder = ui.PictureRecorder();
         final canvas = Canvas(recorder);

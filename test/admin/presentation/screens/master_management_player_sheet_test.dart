@@ -44,7 +44,7 @@ void main() {
   });
 
   group('[Widget] Player Master BottomSheet & Timing リグレッションテスト', () {
-    testWidgets('自動フォーカスの排除検証 (フォーカスバッティング・せり上がり防止)こと', (
+    testWidgets('フォーカスバッティング・せり上がり防止において自動フォーカスの排除検証こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -155,7 +155,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('道場名登録、所属名一括変更、チーム名管理ボトムシートの自動フォーカス排除検証 (Webでの跳ね上がり防止)こと', (
+    testWidgets('Webでの跳ね上がり防止において道場名登録、所属名一括変更、チーム名管理ボトムシートの自動フォーカス排除検証こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -231,7 +231,7 @@ void main() {
       expect(teamTextField.autofocus, isFalse);
     });
 
-    testWidgets('自動ふりがな機能のライブ変換・分割入力・削除シミュレーション検証 (Web/IME対応)こと', (
+    testWidgets('Web/IME対応において自動ふりがな機能のライブ変換・分割入力・削除シミュレーション検証こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -351,7 +351,7 @@ void main() {
       ); // よみがな「たなか」が自己修復されていること！
     });
 
-    testWidgets('自動ふりがな機能の各種例外・エッジケースシミュレーション検証 (カタカナ・英字・コピペ・時間超過ガード)こと', (
+    testWidgets('カタカナ・英字・コピペ・時間超過ガードにおいて自動ふりがな機能の各種例外・エッジケースシミュレーション検証こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

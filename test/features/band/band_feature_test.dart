@@ -14,7 +14,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 
 void main() {
   group('[Widget] BandGroupModel テスト', () {
-    test('toJson and fromJson serialize correctlyであること', () {
+    test('toJson and fromJson serialize correctlyこと', () {
       final now = DateTime(2026, 9, 10, 12, 0);
       final model = BandGroupModel(
         id: 'group_1',
@@ -40,36 +40,33 @@ void main() {
   });
 
   group('BandMatchTextFormatter テスト', () {
-    test(
-      'formatFromMatchGroup produces correct text for individual matchであること',
-      () {
-        final match = MatchModel(
-          id: 'match_001',
-          matchType: '個人戦',
-          redName: '山田 太郎 (道上剣友会)',
-          whiteName: '佐藤 次郎 (相手道場)',
-          note: '第1試合場 1回戦 第1試合',
-          tournamentId: 'tourney_1',
-        );
+    test('formatFromMatchGroup produces correct text for individual matchこと', () {
+      final match = MatchModel(
+        id: 'match_001',
+        matchType: '個人戦',
+        redName: '山田 太郎 (道上剣友会)',
+        whiteName: '佐藤 次郎 (相手道場)',
+        note: '第1試合場 1回戦 第1試合',
+        tournamentId: 'tourney_1',
+      );
 
-        final text = BandMatchTextFormatter.formatFromMatchGroup(
-          matches: [match],
-          tournamentName: '第45回 記念剣道大会',
-          dojoId: 'dojo_test',
-        );
+      final text = BandMatchTextFormatter.formatFromMatchGroup(
+        matches: [match],
+        tournamentName: '第45回 記念剣道大会',
+        dojoId: 'dojo_test',
+      );
 
-        expect(text, contains('【第45回 記念剣道大会】'));
-        expect(text, contains('第1試合場 1回戦 第1試合'));
-        expect(text, contains('赤: 山田 太郎 (道上剣友会) vs 白: 佐藤 次郎 (相手道場)'));
-        expect(text, contains('▼ リアルタイム速報・スコア詳細'));
-        expect(
-          text,
-          contains(
-            'https://kendo-os-beta.web.app/viewer/match_001?tournamentId=tourney_1&role=viewer&dojoId=dojo_test',
-          ),
-        );
-      },
-    );
+      expect(text, contains('【第45回 記念剣道大会】'));
+      expect(text, contains('第1試合場 1回戦 第1試合'));
+      expect(text, contains('赤: 山田 太郎 (道上剣友会) vs 白: 佐藤 次郎 (相手道場)'));
+      expect(text, contains('▼ リアルタイム速報・スコア詳細'));
+      expect(
+        text,
+        contains(
+          'https://kendo-os-beta.web.app/viewer/match_001?tournamentId=tourney_1&role=viewer&dojoId=dojo_test',
+        ),
+      );
+    });
 
     test(
       'formatFromMatchGroup produces correct テキスト for チーム 試合 with live positionこと',
@@ -114,7 +111,7 @@ void main() {
     );
 
     test(
-      'formatFromMatchGroup produces viewer-kachinuki URL for kachinuki matchesであること',
+      'formatFromMatchGroup produces viewer-kachinuki URL for kachinuki matchesこと',
       () {
         final m1 = MatchModel(
           id: 'm1',
@@ -140,7 +137,7 @@ void main() {
       },
     );
 
-    test('formatFromTeamStatus produces correct text for team progressであること', () {
+    test('formatFromTeamStatus produces correct text for team progressこと', () {
       final liveMatch = MatchModel(
         id: 'live_1',
         matchType: '団体戦 (中堅)',
@@ -183,7 +180,7 @@ void main() {
   });
 
   group('BandGroupEditDialog ウィジェットテスト', () {
-    testWidgets('【BandGroupEditDialog】エラーなく正常に描画されること', (tester) async {
+    testWidgets('BandGroupEditDialogにおいて エラーなく正常に描画されること', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

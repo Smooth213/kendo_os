@@ -8,7 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/time/system_time_source.dart';
 
 void main() {
-  group('[E2E] 【分散競合E2E】ミリ秒同時打突入力 × 直後Undo双方向収束テスト', () {
+  group('[E2E] 分散競合E2Eにおいて ミリ秒同時打突入力 × 直後Undo双方向収束テスト', () {
     test(
       '主審(A)と副審(B)によるミリ秒同時打突入力が決定論的に同一順序へ収束し、直後のUndoが双方で完全に双方向同期されること',
       () async {

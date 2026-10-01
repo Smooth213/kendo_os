@@ -41,7 +41,7 @@ class MockDeadLetterQueueNotifierWithItems extends DeadLetterQueueNotifier {
 }
 
 void main() {
-  group('[Widget] [Phase 3] Observability 統一ロケーション隔離検証テスト', () {
+  group('[Widget] に関して、Observability 統一ロケーション隔離検証テスト', () {
     testWidgets('同期バーが、一般ユーザー向けに定義された安心日本語表現（保存済み）を出力すること', (
       WidgetTester tester,
     ) async {

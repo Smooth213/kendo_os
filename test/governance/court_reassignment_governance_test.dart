@@ -9,59 +9,56 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/team
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第21条 ガバナンス監査】現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約', () {
-    test(
-      'Rule 1: [コート変更データ不変性] MatchModel のコート振替時におけるタイマー・スコア・イベント履歴の完全保持規約こと',
-      () {
-        final now = DateTime(2026, 9, 27, 10, 0, 0);
-        final initialEvents = [
-          ScoreEvent(
-            id: 'ev_men_1',
-            side: Side.red,
-            strikeType: StrikeType.men,
-            isIppon: true,
-            timestamp: now,
-            logicalClock: 1,
-            sequence: 1,
-          ),
-        ];
+  group('[Governance] 第21条 ガバナンス監査において 現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約', () {
+    test('コート変更データ不変性に関して、 MatchModel のコート振替時におけるタイマー・スコア・イベント履歴の完全保持規約こと', () {
+      final now = DateTime(2026, 9, 27, 10, 0, 0);
+      final initialEvents = [
+        ScoreEvent(
+          id: 'ev_men_1',
+          side: Side.red,
+          strikeType: StrikeType.men,
+          isIppon: true,
+          timestamp: now,
+          logicalClock: 1,
+          sequence: 1,
+        ),
+      ];
 
-        final ongoingMatch = MatchModel(
-          id: 'reassign_m1',
-          tournamentId: 't1',
-          matchType: '個人戦',
-          redName: '選手A',
-          whiteName: '選手B',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'in_progress',
-          note: '第1試合場, 1回戦',
-          timerStartedAt: now,
-          accumulatedPauseDurationMs: 1500,
-          events: initialEvents,
-        );
+      final ongoingMatch = MatchModel(
+        id: 'reassign_m1',
+        tournamentId: 't1',
+        matchType: '個人戦',
+        redName: '選手A',
+        whiteName: '選手B',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'in_progress',
+        note: '第1試合場, 1回戦',
+        timerStartedAt: now,
+        accumulatedPauseDurationMs: 1500,
+        events: initialEvents,
+      );
 
-        // 現場での急遽コート振替（第1試合場 -> 第3試合場）
-        final reassignedMatch = ongoingMatch.copyWith(note: '第3試合場, 1回戦');
+      // 現場での急遽コート振替（第1試合場 -> 第3試合場）
+      final reassignedMatch = ongoingMatch.copyWith(note: '第3試合場, 1回戦');
 
-        // 規約検証: コート以外のコアデータが完全に不変であること
-        expect(reassignedMatch.id, ongoingMatch.id);
-        expect(reassignedMatch.redScore, ongoingMatch.redScore);
-        expect(reassignedMatch.whiteScore, ongoingMatch.whiteScore);
-        expect(reassignedMatch.status, ongoingMatch.status);
-        expect(reassignedMatch.timerStartedAt, ongoingMatch.timerStartedAt);
-        expect(
-          reassignedMatch.accumulatedPauseDurationMs,
-          ongoingMatch.accumulatedPauseDurationMs,
-        );
-        expect(reassignedMatch.events.length, ongoingMatch.events.length);
-        expect(reassignedMatch.events.first.id, ongoingMatch.events.first.id);
-        expect(reassignedMatch.note, '第3試合場, 1回戦');
-      },
-    );
+      // 規約検証: コート以外のコアデータが完全に不変であること
+      expect(reassignedMatch.id, ongoingMatch.id);
+      expect(reassignedMatch.redScore, ongoingMatch.redScore);
+      expect(reassignedMatch.whiteScore, ongoingMatch.whiteScore);
+      expect(reassignedMatch.status, ongoingMatch.status);
+      expect(reassignedMatch.timerStartedAt, ongoingMatch.timerStartedAt);
+      expect(
+        reassignedMatch.accumulatedPauseDurationMs,
+        ongoingMatch.accumulatedPauseDurationMs,
+      );
+      expect(reassignedMatch.events.length, ongoingMatch.events.length);
+      expect(reassignedMatch.events.first.id, ongoingMatch.events.first.id);
+      expect(reassignedMatch.note, '第3試合場, 1回戦');
+    });
 
     test(
-      'Rule 2: [コートパース＆優先度ソート整合性] team_progress_helper.dart & team_progress_sort_helper.dart 規約こと',
+      'コートパース＆優先度ソート整合性に関して、 team_progress_helper.dart & team_progress_sort_helper.dart 規約こと',
       () {
         // ヘルパーによる文字列抽出検証
         final court1 = TeamProgressHelper.extractCourtAndRoundDisplay(
@@ -116,7 +113,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [ライトスルー永続化規約] match_persistence_helper.dart & local_match_repository.dart によるコート変更の即時反映規約こと',
+      'ライトスルー永続化規約に関して、 match_persistence_helper.dart & local_match_repository.dart によるコート変更の即時反映規約こと',
       () {
         final persistenceHelperFile = File(
           'lib/features/match/application/services/match_persistence_helper.dart',
@@ -144,21 +141,18 @@ void main() {
       },
     );
 
-    test(
-      'Rule 4: [試合編集タブ・UIプリセット規約] match_edit_court_and_group_tab.dart 規約こと',
-      () {
-        final tabFile = File(
-          'lib/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart',
-        );
-        expect(tabFile.existsSync(), isTrue);
-        final tabContent = tabFile.readAsStringSync();
+    test('試合編集タブ・UIプリセット規約に関して、 match_edit_court_and_group_tab.dart 規約こと', () {
+      final tabFile = File(
+        'lib/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart',
+      );
+      expect(tabFile.existsSync(), isTrue);
+      final tabContent = tabFile.readAsStringSync();
 
-        expect(tabContent.contains('courtPresets'), isTrue);
-        expect(tabContent.contains('第1試合場'), isTrue);
-        expect(tabContent.contains('第2試合場'), isTrue);
-        expect(tabContent.contains('第3試合場'), isTrue);
-        expect(tabContent.contains('onClearCourt'), isTrue);
-      },
-    );
+      expect(tabContent.contains('courtPresets'), isTrue);
+      expect(tabContent.contains('第1試合場'), isTrue);
+      expect(tabContent.contains('第2試合場'), isTrue);
+      expect(tabContent.contains('第3試合場'), isTrue);
+      expect(tabContent.contains('onClearCourt'), isTrue);
+    });
   });
 }

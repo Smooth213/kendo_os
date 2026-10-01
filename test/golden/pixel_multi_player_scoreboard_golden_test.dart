@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Golden] 【Golden】多人数団体戦（7人制・8人制・9人制）スコアボード視覚整合性テスト', () {
+  group('[Golden] 多人数団体戦（7人制・8人制・9人制）スコアボード視覚整合性テスト', () {
     List<MatchModel> generateTeamMatches({
       required int playerCount,
       required String redTeam,

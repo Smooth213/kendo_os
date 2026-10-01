@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/application/services/thermal_power_governor.dart
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第13条 ガバナンス監査】端末低負荷・省電力・タイマー沈黙 ＆ サーマル適応制御規約', () {
-    test('Rule 1: [タイマーTick適正化＆天井逆算排除] 通常1000ms間引きTick＆停止時生ミリ秒加算規約こと', () {
+  group('[Governance] 第13条 ガバナンス監査において 端末低負荷・省電力・タイマー沈黙 ＆ サーマル適応制御規約', () {
+    test('タイマーTick適正化＆天井逆算排除に関して、 通常1000ms間引きTick＆停止時生ミリ秒加算規約こと', () {
       final governor = ThermalPowerGovernor();
 
       expect(
@@ -53,63 +53,60 @@ void main() {
       );
     });
 
-    test(
-      'Rule 2: [待機時タイマー沈黙] タイマーループ内ディスクI/O禁止 ＆ AppLifecycleListener によるタイマー沈黙規約こと',
-      () {
-        final timerFile = File(
-          'lib/features/tournament/presentation/operate/providers/match_timer_provider.dart',
-        );
-        final masterTimerFile = File(
-          'lib/features/tournament/presentation/operate/providers/renseikai_master_timer_provider.dart',
-        );
-        final dockTimerFile = File(
-          'lib/features/tournament/presentation/providers/dock_timer_provider.dart',
-        );
-        final settingsFile = File(
-          'lib/shared/presentation/providers/settings_provider.dart',
-        );
+    test('待機時タイマー沈黙に関して、 タイマーループ内ディスクI/O禁止 ＆ AppLifecycleListener によるタイマー沈黙規約こと', () {
+      final timerFile = File(
+        'lib/features/tournament/presentation/operate/providers/match_timer_provider.dart',
+      );
+      final masterTimerFile = File(
+        'lib/features/tournament/presentation/operate/providers/renseikai_master_timer_provider.dart',
+      );
+      final dockTimerFile = File(
+        'lib/features/tournament/presentation/providers/dock_timer_provider.dart',
+      );
+      final settingsFile = File(
+        'lib/shared/presentation/providers/settings_provider.dart',
+      );
 
-        expect(timerFile.existsSync(), isTrue);
-        expect(masterTimerFile.existsSync(), isTrue);
-        expect(dockTimerFile.existsSync(), isTrue);
-        expect(settingsFile.existsSync(), isTrue);
+      expect(timerFile.existsSync(), isTrue);
+      expect(masterTimerFile.existsSync(), isTrue);
+      expect(dockTimerFile.existsSync(), isTrue);
+      expect(settingsFile.existsSync(), isTrue);
 
-        final renseikaiContent = masterTimerFile.readAsStringSync();
-        final dockContent = dockTimerFile.readAsStringSync();
-        final settingsContent = settingsFile.readAsStringSync();
+      final renseikaiContent = masterTimerFile.readAsStringSync();
+      final dockContent = dockTimerFile.readAsStringSync();
+      final settingsContent = settingsFile.readAsStringSync();
 
-        expect(
-          renseikaiContent.contains('AppLifecycleListener('),
-          isTrue,
-          reason:
-              'RenseikaiMasterTimerNotifier に AppLifecycleListener が配備されていること',
-        );
-        expect(
-          dockContent.contains('AppLifecycleListener('),
-          isTrue,
-          reason: 'DockTimerNotifier に AppLifecycleListener が配備されていること',
-        );
-        expect(
-          settingsContent.contains('AppLifecycleListener('),
-          isTrue,
-          reason: 'BatteryNotifier に AppLifecycleListener が配備されていること',
-        );
+      expect(
+        renseikaiContent.contains('AppLifecycleListener('),
+        isTrue,
+        reason:
+            'RenseikaiMasterTimerNotifier に AppLifecycleListener が配備されていること',
+      );
+      expect(
+        dockContent.contains('AppLifecycleListener('),
+        isTrue,
+        reason: 'DockTimerNotifier に AppLifecycleListener が配備されていること',
+      );
+      expect(
+        settingsContent.contains('AppLifecycleListener('),
+        isTrue,
+        reason: 'BatteryNotifier に AppLifecycleListener が配備されていること',
+      );
 
-        final ifStatePos = renseikaiContent.indexOf('if (state > 0) {');
-        expect(ifStatePos, isNonNegative);
-        final elsePos = renseikaiContent.indexOf('} else {', ifStatePos);
-        expect(elsePos, isNonNegative);
-        final stateDecrementBlock = renseikaiContent.substring(
-          ifStatePos,
-          elsePos,
-        );
-        expect(stateDecrementBlock.contains('state--;'), isTrue);
-        expect(stateDecrementBlock.contains('_saveState();'), isFalse);
-      },
-    );
+      final ifStatePos = renseikaiContent.indexOf('if (state > 0) {');
+      expect(ifStatePos, isNonNegative);
+      final elsePos = renseikaiContent.indexOf('} else {', ifStatePos);
+      expect(elsePos, isNonNegative);
+      final stateDecrementBlock = renseikaiContent.substring(
+        ifStatePos,
+        elsePos,
+      );
+      expect(stateDecrementBlock.contains('state--;'), isTrue);
+      expect(stateDecrementBlock.contains('_saveState();'), isFalse);
+    });
 
     test(
-      'Rule 3: [VRR適応制御] ThermalPowerGovernor の targetFps / isVrrThrottled 規約こと',
+      'VRR適応制御に関して、 ThermalPowerGovernor の targetFps / isVrrThrottled 規約こと',
       () {
         final governor = ThermalPowerGovernor();
         expect(governor.targetFps, equals(60));
@@ -126,7 +123,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [タイマーコールドスリープ] match_timer_provider.dart の enterColdSleep / resumeFromColdSleep 規約こと',
+      'タイマーコールドスリープに関して、 match_timer_provider.dart の enterColdSleep / resumeFromColdSleep 規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/providers/match_timer_provider.dart',
@@ -140,7 +137,7 @@ void main() {
     );
 
     test(
-      'Rule 5: [画像ダウンサンプリング＆StackTrace走査排除] cacheWidth / cacheHeight ＆ StackTrace走査排除規約こと',
+      '画像ダウンサンプリング＆StackTrace走査排除に関して、 cacheWidth / cacheHeight ＆ StackTrace走査排除規約こと',
       () {
         final viewsFile = File(
           'lib/features/tournament/presentation/components/program_management/program_management_content_views.dart',
@@ -169,7 +166,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [バッテリーポーリング緩和] settings_provider.dart のバッテリーポーリングが60秒に緩和されていること',
+      'バッテリーポーリング緩和に関して、 settings_provider.dart のバッテリーポーリングが60秒に緩和されていること',
       () {
         final file = File(
           'lib/shared/presentation/providers/settings_provider.dart',

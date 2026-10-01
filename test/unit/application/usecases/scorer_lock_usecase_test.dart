@@ -13,7 +13,7 @@ void main() {
       tournamentId: 'tournament_1',
     );
 
-    test('tryClaimScorer succeeds when scorerId is nullであること', () {
+    test('記録係IDが未設定の場合に記録権限の取得に成功すること', () {
       final now = DateTime(2026, 8, 16, 12, 0);
       final updated = useCase.tryClaimScorer(baseMatch, 'user_A', now: now);
 
@@ -22,7 +22,7 @@ void main() {
       expect(updated.lockExpiresAt, DateTime(2026, 8, 16, 12, 30));
     });
 
-    test('tryClaimScorer succeeds when claimed by same userであること', () {
+    test('同一ユーザーによる記録係権限の再取得が成功すること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 12, 10),
@@ -46,7 +46,7 @@ void main() {
       expect(updated, isNull);
     });
 
-    test('tryClaimScorer succeeds when previous lock is expiredであること', () {
+    test('過去のロックが期限切れの場合に記録係権限の取得に成功すること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 11, 59),
@@ -58,7 +58,7 @@ void main() {
       expect(updated!.scorerId, 'user_B');
     });
 
-    test('forceClaimScorer overrides existing lock immediatelyであること', () {
+    test('forceClaimScorerが既存のロックを即座に上書きできること', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 12, 30),
@@ -70,7 +70,7 @@ void main() {
       expect(updated.lockExpiresAt, DateTime(2026, 8, 16, 12, 30));
     });
 
-    test('releaseScorer only releases if user matchesであること', () {
+    test('releaseScorer only releases if user matchesこと', () {
       final locked = baseMatch.copyWith(
         scorerId: 'user_A',
         lockExpiresAt: DateTime(2026, 8, 16, 12, 30),

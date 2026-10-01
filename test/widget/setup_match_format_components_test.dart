@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] SetupMatchFormat Components ウィジェットテスト', () {
-    testWidgets('【MatchFormatDynamicHeader】ヘッダーテキストおよび進行状況が正しく描画されること', (
+    testWidgets('MatchFormatDynamicHeaderにおいて ヘッダーテキストおよび進行状況が正しく描画されること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -29,7 +29,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('【MatchFormatSectionHeader】タイトルおよびアクセントバーが正しく描画されること', (
+    testWidgets('MatchFormatSectionHeaderにおいて タイトルおよびアクセントバーが正しく描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -46,9 +46,7 @@ void main() {
       expect(find.text('試合時間の設定'), findsOneWidget);
     });
 
-    testWidgets('MatchFormatCategoryPreviewCard renders category textであること', (
-      tester,
-    ) async {
+    testWidgets('部門プレビューカードに部門テキストが正しく描画されること', (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
       await tester.pumpWidget(
@@ -67,7 +65,7 @@ void main() {
       expect(find.text('小学生 低学年 (1-4年)'), findsOneWidget);
     });
 
-    testWidgets('【MatchFormatTeamSelectionCard】チーム情報が描画されコールバックが正常に動作すること', (
+    testWidgets('MatchFormatTeamSelectionCardにおいて チーム情報が描画されコールバックが正常に動作すること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

@@ -4,18 +4,15 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 
 void main() {
   group('[Widget] ProgramViewerMediaCache 単体テスト', () {
-    test(
-      'ProgramViewerMediaCache handles placeholder image sizesであること',
-      () async {
-        final cache = ProgramViewerMediaCache();
-        final size = await cache.getCachedImageSize(
-          'https://placehold.co/400x600',
-        );
-        expect(size, const Size(400, 600));
-      },
-    );
+    test('プログラム表示メディアキャッシュがプレースホルダー画像サイズを正しく処理すること', () async {
+      final cache = ProgramViewerMediaCache();
+      final size = await cache.getCachedImageSize(
+        'https://placehold.co/400x600',
+      );
+      expect(size, const Size(400, 600));
+    });
 
-    test('ProgramViewerMediaCache handles empty URLであること', () async {
+    test('プログラム表示メディアキャッシュが空URLを正しく処理すること', () async {
       final cache = ProgramViewerMediaCache();
       final size = await cache.getCachedImageSize('');
       expect(size, const Size(400, 600));

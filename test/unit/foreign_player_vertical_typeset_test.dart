@@ -36,7 +36,7 @@ class VerticalTypesetter {
 }
 
 void main() {
-  group('[Unit] 【Phase 4-11/11】国際外国人選手名（Smith, Müller等）縦書き縦中横組版テスト', () {
+  group('[Unit] 国際外国人選手名（Smith, Müller等）縦書き縦中横組版テスト', () {
     test('アルファベット名（Smith）が1文字ずつバラバラにならず単語ブロックとして保持されること', () {
       final blocks = VerticalTypesetter.typeset('Smith');
       expect(blocks, ['Smith']);

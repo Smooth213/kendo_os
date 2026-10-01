@@ -65,7 +65,7 @@ Widget _buildTestWidget(MatchRule rule, {bool isTeam = false}) {
 
 void main() {
   group('[Widget] 部内戦ルールバッジ表示テスト', () {
-    testWidgets('デフォルトルール: 3分 / 3本 のみ表示 (延長・判定なし)こと', (
+    testWidgets('延長・判定なしにおいてデフォルトルール: 3分 / 3本 のみ表示こと', (
       WidgetTester tester,
     ) async {
       const rule = MatchRule(
@@ -271,7 +271,7 @@ void main() {
       expect(find.text('判定'), findsWidgets); // バッジ内とラベル両方
     });
 
-    testWidgets('各種試合時間の分秒表記が正確であること', (WidgetTester tester) async {
+    testWidgets('各種試合時間の分秒表記が正確こと', (WidgetTester tester) async {
       // テストケース: matchTimeMinutes → 期待される表示
       final testCases = <double, String>{
         1.0: '1分 / 3本',

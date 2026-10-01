@@ -64,7 +64,7 @@ void main() {
       },
     );
 
-    testWidgets('【both inProgress and 待機中 are empty】nothingが正しく描画されること', (
+    testWidgets('both inProgress and 待機中 are emptyにおいて nothingが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

@@ -16,7 +16,7 @@ void main() {
       );
     });
 
-    test('【勝数】チームの勝敗（matchWins）の差で正しく順位が決定すること', () {
+    test('勝数において チームの勝敗（matchWins）の差で正しく順位が決定すること', () {
       final calculator = LeagueStandingsCalculator();
       final matches = [
         // チームA vs チームB (チームAの勝ち)
@@ -39,7 +39,7 @@ void main() {
       expect(stats.firstWhere((s) => s.name == 'チームB').matchLosses, equals(1));
     });
 
-    test('【本数】勝数が同数の場合、総取得本数（totalPointsScored）の多さで判定されること', () {
+    test('本数において 勝数が同数の場合、総取得本数（totalPointsScored）の多さで判定されること', () {
       final calculator = LeagueStandingsCalculator();
       final matches = [
         // チームA vs チームB (チームAが2本勝ち)
@@ -71,7 +71,7 @@ void main() {
       expect(stats[1].name, equals('チームC'));
     });
 
-    test('【勝者数】勝数・本数が並んだ場合、個人勝者数（individualWinners）の多さでソートされること', () {
+    test('勝者数において 勝数・本数が並んだ場合、個人勝者数（individualWinners）の多さでソートされること', () {
       final calculator = LeagueStandingsCalculator();
       final matches = [
         // チームA vs チームB (チームAが 1-0 で勝ち。本数は1本)
@@ -101,7 +101,7 @@ void main() {
       expect(stats.length, isNotNull);
     });
 
-    test('【勝点】winPoint / drawPoint に基づく customPoints の優位が最優先されること', () {
+    test('勝点において winPoint / drawPoint に基づく customPoints の優位が最優先されること', () {
       final calculator = LeagueStandingsCalculator();
       final customRule = const MatchRule(
         winPoint: 5.0,
@@ -126,7 +126,7 @@ void main() {
       expect(teamA.customPoints, equals(5.0));
     });
 
-    test('【代表戦】代表戦がペアリングに含まれる場合の集計ロジックを安全透過すること', () {
+    test('代表戦において 代表戦がペアリングに含まれる場合の集計ロジックを安全透過すること', () {
       final calculator = LeagueStandingsCalculator();
       final matches = [
         const MatchModel(
@@ -144,7 +144,7 @@ void main() {
       expect(stats.firstWhere((s) => s.name == 'チームA').matchWins, equals(1));
     });
 
-    test('【同率】すべての戦績データが完全に同一な場合の安定ソートが破綻しないこと', () {
+    test('同率において すべての戦績データが完全に同一な場合の安定ソートが破綻しないこと', () {
       final calculator = LeagueStandingsCalculator();
       final matches = [
         const MatchModel(
@@ -163,7 +163,7 @@ void main() {
       expect(stats[1].rank, equals(2));
     });
 
-    test('【三つ巴】3チーム間で勝ち負けが循環（三つ巴）した際のランク判定が決定論的に終了すること', () {
+    test('三つ巴において 3チーム間で勝ち負けが循環（三つ巴）した際のランク判定が決定論的に終了すること', () {
       final calculator = LeagueStandingsCalculator();
       final matches = [
         // A vs B (A勝ち)
@@ -205,7 +205,7 @@ void main() {
     });
 
     test(
-      '【個人リーグ戦】個人リーグ戦（matchType: \'individual\'）において、チーム名ではなく個人名で正しく成績が計算・集計されること',
+      '個人リーグ戦において 個人リーグ戦（matchType: \'individual\'）において、チーム名ではなく個人名で正しく成績が計算・集計されること',
       () {
         final calculator = LeagueStandingsCalculator();
         final matches = [

@@ -91,7 +91,7 @@ void main() {
       expect(slots, equals(['先鋒', '次鋒', '中堅', '副将', '大将']));
     });
 
-    test('テキストパーサーによるセクションおよびチーム形式検出（3人制・5人制）こと', () {
+    test('テキストパーサーによるセクションおよびチーム形式の検出が行えること', () {
       // セクション見出しの検出
       expect(
         TournamentTextParserHelper.detectSectionMatchType('【3人制勝ち抜き戦の部】'),

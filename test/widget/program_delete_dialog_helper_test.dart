@@ -35,49 +35,48 @@ void main() {
       ),
     ];
 
-    testWidgets(
-      'confirmSingleDelete shows dialog and executes on confirmであること',
-      (tester) async {
-        final mockRepo = MockProgramRepository();
+    testWidgets('confirmSingleDelete shows dialog and executes on confirmこと', (
+      tester,
+    ) async {
+      final mockRepo = MockProgramRepository();
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [programRepositoryProvider.overrideWithValue(mockRepo)],
-            child: MaterialApp(
-              home: Scaffold(
-                body: Consumer(
-                  builder: (context, ref, child) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        ProgramDeleteDialogHelper.confirmSingleDelete(
-                          context: context,
-                          ref: ref,
-                          program: programs[0],
-                        );
-                      },
-                      child: const Text('削除ボタン'),
-                    );
-                  },
-                ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [programRepositoryProvider.overrideWithValue(mockRepo)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, child) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      ProgramDeleteDialogHelper.confirmSingleDelete(
+                        context: context,
+                        ref: ref,
+                        program: programs[0],
+                      );
+                    },
+                    child: const Text('削除ボタン'),
+                  );
+                },
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('削除ボタン'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('削除ボタン'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('プログラムの削除'), findsOneWidget);
-        expect(find.text('「進行表1」を削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
+      expect(find.text('プログラムの削除'), findsOneWidget);
+      expect(find.text('「進行表1」を削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
 
-        await tester.tap(find.text('削除'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('削除'));
+      await tester.pumpAndSettle();
 
-        expect(mockRepo.deletedIds, contains('p1'));
-      },
-    );
+      expect(mockRepo.deletedIds, contains('p1'));
+    });
 
-    testWidgets('【confirmBulkDelete】確認ダイアログが表示され承認時に選択アイテムが削除されること', (
+    testWidgets('confirmBulkDeleteにおいて 確認ダイアログが表示され承認時に選択アイテムが削除されること', (
       tester,
     ) async {
       final mockRepo = MockProgramRepository();

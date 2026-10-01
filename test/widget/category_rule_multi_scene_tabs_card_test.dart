@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_multi_scene_tabs_card.dart';
 
 void main() {
-  testWidgets('【CategoryRuleMultiSceneTabsCard】チェックボックスおよびタブビューが描画されること', (
+  testWidgets('CategoryRuleMultiSceneTabsCardにおいて チェックボックスおよびタブビューが描画されること', (
     tester,
   ) async {
     await tester.pumpWidget(

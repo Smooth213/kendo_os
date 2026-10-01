@@ -4,9 +4,9 @@ import 'package:kendo_os/features/match/domain/match_state.dart';
 import '../../test/helpers/mock_data.dart';
 
 void main() {
-  group('[Unit] — 状態遷移保証ユニットテスト要塞', () {
+  group('[Unit] 状態遷移保証ユニットテスト要塞', () {
     test(
-      '【FSM・状態遷移関数】transitionメソッドを介したライフサイクル状態の遷移が決定論的にstatus文字列へ投影されること',
+      'FSM・状態遷移関数において transitionメソッドを介したライフサイクル状態の遷移が決定論的にstatus文字列へ投影されること',
       () {
         final baseMatch = MatchBuilder().id('fsm_test_001').build();
         expect(baseMatch.status, equals('waiting'));
@@ -25,7 +25,7 @@ void main() {
     );
 
     test(
-      '【タイマー状態遷移・絶対時間】経過時間Msと外部注入タイムソース(now)から残り秒数が1ミリ秒の狂いもなく絶対プロジェクションされること',
+      'タイマー状態遷移・絶対時間において 経過時間Msと外部注入タイムソース(now)から残り秒数が1ミリ秒の狂いもなく絶対プロジェクションされること',
       () {
         final baseTime = DateTime(2026, 5, 30, 9, 0, 0);
         final match = MatchModel(
@@ -48,7 +48,7 @@ void main() {
     );
 
     test(
-      '【Undo操作保護】Strangler Figパターンで保護されたisDirtyフラグおよび同等の状態ライフサイクルが非破壊原則を維持していること',
+      'Undo操作保護において Strangler Figパターンで保護されたisDirtyフラグおよび同等の状態ライフサイクルが非破壊原則を維持していること',
       () {
         final syncedMatch = MatchBuilder().id('undo_fsm_001').build();
         expect(syncedMatch.isDirty, isFalse);

@@ -6,9 +6,9 @@ import 'package:kendo_os/features/match/application/mappers/score_event_legacy_a
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 void main() {
-  group('[E2E] 【E2E】Plan 1 高速スコア連打・Jank撲滅＆バッチ同期 E2Eテスト', () {
+  group('[E2E] Plan 1 高速スコア連打・Jank撲滅＆バッチ同期 E2Eテスト', () {
     test(
-      '[高速スコア連打シナリオ] スコアの連続打突操作（赤・白の一本、取り消し）が遅延なく消化され、最終スコアが完全に整合すること',
+      '高速スコア連打シナリオに関して、スコアの連続打突操作（赤・白の一本、取り消し）が遅延なく消化され、最終スコアが完全に整合すること',
       () async {
         // 模擬的な高速打突入力テスト
         var currentMatch = MatchModel(
@@ -72,7 +72,7 @@ void main() {
     );
 
     test(
-      '[団体戦セレクター等価遮断シナリオ] 複数試合が存在するトーナメントで、他グループや同一内容の更新時にリスナーへの再通知が0回であること',
+      '団体戦セレクター等価遮断シナリオに関して、複数試合が存在するトーナメントで、他グループや同一内容の更新時にリスナーへの再通知が0回こと',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -154,7 +154,7 @@ void main() {
     );
 
     test(
-      '[複数未同期マッチの一括バルク同期シナリオ] オフライン状態で蓄積された全試合がバッチ処理によりアトミックに同期完了ステートへ更新されること',
+      '複数未同期マッチの一括バルク同期シナリオに関して、オフライン状態で蓄積された全試合がバッチ処理によりアトミックに同期完了ステートへ更新されること',
       () async {
         final unSyncedMatches = List.generate(
           5,

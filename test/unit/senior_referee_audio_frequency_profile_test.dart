@@ -28,7 +28,7 @@ class SeniorAudioEqualizer {
 }
 
 void main() {
-  group('[Unit] 【Phase 6-2/12】シニア審判員向け1.5kHz中音域強調＆低速読み上げプロファイルテスト', () {
+  group('[Unit] シニア審判員向け1.5kHz中音域強調＆低速読み上げプロファイルテスト', () {
     test('シニアモード有効時、中心周波数が1,500Hzに設定され、発話速度が聞き取りやすい0.6になること', () {
       final profile = SeniorAudioEqualizer.getAudioProfile(isSeniorMode: true);
 

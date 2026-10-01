@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Unit] 【Phase 2-9/10】OS省電力モード タイマースロットリング絶対時刻補正テスト', () {
+  group('[Unit] OS省電力モード タイマースロットリング絶対時刻補正テスト', () {
     test('Timer.periodic が3秒ごとに間引かれても、絶対時間差分計算により正確な残り秒数が得られること', () {
       final matchStart = DateTime(2026, 9, 3, 10, 0, 0);
       const totalSeconds = 180;

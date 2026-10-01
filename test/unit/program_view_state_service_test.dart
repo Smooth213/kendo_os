@@ -23,7 +23,7 @@ void main() {
       expect(service.getLastPageNumber('prog_1', defaultPage: 5), 5);
     });
 
-    test('プログラムインデックスの保存と即時復元（メモリキャッシュ＆SharedPreferences）こと', () async {
+    test('メモリキャッシュおよびSharedPreferencesによるプログラムインデックスの保存と即時復元が行えること', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final service = ProgramViewStateService.instance;
@@ -37,7 +37,7 @@ void main() {
       expect(service.getLastProgramIndex('tournament_2', defaultIndex: 0), 0);
     });
 
-    test('PDFページ番号の保存と即時復元（メモリキャッシュ＆SharedPreferences）こと', () async {
+    test('メモリキャッシュおよびSharedPreferencesによるPDFページ番号の保存と即時復元が行えること', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final service = ProgramViewStateService.instance;

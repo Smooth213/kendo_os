@@ -23,14 +23,14 @@ void main() {
     BandLauncherHelper.webDirectLauncherOverride = null;
   });
 
-  group('[Unit] 【SFSafariViewController・アプリ内ブラウザ白紙残留 物理ゼロ保証テスト】', () {
+  group('[Unit] SFSafariViewController・アプリ内ブラウザ白紙残留 物理ゼロ保証テストにおいて', () {
     group('ネイティブ環境（iOS / Android）保証', () {
       setUp(() {
         BandLauncherHelper.isWebOverride = false;
       });
 
       test(
-        'Native Rule 1: アプリ内ブラウザ（inAppWebView / platformDefault）を厳格に禁止し、必ず LaunchMode.externalApplication が指定されること',
+        'ネイティブ環境でアプリ内ブラウザ（inAppWebView / platformDefault）を厳格に禁止し、必ず LaunchMode.externalApplication が指定されること',
         () async {
           Uri? capturedUri;
           LaunchMode? capturedMode;
@@ -73,7 +73,7 @@ void main() {
       );
 
       test(
-        'Native Rule 2: バンドID形式（https://band.us/band/12345）は直接ネイティブスキーム bandapp://band/12345 へ自動変換されること',
+        'ネイティブ環境でバンドID形式（https://band.us/band/12345）は直接スキーム bandapp://band/12345 へ自動変換されること',
         () async {
           Uri? capturedUri;
 
@@ -87,23 +87,20 @@ void main() {
         },
       );
 
-      test(
-        'Native Rule 3: 空URLまたはband.usトップはデフォルトで bandapp:// へ自動変換されること',
-        () async {
-          Uri? capturedUri;
+      test('ネイティブ環境で空URLまたはband.usトップはデフォルトで bandapp:// へ自動変換されること', () async {
+        Uri? capturedUri;
 
-          BandLauncherHelper.urlLauncherOverride = (uri) async {
-            capturedUri = uri;
-            return true;
-          };
+        BandLauncherHelper.urlLauncherOverride = (uri) async {
+          capturedUri = uri;
+          return true;
+        };
 
-          await BandLauncherHelper.launchBandUrl('');
-          expect(capturedUri, Uri.parse('bandapp://'));
+        await BandLauncherHelper.launchBandUrl('');
+        expect(capturedUri, Uri.parse('bandapp://'));
 
-          await BandLauncherHelper.launchBandUrl('https://band.us');
-          expect(capturedUri, Uri.parse('bandapp://'));
-        },
-      );
+        await BandLauncherHelper.launchBandUrl('https://band.us');
+        expect(capturedUri, Uri.parse('bandapp://'));
+      });
     });
 
     group('Web環境（iOS PWA / Safari / Chrome）保証', () {
@@ -112,7 +109,7 @@ void main() {
       });
 
       test(
-        'Web Rule 1: トップURLやバンドID形式は安全に bandapp:// スキームへ変換され、招待URL等はUniversal Linkとして保持されること',
+        'Web環境でトップURLやバンドID形式は安全に bandapp:// スキームへ変換され、招待URL等はUniversal Linkとして保持されること',
         () {
           expect(BandLauncherHelper.convertToBandAppScheme(''), 'bandapp://');
           expect(
@@ -137,7 +134,7 @@ void main() {
       );
 
       test(
-        'Web Rule 2: Web環境では window.open をバイパスし、同一ウィンドウ直接キック（launchWebDirect）が最優先実行されること',
+        'Web環境では window.open をバイパスし、同一ウィンドウ直接キック（launchWebDirect）が最優先実行されること',
         () async {
           String? capturedDirectUrl;
           bool urlLauncherWasCalled = false;
@@ -170,7 +167,7 @@ void main() {
       );
 
       test(
-        'Web Rule 3: Webフォールバック時でも webOnlyWindowName: _self かつ LaunchMode.externalApplication が厳格に渡されること',
+        'Web環境のフォールバック時でも webOnlyWindowName: _self かつ LaunchMode.externalApplication が厳格に渡されること',
         () async {
           Uri? capturedUri;
           LaunchMode? capturedMode;
@@ -216,7 +213,7 @@ void main() {
       ];
 
       testWidgets(
-        'UI Rule 1: Web環境でグループをタップした際、LIVE配信可能なグループ画面へ直行するためグループURLがキックされシートが正しく閉じること',
+        'UI Web環境でグループをタップした際、LIVE配信可能なグループ画面へ直行するためグループURLがキックされシートが正しく閉じること',
         (tester) async {
           BandLauncherHelper.isWebOverride = true;
           String? launchedUrl;
@@ -252,44 +249,41 @@ void main() {
         },
       );
 
-      testWidgets(
-        'UI Rule 2: ヘッダーの「BANDアプリを開く」ボタンをタップした際、直接 bandapp:// が安全に起動されること',
-        (tester) async {
-          BandLauncherHelper.isWebOverride = true;
-          String? launchedUrl;
-          BandLauncherHelper.webDirectLauncherOverride = (url) {
-            launchedUrl = url;
-            return true;
-          };
-
-          await tester.pumpWidget(
-            ProviderScope(
-              overrides: [
-                bandGroupsStreamProvider.overrideWith(
-                  (ref) => Stream.value(sampleGroups),
-                ),
-              ],
-              child: const MaterialApp(
-                home: Scaffold(
-                  body: BandGroupSelectSheet(formattedText: '試合速報テキスト'),
-                ),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          final openAppBtn = find.text('BANDアプリを開く');
-          expect(openAppBtn, findsOneWidget);
-          await tester.tap(openAppBtn);
-          await tester.pumpAndSettle();
-
-          expect(launchedUrl, 'bandapp://');
-        },
-      );
-
-      testWidgets('UI Rule 3: 招待URL形式のグループをタップした際、その招待URLが直接キックされること', (
+      testWidgets('UI ヘッダーの「BANDアプリを開く」ボタンをタップした際、直接 bandapp:// が安全に起動されること', (
         tester,
       ) async {
+        BandLauncherHelper.isWebOverride = true;
+        String? launchedUrl;
+        BandLauncherHelper.webDirectLauncherOverride = (url) {
+          launchedUrl = url;
+          return true;
+        };
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              bandGroupsStreamProvider.overrideWith(
+                (ref) => Stream.value(sampleGroups),
+              ),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(
+                body: BandGroupSelectSheet(formattedText: '試合速報テキスト'),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final openAppBtn = find.text('BANDアプリを開く');
+        expect(openAppBtn, findsOneWidget);
+        await tester.tap(openAppBtn);
+        await tester.pumpAndSettle();
+
+        expect(launchedUrl, 'bandapp://');
+      });
+
+      testWidgets('UI 招待URL形式のグループをタップした際、その招待URLが直接キックされること', (tester) async {
         BandLauncherHelper.isWebOverride = true;
         String? launchedUrl;
         BandLauncherHelper.webDirectLauncherOverride = (url) {
@@ -327,7 +321,7 @@ void main() {
       });
 
       testWidgets(
-        'UI Rule 4: バンドID形式（https://band.us/band/...）のグループをタップした際、ネイティブスキームに変換されてキックされること',
+        'UI バンドID形式（https://band.us/band/...）のグループをタップした際、ネイティブスキームに変換されてキックされること',
         (tester) async {
           BandLauncherHelper.isWebOverride = true;
           String? launchedUrl;
@@ -366,7 +360,7 @@ void main() {
         },
       );
 
-      testWidgets('UI Rule 5: グループ選択シート内にBANDアプリのインストールが必要な旨の案内バナーが表示されていること', (
+      testWidgets('UI グループ選択シート内にBANDアプリのインストールが必要な旨の案内バナーが表示されていること', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -390,7 +384,7 @@ void main() {
       });
 
       testWidgets(
-        'UI Rule 6: LIVE配信ができない投稿共有API（bandapp://create/post）が呼ばれず、必ずグループURLがキックされること',
+        'UI LIVE配信ができない投稿共有API（bandapp://create/post）が呼ばれず、必ずグループURLがキックされること',
         (tester) async {
           BandLauncherHelper.isWebOverride = true;
           String? launchedUrl;

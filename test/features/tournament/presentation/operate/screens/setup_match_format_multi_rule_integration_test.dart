@@ -343,7 +343,7 @@ void main() {
       expect(savedRule.hasHantei, isFalse);
     });
 
-    testWidgets('【対比検証】選択された「予選リーグ」ルールが正しく MatchRuleProvider へ保存されること', (
+    testWidgets('対比検証において 選択された「予選リーグ」ルールが正しく MatchRuleProvider へ保存されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1800);

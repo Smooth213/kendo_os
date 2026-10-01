@@ -8,7 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/helpers/clipbo
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Unit] 【大会プログラム】クリップボード吸い上げヘルパー検証テスト', () {
+  group('[Unit] 大会プログラムにおいて クリップボード吸い上げヘルパー検証テスト', () {
     test('有効なPDFのURLから正しく PlatformFile を生成できること', () async {
       final mockClient = MockClient((request) async {
         if (request.url.toString() ==

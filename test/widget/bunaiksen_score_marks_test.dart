@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/b
 
 void main() {
   group('[Widget] BunaiksenScoreMarks ウィジェットテスト', () {
-    testWidgets('【both scores are 0】draw icon (close)が正しく描画されること', (
+    testWidgets('both scores are 0において draw icon (close)が正しく描画されること', (
       WidgetTester tester,
     ) async {
       const match = MatchModel(

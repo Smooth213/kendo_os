@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 
 void main() {
-  group('[Unit] 【Phase 2-2/10】試合中の画面消灯（スリープ）防止 WakeLock 保持・復帰テスト', () {
-    test('SettingsModel のデフォルトで sleepPrevent が true（消灯防止有効）であること', () {
+  group('[Unit] 試合中の画面消灯（スリープ）防止 WakeLock 保持・復帰テスト', () {
+    test('設定モデルの初期値で画面消灯防止が有効となること', () {
       final defaultSettings = SettingsModel();
       expect(defaultSettings.sleepPrevent, isTrue);
     });

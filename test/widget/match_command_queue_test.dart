@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 
 void main() {
   group('[Widget] MatchCommandQueue 単体テスト', () {
-    test('DeadLetterQueueNotifier adds, retries, and discards errorsであること', () {
+    test('DeadLetterQueueNotifier adds, retries, and discards errorsこと', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -24,7 +24,7 @@ void main() {
       expect(container.read(deadLetterQueueProvider).isEmpty, true);
     });
 
-    test('MatchCommandModel default status is pendingであること', () {
+    test('MatchCommandModel default status is pendingこと', () {
       final cmd = MatchCommandModel(
         id: 'cmd-2',
         type: CommandType.undoLastEvent,

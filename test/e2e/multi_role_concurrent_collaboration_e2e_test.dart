@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 void main() {
-  group('[E2E] 【E2E 2/5】審判席iPad ＋ 本部PC ＋ 観客席スマホ 3者同時並行データ連携E2Eテスト', () {
+  group('[E2E] E2E 2/5において 審判席iPad ＋ 本部PC ＋ 観客席スマホ 3者同時並行データ連携E2Eテスト', () {
     test('審判席のスコア入力が本部タイムラインと観客席プロジェクションに即時同期し、ロール権限分離が徹底されること', () async {
       final initialMatch = MatchModel(
         id: 'court1_match_1',

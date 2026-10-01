@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[E2E] 【E2E 4/5】部内戦・勝ち抜き戦（勝ち残り）完全フロー実践E2Eテスト', () {
+  group('[E2E] E2E 4/5において 部内戦・勝ち抜き戦（勝ち残り）完全フロー実践E2Eテスト', () {
     test('赤5名 vs 白5名の勝ち抜き戦において、勝者残留・引分両者退場・大将戦決着のフローが完全保証されること', () {
       const kachinukiRule = MatchRule(isKachinuki: true, matchTimeMinutes: 3.0);
 

@@ -22,8 +22,8 @@ class MarathonMatchLifecycle {
 }
 
 void main() {
-  group('[Governance] 【Phase 9-5/6】72時間連続稼働マラソン メモリリークゼロ・破棄サイクル検証テスト', () {
-    test('1,000回の試合開始・終了・disposeサイクルを高速反復しても未解放オブジェクトがゼロであること', () {
+  group('[Governance] 72時間連続稼働マラソン メモリリークゼロ・破棄サイクル検証テスト', () {
+    test('1,000回の試合開始・終了・disposeサイクルを高速反復しても未解放オブジェクトがゼロこと', () {
       final activeSessions = <MarathonMatchLifecycle>[];
 
       // 1,000回連続試合ループ

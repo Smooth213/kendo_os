@@ -18,7 +18,7 @@ void main() {
       container.dispose();
     });
 
-    test('Formatting 1 - 0 with first point Kote (㋙)こと', () {
+    test('㋙においてFormatting 1 - 0 with first point Koteこと', () {
       final match = MatchModel(
         id: 'test_match_1',
         matchType: 'individual',
@@ -42,7 +42,7 @@ void main() {
     });
 
     test(
-      'Formatting 2 - 1 with Red first Kote (㋙) + normal Kote (コ) and White normal Men (メ)こと',
+      'メにおいてFormatting 2 - 1 with Red first Kote (㋙) + normal Kote (コ) and White normal Menこと',
       () {
         final match = MatchModel(
           id: 'test_match_2',
@@ -81,7 +81,7 @@ void main() {
       },
     );
 
-    test('Formatting Hansoku penalty points (反) correctlyであること', () {
+    test('Formatting Hansoku penalty points (反) correctlyこと', () {
       final match = MatchModel(
         id: 'test_match_3',
         matchType: 'individual',
@@ -109,7 +109,7 @@ void main() {
       expect(display, contains('🔴 佐々木 武 0 - 1反 選手 ⚪️'));
     });
 
-    test('Correctly excludes undone/canceled pointsであること', () {
+    test('Correctly excludes undone/canceled pointsこと', () {
       final match = MatchModel(
         id: 'test_match_4',
         matchType: 'individual',

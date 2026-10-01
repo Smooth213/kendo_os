@@ -91,7 +91,7 @@ void main() {
       expect(find.text('【申し合わせ】'), findsNothing);
     });
 
-    testWidgets('CategoryRuleChips & DetailSheet: 統一表記（ 錬成 /  申合せ）で開くこと', (
+    testWidgets('CategoryRuleChips & DetailSheet: 統一表記（ 錬成 / 申合せ）で開くこと', (
       tester,
     ) async {
       const multiSceneRule = CategoryRuleSet(

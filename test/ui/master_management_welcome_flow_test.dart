@@ -44,7 +44,7 @@ void main() {
     ).thenAnswer((_) => Future.value());
   });
 
-  group('[Widget] MasterManagementScreen Welcome Flow テスト', () {
+  group('[Widget] マスタ管理画面 初期ウェルカムフローテスト', () {
     testWidgets(
       '初期状態で道場名登録ボタンが表示され、登録後に選手登録ボタンへ切り替わり、organizationが正しくインジェクションされること',
       (WidgetTester tester) async {
@@ -178,7 +178,7 @@ void main() {
     });
 
     group('iOSカプセルスタイル検証', () {
-      testWidgets('Empty UIの登録ボタンが幅240に制限されていること', (WidgetTester tester) async {
+      testWidgets('データ空UIの登録ボタンの幅が240に制限されていること', (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
         final fakeFirestore = FakeFirebaseFirestore();

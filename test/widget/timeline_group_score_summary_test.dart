@@ -10,7 +10,7 @@ void main() {
   group('[Widget] TimelineGroupScoreSummary ウィジェットテスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    testWidgets('【TimelineGroupScoreSummary】勝数が計算されチーム情報が描画されること', (
+    testWidgets('TimelineGroupScoreSummaryにおいて 勝数が計算されチーム情報が描画されること', (
       WidgetTester tester,
     ) async {
       final matches = [

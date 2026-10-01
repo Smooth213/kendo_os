@@ -14,7 +14,7 @@ void main() {
     });
 
     test(
-      '【Queue & Dirty判定】syncStateがsynced以外の試合は、未送信データ（isDirty）として正しく検出されること',
+      'Queue & Dirty判定において syncStateがsynced以外の試合は、未送信データ（isDirty）として正しく検出されること',
       () {
         const matchLocal = MatchModel(
           id: 'sync_test_001',
@@ -38,7 +38,7 @@ void main() {
     );
 
     test(
-      '【Merge & Conflict Resolution】サーバーの歴史とローカルの未送信差分（pendingEvents）が、ランポート論理時計と絶対時刻で厳密にソートされ、確定的に一本化されること',
+      'Merge & Conflict Resolutionにおいて サーバーの歴史とローカルの未送信差分（pendingEvents）が、ランポート論理時計と絶対時刻で厳密にソートされ、確定的に一本化されること',
       () {
         // サーバー側にある既存の歴史（先に同期されていたイベント）
         final remoteEvents = [
@@ -92,7 +92,7 @@ void main() {
     );
 
     test(
-      '【Retry & Sequence防壁】イベント順序順のcompareToが、論理時計最優先のドメイン規約に完全適合していること',
+      'Retry & Sequence防壁において イベント順序順のcompareToが、論理時計最優先のドメイン規約に完全適合していること',
       () {
         final earlyEvent = ScoreEventLegacyAdapter.fromLegacy(
           id: 'a',

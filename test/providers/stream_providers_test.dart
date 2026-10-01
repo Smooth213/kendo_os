@@ -29,7 +29,7 @@ void main() {
     });
 
     test(
-      '【matchStreamProvider】ローカルDBストリームからデータが射出された際、リアクティブに最新の試合リスト配列が伝播されること',
+      'matchStreamProviderにおいて ローカルDBストリームからデータが射出された際、リアクティブに最新の試合リスト配列が伝播されること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -66,7 +66,7 @@ void main() {
     );
 
     test(
-      '【再接続シーケンスホールド】ストリームが空配列を射出した際にも、システムがクラッシュせず安全にデータ状態が維持されること',
+      '再接続シーケンスホールドにおいて ストリームが空配列を射出した際にも、システムがクラッシュせず安全にデータ状態が維持されること',
       () async {
         final container = ProviderContainer(
           overrides: [

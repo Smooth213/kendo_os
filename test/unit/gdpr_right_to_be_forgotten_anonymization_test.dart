@@ -25,7 +25,7 @@ class GdprAnonymizer {
 }
 
 void main() {
-  group('[Unit] 【Phase 4-9/11】GDPR忘れられる権利 選手不可逆匿名化＆対戦成績整合性テスト', () {
+  group('[Unit] GDPR忘れられる権利 選手不可逆匿名化＆対戦成績整合性テスト', () {
     test('選手退会時に個人特定情報（氏名・道場）が不可逆ハッシュに置換され復元不可能になること', () {
       final anon = GdprAnonymizer.anonymizePlayer(
         playerId: 'player_secret_guid_12345',

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_renseikai_section.dart';
 
 void main() {
-  testWidgets('【CategoryRuleRenseikaiSection】練習会有効時に練習会設定が正しく描画されること', (
+  testWidgets('CategoryRuleRenseikaiSectionにおいて 練習会有効時に練習会設定が正しく描画されること', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -34,7 +34,7 @@ void main() {
     expect(find.text('一試合制'), findsOneWidget);
   });
 
-  testWidgets('【CategoryRuleRenseikaiSection】勝ち抜き戦有効時に勝ち抜き設定が正しく描画されること', (
+  testWidgets('CategoryRuleRenseikaiSectionにおいて 勝ち抜き戦有効時に勝ち抜き設定が正しく描画されること', (
     tester,
   ) async {
     await tester.pumpWidget(

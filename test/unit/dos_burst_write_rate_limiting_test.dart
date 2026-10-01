@@ -32,7 +32,7 @@ class RateLimiter {
 }
 
 void main() {
-  group('[Unit] 【Phase 4-7/11】DDoSバースト書き込み連打 レートリミッティングテスト', () {
+  group('[Unit] DDoSバースト書き込み連打 レートリミッティングテスト', () {
     test('秒間100回の連続打突リクエストを浴びせても、最大20回で安全に制限されクラッシュしないこと', () {
       final now = DateTime(2026, 9, 3, 10, 0, 0);
       final limiter = RateLimiter(maxTokens: 20, initialTime: now);

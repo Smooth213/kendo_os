@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
   group('[Unit] 部門別ルール設定 (CategoryRuleSet) のテスト', () {
-    test('【マルチシーン】本戦ルールなし (useHonsenRule = false) の設定が正しく保持されること', () {
+    test('マルチシーンにおいて 本戦ルールなし (useHonsenRule = false) の設定が正しく保持されること', () {
       const ruleSet = CategoryRuleSet(
         isMultiScene: true,
         useHonsenRule: false,
@@ -31,7 +31,7 @@ void main() {
       expect(ruleSet.moushiawaseRule.matchScene, equals('moushiawase'));
     });
 
-    test('【シリアライズ】JSONとの相互変換で useHonsenRule 等のフラグが保持されること', () {
+    test('シリアライズにおいて JSONとの相互変換で useHonsenRule 等のフラグが保持されること', () {
       const original = CategoryRuleSet(
         isMultiScene: true,
         useHonsenRule: false,
@@ -57,7 +57,7 @@ void main() {
       return false;
     }
 
-    test('【未開始試合の除外】スコア 0-0 で status != finished の試合枠は集計に含まれないこと', () {
+    test('未開始試合の除外において スコア 0-0 で status != finished の試合枠は集計に含まれないこと', () {
       final unplayedMatch = MatchModel(
         id: 'm1',
         tournamentId: 't1',
@@ -73,7 +73,7 @@ void main() {
       expect(isMatchPlayed(unplayedMatch), isFalse);
     });
 
-    test('【実施済み試合の判定】status == finished または スコア/イベントが存在する試合は集計対象となること', () {
+    test('実施済み試合の判定において status == finished または スコア/イベントが存在する試合は集計対象となること', () {
       final finishedMatch = MatchModel(
         id: 'm2',
         tournamentId: 't1',
@@ -102,7 +102,7 @@ void main() {
       expect(isMatchPlayed(scoredMatch), isTrue);
     });
 
-    test('【部門別フィルタ】指定した部門（category）の試合のみが抽出されること', () {
+    test('部門別フィルタにおいて 指定した部門（category）の試合のみが抽出されること', () {
       final matches = [
         MatchModel(
           id: 'm1',
@@ -136,7 +136,7 @@ void main() {
       expect(catMatches.first.redName, contains('山田'));
     });
 
-    test('【シーン別区分】renseikai / honsen / moushiawase が正しく振り分けられること', () {
+    test('シーン別区分において renseikai / honsen / moushiawase が正しく振り分けられること', () {
       final renseikaiMatch = MatchModel(
         id: 'm1',
         tournamentId: 't1',

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/domain/match_calculator/match_calcu
 
 void main() {
   group('[Governance] 試合数計算機 ガバナンス＆設計憲法テスト', () {
-    test('【ガバナンス第2条】calculator配下の全ファイルが500行未満であること', () {
+    test('ガバナンス第2条において calculator配下の全ファイルが500行未満こと', () {
       final calculatorDir = Directory(
         'lib/features/tournament/presentation/components/bunaiksen/calculator',
       );
@@ -29,7 +29,7 @@ void main() {
       }
     });
 
-    test('【モデル不変性】CalculatorSettingsがイミュータブルかつデフォルト値が健全であること', () {
+    test('モデル不変性において CalculatorSettingsがイミュータブルかつデフォルト値が健全こと', () {
       const defaultSettings = CalculatorSettings();
 
       expect(defaultSettings.participantCount, 8);
@@ -44,7 +44,7 @@ void main() {
       expect(defaultSettings.participantCount, 8); // 元は不変
     });
 
-    test('【デザイントークン遵守】新規追加・更新した主要コンポーネントで生Colorsが過剰に使用されていないこと', () {
+    test('デザイントークン遵守において 新規追加・更新した主要コンポーネントで生Colorsが過剰に使用されていないこと', () {
       final targetFiles = [
         'lib/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_accordion_card.dart',
         'lib/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_basic_settings_card.dart',

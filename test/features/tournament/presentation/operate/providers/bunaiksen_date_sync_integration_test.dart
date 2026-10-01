@@ -74,7 +74,7 @@ void main() {
       ).thenAnswer((_) => Stream.value(0));
     });
 
-    testWidgets('JSTローカル時間に基づく今日の試合作成・バインド検証 (深夜・早朝時間帯の先祖返り防止)こと', (
+    testWidgets('深夜・早朝時間帯の先祖返り防止においてJSTローカル時間に基づく今日の試合作成・バインド検証こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

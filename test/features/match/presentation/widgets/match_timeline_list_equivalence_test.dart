@@ -12,7 +12,7 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 
 void main() {
   testWidgets(
-    'MatchTimelineList ensures environment-agnostic accordion equivalenceであること',
+    'MatchTimelineList ensures environment-agnostic accordion equivalenceこと',
     (WidgetTester tester) async {
       // 1. 監査用の決定論的モックデータ作成
       // Web環境で Firestore ストリームから複数件の重複に見えるデータが流れてきたケースを再現

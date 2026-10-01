@@ -61,9 +61,7 @@ void main() {
       expect(selectedScene, 'renseikai');
     });
 
-    testWidgets('部門 チップ一覧 with subtitle and resolves (2)が正しく描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('部門チップ一覧がサブタイトルとともに正しく描画されること', (WidgetTester tester) async {
       final categoryRules = {
         '小学生の部': const CategoryRuleSet(
           subtitle: '予選リーグ',
@@ -101,7 +99,7 @@ void main() {
       expect(find.text('小学生の部 (予選リーグ)'), findsOneWidget);
     });
 
-    testWidgets('【categoryRules is empty】empty widgetが正しく描画されること', (
+    testWidgets('categoryRules is emptyにおいて empty widgetが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');

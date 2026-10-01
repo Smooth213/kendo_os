@@ -17,7 +17,7 @@ void main() {
       organization: '練馬道場',
     );
 
-    testWidgets('MasterOrganizationHeaderBar 正しく描画されること in light modeであること', (
+    testWidgets('MasterOrganizationHeaderBar 正しく描画されること in light modeこと', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -46,7 +46,7 @@ void main() {
       expect(find.text('カテゴリ別'), findsOneWidget);
     });
 
-    testWidgets('MasterOrganizationHeaderBar 正しく描画されること in dark modeであること', (
+    testWidgets('MasterOrganizationHeaderBar 正しく描画されること in dark modeこと', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');

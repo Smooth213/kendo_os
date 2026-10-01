@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 
 void main() {
   group('[Widget] ExpeditionStatsCalculator 単体テスト', () {
-    test('【calculate】勝敗および有効打突の内訳が正しく計算されること', () {
+    test('calculateにおいて 勝敗および有効打突の内訳が正しく計算されること', () {
       final matches = [
         MatchModel(
           id: 'm1',

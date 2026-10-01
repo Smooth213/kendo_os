@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 3-1/11】IMEソフトウェアキーボード出現時 自動スクロール隠蔽回避テスト', () {
+  group('[Widget] IMEソフトウェアキーボード出現時 自動スクロール隠蔽回避テスト', () {
     testWidgets(
       'キーボード出現（viewInsets.bottom: 300px）時、最下部の選手名入力欄が隠れずスクロール可能領域に保持されること',
       (tester) async {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Golden] 【Phase 6-7/12】全剣連公式 A4ミリメートル準拠団体戦試合記録表 Goldenテスト', () {
+  group('[Golden] 全剣連公式 A4ミリメートル準拠団体戦試合記録表 Goldenテスト', () {
     testWidgets('全日本剣道連盟公式記録用紙（5人制団体戦）の罫線・配置が正確にレンダリングされること', (tester) async {
       tester.view.physicalSize = const Size(700, 500);
       tester.view.devicePixelRatio = 1.0;

@@ -81,7 +81,7 @@ void main() {
     );
   }
 
-  group('[Widget] 【パート2】ドック  システム設定  設定値変更・Google同期/解除・BAND・ログアウト保証', () {
+  group('[Widget] パート2において ドック システム設定 設定値変更・Google同期/解除・BAND・ログアウト保証', () {
     testWidgets('大会ホームドックから設定を開き、設定トグル変更がsettingsProviderに即時反映されること', (
       tester,
     ) async {

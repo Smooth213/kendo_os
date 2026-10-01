@@ -18,80 +18,75 @@ void main() {
     registerFallbackValue(FakeSource());
   });
 
-  group(
-    '[Governance] [Phase 8 Performance Governance] 音声再生ゼロ遅延化＆Pre-warmingテスト',
-    () {
-      late MockAudioPlayer mockAudioPlayer;
-      late MockFlutterTts mockTts;
-      late SoundService soundService;
+  group('[Governance] Performance Governanceに関して、音声再生ゼロ遅延化＆Pre-warmingテスト', () {
+    late MockAudioPlayer mockAudioPlayer;
+    late MockFlutterTts mockTts;
+    late SoundService soundService;
 
-      setUp(() {
-        mockAudioPlayer = MockAudioPlayer();
-        mockTts = MockFlutterTts();
+    setUp(() {
+      mockAudioPlayer = MockAudioPlayer();
+      mockTts = MockFlutterTts();
 
-        when(() => mockTts.setLanguage(any())).thenAnswer((_) async => 1);
-        when(() => mockTts.setSpeechRate(any())).thenAnswer((_) async => 1);
-        when(() => mockTts.setVolume(any())).thenAnswer((_) async => 1);
-        when(() => mockTts.speak(any())).thenAnswer((_) async => 1);
-        when(() => mockTts.stop()).thenAnswer((_) async => 1);
+      when(() => mockTts.setLanguage(any())).thenAnswer((_) async => 1);
+      when(() => mockTts.setSpeechRate(any())).thenAnswer((_) async => 1);
+      when(() => mockTts.setVolume(any())).thenAnswer((_) async => 1);
+      when(() => mockTts.speak(any())).thenAnswer((_) async => 1);
+      when(() => mockTts.stop()).thenAnswer((_) async => 1);
 
-        when(
-          () => mockAudioPlayer.setPlayerMode(any()),
-        ).thenAnswer((_) async {});
-        when(() => mockAudioPlayer.setSource(any())).thenAnswer((_) async {});
-        when(() => mockAudioPlayer.stop()).thenAnswer((_) async {});
-        when(
-          () => mockAudioPlayer.play(
-            any(),
-            volume: any(named: 'volume'),
-            balance: any(named: 'balance'),
-            ctx: any(named: 'ctx'),
-            position: any(named: 'position'),
-            mode: any(named: 'mode'),
-          ),
-        ).thenAnswer((_) async {});
-        when(() => mockAudioPlayer.dispose()).thenAnswer((_) async {});
+      when(() => mockAudioPlayer.setPlayerMode(any())).thenAnswer((_) async {});
+      when(() => mockAudioPlayer.setSource(any())).thenAnswer((_) async {});
+      when(() => mockAudioPlayer.stop()).thenAnswer((_) async {});
+      when(
+        () => mockAudioPlayer.play(
+          any(),
+          volume: any(named: 'volume'),
+          balance: any(named: 'balance'),
+          ctx: any(named: 'ctx'),
+          position: any(named: 'position'),
+          mode: any(named: 'mode'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => mockAudioPlayer.dispose()).thenAnswer((_) async {});
 
-        soundService = SoundService(tts: mockTts, audioPlayer: mockAudioPlayer);
-      });
+      soundService = SoundService(tts: mockTts, audioPlayer: mockAudioPlayer);
+    });
 
-      tearDown(() {
-        soundService.dispose();
-      });
+    tearDown(() {
+      soundService.dispose();
+    });
 
-      test('SoundService.prewarm が正常に実行され事前暖機ステートが確立すること', () async {
-        expect(soundService.isPrewarmed, isFalse);
+    test('SoundService.prewarm が正常に実行され事前暖機ステートが確立すること', () async {
+      expect(soundService.isPrewarmed, isFalse);
 
-        await soundService.prewarm();
-        expect(soundService.isPrewarmed, isTrue);
+      await soundService.prewarm();
+      expect(soundService.isPrewarmed, isTrue);
 
-        verify(
-          () => mockAudioPlayer.setPlayerMode(PlayerMode.lowLatency),
-        ).called(1);
-        verify(() => mockAudioPlayer.setSource(any())).called(1);
-      });
+      verify(
+        () => mockAudioPlayer.setPlayerMode(PlayerMode.lowLatency),
+      ).called(1);
+      verify(() => mockAudioPlayer.setSource(any())).called(1);
+    });
 
-      test('効果音の連続呼び出しが単一の共有プレイヤーを再利用して低遅延再生されること', () async {
-        await soundService.prewarm();
+    test('効果音の連続呼び出しが単一の共有プレイヤーを再利用して低遅延再生されること', () async {
+      await soundService.prewarm();
 
-        // 各効果音を連続呼び出し
-        await soundService.playScoreSound(true);
-        await soundService.playScoreSound(false);
-        await soundService.playHansokuSound();
-        await soundService.playUndoSound();
-        await soundService.playFinishFanfare();
+      // 各効果音を連続呼び出し
+      await soundService.playScoreSound(true);
+      await soundService.playScoreSound(false);
+      await soundService.playHansokuSound();
+      await soundService.playUndoSound();
+      await soundService.playFinishFanfare();
 
-        // playが5回低遅延モードで呼び出されたことを検証
-        verify(
-          () => mockAudioPlayer.play(any(), mode: PlayerMode.lowLatency),
-        ).called(5);
-      });
+      // playが5回低遅延モードで呼び出されたことを検証
+      verify(
+        () => mockAudioPlayer.play(any(), mode: PlayerMode.lowLatency),
+      ).called(5);
+    });
 
-      test('TTS音声読み上げが安全に呼び出されること', () async {
-        await soundService.speak('赤、一本！');
-        verify(() => mockTts.stop()).called(1);
-        verify(() => mockTts.speak('赤、一本！')).called(1);
-      });
-    },
-  );
+    test('TTS音声読み上げが安全に呼び出されること', () async {
+      await soundService.speak('赤、一本！');
+      verify(() => mockTts.stop()).called(1);
+      verify(() => mockTts.speak('赤、一本！')).called(1);
+    });
+  });
 }

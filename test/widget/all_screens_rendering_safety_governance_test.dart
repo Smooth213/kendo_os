@@ -69,12 +69,12 @@ void main() {
   final edgeMatches = RenderingSafetyTestHelper.createEdgeCaseMatches();
   final edgeComments = RenderingSafetyTestHelper.createTestComments();
 
-  group('[Widget] 【第15大ガバナンス】全ページ UIゼロレンダリングエラー保証 網羅的テスト', () {
+  group('[Widget] 第15大ガバナンスにおいて 全ページ UIゼロレンダリングエラー保証 網羅的テスト', () {
     // -------------------------------------------------------------------------
     // 1. 運営・管理系画面 (14画面)
     // -------------------------------------------------------------------------
     testWidgets(
-      '運営・管理系画面（Start, RoleSelect, PinAuth, Settings, Master, TournamentList, ProgramManagement, Observability, AuditLog, EmbeddedManual, Login）こと',
+      'Start, RoleSelect, PinAuth, Settings, Master, TournamentList, ProgramManagement, Observability, AuditLog, EmbeddedManual, Loginにおいて運営・管理系画面こと',
       (tester) async {
         final screens = <Widget>[
           const StartScreen(),
@@ -108,7 +108,7 @@ void main() {
     );
 
     testWidgets(
-      '運営試合・スコア系画面（HomeScreen, TeamMatchStatus, OfficialRecord, TeamScoreboard, KachinukiScoreboard, NewMatchScreen, MatchScreen）こと',
+      'HomeScreen, TeamMatchStatus, OfficialRecord, TeamScoreboard, KachinukiScoreboard, NewMatchScreen, MatchScreenにおいて運営試合・スコア系画面こと',
       (tester) async {
         final screens = <Widget>[
           const HomeScreen(tournamentId: testTournamentId),
@@ -147,7 +147,7 @@ void main() {
     // 2. 大会セットアップ・設定系画面 (6画面)
     // -------------------------------------------------------------------------
     testWidgets(
-      '大会セットアップ系画面（CreateTournament, SetupMatch, OrderSetup, TeamReg, CategoryRules, Standings）こと',
+      'CreateTournament, SetupMatch, OrderSetup, TeamReg, CategoryRules, Standingsにおいて大会セットアップ系画面こと',
       (tester) async {
         final setupScreens = <Widget>[
           const CreateTournamentScreen(),
@@ -178,7 +178,7 @@ void main() {
     // 3. 部内戦画面 (3画面)
     // -------------------------------------------------------------------------
     testWidgets(
-      '部内戦画面（BunaiksenHome, BunaiksenSetup, BunaiksenOfficialRecord）こと',
+      'BunaiksenHome, BunaiksenSetup, BunaiksenOfficialRecordにおいて部内戦画面こと',
       (tester) async {
         final bunaiksenScreens = <Widget>[
           const BunaiksenHomeScreen(),
@@ -209,7 +209,7 @@ void main() {
     // 4. 観戦者（Viewer）専用画面 (7画面)
     // -------------------------------------------------------------------------
     testWidgets(
-      '観戦者専用画面（ViewerHome, ViewerMatch, ViewerRecord, ViewerTeam, ViewerKachinuki, ViewerBunaiksenHome, ViewerBunaiksenRecord）こと',
+      'ViewerHome, ViewerMatch, ViewerRecord, ViewerTeam, ViewerKachinuki, ViewerBunaiksenHome, ViewerBunaiksenRecordにおいて観戦者専用画面こと',
       (tester) async {
         final viewerScreens = <Widget>[
           const ViewerHomeScreen(tournamentId: testTournamentId),
@@ -248,7 +248,7 @@ void main() {
     // 5. フローティングドック展開全ボトムシート (全7種)
     // -------------------------------------------------------------------------
     testWidgets(
-      'ドック全ボトムシート展開（Program, Memo, Announce, Manual, ViewerSettings, OfficialRecord, TeamStatus）こと',
+      'Program, Memo, Announce, Manual, ViewerSettings, OfficialRecord, TeamStatusにおいてドック全ボトムシート展開こと',
       (tester) async {
         final sheets = <Widget>[
           const ProgramBottomSheet(

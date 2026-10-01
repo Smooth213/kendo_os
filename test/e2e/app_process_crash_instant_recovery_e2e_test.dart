@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[E2E] 【E2E 5/5】アプリ強制終了（OOMキル/端末再起動）ミリ秒精度復旧実践E2Eテスト', () {
+  group('[E2E] E2E 5/5において アプリ強制終了（OOMキル/端末再起動）ミリ秒精度復旧実践E2Eテスト', () {
     test('タイマー稼働中にアプリが強制キルされても、再起動時に経過時間とスコアイベントがミリ秒単位で復元されること', () {
       final matchStart = DateTime(2026, 9, 3, 15, 30, 0, 0); // 15:30:00.000
 

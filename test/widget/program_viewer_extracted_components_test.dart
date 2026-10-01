@@ -5,7 +5,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] ProgramViewer Extracted Components テスト', () {
-    test('ProgramViewerStrokeEraser detects near strokes correctlyであること', () {
+    test('ProgramViewerStrokeEraser detects near strokes correctlyこと', () {
       final points = [const Offset(10.0, 10.0), const Offset(20.0, 20.0)];
 
       expect(
@@ -26,7 +26,7 @@ void main() {
       );
     });
 
-    test('ProgramViewerStrokeEraser detects local strokes correctlyであること', () {
+    test('ProgramViewerStrokeEraser detects local strokes correctlyこと', () {
       final xs = [10.0, 20.0];
       final ys = [10.0, 20.0];
 

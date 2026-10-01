@@ -39,7 +39,7 @@ void main() {
       events: [],
     );
 
-    test('generateCsvString produces single category CSV with BOMであること', () {
+    test('generateCsvString produces single category CSV with BOMこと', () {
       final csv = CsvService.generateCsvString('小学生の部', [
         {
           'groupName': '予選A',
@@ -61,7 +61,7 @@ void main() {
     });
 
     test(
-      'generateMultiCategoryCsvString produces multi-category CSV in orderであること',
+      'generateMultiCategoryCsvString produces multi-category CSV in orderこと',
       () {
         final csv = CsvService.generateMultiCategoryCsvString([
           (
@@ -110,7 +110,7 @@ void main() {
     );
 
     test(
-      '【generateMultiCategoryCsvBytesAsync】BOM付きの有効なUTF-8バイト列が返却されること',
+      'generateMultiCategoryCsvBytesAsyncにおいて BOM付きの有効なUTF-8バイト列が返却されること',
       () async {
         final bytes = await CsvService.generateMultiCategoryCsvBytesAsync([
           (

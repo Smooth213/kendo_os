@@ -6,41 +6,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  group('[Governance] 【第6条 ガバナンス監査】大会情報編集UI ドックボトムシート統合 ＆ 旧ダイアログ排除規約', () {
+  group('[Governance] 第6条 ガバナンス監査において 大会情報編集UI ドックボトムシート統合 ＆ 旧ダイアログ排除規約', () {
     final libDir = Directory('lib');
 
-    test(
-      'Rule 1: [静的スキャン] 旧来の TournamentEditDialog クラスおよびファイルが lib/ 配下に0件であること',
-      () {
-        final violations = <String>[];
-        final files = libDir.listSync(recursive: true).whereType<File>();
+    test('静的スキャンに関して、 旧来の TournamentEditDialog クラスおよびファイルが lib/ 配下に0件こと', () {
+      final violations = <String>[];
+      final files = libDir.listSync(recursive: true).whereType<File>();
 
-        for (final file in files) {
-          if (!file.path.endsWith('.dart')) continue;
+      for (final file in files) {
+        if (!file.path.endsWith('.dart')) continue;
 
-          if (file.path.endsWith('tournament_edit_dialog.dart')) {
-            violations.add('旧ダイアログファイルが存在します: ${file.path}');
-          }
-
-          final content = file.readAsStringSync();
-          if (content.contains('TournamentEditDialog')) {
-            violations.add('旧ダイアログへの参照が検出されました: ${file.path}');
-          }
+        if (file.path.endsWith('tournament_edit_dialog.dart')) {
+          violations.add('旧ダイアログファイルが存在します: ${file.path}');
         }
 
-        expect(
-          violations,
-          isEmpty,
-          reason:
-              '旧来の TournamentEditDialog が検出されました。'
-              '大会情報の編集は TournamentEditBottomSheet に統一してください。\n'
-              '違反一覧:\n${violations.join('\n')}',
-        );
-      },
-    );
+        final content = file.readAsStringSync();
+        if (content.contains('TournamentEditDialog')) {
+          violations.add('旧ダイアログへの参照が検出されました: ${file.path}');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            '旧来の TournamentEditDialog が検出されました。'
+            '大会情報の編集は TournamentEditBottomSheet に統一してください。\n'
+            '違反一覧:\n${violations.join('\n')}',
+      );
+    });
 
     test(
-      'Rule 2: [静的スキャン] tournament_header_card.dart において TournamentEditBottomSheet.show が直接呼び出されていること',
+      '静的スキャンに関して、 tournament_header_card.dart において TournamentEditBottomSheet.show が直接呼び出されていること',
       () {
         final headerCardFile = File(
           'lib/features/tournament/presentation/operate/components/home/tournament_header_card.dart',
@@ -64,7 +61,7 @@ void main() {
     );
 
     testWidgets(
-      'Rule 3: [動的規約] TournamentEditBottomSheet の可変シートサイズがドック仕様（0.58〜0.95）に適合していること',
+      '動的規約に関して、 TournamentEditBottomSheet の可変シートサイズがドック仕様（0.58〜0.95）に適合していること',
       (tester) async {
         final tournament = TournamentModel(
           id: 'gov_t01',
@@ -108,7 +105,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [静的スキャン] tournament_edit_bottom_sheet.dart において複数行メモとキーボード追従が実装されていること',
+      '静的スキャンに関して、 tournament_edit_bottom_sheet.dart において複数行メモとキーボード追従が実装されていること',
       () {
         final sheetFile = File(
           'lib/features/tournament/presentation/operate/components/home/tournament_edit_bottom_sheet.dart',

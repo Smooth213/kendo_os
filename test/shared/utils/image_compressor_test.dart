@@ -9,7 +9,7 @@ void main() {
 
   group('[Unit] ImageCompressor ユニットテスト要塞 (自動リサイズ・圧縮 & HEICフォールバック保証)', () {
     test(
-      '【正常系】巨大な画像 (3000 x 4000) が、アスペクト比を維持したまま最大解像度2000pxに自動縮小され、バイトサイズが削減されること',
+      '正常系として 巨大な画像 (3000 x 4000) が、アスペクト比を維持したまま最大解像度2000pxに自動縮小され、バイトサイズが削減されること',
       () async {
         // 1. テスト用に巨大画像 (横3000 x 縦4000) を動的に生成
         final original = img.Image(width: 3000, height: 4000);
@@ -43,7 +43,7 @@ void main() {
       },
     );
 
-    test('【正常系】最大解像度以下の画像 (800 x 600) は、リサイズされずにクオリティ圧縮のみ適用されること', () async {
+    test('正常系として 最大解像度以下の画像 (800 x 600) は、リサイズされずにクオリティ圧縮のみ適用されること', () async {
       final original = img.Image(width: 800, height: 600);
       img.fill(original, color: img.ColorRgb8(0, 0, 255));
       final originalBytes = Uint8List.fromList(
@@ -67,7 +67,7 @@ void main() {
     });
 
     test(
-      '【異常系·HEIC等フォールバック】デコードできない無効なバイト配列が渡された場合、例外をスローせず null を返すこと',
+      '異常系·HEIC等フォールバックにおいて デコードできない無効なバイト配列が渡された場合、例外をスローせず null を返すこと',
       () async {
         // 壊れた画像データ (デコード不能なダミーデータ)
         final brokenBytes = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8]);

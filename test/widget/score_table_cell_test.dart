@@ -34,7 +34,7 @@ void main() {
       expect(find.byType(PointBox), findsNWidgets(2));
     });
 
-    testWidgets('【試合 終了済み with equal スコア】draw markが正しく描画されること', (
+    testWidgets('試合 終了済み with equal スコアにおいて draw markが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -58,7 +58,7 @@ void main() {
       expect(find.text('✕'), findsOneWidget);
     });
 
-    testWidgets('【isEncho is true】encho badges 延 / 長が正しく描画されること', (
+    testWidgets('isEncho is trueにおいて encho badges 延 / 長が正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

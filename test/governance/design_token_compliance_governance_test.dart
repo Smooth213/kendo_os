@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 void main() {
-  group('[Governance] 【ガバナンス第3条】デザインシステムトークン厳格準拠 監査テスト', () {
+  group('[Governance] ガバナンス第3条において デザインシステムトークン厳格準拠 監査テスト', () {
     test(
       'app_tokens.dart に AppSpacing, AppRadius, AppFontSize 等の基幹トークンが完全定義されていること',
       () {
@@ -19,7 +19,7 @@ void main() {
       },
     );
 
-    test('主要トークン値（Spacing, Radius, FontSize, AppKendoColors）が有効であること', () {
+    test('主要トークン値（Spacing, Radius, FontSize, AppKendoColors）が有効こと', () {
       expect(AppSpacing.xs, greaterThan(0));
       expect(AppSpacing.sm, greaterThan(AppSpacing.xs));
       expect(AppSpacing.md, greaterThan(AppSpacing.sm));

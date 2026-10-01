@@ -41,35 +41,29 @@ void main() {
       expect(snapshot.events.length, 1);
     });
 
-    test(
-      'addSnapshotToMatch caps snapshots at 1 item by default (sliding window for light memory/DB footprint)こと',
-      () {
-        var currentMatch = MatchModel(
-          id: 'match-1',
-          tournamentId: 'tour-1',
-          matchOrder: 1,
-          matchType: '先鋒',
-          status: 'in_progress',
-          redName: '選手A',
-          whiteName: '選手B',
-        );
+    test('メモリおよびDB負荷軽減のためスナップショットが最大1件に制限されること', () {
+      var currentMatch = MatchModel(
+        id: 'match-1',
+        tournamentId: 'tour-1',
+        matchOrder: 1,
+        matchType: '先鋒',
+        status: 'in_progress',
+        redName: '選手A',
+        whiteName: '選手B',
+      );
 
-        for (int i = 1; i <= 25; i++) {
-          currentMatch = helper.addSnapshotToMatch(
-            currentMatch,
-            'Snapshot #$i',
-          );
-        }
+      for (int i = 1; i <= 25; i++) {
+        currentMatch = helper.addSnapshotToMatch(currentMatch, 'Snapshot #$i');
+      }
 
-        // 上限1件に制限されていること（直前Undo用）
-        expect(currentMatch.snapshots.length, 1);
-        // 最新の25件目のみが保持されていること
-        expect(currentMatch.snapshots.first.reason, 'Snapshot #25');
-      },
-    );
+      // 上限1件に制限されていること（直前Undo用）
+      expect(currentMatch.snapshots.length, 1);
+      // 最新の25件目のみが保持されていること
+      expect(currentMatch.snapshots.first.reason, 'Snapshot #25');
+    });
 
     test(
-      'addSnapshotToMatch supports configurable maxSnapshots parameterであること',
+      'addSnapshotToMatch supports configurable maxSnapshots parameterこと',
       () {
         const customHelper = MatchSnapshotHelper(maxSnapshots: 5);
         var currentMatch = MatchModel(

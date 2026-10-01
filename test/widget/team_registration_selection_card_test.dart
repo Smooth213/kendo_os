@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 
 void main() {
   group('[Widget] TeamRegistrationSelectionCard ウィジェットテスト', () {
-    testWidgets('selectable 選手 カード and handles tapが正しく描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('選択可能な選手カードが描画されタップが正常に処理されること', (WidgetTester tester) async {
       bool tapped = false;
 
       await tester.pumpWidget(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 7-4/8】直射日光・逆光グレア対策 超高コントラスト屋外モード Widgetテスト', () {
+  group('[Widget] 直射日光・逆光グレア対策 超高コントラスト屋外モード Widgetテスト', () {
     testWidgets('グレアモード有効時、背景が純黒（0xFF000000）かつ高輝度テキストで視認性が最大化されること', (
       tester,
     ) async {

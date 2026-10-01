@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/config/runtime_mode.dart';
 import 'package:kendo_os/shared/routing/match_router.dart';
 
 void main() {
-  group('[Widget] [Phase 1] Feature Flag 完全統制セキュリティ検証テスト', () {
+  group('[Widget] に関して、Feature Flag 完全統制セキュリティ検証テスト', () {
     testWidgets('フラグがOFFの際、開発者用システム画面への直接URLアクセス（DeepLink）が物理拒否されること', (
       WidgetTester tester,
     ) async {
@@ -26,7 +26,7 @@ void main() {
       expect(find.text('Observability Dashboard'), findsNothing);
     });
 
-    testWidgets('一般ユーザー画面において、隠蔽すべき特権操作ボタンやメニューが一切露出していないこと', (
+    testWidgets('一般ユーザー画面において、特権操作ボタンやメニューが一切露出していないこと', (
       WidgetTester tester,
     ) async {
       // 1. フラグ状態の事前検証（★最新 of 定数定義に完全同期）

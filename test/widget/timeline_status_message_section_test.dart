@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/safe
 
 void main() {
   group('[Widget] TimelineStatusMessageSection テスト', () {
-    testWidgets('shows error state when hasError is trueであること', (tester) async {
+    testWidgets('エラー発生時にエラー状態が表示されること', (tester) async {
       const SafeTimelineResult result = (
         entries: [],
         isLoading: false,
@@ -31,7 +31,7 @@ void main() {
       expect(find.text('Network error'), findsOneWidget);
     });
 
-    testWidgets('shows empty search query resultであること', (tester) async {
+    testWidgets('shows empty search query resultこと', (tester) async {
       const SafeTimelineResult result = (
         entries: [],
         isLoading: false,

@@ -12,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('【ViewerTeamCard】チームヘッダーおよび子カードが正しく描画されること', (tester) async {
+  testWidgets('ViewerTeamCardにおいて チームヘッダーおよび子カードが正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

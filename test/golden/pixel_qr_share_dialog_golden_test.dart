@@ -10,7 +10,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Golden] 【Golden】WebアプリQRコード ＆ 道場ルームQRダイアログ視覚整合性テスト', () {
+  group('[Golden] WebアプリQRコード ＆ 道場ルームQRダイアログ視覚整合性テスト', () {
     Widget buildQrWrapper({required Widget child, required bool isDark}) {
       final themeColors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
       return ProviderScope(

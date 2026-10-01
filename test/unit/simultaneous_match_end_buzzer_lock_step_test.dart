@@ -18,7 +18,7 @@ class MultiCourtBuzzerScheduler {
 }
 
 void main() {
-  group('[Unit] 【Phase 7-7/8】全8コート一斉終了ブザー 音割れ・位相反転防止スタガード制御テスト', () {
+  group('[Unit] 全8コート一斉終了ブザー 音割れ・位相反転防止スタガード制御テスト', () {
     test('8コート同時に試合終了時、0ms、20ms、40ms...と微小遅延配置され音割れが防止されること', () {
       final courts = [1, 2, 3, 4, 5, 6, 7, 8];
       final schedule = MultiCourtBuzzerScheduler.scheduleBuzzers(courts);

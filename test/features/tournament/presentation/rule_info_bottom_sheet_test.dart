@@ -433,7 +433,7 @@ void main() {
       });
 
       testWidgets(
-        '【ポジション延長 誤表示回帰防止テスト】旧データや不正なデフォルト値（enchoTimeMinutes=3.0, enchoCount=0）を持つ団体戦データでも「ポジション延長」「延長戦」「判定」が100%非表示であること',
+        'ポジション延長 誤表示回帰防止テストにおいて 旧データや不正なデフォルト値（enchoTimeMinutes=3.0, enchoCount=0）を持つ団体戦データでも「ポジション延長」「延長戦」「判定」が100%非表示となること',
         (WidgetTester tester) async {
           const buggyLegacyRule = MatchRule(
             matchTimeMinutes: 3.0,

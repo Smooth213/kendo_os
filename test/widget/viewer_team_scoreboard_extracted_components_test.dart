@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] ViewerTeamScoreboard Extracted Components テスト', () {
-    testWidgets('ViewerTeamScoreboardTableBuilder builds rows correctlyであること', (
+    testWidgets('ViewerTeamScoreboardTableBuilder builds rows correctlyこと', (
       tester,
     ) async {
       final headerRow = ViewerTeamScoreboardTableBuilder.buildHeaderRow(
@@ -42,7 +42,7 @@ void main() {
       expect(find.text('1 / 1'), findsOneWidget);
     });
 
-    testWidgets('観戦側 1本勝ちの公式記録表記テスト（左上に丸囲み技マーク＋全体勝者円）こと', (tester) async {
+    testWidgets('左上に丸囲み技マーク＋全体勝者円において観戦側 1本勝ちの公式記録表記テストこと', (tester) async {
       final matchRow = ViewerTeamScoreboardTableBuilder.buildMatchRow(
         const MatchListProjection(
           id: 'm1',

@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[Unit] 【Phase 1-1/10】全剣連規則第34条 反則4回相手二本勝ち・即座試合終了境界値テスト', () {
+  group('[Unit] 全剣連規則第34条 反則4回相手二本勝ち・即座試合終了境界値テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm1',

@@ -382,7 +382,7 @@ void main() {
     );
 
     testWidgets(
-      '部内戦観客モード（ViewerBunaiksenHomeScreen）：通常インディゴ・部内戦運営臙脂と重複しない「千歳緑（Colors.teal.shade700）背景に白文字」の色分け検証 (すりガラスOFF時)こと',
+      'すりガラスOFF時において部内戦観客モード（ViewerBunaiksenHomeScreen）：通常インディゴ・部内戦運営臙脂と重複しない「千歳緑（Colors.teal.shade700）背景に白文字」の色分け検証こと',
       (WidgetTester tester) async {
         // SharedPreferences setup to save enableLiquidGlass as false
         prefs.setString(
@@ -416,7 +416,7 @@ void main() {
     );
 
     testWidgets(
-      '部内戦観客モード（ViewerBunaiksenHomeScreen）：すりガラスON時、背景が透明かつ文字・アイコンがColors.teal.shade700であること',
+      '部内戦観客モード（ViewerBunaiksenHomeScreen）：すりガラスON時、背景が透明かつ文字・アイコンがColors.teal.shade700こと',
       (WidgetTester tester) async {
         // SharedPreferences setup to save enableLiquidGlass as true
         prefs.setString(
@@ -450,7 +450,7 @@ void main() {
     );
 
     testWidgets(
-      '部内戦観客モード（ViewerBunaiksenHomeScreen）：ダークモード時、文字・アイコンがColors.teal.shade300であること',
+      '部内戦観客モード（ViewerBunaiksenHomeScreen）：ダークモード時、文字・アイコンがColors.teal.shade300こと',
       (WidgetTester tester) async {
         prefs.setString(
           'kendo_sync_settings',

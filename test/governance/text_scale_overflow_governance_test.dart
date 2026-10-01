@@ -39,7 +39,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] [ガバナンス第3条] フォントサイズ拡大時の文字切れ・省略（...）完全防止規約', () {
+  group('[Governance] ガバナンス第3条に関して、フォントサイズ拡大時の文字切れ・省略（...）完全防止規約', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -56,7 +56,7 @@ void main() {
     // ------------------------------------------------------------------------
     // 静的コードガバナンス監査
     // ------------------------------------------------------------------------
-    test('【静的規約 1】主要ヘッダー・バナーコンポーネントが FittedBox による縮小防護を備えていること', () {
+    test('静的規約 1において 主要ヘッダー・バナーコンポーネントが FittedBox による縮小防護を備えていること', () {
       final targetComponents = [
         'lib/shared/widgets/app_header.dart',
         'lib/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart',
@@ -84,7 +84,7 @@ void main() {
       }
     });
 
-    test('【静的規約 2】AppHeader でのタイトル直書きは禁止され、FittedBox による動的縮小が施されていること', () {
+    test('静的規約 2において AppHeader でのタイトル直書きは禁止され、FittedBox による動的縮小が施されていること', () {
       final headerFile = dartFiles.firstWhere(
         (f) => f.path
             .replaceAll('\\', '/')
@@ -96,7 +96,7 @@ void main() {
     });
 
     test(
-      '【静的規約 3】DockBottomSheetHeader でのタイトル直書きは禁止され、FittedBox による動的縮小が施されていること',
+      '静的規約 3において DockBottomSheetHeader でのタイトル直書きは禁止され、FittedBox による動的縮小が施されていること',
       () {
         final dockFile = dartFiles.firstWhere(
           (f) => f.path
@@ -185,7 +185,7 @@ void main() {
     // 動的描画検証テストケース
     // ------------------------------------------------------------------------
     testWidgets(
-      '【動的規約 1】AppBar標準ヘッダー (AppHeader): 長文タイトルでもFittedBoxで綺麗に収まり文字切れゼロこと',
+      '動的規約 1において AppBar標準ヘッダー (AppHeader): 長文タイトルでもFittedBoxで綺麗に収まり文字切れゼロこと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -198,7 +198,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 2】ドックボトムシートヘッダー (DockBottomSheetHeader): 特大時もボタン押し出し・文字切れゼロこと',
+      '動的規約 2において ドックボトムシートヘッダー (DockBottomSheetHeader): 特大時もボタン押し出し・文字切れゼロこと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -212,7 +212,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 3】試合チームヘッダー行 (MatchTeamHeaderRow): 左右長文チーム名でも重ならず全文表示こと',
+      '動的規約 3において 試合チームヘッダー行 (MatchTeamHeaderRow): 左右長文チーム名でも重ならず全文表示こと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -227,7 +227,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 4】試合選手・スコア行 (MatchPlayersScoreRow): 左右長文選手名でもスコアと干渉せず全文表示こと',
+      '動的規約 4において 試合選手・スコア行 (MatchPlayersScoreRow): 左右長文選手名でもスコアと干渉せず全文表示こと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -248,7 +248,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 5】大会情報ヘッダー (TournamentHeaderCard): 長文会場名でもFittedBoxで綺麗に全文収まること',
+      '動的規約 5において 大会情報ヘッダー (TournamentHeaderCard): 長文会場名でもFittedBoxで綺麗に全文収まること',
       (tester) async {
         final mockTournament = TournamentModel(
           id: 'gov_tourney',
@@ -268,7 +268,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 6】対戦履歴カードリスト (ExpeditionCardResultList): 長文試合場・進行見出しでも全文表示こと',
+      '動的規約 6において 対戦履歴カードリスト (ExpeditionCardResultList): 長文試合場・進行見出しでも全文表示こと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -295,7 +295,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 7】試合編集シート (MatchEditSheet): タブ「コート・メモ」等全文字サイズで文字切れゼロこと',
+      '動的規約 7において 試合編集シート (MatchEditSheet): タブ「コート・メモ」等全文字サイズで文字切れゼロこと',
       (tester) async {
         final mockMatch = MatchModel(
           id: 'gov_m1',
@@ -320,7 +320,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 8】コート計算機形式選択 (MatchCalculatorFormatSelector): ボタン文字切れゼロこと',
+      '動的規約 8において コート計算機形式選択 (MatchCalculatorFormatSelector): ボタン文字切れゼロこと',
       (tester) async {
         final notifier = MatchCalculatorNotifier();
         await testWidgetWithTextScalers(
@@ -335,7 +335,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 9】観客用表示設定シート (ViewerSettingsBottomSheet): 全設定タイルで文字切れゼロこと',
+      '動的規約 9において 観客用表示設定シート (ViewerSettingsBottomSheet): 全設定タイルで文字切れゼロこと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,
@@ -346,7 +346,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 10】遠征サマリーツールバー (ExpeditionSummaryToolbar): 文字拡大時も文字切れゼロこと',
+      '動的規約 10において 遠征サマリーツールバー (ExpeditionSummaryToolbar): 文字拡大時も文字切れゼロこと',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -391,7 +391,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 11】遠征サマリーヘッダー (ExpeditionSummaryHeader): タイトル・共有・開閉ボタン文字切れゼロこと',
+      '動的規約 11において 遠征サマリーヘッダー (ExpeditionSummaryHeader): タイトル・共有・開閉ボタン文字切れゼロこと',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -413,7 +413,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 12】チーム登録オーダー入力ステップ (TeamRegistrationOrderStep): 特大文字時もボタン・アバター文字切れゼロこと',
+      '動的規約 12において チーム登録オーダー入力ステップ (TeamRegistrationOrderStep): 特大文字時もボタン・アバター文字切れゼロこと',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,
@@ -445,7 +445,7 @@ void main() {
     );
 
     testWidgets(
-      '【動的規約 13】公式記録カテゴリ別タブビュー (OfficialRecordCategoryTabView): 特大文字時も全要素崩れゼロこと',
+      '動的規約 13において 公式記録カテゴリ別タブビュー (OfficialRecordCategoryTabView): 特大文字時も全要素崩れゼロこと',
       (tester) async {
         await testWidgetWithTextScalers(
           tester: tester,

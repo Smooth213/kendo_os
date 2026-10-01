@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_roster_swap_dialog.dart';
 
 void main() {
-  testWidgets('【QuickRosterSwapDialog】ドラッグハンドル付きの並び替え可能な選手一覧が描画されること', (
+  testWidgets('QuickRosterSwapDialogにおいて ドラッグハンドル付きの並び替え可能な選手一覧が描画されること', (
     tester,
   ) async {
     final teamMatches = [

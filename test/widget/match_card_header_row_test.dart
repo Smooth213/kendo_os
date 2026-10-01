@@ -22,7 +22,7 @@ void main() {
       expect(find.text('STATUS'), findsOneWidget);
     });
 
-    testWidgets('【provided】leading widgetが正しく描画されること', (
+    testWidgets('providedにおいて leading widgetが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

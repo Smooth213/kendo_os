@@ -14,7 +14,7 @@ import 'package:kendo_os/shared/widgets/app_text_field.dart';
 // 適正な薄いグレー（hintColor / subTextColor / 透過グレー等）で表示されることを永久保証します。
 // ==============================================================================
 void main() {
-  group('[Governance] [第3条 ガバナンス規約] 全画面ヒントテキスト視認性・適正グレー保証テスト', () {
+  group('[Governance] 第3条 ガバナンス規約に関して、全画面ヒントテキスト視認性・適正グレー保証テスト', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -31,7 +31,7 @@ void main() {
     // --------------------------------------------------------------------------
     // 1. 静的コード解析規約: lib/ 全域での hintStyle 不透明純白・純黒の直書きゼロ保証
     // --------------------------------------------------------------------------
-    test('[静的規約] 全Dartファイルで hintStyle への不透明純白(0xFFFFFFFF/white)・純黒の直接指定が0件であること', () {
+    test('静的規約に関して、全Dartファイルで hintStyle への不透明純白(0xFFFFFFFF/white)・純黒の直接指定が0件こと', () {
       final violations = <String>[];
 
       final whiteRegex = RegExp(
@@ -70,7 +70,7 @@ void main() {
     // --------------------------------------------------------------------------
     // 2. デザインシステムトークン規約: ライト/ダーク両モードの hintColor が適正グレーであること
     // --------------------------------------------------------------------------
-    test('[トークン規約] AppThemeColors の hintColor がライト/ダークともに適正なグレー色であること', () {
+    test('トークン規約に関して、AppThemeColors の hintColor がライト/ダークともに適正なグレー色こと', () {
       for (final mode in ['normal', 'combat', 'zen']) {
         final lightColors = AppThemeColors.ofMode(isDark: false, mode: mode);
         final darkColors = AppThemeColors.ofMode(isDark: true, mode: mode);
@@ -107,49 +107,48 @@ void main() {
     // --------------------------------------------------------------------------
     // 3. 動的ウィジェット規約: AppTextField がライト/ダーク両モードで hintColor を自動適用すること
     // --------------------------------------------------------------------------
-    testWidgets(
-      '[ウィジェット規約] AppTextField のデフォルトヒント色がライト/ダークともに hintColor であること',
-      (tester) async {
-        for (final isDark in [false, true]) {
-          final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-          final controller = TextEditingController();
-          addTearDown(controller.dispose);
+    testWidgets('ウィジェット規約に関して、AppTextField のデフォルトヒント色がライト/ダークともに hintColorこと', (
+      tester,
+    ) async {
+      for (final isDark in [false, true]) {
+        final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+        final controller = TextEditingController();
+        addTearDown(controller.dispose);
 
-          final themeData = ThemeData(
-            brightness: isDark ? Brightness.dark : Brightness.light,
-            extensions: [colors],
-          );
+        final themeData = ThemeData(
+          brightness: isDark ? Brightness.dark : Brightness.light,
+          extensions: [colors],
+        );
 
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Theme(
-                data: themeData,
-                child: Scaffold(
-                  body: AppTextField(
-                    controller: controller,
-                    hintText: 'プレースホルダー入力補助',
-                  ),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Theme(
+              data: themeData,
+              child: Scaffold(
+                body: AppTextField(
+                  controller: controller,
+                  hintText: 'プレースホルダー入力補助',
                 ),
               ),
             ),
-          );
+          ),
+        );
 
-          final textField = tester.widget<TextField>(find.byType(TextField));
-          final hintColor = textField.decoration?.hintStyle?.color;
+        final textField = tester.widget<TextField>(find.byType(TextField));
+        final hintColor = textField.decoration?.hintStyle?.color;
 
-          expect(hintColor, isNotNull);
-          expect(hintColor, equals(colors.hintColor));
-          expect(hintColor, isNot(equals(const Color(0xFFFFFFFF))));
-          expect(hintColor, isNot(equals(const Color(0xFF000000))));
-        }
-      },
-    );
+        expect(hintColor, isNotNull);
+        expect(hintColor, equals(colors.hintColor));
+        expect(hintColor, isNot(equals(const Color(0xFFFFFFFF))));
+        expect(hintColor, isNot(equals(const Color(0xFF000000))));
+      }
+    });
 
     // --------------------------------------------------------------------------
     // 4. 動的画面規約: MatchEditCourtAndGroupTab の入力欄がライト/ダークともに適正グレーであること
     // --------------------------------------------------------------------------
     testWidgets(
-      '[画面規約] MatchEditCourtAndGroupTab 全入力欄のヒント色がライト/ダークともに適正グレーであること',
+      '画面規約に関して、MatchEditCourtAndGroupTab 全入力欄のヒント色がライト/ダークともに適正グレーこと',
       (tester) async {
         for (final isDark in [false, true]) {
           final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -198,7 +197,7 @@ void main() {
     // 5. 動的画面規約: MatchEditTeamAndPlayersTab の入力欄がライト/ダークともに適正グレーであること
     // --------------------------------------------------------------------------
     testWidgets(
-      '[画面規約] MatchEditTeamAndPlayersTab 全入力欄のヒント色がライト/ダークともに適正グレーであること',
+      '画面規約に関して、MatchEditTeamAndPlayersTab 全入力欄のヒント色がライト/ダークともに適正グレーこと',
       (tester) async {
         for (final isDark in [false, true]) {
           final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
@@ -263,106 +262,103 @@ void main() {
     // --------------------------------------------------------------------------
     // 6. 動的画面規約: 大会作成画面 (Page1 / Page2) のヒント色がライト/ダークともに適正グレーであること
     // --------------------------------------------------------------------------
-    testWidgets(
-      '[画面規約] 大会作成画面 (Page1 & Page2) 全入力欄のヒント色がライト/ダークともに適正グレーであること',
-      (tester) async {
-        for (final isDark in [false, true]) {
-          final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-          final nameCtrl = TextEditingController();
-          final venueCtrl = TextEditingController();
-          final notesCtrl = TextEditingController();
+    testWidgets('画面規約に関して、大会作成画面 (Page1 & Page2) 全入力欄のヒント色がライト/ダークともに適正グレーこと', (
+      tester,
+    ) async {
+      for (final isDark in [false, true]) {
+        final colors = AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+        final nameCtrl = TextEditingController();
+        final venueCtrl = TextEditingController();
+        final notesCtrl = TextEditingController();
 
-          addTearDown(() {
-            nameCtrl.dispose();
-            venueCtrl.dispose();
-            notesCtrl.dispose();
-          });
+        addTearDown(() {
+          nameCtrl.dispose();
+          venueCtrl.dispose();
+          notesCtrl.dispose();
+        });
 
-          final themeData = ThemeData(
-            brightness: isDark ? Brightness.dark : Brightness.light,
-            extensions: [colors],
-          );
+        final themeData = ThemeData(
+          brightness: isDark ? Brightness.dark : Brightness.light,
+          extensions: [colors],
+        );
 
-          // Page 1
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Theme(
-                data: themeData,
-                child: Scaffold(
-                  body: Builder(
-                    builder: (context) {
-                      final hintColor = isDark
-                          ? const Color(0xFF8E8E93)
-                          : context.appColors.hintColor;
-                      return TextField(
-                        controller: nameCtrl,
-                        decoration: InputDecoration(
-                          hintText: '例：第1回 〇〇剣道大会',
-                          hintStyle: TextStyle(color: hintColor),
+        // Page 1
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Theme(
+              data: themeData,
+              child: Scaffold(
+                body: Builder(
+                  builder: (context) {
+                    final hintColor = isDark
+                        ? const Color(0xFF8E8E93)
+                        : context.appColors.hintColor;
+                    return TextField(
+                      controller: nameCtrl,
+                      decoration: InputDecoration(
+                        hintText: '例：第1回 〇〇剣道大会',
+                        hintStyle: TextStyle(color: hintColor),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+
+        var tf = tester.widget<TextField>(find.byType(TextField));
+        var hintColor = tf.decoration?.hintStyle?.color;
+        expect(hintColor, isNotNull);
+        expect(hintColor, isNot(equals(const Color(0xFFFFFFFF))));
+        expect(hintColor, isNot(equals(const Color(0xFF000000))));
+        expect(hintColor, isNot(equals(colors.textColor)));
+
+        // Page 2
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Theme(
+              data: themeData,
+              child: Scaffold(
+                body: Builder(
+                  builder: (context) {
+                    final hintColor = isDark
+                        ? const Color(0xFF8E8E93)
+                        : context.appColors.hintColor;
+                    return Column(
+                      children: [
+                        TextField(
+                          controller: venueCtrl,
+                          decoration: InputDecoration(
+                            hintText: '例：〇〇県立武道館',
+                            hintStyle: TextStyle(color: hintColor),
+                          ),
                         ),
-                      );
-                    },
-                  ),
+                        TextField(
+                          controller: notesCtrl,
+                          decoration: InputDecoration(
+                            hintText: '例：駐車場は第2駐車場を利用',
+                            hintStyle: TextStyle(color: hintColor),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
-          );
+          ),
+        );
 
-          var tf = tester.widget<TextField>(find.byType(TextField));
-          var hintColor = tf.decoration?.hintStyle?.color;
-          expect(hintColor, isNotNull);
-          expect(hintColor, isNot(equals(const Color(0xFFFFFFFF))));
-          expect(hintColor, isNot(equals(const Color(0xFF000000))));
-          expect(hintColor, isNot(equals(colors.textColor)));
-
-          // Page 2
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Theme(
-                data: themeData,
-                child: Scaffold(
-                  body: Builder(
-                    builder: (context) {
-                      final hintColor = isDark
-                          ? const Color(0xFF8E8E93)
-                          : context.appColors.hintColor;
-                      return Column(
-                        children: [
-                          TextField(
-                            controller: venueCtrl,
-                            decoration: InputDecoration(
-                              hintText: '例：〇〇県立武道館',
-                              hintStyle: TextStyle(color: hintColor),
-                            ),
-                          ),
-                          TextField(
-                            controller: notesCtrl,
-                            decoration: InputDecoration(
-                              hintText: '例：駐車場は第2駐車場を利用',
-                              hintStyle: TextStyle(color: hintColor),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          );
-
-          final textFields = tester.widgetList<TextField>(
-            find.byType(TextField),
-          );
-          for (final field in textFields) {
-            final color = field.decoration?.hintStyle?.color;
-            expect(color, isNotNull);
-            expect(color, isNot(equals(const Color(0xFFFFFFFF))));
-            expect(color, isNot(equals(const Color(0xFF000000))));
-            expect(color, isNot(equals(colors.textColor)));
-          }
+        final textFields = tester.widgetList<TextField>(find.byType(TextField));
+        for (final field in textFields) {
+          final color = field.decoration?.hintStyle?.color;
+          expect(color, isNotNull);
+          expect(color, isNot(equals(const Color(0xFFFFFFFF))));
+          expect(color, isNot(equals(const Color(0xFF000000))));
+          expect(color, isNot(equals(colors.textColor)));
         }
-      },
-    );
+      }
+    });
   });
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 4-1/11】ブラウザ「戻る」ボタン誤押下 PopScope 画面離脱阻止テスト', () {
+  group('[Widget] ブラウザ「戻る」ボタン誤押下 PopScope 画面離脱阻止テスト', () {
     testWidgets('試合進行中にブラウザの戻る操作が起きても PopScope が離脱を阻止すること', (tester) async {
       bool confirmDialogShown = false;
       bool isMatchInProgress = true;

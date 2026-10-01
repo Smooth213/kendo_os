@@ -30,9 +30,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] Bunaiksen Setup Extracted Components テスト', () {
-    testWidgets('BunaiksenRuleSettingsCard renders expansion tileであること', (
-      tester,
-    ) async {
+    testWidgets('部内戦ルール設定カードのExpansionTileが正しく描画されること', (tester) async {
       final rule = MatchRule(matchTimeMinutes: 2.0, isIpponShobu: false);
 
       await tester.pumpWidget(
@@ -57,7 +55,7 @@ void main() {
       expect(find.text('部内戦ルール設定'), findsOneWidget);
     });
 
-    testWidgets('【BunaiksenSetupScreen】全タブとともに適切に描画されること', (tester) async {
+    testWidgets('BunaiksenSetupScreenにおいて 全タブとともに適切に描画されること', (tester) async {
       tester.view.physicalSize = const Size(1200, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());

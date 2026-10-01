@@ -61,7 +61,7 @@ void main() {
       expect(analysis.displays[Side.white]!.first.mark, '反');
     });
 
-    test('時間切れかつ同点の場合、延長戦に突入すべきと判定されること', () {
+    test('時間切れかつ同点の場合、延長戦突入と判定されること', () {
       final ctx = MatchContext(
         redIppon: 0,
         whiteIppon: 0,
@@ -218,7 +218,7 @@ void main() {
       );
     });
 
-    test('【判定】判定(Hantei)が入力された際、マークが「判定」かつ「◯囲み対象」になるかこと', () {
+    test('判定において 判定(Hantei)が入力された際、マークが「判定」かつ「◯囲み対象」になるかこと', () {
       final event = ScoreEvent(
         id: 'e',
         side: Side.red,
@@ -234,7 +234,7 @@ void main() {
       expect(display.isFirstMatchPoint, isTrue, reason: '試合の1本目なので◯囲みが必要');
     });
 
-    test('【不戦勝】不戦勝(Fusen)が入力された際、マーク「◯」が2つ生成されるかこと', () {
+    test('不戦勝において 不戦勝(Fusen)が入力された際、マーク「◯」が2つ生成されるかこと', () {
       final event = ScoreEvent(
         id: 'e',
         side: Side.red,
@@ -253,7 +253,7 @@ void main() {
       expect(displays[1].isFirstMatchPoint, isFalse, reason: '不戦勝の2本目はそのまま');
     });
 
-    test('【反則一本】反則2回で、相手側にマーク「反」が生成されるかこと', () {
+    test('反則一本において 反則2回で、相手側にマーク「反」が生成されるかこと', () {
       final events = [hansoku(Side.red), hansoku(Side.red)];
 
       final analysis = engine.analyzeHistory(events, dummyMatch, dummyRule);
@@ -265,7 +265,7 @@ void main() {
       expect(analysis.context.redHansoku, 2);
     });
 
-    test('【1本目/2本目】1本目は◯囲みあり、2本目は◯囲みなしになるかこと', () {
+    test('1本目/2本目において 1本目は◯囲みあり、2本目は◯囲みなしになるかこと', () {
       final events = [men(Side.red), kote(Side.red)];
 
       final analysis = engine.analyzeHistory(events, dummyMatch, dummyRule);
@@ -277,7 +277,7 @@ void main() {
       expect(displays[1].isFirstMatchPoint, isFalse);
     });
 
-    test('【反則数】UI表示用の反則数(▲カウント)が正しく計算されるかこと', () {
+    test('反則数において UI表示用の反則数(▲カウント)が正しく計算されるかこと', () {
       final analysis = engine.analyzeHistory(
         [hansoku(Side.red)],
         dummyMatch,

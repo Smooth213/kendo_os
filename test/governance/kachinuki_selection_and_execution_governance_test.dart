@@ -25,13 +25,13 @@ void main() {
     return MaterialApp(home: Scaffold(body: child));
   }
 
-  group('[Governance] 【勝ち抜き戦（5人制 / 3人制）】選択・適応・実行 総合保証テスト', () {
+  group('[Governance] 勝ち抜き戦（5人制 / 3人制）において 選択・適応・実行 総合保証テスト', () {
     // =========================================================================
     // 柱1: 【選択保証 (Selection Guarantee)】
     // =========================================================================
     group('第1柱: 全UI画面における選択保証', () {
       testWidgets(
-        '[新規チーム登録] TeamRegistrationCategoryStep で「勝ち抜き戦（5人制）」「勝ち抜き戦（3人制）」が選択できること',
+        '新規チーム登録に関して、TeamRegistrationCategoryStep で「勝ち抜き戦（5人制）」「勝ち抜き戦（3人制）」が選択できること',
         (tester) async {
           String selectedType = '団体戦（5人制）';
 
@@ -71,7 +71,7 @@ void main() {
       );
 
       testWidgets(
-        '[チーム編集] TeamEditBasicFields で「勝ち抜き戦（5人制）」「勝ち抜き戦（3人制）」が描画され選択切り替えできること',
+        'チーム編集に関して、TeamEditBasicFields で「勝ち抜き戦（5人制）」「勝ち抜き戦（3人制）」が描画され選択切り替えできること',
         (tester) async {
           final controller = TextEditingController(text: 'テスト道場');
           String selectedType = '個人戦';
@@ -108,7 +108,7 @@ void main() {
         },
       );
 
-      testWidgets('[共有インポート] ShareImportTeamSection のボトムシートで新形式が選択反映されること', (
+      testWidgets('共有インポートに関して、ShareImportTeamSection のボトムシートで新形式が選択反映されること', (
         tester,
       ) async {
         const team = ParsedTeamOrder(
@@ -151,7 +151,7 @@ void main() {
       });
 
       testWidgets(
-        '[大会作成] CreateTournamentImportTeamsCard のボトムシートで新形式が選択反映されること',
+        '大会作成に関して、CreateTournamentImportTeamsCard のボトムシートで新形式が選択反映されること',
         (tester) async {
           const teams = [
             ParsedTeamOrder(
@@ -194,7 +194,7 @@ void main() {
       );
 
       testWidgets(
-        '[部門別ルール編集] CategoryRuleEditorHeaderCard のドロップダウンで新形式を選択できること',
+        '部門別ルール編集に関して、CategoryRuleEditorHeaderCard のドロップダウンで新形式を選択できること',
         (tester) async {
           String currentMatchType = '団体戦';
           final subCtrl = TextEditingController();
@@ -241,7 +241,7 @@ void main() {
     // 柱2: 【適応保証 (Adaptation Guarantee)】
     // =========================================================================
     group('第2柱: スロット・ルール設定の適応保証', () {
-      test('[スロット適応] 3人制と5人制で基準スロット定義および自動生成が正しく適応されること', () {
+      test('スロット適応に関して、3人制と5人制で基準スロット定義および自動生成が正しく適応されること', () {
         final slots3 = TournamentTeamAutoRegisterService.getBaseSlots(
           '勝ち抜き戦（3人制）',
         );
@@ -299,7 +299,7 @@ void main() {
       });
 
       test(
-        '[ルール生成適応] CategoryRuleMatchHelper が新形式を isKachinuki: true として適応すること',
+        'ルール生成適応に関して、CategoryRuleMatchHelper が新形式を isKachinuki: true として適応すること',
         () {
           // 3人制勝ち抜き戦のルール生成
           final rule3 = CategoryRuleMatchHelper.buildMatchRule(
@@ -371,7 +371,7 @@ void main() {
       );
 
       testWidgets(
-        '[フォーム適応] CategoryRuleFormSection で新形式選択時に勝ち抜き戦専用設定が描画されること',
+        'フォーム適応に関して、CategoryRuleFormSection で新形式選択時に勝ち抜き戦専用設定が描画されること',
         (tester) async {
           await tester.pumpWidget(
             wrapWithScaffold(
@@ -442,7 +442,7 @@ void main() {
       );
 
       testWidgets(
-        '[サマリー適応] CategoryRuleSummaryCard に「勝ち抜き戦（3人制）」および「勝ち抜き戦（5人制）」が明記されること',
+        'サマリー適応に関して、CategoryRuleSummaryCard に「勝ち抜き戦（3人制）」および「勝ち抜き戦（5人制）」が明記されること',
         (tester) async {
           const rule = MatchRule(
             isKachinuki: true,
@@ -475,7 +475,7 @@ void main() {
     group('第3柱: 試合生成〜勝者残留・敗者交代・決着の実行保証', () {
       final domainService = MatchDomainService();
 
-      test('【3人制勝ち抜き戦】初期試合生成から大将戦決着までの完全ライフサイクル実行保証こと', () {
+      test('3人制勝ち抜き戦において 初期試合生成から大将戦決着までの完全ライフサイクル実行保証こと', () {
         const rule = MatchRule(
           isKachinuki: true,
           matchTimeMinutes: 3.0,
@@ -555,7 +555,7 @@ void main() {
         expect(bout5, isNull);
       });
 
-      test('【5人制勝ち抜き戦】5人抜き完全勝利シナリオの実行保証こと', () {
+      test('5人制勝ち抜き戦において 5人抜き完全勝利シナリオの実行保証こと', () {
         const rule = MatchRule(
           isKachinuki: true,
           matchTimeMinutes: 3.0,

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_slot_helper.dart';
 
 void main() {
-  group('[Unit] 【Unit】TeamRegistrationSlotHelper 選手・補欠スロット操作テスト', () {
+  group('[Unit] TeamRegistrationSlotHelper 選手・補欠スロット操作テスト', () {
     test('removeSubstitute: 補欠スロット削除時に後続が正しく前詰めシフトされ、末尾が削除されること', () {
       final selectedPlayers = <int, String>{5: '補欠1', 6: '補欠2', 7: '補欠3'};
 

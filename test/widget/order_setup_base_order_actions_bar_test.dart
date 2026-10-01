@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_base_order_actions_bar.dart';
 
 void main() {
-  testWidgets('【OrderSetupBaseOrderActionsBar】保存および読込のコールバックが正常に動作すること', (
+  testWidgets('OrderSetupBaseOrderActionsBarにおいて 保存および読込のコールバックが正常に動作すること', (
     tester,
   ) async {
     bool saved = false;

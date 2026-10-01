@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('TeamRegistrationOrderStep renders properlyであること', (
-    tester,
-  ) async {
+  testWidgets('チーム登録オーダー設定ステップが正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final controller = TextEditingController(text: '赤心館A');
     final focusNode = FocusNode();

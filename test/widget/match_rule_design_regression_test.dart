@@ -222,7 +222,7 @@ void main() {
       },
     );
 
-    testWidgets('テーマ・レスポンシブ崩れ防止: 小画面（幅360px）でもOverflowエラー無くスクロール・操作可能であること', (
+    testWidgets('テーマ・レスポンシブ崩れ防止: 小画面（幅360px）でもOverflowエラー無くスクロール・操作可能こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(720, 1280);

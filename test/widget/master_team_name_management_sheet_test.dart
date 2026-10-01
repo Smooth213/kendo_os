@@ -5,7 +5,7 @@ import 'package:kendo_os/admin/presentation/components/master_team_name_manageme
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_name_history_provider.dart';
 
 void main() {
-  testWidgets('【MasterTeamNameManagementSheet】チーム名一覧および入力フィールドが表示されること', (
+  testWidgets('MasterTeamNameManagementSheetにおいて チーム名一覧および入力フィールドが表示されること', (
     tester,
   ) async {
     await tester.pumpWidget(

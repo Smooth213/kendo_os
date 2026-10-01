@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('[Unit] 【Phase 1】AppStartup コアサービス並列初期化パイプライン検証テスト', () {
+  group('[Unit] AppStartup コアサービス並列初期化パイプライン検証テスト', () {
     test('SharedPreferences および独立非同期コアサービスが Future.wait で並列初期化されること', () async {
       SharedPreferences.setMockInitialValues({'test_key': 'kendo_os_startup'});
 

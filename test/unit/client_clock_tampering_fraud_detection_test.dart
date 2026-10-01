@@ -41,7 +41,7 @@ class ClockTamperDetector {
 }
 
 void main() {
-  group('[Unit] 【Phase 4-5/11】端末時刻意図的改ざん（時間切れ不正工作）検知＆矯正テスト', () {
+  group('[Unit] 端末時刻意図的改ざん（時間切れ不正工作）検知＆矯正テスト', () {
     final serverNow = DateTime(2026, 9, 3, 10, 1, 0); // 試合開始1分後（残り120秒のはず）
     final matchStart = DateTime(2026, 9, 3, 10, 0, 0);
     const totalSeconds = 180;

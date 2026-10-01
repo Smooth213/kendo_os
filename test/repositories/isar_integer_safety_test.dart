@@ -110,7 +110,7 @@ void main() {
       );
     });
 
-    test('【包括テスト】全 .g.dart ファイルが制限内の整数を使用すること', () async {
+    test('包括テストにおいて 全 .g.dart ファイルが制限内の整数を使用すること', () async {
       final modelDir = Directory('lib');
       if (!modelDir.existsSync()) {
         fail('lib directory not found');
@@ -148,7 +148,7 @@ void main() {
       expect((maxSafeJsInteger + 1).abs() > maxSafeJsInteger, isTrue);
     });
 
-    test('生成後再実行しても安全性が維持されることを確認（再発防止）こと', () async {
+    test('再発防止において生成後再実行しても安全性が維持されることを確認こと', () async {
       // This test documents the expected behavior after code generation
       // If this test fails, it means generated files lost their JS-safe ID patches
 

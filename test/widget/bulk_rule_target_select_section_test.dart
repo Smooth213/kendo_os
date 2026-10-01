@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bul
 
 void main() {
   group('[Widget] BulkRuleTargetSelectSection ウィジェットテスト', () {
-    testWidgets('filters, units and triggers callbacksが正しく描画されること', (
-      tester,
-    ) async {
+    testWidgets('フィルターとユニットが表示されコールバックが正常に実行されること', (tester) async {
       String selectedCategory = 'すべて';
       String selectedType = 'すべて';
       bool toggleAllCalled = false;
@@ -70,7 +68,7 @@ void main() {
     });
 
     testWidgets(
-      '【ダークモード視認性保証テスト】ダークモード時、チェックリスト背景が白にならず、白テキストとのコントラストが保たれること',
+      'ダークモード視認性保証テストにおいて ダークモード時、チェックリスト背景が白にならず、白テキストとのコントラストが保たれること',
       (tester) async {
         final units = [
           const MatchGroupUnit(
@@ -135,7 +133,7 @@ void main() {
       },
     );
 
-    testWidgets('【ライトモード視認性保証テスト】ライトモード時、適切な背景と文字色で描画されること', (tester) async {
+    testWidgets('ライトモード視認性保証テストにおいて ライトモード時、適切な背景と文字色で描画されること', (tester) async {
       final units = [
         const MatchGroupUnit(
           id: 'u1',

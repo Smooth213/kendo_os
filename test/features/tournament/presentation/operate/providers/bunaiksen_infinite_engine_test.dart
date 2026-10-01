@@ -90,175 +90,166 @@ void main() {
       },
     );
 
-    test(
-      'Verify that KendoRuleEngine does not evaluate an in-progress infinite kachinuki match as a tieであること',
-      () {
-        final engine = KendoRuleEngine();
-        final rule = const MatchRule(
-          matchTimeMinutes: 3,
-          enchoTimeMinutes: 0,
-          isEnchoUnlimited: false,
-          isKachinuki: true,
-        );
+    test('進行中の勝ち抜き試合が引き分けとして判定されないことが検証できること', () {
+      final engine = KendoRuleEngine();
+      final rule = const MatchRule(
+        matchTimeMinutes: 3,
+        enchoTimeMinutes: 0,
+        isEnchoUnlimited: false,
+        isKachinuki: true,
+      );
 
-        // 1. Match is in progress (status: in_progress) at 0-0 score
-        final inProgressMatch = MatchModel(
-          id: 'test_match',
-          redName: '選手A',
-          whiteName: '選手B',
-          redScore: 0,
-          whiteScore: 0,
-          status: 'in_progress',
+      // 1. Match is in progress (status: in_progress) at 0-0 score
+      final inProgressMatch = MatchModel(
+        id: 'test_match',
+        redName: '選手A',
+        whiteName: '選手B',
+        redScore: 0,
+        whiteScore: 0,
+        status: 'in_progress',
+        matchType: '無限勝ち抜き',
+        isKachinuki: true,
+        redRemaining: const [],
+        whiteRemaining: const [],
+      );
+
+      final inProgressStatus = engine.analyzeGroupStatus(
+        currentMatch: inProgressMatch,
+        groupMatches: [inProgressMatch],
+        rule: rule,
+      );
+
+      // Should NOT be evaluated as a tie or finished
+      expect(inProgressStatus.isAllDone, isFalse);
+      expect(inProgressStatus.isTie, isFalse);
+
+      // 2. Match is finished (status: finished) at 0-0 score
+      final finishedMatch = inProgressMatch.copyWith(status: 'finished');
+      final finishedStatus = engine.analyzeGroupStatus(
+        currentMatch: finishedMatch,
+        groupMatches: [finishedMatch],
+        rule: rule,
+      );
+
+      // Should be evaluated as a finished tie/draw since scores are equal and no extensions remain
+      expect(finishedStatus.isAllDone, isTrue);
+      expect(finishedStatus.isTie, isTrue);
+    });
+
+    test('勝敗または引き分け後のリスト復帰時に待機キューが正常に復元されること', () async {
+      // --- Scenario 1: Red Wins ---
+      {
+        final container = ProviderContainer();
+        final queueNotifier = container.read(
+          bunaiksenInfiniteQueueProvider.notifier,
+        );
+        queueNotifier.setPlayers(['Tanaka', 'Suzuki']);
+
+        final engine = container.read(bunaiksenInfiniteEngineProvider);
+
+        final finishedMatch = MatchModel(
+          id: 'match_1',
+          redName: 'Yamada',
+          whiteName: 'Sato',
+          redScore: 2,
+          whiteScore: 1,
+          status: 'finished',
           matchType: '無限勝ち抜き',
           isKachinuki: true,
-          redRemaining: const [],
-          whiteRemaining: const [],
         );
 
-        final inProgressStatus = engine.analyzeGroupStatus(
-          currentMatch: inProgressMatch,
-          groupMatches: [inProgressMatch],
-          rule: rule,
+        // Process Yamada (Red) win
+        final nextMatch = await engine.processMatchResult(finishedMatch, 'red');
+        expect(nextMatch, isNotNull);
+        expect(nextMatch!.redName, 'Yamada'); // winner
+        expect(
+          nextMatch.whiteName,
+          'Tanaka',
+        ); // next challenger popped from queue
+
+        // Queue state right now is [Suzuki, Sato (loser)]
+        expect(container.read(bunaiksenInfiniteQueueProvider), [
+          'Suzuki',
+          'Sato',
+        ]);
+
+        // Simulate "Return to List (Break)" logic
+        final currentQueue = container.read(bunaiksenInfiniteQueueProvider);
+        final filteredQueue = currentQueue
+            .where((p) => p != nextMatch.redName && p != nextMatch.whiteName)
+            .toList();
+        queueNotifier.setPlayers([
+          nextMatch.redName,
+          nextMatch.whiteName,
+          ...filteredQueue,
+        ]);
+
+        // Expected queue after break: Yamada (winner) at front, Tanaka (challenger) second, Suzuki third, Sato (loser) at end
+        expect(container.read(bunaiksenInfiniteQueueProvider), [
+          'Yamada',
+          'Tanaka',
+          'Suzuki',
+          'Sato',
+        ]);
+      }
+
+      // --- Scenario 2: Draw ---
+      {
+        final container = ProviderContainer();
+        final queueNotifier = container.read(
+          bunaiksenInfiniteQueueProvider.notifier,
+        );
+        queueNotifier.setPlayers(['Tanaka', 'Suzuki', 'Watanabe']);
+
+        final engine = container.read(bunaiksenInfiniteEngineProvider);
+
+        final finishedMatch = MatchModel(
+          id: 'match_2',
+          redName: 'Yamada',
+          whiteName: 'Sato',
+          redScore: 1,
+          whiteScore: 1,
+          status: 'finished',
+          matchType: '無限勝ち抜き',
+          isKachinuki: true,
         );
 
-        // Should NOT be evaluated as a tie or finished
-        expect(inProgressStatus.isAllDone, isFalse);
-        expect(inProgressStatus.isTie, isFalse);
-
-        // 2. Match is finished (status: finished) at 0-0 score
-        final finishedMatch = inProgressMatch.copyWith(status: 'finished');
-        final finishedStatus = engine.analyzeGroupStatus(
-          currentMatch: finishedMatch,
-          groupMatches: [finishedMatch],
-          rule: rule,
+        // Process Draw
+        final nextMatch = await engine.processMatchResult(
+          finishedMatch,
+          'draw',
         );
+        expect(nextMatch, isNotNull);
+        expect(nextMatch!.redName, 'Tanaka'); // first challenger popped
+        expect(nextMatch.whiteName, 'Suzuki'); // second challenger popped
 
-        // Should be evaluated as a finished tie/draw since scores are equal and no extensions remain
-        expect(finishedStatus.isAllDone, isTrue);
-        expect(finishedStatus.isTie, isTrue);
-      },
-    );
+        // Queue state right now is [Watanabe, Yamada (loser1), Sato (loser2)]
+        expect(container.read(bunaiksenInfiniteQueueProvider), [
+          'Watanabe',
+          'Yamada',
+          'Sato',
+        ]);
 
-    test(
-      'Verify queue restoration on return to list / break after win or drawであること',
-      () async {
-        // --- Scenario 1: Red Wins ---
-        {
-          final container = ProviderContainer();
-          final queueNotifier = container.read(
-            bunaiksenInfiniteQueueProvider.notifier,
-          );
-          queueNotifier.setPlayers(['Tanaka', 'Suzuki']);
+        // Simulate "Return to List (Break)" logic
+        final currentQueue = container.read(bunaiksenInfiniteQueueProvider);
+        final filteredQueue = currentQueue
+            .where((p) => p != nextMatch.redName && p != nextMatch.whiteName)
+            .toList();
+        queueNotifier.setPlayers([
+          nextMatch.redName,
+          nextMatch.whiteName,
+          ...filteredQueue,
+        ]);
 
-          final engine = container.read(bunaiksenInfiniteEngineProvider);
-
-          final finishedMatch = MatchModel(
-            id: 'match_1',
-            redName: 'Yamada',
-            whiteName: 'Sato',
-            redScore: 2,
-            whiteScore: 1,
-            status: 'finished',
-            matchType: '無限勝ち抜き',
-            isKachinuki: true,
-          );
-
-          // Process Yamada (Red) win
-          final nextMatch = await engine.processMatchResult(
-            finishedMatch,
-            'red',
-          );
-          expect(nextMatch, isNotNull);
-          expect(nextMatch!.redName, 'Yamada'); // winner
-          expect(
-            nextMatch.whiteName,
-            'Tanaka',
-          ); // next challenger popped from queue
-
-          // Queue state right now is [Suzuki, Sato (loser)]
-          expect(container.read(bunaiksenInfiniteQueueProvider), [
-            'Suzuki',
-            'Sato',
-          ]);
-
-          // Simulate "Return to List (Break)" logic
-          final currentQueue = container.read(bunaiksenInfiniteQueueProvider);
-          final filteredQueue = currentQueue
-              .where((p) => p != nextMatch.redName && p != nextMatch.whiteName)
-              .toList();
-          queueNotifier.setPlayers([
-            nextMatch.redName,
-            nextMatch.whiteName,
-            ...filteredQueue,
-          ]);
-
-          // Expected queue after break: Yamada (winner) at front, Tanaka (challenger) second, Suzuki third, Sato (loser) at end
-          expect(container.read(bunaiksenInfiniteQueueProvider), [
-            'Yamada',
-            'Tanaka',
-            'Suzuki',
-            'Sato',
-          ]);
-        }
-
-        // --- Scenario 2: Draw ---
-        {
-          final container = ProviderContainer();
-          final queueNotifier = container.read(
-            bunaiksenInfiniteQueueProvider.notifier,
-          );
-          queueNotifier.setPlayers(['Tanaka', 'Suzuki', 'Watanabe']);
-
-          final engine = container.read(bunaiksenInfiniteEngineProvider);
-
-          final finishedMatch = MatchModel(
-            id: 'match_2',
-            redName: 'Yamada',
-            whiteName: 'Sato',
-            redScore: 1,
-            whiteScore: 1,
-            status: 'finished',
-            matchType: '無限勝ち抜き',
-            isKachinuki: true,
-          );
-
-          // Process Draw
-          final nextMatch = await engine.processMatchResult(
-            finishedMatch,
-            'draw',
-          );
-          expect(nextMatch, isNotNull);
-          expect(nextMatch!.redName, 'Tanaka'); // first challenger popped
-          expect(nextMatch.whiteName, 'Suzuki'); // second challenger popped
-
-          // Queue state right now is [Watanabe, Yamada (loser1), Sato (loser2)]
-          expect(container.read(bunaiksenInfiniteQueueProvider), [
-            'Watanabe',
-            'Yamada',
-            'Sato',
-          ]);
-
-          // Simulate "Return to List (Break)" logic
-          final currentQueue = container.read(bunaiksenInfiniteQueueProvider);
-          final filteredQueue = currentQueue
-              .where((p) => p != nextMatch.redName && p != nextMatch.whiteName)
-              .toList();
-          queueNotifier.setPlayers([
-            nextMatch.redName,
-            nextMatch.whiteName,
-            ...filteredQueue,
-          ]);
-
-          // Expected queue after break: Tanaka & Suzuki (next challengers) at front, Watanabe, then Yamada & Sato (losers) at end
-          expect(container.read(bunaiksenInfiniteQueueProvider), [
-            'Tanaka',
-            'Suzuki',
-            'Watanabe',
-            'Yamada',
-            'Sato',
-          ]);
-        }
-      },
-    );
+        // Expected queue after break: Tanaka & Suzuki (next challengers) at front, Watanabe, then Yamada & Sato (losers) at end
+        expect(container.read(bunaiksenInfiniteQueueProvider), [
+          'Tanaka',
+          'Suzuki',
+          'Watanabe',
+          'Yamada',
+          'Sato',
+        ]);
+      }
+    });
   });
 }

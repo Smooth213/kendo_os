@@ -57,7 +57,7 @@ void main() {
       'bunaiksen_${DateFormat('yyyyMMdd').format(testDate)}';
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen team score 【table】"赤" and "白"が表示されること',
+    'BunaiksenOfficialRecordScreen team score tableにおいて "赤" and "白"が表示されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
@@ -109,7 +109,7 @@ void main() {
   );
 
   testWidgets(
-    '【BunaiksenOfficialRecordScreen】部内戦公式記録のリーグ表でBunaiksenHelperが勝点計算に使用されること',
+    'BunaiksenOfficialRecordScreenにおいて 部内戦公式記録のリーグ表でBunaiksenHelperが勝点計算に使用されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(
@@ -232,7 +232,7 @@ void main() {
     },
   );
 
-  testWidgets('【BunaiksenOfficialRecordScreen】empty cell for "欠員"が表示されること', (
+  testWidgets('BunaiksenOfficialRecordScreenにおいて empty cell for "欠員"が表示されること', (
     WidgetTester tester,
   ) async {
     final matches = [
@@ -285,7 +285,7 @@ void main() {
   });
 
   testWidgets(
-    '【BunaiksenOfficialRecordScreen】initial for same last namesが表示されること',
+    'BunaiksenOfficialRecordScreenにおいて initial for same last namesが表示されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(

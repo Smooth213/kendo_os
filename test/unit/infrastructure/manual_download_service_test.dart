@@ -44,12 +44,12 @@ void main() {
   });
 
   group('[Unit] ManualDownloadService テスト', () {
-    test('isFileDownloaded 【file does not exist】falseが返却されること', () async {
+    test('isFileDownloaded file does not existにおいて falseが返却されること', () async {
       final exists = await downloadService.isFileDownloaded(testFileName);
       expect(exists, isFalse);
     });
 
-    test('【downloadManual】ファイルがダウンロードされonProgressがトリガーされること', () async {
+    test('downloadManualにおいて ファイルがダウンロードされonProgressがトリガーされること', () async {
       // 1. モックデータを作成 (100バイト)
       final dummyData = List<int>.generate(100, (i) => i);
 
@@ -84,22 +84,25 @@ void main() {
       expect(exists, isTrue);
     });
 
-    test('getLocalFile 【downloaded, and null otherwise】Fileが返却されること', () async {
-      // ダウンロード前
-      var file = await downloadService.getLocalFile(testFileName);
-      expect(file, isNull);
+    test(
+      'getLocalFile downloaded, and null otherwiseにおいて Fileが返却されること',
+      () async {
+        // ダウンロード前
+        var file = await downloadService.getLocalFile(testFileName);
+        expect(file, isNull);
 
-      // 手動でファイルを置いてダウンロード済みに見せかける
-      final localFile = File('${tempDir.path}/$testFileName');
-      await localFile.writeAsString('dummy content');
+        // 手動でファイルを置いてダウンロード済みに見せかける
+        final localFile = File('${tempDir.path}/$testFileName');
+        await localFile.writeAsString('dummy content');
 
-      // ダウンロード後
-      file = await downloadService.getLocalFile(testFileName);
-      expect(file, isNotNull);
-      expect(await file!.readAsString(), 'dummy content');
-    });
+        // ダウンロード後
+        file = await downloadService.getLocalFile(testFileName);
+        expect(file, isNotNull);
+        expect(await file!.readAsString(), 'dummy content');
+      },
+    );
 
-    test('【deleteLocalFile】ストレージからファイルが正常に削除されること', () async {
+    test('deleteLocalFileにおいて ストレージからファイルが正常に削除されること', () async {
       // 手動でファイルを配置
       final localFile = File('${tempDir.path}/$testFileName');
       await localFile.writeAsString('dummy content');

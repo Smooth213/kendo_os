@@ -5,7 +5,7 @@ import 'package:kendo_os/features/p2p/presentation/assets/web_viewer_html.dart';
 
 void main() {
   group('[Unit] LocalP2pBroadcaster テスト', () {
-    test('WebViewHtml generates correct HTML with host and portこと', () {
+    test('ホストとポートを含む正しいWebView用HTMLが生成されること', () {
       final html = WebViewHtml.build(hostIp: '192.168.1.100', port: 8080);
       expect(html, contains('kendo OS - リアルタイム観戦ビュアー'));
       expect(html, contains('ws://'));
@@ -13,7 +13,7 @@ void main() {
     });
 
     test(
-      'LocalP2pBroadcaster starts, broadcasts, and stops safelyであること',
+      'LocalP2pBroadcaster starts, broadcasts, and stops safelyこと',
       () async {
         final broadcaster = LocalP2pBroadcaster();
         expect(broadcaster.isRunning, false);

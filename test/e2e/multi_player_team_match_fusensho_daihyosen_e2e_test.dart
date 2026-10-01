@@ -9,7 +9,7 @@ import 'package:kendo_os/features/match/domain/services/team_match_calculator.da
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 
 void main() {
-  group('[E2E] 【E2E】8人制団体戦 不戦勝（各2本）混在・4-4/8-8同点  代表戦サドンデス完全決着E2Eテスト', () {
+  group('[E2E] 8人制団体戦 不戦勝（各2本）混在・4-4/8-8同点 代表戦サドンデス完全決着E2Eテスト', () {
     late KendoRuleEngine ruleEngine;
     final now = DateTime(2026, 9, 27, 10, 0);
 

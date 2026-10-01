@@ -4,14 +4,14 @@ import 'package:kendo_os/shared/application/services/thermal_power_governor.dart
 import 'package:kendo_os/shared/application/services/thermal_monitor_service.dart';
 
 void main() {
-  group('[Governance] 【Phase 10: アダプティブ省電力・サーマル冷却】ガバナンステスト', () {
+  group('[Governance] アダプティブ省電力・サーマル冷却ガバナンステスト', () {
     late ThermalPowerGovernor governor;
 
     setUp(() {
       governor = ThermalPowerGovernor();
     });
 
-    test('初期状態では通常モード（100ms・高精度レスポンス）であること', () {
+    test('初期状態では高精度レスポンスの通常モードが適用されること', () {
       expect(governor.mode, equals(ThermalPowerMode.normal));
       expect(
         governor.recommendedTickInterval,
@@ -106,7 +106,7 @@ void main() {
       expect(ultraReduction, equals(90.0));
     });
 
-    test('【最重要ガバナンス】優先順位「温度 ＞ 手動 ＞ 自動」が厳格に適用されること', () {
+    test('最重要ガバナンスにおいて 優先順位「温度 ＞ 手動 ＞ 自動」が厳格に適用されること', () {
       // 1. 【手動 ＞ 自動】通常高速固定時は、バッテリー低下やOS低電力モードを無視して通常高速を維持
       governor.updatePreference('normal');
       governor.updateBatteryInfo(

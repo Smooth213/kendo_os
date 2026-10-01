@@ -7,9 +7,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] MasterPlayer Components & Helpers テスト', () {
-    testWidgets('MasterPlayerGenderSelector taps correctlyであること', (
-      tester,
-    ) async {
+    testWidgets('MasterPlayerGenderSelector taps correctlyこと', (tester) async {
       String selectedGender = '男子';
 
       await tester.pumpWidget(
@@ -32,9 +30,7 @@ void main() {
       expect(selectedGender, '女子');
     });
 
-    testWidgets('AutoKanaHelper updates kana on name changeであること', (
-      tester,
-    ) async {
+    testWidgets('氏名変更時にフリガナが自動更新されること', (tester) async {
       final nameCtrl = TextEditingController();
       final kanaCtrl = TextEditingController();
 

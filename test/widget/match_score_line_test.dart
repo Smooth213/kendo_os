@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
   group('[Widget] MatchScoreLine ウィジェットテスト', () {
-    testWidgets('【no points and not draw】empty spaceが正しく描画されること', (
+    testWidgets('no points and not drawにおいて empty spaceが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -51,7 +51,7 @@ void main() {
       expect(find.text('×'), findsNothing);
     });
 
-    testWidgets('【0-0 終了済み】draw mark × correctlyが正しく描画されること', (
+    testWidgets('スコア0-0の終了済みにおいて引き分けマーク（×）が正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

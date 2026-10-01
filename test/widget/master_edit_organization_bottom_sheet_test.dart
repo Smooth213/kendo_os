@@ -5,7 +5,7 @@ import 'package:kendo_os/admin/presentation/components/master_edit_organization_
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  testWidgets('【MasterEditOrganizationBottomSheet】入力フィールドおよび更新ボタンが表示されること', (
+  testWidgets('MasterEditOrganizationBottomSheetにおいて 入力フィールドおよび更新ボタンが表示されること', (
     tester,
   ) async {
     final samplePlayer = PlayerModel(

@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 void main() {
   group('[Widget] OrderReorderBottomSheet ウィジェットテスト', () {
-    testWidgets('【OrderReorderBottomSheet】描画され、試合一覧 orderが表示されること', (
+    testWidgets('OrderReorderBottomSheetにおいて 描画され、試合一覧 orderが表示されること', (
       WidgetTester tester,
     ) async {
       final matches = [

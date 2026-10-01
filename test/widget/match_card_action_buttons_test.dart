@@ -42,9 +42,7 @@ void main() {
       expect(scorePressed, isTrue);
     });
 
-    testWidgets('Hides buttons when flags are falseであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('フラグが無効な場合は各ボタンが非表示になること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

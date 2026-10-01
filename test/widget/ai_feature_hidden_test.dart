@@ -4,13 +4,16 @@ import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/application/services/ai_help_service.dart';
 
 void main() {
-  group('[Widget] [Phase 4] AI Runtime 完全封鎖検証テスト', () {
-    test('【ガバナンス監査】BetaFeatureFlags.showAiFeatures が厳格に false に固定されていること', () {
-      expect(BetaFeatureFlags.showAiFeatures, false);
-    });
+  group('[Widget] に関して、AI Runtime 完全封鎖検証テスト', () {
+    test(
+      'ガバナンス監査において BetaFeatureFlags.showAiFeatures が厳格に false に固定されていること',
+      () {
+        expect(BetaFeatureFlags.showAiFeatures, false);
+      },
+    );
 
     test(
-      '【ガバナンス監査】AI機能フラグOFFの際、AiHelpService 内の全処理がパニックを起こさず決定論的に空データまたはアクセス制限文言を返すこと',
+      'ガバナンス監査において AI機能フラグOFFの際、AiHelpService 内の全処理がパニックを起こさず決定論的に空データまたはアクセス制限文言を返すこと',
       () async {
         final container = ProviderContainer();
         addTearDown(container.dispose);

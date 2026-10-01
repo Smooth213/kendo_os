@@ -54,7 +54,7 @@ void main() {
       expect(find.text('終了'), findsOneWidget);
     });
 
-    testWidgets('【TimelineTeamCard】ヘッダーおよび試合情報が正しく描画されること', (tester) async {
+    testWidgets('TimelineTeamCardにおいて ヘッダーおよび試合情報が正しく描画されること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,

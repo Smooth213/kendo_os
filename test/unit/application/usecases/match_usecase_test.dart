@@ -120,7 +120,7 @@ void main() {
     });
 
     test(
-      '【完全性証明】2本先取で終了(finished)した試合でUndoを実行した場合、ステータスが進行中(in_progress)に復元されること',
+      '完全性証明において 2本先取で終了(finished)した試合でUndoを実行した場合、ステータスが進行中(in_progress)に復元されること',
       () {
         // 1. 初期状態（0対0、進行中）
         final initialMatch = dummyMatch.copyWith(
@@ -168,7 +168,7 @@ void main() {
       },
     );
 
-    test('【完全性証明】反則2回による1本付与と、そのUndo（反則の取り消し）が正しく計算されること', () {
+    test('完全性証明において 反則2回による1本付与と、そのUndo（反則の取り消し）が正しく計算されること', () {
       final initialMatch = dummyMatch.copyWith(
         events: <ScoreEvent>[],
         redScore: 0,

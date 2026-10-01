@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Governance] 【ガバナンス第19条】重厚ライブラリ遅延読み込み＆初期バンドル最小化規約テスト', () {
+  group('[Governance] ガバナンス第19条において 重厚ライブラリ遅延読み込み＆初期バンドル最小化規約テスト', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -17,7 +17,7 @@ void main() {
     });
 
     test(
-      '【クリティカルUI隔離規約】試合進行・操作画面（lib/features/match/）からPDF・印刷ライブラリが直接インポートされていないこと',
+      'クリティカルUI隔離規約において 試合進行・操作画面（lib/features/match/）からPDF・印刷ライブラリが直接インポートされていないこと',
       () {
         final prohibitedPackages = [
           'package:pdf/pdf.dart',
@@ -51,7 +51,7 @@ void main() {
     );
 
     test(
-      '【観戦ビュアーUI隔離規約】観客用リアルタイム画面（lib/features/viewer/）からPDF・印刷ライブラリが直接インポートされていないこと',
+      '観戦ビュアーUI隔離規約において 観客用リアルタイム画面（lib/features/viewer/）からPDF・印刷ライブラリが直接インポートされていないこと',
       () {
         final prohibitedPackages = [
           'package:pdf/pdf.dart',
@@ -84,28 +84,31 @@ void main() {
       },
     );
 
-    test('【PDF機能局所化規約】package:pdf/ は lib/features/pdf/ 配下に厳格にカプセル化されていること', () {
-      final violations = <String>[];
+    test(
+      'PDF機能局所化規約において package:pdf/ は lib/features/pdf/ 配下に厳格にカプセル化されていること',
+      () {
+        final violations = <String>[];
 
-      for (final file in dartFiles) {
-        final path = file.path.replaceAll('\\', '/');
-        // lib/features/pdf/ 以外での package:pdf の直接インポートを検出
-        if (!path.contains('/features/pdf/')) {
-          final content = file.readAsStringSync();
-          if (content.contains("import 'package:pdf/")) {
-            violations.add(
-              '${file.path}: lib/features/pdf/ 外での package:pdf 直接インポート',
-            );
+        for (final file in dartFiles) {
+          final path = file.path.replaceAll('\\', '/');
+          // lib/features/pdf/ 以外での package:pdf の直接インポートを検出
+          if (!path.contains('/features/pdf/')) {
+            final content = file.readAsStringSync();
+            if (content.contains("import 'package:pdf/")) {
+              violations.add(
+                '${file.path}: lib/features/pdf/ 外での package:pdf 直接インポート',
+              );
+            }
           }
         }
-      }
 
-      expect(
-        violations,
-        isEmpty,
-        reason:
-            'package:pdf は lib/features/pdf/ 配下の専用サービスおよびWidget群にカプセル化されていなければなりません:\n${violations.join('\n')}',
-      );
-    });
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              'package:pdf は lib/features/pdf/ 配下の専用サービスおよびWidget群にカプセル化されていなければなりません:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }

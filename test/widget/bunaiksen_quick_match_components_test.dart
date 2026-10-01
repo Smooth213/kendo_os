@@ -6,36 +6,31 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bun
 
 void main() {
   group('[Widget] BunaiksenQuickMatch Components テスト', () {
-    testWidgets(
-      'renders BunaiksenQuickMatchPlayerSelectSection correctlyであること',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: Consumer(
-                  builder: (context, ref, _) =>
-                      BunaiksenQuickMatchPlayerSelectSection(
-                        redPlayer: '選手A',
-                        whitePlayer: '選手B',
-                        onRedPlayerSelected: (_) {},
-                        onWhitePlayerSelected: (_) {},
-                        ref: ref,
-                      ),
-                ),
+    testWidgets('部内戦クイックマッチ選手選択セクションが正しく描画されること', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, _) =>
+                    BunaiksenQuickMatchPlayerSelectSection(
+                      redPlayer: '選手A',
+                      whitePlayer: '選手B',
+                      onRedPlayerSelected: (_) {},
+                      onWhitePlayerSelected: (_) {},
+                      ref: ref,
+                    ),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('選手A'), findsOneWidget);
-        expect(find.text('選手B'), findsOneWidget);
-      },
-    );
+      expect(find.text('選手A'), findsOneWidget);
+      expect(find.text('選手B'), findsOneWidget);
+    });
 
-    testWidgets('renders BunaiksenQuickMatchRuleSection correctlyであること', (
-      tester,
-    ) async {
+    testWidgets('部内戦クイックマッチルールセクションが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

@@ -8,7 +8,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Golden] 【Golden】遠征記録サマリーカード ピクセル完全性テスト', () {
+  group('[Golden] 遠征記録サマリーカード ピクセル完全性テスト', () {
     final sampleMatches = [
       MatchModel(
         id: 'exp_m1',

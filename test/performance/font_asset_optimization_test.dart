@@ -6,7 +6,7 @@ import 'package:kendo_os/features/pdf/services/pdf_font_loader.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] [Phase 6 Performance Governance] フォント・アセット最適化テスト', () {
+  group('[Governance] Performance Governanceに関して、フォント・アセット最適化テスト', () {
     test('PdfFontLoader がメモ化キャッシュにより2回目以降を即座（同一インスタンス）に返却すること', () async {
       PdfFontLoader.clearCache();
 

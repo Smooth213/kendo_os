@@ -12,7 +12,7 @@ import '../helpers/test_isar_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【Phase 13: Isar メモリマップトI/O（MMAP）＆ ページサイズ最適化】ガバナンステスト', () {
+  group('[Governance] Isar メモリマップトIOおよびページサイズ最適化ガバナンステスト', () {
     TestIsarContext? isarContext;
     late Isar isar;
 

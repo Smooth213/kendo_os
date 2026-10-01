@@ -22,7 +22,7 @@ class FakePathProviderPlatform extends Fake
 }
 
 void main() {
-  group('[Golden] 【Golden/視覚整合性】マニュアル画面 多端末・テーマ別UI崩壊ゼロ検証テスト', () {
+  group('[Golden] Golden/視覚整合性において マニュアル画面 多端末・テーマ別UI崩壊ゼロ検証テスト', () {
     late Directory tempDir;
 
     setUpAll(() async {
@@ -99,7 +99,7 @@ void syncMatchTime(Duration elapsed);
       final viewportSize = entry.value;
 
       testWidgets(
-        '【解像度検証】$deviceName 環境で EmbeddedManualScreen がはみ出し例外ゼロで描画されること',
+        '解像度検証において $deviceName 環境で EmbeddedManualScreen がはみ出し例外ゼロで描画されること',
         (tester) async {
           await tester.runAsync(() async {
             tester.view.physicalSize = viewportSize;
@@ -143,7 +143,7 @@ void syncMatchTime(Duration elapsed);
       final themeName = themeEntry.key;
       final themeData = themeEntry.value;
 
-      testWidgets('【テーマ検証】$themeName で ManualIndexPane が崩れず描画されること', (
+      testWidgets('テーマ検証において $themeName で ManualIndexPane が崩れず描画されること', (
         tester,
       ) async {
         tester.view.physicalSize = const Size(375, 667);
@@ -182,7 +182,7 @@ void syncMatchTime(Duration elapsed);
     }
 
     // 3. リッチMarkdown描画完全性テスト（見出し・表・引用・コード）
-    testWidgets('【Markdown描画検証】見出し・テーブル・箇条書き・コードブロックが正常にレンダリングされること', (
+    testWidgets('Markdown描画検証において 見出し・テーブル・箇条書き・コードブロックが正常にレンダリングされること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1000);
@@ -213,7 +213,7 @@ void syncMatchTime(Duration elapsed);
 
     // 4. ワイド画面（タブレット・PC）でのサイドバー固定表示テスト
     testWidgets(
-      '【ワイド画面検証】isWideScreen=true で ManualIndexPane が320px固定幅でレンダリングされること',
+      'ワイド画面検証において isWideScreen=true で ManualIndexPane が320px固定幅でレンダリングされること',
       (tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;

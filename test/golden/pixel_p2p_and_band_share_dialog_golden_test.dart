@@ -95,7 +95,7 @@ void main() {
     );
   }
 
-  group('[Golden] 【Golden】P2Pローカル配信QR ＆ BANDグループ共有シート ピクセル視覚整合性テスト', () {
+  group('[Golden] P2Pローカル配信QR ＆ BANDグループ共有シート ピクセル視覚整合性テスト', () {
     testWidgets('P2pBroadcastDialog: 通常スマホ幅(390px) ライトモード レンダリングが正しく検証されること', (
       tester,
     ) async {

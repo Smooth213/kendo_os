@@ -80,7 +80,7 @@ void main() {
       expect(size2, equals(const Size(1414.0, 1000.0)));
     });
 
-    test('extractSinglePage で抽出されたPDFが常に総ページ数「1」であること', () {
+    test('extractSinglePage で抽出されたPDFが常に総ページ数「1」こと', () {
       // Page 0 抽出
       final singleP0Bytes = ProgramViewerPdfPageCache.shared.extractSinglePage(
         mixedPdfBytes,

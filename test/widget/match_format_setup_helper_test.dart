@@ -3,7 +3,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 
 void main() {
   group('[Widget] MatchFormatSetupHelper テスト', () {
-    test('parseCategoryToState parses correctlyであること', () {
+    test('部門文字列から状態へのパースが正しく行えること', () {
       expect(MatchFormatSetupHelper.parseCategoryToState('初心者の部'), (
         '初心者',
         '全体',
@@ -27,7 +27,7 @@ void main() {
       ));
     });
 
-    test('generatePositions generates correct listsであること', () {
+    test('ポジションリストが正しく生成されること', () {
       expect(MatchFormatSetupHelper.generatePositions(1), ['選手']);
       expect(MatchFormatSetupHelper.generatePositions(3), ['先鋒', '中堅', '大将']);
       expect(MatchFormatSetupHelper.generatePositions(5), [
@@ -48,7 +48,7 @@ void main() {
       ]);
     });
 
-    test('【calculateTeamSize】individual and チーム formatsが適切に処理されること', () {
+    test('calculateTeamSizeにおいて individual and チーム formatsが適切に処理されること', () {
       expect(
         MatchFormatSetupHelper.calculateTeamSize(
           matchType: '個人戦',

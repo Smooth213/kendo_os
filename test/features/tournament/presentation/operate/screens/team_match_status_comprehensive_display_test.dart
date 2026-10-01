@@ -8,7 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/screens/team_m
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
-  group('[Widget] 【UI完全保証】チーム試合状況 全試合形式UI描画＆誤表示ゼロ検証テスト', () {
+  group('[Widget] UI完全保証において チーム試合状況 全試合形式UI描画＆誤表示ゼロ検証テスト', () {
     final uiTestMatches = [
       // 1. トーナメント団体戦（進行中LIVE）
       MatchModel(

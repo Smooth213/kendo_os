@@ -34,7 +34,7 @@ void main() {
     );
 
     testWidgets(
-      '【ViewerHomeScreen】Firestoreがpermission-denied例外を返しても、UIクラッシュせず安全にフォールバック描画されること',
+      'ViewerHomeScreenにおいて Firestoreがpermission-denied例外を返しても、UIクラッシュせず安全にフォールバック描画されること',
       (tester) async {
         await tester.pumpWidget(
           createTestApp(
@@ -85,7 +85,7 @@ void main() {
     );
 
     testWidgets(
-      '【ViewerBunaiksenHomeScreen】bunaiksenAvailableDatesProviderがpermission-denied例外を返してもクラッシュしないこと',
+      'ViewerBunaiksenHomeScreenにおいて bunaiksenAvailableDatesProviderがpermission-denied例外を返してもクラッシュしないこと',
       (tester) async {
         await tester.pumpWidget(
           createTestApp(
@@ -125,7 +125,7 @@ void main() {
     );
 
     testWidgets(
-      '【RoleInjector & ViewerAuthGate】未認証時にビュアー用ローディング防壁が表示され、未認証のままFirestoreへのアクセスを防ぐこと',
+      'RoleInjector & ViewerAuthGateにおいて 未認証時にビュアー用ローディング防壁が表示され、未認証のままFirestoreへのアクセスを防ぐこと',
       (tester) async {
         await tester.pumpWidget(
           createTestApp(
@@ -148,7 +148,7 @@ void main() {
     );
 
     test(
-      '【PlayerRepository】watchCustomTeamNames が Firestore エラー時でも例外をスローせず空リストへ安全フォールバックすること',
+      'PlayerRepositoryにおいて watchCustomTeamNames が Firestore エラー時でも例外をスローせず空リストへ安全フォールバックすること',
       () async {
         final fakeFirestore = FakeFirebaseFirestore();
         final repo = PlayerRepository(

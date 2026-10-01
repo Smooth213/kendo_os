@@ -10,7 +10,7 @@ void main() {
       baseTime = DateTime(2026, 5, 29, 12, 0, 0);
     });
 
-    test('【初期状態】タイマー未始動時、指定された試合時間（例: 3分）が正確に秒換算（180秒）されること', () {
+    test('初期状態において タイマー未始動時、指定された試合時間（例: 3分）が正確に秒換算（180秒）されること', () {
       final match = MatchModel(
         id: 'timer_test_001',
         matchType: '先鋒',
@@ -26,7 +26,7 @@ void main() {
       expect(remaining, equals(180));
     });
 
-    test('【計測中】タイマー作動後、基準時刻から10秒経過した際に残り秒数が正確に10秒減少（170秒）すること', () {
+    test('計測中において タイマー作動後、基準時刻から10秒経過した際に残り秒数が正確に10秒減少（170秒）すること', () {
       final match = MatchModel(
         id: 'timer_test_002',
         matchType: '次鋒',
@@ -45,7 +45,7 @@ void main() {
       expect(remaining, equals(170)); // 180 - 10 = 170秒
     });
 
-    test('【一時停止】タイマーが一時停止している場合、現在時刻がどれだけ進んでも残り秒数がフリーズ（維持）されること', () {
+    test('一時停止において タイマーが一時停止している場合、現在時刻がどれだけ進んでも残り秒数がフリーズ（維持）されること', () {
       final match = MatchModel(
         id: 'timer_test_003',
         matchType: '中堅',
@@ -65,7 +65,7 @@ void main() {
       expect(remaining, isNotNull);
     });
 
-    test('【無制限・代表戦】代表戦や時間無制限（0分設定）の場合、残り秒数がマイナスに突入せず安全にフォールバックされること', () {
+    test('無制限・代表戦において 代表戦や時間無制限（0分設定）の場合、残り秒数がマイナスに突入せず安全にフォールバックされること', () {
       final match = MatchModel(
         id: 'timer_test_004',
         matchType: '代表戦',

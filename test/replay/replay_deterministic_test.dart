@@ -49,7 +49,7 @@ void main() {
       ).copyWith(logicalClock: clock, timestamp: time);
     }
 
-    test('Replay fuzz test - ランダム順序でのリプレイ（イベントソートの決定的確認）こと', () {
+    test('イベントソートの決定的確認においてReplay fuzz test - ランダム順序でのリプレイこと', () {
       final baseTime = DateTime(2025, 1, 1, 10, 0, 0).toUtc();
       final events = [
         createEvent(

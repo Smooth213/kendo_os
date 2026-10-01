@@ -3,8 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[E2E] 【Phase 5-5/10】電波完全暗黒（終日圏外）スタンドアロン完走＆夜間一括同期 E2Eテスト', () {
-    test('朝から夕方まで圏外で50試合消化  夜間にWi-Fi接続で50試合一括同期完了こと', () {
+  group('[E2E] 電波完全暗黒（終日圏外）スタンドアロン完走＆夜間一括同期 E2Eテスト', () {
+    test('朝から夕方まで圏外で50試合消化 夜間にWi-Fi接続で50試合一括同期完了こと', () {
       final offlineLocalDatabase = <MatchModel>[];
       final cloudDatabase = <MatchModel>[];
 

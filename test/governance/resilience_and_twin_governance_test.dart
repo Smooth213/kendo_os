@@ -8,8 +8,8 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第17条 ガバナンス監査】ツインエンジン自己修復・現場障害耐性 ＆ 完全耐障害性規約', () {
-    test('Rule 1: [ツイン永続化＆自己修復] TwinMatchPersistenceHelper 統合 ＆ 非同期I/O規約こと', () {
+  group('[Governance] 第17条 ガバナンス監査において ツインエンジン自己修復・現場障害耐性 ＆ 完全耐障害性規約', () {
+    test('ツイン永続化＆自己修復に関して、 TwinMatchPersistenceHelper 統合 ＆ 非同期I/O規約こと', () {
       final repoFile = File(
         'lib/shared/infrastructure/repository/local_match_repository.dart',
       );
@@ -30,7 +30,7 @@ void main() {
       expect(twinContent.contains('readAsStringSync('), isFalse);
     });
 
-    test('Rule 2: [スナップショット軽量化] ドキュメント内スナップショット保持上限(1件)規約こと', () {
+    test('スナップショット軽量化に関して、 ドキュメント内スナップショット保持上限(1件)規約こと', () {
       final helperFile = File(
         'lib/features/match/application/services/match_snapshot_helper.dart',
       );
@@ -50,7 +50,7 @@ void main() {
     });
 
     test(
-      'Rule 3: [Fatal Crash Trap] 未捕捉例外発生時に直前状態を退避する EmergencyCrashPreserver 配備規約こと',
+      'Fatal Crash Trapに関して、 未捕捉例外発生時に直前状態を退避する EmergencyCrashPreserver 配備規約こと',
       () {
         final preserverFile = File(
           'lib/shared/errors/emergency_crash_preserver.dart',
@@ -71,7 +71,7 @@ void main() {
       },
     );
 
-    test('Rule 4: [データ消失ゼロ暗号フォールバック] saveMatchSafeMode 不正署名隔離退避規約こと', () async {
+    test('データ消失ゼロ暗号フォールバックに関して、 saveMatchSafeMode 不正署名隔離退避規約こと', () async {
       final repoFile = File(
         'lib/shared/infrastructure/repository/local_match_repository.dart',
       );
@@ -107,7 +107,7 @@ void main() {
     });
 
     test(
-      'Rule 5: [署名検証O(1)キャッシュ] LocalMatchRepository に _verifiedSignatureKeys キャッシュ配備規約こと',
+      '署名検証O(1)キャッシュに関して、 LocalMatchRepository に _verifiedSignatureKeys キャッシュ配備規約こと',
       () {
         final repoFile = File(
           'lib/shared/infrastructure/repository/local_match_repository.dart',
@@ -121,7 +121,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [完全べき等キューイング] match_command_queue.dart に重複UUIDコマンド排除配備規約こと',
+      '完全べき等キューイングにおいて match_command_queue.dart に重複UUIDコマンド排除配備規約が遵守されていること',
       () {
         final queueFile = File(
           'lib/features/tournament/presentation/operate/providers/match_command_queue.dart',
@@ -136,7 +136,7 @@ void main() {
     );
 
     test(
-      'Rule 7: [物理的誤操作ガード] match_screen.dart に PopScope が配備され、試合中の離脱ガードが行われること',
+      '物理的誤操作ガードに関して、 match_screen.dart に PopScope が配備され、試合中の離脱ガードが行われること',
       () {
         final screenFile = File(
           'lib/features/tournament/presentation/operate/match_screen.dart',
@@ -154,7 +154,7 @@ void main() {
     );
 
     test(
-      'Rule 8: [フォントオフライン耐性] app_startup.dart に enforceOfflineFontFallback が配備されていること',
+      'フォントオフライン耐性に関して、 app_startup.dart に enforceOfflineFontFallback が配備されていること',
       () {
         final file = File('lib/bootstrap/app_startup.dart');
         expect(file.existsSync(), isTrue);
@@ -169,7 +169,7 @@ void main() {
     );
 
     test(
-      'Rule 9: [Fatal Crash Trap & Async Error Boundary] 非同期例外完全捕捉＆クラッシュ隔離（runZonedGuarded / ErrorWidget.builder）規約こと',
+      'Fatal Crash Trap & Async Error Boundaryに関して、 非同期例外完全捕捉＆クラッシュ隔離（runZonedGuarded / ErrorWidget.builder）規約こと',
       () {
         final globalErrorFile = File(
           'lib/shared/errors/global_error_handler.dart',

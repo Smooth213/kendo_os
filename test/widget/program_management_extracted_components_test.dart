@@ -27,56 +27,58 @@ void main() {
       ),
     ];
 
-    testWidgets('【ProgramManagementContentViews】Slidable付きのリストビューが正しく描画されること', (
-      tester,
-    ) async {
-      ProgramModel? deletedProgram;
+    testWidgets(
+      'ProgramManagementContentViewsにおいて Slidable付きのリストビューが正しく描画されること',
+      (tester) async {
+        ProgramModel? deletedProgram;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ProgramManagementContentViews.buildListView(
-                context: context,
-                programs: programs,
-                getSafeUrl: (url) => url,
-                onDelete: (p) {
-                  deletedProgram = p;
-                },
-                isViewerMode: false,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) =>
+                    ProgramManagementContentViews.buildListView(
+                      context: context,
+                      programs: programs,
+                      getSafeUrl: (url) => url,
+                      onDelete: (p) {
+                        deletedProgram = p;
+                      },
+                      isViewerMode: false,
+                    ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('進行表'), findsOneWidget);
-      expect(find.text('トーナメント表'), findsOneWidget);
+        expect(find.text('進行表'), findsOneWidget);
+        expect(find.text('トーナメント表'), findsOneWidget);
 
-      // 常時表示のゴミ箱アイコンは削除され、存在しないこと
-      expect(find.byIcon(Icons.delete_outline), findsNothing);
+        // 常時表示のゴミ箱アイコンは削除され、存在しないこと
+        expect(find.byIcon(Icons.delete_outline), findsNothing);
 
-      // Slidableウィジェットが存在すること
-      expect(find.byType(Slidable), findsNWidgets(2));
+        // Slidableウィジェットが存在すること
+        expect(find.byType(Slidable), findsNWidgets(2));
 
-      // スワイプ（右から左へドラッグ）して削除アクションを表示
-      await tester.drag(find.text('進行表'), const Offset(-300, 0));
-      await tester.pumpAndSettle();
+        // スワイプ（右から左へドラッグ）して削除アクションを表示
+        await tester.drag(find.text('進行表'), const Offset(-300, 0));
+        await tester.pumpAndSettle();
 
-      // 削除アクションが表示されること
-      expect(find.text('削除'), findsOneWidget);
-      expect(find.byIcon(Icons.delete), findsOneWidget);
+        // 削除アクションが表示されること
+        expect(find.text('削除'), findsOneWidget);
+        expect(find.byIcon(Icons.delete), findsOneWidget);
 
-      // 削除タップでコールバックが呼ばれること
-      await tester.tap(find.text('削除'));
-      await tester.pumpAndSettle();
+        // 削除タップでコールバックが呼ばれること
+        await tester.tap(find.text('削除'));
+        await tester.pumpAndSettle();
 
-      expect(deletedProgram, isNotNull);
-      expect(deletedProgram!.id, 'p1');
-    });
+        expect(deletedProgram, isNotNull);
+        expect(deletedProgram!.id, 'p1');
+      },
+    );
 
     testWidgets(
-      'ProgramManagementContentViews viewer mode disables Slidable deleteであること',
+      'ProgramManagementContentViews viewer mode disables Slidable deleteこと',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -104,42 +106,38 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Long press triggers onLongPress callback in normal modeであること',
-      (tester) async {
-        ProgramModel? longPressedProgram;
+    testWidgets('通常モード時の長押しでコールバックが正常に発火すること', (tester) async {
+      ProgramModel? longPressedProgram;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) =>
-                    ProgramManagementContentViews.buildListView(
-                      context: context,
-                      programs: programs,
-                      getSafeUrl: (url) => url,
-                      onDelete: (_) {},
-                      isViewerMode: false,
-                      onLongPress: (p) {
-                        longPressedProgram = p;
-                      },
-                    ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ProgramManagementContentViews.buildListView(
+                context: context,
+                programs: programs,
+                getSafeUrl: (url) => url,
+                onDelete: (_) {},
+                isViewerMode: false,
+                onLongPress: (p) {
+                  longPressedProgram = p;
+                },
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        // 長押し操作
-        await tester.longPress(find.text('進行表'));
-        await tester.pumpAndSettle();
+      // 長押し操作
+      await tester.longPress(find.text('進行表'));
+      await tester.pumpAndSettle();
 
-        expect(longPressedProgram, isNotNull);
-        expect(longPressedProgram!.id, 'p1');
-      },
-    );
+      expect(longPressedProgram, isNotNull);
+      expect(longPressedProgram!.id, 'p1');
+    });
 
     testWidgets(
-      'Selection mode shows checkboxes, toggles selection, and disables Slidableであること',
+      'Selection mode shows checkboxes, toggles selection, and disables Slidableこと',
       (tester) async {
         ProgramModel? toggledProgram;
 
@@ -181,7 +179,7 @@ void main() {
       },
     );
 
-    testWidgets('【ProgramManagementContentViews】選択機能付きのグリッドビューが正しく描画されること', (
+    testWidgets('ProgramManagementContentViewsにおいて 選択機能付きのグリッドビューが正しく描画されること', (
       tester,
     ) async {
       ProgramModel? toggledProgram;

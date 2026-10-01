@@ -45,7 +45,7 @@ class RosterCsvParser {
 }
 
 void main() {
-  group('[Unit] 【Phase 1-7/10】1,000名規模名簿CSV・BOM・改行混在パース異常系リカバリテスト', () {
+  group('[Unit] 1,000名規模名簿CSV・BOM・改行混在パース異常系リカバリテスト', () {
     test('UTF-8 BOM・CRLF/LF混在・空行・余剰カンマを含むCSVが正確にパースされること', () {
       const dirtyCsv =
           "\uFEFF氏名, 道場, 段位\r\n"

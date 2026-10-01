@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/application/services/csv_service.dart';
 
 void main() {
-  group('[Unit] 【Unit】CsvService 堅牢性・文字コード・RFC 4180適合テスト', () {
+  group('[Unit] CsvService 堅牢性・文字コード・RFC 4180適合テスト', () {
     test('UTF-8 BOM(\\uFEFF)が先頭に付与され、Excelでの文字化けが完全に防止されること', () {
       final csv = CsvService.generateCsvString('一般男子の部', []);
       expect(csv.startsWith('\uFEFF'), isTrue);

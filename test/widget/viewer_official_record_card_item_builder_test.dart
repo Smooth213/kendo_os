@@ -6,7 +6,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] ViewerOfficialRecordCardItemBuilder テスト', () {
-    test('【generateDescriptiveLeagueTitle】団体リーグ戦のタイトルが正しく生成されること', () {
+    test('generateDescriptiveLeagueTitleにおいて 団体リーグ戦のタイトルが正しく生成されること', () {
       final matches = [
         const MatchListProjection(
           id: 'm1',

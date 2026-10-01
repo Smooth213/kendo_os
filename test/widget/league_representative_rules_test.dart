@@ -26,7 +26,7 @@ void main() {
     });
 
     test(
-      'Domain Layer - Timer resolution count-up / count-down for representative matchesであること',
+      'Domain Layer - Timer resolution count-up / count-down for representative matchesこと',
       () {
         final now = DateTime(2026, 7, 1, 12, 0, 0);
 
@@ -65,7 +65,7 @@ void main() {
       },
     );
 
-    testWidgets('【setup_match_format_screen】リーグ戦モードで詳細な代表戦設定が描画されること', (
+    testWidgets('setup_match_format_screenにおいて リーグ戦モードで詳細な代表戦設定が描画されること', (
       WidgetTester tester,
     ) async {
       // Set large size to build all lazy ListView items

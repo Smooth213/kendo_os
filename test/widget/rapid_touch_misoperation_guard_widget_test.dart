@@ -15,7 +15,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('[Widget] 【Widget 1/5】連打誤操作・多重加点防止ガード耐久テスト', () {
+  group('[Widget] Widget 1/5において 連打誤操作・多重加点防止ガード耐久テスト', () {
     testWidgets('1秒間に10回連続の高速タップが発生しても、二重発火・例外なく安定制御されること', (
       WidgetTester tester,
     ) async {

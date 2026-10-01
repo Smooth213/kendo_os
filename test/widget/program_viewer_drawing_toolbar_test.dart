@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 void main() {
-  testWidgets('【ProgramViewerDrawingToolbar】各種ツールが描画されコールバックが処理されること', (
+  testWidgets('ProgramViewerDrawingToolbarにおいて 各種ツールが描画されコールバックが処理されること', (
     WidgetTester tester,
   ) async {
     String selectedTool = 'pen';
@@ -41,7 +41,7 @@ void main() {
     expect(undoCalled, isTrue);
   });
 
-  testWidgets('【ProgramViewerDrawingToolbar】観客モード時に共有ペン設定が秘匿されること', (
+  testWidgets('ProgramViewerDrawingToolbarにおいて 観客モード時に共有ペン設定が秘匿されること', (
     WidgetTester tester,
   ) async {
     Color selectedColor = AppKendoColors.blue;
@@ -96,7 +96,7 @@ void main() {
     expect(selectedColor, equals(AppKendoColors.pureBlack));
   });
 
-  testWidgets('【ProgramViewerDrawingToolbar】記録係モード時に共有ペン設定が表示されること', (
+  testWidgets('ProgramViewerDrawingToolbarにおいて 記録係モード時に共有ペン設定が表示されること', (
     WidgetTester tester,
   ) async {
     Color selectedColor = AppKendoColors.pink;

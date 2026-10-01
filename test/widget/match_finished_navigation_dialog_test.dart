@@ -5,9 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchFinishedNavigationDialog ウィジェットテスト', () {
-    testWidgets('all ボタン一覧 and triggers callbacks accuratelyが正しく描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('全ボタン一覧が表示されコールバックが正確に実行されること', (WidgetTester tester) async {
       bool addRenseikaiClicked = false;
       bool nextMatchClicked = false;
       bool goHomeClicked = false;
@@ -68,7 +66,7 @@ void main() {
       expect(scoreboardClicked, isTrue);
     });
 
-    testWidgets('【tournamentId is 部内戦】部内戦 home labelが正しく描画されること', (
+    testWidgets('tournamentId is 部内戦において 部内戦 home labelが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

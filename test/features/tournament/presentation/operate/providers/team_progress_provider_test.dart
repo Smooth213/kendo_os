@@ -72,7 +72,7 @@ void main() {
     });
 
     group('コート・回戦・試合順抽出（extractCourtAndRoundDisplay）検証', () {
-      test('第2コート, 1回戦, 4試合目 -> 第2コート (1回戦・第4試合)こと', () {
+      test('1回戦・第4試合において第2コート, 1回戦, 4試合目 -> 第2コートこと', () {
         const match = MatchModel(
           id: 'm1',
           matchType: '個人戦',
@@ -83,7 +83,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '第2コート (1回戦・第4試合)');
       });
 
-      test('第1試合場, 3試合目 -> 第1試合場 (第3試合)こと', () {
+      test('第3試合において第1試合場, 3試合目 -> 第1試合場こと', () {
         const match = MatchModel(
           id: 'm2',
           matchType: '個人戦',
@@ -94,7 +94,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '第1試合場 (第3試合)');
       });
 
-      test('第3コート, 準決勝 -> 第3コート (準決勝)こと', () {
+      test('準決勝において第3コート, 準決勝 -> 第3コートこと', () {
         const match = MatchModel(
           id: 'm3',
           matchType: '個人戦',
@@ -116,7 +116,7 @@ void main() {
         expect(extractCourtAndRoundDisplay(match), '部内戦コート');
       });
 
-      test('コート未指定で回戦のみ -> コート未指定 (2回戦・第1試合)こと', () {
+      test('2回戦・第1試合においてコート未指定で回戦のみ -> コート未指定こと', () {
         const match = MatchModel(
           id: 'm5',
           matchType: '個人戦',

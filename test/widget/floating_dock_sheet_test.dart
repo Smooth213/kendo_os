@@ -10,7 +10,7 @@ void main() {
       await FloatingDockSheetManager.close(immediate: true);
     });
 
-    testWidgets('【背面操作保証】フローティングシート展開中も背後のボタンが自由にタップ可能であること', (tester) async {
+    testWidgets('背面操作保証において フローティングシート展開中も背後のボタンが自由にタップ可能こと', (tester) async {
       int backgroundTapCount = 0;
 
       await tester.pumpWidget(

@@ -55,7 +55,7 @@ void main() {
   // Step 1: スクロール先読みキャッシュ検証
   // ─────────────────────────────────────────────────────────
   group('[Governance] スクロール先読みキャッシュ (cacheExtent)', () {
-    test('【1500.0, 1000.0】1. cacheExtent値が正しく計算できること', () {
+    test('画面サイズ1500.0および1000.0において cacheExtent値が正しく計算できること', () {
       const double tournamentListCacheExtent = 1500.0;
       const double categoryListCacheExtent = 1000.0;
 
@@ -74,7 +74,7 @@ void main() {
       expect(tournamentListCacheExtent, greaterThan(categoryListCacheExtent));
     });
 
-    test('program_management_screen の itemExtent が妥当な値であること', () {
+    test('program_management_screen の itemExtent が妥当な値こと', () {
       // program_management_screen は itemExtent: 68.0 を設定済み
       const double programListItemExtent = 68.0;
 
@@ -87,10 +87,10 @@ void main() {
   // ─────────────────────────────────────────────────────────
   // Step 2-A: KachinukiBracketPainter.shouldRepaint の検証
   // ─────────────────────────────────────────────────────────
-  group('-A: KachinukiBracketPainter.shouldRepaint (Web/Native共通)', () {
+  group('A: KachinukiBracketPainter.shouldRepaint (Web/Native共通)', () {
     // ref は paint() 内でのみ使われるため、shouldRepaint のテストでは null で代用
 
-    test('2A-1. 同一データのリストが渡された場合は false を返すこと', () {
+    test('同一データのリストが渡された場合は false を返すこと', () {
       final matches = [_makeProjection()];
       final old = KachinukiBracketPainter(
         matches: matches,
@@ -110,7 +110,7 @@ void main() {
       );
     });
 
-    test('2A-2. スコアが変化した場合は true を返すこと', () {
+    test('スコアが変化した場合は true を返すこと', () {
       final old = KachinukiBracketPainter(
         matches: [_makeProjection(redScore: 0)],
         isDark: false,
@@ -125,7 +125,7 @@ void main() {
       expect(current.shouldRepaint(old), isTrue, reason: 'スコア変化時は再描画すべき');
     });
 
-    test('2A-3. status が in_progress→finished に変化した場合は true を返すこと', () {
+    test('status が in_progress→finished に変化した場合は true を返すこと', () {
       final old = KachinukiBracketPainter(
         matches: [_makeProjection(status: 'in_progress')],
         isDark: false,
@@ -140,7 +140,7 @@ void main() {
       expect(current.shouldRepaint(old), isTrue, reason: '試合終了時は再描画すべき');
     });
 
-    test('2A-4. isDark が切り替わった場合は true を返すこと', () {
+    test('isDark が切り替わった場合は true を返すこと', () {
       final matches = [_makeProjection()];
       final old = KachinukiBracketPainter(
         matches: matches,
@@ -156,7 +156,7 @@ void main() {
       expect(current.shouldRepaint(old), isTrue, reason: 'テーマ変更時は再描画すべき');
     });
 
-    test('2A-5. 試合が追加された場合（リスト長変化）は true を返すこと', () {
+    test('試合が追加された場合（リスト長変化）は true を返すこと', () {
       final old = KachinukiBracketPainter(
         matches: [_makeProjection()],
         isDark: false,
@@ -174,7 +174,7 @@ void main() {
       expect(current.shouldRepaint(old), isTrue, reason: '試合数増加時は再描画すべき');
     });
 
-    test('2A-6. note（延長など）が変化した場合は true を返すこと', () {
+    test('note（延長など）が変化した場合は true を返すこと', () {
       final old = KachinukiBracketPainter(
         matches: [_makeProjection(note: '')],
         isDark: false,
@@ -189,7 +189,7 @@ void main() {
       expect(current.shouldRepaint(old), isTrue, reason: '延長フラグ変化時は再描画すべき');
     });
 
-    test('2A-7. PointDisplay参照が異なりスコア/status/nameが同一なら false を返すこと'
+    test('PointDisplay参照が異なりスコア/status/nameが同一なら false を返すこと'
         '（PointDisplay.== 未実装の安全保証 - Web/Native共通）', () {
       // PointDisplayは==未実装だが、描画判定はstatus/score/nameのみで行う
       final p1 = MatchProjection(
@@ -235,8 +235,8 @@ void main() {
   // ─────────────────────────────────────────────────────────
   // Step 2-B: StrokePainter の shouldRepaint ロジック検証
   // ─────────────────────────────────────────────────────────
-  group('-B: StrokePainter.shouldRepaint ロジック (Web/Native共通)', () {
-    test('2B-1. 同一ストロークリスト参照では false を返すこと', () {
+  group('B: StrokePainter.shouldRepaint ロジック (Web/Native共通)', () {
+    test('同一ストロークリスト参照では false を返すこと', () {
       final strokes = [_makeStroke('stroke-1')];
       final checker = _StrokePainterLogic(
         sharedStrokes: strokes,
@@ -260,7 +260,7 @@ void main() {
       );
     });
 
-    test('2B-2. ストロークが追加された場合（長さ変化）は true を返すこと', () {
+    test('ストロークが追加された場合（長さ変化）は true を返すこと', () {
       final old = _StrokePainterLogic(
         sharedStrokes: [_makeStroke('stroke-1')],
         privateCount: 0,
@@ -279,7 +279,7 @@ void main() {
       expect(current.shouldRepaintWith(old), isTrue, reason: 'ストローク追加時は再描画すべき');
     });
 
-    test('2B-3. 描画中の点列が変化した場合は true を返すこと', () {
+    test('描画中の点列が変化した場合は true を返すこと', () {
       final old = _StrokePainterLogic(
         sharedStrokes: [],
         privateCount: 0,
@@ -302,7 +302,7 @@ void main() {
       );
     });
 
-    test('2B-4. ペン色が変わった場合は true を返すこと', () {
+    test('ペン色が変わった場合は true を返すこと', () {
       final strokes = [_makeStroke('stroke-1')];
       final old = _StrokePainterLogic(
         sharedStrokes: strokes,
@@ -385,7 +385,7 @@ void main() {
   // パフォーマンス境界値テスト
   // ─────────────────────────────────────────────────────────
   group('パフォーマンス境界値: 大量データ時の shouldRepaint コスト', () {
-    test('P-1. 100試合リストの shouldRepaint 比較が 1ms 未満で完了すること', () {
+    test('100試合リストの shouldRepaint 比較が 1ms 未満で完了すること', () {
       final matches100 = List.generate(
         100,
         (i) => _makeProjection(

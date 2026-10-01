@@ -23,7 +23,7 @@ void main() {
       expect(find.textContaining('【先鋒】'), findsOneWidget);
     });
 
-    testWidgets('【note and type are empty or default】nothingが正しく描画されること', (
+    testWidgets('note and type are empty or defaultにおいて nothingが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

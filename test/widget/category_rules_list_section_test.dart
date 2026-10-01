@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
   group('[Widget] CategoryRulesListSection ウィジェットテスト', () {
-    testWidgets('【no 部門 ルール設定】空状態が正しく描画されること', (tester) async {
+    testWidgets('no 部門 ルール設定において 空状態が正しく描画されること', (tester) async {
       final tournament = TournamentModel(
         id: 't1',
         organizationId: 'org1',

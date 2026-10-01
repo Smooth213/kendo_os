@@ -32,7 +32,7 @@ void main() {
   });
 
   group('[Unit] Web Platform Safety & Historical Bug リグレッションテスト', () {
-    test('JS Safe Integer Limitation (64bit整数限界エラー防止)こと', () {
+    test('64bit整数限界によるJavaScriptエラーが防止されること', () {
       // 【歴史】Isarの巨大なID(19桁)をそのままWebビルドに通すと、dart2jsコンパイラが
       // 処理不能に陥りビルドが密かに失敗。古いアプリがデプロイされ続ける原因となった。
       const int maxJsSafeInteger = 9007199254740991;
@@ -47,7 +47,7 @@ void main() {
       }
     });
 
-    test('Isar Web Isolation (Isar Web起動時の自爆クラッシュ防止)こと', () {
+    test('Web環境でのIsar起動によるクラッシュが確実に防止されること', () {
       // 【歴史】Web環境でIsarを初期化しようとすると、v3の制約により
       // "Please use Isar 2.5.0..." という致命的エラーが発生し画面がホワイトアウトした。
       bool kIsWebMock = true;
@@ -64,7 +64,7 @@ void main() {
       );
     });
 
-    test('Single Router Architecture (URL消失・ホワイトアウト防止)こと', () {
+    test('シングルルーター構成によりURL消失および画面ホワイトアウトが防止されること', () {
       // 【歴史】AuthCheck内で MaterialApp と MaterialApp.router を条件分岐させると、
       // 切り替え時にブラウザのURLパラメータが消失し、強制的にトップページに戻される障害が発生した。
       const bool alwaysUsesRouter = true;
@@ -77,7 +77,7 @@ void main() {
       );
     });
 
-    test('Zero Trust AuthGuard Logic (未ログイン観客のスルー検証)こと', () {
+    test('未ログイン観客による不当アクセスがAuthGuardにより遮断されること', () {
       // 【歴史】QRコードを読んだ保護者（未ログイン）が、不正アクセスと誤認されて
       // Kendo Syncのログイン画面に強制送還されてしまう関所ブロック障害が発生した。
       final testCases = [
@@ -116,7 +116,7 @@ void main() {
       }
     });
 
-    test('ConsumerWidget Property Access (Widget.child 参照エラー防止)こと', () {
+    test('Widget.child 参照エラー防止においてConsumerWidget Property Accessこと', () {
       // 【歴史】RoleInjector(ConsumerWidget)内で `widget.child` を呼び出したため
       // コンパイルエラーが発生。これに気づかずデプロイし、iPhone側が一切更新されない事態を招いた。
       const hasWidgetDotChild = false;
@@ -128,7 +128,7 @@ void main() {
       );
     });
 
-    test('Viewer Screen Door Logic (観客席の扉ボタン非表示と閉じ込め防止)こと', () {
+    test('観客席の扉ボタン非表示と閉じ込め防止においてViewer Screen Door Logicこと', () {
       // 【歴史】QRコード(Web)から直接アクセスした観客に、管理者画面に戻るための
       // 扉ボタンが表示されてしまう、または管理者がプレビュー画面から戻れなくなるUXバグが発生した。
 
@@ -152,7 +152,7 @@ void main() {
       );
     });
 
-    test('Isar Schema ID Protection (設計図破壊の再発防止テスト)こと', () {
+    test('設計図破壊の再発防止テストにおいてIsar Schema ID Protectionこと', () {
       // 【歴史】デプロイスクリプトの置換処理が、Isarの設計図(CollectionSchema)のIDまで
       // 書き換えてしまったため、iPhoneで「Collection id is invalid」エラーが発生した。
       // 本テストでは、スクリプトで使用している正規表現が「設計図」を守り、「データID」だけを狙えるか検証する。
@@ -186,7 +186,7 @@ void main() {
       );
     });
 
-    test('SyncState Enforcement (本番サービスを通した未送信フラグ強制付与の検証)こと', () async {
+    test('本番サービスを通した未送信フラグ強制付与の検証においてSyncState Enforcementこと', () async {
       // 【歴史】一括生成した試合を保存する際、syncStateがlocalOnlyに設定されていなかったため、
       // 同期エンジンが「送信済み」と誤認し、Firestoreにデータが上がらずViewerに表示されない不具合があった。
 
@@ -246,31 +246,34 @@ void main() {
       );
     });
 
-    test('Web Viewer Pipeline Constraint (Web版のIsarバイパスとProjection更新制約)こと', () {
-      // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
-      // 【歴史】Web版でIsarを監視しようとしてデータが0件になる、またはProjectionが更新されず真っ白になる不具合があった。
-      // また、Firestoreから受信したデータがProjectionStoreに反映されず、画面が真っ白になった。
+    test(
+      'Web版のIsarバイパスとProjection更新制約においてWeb Viewer Pipeline Constraintこと',
+      () {
+        // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
+        // 【歴史】Web版でIsarを監視しようとしてデータが0件になる、またはProjectionが更新されず真っ白になる不具合があった。
+        // また、Firestoreから受信したデータがProjectionStoreに反映されず、画面が真っ白になった。
 
-      const bool isWebEnvironment = true;
+        const bool isWebEnvironment = true;
 
-      // matchListProvider に課せられたWeb版のアーキテクチャ制約をシミュレート
-      final bool usesIsar = !isWebEnvironment;
-      final bool callsUpdateProjections =
-          isWebEnvironment; // Web環境ならストリーム内で必ず手動で呼ぶ
+        // matchListProvider に課せられたWeb版のアーキテクチャ制約をシミュレート
+        final bool usesIsar = !isWebEnvironment;
+        final bool callsUpdateProjections =
+            isWebEnvironment; // Web環境ならストリーム内で必ず手動で呼ぶ
 
-      expect(
-        usesIsar,
-        isFalse,
-        reason: 'Web環境ではIsar(Local DB)への依存を完全に断ち切り、Firestoreを直接監視しなければならない',
-      );
-      expect(
-        callsUpdateProjections,
-        isTrue,
-        reason: 'Web環境では、Firestoreからの受信時に手動でProjectionを更新しなければ画面に描画されない',
-      );
-    });
+        expect(
+          usesIsar,
+          isFalse,
+          reason: 'Web環境ではIsar(Local DB)への依存を完全に断ち切り、Firestoreを直接監視しなければならない',
+        );
+        expect(
+          callsUpdateProjections,
+          isTrue,
+          reason: 'Web環境では、Firestoreからの受信時に手動でProjectionを更新しなければ画面に描画されない',
+        );
+      },
+    );
 
-    test('Match Timer Ghost Resume Prevention (タイマーゴースト再開の防止と絶対時間仕様)こと', () {
+    test('タイマーゴースト再開の防止と絶対時間仕様においてMatch Timer Ghost Resume Preventionこと', () {
       // 【歴史】タイマーを停止(timerStartedAt = null)した直後に、同期エンジンが
       // 古いメモリ状態(timerStartedAt != null)をサーバーに送信し、それが降ってきて
       // タイマーが勝手に再開してしまう「ゴースト再開」の不具合が発生した。
@@ -323,7 +326,7 @@ void main() {
       );
     });
 
-    test('Bunaiksen Viewer Role Enforcement (部内戦観客席の権限ダウングレード検証)こと', () {
+    test('部内戦観客席の権限ダウングレード検証においてBunaiksen Viewer Role Enforcementこと', () {
       // 【歴史】部内戦の観客席(Bunaiksen Viewer)は、認証済みユーザーであっても
       // 強制的に viewer 権限にダウングレードさせ、誤操作を物理的に防ぐ必要がある。
       // ルーティング設定において、RoleInjector に roleStr: 'viewer' が固定で
@@ -356,7 +359,7 @@ void main() {
       }
     });
 
-    test('【ルーティング隔離】通常観客席と部内戦観客席のルーティング分離検証が正常に機能すること', () {
+    test('ルーティング隔離において 通常観客席と部内戦観客席のルーティング分離検証が正常に機能すること', () {
       // 【歴史】通常大会と部内戦で共有URL(QR)のパスを混ぜた結果、想定外の画面が開いたり
       // UIが崩れたりする障害が発生した。両者は完全に別々のURLパス空間として定義されなければならない。
       const standardViewerUrl = 'https://kendo-os.web.app/viewer-home/t_123';
@@ -387,7 +390,7 @@ void main() {
     });
 
     test(
-      'Reorder Match Order Precision Bug (巨大な浮動小数点での情報落ちによる並び替え無効化の防止)こと',
+      '巨大な浮動小数点での情報落ちによる並び替え無効化の防止においてReorder Match Order Precision Bugこと',
       () {
         // 【歴史】ドラッグ＆ドロップでの並び替え時、巨大なタイムスタンプ由来のorder値に対して
         // 重複回避のために +0.001 を足していたが、double型の精度限界（情報落ち）により
@@ -433,7 +436,7 @@ void main() {
       },
     );
 
-    test('Web Archive Delay Prevention (過去大会読み込み遅延・フリーズの防止)こと', () {
+    test('過去大会読み込み遅延・フリーズの防止においてWeb Archive Delay Preventionこと', () {
       // 【歴史】Web版で、蓄積した過去大会(アーカイブ)のデータも含めた全試合ストリームを
       // 一括で取得・監視しようとした結果、ブラウザが数分間フリーズする不具合が発生した。
       // そのため、Web環境では以下の2点のバイパス・ピンポイント監視が必須となる。
@@ -460,7 +463,7 @@ void main() {
       );
     });
 
-    test('ViewerMatchScreen Infinite Loading Fallback (ずっとクルクルする不具合の防止)こと', () {
+    test('ずっとクルクルする不具合の防止においてViewerMatchScreen Infinite Loading Fallbackこと', () {
       // 【歴史】ViewerMatchScreenで、プロジェクションの初回ストリームパケットの到達が遅れ、
       // Loading状態のまま画面がずっとクルクルしてフリーズしたように見える不具合が発生した。
       // このため、Loading中であってもローカルキャッシュ(matchListProvider)から即座に
@@ -480,7 +483,7 @@ void main() {
       );
     });
 
-    test('Web Score Input Bypass (Web版スコア入力時のIsarバイパス制約)こと', () {
+    test('Web版スコア入力時のIsarバイパス制約においてWeb Score Input Bypassこと', () {
       // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
       // 【歴史】Web環境でIsar(ローカルDB)が永続化動作を行えないことが原因で、スコアを入力しても保存処理の途中で止まってしまい、
       // 結果がUIに反映されない（あるいはエラーになる）という重大な不具合が発生した。
@@ -505,7 +508,7 @@ void main() {
       );
     });
 
-    test('HomeScreen Web Performance (Web版ホーム画面のフリーズ防止)こと', () {
+    test('Web版ホーム画面のフリーズ防止においてHomeScreen Web Performanceこと', () {
       // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
       // 【歴史】Web版のHomeScreenで、全大会の試合データ(matchListProvider)を読み込もうとした結果、
       // アーカイブデータが増えるにつれてブラウザが数分間フリーズする致命的なパフォーマンス問題が発生した。
@@ -531,7 +534,7 @@ void main() {
       );
     });
 
-    test('Firestore Stream Silent Failure Prevention (通信エラー時の無限クルクル防止)こと', () {
+    test('通信エラー時の無限クルクル防止においてFirestore Stream Silent Failure Preventionこと', () {
       // ⚠️ 注意：これは本番コードを直接テストするものではなく、開発者に「Web版のルール」を伝達するための『実行可能なドキュメント』です。
       // 【歴史】Web版の matchListByTournamentProvider において、Firestoreの権限エラーや通信エラーが発生した際、
       // onError コールバックでエラーをキャッチしたものの、ストリームに値を流さなかった（沈黙した）ため、
@@ -555,7 +558,7 @@ void main() {
       );
     });
 
-    test('Scoreboard Memory Priority & Decoding (スコア画面の即時表示と日本語文字化け防止)こと', () {
+    test('スコア画面の即時表示と日本語文字化け防止においてScoreboard Memory Priority & Decodingこと', () {
       // ⚠️ 注意：これも実行可能なドキュメントです。
       // 【歴史】Web版のスコア入力画面（TeamScoreboardScreen）に一覧から遷移した際、
       // 1. URLエンコードされた日本語チーム名がそのまま渡され、検索にヒットせず「データなし」になる
@@ -585,7 +588,7 @@ void main() {
       );
     });
 
-    test('Web Viewer Match List Fallback (Web版Viewerの試合リスト消失防止と網羅検索の保証)こと', () {
+    test('Web版Viewerの試合リスト消失防止と網羅検索の保証においてWeb Viewer Match List Fallbackこと', () {
       // ⚠️ 注意：これも実行可能なドキュメントです。
       // 【歴史】Web版のViewerHomeScreenで、試合データを取得する際に `collectionGroup('matches')` などの
       // 単一のクエリのみを参照していた結果、ルートコレクション `collection('matches')` に保存された試合が一切取得できず、
@@ -615,7 +618,7 @@ void main() {
     });
 
     test(
-      'Member Role Auto-Registration Enforcement (権限登録漏れによるPermission Denied再発防止)こと',
+      '権限登録漏れによるPermission Denied再発防止においてMember Role Auto-Registration Enforcementこと',
       () async {
         // ⚠️ 注意：これは単なるドキュメントではなく、アーキテクチャの構造的制約を強制するテストです。
         // 【歴史】匿名ログインや再インストール直後など、Firestoreの `members/{uid}` に自身のRoleデータが存在しない状態で

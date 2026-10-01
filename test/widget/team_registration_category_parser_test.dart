@@ -3,7 +3,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 
 void main() {
   group('[Widget] TeamRegistrationCategoryParser テスト', () {
-    test('formatCategoryName formats categories correctlyであること', () {
+    test('部門名が正しくフォーマットされること', () {
       expect(
         TeamRegistrationCategoryParser.formatCategoryName(
           majorCategory: '小学生',
@@ -34,27 +34,20 @@ void main() {
       );
     });
 
-    test(
-      'parseCategoryToState parses saved category strings correctlyであること',
-      () {
-        final res1 = TeamRegistrationCategoryParser.parseCategoryToState(
-          '小学生高学年の部',
-        );
-        expect(res1.majorCategory, '小学生');
-        expect(res1.minorCategory, '高学年');
+    test('保存済み部門文字列が状態へ正しくパースされること', () {
+      final res1 = TeamRegistrationCategoryParser.parseCategoryToState(
+        '小学生高学年の部',
+      );
+      expect(res1.majorCategory, '小学生');
+      expect(res1.minorCategory, '高学年');
 
-        final res2 = TeamRegistrationCategoryParser.parseCategoryToState(
-          '初心者の部',
-        );
-        expect(res2.majorCategory, '初心者');
-        expect(res2.minorCategory, '全体');
+      final res2 = TeamRegistrationCategoryParser.parseCategoryToState('初心者の部');
+      expect(res2.majorCategory, '初心者');
+      expect(res2.minorCategory, '全体');
 
-        final res3 = TeamRegistrationCategoryParser.parseCategoryToState(
-          '一般の部',
-        );
-        expect(res3.majorCategory, '大学・一般');
-        expect(res3.minorCategory, '一般');
-      },
-    );
+      final res3 = TeamRegistrationCategoryParser.parseCategoryToState('一般の部');
+      expect(res3.majorCategory, '大学・一般');
+      expect(res3.minorCategory, '一般');
+    });
   });
 }

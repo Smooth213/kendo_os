@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
 
 void main() {
-  group('[Governance] 【Phase 11: Dart AOT コンパイル関数インライン化】マイクロベンチマーク＆整合性テスト', () {
+  group('[Governance] Dart AOT コンパイル関数インライン化マイクロベンチマーク＆整合性テスト', () {
     late MatchModel testMatch;
 
     setUp(() {
@@ -21,7 +21,7 @@ void main() {
     });
 
     test(
-      'calculateRemainingSeconds 100,000回連続呼び出しマイクロベンチマーク（超高速・ゼロアロケーション）こと',
+      '超高速・ゼロアロケーションにおいてcalculateRemainingSeconds 100,000回連続呼び出しマイクロベンチマークこと',
       () {
         final now = DateTime(2026, 9, 4, 10, 1, 30);
         const iterations = 100000;

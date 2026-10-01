@@ -5,7 +5,7 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_group_ma
 
 void main() {
   group('[Widget] ViewerGroupMatchCard Components テスト', () {
-    testWidgets('【ViewerGroupMatchScoreSummary】チーム名およびスコアが正しく描画されること', (
+    testWidgets('ViewerGroupMatchScoreSummaryにおいて チーム名およびスコアが正しく描画されること', (
       tester,
     ) async {
       const match = MatchModel(

@@ -243,7 +243,7 @@ void main() {
     );
 
     // 5. TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能であること
-    testWidgets('TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能であること', (
+    testWidgets('TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能こと', (
       tester,
     ) async {
       final controller = TextEditingController(text: '道上剣友会A');

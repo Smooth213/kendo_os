@@ -3,7 +3,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryRuleMatchHelper テスト', () {
-    test('【isAdvancedMatchName】決勝・準決勝が正しく検知されること', () {
+    test('isAdvancedMatchNameにおいて 決勝・準決勝が正しく検知されること', () {
       expect(CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 決勝戦'), isTrue);
       expect(
         CategoryRuleMatchHelper.isAdvancedMatchName('第2コート 準決勝第1試合'),
@@ -12,7 +12,7 @@ void main() {
       expect(CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 1回戦'), isFalse);
     });
 
-    test('buildMatchRule creates valid MatchRule instanceであること', () {
+    test('有効なMatchRuleインスタンスが正しく生成されること', () {
       final rule = CategoryRuleMatchHelper.buildMatchRule(
         category: '一般',
         matchType: '個人戦',

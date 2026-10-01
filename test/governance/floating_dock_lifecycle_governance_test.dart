@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 
 void main() {
   group(
-    '[Governance] 【ガバナンス監査 18/18】FloatingDock 常設ドック・オーバーレイ解放＆ライフサイクル規約テスト',
+    '[Governance] ガバナンス監査 18/18において FloatingDock 常設ドック・オーバーレイ解放＆ライフサイクル規約テスト',
     () {
       testWidgets(
         'OverlayEntry ライフサイクル解放規約: show/close が安全に動作し isOpen が正しく遷移すること',

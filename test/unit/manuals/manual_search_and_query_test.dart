@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Unit] マニュアル検索・クエリ機能テスト (Manual Search & Query テスト)', () {
+  group('[Unit] マニュアル検索およびクエリ機能テスト', () {
     const indexPath =
         'packages/documentation_runtime/manuals/manual_search_index.json';
     late List<dynamic> searchIndex;

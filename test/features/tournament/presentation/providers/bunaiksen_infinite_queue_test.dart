@@ -16,13 +16,13 @@ void main() {
       container.dispose();
     });
 
-    test('Initial queue state is emptyであること', () {
+    test('Initial queue state is emptyこと', () {
       final state = container.read(bunaiksenInfiniteQueueProvider);
       expect(state, isEmpty);
     });
 
     test(
-      'Adding players appends them to the end and prevents duplicatesであること',
+      'Adding players appends them to the end and prevents duplicatesこと',
       () {
         queueNotifier.addPlayer('山田 太郎');
         expect(container.read(bunaiksenInfiniteQueueProvider), ['山田 太郎']);
@@ -42,39 +42,33 @@ void main() {
       },
     );
 
-    test(
-      'Removing players (leaving) removes them without disturbing other players\' orderであること',
-      () {
-        queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
+    test('選手の離脱削除時に他の選手データに影響を与えることなく正常に削除されること', () {
+      queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
 
-        // '田中' leaves the queue
-        queueNotifier.removePlayer('田中');
-        expect(container.read(bunaiksenInfiniteQueueProvider), [
-          '山田',
-          '佐藤',
-          '鈴木',
-        ]);
+      // '田中' leaves the queue
+      queueNotifier.removePlayer('田中');
+      expect(container.read(bunaiksenInfiniteQueueProvider), [
+        '山田',
+        '佐藤',
+        '鈴木',
+      ]);
 
-        // '山田' (front) leaves the queue
-        queueNotifier.removePlayer('山田');
-        expect(container.read(bunaiksenInfiniteQueueProvider), ['佐藤', '鈴木']);
-      },
-    );
+      // '山田' (front) leaves the queue
+      queueNotifier.removePlayer('山田');
+      expect(container.read(bunaiksenInfiniteQueueProvider), ['佐藤', '鈴木']);
+    });
 
-    test(
-      'Moving a player to the last position preserves other ordersであること',
-      () {
-        queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
+    test('選手を末尾に移動した際に他の選手の順序が正常に維持されること', () {
+      queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
 
-        queueNotifier.moveToLast('佐藤');
-        expect(container.read(bunaiksenInfiniteQueueProvider), [
-          '山田',
-          '田中',
-          '鈴木',
-          '佐藤',
-        ]);
-      },
-    );
+      queueNotifier.moveToLast('佐藤');
+      expect(container.read(bunaiksenInfiniteQueueProvider), [
+        '山田',
+        '田中',
+        '鈴木',
+        '佐藤',
+      ]);
+    });
 
     test('キューのシャッフル時に全要素および件数が保持されること', () {
       final originalList = ['山田', '佐藤', '田中', '鈴木', '高橋'];
@@ -113,7 +107,7 @@ void main() {
       ]);
     });
 
-    test('PopFirst retrieves and removes the front playerであること', () {
+    test('先頭の選手が正常に取り出されキューから除去されること', () {
       queueNotifier.setPlayers(['山田', '佐藤', '田中']);
 
       final first = queueNotifier.popFirst();

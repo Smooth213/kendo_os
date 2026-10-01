@@ -5,7 +5,7 @@ void main() {
   group('[Unit] NewMatchSubmissionService テスト', () {
     const service = NewMatchSubmissionService();
 
-    test('Service can be instantiatedであること', () {
+    test('サービスのインスタンスが正常に生成できること', () {
       expect(service, isNotNull);
     });
   });

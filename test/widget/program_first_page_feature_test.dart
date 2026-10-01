@@ -180,9 +180,7 @@ void main() {
       expect(firstPagePressed, isTrue);
     });
 
-    testWidgets('複数ページPDFでも1ページ目表示時はボタンが非活性（onPressed == null）であること', (
-      tester,
-    ) async {
+    testWidgets('複数ページPDFでも1ページ目表示時はボタンが非活性となること', (tester) async {
       final pdfProgram = ProgramModel(
         id: 'pdf_sample',
         tournamentId: 'tour_sample',

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 2-1/10】40℃猛暑サーマルスロットリング（15FPS低フレームレート）耐久テスト', () {
+  group('[Widget] 40℃猛暑サーマルスロットリング（15FPS低フレームレート）耐久テスト', () {
     testWidgets('15FPS（約66ms周期）のコマ落ち環境下でも、絶対時間ベースのタイマーが正確に刻まれること', (
       tester,
     ) async {

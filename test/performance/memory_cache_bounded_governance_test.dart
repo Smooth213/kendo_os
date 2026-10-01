@@ -5,7 +5,7 @@ import 'package:kendo_os/bootstrap/app_startup.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] [Phase 2 Performance Governance] 画像キャッシュ上限・メモリ制御テスト', () {
+  group('[Governance] Performance Governanceに関して、画像キャッシュ上限・メモリ制御テスト', () {
     test('デフォルト設定で画像キャッシュ上限が50MBかつ100枚に制限されること', () {
       // 実行
       AppStartup.configureImageCache();

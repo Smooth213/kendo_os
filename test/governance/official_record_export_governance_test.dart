@@ -17,11 +17,11 @@ import 'package:kendo_os/shared/widgets/app_switch.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] [ガバナンス第6条・第12条] 大会公式記録一括エクスポート＆トグルUI 永続保証規約', () {
+  group('[Governance] ガバナンス第6条・第12条に関して、大会公式記録一括エクスポート＆トグルUI 永続保証規約', () {
     // ------------------------------------------------------------------------
     // 1. UIレンダリング安全 ＆ オーバーフローゼロ保証 (第6条)
     // ------------------------------------------------------------------------
-    group('【第6条】UIレンダリング安全 ＆ 文字サイズ拡大・狭小画面オーバーフローゼロ規約', () {
+    group('第6条において UIレンダリング安全 ＆ 文字サイズ拡大・狭小画面オーバーフローゼロ規約', () {
       final viewports = [
         const Size(320, 568), // iPhone SE 1st (最小サポート幅)
         const Size(375, 667), // iPhone 8 / SE 2nd (標準幅)
@@ -34,7 +34,7 @@ void main() {
       for (final size in viewports) {
         for (final textScale in textScales) {
           testWidgets(
-            '幅${size.width.toInt()}px × TextScale ${textScale}x (OFF/ON) でRenderFlexオーバーフローが0件であること',
+            '幅${size.width.toInt()}px × TextScale ${textScale}x (OFF/ON) でRenderFlexオーバーフローが0件こと',
             (WidgetTester tester) async {
               tester.view.physicalSize = Size(size.width * 2, size.height * 2);
               tester.view.devicePixelRatio = 2.0;
@@ -92,7 +92,7 @@ void main() {
     // ------------------------------------------------------------------------
     // 2. システム設定統一AppSwitch採用規約 (第3条)
     // ------------------------------------------------------------------------
-    testWidgets('【第3条】システム設定と統一されたAppSwitchコンポーネントが使用されていること', (
+    testWidgets('第3条において システム設定と統一されたAppSwitchコンポーネントが使用されていること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -125,7 +125,7 @@ void main() {
     // ------------------------------------------------------------------------
     // 3. 複数カテゴリCSV重計算 Isolate非同期分離規約 (第12条)
     // ------------------------------------------------------------------------
-    test('【第12条】大量試合データの複数カテゴリ一括CSV生成が非ブロッキングIsolateで実行されること', () async {
+    test('第12条において 大量試合データの複数カテゴリ一括CSV生成が非ブロッキングIsolateで実行されること', () async {
       final sampleMatches = List.generate(
         50,
         (i) => MatchModel(

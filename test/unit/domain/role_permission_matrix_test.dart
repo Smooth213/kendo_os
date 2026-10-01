@@ -36,7 +36,7 @@ void main() {
       userId: 'test',
     );
 
-    test('Viewer (観客) は、いかなる試合進行の書き込み操作も【拒否】されること', () {
+    test('Viewer (観客) は、いかなる試合進行の書き込み操作も拒否において されること', () {
       expect(
         permissionService.canAppend(viewer, dummyEvent),
         isFalse,
@@ -54,7 +54,7 @@ void main() {
       );
     });
 
-    test('Scorer (記録係) は、担当範囲の試合進行操作が【許可】されること', () {
+    test('Scorer (記録係) は、担当範囲の試合進行操作が許可において されること', () {
       expect(
         permissionService.canAppend(scorer, dummyEvent),
         isTrue,
@@ -72,7 +72,7 @@ void main() {
       );
     });
 
-    test('Admin (管理者) は、すべての操作が【許可】されること', () {
+    test('Admin (管理者) は、すべての操作が許可において されること', () {
       expect(
         permissionService.canAppend(admin, dummyEvent),
         isTrue,

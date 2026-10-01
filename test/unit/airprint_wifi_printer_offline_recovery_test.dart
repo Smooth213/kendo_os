@@ -18,7 +18,7 @@ class PrinterErrorHandler {
 }
 
 void main() {
-  group('[Unit] 【Phase 2-4/10】AirPrint/Wi-Fiプリンタ オフライン・紙詰まり障害リカバリテスト', () {
+  group('[Unit] AirPrint/Wi-Fiプリンタ オフライン・紙詰まり障害リカバリテスト', () {
     test('プリンタ電源断・オフラインエラー時の適切なガイダンス案内こと', () {
       final error = Exception(
         'Printer is offline or unreachable on local network',

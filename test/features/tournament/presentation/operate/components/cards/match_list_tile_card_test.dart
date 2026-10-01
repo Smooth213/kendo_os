@@ -77,7 +77,7 @@ void main() {
   }
 
   group('[Widget] MatchListTileCard スワイプ権限制御テスト', () {
-    testWidgets('【試合記録者 (Recorder)】 スワイプで「編集」が表示され、「削除」は非表示であること', (
+    testWidgets('試合記録者 (Recorder)において スワイプで「編集」が表示され、「削除」は非表示こと', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -118,7 +118,7 @@ void main() {
       expect(find.byType(MatchEditSheet), findsOneWidget);
     });
 
-    testWidgets('【大会管理者 (Admin)】 スワイプで「編集」と「削除」の両方が表示されること', (
+    testWidgets('大会管理者 (Admin)において スワイプで「編集」と「削除」の両方が表示されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -145,7 +145,7 @@ void main() {
       expect(find.text('削除'), findsOneWidget);
     });
 
-    testWidgets('【閲覧者 (Viewer)】 スワイプが無効化され、アクションが一切露出しないこと', (
+    testWidgets('閲覧者 (Viewer)において スワイプが無効化され、アクションが一切露出しないこと', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

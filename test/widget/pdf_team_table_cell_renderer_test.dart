@@ -10,7 +10,7 @@ void main() {
     final ttf = pw.Font.helvetica();
     final ttfBold = pw.Font.helveticaBold();
 
-    test('buildTeamCell renders team name correctlyであること', () {
+    test('チームセルにチーム名が正しく描画されること', () {
       final widget = PdfTeamTableCellRenderer.buildTeamCell(
         '東京道場',
         PdfColors.red900,
@@ -20,7 +20,7 @@ void main() {
       expect(widget, isA<pw.Widget>());
     });
 
-    test('【buildTeamResultCell】draw and win casesが適切に処理されること', () {
+    test('buildTeamResultCellにおいて draw and win casesが適切に処理されること', () {
       final drawWidget = PdfTeamTableCellRenderer.buildTeamResultCell(
         'draw',
         ttfBold,
@@ -34,7 +34,7 @@ void main() {
       expect(winWidget, isNotNull);
     });
 
-    test('【buildNameCell】single and duplicated last namesが適切に処理されること', () {
+    test('buildNameCellにおいて single and duplicated last namesが適切に処理されること', () {
       final nameWidget = PdfTeamTableCellRenderer.buildNameCell('東京道場 : 佐藤 健', [
         '佐藤',
         '武田',

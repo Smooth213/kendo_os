@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] TeamRegistration Components ウィジェットテスト', () {
-    testWidgets('【TeamRegistrationAppBar】戻るボタンおよびマニュアルボタンが描画されること', (
+    testWidgets('TeamRegistrationAppBarにおいて 戻るボタンおよびマニュアルボタンが描画されること', (
       tester,
     ) async {
       bool backPressed = false;
@@ -25,7 +25,7 @@ void main() {
       expect(backPressed, isTrue);
     });
 
-    testWidgets('【TeamRegistrationDynamicHeader】ヘッダータイトルおよび進行状況が描画されること', (
+    testWidgets('TeamRegistrationDynamicHeaderにおいて ヘッダータイトルおよび進行状況が描画されること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -45,7 +45,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('【TeamRegistrationAutocompleteField】サジェスト付き入力欄が描画されること', (
+    testWidgets('TeamRegistrationAutocompleteFieldにおいて サジェスト付き入力欄が描画されること', (
       tester,
     ) async {
       final controller = TextEditingController();

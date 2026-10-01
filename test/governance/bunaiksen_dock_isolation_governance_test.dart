@@ -21,7 +21,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('[Governance] 【部内戦ドック完全隔離・画面外残留ゼロ保証ガバナンス】', () {
+  group('[Governance] 部内戦ドック完全隔離・画面外残留ゼロ保証ガバナンスにおいて', () {
     test('静的コード規約: 部内戦対象画面以外に BunaiksenDockButton が1文字たりとも記述されていないこと', () {
       final libDir = Directory('lib');
       expect(libDir.existsSync(), isTrue);

@@ -98,7 +98,7 @@ class QrTokenSecurityEngine {
 }
 
 void main() {
-  group('[Unit] 【Phase 1-8/10】大会・審判QRコード一時トークン暗号署名＆TTL有効期限失効テスト', () {
+  group('[Unit] 大会・審判QRコード一時トークン暗号署名＆TTL有効期限失効テスト', () {
     final baseTime = DateTime(2026, 9, 3, 10, 0, 0);
 
     test('有効期限内の正規トークンが正しく検証・認証されること', () {

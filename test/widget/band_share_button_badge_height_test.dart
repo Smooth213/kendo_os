@@ -8,7 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Widget] 【カプセルUIガバナンス】ステータスバッジ＆BAND共有ボタン 統一高さ検証テスト', () {
+  group('[Widget] カプセルUIガバナンスにおいて ステータスバッジ＆BAND共有ボタン 統一高さ検証テスト', () {
     testWidgets('BandShareButton と MatchStatusBadge の高さが完全に一致（22px）すること', (
       tester,
     ) async {

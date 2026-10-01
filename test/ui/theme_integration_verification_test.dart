@@ -109,7 +109,7 @@ void main() {
     });
 
     testWidgets(
-      '【CreateTournamentScreen】Indigoフォーカスおよびグラデーションカラーでテーマが正しく適用されること',
+      'CreateTournamentScreenにおいて Indigoフォーカスおよびグラデーションカラーでテーマが正しく適用されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -163,7 +163,7 @@ void main() {
     });
 
     testWidgets(
-      '【部内戦モード】OrderSetupScreenおよびBunaiksenSetupScreenがクラッシュせずに正しく描画されること',
+      '部内戦モードにおいて OrderSetupScreenおよびBunaiksenSetupScreenがクラッシュせずに正しく描画されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -196,132 +196,126 @@ void main() {
       },
     );
 
-    testWidgets(
-      'OperatorActionButtons viewer preview color matches viewer theme (BlueGrey/Purple)こと',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+    testWidgets('観客プレビューの色が観客テーマのBlueGreyおよびPurpleと一致すること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        // Test under normal tournament
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              isarProvider.overrideWithValue(null),
-              permissionProvider.overrideWith(
-                (ref) => const AppPermissions(
-                  isReadOnly: false,
-                  canManageTournament: true,
-                  canCreateMatch: true,
-                  canChangeSettings: true,
-                  canDeleteData: true,
-                ),
-              ),
-            ],
-            child: const MaterialApp(
-              home: Scaffold(
-                body: OperatorActionButtons(
-                  tournamentId: 'standard_tourney_id',
-                ),
+      // Test under normal tournament
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            isarProvider.overrideWithValue(null),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        final standardBtnFinder = find.text('観客の画面を確認');
-        expect(standardBtnFinder, findsOneWidget);
-
-        // Test under Bunaiksen tournament
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              isarProvider.overrideWithValue(null),
-              permissionProvider.overrideWith(
-                (ref) => const AppPermissions(
-                  isReadOnly: false,
-                  canManageTournament: true,
-                  canCreateMatch: true,
-                  canChangeSettings: true,
-                  canDeleteData: true,
-                ),
-              ),
-            ],
-            child: const MaterialApp(
-              home: Scaffold(
-                body: OperatorActionButtons(tournamentId: 'bunaiksen_2026_id'),
-              ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: OperatorActionButtons(tournamentId: 'standard_tourney_id'),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final bunaiksenBtnFinder = find.text('観客の画面を確認');
-        expect(bunaiksenBtnFinder, findsOneWidget);
-      },
-    );
+      final standardBtnFinder = find.text('観客の画面を確認');
+      expect(standardBtnFinder, findsOneWidget);
 
-    testWidgets(
-      'OfficialRecordScreen Image share button uses LINE brand green colorであること',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              registeredTeamsProvider(
-                'test_id',
-              ).overrideWith((ref) => Stream.value(<TeamModel>[])),
-              isExportingProvider.overrideWith((ref) => false),
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              isarProvider.overrideWithValue(null),
-              matchListProvider.overrideWith(
-                (ref) => [
-                  const MatchModel(
-                    id: 'm1',
-                    tournamentId: 'test_id',
-                    groupName: 'group_1',
-                    matchType: '大将',
-                    redName: 'Aチーム: 赤選手',
-                    whiteName: 'Bチーム: 白選手',
-                    redScore: 1,
-                    whiteScore: 0,
-                    status: 'finished',
-                  ),
-                ],
-              ),
-              customTeamNamesProvider.overrideWith(
-                (ref) => Stream.value(<String>[]),
-              ),
-              permissionProvider.overrideWith(
-                (ref) => const AppPermissions(
-                  isReadOnly: false,
-                  canManageTournament: true,
-                  canCreateMatch: true,
-                  canChangeSettings: true,
-                  canDeleteData: true,
-                ),
-              ),
-              tournamentProvider(
-                'test_id',
-              ).overrideWith((ref) => Stream.value(null)),
-            ],
-            child: const MaterialApp(
-              home: Scaffold(
-                body: OfficialRecordScreen(tournamentId: 'test_id'),
+      // Test under Bunaiksen tournament
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            isarProvider.overrideWithValue(null),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
               ),
             ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: OperatorActionButtons(tournamentId: 'bunaiksen_2026_id'),
+            ),
           ),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Verify image button color (Color(0xFF06C755))
-        final imageBtnTextFinder = find.text('画像');
-        expect(imageBtnTextFinder, findsOneWidget);
-      },
-    );
+      final bunaiksenBtnFinder = find.text('観客の画面を確認');
+      expect(bunaiksenBtnFinder, findsOneWidget);
+    });
+
+    testWidgets('公式記録画面の画像共有ボタンにLINEブランドカラーのグリーンが使用されること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            registeredTeamsProvider(
+              'test_id',
+            ).overrideWith((ref) => Stream.value(<TeamModel>[])),
+            isExportingProvider.overrideWith((ref) => false),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            isarProvider.overrideWithValue(null),
+            matchListProvider.overrideWith(
+              (ref) => [
+                const MatchModel(
+                  id: 'm1',
+                  tournamentId: 'test_id',
+                  groupName: 'group_1',
+                  matchType: '大将',
+                  redName: 'Aチーム: 赤選手',
+                  whiteName: 'Bチーム: 白選手',
+                  redScore: 1,
+                  whiteScore: 0,
+                  status: 'finished',
+                ),
+              ],
+            ),
+            customTeamNamesProvider.overrideWith(
+              (ref) => Stream.value(<String>[]),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            tournamentProvider(
+              'test_id',
+            ).overrideWith((ref) => Stream.value(null)),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: OfficialRecordScreen(tournamentId: 'test_id')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // Verify image button color (Color(0xFF06C755))
+      final imageBtnTextFinder = find.text('画像');
+      expect(imageBtnTextFinder, findsOneWidget);
+    });
   });
 }

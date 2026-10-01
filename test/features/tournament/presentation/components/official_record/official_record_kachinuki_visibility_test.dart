@@ -84,7 +84,7 @@ void main() {
       );
     });
 
-    testWidgets('ダークモード時にスコアカードの背景がダーク系(cardBackground)であること', (tester) async {
+    testWidgets('ダークモード時にスコアカードの背景がダーク系色となること', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

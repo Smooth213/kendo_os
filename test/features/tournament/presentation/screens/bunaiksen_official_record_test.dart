@@ -64,7 +64,7 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
     });
 
-    testWidgets('【Web環境】Firestoreから試合記録が正しく読み込まれること', (
+    testWidgets('Web環境において Firestoreから試合記録が正しく読み込まれること', (
       WidgetTester tester,
     ) async {
       debugIsWebOverride = true; // Simulate Web
@@ -105,7 +105,7 @@ void main() {
       expect(find.textContaining('選手B'), findsOneWidget);
     });
 
-    testWidgets('【ネイティブ環境】ローカルDB（Isar）から試合記録が正しく読み込まれること', (
+    testWidgets('ネイティブ環境において ローカルDB（Isar）から試合記録が正しく読み込まれること', (
       WidgetTester tester,
     ) async {
       debugIsWebOverride = false; // Simulate Native

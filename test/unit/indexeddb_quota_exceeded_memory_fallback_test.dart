@@ -32,7 +32,7 @@ class HybridBrowserStorage {
 }
 
 void main() {
-  group('[Unit] 【Phase 4-4/11】ブラウザ IndexedDB 容量枯渇インメモリフォールバックテスト', () {
+  group('[Unit] ブラウザ IndexedDB 容量枯渇インメモリフォールバックテスト', () {
     test('QuotaExceededError 発生時でもクラッシュせず、インメモリキャッシュで試合記録が継続されること', () {
       final storage = HybridBrowserStorage();
 

@@ -5,7 +5,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[Unit] 【Phase 1-5/10】全剣連規則 相打ち・無効打突時のスコア不変性＆タイマー再開制御テスト', () {
+  group('[Unit] 全剣連規則 相打ち・無効打突時のスコア不変性＆タイマー再開制御テスト', () {
     late KendoRuleEngine ruleEngine;
     final startTime = DateTime(2026, 9, 3, 10, 0, 0);
 

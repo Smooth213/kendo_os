@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Widget] 【Phase 3-3/11】外付けテンキー ブラインド試合操作ショートカットキー完全対応テスト', () {
+  group('[Widget] 外付けテンキー ブラインド試合操作ショートカットキー完全対応テスト', () {
     testWidgets('テンキー「1（赤面）」「7（白面）」「Space（時計）」のキーボードショートカット完全動作こと', (
       tester,
     ) async {

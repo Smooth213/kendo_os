@@ -11,8 +11,8 @@ import 'package:kendo_os/shared/routing/app_router.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第20条 ガバナンス監査】ディープリンク・未認証URLルーティング完全性規約', () {
-    test('Rule 1: [静的整合性] ルーティング防壁ファイル群の完全配備規約こと', () {
+  group('[Governance] 第20条 ガバナンス監査において ディープリンク・未認証URLルーティング完全性規約', () {
+    test('静的整合性に関して、 ルーティング防壁ファイル群の完全配備規約こと', () {
       final appRouterFile = File('lib/shared/routing/app_router.dart');
       final routeGuardsFile = File('lib/shared/routing/route_guards.dart');
       final routeGuardFile = File('lib/security/route_guard.dart');
@@ -29,7 +29,7 @@ void main() {
       expect(routerContent.contains('initialLocation:'), isTrue);
     });
 
-    test('Rule 2: [未認証・一般観客防御] RouteGuard による特権URL直打ち遮断規約こと', () {
+    test('未認証・一般観客防御に関して、 RouteGuard による特権URL直打ち遮断規約こと', () {
       final container = ProviderContainer(
         overrides: [currentUserRoleProvider.overrideWithValue(UserRole.viewer)],
       );
@@ -59,7 +59,7 @@ void main() {
       expect(routeGuardContent.contains("return '/role-select'"), isTrue);
     });
 
-    test('Rule 3: [ゼロトラスト・内部遮断] InternalRouteGuard による内部監査・管理画面の強制遮断規約こと', () {
+    test('ゼロトラスト・内部遮断に関して、 InternalRouteGuard による内部監査・管理画面の強制遮断規約こと', () {
       // 内部画面パスの検知検証
       expect(
         InternalRouteGuard.isInternalPath('/admin/internal/debug'),
@@ -81,7 +81,7 @@ void main() {
       expect(InternalRouteGuard.isInternalPath('/role-select'), isFalse);
     });
 
-    test('Rule 4: [公開ビュアー安全注入] RoleInjector による権限偽装防止＆安全フォールバック規約こと', () {
+    test('公開ビュアー安全注入に関して、 RoleInjector による権限偽装防止＆安全フォールバック規約こと', () {
       final routeGuardsContent = File(
         'lib/shared/routing/route_guards.dart',
       ).readAsStringSync();
@@ -92,25 +92,24 @@ void main() {
       expect(routeGuardsContent.contains('ViewerAuthGate'), isTrue);
     });
 
-    testWidgets(
-      'Rule 5: [404/未知ルートフォールバック] 不明なURLアクセス時に赤画面が出ずScaffoldが安全描画されること',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(child: MaterialApp.router(routerConfig: appRouter)),
-        );
-        await tester.pumpAndSettle();
+    testWidgets('404/未知ルートフォールバックに関して、 不明なURLアクセス時に赤画面が出ずScaffoldが安全描画されること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(child: MaterialApp.router(routerConfig: appRouter)),
+      );
+      await tester.pumpAndSettle();
 
-        // 初期画面が正常表示されること
-        expect(find.byType(MaterialApp), findsOneWidget);
+      // 初期画面が正常表示されること
+      expect(find.byType(MaterialApp), findsOneWidget);
 
-        // 未知ルートへの強制遷移
-        appRouter.go('/unknown-nonexistent-path-404-xyz');
-        await tester.pumpAndSettle();
+      // 未知ルートへの強制遷移
+      appRouter.go('/unknown-nonexistent-path-404-xyz');
+      await tester.pumpAndSettle();
 
-        // errorBuilder により「ページが見つかりません」または Scaffold が表示されクラッシュしないこと
-        expect(find.byType(Scaffold), findsWidgets);
-        expect(find.textContaining('ページが見つかりません'), findsOneWidget);
-      },
-    );
+      // errorBuilder により「ページが見つかりません」または Scaffold が表示されクラッシュしないこと
+      expect(find.byType(Scaffold), findsWidgets);
+      expect(find.textContaining('ページが見つかりません'), findsOneWidget);
+    });
   });
 }

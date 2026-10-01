@@ -17,7 +17,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 
 void main() {
   group(
-    '[Widget] 【Widget 2/5】超小型画面（iPhone SE 320x568）RenderFlex オーバーフロー完全ゼロ検証',
+    '[Widget] Widget 2/5において 超小型画面（iPhone SE 320x568）RenderFlex オーバーフロー完全ゼロ検証',
     () {
       testWidgets('320x568 極小画面でもスコアボードがオーバーフロー例外ゼロで完全描画されること', (
         WidgetTester tester,

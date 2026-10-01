@@ -11,7 +11,7 @@ void main() {
     const testMatchId = 'oper_widget_test_001';
 
     testWidgets(
-      '【打突入力表示】ScoreActionPanel が赤・白両サイド正しくレンダリングされ、「メ」等の打突文字が視認できること',
+      '打突入力表示において ScoreActionPanel が赤・白両サイド正しくレンダリングされ、「メ」等の打突文字が視認できること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
@@ -53,7 +53,7 @@ void main() {
     );
 
     testWidgets(
-      '【コマンドロック防壁】isMatchCommandProcessing が true（書き込み処理中）のとき、ボタンが有効ロック状態をホールドすること',
+      'コマンドロック防壁において isMatchCommandProcessing が true（書き込み処理中）のとき、ボタンが有効ロック状態をホールドすること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(

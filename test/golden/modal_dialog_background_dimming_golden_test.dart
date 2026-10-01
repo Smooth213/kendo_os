@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Golden] 【Phase 3-10/11】モーダルダイアログ背面暗転（Scrim）Goldenテスト', () {
+  group('[Golden] モーダルダイアログ背面暗転（Scrim）Goldenテスト', () {
     testWidgets('ダイアログ表示時に背景が確実に暗転（Scrim）され、中央の確認カードが浮かび上がること', (tester) async {
       tester.view.physicalSize = const Size(800, 600);
       tester.view.devicePixelRatio = 1.0;

@@ -150,7 +150,7 @@ void main() {
       }
 
       testWidgets(
-        'ボトムシート展開  団体戦カードタップ  スコアボード  対戦詳細(MatchScreen)の2段階ネスト遷移と完全復帰こと',
+        'ボトムシート展開 団体戦カードタップ スコアボード 対戦詳細(MatchScreen)の2段階ネスト遷移と完全復帰こと',
         (WidgetTester tester) async {
           tester.view.physicalSize = const Size(1200, 2400);
           addTearDown(tester.view.resetPhysicalSize);
@@ -213,7 +213,7 @@ void main() {
       );
 
       testWidgets(
-        '直前の結果タップ  MatchScreen への直接遷移 & 画面リサイズ(needsScroll)でもシートが勝手に閉じないことの保証こと',
+        '直前の結果タップ MatchScreen への直接遷移 & 画面リサイズ(needsScroll)でもシートが勝手に閉じないことの保証こと',
         (WidgetTester tester) async {
           tester.view.physicalSize = const Size(1200, 2400);
           addTearDown(tester.view.resetPhysicalSize);

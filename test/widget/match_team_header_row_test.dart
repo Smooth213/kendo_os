@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 
 void main() {
   group('[Widget] MatchTeamHeaderRow ウィジェットテスト', () {
-    testWidgets('Renders team names correctlyであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('チーム名が正しく描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -23,7 +21,7 @@ void main() {
       expect(find.text('相手道場'), findsOneWidget);
     });
 
-    testWidgets('【チーム name is empty】fallback labelが正しく描画されること', (
+    testWidgets('チーム name is emptyにおいて fallback labelが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

@@ -51,7 +51,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('アコーディオンの開閉トグル（展開  折りたたみ）が正常に機能すること', (tester) async {
+    testWidgets('アコーディオンの開閉トグル（展開 折りたたみ）が正常に機能すること', (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

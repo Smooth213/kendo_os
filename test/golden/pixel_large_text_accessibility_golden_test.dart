@@ -5,8 +5,8 @@ import 'package:kendo_os/shared/widgets/action_buttons.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  group('[Golden] 【Golden】文字拡大モード（1.5x / 2.0x）視覚的整合性テスト', () {
-    testWidgets('TextScaler 1.5x 環境下での打突アクションボタン群レイアウト整合性こと', (
+  group('[Golden] 文字拡大モード（1.5x / 2.0x）視覚的整合性テスト', () {
+    testWidgets('TextScaler 1.5x 環境下での打突アクションボタン群のレイアウト整合性が保証されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 400);

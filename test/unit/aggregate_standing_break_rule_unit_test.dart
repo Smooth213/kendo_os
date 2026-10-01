@@ -40,7 +40,7 @@ class KendoStandingComparator {
 }
 
 void main() {
-  group('[Unit] 【Unit 5/5】同率タイブレーク（勝点・勝者数・総本数・代表戦）境界値テスト', () {
+  group('[Unit] Unit 5/5において 同率タイブレーク（勝点・勝者数・総本数・代表戦）境界値テスト', () {
     test('勝数が異なる場合、勝数の多い選手/チームが上位になること', () {
       const s1 = LeagueStanding(playerName: '選手A', wins: 2, pointsFor: 3);
       const s2 = LeagueStanding(playerName: '選手B', wins: 1, pointsFor: 5);

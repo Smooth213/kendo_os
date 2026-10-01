@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第14条 ガバナンス監査】メモリ保護・LRU上限 ＆ リソース明示解放（リーク根絶）規約', () {
+  group('[Governance] 第14条 ガバナンス監査において メモリ保護・LRU上限 ＆ リソース明示解放（リーク根絶）規約', () {
     test(
-      'Rule 1: [LRUキャッシュ上限＆解放] program_viewer_pdf_page_cache.dart における LRU 上限 ＆ clearUrl 規約こと',
+      'LRUキャッシュ上限＆解放に関して、 program_viewer_pdf_page_cache.dart における LRU 上限 ＆ clearUrl 規約こと',
       () {
         final file = File(
           'lib/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart',
@@ -29,7 +29,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [ビューア画面・PDFサービスメモリ解放] program_viewer_screen.dart & pdf_service.dart のキャッシュ解放規約こと',
+      'ビューア画面・PDFサービスメモリ解放に関して、 program_viewer_screen.dart & pdf_service.dart のキャッシュ解放規約こと',
       () {
         final viewerFile = File(
           'lib/features/tournament/presentation/operate/screens/program_viewer_screen.dart',
@@ -55,7 +55,7 @@ void main() {
       },
     );
 
-    test('Rule 3: [コントローラー明示解放] 各種画面・シート・ガードにおける TextEditingController 解放規約こと', () {
+    test('コントローラー明示解放に関して、 各種画面・シート・ガードにおける TextEditingController 解放規約こと', () {
       // 1. timeline_rename_team_sheet.dart
       final renameFile = File(
         'lib/features/tournament/presentation/operate/components/timeline/timeline_rename_team_sheet.dart',
@@ -173,35 +173,32 @@ void main() {
       );
     });
 
-    test(
-      'Rule 4: [グローバルアナウンス購読解除＆既読トリム] cancelGlobalAnnouncements ＆ 既読ID上限トリム規約こと',
-      () {
-        final announceFile = File(
-          'lib/features/match/presentation/components/announce_popup_manager.dart',
-        );
-        expect(announceFile.existsSync(), isTrue);
-        expect(
-          announceFile.readAsStringSync().contains(
-            'void cancelGlobalAnnouncements({String? tournamentId})',
-          ),
-          isTrue,
-        );
+    test('グローバルアナウンス購読解除＆既読トリムに関して、 cancelGlobalAnnouncements ＆ 既読ID上限トリム規約こと', () {
+      final announceFile = File(
+        'lib/features/match/presentation/components/announce_popup_manager.dart',
+      );
+      expect(announceFile.existsSync(), isTrue);
+      expect(
+        announceFile.readAsStringSync().contains(
+          'void cancelGlobalAnnouncements({String? tournamentId})',
+        ),
+        isTrue,
+      );
 
-        final readAnnounceFile = File(
-          'lib/features/match/presentation/providers/read_announcements_provider.dart',
-        );
-        expect(readAnnounceFile.existsSync(), isTrue);
-        final readContent = readAnnounceFile.readAsStringSync();
-        expect(
-          readContent.contains('maxReadCount') && readContent.contains('200'),
-          isTrue,
-        );
-        expect(readContent.contains('_trimIds'), isTrue);
-      },
-    );
+      final readAnnounceFile = File(
+        'lib/features/match/presentation/providers/read_announcements_provider.dart',
+      );
+      expect(readAnnounceFile.existsSync(), isTrue);
+      final readContent = readAnnounceFile.readAsStringSync();
+      expect(
+        readContent.contains('maxReadCount') && readContent.contains('200'),
+        isTrue,
+      );
+      expect(readContent.contains('_trimIds'), isTrue);
+    });
 
     test(
-      'Rule 5: [プロバイダ autoDispose & keepAlive 適正管理] matchList / viewer / sound プロバイダのライフサイクル規約こと',
+      'プロバイダ autoDispose & keepAlive 適正管理に関して、 matchList / viewer / sound プロバイダのライフサイクル規約こと',
       () {
         final matchFile = File(
           'lib/features/tournament/presentation/operate/providers/match_list_provider.dart',
@@ -248,7 +245,7 @@ void main() {
     );
 
     test(
-      'Rule 6: [非同期リスナー・タイマー完全解放] StreamSubscription / Timer / AnimationController の dispose 明示解放規約こと',
+      '非同期リスナー・タイマー完全解放に関して、 StreamSubscription / Timer / AnimationController の dispose 明示解放規約こと',
       () {
         // 1. thermal_floating_toast.dart
         final toastFile = File(

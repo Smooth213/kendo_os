@@ -7,7 +7,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Unit] MatchUIAssistProvider テスト', () {
-    test('isMatchViewFlippedProvider のトグル動作が正常であること', () {
+    test('isMatchViewFlippedProvider のトグル動作が正常こと', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

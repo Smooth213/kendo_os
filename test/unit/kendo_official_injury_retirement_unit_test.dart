@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[Unit] 【Phase 1-2/10】全剣連規則第33条 負傷棄権時のスコア算定＆取得本数保全境界値テスト', () {
+  group('[Unit] 全剣連規則第33条 負傷棄権時のスコア算定＆取得本数保全境界値テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm_injury',

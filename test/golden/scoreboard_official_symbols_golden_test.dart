@@ -17,7 +17,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('[Golden] 【Golden 1/5】公式スコアボード 打突記号・勝敗バッジ 視覚的境界整合性テスト', () {
+  group('[Golden] Golden 1/5において 公式スコアボード 打突記号・勝敗バッジ 視覚的境界整合性テスト', () {
     testWidgets('公式打突記号（メ・コ・先取丸・勝者丸）が厳密なサイズと位置で描画されること', (
       WidgetTester tester,
     ) async {

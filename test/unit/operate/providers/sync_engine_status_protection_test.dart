@@ -21,45 +21,42 @@ class FakeRebuildMatchFromEventsUseCase
 }
 
 void main() {
-  group('[Unit] SyncEngine Status Protection テスト (同期時のステータス巻き戻り保護テスト)', () {
-    test(
-      'Drift Monitor時: 再計算ロジックがステータスを初期化しても、元の確定ステータス(finished)が維持・保護されること',
-      () {
-        // 1. テストデータの準備: ユーザーが確定させた(finished)状態の試合
-        const originalStatus = 'finished';
-        final match = MatchModel(
-          id: 'test-match-123',
-          status: originalStatus,
-          matchType: '個人戦',
-          redScore: 2,
-          whiteScore: 0,
-          redName: '赤',
-          whiteName: '白',
-          events: const [],
-        );
+  group('[Unit] 同期エンジンステータス巻き戻り保護テスト', () {
+    test('ドリフト監視時において、再計算ロジックがステータスを初期化しても、元の確定ステータス(finished)が維持・保護されること', () {
+      // 1. テストデータの準備: ユーザーが確定させた(finished)状態の試合
+      const originalStatus = 'finished';
+      final match = MatchModel(
+        id: 'test-match-123',
+        status: originalStatus,
+        matchType: '個人戦',
+        redScore: 2,
+        whiteScore: 0,
+        redName: '赤',
+        whiteName: '白',
+        events: const [],
+      );
 
-        final rebuilder = FakeRebuildMatchFromEventsUseCase();
-        final rule = const MatchRule();
+      final rebuilder = FakeRebuildMatchFromEventsUseCase();
+      final rule = const MatchRule();
 
-        // 2. sync_provider.dart で実際に行われている保護処理をシミュレート
-        MatchModel rebuiltMatch = rebuilder.execute(match, rule);
-        expect(
-          rebuiltMatch.status,
-          'waiting',
-          reason: 'バグ再現: Rebuildを通すとステータスが壊れることの確認',
-        );
+      // 2. sync_provider.dart で実際に行われている保護処理をシミュレート
+      MatchModel rebuiltMatch = rebuilder.execute(match, rule);
+      expect(
+        rebuiltMatch.status,
+        'waiting',
+        reason: 'バグ再現: Rebuildを通すとステータスが壊れることの確認',
+      );
 
-        // ★ 修正された保護コード
-        rebuiltMatch = rebuiltMatch.copyWith(status: match.status);
+      // ★ 修正された保護コード
+      rebuiltMatch = rebuiltMatch.copyWith(status: match.status);
 
-        // 3. 検証
-        expect(
-          rebuiltMatch.status,
-          originalStatus,
-          reason: '元のステータス(finished)が完全に復元・保護されているべき',
-        );
-      },
-    );
+      // 3. 検証
+      expect(
+        rebuiltMatch.status,
+        originalStatus,
+        reason: '元のステータス(finished)が完全に復元・保護されているべき',
+      );
+    });
 
     test('CRDTマージ時: 退避したステータスが正しく復元されること', () {
       const originalStatus = 'approved';

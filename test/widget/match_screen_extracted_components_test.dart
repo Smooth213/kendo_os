@@ -10,7 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 
 void main() {
   group('[Widget] MatchScreen Extracted Components テスト', () {
-    testWidgets('renders MatchTimerSection correctlyであること', (tester) async {
+    testWidgets('試合タイマーセクションが正しく描画されること', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 

@@ -67,9 +67,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  group('[E2E] 【E2E】BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト', () {
+  group('[E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト', () {
     testWidgets(
-      '【シナリオ1: チーム試合状況カード】BANDボタンタップ  クリップボードコピー  シート展開  グループ選択起動の完全連携こと',
+      'シナリオ1: チーム試合状況カードにおいて BANDボタンタップ クリップボードコピー シート展開 グループ選択起動の完全連携こと',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -162,7 +162,7 @@ void main() {
       },
     );
 
-    testWidgets('【シナリオ2: タイムライン個人戦】BANDボタンタップ  個人戦コピー  コピーのみで閉じるフローこと', (
+    testWidgets('シナリオ2: タイムライン個人戦において BANDボタンタップ 個人戦コピー コピーのみで閉じるフローこと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -227,7 +227,7 @@ void main() {
       expect(find.text('BANDでLIVE配信・共有'), findsNothing);
     });
 
-    testWidgets('【シナリオ3: 未登録状態】空メッセージ表示  その場で即時グループ追加ダイアログ展開こと', (
+    testWidgets('シナリオ3: 未登録状態において 空メッセージ表示 その場で即時グループ追加ダイアログ展開こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -277,7 +277,7 @@ void main() {
     });
 
     testWidgets(
-      '【シナリオ4: システム設定画面】BAND設定タイル  一括管理シート  ダイアログ起動のライフサイクルが正しく検証されること',
+      'シナリオ4: システム設定画面において BAND設定タイル 一括管理シート ダイアログ起動のライフサイクルが正しく検証されること',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;

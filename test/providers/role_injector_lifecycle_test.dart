@@ -53,7 +53,7 @@ void main() {
       }
     });
 
-    test('【回帰テスト】RoleInjector が Provider init 中に state を修正しないこと', () async {
+    test('回帰テストにおいて RoleInjector が Provider init 中に state を修正しないこと', () async {
       bool riverpodViolationDetected = false;
 
       try {

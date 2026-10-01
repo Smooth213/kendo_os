@@ -21,7 +21,7 @@ void main() {
   });
 
   group('RoomJoinValidator.validate - バリデーション', () {
-    test('空文字 → エラー（コード入力を求める）こと', () {
+    test('空文字入力時にコード入力を求めるエラーが発生すること', () {
       final result = RoomJoinValidator.validate('');
       expect(result.isValid, isFalse);
       expect(result.errorMessage, isNotEmpty);
@@ -32,23 +32,23 @@ void main() {
       expect(result.isValid, isFalse);
     });
 
-    test('半角英数字のみ → OKであること', () {
+    test('半角英数字のみ → OKこと', () {
       final result = RoomJoinValidator.validate('abc123');
       expect(result.isValid, isTrue);
       expect(result.errorMessage, isNull);
     });
 
-    test('ハイフン含む → OKであること', () {
+    test('ハイフン含む → OKこと', () {
       final result = RoomJoinValidator.validate('tokyo-dojo-2026');
       expect(result.isValid, isTrue);
     });
 
-    test('アンダーバー含む → OKであること', () {
+    test('アンダーバー含む → OKこと', () {
       final result = RoomJoinValidator.validate('tokyo_dojo_2026');
       expect(result.isValid, isTrue);
     });
 
-    test('ハイフンとアンダーバー混在 → OKであること', () {
+    test('ハイフンとアンダーバー混在 → OKこと', () {
       final result = RoomJoinValidator.validate('tokyo_dojo-2026');
       expect(result.isValid, isTrue);
     });
@@ -75,7 +75,7 @@ void main() {
       expect(result.isValid, isTrue);
     });
 
-    test('現実的な道場コード例 → OKであること', () {
+    test('現実的な道場コード例 → OKこと', () {
       final codes = [
         'shinagawa-kendo-2026',
         'osaka_dojo01',
@@ -91,7 +91,7 @@ void main() {
   });
 
   group('RoomJoinValidationResult - 結果オブジェクト', () {
-    test('ok()コンストラクタはisValid=true, errorMessage=nullであること', () {
+    test('ok()コンストラクタはisValid=true, errorMessage=nullこと', () {
       const result = RoomJoinValidationResult.ok();
       expect(result.isValid, isTrue);
       expect(result.errorMessage, isNull);

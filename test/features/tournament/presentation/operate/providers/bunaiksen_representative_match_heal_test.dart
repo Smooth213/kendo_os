@@ -26,7 +26,7 @@ void main() {
       });
 
       test(
-        '[未開始の代表戦における汚染ステート自動中和] - empty events + corrupted/finished status => waitingであること',
+        '未開始の代表戦における汚染ステート自動中和に関して、- empty events + corrupted/finished status => waitingこと',
         () async {
           debugIsWebOverride = true;
           final fakeFirestore = FakeFirebaseFirestore();
@@ -106,7 +106,7 @@ void main() {
       );
 
       test(
-        '[打突開始後の代表戦におけるステート保護] - has events + finished status => remains finishedであること',
+        '打突開始後の代表戦におけるステート保護に関して、- has events + finished status => remains finishedこと',
         () async {
           debugIsWebOverride = true;
           final fakeFirestore = FakeFirebaseFirestore();

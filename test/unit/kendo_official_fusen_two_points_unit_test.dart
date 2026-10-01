@@ -6,7 +6,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 
 void main() {
-  group('[Unit] 【Phase 1-3/10】全剣連規則第32条 不戦勝の自動2本付与＆チーム勝敗数決定論的積算テスト', () {
+  group('[Unit] 全剣連規則第32条 不戦勝の自動2本付与＆チーム勝敗数決定論的積算テスト', () {
     late KendoRuleEngine ruleEngine;
     final dummyMatch = MatchModel(
       id: 'm_fusen',

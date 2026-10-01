@@ -15,7 +15,7 @@ void main() {
       expect(email, isNull);
     });
 
-    test('GoogleAuthService インスタンスが正常に生成され null-safe であること', () {
+    test('GoogleAuthService インスタンスが正常に生成され null-safeこと', () {
       final service = GoogleAuthService();
       expect(service.currentUser, isNull);
       expect(service.isGoogleLinked, isFalse);

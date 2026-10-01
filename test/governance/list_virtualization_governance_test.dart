@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第11条 ガバナンス監査】リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約', () {
+  group('[Governance] 第11条 ガバナンス監査において リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約', () {
     test(
-      'Rule 1: [選手候補入力仮想化] smart_player_input.dart で全選手の一斉生成が禁止され、ListView.builder が使用されていること',
+      '選手候補入力仮想化に関して、 smart_player_input.dart で全選手の一斉生成が禁止され、ListView.builder が使用されていること',
       () {
         final file = File('lib/shared/widgets/smart_player_input.dart');
         expect(file.existsSync(), isTrue);
@@ -31,7 +31,7 @@ void main() {
     );
 
     test(
-      'Rule 2: [選手一括選択入力仮想化] multi_player_select_input.dart で全選手の一斉生成が禁止され、ListView.builder が使用されていること',
+      '選手一括選択入力仮想化に関して、 multi_player_select_input.dart で全選手の一斉生成が禁止され、ListView.builder が使用されていること',
       () {
         final file = File('lib/shared/widgets/multi_player_select_input.dart');
         expect(file.existsSync(), isTrue);
@@ -57,7 +57,7 @@ void main() {
     );
 
     test(
-      'Rule 3: [チーム選手選択仮想化] team_registration_player_select_bottom_sheet.dart で CustomScrollView + SliverList.builder が使用されていること',
+      'チーム選手選択仮想化に関して、 team_registration_player_select_bottom_sheet.dart で CustomScrollView + SliverList.builder が使用されていること',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart',
@@ -88,7 +88,7 @@ void main() {
     );
 
     test(
-      'Rule 4: [オーダー選手選択仮想化] order_setup_player_select_bottom_sheet.dart で ListView.builder が使用されていること',
+      'オーダー選手選択仮想化に関して、 order_setup_player_select_bottom_sheet.dart で ListView.builder が使用されていること',
       () {
         final file = File(
           'lib/features/tournament/presentation/operate/components/order_setup/order_setup_player_select_bottom_sheet.dart',
@@ -115,7 +115,7 @@ void main() {
     );
 
     test(
-      'Rule 5: [公式記録スクロール仮想化復権] official_record_screen.dart & viewer_official_record_screen.dart の Expanded 下で不要な shrinkWrap: true が排除されていること',
+      '公式記録スクロール仮想化復権に関して、 official_record_screen.dart & viewer_official_record_screen.dart の Expanded 下で不要な shrinkWrap: true が排除されていること',
       () {
         final officialFile = File(
           'lib/features/tournament/presentation/operate/official_record_screen.dart',

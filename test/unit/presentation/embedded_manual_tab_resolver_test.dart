@@ -57,7 +57,7 @@ void main() {
       expect(EmbeddedManualTabResolver.resolveInitialTabIndex(), 2);
     });
 
-    test('shouldShowSearch の検索バー表示条件が正確に評価されること', () {
+    test('検索バー表示判定（shouldShowSearch）の表示条件が正確に評価されること', () {
       // タブが総合マニュアル (2) かつ Web または PDFダウンロード済みの場合に true
       expect(
         EmbeddedManualTabResolver.shouldShowSearch(

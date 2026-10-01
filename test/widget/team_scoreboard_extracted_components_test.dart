@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] TeamScoreboard Extracted Components テスト', () {
-    testWidgets('TeamScoreboardTableBuilder builds table rows correctlyであること', (
+    testWidgets('TeamScoreboardTableBuilder builds table rows correctlyこと', (
       tester,
     ) async {
       final headerRow = TeamScoreboardTableBuilder.buildHeaderRow(
@@ -42,7 +42,7 @@ void main() {
       expect(find.text('2 / 1'), findsOneWidget);
     });
 
-    test('TeamScoreboardTableBuilder calcPts parses points correctlyであること', () {
+    test('チームスコアボードの勝ち点計算が正しくパースされること', () {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,
@@ -60,7 +60,7 @@ void main() {
       expect(pts.containsKey('white'), isTrue);
     });
 
-    testWidgets('1本勝ちの公式記録表記テスト（左上に丸囲み技マーク＋全体勝者円）こと', (tester) async {
+    testWidgets('左上に丸囲み技マーク＋全体勝者円において1本勝ちの公式記録表記テストこと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('コ', true)],
         true, // isWinner
@@ -99,7 +99,7 @@ void main() {
       expect(winnerCircle, isNotNull);
     });
 
-    testWidgets('2本勝ちの公式記録表記テスト（左上1本目＋右下2本目＋全体勝者円）こと', (tester) async {
+    testWidgets('左上1本目＋右下2本目＋全体勝者円において2本勝ちの公式記録表記テストこと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('メ', true), TeamPointDisplay('ド', false)],
         true, // isWinner
@@ -127,7 +127,7 @@ void main() {
       );
     });
 
-    testWidgets('不戦勝の公式記録表記テスト（左上◯＋右下◯＋全体勝者円）こと', (tester) async {
+    testWidgets('左上◯＋右下◯＋全体勝者円において不戦勝の公式記録表記テストこと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('◯', false), TeamPointDisplay('◯', false)],
         true, // isWinner
@@ -153,7 +153,7 @@ void main() {
       );
     });
 
-    testWidgets('引き分けの公式記録表記テスト（中央に＋勝者円なし）こと', (tester) async {
+    testWidgets('中央に＋勝者円なしにおいて引き分けの公式記録表記テストこと', (tester) async {
       final scoreBox = TeamScoreboardTableBuilder.buildMatchScoreBox(
         [TeamPointDisplay('メ', true)],
         false, // isWinner

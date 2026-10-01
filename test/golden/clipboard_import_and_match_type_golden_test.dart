@@ -6,84 +6,83 @@ import 'package:kendo_os/features/tournament/presentation/components/share_impor
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_teams_card.dart';
 
 void main() {
-  group('[Golden] 【Golden】クリップボード取り込み（個人戦・複数名）＆ 試合形式選択 UI整合性 Goldenテスト', () {
-    testWidgets(
-      '[Golden] 複数名個人戦（中学生の部）取り込みカードがダークモード・ライトモードでオーバーフローなく描画されること',
-      (tester) async {
-        tester.view.physicalSize = const Size(400, 800);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+  group('[Golden] クリップボード取り込み（個人戦・複数名）＆ 試合形式選択 UI整合性 Goldenテスト', () {
+    testWidgets('複数名個人戦（中学生の部）取り込みカードがダークモード・ライトモードでオーバーフローなく描画されること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
-        final List<ParsedTeamOrder> individualTeams = [
-          const ParsedTeamOrder(
-            teamName: '皿田 唯人',
-            category: '中学生の部',
-            matchType: '個人戦',
-            members: [ParsedTeamMember(position: '個人', name: '皿田 唯人')],
-          ),
-          const ParsedTeamOrder(
-            teamName: '皿田 梓人',
-            category: '中学生の部',
-            matchType: '個人戦',
-            members: [ParsedTeamMember(position: '個人', name: '皿田 梓人')],
-          ),
-          const ParsedTeamOrder(
-            teamName: '橋本 璃久',
-            category: '中学生の部',
-            matchType: '個人戦',
-            members: [ParsedTeamMember(position: '個人', name: '橋本 璃久')],
-          ),
-        ];
+      final List<ParsedTeamOrder> individualTeams = [
+        const ParsedTeamOrder(
+          teamName: '皿田 唯人',
+          category: '中学生の部',
+          matchType: '個人戦',
+          members: [ParsedTeamMember(position: '個人', name: '皿田 唯人')],
+        ),
+        const ParsedTeamOrder(
+          teamName: '皿田 梓人',
+          category: '中学生の部',
+          matchType: '個人戦',
+          members: [ParsedTeamMember(position: '個人', name: '皿田 梓人')],
+        ),
+        const ParsedTeamOrder(
+          teamName: '橋本 璃久',
+          category: '中学生の部',
+          matchType: '個人戦',
+          members: [ParsedTeamMember(position: '個人', name: '橋本 璃久')],
+        ),
+      ];
 
-        // ── ダークモードでの検証 ──
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.dark(),
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: CreateTournamentImportTeamsCard(
-                  teams: individualTeams,
-                  isEnabled: true,
-                  onToggle: (_) {},
-                  roster: const [],
-                ),
+      // ── ダークモードでの検証 ──
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CreateTournamentImportTeamsCard(
+                teams: individualTeams,
+                isEnabled: true,
+                onToggle: (_) {},
+                roster: const [],
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 例外・オーバーフローゼロ検証
-        expect(tester.takeException(), isNull);
-        expect(find.text('皿田 唯人'), findsWidgets);
-        expect(find.text('皿田 梓人'), findsWidgets);
-        expect(find.text('橋本 璃久'), findsWidgets);
-        expect(find.text('中学生の部'), findsNWidgets(3));
-        expect(find.text('個人戦'), findsNWidgets(3));
+      // 例外・オーバーフローゼロ検証
+      expect(tester.takeException(), isNull);
+      expect(find.text('皿田 唯人'), findsWidgets);
+      expect(find.text('皿田 梓人'), findsWidgets);
+      expect(find.text('橋本 璃久'), findsWidgets);
+      expect(find.text('中学生の部'), findsNWidgets(3));
+      expect(find.text('個人戦'), findsNWidgets(3));
 
-        // ── ライトモードでの検証 ──
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.light(),
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: CreateTournamentImportTeamsCard(
-                  teams: individualTeams,
-                  isEnabled: true,
-                  onToggle: (_) {},
-                  roster: const [],
-                ),
+      // ── ライトモードでの検証 ──
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light(),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CreateTournamentImportTeamsCard(
+                teams: individualTeams,
+                isEnabled: true,
+                onToggle: (_) {},
+                roster: const [],
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(tester.takeException(), isNull);
+    });
 
-    testWidgets('[Golden] 全6カテゴリ（小学生低学年〜一般）の個人戦バッジがモバイル幅（375px）で崩れず描画されること', (
+    testWidgets('全6カテゴリ（小学生低学年〜一般）の個人戦バッジがモバイル幅（375px）で崩れず描画されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(375, 900);
@@ -127,7 +126,7 @@ void main() {
       }
     });
 
-    testWidgets('[Golden] 試合形式編集ボトムシート（全8形式）がタブレット＆モバイルでレイアウト崩れなく表示されること', (
+    testWidgets('試合形式編集ボトムシート（全8形式）がタブレット＆モバイルでレイアウト崩れなく表示されること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390, 844); // iPhone 14相当

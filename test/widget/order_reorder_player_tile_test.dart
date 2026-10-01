@@ -5,9 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] OrderReorderPlayerTile ウィジェットテスト', () {
-    testWidgets('Renders position player tile correctlyであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('ポジション選手タイルが正しく描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(

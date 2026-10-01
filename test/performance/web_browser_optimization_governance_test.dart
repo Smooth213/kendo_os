@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.d
 
 void main() {
   group(
-    '[Governance] [Phase 7 Performance Governance] Safari & Chrome Web極限最適化テスト',
+    '[Governance] Performance Governanceに関して、Safari & Chrome Web極限最適化テスト',
     () {
       test('WebPlatformOptimizer が安全に実行できること', () {
         expect(

@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('MatchFormatRuleSummaryCard renders match rule detailsであること', (
-    tester,
-  ) async {
+  testWidgets('試合ルール概要カードに詳細が正しく描画されること', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

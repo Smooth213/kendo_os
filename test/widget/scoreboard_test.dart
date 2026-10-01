@@ -21,7 +21,7 @@ class MockSettingsNotifier extends SettingsNotifier {
 void main() {
   group('[Widget] MatchScoreboard Design & Layout 検証 テスト', () {
     testWidgets(
-      'Scoreboard maintains size parameters, name font sizes, and point badge dimensionsであること',
+      'Scoreboard maintains size parameters, name font sizes, and point badge dimensionsこと',
       (WidgetTester tester) async {
         // Set physical size to guarantee full layout rendering
         tester.view.physicalSize = const Size(1200, 1000);
@@ -154,7 +154,7 @@ void main() {
       },
     );
 
-    testWidgets('【スコアボード】試合進行中は引分バッジが表示されず、引分終了時に正しく表示されること', (
+    testWidgets('スコアボードにおいて 試合進行中は引分バッジが表示されず、引分終了時に正しく表示されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 1000);
@@ -226,7 +226,7 @@ void main() {
     });
 
     testWidgets(
-      '【視認性保証テスト】ダークモード時において、白側選手名および白側取得部位（メ）が暗灰色(separatorColor)ではなく高コントラストなtextColor(白)で描画されること',
+      '視認性保証テストにおいて ダークモード時において、白側選手名および白側取得部位（メ）が暗灰色(separatorColor)ではなく高コントラストなtextColor(白)で描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1000);
         tester.view.devicePixelRatio = 1.0;
@@ -293,7 +293,7 @@ void main() {
     );
 
     testWidgets(
-      '【視認性保証テスト】ライトモード時において、赤側・白側選手名および取得部位（先取サークル枠線・文字色）が高コントラストで描画されること',
+      '視認性保証テストにおいて ライトモード時において、赤側・白側選手名および取得部位（先取サークル枠線・文字色）が高コントラストで描画されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 1000);
         tester.view.devicePixelRatio = 1.0;

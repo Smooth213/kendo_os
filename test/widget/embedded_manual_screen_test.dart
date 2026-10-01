@@ -73,7 +73,7 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('【基本表示ケース】タブレイアウトが正しく描画され、初期タブの切り替えができること', (
+    testWidgets('基本表示ケースにおいて タブレイアウトが正しく描画され、初期タブの切り替えができること', (
       WidgetTester tester,
     ) async {
       await tester.runAsync(() async {
@@ -98,7 +98,7 @@ void main() {
       });
     });
 
-    testWidgets('【検索モードケース】マニュアル検索ボタンの展開・テキスト入力・検索のクリアが正常に動作すること', (
+    testWidgets('検索モードケースにおいて マニュアル検索ボタンの展開・テキスト入力・検索のクリアが正常に動作すること', (
       WidgetTester tester,
     ) async {
       await tester.runAsync(() async {
@@ -140,7 +140,7 @@ void main() {
     });
 
     testWidgets(
-      '【はみ出し防止ケース】横幅320pxの極小画面サイズでもAppBarやアクションボタンがRenderFlexエラーを起こさないこと',
+      'はみ出し防止ケースにおいて 横幅320pxの極小画面サイズでもAppBarやアクションボタンがRenderFlexエラーを起こさないこと',
       (WidgetTester tester) async {
         await tester.runAsync(() async {
           // 超小型スマートフォンサイズ (幅320px, 高さ480px)

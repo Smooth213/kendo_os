@@ -22,7 +22,7 @@ void main() {
       final deviceName = entry.key;
       final size = entry.value;
 
-      testWidgets('【Goldenシミュレーション】$deviceName 環境における描画境界整合性が正常に機能すること', (
+      testWidgets('Goldenシミュレーションにおいて $deviceName 環境における描画境界整合性が正常に機能すること', (
         WidgetTester tester,
       ) async {
         tester.view.physicalSize = size;

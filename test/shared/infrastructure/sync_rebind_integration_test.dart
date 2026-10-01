@@ -54,7 +54,7 @@ void main() {
 
   group('[Unit] ログイン・認証連動試合同期 (Sync Rebind) 統合検証テスト', () {
     test(
-      '【同期検証】ログイン成功時（authSessionProvider更新時）に、SyncEngineが自動的にFirestore監視を再バインドすること',
+      '同期検証において ログイン成功時（authSessionProvider更新時）に、SyncEngineが自動的にFirestore監視を再バインドすること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -108,7 +108,7 @@ void main() {
     );
 
     test(
-      '【同期検証】ログイン成功時（authSessionProvider更新時）に、dojoRoomSyncProvider が自動的に再構築（rebuild）されること',
+      '同期検証において ログイン成功時（authSessionProvider更新時）に、dojoRoomSyncProvider が自動的に再構築（rebuild）されること',
       () async {
         bool isDisposed = false;
 

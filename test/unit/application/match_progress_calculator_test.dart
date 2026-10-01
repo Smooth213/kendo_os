@@ -29,7 +29,7 @@ void main() {
       expect(user.id.length, greaterThan(0));
     });
 
-    test('【冪等性】複数回呼び出しても例外が発生しないこと', () {
+    test('冪等性において 複数回呼び出しても例外が発生しないこと', () {
       // 連続呼び出しでもクラッシュしないことを保証
       expect(() {
         for (int i = 0; i < 5; i++) {

@@ -12,7 +12,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 void main() {
   group('[Widget] プラットフォーム整合性 ＆ ゼロトラスト・リグレッションテスト', () {
     testWidgets(
-      '[Web/Native共通] ローカルキャッシュ(SharedPreferences)が空の環境でも、PIN認証済みのAdminセッションがあればフル機能のUIが描画されること',
+      'WebおよびNative共通環境で、ローカルキャッシュ(SharedPreferences)が空の環境でも、PIN認証済みのAdminセッションがあればフル機能のUIが描画されること',
       (WidgetTester tester) async {
         // Webブラウザでの初回アクセスや、シークレットモードを模倣するため、ローカルキャッシュを完全に空にする
         SharedPreferences.setMockInitialValues({});
@@ -60,7 +60,7 @@ void main() {
     );
 
     testWidgets(
-      '【Zero Trust】[Web/Native共通] Viewerセッションの場合は、管理者ボタンが完全に秘匿され、観客用UIのみが提供されること',
+      'ゼロトラスト規約において WebおよびNative共通環境で、 Viewerセッションの場合は、管理者ボタンが完全に秘匿され、観客用UIのみが提供されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

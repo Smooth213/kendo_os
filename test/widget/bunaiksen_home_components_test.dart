@@ -7,9 +7,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] BunaiksenHome Components テスト', () {
-    testWidgets('BunaiksenMatchListHeaderBar renders properlyであること', (
-      tester,
-    ) async {
+    testWidgets('部内戦試合リストヘッダーバーが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -31,9 +29,7 @@ void main() {
       expect(find.text('ルール一括変更'), findsOneWidget);
     });
 
-    testWidgets('BunaiksenMatchCard renders match detailsであること', (
-      tester,
-    ) async {
+    testWidgets('部内戦試合カードに試合詳細が正しく描画されること', (tester) async {
       const match = MatchModel(
         id: 'm1',
         tournamentId: 'bunaiksen_20260821',

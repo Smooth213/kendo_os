@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_m
 
 void main() {
   group('[Widget] ProgramViewer Painters テスト', () {
-    testWidgets('StrokePainter paints shared and private strokesであること', (
+    testWidgets('StrokePainter paints shared and private strokesこと', (
       tester,
     ) async {
       final sharedStroke = StrokeModel(
@@ -43,7 +43,7 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('OcrHighlightPainter paints matched bounding boxであること', (
+    testWidgets('OcrHighlightPainter paints matched bounding boxこと', (
       tester,
     ) async {
       final ocrWords = [

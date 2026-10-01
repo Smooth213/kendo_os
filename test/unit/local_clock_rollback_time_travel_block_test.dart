@@ -36,7 +36,7 @@ class MonotonicTimerGuard {
 }
 
 void main() {
-  group('[Unit] 【Phase 7-3/8】端末時刻巻き戻しタイムトラベル攻撃 単調増加タイマー死守テスト', () {
+  group('[Unit] 端末時刻巻き戻しタイムトラベル攻撃 単調増加タイマー死守テスト', () {
     test('システム時計が過去に巻き戻されても、残り時間が巻き戻らず時間を死守すること', () {
       final t0 = DateTime(2026, 9, 3, 10, 0, 0);
       final timer = MonotonicTimerGuard(

@@ -10,7 +10,7 @@ void main() {
   group('[Widget] Settings Extracted Components ウィジェットテスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    testWidgets('SettingsSectionHeader & Footer render text correctlyであること', (
+    testWidgets('SettingsSectionHeader & Footer render text correctlyこと', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -31,7 +31,7 @@ void main() {
       expect(find.text('表示に関する説明文です'), findsOneWidget);
     });
 
-    testWidgets('【SettingsBlock】子要素および区切り線が正しく描画されること', (
+    testWidgets('SettingsBlockにおいて 子要素および区切り線が正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -52,7 +52,7 @@ void main() {
       expect(find.byType(Divider), findsOneWidget);
     });
 
-    testWidgets('SettingsSwitchTile toggles value correctlyであること', (
+    testWidgets('SettingsSwitchTile toggles value correctlyこと', (
       WidgetTester tester,
     ) async {
       bool switchValue = false;
@@ -87,7 +87,7 @@ void main() {
       expect(switchValue, isTrue);
     });
 
-    testWidgets('SettingsTestActionPanel responds to tap gesturesであること', (
+    testWidgets('SettingsTestActionPanel responds to tap gesturesこと', (
       WidgetTester tester,
     ) async {
       final settings = SettingsModel(confirmBehavior: 'tap');

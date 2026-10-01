@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/time
 
 void main() {
   group('[Unit] MatchGroupTimelineItem テスト', () {
-    test('【順序】the minimum 順序 of 試合一覧 and commentsが返却されること', () {
+    test('順序において the minimum 順序 of 試合一覧 and commentsが返却されること', () {
       final match = const MatchModel(
         id: 'm1',
         matchType: '先鋒',
@@ -40,7 +40,7 @@ void main() {
       expect(item2.order, 10.0, reason: '試合の方が値が小さければ、試合のorderを返すこと');
     });
 
-    test('【順序】both 試合一覧 and comments are emptyのとき、0.0が返却されること', () {
+    test('順序において both 試合一覧 and comments are emptyのとき、0.0が返却されること', () {
       final item = MatchGroupTimelineItem('group_empty', [], []);
       expect(item.order, 0.0, reason: '試合もコメントも無い場合は0.0を返すこと');
     });
@@ -71,7 +71,7 @@ void main() {
     });
 
     test(
-      '【sortedInnerItems】a sorted list of 試合一覧 and comments combinedが返却されること',
+      'sortedInnerItemsにおいて a sorted list of 試合一覧 and comments combinedが返却されること',
       () {
         final match1 = const MatchModel(
           id: 'm1',
@@ -120,7 +120,7 @@ void main() {
   });
 
   group('MatchCommentModel implements TimelineItem テスト', () {
-    test('returns correct timeline propertiesであること', () {
+    test('タイムラインのプロパティが正しく返却されること', () {
       final comment = const MatchCommentModel(
         id: 'c123',
         text: 'テスト',

@@ -31,7 +31,7 @@ class CheckinScannerQueue {
 }
 
 void main() {
-  group('[Widget] 【Phase 2-8/10】受付バーコードスキャナー秒間5回高速チェックイン・キュー順次処理テスト', () {
+  group('[Widget] 受付バーコードスキャナー秒間5回高速チェックイン・キュー順次処理テスト', () {
     test('秒間5回（200ms間隔未満）の連続スキャンがキューに溜まり、1件もこぼさず処理されること', () async {
       final queue = CheckinScannerQueue();
 
@@ -55,7 +55,7 @@ void main() {
       ]);
     });
 
-    test('【冪等性】同一選手の重複スキャンが二重受付されないこと', () async {
+    test('冪等性において 同一選手の重複スキャンが二重受付されないこと', () async {
       final queue = CheckinScannerQueue();
 
       queue.enqueueBarcode('PLAYER_100');

@@ -64,7 +64,7 @@ void main() {
     });
 
     testWidgets(
-      '【findsNothing】ガバナンス第6条: isViewerMode=true の場合は画面上に一切描画されないこと',
+      'findsNothingにおいて ガバナンス第6条: isViewerMode=true の場合は画面上に一切描画されないこと',
       (tester) async {
         await tester.pumpWidget(
           createTestWidget(isViewerMode: true, role: UserRole.admin),
@@ -75,16 +75,17 @@ void main() {
       },
     );
 
-    testWidgets('【findsNothing】ガバナンス第6条: UserRole.viewer の場合は画面上に一切描画されないこと', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createTestWidget(isViewerMode: false, role: UserRole.viewer),
-      );
-      await tester.pumpAndSettle();
+    testWidgets(
+      'findsNothingにおいて ガバナンス第6条: UserRole.viewer の場合は画面上に一切描画されないこと',
+      (tester) async {
+        await tester.pumpWidget(
+          createTestWidget(isViewerMode: false, role: UserRole.viewer),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(DockParentButton), findsNothing);
-    });
+        expect(find.byType(DockParentButton), findsNothing);
+      },
+    );
 
     testWidgets('タップで展開され、全6つの機能アイテム（対戦・成績・日付・メモ・タイマー・設定）が表示されること', (
       tester,
@@ -122,7 +123,7 @@ void main() {
     });
 
     testWidgets(
-      '【大会ホームと同一】タイマー動作時は親ボタンにタイマーバッジが表示され、展開時はIcons.timer_roundedとなること',
+      '大会ホームと同一において タイマー動作時は親ボタンにタイマーバッジが表示され、展開時はIcons.timer_roundedとなること',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1000);
         tester.view.devicePixelRatio = 1.0;

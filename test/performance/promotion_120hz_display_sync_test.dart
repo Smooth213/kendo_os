@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/utils/promotion_display_helper.dart';
 
 void main() {
-  group('[Governance] 【Phase 12: 120Hz ProMotion ディスプレイ完全同期】ガバナンステスト', () {
+  group('[Governance] 120Hz ProMotion ディスプレイ完全同期ガバナンステスト', () {
     test('フレームバジェット（許容時間）がリフレッシュレートに対して正確に計算されること', () {
       // 120Hz: 1000 / 120 = 8.333... ms
       const rate120 = 120.0;

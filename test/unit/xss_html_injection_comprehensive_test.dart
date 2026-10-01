@@ -29,7 +29,7 @@ class XssSanitizer {
 }
 
 void main() {
-  group('[Unit] 【Phase 4-6/11】XSS・HTML/スクリプトインジェクション・BiDi文字無害化テスト', () {
+  group('[Unit] XSS・HTML/スクリプトインジェクション・BiDi文字無害化テスト', () {
     test('<script>alert("XSS")</script> が安全にエスケープされること', () {
       const maliciousName = '<script>alert("XSS")</script>';
       final safeName = XssSanitizer.sanitize(maliciousName);

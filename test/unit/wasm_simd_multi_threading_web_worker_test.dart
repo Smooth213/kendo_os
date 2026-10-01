@@ -12,7 +12,7 @@ class WasmParallelComputer {
 }
 
 void main() {
-  group('[Unit] 【Phase 8-3/7】Flutter Web Wasm/Web Worker 並列バックグラウンド集計テスト', () {
+  group('[Unit] Flutter Web Wasm/Web Worker 並列バックグラウンド集計テスト', () {
     test('100,000件のスコア集計処理が非同期ワーカーでUIをブロックせず高速完了すること', () async {
       final bigData = List.generate(100000, (i) => i % 3);
 

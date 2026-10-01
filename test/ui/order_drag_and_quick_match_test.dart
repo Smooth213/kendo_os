@@ -27,38 +27,39 @@ void main() {
   });
 
   group('[Widget] オーダー並び替え ＆ 部内戦クイックマッチ機能テスト', () {
-    testWidgets('【OrderSetupScreen】ドラッグハンドル付きのReorderableListViewが正しく描画されること', (
-      WidgetTester tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+    testWidgets(
+      'OrderSetupScreenにおいて ドラッグハンドル付きのReorderableListViewが正しく描画されること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            currentDojoIdProvider.overrideWith((ref) => 'test204'),
-            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-            isarProvider.overrideWithValue(null),
-            opponentTeamHistoryProvider.overrideWithValue([]),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-            matchRuleProvider.overrideWith(() => MatchRuleNotifier()),
-          ],
-          child: const MaterialApp(
-            home: OrderSetupScreen(tournamentId: 'test_t1'),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test204'),
+              playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+              isarProvider.overrideWithValue(null),
+              opponentTeamHistoryProvider.overrideWithValue([]),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              matchRuleProvider.overrideWith(() => MatchRuleNotifier()),
+            ],
+            child: const MaterialApp(
+              home: OrderSetupScreen(tournamentId: 'test_t1'),
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
 
-      // OrderSetupScreen が正常に構築されること
-      expect(find.byType(OrderSetupScreen), findsOneWidget);
-      expect(find.text('オーダー編成'), findsOneWidget);
-    });
+        // OrderSetupScreen が正常に構築されること
+        expect(find.byType(OrderSetupScreen), findsOneWidget);
+        expect(find.text('オーダー編成'), findsOneWidget);
+      },
+    );
 
-    testWidgets('【BunaiksenHomeScreen】1秒クイックマッチボタンが正しく描画されること', (
+    testWidgets('BunaiksenHomeScreenにおいて 1秒クイックマッチボタンが正しく描画されること', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -85,7 +86,7 @@ void main() {
     });
 
     testWidgets(
-      '【BunaiksenHomeScreen】クイックマッチシート（初期2分・増減ステッパー・一本勝負形式）が正常に機能すること',
+      'BunaiksenHomeScreenにおいて クイックマッチシート（初期2分・増減ステッパー・一本勝負形式）が正常に機能すること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

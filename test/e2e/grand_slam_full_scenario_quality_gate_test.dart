@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[E2E] 【Phase 7-8/8】第2期72シナリオ到達 グランドスラム品質ゲート E2Eテスト', () {
-    test('全72大極限テストシナリオの包括的網羅性（Phase 1〜Phase 7）の完全が正しく検証されること', () {
+  group('[E2E] 第2期72シナリオ到達 グランドスラム品質ゲート E2Eテスト', () {
+    test('全72大極限テストシナリオの包括的網羅性（〜）の完全が正しく検証されること', () {
       final scenarioPhases = {
         'Phase 1': '剣道公式競技規則＆ドメイン境界値 (10テスト)',
         'Phase 2': 'OS・ハードウェア・体育館過酷環境 (10テスト)',

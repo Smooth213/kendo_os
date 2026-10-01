@@ -35,7 +35,7 @@ void main() {
       );
     });
 
-    testWidgets('renders match result cell correctlyであること', (tester) async {
+    testWidgets('試合結果セルが正しく描画されること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         tournamentId: 't1',

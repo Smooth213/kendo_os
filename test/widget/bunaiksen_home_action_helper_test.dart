@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bun
 
 void main() {
   group('[Widget] BunaiksenHomeActionHelper テスト', () {
-    testWidgets('confirmDeleteMatch shows confirmation dialogであること', (
+    testWidgets('confirmDeleteMatch shows confirmation dialogこと', (
       tester,
     ) async {
       await tester.pumpWidget(

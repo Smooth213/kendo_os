@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/new
 
 void main() {
   group('[Widget] NewMatchModeInputSection ウィジェットテスト', () {
-    testWidgets('【creationMode is 単発試合】single 試合 inputsが正しく描画されること', (
+    testWidgets('creationMode is 単発試合において single 試合 inputsが正しく描画されること', (
       tester,
     ) async {
       final redController = TextEditingController();
@@ -45,7 +45,7 @@ void main() {
       expect(find.text('白の選手名（またはチーム名）'), findsOneWidget);
     });
 
-    testWidgets('【creationMode is リーグ戦自動生成】league 試合 textareaが正しく描画されること', (
+    testWidgets('creationMode is リーグ戦自動生成において league 試合 textareaが正しく描画されること', (
       tester,
     ) async {
       final redController = TextEditingController();

@@ -38,131 +38,126 @@ void main() {
       );
     });
 
-    testWidgets(
-      'Displays matches in correct kendo position order (先鋒 -> 中堅 -> 大将) even if input is scrambledであること',
-      (tester) async {
-        // 意図的に「中堅 ➔ 大将 ➔ 先鋒」の乱れた順序でリストを作成
-        final chuken = MatchModel(
-          id: 'm_chuken',
-          tournamentId: 'tour_test_1',
-          order: 2.0,
-          matchType: '中堅',
-          redName: '道上剣友会: 皿田 史朗',
-          whiteName: '相手0012: 相手 選手2',
-          groupName: 'group_order_test',
-          status: 'finished',
-          redScore: 1,
-          whiteScore: 0,
-        );
+    testWidgets('入力順序が乱れている場合でも剣道の正しいポジション順で試合が表示されること', (tester) async {
+      // 意図的に「中堅 ➔ 大将 ➔ 先鋒」の乱れた順序でリストを作成
+      final chuken = MatchModel(
+        id: 'm_chuken',
+        tournamentId: 'tour_test_1',
+        order: 2.0,
+        matchType: '中堅',
+        redName: '道上剣友会: 皿田 史朗',
+        whiteName: '相手0012: 相手 選手2',
+        groupName: 'group_order_test',
+        status: 'finished',
+        redScore: 1,
+        whiteScore: 0,
+      );
 
-        final taisho = MatchModel(
-          id: 'm_taisho',
-          tournamentId: 'tour_test_1',
-          order: 3.0,
-          matchType: '大将',
-          redName: '道上剣友会: 久安 達也',
-          whiteName: '相手0012: 相手 選手3',
-          groupName: 'group_order_test',
-          status: 'finished',
-          redScore: 0,
-          whiteScore: 2,
-        );
+      final taisho = MatchModel(
+        id: 'm_taisho',
+        tournamentId: 'tour_test_1',
+        order: 3.0,
+        matchType: '大将',
+        redName: '道上剣友会: 久安 達也',
+        whiteName: '相手0012: 相手 選手3',
+        groupName: 'group_order_test',
+        status: 'finished',
+        redScore: 0,
+        whiteScore: 2,
+      );
 
-        final sempo = MatchModel(
-          id: 'm_sempo',
-          tournamentId: 'tour_test_1',
-          order: 1.0,
-          matchType: '先鋒',
-          redName: '道上剣友会: 塚本 達也',
-          whiteName: '相手0012: 相手 選手1',
-          groupName: 'group_order_test',
-          status: 'finished',
-          redScore: 2,
-          whiteScore: 0,
-        );
+      final sempo = MatchModel(
+        id: 'm_sempo',
+        tournamentId: 'tour_test_1',
+        order: 1.0,
+        matchType: '先鋒',
+        redName: '道上剣友会: 塚本 達也',
+        whiteName: '相手0012: 相手 選手1',
+        groupName: 'group_order_test',
+        status: 'finished',
+        redScore: 2,
+        whiteScore: 0,
+      );
 
-        // バラバラなリスト
-        final scrambledMatches = [chuken, taisho, sempo];
+      // バラバラなリスト
+      final scrambledMatches = [chuken, taisho, sempo];
 
-        final router = GoRouter(
-          initialLocation:
-              '/viewer-team/group_order_test?tournamentId=tour_test_1',
-          routes: [
-            GoRoute(
-              path: '/viewer-team/:groupName',
-              builder: (context, state) => ViewerTeamScoreboardScreen(
-                groupName: state.pathParameters['groupName']!,
-              ),
+      final router = GoRouter(
+        initialLocation:
+            '/viewer-team/group_order_test?tournamentId=tour_test_1',
+        routes: [
+          GoRoute(
+            path: '/viewer-team/:groupName',
+            builder: (context, state) => ViewerTeamScoreboardScreen(
+              groupName: state.pathParameters['groupName']!,
             ),
-          ],
-        );
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              matchListProvider.overrideWith((ref) => scrambledMatches),
-              tournamentRepositoryProvider.overrideWithValue(
-                mockTournamentRepo,
-              ),
-            ],
-            child: MaterialApp.router(routerConfig: router),
           ),
-        );
+        ],
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => scrambledMatches),
+            tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
 
-        // ポジションテキストの存在確認
-        expect(find.text('先鋒'), findsOneWidget);
-        expect(find.text('中堅'), findsOneWidget);
-        expect(find.text('大将'), findsOneWidget);
+      await tester.pumpAndSettle();
 
-        // 描画位置（縦座標 Y）を取得し、上から「先鋒 ➔ 中堅 ➔ 大将」になっているか検証
-        final sempoOffset = tester.getTopLeft(find.text('先鋒'));
-        final chukenOffset = tester.getTopLeft(find.text('中堅'));
-        final taishoOffset = tester.getTopLeft(find.text('大将'));
+      // ポジションテキストの存在確認
+      expect(find.text('先鋒'), findsOneWidget);
+      expect(find.text('中堅'), findsOneWidget);
+      expect(find.text('大将'), findsOneWidget);
 
-        expect(
-          sempoOffset.dy < chukenOffset.dy,
-          isTrue,
-          reason: '先鋒 should be above 中堅',
-        );
-        expect(
-          chukenOffset.dy < taishoOffset.dy,
-          isTrue,
-          reason: '中堅 should be above 大将',
-        );
+      // 描画位置（縦座標 Y）を取得し、上から「先鋒 ➔ 中堅 ➔ 大将」になっているか検証
+      final sempoOffset = tester.getTopLeft(find.text('先鋒'));
+      final chukenOffset = tester.getTopLeft(find.text('中堅'));
+      final taishoOffset = tester.getTopLeft(find.text('大将'));
 
-        // 選手名（RichText）の出現も確認
-        final tsukamotoFinder = find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('塚本'),
-        );
-        final saradaFinder = find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('皿田'),
-        );
-        final hisayasuFinder = find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('久安'),
-        );
+      expect(
+        sempoOffset.dy < chukenOffset.dy,
+        isTrue,
+        reason: '先鋒 should be above 中堅',
+      );
+      expect(
+        chukenOffset.dy < taishoOffset.dy,
+        isTrue,
+        reason: '中堅 should be above 大将',
+      );
 
-        expect(tsukamotoFinder, findsWidgets);
-        expect(saradaFinder, findsWidgets);
-        expect(hisayasuFinder, findsWidgets);
+      // 選手名（RichText）の出現も確認
+      final tsukamotoFinder = find.byWidgetPredicate(
+        (w) => w is RichText && w.text.toPlainText().contains('塚本'),
+      );
+      final saradaFinder = find.byWidgetPredicate(
+        (w) => w is RichText && w.text.toPlainText().contains('皿田'),
+      );
+      final hisayasuFinder = find.byWidgetPredicate(
+        (w) => w is RichText && w.text.toPlainText().contains('久安'),
+      );
 
-        final tsukamotoOffset = tester.getTopLeft(tsukamotoFinder.first);
-        final saradaOffset = tester.getTopLeft(saradaFinder.first);
-        final hisayasuOffset = tester.getTopLeft(hisayasuFinder.first);
+      expect(tsukamotoFinder, findsWidgets);
+      expect(saradaFinder, findsWidgets);
+      expect(hisayasuFinder, findsWidgets);
 
-        expect(
-          tsukamotoOffset.dy < saradaOffset.dy,
-          isTrue,
-          reason: '塚本 (先鋒) should be above 皿田 (中堅)',
-        );
-        expect(
-          saradaOffset.dy < hisayasuOffset.dy,
-          isTrue,
-          reason: '皿田 (中堅) should be above 久安 (大将)',
-        );
-      },
-    );
+      final tsukamotoOffset = tester.getTopLeft(tsukamotoFinder.first);
+      final saradaOffset = tester.getTopLeft(saradaFinder.first);
+      final hisayasuOffset = tester.getTopLeft(hisayasuFinder.first);
+
+      expect(
+        tsukamotoOffset.dy < saradaOffset.dy,
+        isTrue,
+        reason: '塚本 (先鋒) should be above 皿田 (中堅)',
+      );
+      expect(
+        saradaOffset.dy < hisayasuOffset.dy,
+        isTrue,
+        reason: '皿田 (中堅) should be above 久安 (大将)',
+      );
+    });
   });
 }

@@ -43,13 +43,13 @@ class FakeMatchAppService implements MatchApplicationService {
 
 void main() {
   group('[Widget] TimelineReorderHelper テスト', () {
-    test('TimelineReorderHelper exists and is statically accessibleであること', () {
+    test('TimelineReorderHelper exists and is statically accessibleこと', () {
       expect(TimelineReorderHelper.onReorderInnerTimeline, isNotNull);
       expect(TimelineReorderHelper.onReorderMatches, isNotNull);
       expect(TimelineReorderHelper.onReorderTimeline, isNotNull);
     });
 
-    testWidgets('【onReorderTimeline】試合間でコメント移動時にnewOrderが正しく計算されること', (
+    testWidgets('onReorderTimelineにおいて 試合間でコメント移動時にnewOrderが正しく計算されること', (
       tester,
     ) async {
       final fakeCommentCommand = FakeCommentCommandService();
@@ -120,7 +120,7 @@ void main() {
       // (match1のグループオフセットが正しく計算される)
     });
 
-    testWidgets('【onReorderTimeline】最上部または最下部へコメント移動時にnewOrderが正しく計算されること', (
+    testWidgets('onReorderTimelineにおいて 最上部または最下部へコメント移動時にnewOrderが正しく計算されること', (
       tester,
     ) async {
       final fakeCommentCommand = FakeCommentCommandService();
@@ -171,7 +171,7 @@ void main() {
     });
 
     testWidgets(
-      'onReorderTimeline works seamlessly with IndividualPlayerTimelineItemであること',
+      'onReorderTimeline works seamlessly with IndividualPlayerTimelineItemこと',
       (tester) async {
         final fakeCommentCommand = FakeCommentCommandService();
 
@@ -231,7 +231,7 @@ void main() {
       },
     );
 
-    testWidgets('【onReorderTimeline】試合グループを上下へ正しく移動できること', (tester) async {
+    testWidgets('onReorderTimelineにおいて 試合グループを上下へ正しく移動できること', (tester) async {
       final fakeMatchAppService = FakeMatchAppService();
 
       final match1 = const MatchModel(
@@ -299,7 +299,7 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, 400.0);
     });
 
-    testWidgets('【onReorderInnerTimeline】内部の試合一覧およびコメントの並び替えが適切に処理されること', (
+    testWidgets('onReorderInnerTimelineにおいて 内部の試合一覧およびコメントの並び替えが適切に処理されること', (
       tester,
     ) async {
       final fakeCommentCommand = FakeCommentCommandService();
@@ -374,9 +374,7 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, 400.0);
     });
 
-    testWidgets('onReorderMatches correctly reorders matches listであること', (
-      tester,
-    ) async {
+    testWidgets('試合並び替え操作により試合一覧が正しく再順序化されること', (tester) async {
       final fakeMatchAppService = FakeMatchAppService();
 
       final m1 = const MatchModel(
@@ -434,93 +432,87 @@ void main() {
       expect(fakeMatchAppService.savedMatches!.first.order, 150.0);
     });
 
-    testWidgets(
-      'ReorderableListView widget integration: onReorderItem updates comment order between matchesであること',
-      (tester) async {
-        final fakeCommentCommand = FakeCommentCommandService();
+    testWidgets('並び替えリスト操作により試合間コメント順序が正しく更新されること', (tester) async {
+      final fakeCommentCommand = FakeCommentCommandService();
 
-        final c1 = const MatchCommentModel(id: 'c1', text: 'テスト', order: 300.0);
-        final m1 = const MatchModel(
-          id: 'm1',
-          redName: 'A',
-          whiteName: 'B',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 200.0,
-        );
-        final m2 = const MatchModel(
-          id: 'm2',
-          redName: 'A',
-          whiteName: 'C',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 100.0,
-        );
+      final c1 = const MatchCommentModel(id: 'c1', text: 'テスト', order: 300.0);
+      final m1 = const MatchModel(
+        id: 'm1',
+        redName: 'A',
+        whiteName: 'B',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 200.0,
+      );
+      final m2 = const MatchModel(
+        id: 'm2',
+        redName: 'A',
+        whiteName: 'C',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 100.0,
+      );
 
-        final items = <ReorderableTimelineItem>[
-          CommentTimelineItem(c1),
-          MatchGroupTimelineItem('g1', [m1]),
-          MatchGroupTimelineItem('g2', [m2]),
-        ];
+      final items = <ReorderableTimelineItem>[
+        CommentTimelineItem(c1),
+        MatchGroupTimelineItem('g1', [m1]),
+        MatchGroupTimelineItem('g2', [m2]),
+      ];
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ProviderScope(
-                overrides: [
-                  permissionProvider.overrideWithValue(
-                    const PermissionState(canManageTournament: true),
-                  ),
-                  commentCommandProvider.overrideWithValue(fakeCommentCommand),
-                ],
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    return ReorderableListView(
-                      onReorderItem: (oldIndex, newIndex) =>
-                          TimelineReorderHelper.onReorderTimeline(
-                            items,
-                            oldIndex,
-                            newIndex,
-                            ref,
-                          ),
-                      children: [
-                        ListTile(
-                          key: const ValueKey('c1'),
-                          title: Text(c1.text),
-                        ),
-                        ListTile(
-                          key: const ValueKey('m1'),
-                          title: Text(m1.whiteName),
-                        ),
-                        ListTile(
-                          key: const ValueKey('m2'),
-                          title: Text(m2.whiteName),
-                        ),
-                      ],
-                    );
-                  },
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProviderScope(
+              overrides: [
+                permissionProvider.overrideWithValue(
+                  const PermissionState(canManageTournament: true),
                 ),
+                commentCommandProvider.overrideWithValue(fakeCommentCommand),
+              ],
+              child: Consumer(
+                builder: (context, ref, _) {
+                  return ReorderableListView(
+                    onReorderItem: (oldIndex, newIndex) =>
+                        TimelineReorderHelper.onReorderTimeline(
+                          items,
+                          oldIndex,
+                          newIndex,
+                          ref,
+                        ),
+                    children: [
+                      ListTile(key: const ValueKey('c1'), title: Text(c1.text)),
+                      ListTile(
+                        key: const ValueKey('m1'),
+                        title: Text(m1.whiteName),
+                      ),
+                      ListTile(
+                        key: const ValueKey('m2'),
+                        title: Text(m2.whiteName),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        final reorderableListView = tester.widget<ReorderableListView>(
-          find.byType(ReorderableListView),
-        );
-        // c1 (oldIndex = 0) を m1 と m2 の間 (onReorderItem では newIndex = 1) にドラッグ
-        reorderableListView.onReorderItem!(0, 1);
-        await tester.pump();
+      final reorderableListView = tester.widget<ReorderableListView>(
+        find.byType(ReorderableListView),
+      );
+      // c1 (oldIndex = 0) を m1 と m2 の間 (onReorderItem では newIndex = 1) にドラッグ
+      reorderableListView.onReorderItem!(0, 1);
+      await tester.pump();
 
-        // m1 (200.0) と m2 (100.0) の中間値 150.0 になることを検証！
-        expect(fakeCommentCommand.lastUpdatedComment?.id, 'c1');
-        expect(fakeCommentCommand.lastUpdatedOrder, 150.0);
-      },
-    );
+      // m1 (200.0) と m2 (100.0) の中間値 150.0 になることを検証！
+      expect(fakeCommentCommand.lastUpdatedComment?.id, 'c1');
+      expect(fakeCommentCommand.lastUpdatedOrder, 150.0);
+    });
 
     test(
-      'CommentCommandService.updateCommentOrder saves even without prior added event in memoryであること',
+      'CommentCommandService.updateCommentOrder saves even without prior added event in memoryこと',
       () async {
         MatchCommentModel? savedLocalComment;
         MatchCommentModel? savedRemoteComment;

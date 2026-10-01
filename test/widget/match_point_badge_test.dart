@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 
 void main() {
   group('[Widget] MatchPointBadge ウィジェットテスト', () {
-    testWidgets('Renders simple strike mark correctlyであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('シンプルな打突マークが正しく描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -58,23 +56,22 @@ void main() {
       expect(circleDecorations.isNotEmpty, isTrue);
     });
 
-    testWidgets(
-      'Normalizes fullwidth cross  to halfwidth cross × correctlyであること',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: MatchPointBadge(
-                mark: '✕',
-                isFirst: false,
-                color: Colors.grey,
-              ),
+    testWidgets('Normalizes fullwidth cross to halfwidth cross × correctlyこと', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: MatchPointBadge(
+              mark: '✕',
+              isFirst: false,
+              color: Colors.grey,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('×'), findsOneWidget);
-      },
-    );
+      expect(find.text('×'), findsOneWidget);
+    });
   });
 }

@@ -40,7 +40,7 @@ void main() {
   );
 
   group('[Widget] TimerWidget ライト＆ダークモード視認性コントラスト完全保証テスト', () {
-    testWidgets('【ライトモード・動作中】赤背景において、テキストおよびアイコンが純白(pureWhite)で描画されること', (
+    testWidgets('ライトモード・動作中において 赤背景において、テキストおよびアイコンが純白(pureWhite)で描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -75,7 +75,7 @@ void main() {
       expect(iconWidget.color, AppKendoColors.pureWhite);
     });
 
-    testWidgets('【ダークモード・動作中】暗赤背景において、テキストおよびアイコンが純白(pureWhite)で描画されること', (
+    testWidgets('ダークモード・動作中において 暗赤背景において、テキストおよびアイコンが純白(pureWhite)で描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -108,43 +108,44 @@ void main() {
       expect(iconWidget.color, AppKendoColors.pureWhite);
     });
 
-    testWidgets('【ライトモード・停止中】白背景において、テキストがtextColor(黒)、アイコンがインディゴブルーで描画されること', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createTestApp(
-          Theme(
-            data: ThemeData.light().copyWith(
-              extensions: [
-                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
-              ],
-            ),
-            child: const Scaffold(
-              body: Center(
-                child: TimerWidget(
-                  matchId: 'test_match_stopped',
-                  isInputLocked: false,
+    testWidgets(
+      'ライトモード・停止中において 白背景において、テキストがtextColor(黒)、アイコンがインディゴブルーで描画されること',
+      (tester) async {
+        await tester.pumpWidget(
+          createTestApp(
+            Theme(
+              data: ThemeData.light().copyWith(
+                extensions: [
+                  AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+                ],
+              ),
+              child: const Scaffold(
+                body: Center(
+                  child: TimerWidget(
+                    matchId: 'test_match_stopped',
+                    isInputLocked: false,
+                  ),
                 ),
               ),
             ),
+            overrides: [
+              matchListProvider.overrideWith((ref) => [testMatchStopped]),
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+            ],
           ),
-          overrides: [
-            matchListProvider.overrideWith((ref) => [testMatchStopped]),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final textWidget = tester.widget<Text>(find.byType(Text).first);
-      expect(textWidget.style?.color, const Color(0xFF000000));
+        final textWidget = tester.widget<Text>(find.byType(Text).first);
+        expect(textWidget.style?.color, const Color(0xFF000000));
 
-      final iconWidget = tester.widget<Icon>(find.byType(Icon).first);
-      expect(iconWidget.color, const Color(0xFF3F51B5));
-    });
+        final iconWidget = tester.widget<Icon>(find.byType(Icon).first);
+        expect(iconWidget.color, const Color(0xFF3F51B5));
+      },
+    );
 
     testWidgets(
-      '【ダークモード・停止中】暗色背景において、テキストがtextColor(白)、アイコンが高視認性インディゴで描画されること',
+      'ダークモード・停止中において 暗色背景において、テキストがtextColor(白)、アイコンが高視認性インディゴで描画されること',
       (tester) async {
         await tester.pumpWidget(
           createTestApp(

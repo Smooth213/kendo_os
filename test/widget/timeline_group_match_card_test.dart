@@ -89,7 +89,7 @@ void main() {
         expect(find.text('(0)'), findsWidgets);
       });
 
-      testWidgets('観客席ビュアー親カードでも1〜5段構造が正しく描画され、管理操作ボタンが非表示であること', (
+      testWidgets('観客席ビュアー親カードでも1〜5段構造が正しく描画され、管理操作ボタンが非表示こと', (
         WidgetTester tester,
       ) async {
         final themeColors = AppThemeColors.ofMode(

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 
 void main() {
   group('[Widget] OfficialRecordGroupHelper テスト', () {
-    test('groupMatchesByCategory correctly groups matchesであること', () {
+    test('groupMatchesByCategory correctly groups matchesこと', () {
       final matches = [
         MatchModel(
           id: 'm1',

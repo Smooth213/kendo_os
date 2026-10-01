@@ -20,60 +20,63 @@ import 'package:kendo_os/features/match/application/mappers/score_event_legacy_a
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[E2E] 【E2E / 統合シナリオ】プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証', () {
-    test('[タイマーI/Oバッファリング] 稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること', () async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+  group('[E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証', () {
+    test(
+      'タイマーI/Oバッファリングに関して、稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
 
-      final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      );
-      addTearDown(container.dispose);
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
 
-      const courtId = 'court_e2e_1';
-      final timerNotifier = container.read(
-        renseikaiMasterTimerProvider(courtId).notifier,
-      );
+        const courtId = 'court_e2e_1';
+        final timerNotifier = container.read(
+          renseikaiMasterTimerProvider(courtId).notifier,
+        );
 
-      // 初期化（180秒）
-      timerNotifier.initialize(180);
-      expect(container.read(renseikaiMasterTimerProvider(courtId)), 180);
-      expect(prefs.getInt('master_timer_seconds_$courtId'), 180);
+        // 初期化（180秒）
+        timerNotifier.initialize(180);
+        expect(container.read(renseikaiMasterTimerProvider(courtId)), 180);
+        expect(prefs.getInt('master_timer_seconds_$courtId'), 180);
 
-      // タイマー開始
-      timerNotifier.start();
-      expect(prefs.getBool('master_timer_running_$courtId'), isTrue);
+        // タイマー開始
+        timerNotifier.start();
+        expect(prefs.getBool('master_timer_running_$courtId'), isTrue);
 
-      // 1秒待機（タイマーの1カウントダウン進行）
-      await Future.delayed(const Duration(milliseconds: 1100));
+        // 1秒待機（タイマーの1カウントダウン進行）
+        await Future.delayed(const Duration(milliseconds: 1100));
 
-      // メモリ内Stateはカウントダウンされていること
-      final currentSecond = container.read(
-        renseikaiMasterTimerProvider(courtId),
-      );
-      expect(currentSecond, lessThan(180));
+        // メモリ内Stateはカウントダウンされていること
+        final currentSecond = container.read(
+          renseikaiMasterTimerProvider(courtId),
+        );
+        expect(currentSecond, lessThan(180));
 
-      // 一時停止
-      timerNotifier.pause();
-      expect(prefs.getBool('master_timer_running_$courtId'), isFalse);
-      expect(
-        prefs.getInt('master_timer_seconds_$courtId'),
-        currentSecond,
-        reason: '一時停止時に最新の残り秒数がディスクに確定保存されること',
-      );
+        // 一時停止
+        timerNotifier.pause();
+        expect(prefs.getBool('master_timer_running_$courtId'), isFalse);
+        expect(
+          prefs.getInt('master_timer_seconds_$courtId'),
+          currentSecond,
+          reason: '一時停止時に最新の残り秒数がディスクに確定保存されること',
+        );
 
-      // 秒数手動変更
-      timerNotifier.setSeconds(120);
-      expect(container.read(renseikaiMasterTimerProvider(courtId)), 120);
-      expect(
-        prefs.getInt('master_timer_seconds_$courtId'),
-        120,
-        reason: '手動秒数変更時に即時保存されること',
-      );
-    });
+        // 秒数手動変更
+        timerNotifier.setSeconds(120);
+        expect(container.read(renseikaiMasterTimerProvider(courtId)), 120);
+        expect(
+          prefs.getInt('master_timer_seconds_$courtId'),
+          120,
+          reason: '手動秒数変更時に即時保存されること',
+        );
+      },
+    );
 
     test(
-      '[PDF LRUメモリ保護] 10ページ以上連続アクセスしても上限8ページに制限され、clearUrl で即時解放されること',
+      'PDF LRUメモリ保護に関して、10ページ以上連続アクセスしても上限8ページに制限され、clearUrl で即時解放されること',
       () async {
         final cache = ProgramViewerPdfPageCache.shared;
         cache.clear();
@@ -100,7 +103,7 @@ void main() {
       },
     );
 
-    test('[スナップショットサイズ爆縮] 25回連続で操作を行ってもスナップショットが最新1件のみ保持され、DB肥大化がゼロであること', () {
+    test('スナップショットサイズ爆縮に関して、25回連続で操作を行ってもスナップショットが最新1件のみ保持され、DB肥大化がゼロこと', () {
       const helper = MatchSnapshotHelper();
 
       var match = MatchModel(
@@ -144,7 +147,7 @@ void main() {
     });
 
     test(
-      '[通信リーク根絶] matchListByTournamentProvider は autoDispose であり、監視終了後に安全にリソースがクリーンアップされること',
+      '通信リーク根絶に関して、matchListByTournamentProvider は autoDispose であり、監視終了後に安全にリソースがクリーンアップされること',
       () {
         final container = ProviderContainer();
         addTearDown(container.dispose);
@@ -168,7 +171,7 @@ void main() {
     );
 
     test(
-      '[緊急バックアップ実ファイル3世代ローテーション] 連続保存失敗時も実ディスク上に最新3世代のみが維持されディスク肥大化がゼロであること',
+      '緊急バックアップ実ファイル3世代ローテーションに関して、連続保存失敗時も実ディスク上に最新3世代のみが維持されディスク肥大化がゼロこと',
       () async {
         final tempDir = await Directory.systemTemp.createTemp('e2e_rot_test_');
         addTearDown(() async {
@@ -245,7 +248,7 @@ void main() {
     );
 
     test(
-      '[試合タイマー適正化E2E] 通常試合は1000ms（毎秒1回）間引き、代表戦・延長戦のみ100ms高精度Tickが適用されること',
+      '試合タイマー適正化E2Eに関して、通常試合は1000ms（毎秒1回）間引き、代表戦・延長戦のみ100ms高精度Tickが適用されること',
       () {
         final container = ProviderContainer();
         addTearDown(container.dispose);
@@ -285,7 +288,7 @@ void main() {
       },
     );
 
-    testWidgets('[VRR＆タッチ即時復帰E2E] 操作後静止でVRRスロットリングし、画面タップで即座に60fpsへ復帰すること', (
+    testWidgets('VRR＆タッチ即時復帰E2Eに関して、操作後静止でVRRスロットリングし、画面タップで即座に60fpsへ復帰すること', (
       tester,
     ) async {
       final governor = ThermalPowerGovernor();
@@ -324,7 +327,7 @@ void main() {
       expect(governor.isVrrThrottled, isFalse);
     });
 
-    test('[適応型マイクロバッチングE2E] 微小更新がメモリ集約され、得点クリティカル契機で即時フラッシュされること', () async {
+    test('適応型マイクロバッチングE2Eに関して、微小更新がメモリ集約され、得点クリティカル契機で即時フラッシュされること', () async {
       final repo = LocalMatchRepository(null);
       addTearDown(repo.dispose);
 
@@ -361,7 +364,7 @@ void main() {
       await repo.flushMicroBatch();
     });
 
-    test('[P2P差分デルタ伝送E2E] broadcastMatchDelta で差分ペイロードが安全に構築・送信されること', () {
+    test('P2P差分デルタ伝送E2Eに関して、broadcastMatchDelta で差分ペイロードが安全に構築・送信されること', () {
       final broadcaster = LocalP2pBroadcaster();
       addTearDown(broadcaster.stopServer);
 

@@ -93,7 +93,7 @@ void main() {
       expect(find.text('(0)'), findsWidgets);
     });
 
-    testWidgets('大会ホーム（観客席ビュアー）で5段構造レイアウトが維持され、管理ボタンが非表示であること', (
+    testWidgets('大会ホーム（観客席ビュアー）で5段構造レイアウトが維持され、管理ボタンが非表示こと', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

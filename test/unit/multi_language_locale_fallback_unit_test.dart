@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('[Unit] 【Unit 2/5】多言語・国際化ロケールフォールバック境界値テスト', () {
+  group('[Unit] Unit 2/5において 多言語・国際化ロケールフォールバック境界値テスト', () {
     const supportedLocales = [Locale('ja', 'JP'), Locale('en', 'US')];
     const defaultLocale = Locale('ja', 'JP');
 

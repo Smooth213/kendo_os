@@ -9,7 +9,7 @@ void main() {
   group('[Widget] MatchEditTeamAndPlayersTab ウィジェットテスト', () {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    test('【MatchEditDataHelper】選手名および整形された備考が正しく抽出されること', () {
+    test('MatchEditDataHelperにおいて 選手名および整形された備考が正しく抽出されること', () {
       expect(
         MatchEditDataHelper.extractTeamName('青龍道場: 山田', 'fallback', true),
         '青龍道場',
@@ -20,7 +20,7 @@ void main() {
       expect(MatchEditDataHelper.getPositionLabel(4, 5), '大将');
     });
 
-    testWidgets('【MatchEditTeamAndPlayersTab】入力欄が描画され紅白入替が正常に行えること', (
+    testWidgets('MatchEditTeamAndPlayersTabにおいて 入力欄が描画され紅白入替が正常に行えること', (
       WidgetTester tester,
     ) async {
       final redTeamCtrl = TextEditingController(text: '赤チーム');

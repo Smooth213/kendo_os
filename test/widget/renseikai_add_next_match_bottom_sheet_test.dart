@@ -34,9 +34,7 @@ void main() {
     ).thenAnswer((_) => Stream.value(<TeamModel>[]));
   });
 
-  testWidgets('RenseikaiAddNextMatchBottomSheet renders properlyであること', (
-    tester,
-  ) async {
+  testWidgets('錬成会次試合追加ボトムシートが正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     final prefs = await SharedPreferences.getInstance();
 

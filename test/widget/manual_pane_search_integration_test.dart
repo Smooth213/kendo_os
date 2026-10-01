@@ -15,7 +15,7 @@ void main() {
       realIndex = jsonDecode(file.readAsStringSync()) as List<dynamic>;
     });
 
-    testWidgets('【実データ検索】「ドック」入力でドックガイドが表示されタップ選択できること', (tester) async {
+    testWidgets('実データ検索において 「ドック」入力でドックガイドが表示されタップ選択できること', (tester) async {
       final controller = TextEditingController();
       String searchQuery = '';
       String selectedPath = '';
@@ -76,7 +76,7 @@ void main() {
       expect(controller.text, isEmpty);
     });
 
-    testWidgets('【実データ検索】「ルール」入力で部門別ルール設定が表示されること', (tester) async {
+    testWidgets('実データ検索において 「ルール」入力で部門別ルール設定が表示されること', (tester) async {
       final controller = TextEditingController();
       String searchQuery = '';
       String selectedPath = '';

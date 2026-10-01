@@ -7,7 +7,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] OfficialRecordExpeditionSummaryCard テスト', () {
-    testWidgets('【OfficialRecordExpeditionSummaryCard】試合情報とともに適切に描画されること', (
+    testWidgets('OfficialRecordExpeditionSummaryCardにおいて 試合情報とともに適切に描画されること', (
       tester,
     ) async {
       final match = MatchModel(
@@ -75,7 +75,7 @@ void main() {
       expect(find.text('開く'), findsOneWidget);
     });
 
-    test('ExpeditionStatsCalculator computes wins accuratelyであること', () {
+    test('ExpeditionStatsCalculator computes wins accuratelyこと', () {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,

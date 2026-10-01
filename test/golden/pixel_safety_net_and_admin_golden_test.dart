@@ -107,7 +107,7 @@ void main() {
     );
   }
 
-  group('[Golden] 【Golden】不壊セーフティネット作動画面 ＆ 管理者ダッシュボード ピクセル完全性テスト', () {
+  group('[Golden] 不壊セーフティネット作動画面 ＆ 管理者ダッシュボード ピクセル完全性テスト', () {
     final simulatedDetails = FlutterErrorDetails(
       exception: Exception('現場テスト用シミュレーションエラー: Database timeout'),
       stack: StackTrace.current,
@@ -185,7 +185,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('管理者ダッシュボード: 初期レイアウト描画検証 (ObservabilityDashboardScreen)こと', (
+    testWidgets('ObservabilityDashboardScreenにおいて管理者ダッシュボード: 初期レイアウト描画検証こと', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1200);

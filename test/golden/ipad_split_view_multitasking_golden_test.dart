@@ -2,96 +2,91 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group(
-    '[Golden] 【Phase 3-7/11】iPad Split View（1/3極小幅 320px）マルチタスク Goldenテスト',
-    () {
-      testWidgets('横幅320pxの極小分割画面でもスコア・タイマーがoverflowせず美しく収まること', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(320, 600);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+  group('[Golden] iPad Split View（1/3極小幅 320px）マルチタスク Goldenテスト', () {
+    testWidgets('横幅320pxの極小分割画面でもスコア・タイマーがoverflowせず美しく収まること', (tester) async {
+      tester.view.physicalSize = const Size(320, 600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.dark(),
-            home: Scaffold(
-              appBar: AppBar(
-                title: const Text(
-                  'Kendo OS - Split',
-                  style: TextStyle(fontSize: 16),
-                ),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(),
+          home: Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'Kendo OS - Split',
+                style: TextStyle(fontSize: 16),
               ),
-              body: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    // スコアボード極小表示
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            '佐藤 (赤)',
-                            style: TextStyle(
-                              color: Colors.redAccent,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '1 - 0',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '鈴木 (白)',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  // スコアボード極小表示
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
                     ),
-                    const SizedBox(height: 12),
-                    const Center(
-                      child: Text(
-                        '残り 120 秒',
-                        style: TextStyle(fontSize: 18, color: Colors.amber),
-                      ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24),
                     ),
-                  ],
-                ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text(
+                          '佐藤 (赤)',
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '1 - 0',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '鈴木 (白)',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Center(
+                    child: Text(
+                      '残り 120 秒',
+                      style: TextStyle(fontSize: 18, color: Colors.amber),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // UI崩壊・はみ出し（A RenderFlex overflowed...）例外ゼロ検証
-        expect(tester.takeException(), isNull);
+      // UI崩壊・はみ出し（A RenderFlex overflowed...）例外ゼロ検証
+      expect(tester.takeException(), isNull);
 
-        expect(find.text('1 - 0'), findsOneWidget);
-        expect(find.text('残り 120 秒'), findsOneWidget);
-        expect(find.text('佐藤 (赤)'), findsOneWidget);
-        expect(find.text('鈴木 (白)'), findsOneWidget);
+      expect(find.text('1 - 0'), findsOneWidget);
+      expect(find.text('残り 120 秒'), findsOneWidget);
+      expect(find.text('佐藤 (赤)'), findsOneWidget);
+      expect(find.text('鈴木 (白)'), findsOneWidget);
 
-        // 横幅320pxの極小画面内に完全に収まっていること
-        final scaffoldSize = tester.getSize(find.byType(Scaffold));
-        expect(scaffoldSize.width, 320.0);
-      });
-    },
-  );
+      // 横幅320pxの極小画面内に完全に収まっていること
+      final scaffoldSize = tester.getSize(find.byType(Scaffold));
+      expect(scaffoldSize.width, 320.0);
+    });
+  });
 }

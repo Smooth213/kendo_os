@@ -26,7 +26,7 @@ void main() {
     ),
   ];
 
-  testWidgets('【OrderSetupPlayerSelectBottomSheet】選択肢および選手一覧が描画されること', (
+  testWidgets('OrderSetupPlayerSelectBottomSheetにおいて 選択肢および選手一覧が描画されること', (
     tester,
   ) async {
     String? selectedResult;

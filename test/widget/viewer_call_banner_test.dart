@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_call_banner.dart';
 
 void main() {
-  testWidgets('【ViewerCallBanner】進行中および待機中の試合が正しく描画されること', (tester) async {
+  testWidgets('ViewerCallBannerにおいて 進行中および待機中の試合が正しく描画されること', (tester) async {
     final match1 = MatchModel(
       id: 'm1',
       tournamentId: 't1',

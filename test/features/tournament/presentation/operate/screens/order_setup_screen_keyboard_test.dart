@@ -22,7 +22,7 @@ void main() {
   });
 
   group('[Widget] OrderSetupScreen Keyboard Avoidance Layout テスト', () {
-    testWidgets('テキスト入力フォーカス時でも確定操作のため下部ボタン領域が視認可能であること', (
+    testWidgets('テキスト入力フォーカス時でも確定操作のため下部ボタン領域が視認可能こと', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

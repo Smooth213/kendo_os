@@ -8,7 +8,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 void main() {
-  group('[Widget] 【PDFスコアセル＆勝者円はみ出し防止 完全保証テスト】', () {
+  group('[Widget] PDFスコアセル＆勝者円はみ出し防止 完全保証テストにおいて', () {
     late pw.Font fontBold;
     late pw.Font fontRegular;
 
@@ -17,7 +17,7 @@ void main() {
       fontRegular = pw.Font.helvetica();
     });
 
-    test('【寸法保証】buildPointBox がセル領域(26x26)に収まり、勝者円(25x25)が境界線と干渉しないこと', () {
+    test('寸法保証において buildPointBox がセル領域(26x26)に収まり、勝者円(25x25)が境界線と干渉しないこと', () {
       final pts = [PdfPointData('コ', true), PdfPointData('ツ', false)];
 
       final widget = PdfTeamTableCellRenderer.buildPointBox(
@@ -37,69 +37,72 @@ void main() {
       expect(box?.maxHeight ?? 26, lessThanOrEqualTo(26.0));
     });
 
-    test('【1本勝ち/2本勝ち/引き分け】すべての打突マークパターンでPDFページ描画がはみ出さずレンダリング完了すること', () async {
-      final pdf = pw.Document();
+    test(
+      '1本勝ち/2本勝ち/引き分けにおいて すべての打突マークパターンでPDFページ描画がはみ出さずレンダリング完了すること',
+      () async {
+        final pdf = pw.Document();
 
-      // 各種打突パターンの検証
-      final singlePoint = [PdfPointData('メ', true)];
-      final doublePoint = [PdfPointData('コ', true), PdfPointData('ツ', false)];
-      final drawPoint = [PdfPointData('×', false)];
-      final fusenPoint = [PdfPointData('◯', true)];
+        // 各種打突パターンの検証
+        final singlePoint = [PdfPointData('メ', true)];
+        final doublePoint = [PdfPointData('コ', true), PdfPointData('ツ', false)];
+        final drawPoint = [PdfPointData('×', false)];
+        final fusenPoint = [PdfPointData('◯', true)];
 
-      pdf.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          build: (context) {
-            return pw.Column(
-              children: [
-                // 1本勝ち（赤）
-                PdfTeamTableCellRenderer.buildPointBox(
-                  singlePoint,
-                  true,
-                  true,
-                  fontBold,
-                ),
-                // 2本勝ち（赤）
-                PdfTeamTableCellRenderer.buildPointBox(
-                  doublePoint,
-                  true,
-                  true,
-                  fontBold,
-                ),
-                // 1本負け（白側勝者なし）
-                PdfTeamTableCellRenderer.buildPointBox(
-                  singlePoint,
-                  false,
-                  false,
-                  fontBold,
-                ),
-                // 引き分け（×）
-                PdfTeamTableCellRenderer.buildPointBox(
-                  drawPoint,
-                  false,
-                  false,
-                  fontBold,
-                ),
-                // 不戦勝（◯）
-                PdfTeamTableCellRenderer.buildPointBox(
-                  fusenPoint,
-                  true,
-                  true,
-                  fontBold,
-                ),
-              ],
-            );
-          },
-        ),
-      );
+        pdf.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            build: (context) {
+              return pw.Column(
+                children: [
+                  // 1本勝ち（赤）
+                  PdfTeamTableCellRenderer.buildPointBox(
+                    singlePoint,
+                    true,
+                    true,
+                    fontBold,
+                  ),
+                  // 2本勝ち（赤）
+                  PdfTeamTableCellRenderer.buildPointBox(
+                    doublePoint,
+                    true,
+                    true,
+                    fontBold,
+                  ),
+                  // 1本負け（白側勝者なし）
+                  PdfTeamTableCellRenderer.buildPointBox(
+                    singlePoint,
+                    false,
+                    false,
+                    fontBold,
+                  ),
+                  // 引き分け（×）
+                  PdfTeamTableCellRenderer.buildPointBox(
+                    drawPoint,
+                    false,
+                    false,
+                    fontBold,
+                  ),
+                  // 不戦勝（◯）
+                  PdfTeamTableCellRenderer.buildPointBox(
+                    fusenPoint,
+                    true,
+                    true,
+                    fontBold,
+                  ),
+                ],
+              );
+            },
+          ),
+        );
 
-      // PDFバイナリの生成がエラー・クラッシュ・オーバーフローなく完了すること
-      final bytes = await pdf.save();
-      expect(bytes, isNotEmpty);
-      expect(bytes.length, greaterThan(100));
-    });
+        // PDFバイナリの生成がエラー・クラッシュ・オーバーフローなく完了すること
+        final bytes = await pdf.save();
+        expect(bytes, isNotEmpty);
+        expect(bytes.length, greaterThan(100));
+      },
+    );
 
-    test('【団体戦スコアテーブル全体検証】全5ポジション（先鋒〜大将）の対戦表が境界線はみ出しなくPDF出力できること', () async {
+    test('団体戦スコアテーブル全体検証において 全5ポジション（先鋒〜大将）の対戦表が境界線はみ出しなくPDF出力できること', () async {
       final pdf = pw.Document();
 
       final now = DateTime(2026, 8, 29);

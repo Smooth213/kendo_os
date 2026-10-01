@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/utils/file_download_helper.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Unit] 【Unit】Webファイルダウンロード＆共有ヘルパー 安全性・フォールバック検証', () {
+  group('[Unit] Webファイルダウンロード＆共有ヘルパー 安全性・フォールバック検証', () {
     test('file_download_helper (ネイティブ/スタブ環境): 例外スローなく安全に終了すること', () async {
       final dummyBytes = Uint8List.fromList([
         0x4B,

@@ -8,7 +8,7 @@ void main() {
     // 1. 個人戦のテスト
     // ==========================================
     group('個人戦 (IndividualMatchStrategy)', () {
-      test('【延長あり/回数1回】0回目の同点は「延長戦(startExtension)」へ進むこと', () {
+      test('延長あり/回数1回において 0回目の同点は「延長戦(startExtension)」へ進むこと', () {
         const match = MatchModel(
           id: '1',
           matchType: '個人戦',
@@ -31,7 +31,7 @@ void main() {
         expect(action, NextMatchAction.startExtension);
       });
 
-      test('【延長あり/回数1回】1回延長済みの同点は「判定(showHantei)」へ進むこと', () {
+      test('延長あり/回数1回において 1回延長済みの同点は「判定(showHantei)」へ進むこと', () {
         const match = MatchModel(
           id: '2',
           matchType: '個人戦',

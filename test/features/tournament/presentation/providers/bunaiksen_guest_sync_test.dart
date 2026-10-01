@@ -15,7 +15,7 @@ void main() {
     });
 
     test(
-      'Guest players Firestore synchronization, date change and Dojo ID change isolationであること',
+      'Guest players Firestore synchronization, date change and Dojo ID change isolationこと',
       () async {
         final container = ProviderContainer(
           overrides: [

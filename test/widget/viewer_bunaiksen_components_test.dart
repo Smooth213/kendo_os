@@ -38,23 +38,20 @@ void main() {
       expect(find.text('第1試合'), findsOneWidget);
     });
 
-    test(
-      'ViewerBunaiksenMatchCard.buildScoreMarks handles zero scoresであること',
-      () {
-        final match = MatchModel(
-          id: 'm2',
-          matchOrder: 2,
-          redName: '佐藤',
-          whiteName: '鈴木',
-          redScore: 0,
-          whiteScore: 0,
-          status: 'waiting',
-          matchType: '個人戦',
-        );
+    test('部内戦カードのスコア表示においてゼロ得点が正常に処理されること', () {
+      final match = MatchModel(
+        id: 'm2',
+        matchOrder: 2,
+        redName: '佐藤',
+        whiteName: '鈴木',
+        redScore: 0,
+        whiteScore: 0,
+        status: 'waiting',
+        matchType: '個人戦',
+      );
 
-        final widget = ViewerBunaiksenMatchCard.buildScoreMarks(match, false);
-        expect(widget, isNotNull);
-      },
-    );
+      final widget = ViewerBunaiksenMatchCard.buildScoreMarks(match, false);
+      expect(widget, isNotNull);
+    });
   });
 }

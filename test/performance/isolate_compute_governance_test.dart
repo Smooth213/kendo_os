@@ -19,7 +19,7 @@ int _heavyFibonacci(int n) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] [Phase 4 Performance Governance] 重計算Isolate分離テスト', () {
+  group('[Governance] Performance Governanceに関して、重計算Isolate分離テスト', () {
     test('KendoComputeHelper.run が重計算を正しく実行し結果を返却すること', () async {
       final result = await KendoComputeHelper.run(_heavyFibonacci, 30);
       expect(result, 832040);

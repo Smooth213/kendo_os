@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart';
 
 void main() {
-  testWidgets('【CategoryRuleEditorHeaderCard】部門情報およびスイッチが正しく描画されること', (
+  testWidgets('CategoryRuleEditorHeaderCardにおいて 部門情報およびスイッチが正しく描画されること', (
     tester,
   ) async {
     final subtitleController = TextEditingController();
@@ -39,7 +39,7 @@ void main() {
   });
 
   testWidgets(
-    '【CategoryRuleEditorHeaderCard】識別可能な場合に(2)を省略してタイトルプレビューが表示されること',
+    'CategoryRuleEditorHeaderCardにおいて 識別可能な場合に(2)を省略してタイトルプレビューが表示されること',
     (tester) async {
       final subtitleController = TextEditingController(text: '決勝トーナメント');
       final commentController = TextEditingController();

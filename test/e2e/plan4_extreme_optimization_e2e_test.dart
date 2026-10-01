@@ -65,9 +65,9 @@ void main() {
     await isarContext?.clear();
   });
 
-  group('[E2E] 【Plan 4 E2E】4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト', () {
+  group('[E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト', () {
     test(
-      'E2E-1: 【保留コマンド自律消去・Poison Pill根絶】同期完了した試合の保留コマンドがIsarから漏れなく自動消去され、キュー滞留がゼロ化すること',
+      'E2E-1: 保留コマンド自律消去・Poison Pill根絶において 同期完了した試合の保留コマンドがIsarから漏れなく自動消去され、キュー滞留がゼロ化すること',
       () async {
         // Given: 試合A（同期完了予定）と試合B（未同期）の保留コマンドをIsarに保存
         final cmdA1 = MatchCommandEntity()
@@ -120,7 +120,7 @@ void main() {
     );
 
     test(
-      'E2E-2: 【UI局所化・Jank防止】settingsProvider.select((s) => s.themeMode) により、他設定（バイブ・確認ダイアログ等）変更でルート再ビルドが発生しないこと',
+      'E2E-2: UI局所化・Jank防止において settingsProvider.select((s) => s.themeMode) により、他設定（バイブ・確認ダイアログ等）変更でルート再ビルドが発生しないこと',
       () async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -193,7 +193,7 @@ void main() {
     );
 
     test(
-      'E2E-3: 【バックグラウンド待機時タイマー沈黙・復帰再開】BatteryNotifier が AppLifecycleState に連動して安全に動作すること',
+      'E2E-3: バックグラウンド待機時タイマー沈黙・復帰再開において BatteryNotifier が AppLifecycleState に連動して安全に動作すること',
       () async {
         final notifier = BatteryNotifier();
         expect(notifier.zoneValuesContainsTestKey(), isTrue);
@@ -206,7 +206,7 @@ void main() {
     );
 
     test(
-      'E2E-4: 【空Txn根絶・I/O半減実証】通常試合（<=200件）保存時に過去アーカイブが存在しない場合はIsarへの不要なwriteTxnが発生せず、正常に保存・復元できること',
+      'E2E-4: 空Txn根絶・I/O半減実証において 通常試合（<=200件）保存時に過去アーカイブが存在しない場合はIsarへの不要なwriteTxnが発生せず、正常に保存・復元できること',
       () async {
         // 1. アーカイブが存在しない新規の通常試合（イベント10件）
         final normalMatch = MatchModel(
@@ -281,7 +281,7 @@ void main() {
     );
 
     test(
-      'E2E-5: 【Poison Pill自律パージ実証】不正ペイロードの毒薬コマンドがIsarキューから自律パージされ、後続正常コマンドが滞留なく処理されること',
+      'E2E-5: Poison Pill自律パージ実証において 不正ペイロードの毒薬コマンドがIsarキューから自律パージされ、後続正常コマンドが滞留なく処理されること',
       () async {
         final fakeRemoteRepo = FakeRemoteMatchRepository();
         final container = ProviderContainer(
@@ -329,7 +329,7 @@ void main() {
     );
 
     test(
-      'E2E-6: 【保留コマンドバルク保存＆バルクパージ実証】savePendingCommandsBulk による一括書き込みと deleteAll による一括パージがアトミックに動作すること',
+      'E2E-6: 保留コマンドバルク保存＆バルクパージ実証において savePendingCommandsBulk による一括書き込みと deleteAll による一括パージがアトミックに動作すること',
       () async {
         // 1. 複数（10件）のコマンドを一括作成
         final cmds = List.generate(
@@ -380,7 +380,7 @@ void main() {
     );
 
     test(
-      'E2E-7: 【既読アナウンスID上限トリム実証】ReadAnnouncementsNotifier が200件を超過した古いIDを自動トリムし、メモリ肥大化を完全抑止すること',
+      'E2E-7: 既読アナウンスID上限トリム実証において ReadAnnouncementsNotifier が200件を超過した古いIDを自動トリムし、メモリ肥大化を完全抑止すること',
       () async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

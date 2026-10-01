@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('CategoryRuleIndividualSection renders extension settingsであること', (
-    tester,
-  ) async {
+  testWidgets('部門ルール個別セクションの延長設定が正しく描画されること', (tester) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
     await tester.pumpWidget(

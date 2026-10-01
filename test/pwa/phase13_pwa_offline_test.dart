@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 
 void main() {
-  group('[Unit] — PWA完全オフライン要塞・ブラウザレジリエンステスト', () {
+  group('[Unit] PWA完全オフライン要塞・ブラウザレジリエンステスト', () {
     late DateTime baseTime;
 
     setUp(() {
@@ -10,7 +10,7 @@ void main() {
     });
 
     test(
-      '【ServiceWorker更新競合】バックグラウンドで新旧のServiceWorkerのライフサイクル更新が衝突しても、読み込み中のプログラム配列データが破棄されず安全に維持されること',
+      'ServiceWorker更新競合において バックグラウンドで新旧のServiceWorkerのライフサイクル更新が衝突しても、読み込み中のプログラム配列データが破棄されず安全に維持されること',
       () {
         final currentLoadedPrograms = [
           ProgramModel(
@@ -34,7 +34,7 @@ void main() {
     );
 
     test(
-      '【ブラウザキャッシュ破損】PWAのCacheStorageが突発的にデータ破損(CacheException)を起こしても、UIがホワイトアウトせず安全にフォールバックすること',
+      'ブラウザキャッシュ破損において PWAのCacheStorageが突発的にデータ破損(CacheException)を起こしても、UIがホワイトアウトせず安全にフォールバックすること',
       () {
         String getCachedDataOrFallback() {
           try {
@@ -50,7 +50,7 @@ void main() {
     );
 
     test(
-      '【オフラインPDF閲覧】体育館の電波が完全遮断され、PDFのロード時にネットワークエラーが発生しても、画面スレッドがハングアップせずエラーダイアログ等の非クラッシュ状態へ遷移すること',
+      'オフラインPDF閲覧において 体育館の電波が完全遮断され、PDFのロード時にネットワークエラーが発生しても、画面スレッドがハングアップせずエラーダイアログ等の非クラッシュ状態へ遷移すること',
       () {
         bool hasNetworkError = true;
         String pdfViewerUiState = 'loading';
@@ -64,7 +64,7 @@ void main() {
     );
 
     test(
-      '【オフラインプログラム閲覧】完全オフライン状態で ProgramModel がUIへバインドされた際、データにnullが混入していてもデフォルト表示を維持し、ホワイトアウトを100%防止すること',
+      'オフラインプログラム閲覧において 完全オフライン状態で ProgramModel がUIへバインドされた際、データにnullが混入していてもデフォルト表示を維持し、ホワイトアウトを100%防止すること',
       () {
         final offlineProgram = ProgramModel(
           id: 'off_prog_001',

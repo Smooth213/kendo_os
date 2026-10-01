@@ -421,71 +421,70 @@ Widget createTestableWidget(
 
 void main() {
   group('[Widget] ViewerHomeScreen Accordion Grouping テスト', () {
-    testWidgets(
-      'Verify proper grouping/accordion display in ViewerHomeScreenであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 4000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('観客ホーム画面で適切なグループ分けおよびアコーディオン表示が行われること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        await tester.pumpWidget(
-          createTestableWidget(
-            const ViewerHomeScreen(tournamentId: 'test_tournament_1'),
-          ),
-        );
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerHomeScreen(tournamentId: 'test_tournament_1'),
+        ),
+      );
 
-        await tester.pump();
-        await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pumpAndSettle();
 
-        // Verify category headings
-        expect(find.text('一般'), findsWidgets);
-        expect(find.text('個人'), findsWidgets);
+      // Verify category headings
+      expect(find.text('一般'), findsWidgets);
+      expect(find.text('個人'), findsWidgets);
 
-        // Verify group headers/representatives are shown
-        final groupTitleFinder = find.byKey(const PageStorageKey('group_団体戦A'));
-        await tester.ensureVisible(groupTitleFinder.first);
-        await tester.pumpAndSettle();
+      // Verify group headers/representatives are shown
+      final groupTitleFinder = find.byKey(const PageStorageKey('group_団体戦A'));
+      await tester.ensureVisible(groupTitleFinder.first);
+      await tester.pumpAndSettle();
 
-        // Expand "団体戦A" group accordion
-        await tester.tap(groupTitleFinder.first);
-        await tester.pumpAndSettle();
+      // Expand "団体戦A" group accordion
+      await tester.tap(groupTitleFinder.first);
+      await tester.pumpAndSettle();
 
-        // Now "白虎剣友会" and other inner widgets should be built and visible
-        final opponentFinder = find.text('白虎剣友会');
-        await tester.dragUntilVisible(
-          opponentFinder.first,
-          find.byType(ListView).first,
-          const Offset(0, -100),
-        );
-        await tester.pumpAndSettle();
-        expect(opponentFinder, findsWidgets);
-        expect(find.text('[団体戦]'), findsWidgets);
+      // Now "白虎剣友会" and other inner widgets should be built and visible
+      final opponentFinder = find.text('白虎剣友会');
+      await tester.dragUntilVisible(
+        opponentFinder.first,
+        find.byType(ListView).first,
+        const Offset(0, -100),
+      );
+      await tester.pumpAndSettle();
+      expect(opponentFinder, findsWidgets);
+      expect(find.text('[団体戦]'), findsWidgets);
 
-        // Verify individual matches (single or in league)
-        final player1Finder = find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('山田'),
-        );
-        await tester.ensureVisible(player1Finder.first);
-        await tester.pumpAndSettle();
-        expect(player1Finder, findsWidgets);
+      // Verify individual matches (single or in league)
+      final player1Finder = find.byWidgetPredicate(
+        (w) => w is RichText && w.text.toPlainText().contains('山田'),
+      );
+      await tester.ensureVisible(player1Finder.first);
+      await tester.pumpAndSettle();
+      expect(player1Finder, findsWidgets);
 
-        final player2Finder = find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('鈴木'),
-        );
-        await tester.dragUntilVisible(
-          player2Finder.first,
-          find.byType(ListView).first,
-          const Offset(0, -100),
-        );
-        await tester.pumpAndSettle();
-        expect(player2Finder, findsWidgets);
-      },
-    );
+      final player2Finder = find.byWidgetPredicate(
+        (w) => w is RichText && w.text.toPlainText().contains('鈴木'),
+      );
+      await tester.dragUntilVisible(
+        player2Finder.first,
+        find.byType(ListView).first,
+        const Offset(0, -100),
+      );
+      await tester.pumpAndSettle();
+      expect(player2Finder, findsWidgets);
+    });
 
-    testWidgets('【ViewerHomeScreen】自チームの左右を入れ替えずにスタイリング付きで優先表示されること', (
+    testWidgets('ViewerHomeScreenにおいて 自チームの左右を入れ替えずにスタイリング付きで優先表示されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 4000);

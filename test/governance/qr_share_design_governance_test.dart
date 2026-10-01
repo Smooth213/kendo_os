@@ -16,7 +16,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Governance] 【第8条 ガバナンス 3/3】 QRコード共有UIデザイン統一永続保証規約', () {
+  group('[Governance] 第8条 ガバナンス 3/3において QRコード共有UIデザイン統一永続保証規約', () {
     late List<File> dartFiles;
 
     setUpAll(() {
@@ -30,7 +30,7 @@ void main() {
           .toList();
     });
 
-    test('Rule 1: 生の QrImageView 直接配置の排除と統一コンポーネント限定規約こと', () {
+    test('生の QrImageView 直接配置の排除と統一コンポーネント限定規約こと', () {
       final allowedFiles = {
         'lib/shared/widgets/qr_share_dialog.dart',
         'lib/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart',
@@ -62,7 +62,7 @@ void main() {
       );
     });
 
-    test('Rule 2: 全てのQR共有ダイアログが QrShareDialog を利用していることの構造監査こと', () {
+    test('全てのQR共有ダイアログが QrShareDialog を利用していることの構造監査こと', () {
       final shareDialogFiles = [
         'lib/features/tournament/presentation/operate/components/home/home_screen_qr_dialog.dart',
         'lib/features/tournament/presentation/operate/components/settings/web_app_qr_dialog.dart',
@@ -100,54 +100,51 @@ void main() {
       );
     });
 
-    testWidgets(
-      'Rule 3-1: QrShareDialog が必須UI要素（アイコン・QRカード・URLバー・コピー・シェアボタン）を完備していること',
-      (tester) async {
-        const testUrl = 'https://kendo-os-beta.web.app/viewer-home/gov_test';
+    testWidgets('QrShareDialog が必須UI要素（アイコン・QRカード・URLバー・コピー・シェアボタン）を完備していること', (
+      tester,
+    ) async {
+      const testUrl = 'https://kendo-os-beta.web.app/viewer-home/gov_test';
 
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.light().copyWith(
-              extensions: [
-                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
-              ],
-            ),
-            home: const Scaffold(
-              body: QrShareDialog(
-                title: '大会観戦リンク',
-                themeColor: AppKendoColors.teal,
-                description: 'テスト説明文',
-                shareUrl: testUrl,
-                shareText: 'シェアテキスト',
-                subtitleBadge: '大会ID: gov_test',
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: const Scaffold(
+            body: QrShareDialog(
+              title: '大会観戦リンク',
+              themeColor: AppKendoColors.teal,
+              description: 'テスト説明文',
+              shareUrl: testUrl,
+              shareText: 'シェアテキスト',
+              subtitleBadge: '大会ID: gov_test',
             ),
           ),
-        );
-        await tester.pumpAndSettle();
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // 1. タイトルアイコン (Icons.qr_code_2_rounded)
-        expect(find.byIcon(Icons.qr_code_2_rounded), findsOneWidget);
+      // 1. タイトルアイコン (Icons.qr_code_2_rounded)
+      expect(find.byIcon(Icons.qr_code_2_rounded), findsOneWidget);
 
-        // 2. QRカード (QrImageView)
-        expect(find.byType(QrImageView), findsOneWidget);
+      // 2. QRカード (QrImageView)
+      expect(find.byType(QrImageView), findsOneWidget);
 
-        // 3. 大会IDバッジ
-        expect(find.text('大会ID: gov_test'), findsOneWidget);
+      // 3. 大会IDバッジ
+      expect(find.text('大会ID: gov_test'), findsOneWidget);
 
-        // 4. URLバー ＆ コピーボタン
-        expect(find.text(testUrl), findsOneWidget);
-        expect(find.byIcon(Icons.link), findsOneWidget);
-        expect(find.byIcon(Icons.copy_rounded), findsOneWidget);
+      // 4. URLバー ＆ コピーボタン
+      expect(find.text(testUrl), findsOneWidget);
+      expect(find.byIcon(Icons.link), findsOneWidget);
+      expect(find.byIcon(Icons.copy_rounded), findsOneWidget);
 
-        // 5. シェアボタン (Icons.ios_share)
-        expect(find.byIcon(Icons.ios_share), findsOneWidget);
-        expect(find.text('LINEやSNSでURLを送る'), findsOneWidget);
-      },
-    );
+      // 5. シェアボタン (Icons.ios_share)
+      expect(find.byIcon(Icons.ios_share), findsOneWidget);
+      expect(find.text('LINEやSNSでURLを送る'), findsOneWidget);
+    });
 
     testWidgets(
-      'Rule 3-2: 各種ダイアログ（HomeScreenQrDialog, WebAppQrDialog, BunaiksenShareDialog, ViewerShareDialog）の描画完全性こと',
+      '各種ダイアログ（HomeScreenQrDialog, WebAppQrDialog, BunaiksenShareDialog, ViewerShareDialog）の描画完全性こと',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -172,56 +169,53 @@ void main() {
       },
     );
 
-    test(
-      'Rule 4: ViewerQrBottomSheet がURL表示バー・コピー・共有ボタン・QRカード装飾を完備していることの静的監査こと',
-      () {
-        final sheetFile = dartFiles.firstWhere(
-          (f) => f.path
-              .replaceAll('\\', '/')
-              .endsWith(
-                'lib/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart',
-              ),
-        );
+    test('ViewerQrBottomSheet がURL表示バー・コピー・共有ボタン・QRカード装飾を完備していることの静的監査こと', () {
+      final sheetFile = dartFiles.firstWhere(
+        (f) => f.path
+            .replaceAll('\\', '/')
+            .endsWith(
+              'lib/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart',
+            ),
+      );
 
-        final content = sheetFile.readAsStringSync();
+      final content = sheetFile.readAsStringSync();
 
-        // 必須UI要素の存在検証
-        expect(
-          content.contains('QrImageView('),
-          isTrue,
-          reason: 'QRコード表示が存在すること',
-        );
-        expect(
-          content.contains('Icons.link'),
-          isTrue,
-          reason: 'URLリンクアイコンが存在すること',
-        );
-        expect(
-          content.contains('Icons.ios_share'),
-          isTrue,
-          reason: 'シェアアイコンが存在すること',
-        );
-        expect(
-          content.contains('Icons.copy_rounded'),
-          isTrue,
-          reason: 'コピーアイコンが存在すること',
-        );
-        expect(
-          content.contains('SelectableText('),
-          isTrue,
-          reason: 'URL選択可能テキストが存在すること',
-        );
-        expect(
-          content.contains('AppRadius.large'),
-          isTrue,
-          reason: 'QRカードの角丸がAppRadius.largeであること',
-        );
-        expect(
-          content.contains('AppKendoColors.teal'),
-          isTrue,
-          reason: 'アクセントカラーがAppKendoColors.tealであること',
-        );
-      },
-    );
+      // 必須UI要素の存在検証
+      expect(
+        content.contains('QrImageView('),
+        isTrue,
+        reason: 'QRコード表示が存在すること',
+      );
+      expect(
+        content.contains('Icons.link'),
+        isTrue,
+        reason: 'URLリンクアイコンが存在すること',
+      );
+      expect(
+        content.contains('Icons.ios_share'),
+        isTrue,
+        reason: 'シェアアイコンが存在すること',
+      );
+      expect(
+        content.contains('Icons.copy_rounded'),
+        isTrue,
+        reason: 'コピーアイコンが存在すること',
+      );
+      expect(
+        content.contains('SelectableText('),
+        isTrue,
+        reason: 'URL選択可能テキストが存在すること',
+      );
+      expect(
+        content.contains('AppRadius.large'),
+        isTrue,
+        reason: 'QRカードの角丸がAppRadius.largeであること',
+      );
+      expect(
+        content.contains('AppKendoColors.teal'),
+        isTrue,
+        reason: 'アクセントカラーがAppKendoColors.tealであること',
+      );
+    });
   });
 }

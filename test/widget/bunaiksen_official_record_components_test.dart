@@ -6,9 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 
 void main() {
   group('[Widget] BunaiksenOfficialRecord Components テスト', () {
-    testWidgets('BunaiksenRecordActionBar renders action buttonsであること', (
-      tester,
-    ) async {
+    testWidgets('部内戦記録アクションバーのアクションボタンが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -27,9 +25,7 @@ void main() {
       expect(find.text('画像シェア'), findsOneWidget);
     });
 
-    testWidgets('BunaiksenTeamScoreTable renders matchup properlyであること', (
-      tester,
-    ) async {
+    testWidgets('部内戦チームスコアテーブルの対戦表が正しく描画されること', (tester) async {
       const match1 = MatchModel(
         id: 'm1',
         tournamentId: 't1',

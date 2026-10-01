@@ -17,7 +17,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 }
 
 void main() {
-  group('[Golden] 【Golden】公式スコアボード（打突記号・旗色・タイマー）ピクセル・視覚整合性テスト', () {
+  group('[Golden] 公式スコアボード（打突記号・旗色・タイマー）ピクセル・視覚整合性テスト', () {
     testWidgets('公式打突記号（メ・コ・反・先取◯）とタイマーのレイアウトが正しく検証されること', (
       WidgetTester tester,
     ) async {

@@ -31,7 +31,7 @@ void main() {
       });
     });
 
-    group('Event Signature (改ざん防止署名)', () {
+    group('イベント改ざん防止署名が正しく機能すること', () {
       test('正規のルートで生成されたイベントは検証をパスすること', () {
         final event = ScoreEventLegacyAdapter.fromLegacy(
           side: Side.red,
@@ -64,7 +64,7 @@ void main() {
       // ==========================================
       // ★ あえて仕込んだ「脆弱性検知」テスト
       // ==========================================
-      test('【脆弱性検知】イベントの「技の種類」や「赤白」を改ざんした場合、署名検証に失敗すること', () {
+      test('脆弱性検知において イベントの「技の種類」や「赤白」を改ざんした場合、署名検証に失敗すること', () {
         final event = ScoreEventLegacyAdapter.fromLegacy(
           side: Side.red,
           type: PointType.men,

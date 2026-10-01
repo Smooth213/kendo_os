@@ -6,7 +6,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Unit] manualIndexProvider テスト', () {
-    test('Provider exists and is a FutureProviderであること', () {
+    test('Provider exists and is a FutureProviderこと', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

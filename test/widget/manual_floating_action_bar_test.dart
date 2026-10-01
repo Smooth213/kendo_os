@@ -4,9 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualFloatingActionBar ウィジェットテスト', () {
-    testWidgets('ボタン一覧 and triggers callbacksが正しく描画されること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('ボタン一覧が表示されコールバックが正しく動作すること', (WidgetTester tester) async {
       bool primaryTapped = false;
       bool secondaryTapped = false;
 
@@ -36,9 +34,7 @@ void main() {
       expect(secondaryTapped, isTrue);
     });
 
-    testWidgets('Renders in dark mode correctlyであること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('ダークモード環境で正しく描画されること', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

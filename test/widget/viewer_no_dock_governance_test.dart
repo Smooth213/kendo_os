@@ -26,7 +26,7 @@ void main() {
   final edgeMatches = RenderingSafetyTestHelper.createEdgeCaseMatches();
   final edgeComments = RenderingSafetyTestHelper.createTestComments();
 
-  group('[Widget] 【セキュリティ＆ロール露出規制】閲覧専用ビュアー フローティングドック完全排除保証テスト', () {
+  group('[Widget] セキュリティ＆ロール露出規制において 閲覧専用ビュアー フローティングドック完全排除保証テスト', () {
     testWidgets(
       '静的コード規約: lib/features/viewer/ 配下に FloatingProgramDockButton が一切存在しないこと',
       (tester) async {
@@ -59,7 +59,7 @@ void main() {
     );
 
     testWidgets(
-      '【findsNothing】閲覧専用全7画面で FloatingProgramDockButton および BunaiksenDockButton が画面上に物理排除されていること',
+      'findsNothingにおいて 閲覧専用全7画面で FloatingProgramDockButton および BunaiksenDockButton が画面上に物理排除されていること',
       (tester) async {
         final viewerScreens = <Widget>[
           const ViewerHomeScreen(tournamentId: testTournamentId),

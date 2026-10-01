@@ -35,7 +35,7 @@ void main() {
     } catch (_) {}
   });
 
-  group('[E2E] 【Plan 3 E2E】不壊・絶対安定・高耐障害性 総合結合テスト', () {
+  group('[E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト', () {
     test('E2E-1: 試合操作中にクラッシュが発生しても直前状態が退避され、再開時に復旧できること', () async {
       final activeMatch = MatchModel(
         id: 'e2e-crash-match-1',
@@ -99,7 +99,7 @@ void main() {
       },
     );
 
-    test('E2E-3: 同一IDのコマンドが短時間に複数回投入されても、完全べき等性により重複実行が防止されること', () async {
+    test('同一IDのコマンドが短時間に複数回投入されても、完全べき等性により重複実行が防止されること', () async {
       final container = ProviderContainer(
         overrides: [
           localMatchRepositoryProvider.overrideWithValue(

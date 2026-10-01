@@ -368,7 +368,7 @@ void main() {
       verify(() => mockLocalStrokeRepo.undoLastStroke('p1')).called(1);
     });
 
-    test('蛍光ペンの描画判定 (opacity/a の値が半透明の時は BlendMode.multiply が適用されること)こと', () {
+    test('opacity/a の値が半透明の時は BlendMode.multiply が適用されることにおいて蛍光ペンの描画判定こと', () {
       final painter = StrokePainter(
         sharedStrokes: [],
         privateStrokes: [],

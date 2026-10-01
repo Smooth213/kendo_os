@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
   group('[Unit] Timeline Replay & Merge Conflict テスト', () {
-    test('Comment Event Append-Only & Deterministic Rebuildであること', () {
+    test('Comment Event Append-Only & Deterministic Rebuildこと', () {
       final events = [
         CommentEvent(
           id: 'evt1',
@@ -52,7 +52,7 @@ void main() {
       expect(state.order, 10.0);
     });
 
-    test('Timeline Merge Conflict Determinismであること', () {
+    test('Timeline Merge Conflict Determinismこと', () {
       final evt1 = CommentEvent(
         id: 'evt1',
         commentId: 'c1',

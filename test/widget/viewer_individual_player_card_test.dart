@@ -12,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('【ViewerIndividualPlayerCard】選手名と試合一覧が正しく描画されること', (
+  testWidgets('ViewerIndividualPlayerCardにおいて 選手名と試合一覧が正しく描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

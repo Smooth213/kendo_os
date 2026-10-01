@@ -11,7 +11,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import '../helpers/event_factory.dart';
 
 void main() {
-  group('[E2E] 【E2E】チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト', () {
+  group('[E2E] チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト', () {
     final liveEvents = [kote(Side.red), men(Side.white)];
 
     final comprehensiveMatches = [
@@ -99,7 +99,7 @@ void main() {
     ];
 
     testWidgets(
-      '【総合E2Eシナリオ】個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること',
+      '総合E2Eシナリオにおいて 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること',
       (tester) async {
         tester.view.physicalSize = const Size(800, 2400);
         tester.view.devicePixelRatio = 1.0;

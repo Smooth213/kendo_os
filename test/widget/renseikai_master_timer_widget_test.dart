@@ -15,7 +15,7 @@ class FakeRenseikaiMasterTimerNotifier extends RenseikaiMasterTimerNotifier {
 
 void main() {
   group('[Widget] RenseikaiMasterTimerWidget ウィジェットテスト', () {
-    testWidgets('initial timer display and toggles on tapが正しく描画されること', (
+    testWidgets('初期タイマー表示が行われタップ時にトグル動作が正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

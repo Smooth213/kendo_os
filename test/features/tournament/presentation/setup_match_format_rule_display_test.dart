@@ -187,7 +187,7 @@ void main() {
         expect(s.ipponLimit, 1);
       });
 
-      test('勝負方式: 三本勝負 (2本先取)こと', () {
+      test('2本先取において勝負方式: 三本勝負こと', () {
         final rule = MatchRule(isIpponShobu: false, ipponLimit: 2);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.isIpponShobu, isFalse);
@@ -200,7 +200,7 @@ void main() {
         expect(s.hansokuLimit, 3);
       });
 
-      test('延長戦あり (3分・2回)こと', () {
+      test('3分・2回において延長戦ありこと', () {
         final rule = MatchRule(enchoCount: 2, enchoTimeMinutes: 3.0);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hasExtension, isTrue);
@@ -208,7 +208,7 @@ void main() {
         expect(s.extTime, 3.0);
       });
 
-      test('延長戦なし (enchoCount=0)こと', () {
+      test('enchoCount=0において延長戦なしこと', () {
         final rule = MatchRule(enchoCount: 0, enchoTimeMinutes: 0);
         final s = applyRuleToState(rule, '個人戦');
         expect(s.hasExtension, isFalse);
@@ -259,7 +259,7 @@ void main() {
         expect(s.daihyoHasHantei, isTrue);
       });
 
-      test('代表戦なし: hasLeagueDaihyo=falseであること', () {
+      test('代表戦なし: hasLeagueDaihyo=falseこと', () {
         final rule = MatchRule(hasLeagueDaihyo: false);
         final s = applyRuleToState(rule, '団体戦');
         expect(s.hasLeagueDaihyo, isFalse);
@@ -423,11 +423,11 @@ void main() {
         expect(daihyoEnchoText(false, 0), 'なし');
       });
 
-      test('代表戦延長あり (無制限)こと', () {
+      test('無制限において代表戦延長ありこと', () {
         expect(daihyoEnchoText(true, -2), 'あり (無制限)');
       });
 
-      test('代表戦延長あり (2回)こと', () {
+      test('2回において代表戦延長ありこと', () {
         expect(daihyoEnchoText(true, 2), 'あり (〇分・2回)');
       });
     });
@@ -443,15 +443,15 @@ void main() {
         return s == 0 ? '$m分' : '$m分$s秒';
       }
 
-      test('0分 → "無制限"であること', () {
+      test('0分 → "無制限"こと', () {
         expect(daihyoTimeText(0.0), '無制限');
       });
 
-      test('3分 → "3分"であること', () {
+      test('3分 → "3分"こと', () {
         expect(daihyoTimeText(3.0), '3分');
       });
 
-      test('2分30秒 → "2分30秒"であること', () {
+      test('2分30秒 → "2分30秒"こと', () {
         expect(daihyoTimeText(2.5), '2分30秒');
       });
     });
