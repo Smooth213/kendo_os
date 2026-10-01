@@ -21,26 +21,37 @@ def main():
     print(" 📊 【第16条 ガバナンス監査】🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約")
     print("=" * 68)
 
-    cmd = [
+    cmd1 = [
         "flutter",
         "test",
         "test/governance/sync_and_crdt_governance_test.dart",
         "--reporter=expanded",
     ]
+    res1 = subprocess.run(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    is_ok1 = (res1.returncode == 0)
 
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    is_ok = (res.returncode == 0)
+    cmd2 = [
+        "flutter",
+        "test",
+        "test/governance/projection_hash_and_sync_queue_governance_test.dart",
+        "--reporter=expanded",
+    ]
+    res2 = subprocess.run(cmd2, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    is_ok2 = (res2.returncode == 0)
+
+    is_ok = is_ok1 and is_ok2
 
     rules = [
-        ("① [Clock Skew補正] server_clock_offset_service ＆ system_time_source 連携規約", is_ok),
-        ("② [CRDT 3者マージ] リモート確定・ローカル確定・未送信マージ ＆ LWWタイマー調停規約", is_ok),
-        ("③ [ステータス不可逆] resolveMonotonicStatus 巻き戻り防止ガード規約", is_ok),
-        ("④ [ループ根絶] 指数バックオフ ＆ サーキットブレーカー安全機構規約", is_ok),
-        ("⑤ [ライフサイクル一元化] main.dart 重複排除 ＆ sync_provider 一元化規約", is_ok),
-        ("⑥ [O(1)パス直結] scoreboard.dart 階層直接監視優先 ＆ 重複リスナー排除規約", is_ok),
-        ("⑦ [ステート保護＆FSM] 大会切替リセット、FSM状態遷移、接続性判定統一規約", is_ok),
-        ("⑧ [差分デルタ伝送] broadcastMatchDelta デルタ伝送規約", is_ok),
-        ("⑨ [CQRS DI一貫性] ProjectionStore の firestoreProvider 経由規約", is_ok),
+        ("① [Clock Skew補正] server_clock_offset_service ＆ system_time_source 連携規約", is_ok1),
+        ("② [CRDT 3者マージ] リモート確定・ローカル確定・未送信マージ ＆ LWWタイマー調停規約", is_ok1),
+        ("③ [ステータス不可逆] resolveMonotonicStatus 巻き戻り防止ガード規約", is_ok1),
+        ("④ [ループ根絶] 指数バックオフ ＆ サーキットブレーカー安全機構規約", is_ok1),
+        ("⑤ [ライフサイクル一元化] main.dart 重複排除 ＆ sync_provider 一元化規約", is_ok1),
+        ("⑥ [O(1)パス直結] scoreboard.dart 階層直接監視優先 ＆ 重複リスナー排除規約", is_ok1),
+        ("⑦ [ステート保護＆FSM] 大会切替リセット、FSM状態遷移、接続性判定統一規約", is_ok1),
+        ("⑧ [差分デルタ伝送] broadcastMatchDelta デルタ伝送規約", is_ok1),
+        ("⑨ [CQRS DI一貫性] ProjectionStore の firestoreProvider 経由規約", is_ok1),
+        ("⑩ [分散プロジェクション＆FIFO] TimelineProjection決定論的ハッシュ ＆ PendingSyncQueue不変性規約", is_ok2),
     ]
 
     for label, ok in rules:
@@ -55,7 +66,10 @@ def main():
     else:
         print(" 🔴 監査結果: 違反 (第16条 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約に違反があります)")
         print("=" * 68)
-        print(res.stdout + res.stderr)
+        if not is_ok1:
+            print(res1.stdout + res1.stderr)
+        if not is_ok2:
+            print(res2.stdout + res2.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

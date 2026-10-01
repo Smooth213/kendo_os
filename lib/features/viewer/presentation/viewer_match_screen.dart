@@ -31,8 +31,13 @@ class ViewerMatchScreen extends ConsumerWidget {
         ? null
         : ref.watch(viewerMatchProjectionProvider(matchId));
 
-    final queryTournamentId =
-        GoRouterState.of(context).uri.queryParameters['tournamentId'] ?? '';
+    String queryTournamentId = '';
+    try {
+      queryTournamentId =
+          GoRouterState.of(context).uri.queryParameters['tournamentId'] ?? '';
+    } catch (_) {
+      queryTournamentId = '';
+    }
     final tournamentId = queryTournamentId.isNotEmpty
         ? queryTournamentId
         : (ref.watch(webCurrentTournamentIdProvider) ?? '');
@@ -111,7 +116,8 @@ class ViewerMatchScreen extends ConsumerWidget {
         appBar: AppHeader(
           title: '試合状況 (観戦)',
           leading:
-              (GoRouter.of(context).canPop() || Navigator.of(context).canPop())
+              ((GoRouter.maybeOf(context)?.canPop() ?? false) ||
+                  Navigator.of(context).canPop())
               ? IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new),
                   onPressed: () => context.pop(),

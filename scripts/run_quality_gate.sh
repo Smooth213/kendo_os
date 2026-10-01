@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全26大ガバナンス個別監査 (1/26 〜 26/26: 100% PASS)
+# 1. 全27大ガバナンス個別監査 (1/27 〜 27/27: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全26大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全26大ガバナンス個別監査を実行中..."
+# 1. 全27大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全27大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全26大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全27大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -193,12 +193,27 @@ flutter test test/governance/design_system_governance_test.dart \
               test/golden/pixel_master_delete_dialog_golden_test.dart \
               test/e2e/composite_dynamic_rule_change_and_export_e2e_test.dart \
               test/e2e/composite_odd_league_multi_court_viewer_sync_test.dart \
-              test/e2e/composite_redo_offline_crdt_convergence_test.dart
+              test/e2e/composite_redo_offline_crdt_convergence_test.dart \
+              test/governance/role_permissions_centralized_governance_test.dart \
+              test/governance/projection_hash_and_sync_queue_governance_test.dart \
+              test/governance/thermal_toast_governance_test.dart \
+              test/unit/role_permissions_matrix_test.dart \
+              test/unit/feature_gate_security_level_test.dart \
+              test/unit/pending_sync_queue_test.dart \
+              test/unit/timeline_projection_hash_test.dart \
+              test/unit/match_hantei_finish_helper_test.dart \
+              test/unit/team_progress_status_test.dart \
+              test/golden/pixel_thermal_floating_toast_golden_test.dart \
+              test/golden/pixel_tournament_quick_hub_golden_test.dart \
+              test/golden/pixel_viewer_team_scoreboard_score_box_golden_test.dart \
+              test/e2e/composite_offline_fifo_sync_projection_convergence_test.dart \
+              test/e2e/composite_hantei_finish_audio_approval_flow_e2e_test.dart \
+              test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全26大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全27大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

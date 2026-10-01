@@ -9,7 +9,7 @@ import 'package:kendo_os/security/feature_gate.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/security_level_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
-import '../domain/entities/user_role.dart'; // UserRole.viewer の評価のために追加
+import 'package:kendo_os/security/role_permissions.dart';
 
 class MatchRouter extends ConsumerWidget {
   final String matchId;
@@ -42,14 +42,20 @@ class MatchRouter extends ConsumerWidget {
       currentRole,
       currentLevel,
     );
-    final bool isViewerSession = session?.role == UserRole.viewer;
-    final bool isUrlViewer =
-        GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
+    final bool isViewerSession =
+        session?.role != null && RolePermissions.isViewer(session!.role);
+    bool isUrlViewer = false;
+    try {
+      isUrlViewer =
+          GoRouterState.of(context).uri.queryParameters['role'] == 'viewer';
+    } catch (_) {
+      isUrlViewer = false;
+    }
 
     // 動的に権限（canOperate）がない、またはViewerセッションが確立されている場合はViewer画面へ切り替え
     if (!canOperate ||
         isViewerSession ||
-        (isUrlViewer && currentRole == UserRole.viewer)) {
+        (isUrlViewer && RolePermissions.isViewer(currentRole))) {
       return ViewerMatchScreen(matchId: matchId);
     } else {
       return MatchScreen(matchId: matchId);

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 全26大ガバナンス監査 統合ランナー (Unified Governance Runner)
+🥋 Kendo OS - 全27大ガバナンス監査 統合ランナー (Unified Governance Runner)
 ========================================================================
-kendo OS の全26大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
+kendo OS の全27大ガバナンス監査を一括実行し、品質・アーキテクチャ・堅牢性を完全検証します。
 - 第1部：ドメイン・プロダクト品質規約（第1条〜第8条）
-- 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条）
+- 第2部：極限最適化・低負荷・絶対安定性規約（第9条〜第17条、第27条）
 - 第3部：大会運営支援・シミュレーション規約（第18条）
 - 第4部：プラットフォーム最適化・遅延バンドル規約（第19条）
 - 第5部：ルーティング・セキュリティ規約（第20条）
@@ -213,11 +213,20 @@ AUDIT_DEFINITIONS = [
         "name": "🛡️ データ入力サニタイズ・CSV/JSONインジェクション防護 ＆ 制御文字排除規約",
         "cmd": ["python3", "scripts/check_gov_26_input_sanitization_governance.py"],
     },
+    # ==========================================================================
+    # 【第12部：サーマルUI・省電力規約】（第27条）
+    # ==========================================================================
+    {
+        "id": 27,
+        "part": "第12部: サーマルUI・省電力",
+        "name": "🚨 サーマル適応警告・省電力UIトースト非ブロッキング表示 ＆ メモリリークゼロ規約",
+        "cmd": ["python3", "scripts/check_gov_27_thermal_toast_governance.py"],
+    },
 ]
 
 def main():
-    parser = argparse.ArgumentParser(description="Kendo OS 全26大ガバナンス監査 統合ランナー")
-    parser.add_argument("--only", type=int, help="指定した監査番号（1〜26）のみを実行")
+    parser = argparse.ArgumentParser(description="Kendo OS 全27大ガバナンス監査 統合ランナー")
+    parser.add_argument("--only", type=int, help="指定した監査番号（1〜27）のみを実行")
     parser.add_argument("--verbose", action="store_true", help="各監査の詳細ログを逐次出力")
     args = parser.parse_args()
 

@@ -17,7 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_dock_items_order_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
-import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/security/role_permissions.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -278,7 +278,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
   Widget build(BuildContext context) {
     if (widget.isViewerMode) return const SizedBox.shrink();
     final role = ref.watch(currentUserRoleProvider);
-    if (role == UserRole.viewer || _isInsideSheet) {
+    if (RolePermissions.isViewer(role) || _isInsideSheet) {
       return const SizedBox.shrink();
     }
 
