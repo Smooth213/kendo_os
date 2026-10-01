@@ -243,7 +243,46 @@ flutter test test/governance/design_system_governance_test.dart \
               test/governance/event_store_logical_clock_governance_test.dart \
               test/governance/sync_downstream_dirty_protection_governance_test.dart \
               test/governance/router_fallback_access_denied_governance_test.dart \
-              test/governance/corrupted_state_quarantine_governance_test.dart
+              test/governance/corrupted_state_quarantine_governance_test.dart \
+              test/governance/master_organization_tenancy_governance_test.dart \
+              test/governance/dock_timer_input_parity_governance_test.dart \
+              test/governance/match_aggregate_repository_governance_test.dart \
+              test/governance/global_error_handler_governance_test.dart \
+              test/unit/global_error_handler_test.dart \
+              test/unit/match_aggregate_repository_test.dart \
+              test/unit/isar_projection_store_test.dart \
+              test/unit/bunaiksen_record_export_helper_test.dart \
+              test/unit/match_format_save_helper_test.dart \
+              test/unit/match_format_team_action_helper_test.dart \
+              test/unit/manual_print_share_service_test.dart \
+              test/unit/time_up_usecase_test.dart \
+              test/unit/calculate_point_displays_usecase_test.dart \
+              test/unit/pending_smart_undo_notifier_test.dart \
+              test/unit/auth_repository_test.dart \
+              test/unit/thermal_monitor_service_test.dart \
+              test/unit/metrics_service_test.dart \
+              test/unit/app_bootstrap_helper_test.dart \
+              test/unit/team_registration_save_helper_test.dart \
+              test/unit/in_memory_projection_store_test.dart \
+              test/widget/dock_timer_display_card_test.dart \
+              test/widget/dock_jiggle_drag_wrapper_test.dart \
+              test/widget/master_organization_management_sheets_test.dart \
+              test/widget/manual_tab_views_and_help_button_test.dart \
+              test/widget/tournament_share_import_raw_view_test.dart \
+              test/widget/program_reorderable_file_list_test.dart \
+              test/widget/viewer_bunaiksen_share_dialog_test.dart \
+              test/widget/match_renseikai_next_button_test.dart \
+              test/widget/league_grid_card_test.dart \
+              test/widget/order_setup_team_autocomplete_field_test.dart \
+              test/widget/team_match_sort_bar_test.dart \
+              test/widget/bunaiksen_leaderboard_card_test.dart \
+              test/golden/pixel_dock_timer_display_card_golden_test.dart \
+              test/golden/pixel_master_register_organization_golden_test.dart \
+              test/golden/pixel_embedded_manual_tab_views_golden_test.dart \
+              test/e2e/global_crash_emergency_trap_and_recovery_e2e_test.dart \
+              test/e2e/master_organization_provisioning_isolation_e2e_test.dart \
+              test/e2e/composite_occ_auto_repair_concurrency_convergence_test.dart \
+              test/e2e/composite_dock_timer_wheel_and_keyboard_input_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 

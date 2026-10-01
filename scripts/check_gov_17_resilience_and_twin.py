@@ -32,28 +32,36 @@ def main():
     is_offline_ok = (res_offline.returncode == 0)
 
     # 2. 完全耐障害性・自己修復テスト
-    cmd = [
+    cmd_main = [
         "flutter",
         "test",
         "test/governance/resilience_and_twin_governance_test.dart",
         "--reporter=expanded",
     ]
-    res_main = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    is_main_ok = (res_main.returncode == 0)
+    cmd_trap = [
+        "flutter",
+        "test",
+        "test/governance/global_error_handler_governance_test.dart",
+        "--reporter=expanded",
+    ]
+    res_main = subprocess.run(cmd_main, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    res_trap = subprocess.run(cmd_trap, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    is_main_ok = (res_main.returncode == 0) and (res_trap.returncode == 0)
 
     is_all_ok = is_offline_ok and is_main_ok
 
     rules = [
         ("① [現場障害耐性] オフライン・耐久・リトライ規約", is_offline_ok),
-        ("② [ツイン永続化＆自己修復] TwinMatchPersistenceHelper 統合 ＆ 非同期I/O規約", is_main_ok),
-        ("③ [スナップショット軽量化] ドキュメント内スナップショット保持上限(1件)規約", is_main_ok),
-        ("④ [Fatal Crash Trap] EmergencyCrashPreserver 直前状態緊急退避規約", is_main_ok),
-        ("⑤ [データ消失ゼロ] saveMatchSafeMode 不正署名隔離退避規約", is_main_ok),
-        ("⑥ [署名検証キャッシュ] LocalMatchRepository _verifiedSignatureKeys 規約", is_main_ok),
-        ("⑦ [完全べき等キュー] match_command_queue 重複UUIDコマンド排除規約", is_main_ok),
-        ("⑧ [物理的誤操作ガード] match_screen.dart PopScope 離脱ガード規約", is_main_ok),
-        ("⑨ [フォントオフライン耐性] app_startup.dart enforceOfflineFontFallback 規約", is_main_ok),
-        ("⑩ [Fatal Crash Trap] 非同期例外完全捕捉＆クラッシュ隔離（Async Error Boundary）規約", is_main_ok),
+        ("② [ツイン永続化＆自己修復] TwinMatchPersistenceHelper 統合 ＆ 非同期I/O規約", res_main.returncode == 0),
+        ("③ [スナップショット軽量化] ドキュメント内スナップショット保持上限(1件)規約", res_main.returncode == 0),
+        ("④ [Fatal Crash Trap] EmergencyCrashPreserver 直前状態緊急退避規約", res_main.returncode == 0),
+        ("⑤ [データ消失ゼロ] saveMatchSafeMode 不正署名隔離退避規約", res_main.returncode == 0),
+        ("⑥ [署名検証キャッシュ] LocalMatchRepository _verifiedSignatureKeys 規約", res_main.returncode == 0),
+        ("⑦ [完全べき等キュー] match_command_queue 重複UUIDコマンド排除規約", res_main.returncode == 0),
+        ("⑧ [物理的誤操作ガード] match_screen.dart PopScope 離脱ガード規約", res_main.returncode == 0),
+        ("⑨ [フォントオフライン耐性] app_startup.dart enforceOfflineFontFallback 規約", res_main.returncode == 0),
+        ("⑩ [Fatal Crash Trap] 非同期例外完全捕捉＆クラッシュ隔離（Async Error Boundary）規約", res_main.returncode == 0),
+        ("⑪ [Fatal Crash Trap] GlobalErrorHandler 全3系統緊急退避規約", res_trap.returncode == 0),
     ]
 
     for label, ok in rules:
