@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 
 void main() {
   group('[Widget] MatchCardActionButtons ウィジェットテスト', () {
-    testWidgets('Renders all buttons and responds to tapsであること', (
+    testWidgets('all ボタン一覧 and responds to tapsが正しく描画されること', (
       WidgetTester tester,
     ) async {
       bool summaryPressed = false;

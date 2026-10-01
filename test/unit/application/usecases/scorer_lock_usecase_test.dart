@@ -35,19 +35,16 @@ void main() {
       expect(updated.lockExpiresAt, DateTime(2026, 8, 16, 12, 30));
     });
 
-    test(
-      'tryClaimScorer fails when locked by different user and not expiredであること',
-      () {
-        final locked = baseMatch.copyWith(
-          scorerId: 'user_A',
-          lockExpiresAt: DateTime(2026, 8, 16, 12, 30),
-        );
-        final now = DateTime(2026, 8, 16, 12, 0);
-        final updated = useCase.tryClaimScorer(locked, 'user_B', now: now);
+    test('他ユーザーによりロックされ期限内の場合、tryClaimScorerが失敗すること', () {
+      final locked = baseMatch.copyWith(
+        scorerId: 'user_A',
+        lockExpiresAt: DateTime(2026, 8, 16, 12, 30),
+      );
+      final now = DateTime(2026, 8, 16, 12, 0);
+      final updated = useCase.tryClaimScorer(locked, 'user_B', now: now);
 
-        expect(updated, isNull);
-      },
-    );
+      expect(updated, isNull);
+    });
 
     test('tryClaimScorer succeeds when previous lock is expiredであること', () {
       final locked = baseMatch.copyWith(

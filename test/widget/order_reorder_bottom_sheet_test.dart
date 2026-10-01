@@ -10,58 +10,55 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 void main() {
   group('[Widget] OrderReorderBottomSheet ウィジェットテスト', () {
-    testWidgets(
-      'Renders OrderReorderBottomSheet and displays matches orderであること',
-      (WidgetTester tester) async {
-        final matches = [
-          const MatchModel(
-            id: 'm1',
-            tournamentId: 't1',
-            matchType: '先鋒',
-            redName: '道上 : 佐藤',
-            whiteName: '相手 : 田中',
-            status: 'pending',
-          ),
-          const MatchModel(
-            id: 'm2',
-            tournamentId: 't1',
-            matchType: '次鋒',
-            redName: '道上 : 鈴木',
-            whiteName: '相手 : 高橋',
-            status: 'pending',
-          ),
-        ];
+    testWidgets('【OrderReorderBottomSheet】描画され、試合一覧 orderが表示されること', (
+      WidgetTester tester,
+    ) async {
+      final matches = [
+        const MatchModel(
+          id: 'm1',
+          tournamentId: 't1',
+          matchType: '先鋒',
+          redName: '道上 : 佐藤',
+          whiteName: '相手 : 田中',
+          status: 'pending',
+        ),
+        const MatchModel(
+          id: 'm2',
+          tournamentId: 't1',
+          matchType: '次鋒',
+          redName: '道上 : 鈴木',
+          whiteName: '相手 : 高橋',
+          status: 'pending',
+        ),
+      ];
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              customTeamNamesProvider.overrideWith(
-                (ref) => Stream.value(['道上']),
-              ),
-              timelinePlayerListProvider.overrideWith(
-                (ref) => Stream.value(<PlayerModel>[]),
-              ),
-              registeredTeamsProvider(
-                't1',
-              ).overrideWith((ref) => Stream.value(<TeamModel>[])),
-            ],
-            child: MaterialApp(
-              home: Scaffold(
-                body: OrderReorderBottomSheet(sortedMatches: matches),
-              ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            customTeamNamesProvider.overrideWith((ref) => Stream.value(['道上'])),
+            timelinePlayerListProvider.overrideWith(
+              (ref) => Stream.value(<PlayerModel>[]),
+            ),
+            registeredTeamsProvider(
+              't1',
+            ).overrideWith((ref) => Stream.value(<TeamModel>[])),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: OrderReorderBottomSheet(sortedMatches: matches),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        expect(find.text('オーダー編集 : 道上'), findsOneWidget);
-        expect(find.text('先鋒'), findsOneWidget);
-        expect(find.text('佐藤'), findsOneWidget);
-        expect(find.text('次鋒'), findsOneWidget);
-        expect(find.text('鈴木'), findsOneWidget);
-        expect(find.text('オーダーを確定'), findsOneWidget);
-      },
-    );
+      expect(find.text('オーダー編集 : 道上'), findsOneWidget);
+      expect(find.text('先鋒'), findsOneWidget);
+      expect(find.text('佐藤'), findsOneWidget);
+      expect(find.text('次鋒'), findsOneWidget);
+      expect(find.text('鈴木'), findsOneWidget);
+      expect(find.text('オーダーを確定'), findsOneWidget);
+    });
   });
 }

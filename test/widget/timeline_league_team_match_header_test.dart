@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 
 void main() {
   group('[Widget] TimelineLeagueTeamMatchHeader テスト', () {
-    testWidgets('renders teams and wins correctlyであること', (tester) async {
+    testWidgets('チーム一覧 and wins correctlyが正しく描画されること', (tester) async {
       final bout1 = MatchModel(
         id: 'm1',
         tournamentId: 't1',

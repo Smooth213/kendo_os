@@ -21,7 +21,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders court and round preset chips and triggers selectionであること',
+      'コート and round preset チップ一覧 and triggers selectionが正しく描画されること',
       (tester) async {
         String toggledPreset = '';
         bool cleared = false;

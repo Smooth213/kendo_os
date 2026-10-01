@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 void main() {
   group('[Widget] TimelineTieBreakDetector テスト', () {
     test(
-      'detectTieGroups returns empty list when rule is null or matches emptyであること',
+      '【detectTieGroups】ルール is null or 試合一覧 emptyのとき、empty listが返却されること',
       () {
         final ties = TimelineTieBreakDetector.detectTieGroups(
           normalMatches: [],
@@ -15,15 +15,12 @@ void main() {
       },
     );
 
-    test(
-      'detectTieGroups returns empty list when rule has no matchesであること',
-      () {
-        final ties = TimelineTieBreakDetector.detectTieGroups(
-          normalMatches: [],
-          rule: MatchRule(),
-        );
-        expect(ties, isEmpty);
-      },
-    );
+    test('【detectTieGroups】ルール has no matchesのとき、empty listが返却されること', () {
+      final ties = TimelineTieBreakDetector.detectTieGroups(
+        normalMatches: [],
+        rule: MatchRule(),
+      );
+      expect(ties, isEmpty);
+    });
   });
 }

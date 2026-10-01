@@ -4,47 +4,44 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_match_fi
 
 void main() {
   group('[Widget] ViewerMatchFilterHelper テスト', () {
-    test(
-      'extractActiveMatches correctly separates in_progress and waitingであること',
-      () {
-        final matches = [
-          MatchModel(
-            id: 'm1',
-            tournamentId: 't1',
-            redName: 'A',
-            whiteName: 'B',
-            matchType: '団体戦',
-            groupName: '1回戦',
-            status: 'in_progress',
-          ),
-          MatchModel(
-            id: 'm2',
-            tournamentId: 't1',
-            redName: 'A',
-            whiteName: 'B',
-            matchType: '団体戦',
-            groupName: '1回戦',
-            status: 'waiting',
-          ),
-          MatchModel(
-            id: 'm3',
-            tournamentId: 't1',
-            redName: 'C',
-            whiteName: 'D',
-            matchType: '団体戦',
-            groupName: '2回戦',
-            status: 'waiting',
-          ),
-        ];
+    test('【extractActiveMatches】進行中と待機中の試合が正しく分離されること', () {
+      final matches = [
+        MatchModel(
+          id: 'm1',
+          tournamentId: 't1',
+          redName: 'A',
+          whiteName: 'B',
+          matchType: '団体戦',
+          groupName: '1回戦',
+          status: 'in_progress',
+        ),
+        MatchModel(
+          id: 'm2',
+          tournamentId: 't1',
+          redName: 'A',
+          whiteName: 'B',
+          matchType: '団体戦',
+          groupName: '1回戦',
+          status: 'waiting',
+        ),
+        MatchModel(
+          id: 'm3',
+          tournamentId: 't1',
+          redName: 'C',
+          whiteName: 'D',
+          matchType: '団体戦',
+          groupName: '2回戦',
+          status: 'waiting',
+        ),
+      ];
 
-        final (inProgress, waiting) =
-            ViewerMatchFilterHelper.extractActiveMatches(matches);
+      final (inProgress, waiting) =
+          ViewerMatchFilterHelper.extractActiveMatches(matches);
 
-        expect(inProgress.length, 1);
-        expect(waiting.length, 1);
-        expect(inProgress.first.id, 'm1');
-        expect(waiting.first.id, 'm3');
-      },
-    );
+      expect(inProgress.length, 1);
+      expect(waiting.length, 1);
+      expect(inProgress.first.id, 'm1');
+      expect(waiting.first.id, 'm3');
+    });
   });
 }

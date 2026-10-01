@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchOperateActionButtonsGrid ウィジェットテスト', () {
-    testWidgets('Renders all 4 buttons and triggers callbacksであること', (
+    testWidgets('all 4 ボタン一覧 and triggers callbacksが正しく描画されること', (
       WidgetTester tester,
     ) async {
       bool shareClicked = false;

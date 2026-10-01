@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategorySimpleSceneRuleForm ウィジェットテスト', () {
-    testWidgets('Renders simple scene rule form and handles type toggleであること', (
+    testWidgets('シンプルシーンルールフォームが描画され形式トグルが正常に操作できること', (
       WidgetTester tester,
     ) async {
       double time = 2.0;

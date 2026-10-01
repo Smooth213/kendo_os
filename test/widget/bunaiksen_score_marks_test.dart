@@ -7,7 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/b
 
 void main() {
   group('[Widget] BunaiksenScoreMarks ウィジェットテスト', () {
-    testWidgets('Renders draw icon (close) when both scores are 0であること', (
+    testWidgets('【both scores are 0】draw icon (close)が正しく描画されること', (
       WidgetTester tester,
     ) async {
       const match = MatchModel(
@@ -36,7 +36,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders score marks accurately with strike types and close icon on drawであること',
+      'スコア marks accurately with strike types and close icon on drawが正しく描画されること',
       (WidgetTester tester) async {
         final now = DateTime.now();
         final events = [
@@ -87,7 +87,7 @@ void main() {
       },
     );
 
-    testWidgets('Renders victory match with remove iconであること', (
+    testWidgets('victory 試合 with remove iconが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final now = DateTime.now();

@@ -6,9 +6,7 @@ import 'package:kendo_os/features/viewer/painters/league_table_painters.dart';
 
 void main() {
   group('[Widget] BunaiksenLeagueGridCellRenderer テスト', () {
-    testWidgets('renders diagonal blank cell for same teamであること', (
-      tester,
-    ) async {
+    testWidgets('diagonal blank cell for same teamが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

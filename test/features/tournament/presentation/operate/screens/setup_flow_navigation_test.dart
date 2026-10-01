@@ -146,7 +146,7 @@ void main() {
     );
 
     testWidgets(
-      'CategoryRulesScreen renders setup buttons and navigates to home when isFromSetup=trueであること',
+      '【CategoryRulesScreen】初期設定時（isFromSetup=true）に設定ボタンが描画されホームへ遷移すること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

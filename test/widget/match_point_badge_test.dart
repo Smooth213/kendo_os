@@ -30,7 +30,7 @@ void main() {
       expect(circleDecorations.isEmpty, isTrue);
     });
 
-    testWidgets('Renders first match point with circle border correctlyであること', (
+    testWidgets('first 試合 point with circle border correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

@@ -53,7 +53,7 @@ void main() {
     }
 
     testWidgets(
-      'Should show dialog for recent emergency announcement (target: all)こと',
+      'dialog for recent emergency announcement (target: all)が表示されること',
       (WidgetTester tester) async {
         final container = ProviderContainer(
           overrides: [
@@ -149,43 +149,42 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Should NOT show dialog for announcements older than 30 minutesであること',
-      (WidgetTester tester) async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+    testWidgets('dialog for announcements older than 30 minutesが表示されないこと', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        await tester.pumpWidget(
-          createTestTarget(
-            container: container,
-            tournamentId: 'tourney_123',
-            isStaffRoom: true,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        createTestTarget(
+          container: container,
+          tournamentId: 'tourney_123',
+          isStaffRoom: true,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Add old announcement (31 minutes ago)
-        final oldTime = DateTime.now().subtract(const Duration(minutes: 31));
-        await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_123',
-          'title': '過去のアナウンス',
-          'body': 'これは古い内容です。',
-          'timestamp': Timestamp.fromDate(oldTime),
-          'type': 'emergency',
-          'target': 'all',
-          'isRead': false,
-        });
+      // Add old announcement (31 minutes ago)
+      final oldTime = DateTime.now().subtract(const Duration(minutes: 31));
+      await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_123',
+        'title': '過去のアナウンス',
+        'body': 'これは古い内容です。',
+        'timestamp': Timestamp.fromDate(oldTime),
+        'type': 'emergency',
+        'target': 'all',
+        'isRead': false,
+      });
 
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
-        expect(find.byType(AlertDialog), findsNothing);
-      },
-    );
+      expect(find.byType(AlertDialog), findsNothing);
+    });
 
     testWidgets(
       'Staff target announcement: Should show in staff room, but skip in non-staff roomであること',
@@ -244,49 +243,48 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Should NOT show dialog for announcements sent by the user themselvesであること',
-      (WidgetTester tester) async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+    testWidgets('dialog for announcements sent by the user themselvesが表示されないこと', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        // Build target
-        await tester.pumpWidget(
-          createTestTarget(
-            container: container,
-            tournamentId: 'tourney_123',
-            isStaffRoom: true,
-          ),
-        );
-        await tester.pumpAndSettle();
+      // Build target
+      await tester.pumpWidget(
+        createTestTarget(
+          container: container,
+          tournamentId: 'tourney_123',
+          isStaffRoom: true,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        const myAnnounceId = 'my_special_announce_id';
+      const myAnnounceId = 'my_special_announce_id';
 
-        // Pre-register the ID as sent by myself
-        registerMySentAnnounceId(myAnnounceId);
+      // Pre-register the ID as sent by myself
+      registerMySentAnnounceId(myAnnounceId);
 
-        // Add announcement doc with that ID
-        await fakeFirestore.collection('announcements').doc(myAnnounceId).set({
-          'id': myAnnounceId,
-          'tournamentId': 'tourney_123',
-          'title': '自分が書いた緊急連絡',
-          'body': 'テスト本文',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'all',
-          'isRead': false,
-        });
+      // Add announcement doc with that ID
+      await fakeFirestore.collection('announcements').doc(myAnnounceId).set({
+        'id': myAnnounceId,
+        'tournamentId': 'tourney_123',
+        'title': '自分が書いた緊急連絡',
+        'body': 'テスト本文',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'all',
+        'isRead': false,
+      });
 
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
-        // Should NOT display the dialog (skipped because isMySentAnnounceId was true)
-        expect(find.byType(AlertDialog), findsNothing);
-      },
-    );
+      // Should NOT display the dialog (skipped because isMySentAnnounceId was true)
+      expect(find.byType(AlertDialog), findsNothing);
+    });
   });
 }

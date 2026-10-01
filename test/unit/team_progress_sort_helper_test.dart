@@ -37,7 +37,7 @@ void main() {
       );
     }
 
-    test('extractCourtNumber correctly resolves court indicesであること', () {
+    test('【extractCourtNumber】コート番号インデックスが正しく解決されること', () {
       expect(
         TeamProgressSortHelper.extractCourtNumber(
           makeStatus(teamName: 'A', courtName: '第1コート (1回戦・第1試合)'),
@@ -70,7 +70,7 @@ void main() {
       );
     });
 
-    test('extractMatchOrder correctly resolves match order indicesであること', () {
+    test('【extractMatchOrder】試合順インデックスが正しく解決されること', () {
       expect(
         TeamProgressSortHelper.extractMatchOrder(
           makeStatus(teamName: 'A', courtName: '第1コート (1回戦・第3試合)'),

@@ -11,134 +11,126 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('[Widget] Match Edit & Creation Flow Expansion 統合テスト', () {
-    testWidgets(
-      'Verify MatchEditSheet renders 3 tabs and handles individual match properlyであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2.0;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
+  group('[Widget] 試合編集・作成フロー拡張 統合テスト', () {
+    testWidgets('【MatchEditSheet】3タブが描画され個人戦が適切に処理されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        const initialMatch = MatchModel(
-          id: 'test_edit_1',
-          matchType: '個人戦',
-          redName: '剣道太郎',
-          whiteName: '武道花子',
-          note: '第1試合場\nAリーグ',
-          rule: MatchRule(
-            matchTimeMinutes: 3.0,
-            isIpponShobu: false,
-            teamName: '剣道道場A',
-          ),
-        );
+      const initialMatch = MatchModel(
+        id: 'test_edit_1',
+        matchType: '個人戦',
+        redName: '剣道太郎',
+        whiteName: '武道花子',
+        note: '第1試合場\nAリーグ',
+        rule: MatchRule(
+          matchTimeMinutes: 3.0,
+          isIpponShobu: false,
+          teamName: '剣道道場A',
+        ),
+      );
 
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'operate',
-        );
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'operate');
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-            child: MaterialApp(
-              home: Scaffold(
-                body: MatchEditSheet(
-                  matches: const [initialMatch],
-                  tournamentId: 'test_tourney',
-                  themeColors: themeColors,
-                ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchEditSheet(
+                matches: const [initialMatch],
+                tournamentId: 'test_tourney',
+                themeColors: themeColors,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        expect(find.text('試合情報の編集'), findsOneWidget);
-        expect(find.text('コート・メモ'), findsOneWidget);
-        expect(find.text('一括ルール'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(find.text('試合情報の編集'), findsOneWidget);
+      expect(find.text('コート・メモ'), findsOneWidget);
+      expect(find.text('一括ルール'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
-    testWidgets(
-      'Verify MatchEditSheet Team-wide Bulk Edit Mode for Dantai Matchesであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2.0;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
+    testWidgets('【MatchEditSheet】団体戦の一括編集モードが正常に動作すること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        const dantaiMatches = [
-          MatchModel(
-            id: 'senho',
-            matchType: '団体戦',
-            redName: '赤先鋒',
-            whiteName: '白先鋒',
-            note: '道上 vs テスト相手',
-            rule: MatchRule(teamName: '道上'),
-          ),
-          MatchModel(
-            id: 'jiho',
-            matchType: '団体戦',
-            redName: '赤次鋒',
-            whiteName: '白次鋒',
-            note: '道上 vs テスト相手',
-            rule: MatchRule(teamName: '道上'),
-          ),
-          MatchModel(
-            id: 'chuken',
-            matchType: '団体戦',
-            redName: '赤中堅',
-            whiteName: '手中堅',
-            note: '道上 vs テスト相手',
-            rule: MatchRule(teamName: '道上'),
-          ),
-        ];
+      const dantaiMatches = [
+        MatchModel(
+          id: 'senho',
+          matchType: '団体戦',
+          redName: '赤先鋒',
+          whiteName: '白先鋒',
+          note: '道上 vs テスト相手',
+          rule: MatchRule(teamName: '道上'),
+        ),
+        MatchModel(
+          id: 'jiho',
+          matchType: '団体戦',
+          redName: '赤次鋒',
+          whiteName: '白次鋒',
+          note: '道上 vs テスト相手',
+          rule: MatchRule(teamName: '道上'),
+        ),
+        MatchModel(
+          id: 'chuken',
+          matchType: '団体戦',
+          redName: '赤中堅',
+          whiteName: '手中堅',
+          note: '道上 vs テスト相手',
+          rule: MatchRule(teamName: '道上'),
+        ),
+      ];
 
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'operate',
-        );
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'operate');
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-            child: MaterialApp(
-              home: Scaffold(
-                body: MatchEditSheet(
-                  matches: dantaiMatches,
-                  tournamentId: 'test_dantai_tourney',
-                  themeColors: themeColors,
-                ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchEditSheet(
+                matches: dantaiMatches,
+                tournamentId: 'test_dantai_tourney',
+                themeColors: themeColors,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        expect(find.text('団体戦対戦の編集'), findsOneWidget);
-        expect(find.text('チーム丸ごと赤と白を入れ替える ⇄'), findsOneWidget);
-        expect(find.text('先鋒'), findsOneWidget);
-        expect(find.text('中堅'), findsOneWidget);
-        expect(find.text('大将'), findsOneWidget);
+      expect(find.text('団体戦対戦の編集'), findsOneWidget);
+      expect(find.text('チーム丸ごと赤と白を入れ替える ⇄'), findsOneWidget);
+      expect(find.text('先鋒'), findsOneWidget);
+      expect(find.text('中堅'), findsOneWidget);
+      expect(find.text('大将'), findsOneWidget);
 
-        final swapButton = find.text('チーム丸ごと赤と白を入れ替える ⇄');
-        await tester.tap(swapButton, warnIfMissed: false);
-        await tester.pumpAndSettle();
+      final swapButton = find.text('チーム丸ごと赤と白を入れ替える ⇄');
+      await tester.tap(swapButton, warnIfMissed: false);
+      await tester.pumpAndSettle();
 
-        expect(find.text('団体戦全体を一括保存'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(find.text('団体戦全体を一括保存'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets(
       'Verify My-Team (自チーム) Tracking & Alignment Preservation after Swapであること',
@@ -279,69 +271,65 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Verify MatchEditSheet unified court and round heading chips with clear and left alignmentであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 2400);
-        tester.view.devicePixelRatio = 2.0;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
+    testWidgets('【MatchEditSheet】コート・回戦の見出しチップが左揃えで明瞭に配置されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        const testMatch = MatchModel(
-          id: 'test_heading_chip_1',
-          matchType: '個人戦',
-          redName: '剣道選手A',
-          whiteName: '剣道選手B',
-          note: '',
-          rule: MatchRule(matchTimeMinutes: 3.0),
-        );
+      const testMatch = MatchModel(
+        id: 'test_heading_chip_1',
+        matchType: '個人戦',
+        redName: '剣道選手A',
+        whiteName: '剣道選手B',
+        note: '',
+        rule: MatchRule(matchTimeMinutes: 3.0),
+      );
 
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'operate',
-        );
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'operate');
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-            child: MaterialApp(
-              home: Scaffold(
-                body: MatchEditSheet(
-                  matches: const [testMatch],
-                  tournamentId: 'test_tourney_chips',
-                  themeColors: themeColors,
-                ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: MatchEditSheet(
+                matches: const [testMatch],
+                tournamentId: 'test_tourney_chips',
+                themeColors: themeColors,
               ),
             ),
           ),
-        );
+        ),
+      );
 
+      await tester.pumpAndSettle();
+
+      // 1. コート・メモ タブおよび見出し・メモ項目の描画検証
+      expect(find.text('試合情報の編集'), findsOneWidget);
+      expect(find.text('コート・メモ'), findsOneWidget);
+
+      // 2. 試合場（コート）および回戦・ラウンド選択チップのタップ検証
+      final courtChip = find.text('第1試合場');
+      final roundChip = find.text('準決勝');
+
+      if (courtChip.evaluate().isNotEmpty) {
+        await tester.tap(courtChip.first);
         await tester.pumpAndSettle();
+      }
 
-        // 1. コート・メモ タブおよび見出し・メモ項目の描画検証
-        expect(find.text('試合情報の編集'), findsOneWidget);
-        expect(find.text('コート・メモ'), findsOneWidget);
+      if (roundChip.evaluate().isNotEmpty) {
+        await tester.tap(roundChip.first);
+        await tester.pumpAndSettle();
+      }
 
-        // 2. 試合場（コート）および回戦・ラウンド選択チップのタップ検証
-        final courtChip = find.text('第1試合場');
-        final roundChip = find.text('準決勝');
-
-        if (courtChip.evaluate().isNotEmpty) {
-          await tester.tap(courtChip.first);
-          await tester.pumpAndSettle();
-        }
-
-        if (roundChip.evaluate().isNotEmpty) {
-          await tester.tap(roundChip.first);
-          await tester.pumpAndSettle();
-        }
-
-        // 3. 全体エラーなし正常描画の完了検証
-        expect(tester.takeException(), isNull);
-      },
-    );
+      // 3. 全体エラーなし正常描画の完了検証
+      expect(tester.takeException(), isNull);
+    });
   });
 }

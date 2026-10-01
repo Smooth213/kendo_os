@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchSnapshotHistoryDialog ウィジェットテスト', () {
-    testWidgets('Renders empty message when validEvents is emptyであること', (
+    testWidgets('【validEvents is empty】empty messageが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -30,7 +30,7 @@ void main() {
       expect(find.text('閉じる'), findsOneWidget);
     });
 
-    testWidgets('Renders history list and triggers rewind callbackであること', (
+    testWidgets('history list and triggers rewind callbackが正しく描画されること', (
       WidgetTester tester,
     ) async {
       int? selectedVersion;

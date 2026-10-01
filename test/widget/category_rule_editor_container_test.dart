@@ -15,7 +15,7 @@ class _MockSettingsNotifier extends SettingsNotifier {
 
 void main() {
   group('[Widget] CategoryRuleEditorContainer ウィジェットテスト', () {
-    testWidgets('renders CategoryRuleEditorContainer with category nameであること', (
+    testWidgets('CategoryRuleEditorContainer with 部門 nameが正しく描画されること', (
       tester,
     ) async {
       final tournament = TournamentModel(

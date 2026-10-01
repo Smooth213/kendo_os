@@ -39,7 +39,7 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('[Widget] UI Error リグレッションテスト: ListTile Material Assertion', () {
+  group('[Widget] UIエラー・リグレッションテスト: ListTile Material Assertion', () {
     testWidgets('[Bad Pattern] 色付きDecoratedBoxが直接ListTileをラップすると例外が発生すること', (
       WidgetTester tester,
     ) async {

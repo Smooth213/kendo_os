@@ -4,39 +4,38 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/new
 
 void main() {
   group('[Widget] NewMatchSceneRuleSelectorSection ウィジェットテスト', () {
-    testWidgets(
-      'Renders default 3 scene rule cards and handles selectionであること',
-      (tester) async {
-        String selectedScene = 'honsen';
+    testWidgets('default 3 scene ルール cards and handles selectionが正しく描画されること', (
+      tester,
+    ) async {
+      String selectedScene = 'honsen';
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: StatefulBuilder(
-                builder: (context, setState) {
-                  return NewMatchSceneRuleSelectorSection(
-                    categoryRules: const {},
-                    category: '',
-                    selectedScene: selectedScene,
-                    onSceneSelected: (scene) =>
-                        setState(() => selectedScene = scene),
-                    isDark: false,
-                  );
-                },
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return NewMatchSceneRuleSelectorSection(
+                  categoryRules: const {},
+                  category: '',
+                  selectedScene: selectedScene,
+                  onSceneSelected: (scene) =>
+                      setState(() => selectedScene = scene),
+                  isDark: false,
+                );
+              },
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('⚔️ 錬成（練習試合）'), findsOneWidget);
-        expect(find.text('🏆 本戦（通常戦）'), findsOneWidget);
-        expect(find.text('🤝 申合せ（自由対戦）'), findsOneWidget);
+      expect(find.text('⚔️ 錬成（練習試合）'), findsOneWidget);
+      expect(find.text('🏆 本戦（通常戦）'), findsOneWidget);
+      expect(find.text('🤝 申合せ（自由対戦）'), findsOneWidget);
 
-        await tester.tap(find.text('⚔️ 錬成（練習試合）'));
-        await tester.pump();
+      await tester.tap(find.text('⚔️ 錬成（練習試合）'));
+      await tester.pump();
 
-        expect(selectedScene, 'renseikai');
-      },
-    );
+      expect(selectedScene, 'renseikai');
+    });
   });
 }

@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 
 void main() {
-  group('[Widget] Platform Consistency & Zero Trust リグレッションテスト', () {
+  group('[Widget] プラットフォーム整合性 ＆ ゼロトラスト・リグレッションテスト', () {
     testWidgets(
       '[Web/Native共通] ローカルキャッシュ(SharedPreferences)が空の環境でも、PIN認証済みのAdminセッションがあればフル機能のUIが描画されること',
       (WidgetTester tester) async {

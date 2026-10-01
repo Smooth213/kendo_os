@@ -6,37 +6,34 @@ import 'package:kendo_os/features/match/domain/services/match_domain_service.dar
 
 void main() {
   group('[Unit] MatchAutoProgressionService 単体テスト', () {
-    test(
-      'autoProcessFusenIfNeeded triggers finish when both players are 欠員こと',
-      () async {
-        final container = ProviderContainer();
-        addTearDown(container.dispose);
+    test('両選手が欠員の場合、autoProcessFusenIfNeededにより試合終了がトリガーされること', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-        final service = MatchAutoProgressionService(
-          container.read(Provider((ref) => ref)),
-          MatchDomainService(),
-        );
+      final service = MatchAutoProgressionService(
+        container.read(Provider((ref) => ref)),
+        MatchDomainService(),
+      );
 
-        final match = MatchModel(
-          id: 'm1',
-          matchType: '先鋒',
-          redName: '欠員',
-          whiteName: '欠員',
-          status: 'waiting',
-        );
+      final match = MatchModel(
+        id: 'm1',
+        matchType: '先鋒',
+        redName: '欠員',
+        whiteName: '欠員',
+        status: 'waiting',
+      );
 
-        bool finishCalled = false;
+      bool finishCalled = false;
 
-        await service.autoProcessFusenIfNeeded(
-          match: match,
-          onAddIppon: (id, side, type) async {},
-          onFinish: (id) async {
-            finishCalled = true;
-          },
-        );
+      await service.autoProcessFusenIfNeeded(
+        match: match,
+        onAddIppon: (id, side, type) async {},
+        onFinish: (id) async {
+          finishCalled = true;
+        },
+      );
 
-        expect(finishCalled, isTrue);
-      },
-    );
+      expect(finishCalled, isTrue);
+    });
   });
 }

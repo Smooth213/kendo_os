@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 
 void main() {
-  group('[Unit] Bunaiksen Providers Dojo and Date Isolation / Sync テスト', () {
+  group('[Unit] 部内戦 Providers Dojo and Date Isolation / 同期 テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {

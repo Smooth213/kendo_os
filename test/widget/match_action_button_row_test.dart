@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 void main() {
   group('[Widget] MatchActionButtonRow ウィジェットテスト', () {
-    testWidgets('renders button with label and responds to single tapであること', (
+    testWidgets('ボタン with label and responds to single tapが正しく描画されること', (
       tester,
     ) async {
       bool actionTriggered = false;

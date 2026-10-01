@@ -6,47 +6,44 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryRuleCategoryTile ウィジェットテスト', () {
-    testWidgets(
-      'renders category name and triggers onShowRuleDetail on tapであること',
-      (tester) async {
-        bool detailCalled = false;
-        bool editCalled = false;
-        bool deleteCalled = false;
-
-        final ruleSet = CategoryRuleSet(
-          matchType: '個人戦',
-          normalRule: MatchRule(matchTimeMinutes: 3),
-        );
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CategoryRuleCategoryTile(
-                category: '中学生男子の部',
-                ruleSet: ruleSet,
-                isDark: false,
-                enableLiquidGlass: false,
-                onStartEditing: () => editCalled = true,
-                onDeleteCategory: () => deleteCalled = true,
-                onShowRuleDetail: () => detailCalled = true,
-              ),
-            ),
-          ),
-        );
-
-        expect(find.text('中学生男子の部'), findsOneWidget);
-
-        await tester.tap(find.text('中学生男子の部'));
-        await tester.pump();
-        expect(detailCalled, isTrue);
-        expect(editCalled, isFalse);
-        expect(deleteCalled, isFalse);
-      },
-    );
-
-    testWidgets('renders category with subtitle and commentであること', (
+    testWidgets('部門 name and triggers onShowRuleDetail on tapが正しく描画されること', (
       tester,
     ) async {
+      bool detailCalled = false;
+      bool editCalled = false;
+      bool deleteCalled = false;
+
+      final ruleSet = CategoryRuleSet(
+        matchType: '個人戦',
+        normalRule: MatchRule(matchTimeMinutes: 3),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleCategoryTile(
+              category: '中学生男子の部',
+              ruleSet: ruleSet,
+              isDark: false,
+              enableLiquidGlass: false,
+              onStartEditing: () => editCalled = true,
+              onDeleteCategory: () => deleteCalled = true,
+              onShowRuleDetail: () => detailCalled = true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('中学生男子の部'), findsOneWidget);
+
+      await tester.tap(find.text('中学生男子の部'));
+      await tester.pump();
+      expect(detailCalled, isTrue);
+      expect(editCalled, isFalse);
+      expect(deleteCalled, isFalse);
+    });
+
+    testWidgets('部門 with subtitle and commentが正しく描画されること', (tester) async {
       final ruleSet = CategoryRuleSet(
         matchType: '団体戦',
         subtitle: '決勝トーナメント',
@@ -75,55 +72,52 @@ void main() {
       expect(find.byIcon(Icons.comment_outlined), findsOneWidget);
     });
 
-    testWidgets(
-      'omits (2) when subtitle makes it distinguishable, but keeps (2) when duplicatedであること',
-      (tester) async {
-        final rules = <String, CategoryRuleSet>{
-          '小学生の部': const CategoryRuleSet(subtitle: '予選リーグ'),
-          '小学生の部 (2)': const CategoryRuleSet(subtitle: '決勝トーナメント'),
-          '中学生の部': const CategoryRuleSet(subtitle: '決勝'),
-          '中学生の部 (2)': const CategoryRuleSet(subtitle: '決勝'),
-        };
+    testWidgets('サブタイトルで区別可能な場合は(2)が省略され、重複時は(2)が保持されること', (tester) async {
+      final rules = <String, CategoryRuleSet>{
+        '小学生の部': const CategoryRuleSet(subtitle: '予選リーグ'),
+        '小学生の部 (2)': const CategoryRuleSet(subtitle: '決勝トーナメント'),
+        '中学生の部': const CategoryRuleSet(subtitle: '決勝'),
+        '中学生の部 (2)': const CategoryRuleSet(subtitle: '決勝'),
+      };
 
-        // ① 他と重複しない場合: (2) が省略されて「小学生の部 決勝トーナメント」になる
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CategoryRuleCategoryTile(
-                category: '小学生の部 (2)',
-                ruleSet: rules['小学生の部 (2)']!,
-                allCategoryRules: rules,
-                isDark: false,
-                enableLiquidGlass: false,
-                onStartEditing: () {},
-                onDeleteCategory: () {},
-                onShowRuleDetail: () {},
-              ),
+      // ① 他と重複しない場合: (2) が省略されて「小学生の部 決勝トーナメント」になる
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleCategoryTile(
+              category: '小学生の部 (2)',
+              ruleSet: rules['小学生の部 (2)']!,
+              allCategoryRules: rules,
+              isDark: false,
+              enableLiquidGlass: false,
+              onStartEditing: () {},
+              onDeleteCategory: () {},
+              onShowRuleDetail: () {},
             ),
           ),
-        );
-        expect(find.text('小学生の部 決勝トーナメント'), findsOneWidget);
-        expect(find.text('小学生の部 (2) 決勝トーナメント'), findsNothing);
+        ),
+      );
+      expect(find.text('小学生の部 決勝トーナメント'), findsOneWidget);
+      expect(find.text('小学生の部 (2) 決勝トーナメント'), findsNothing);
 
-        // ② 他と重複する場合: (2) が維持されて「中学生の部 (2) 決勝」になる
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CategoryRuleCategoryTile(
-                category: '中学生の部 (2)',
-                ruleSet: rules['中学生の部 (2)']!,
-                allCategoryRules: rules,
-                isDark: false,
-                enableLiquidGlass: false,
-                onStartEditing: () {},
-                onDeleteCategory: () {},
-                onShowRuleDetail: () {},
-              ),
+      // ② 他と重複する場合: (2) が維持されて「中学生の部 (2) 決勝」になる
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleCategoryTile(
+              category: '中学生の部 (2)',
+              ruleSet: rules['中学生の部 (2)']!,
+              allCategoryRules: rules,
+              isDark: false,
+              enableLiquidGlass: false,
+              onStartEditing: () {},
+              onDeleteCategory: () {},
+              onShowRuleDetail: () {},
             ),
           ),
-        );
-        expect(find.text('中学生の部 (2) 決勝'), findsOneWidget);
-      },
-    );
+        ),
+      );
+      expect(find.text('中学生の部 (2) 決勝'), findsOneWidget);
+    });
   });
 }

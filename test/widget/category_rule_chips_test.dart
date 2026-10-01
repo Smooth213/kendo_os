@@ -32,7 +32,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders multi-scene chips (renseikai, honsen, moushiawase)こと',
+      'multi-scene チップ一覧 (renseikai, honsen, moushiawase)が正しく描画されること',
       (WidgetTester tester) async {
         final ruleSet = const CategoryRuleSet(
           isMultiScene: true,
@@ -64,7 +64,7 @@ void main() {
       },
     );
 
-    testWidgets('Renders advancedRule chips with 1本勝負 badgeであること', (
+    testWidgets('advancedRule チップ一覧 with 1本勝負 badgeが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final ruleSet = const CategoryRuleSet(

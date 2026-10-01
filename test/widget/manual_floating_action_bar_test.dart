@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualFloatingActionBar ウィジェットテスト', () {
-    testWidgets('Renders buttons and triggers callbacksであること', (
+    testWidgets('ボタン一覧 and triggers callbacksが正しく描画されること', (
       WidgetTester tester,
     ) async {
       bool primaryTapped = false;

@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 void main() {
   group('[Widget] OrderSetupPositionSlot ウィジェットテスト', () {
     testWidgets(
-      'Renders position slot with player name, change button, and handles vacantであること',
+      'position slot with 選手 name, change ボタン, and handles vacantが正しく描画されること',
       (WidgetTester tester) async {
         bool tapped = false;
         bool vacantTapped = false;

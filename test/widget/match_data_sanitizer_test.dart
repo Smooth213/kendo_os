@@ -4,17 +4,14 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 
 void main() {
   group('[Widget] MatchDataSanitizer 単体テスト', () {
-    test(
-      'sanitizeFirestoreData correctly maps numbers and nested structuresであること',
-      () {
-        final input = {'order': 1, 'matchTimeMinutes': 4, 'redScore': 2.0};
+    test('【sanitizeFirestoreData】数値およびネスト構造が正しくマッピングされること', () {
+      final input = {'order': 1, 'matchTimeMinutes': 4, 'redScore': 2.0};
 
-        final sanitized = MatchDataSanitizer.sanitizeFirestoreData(input);
-        expect(sanitized['order'], 1.0);
-        expect(sanitized['matchTimeMinutes'], 4.0);
-        expect(sanitized['redScore'], 2);
-      },
-    );
+      final sanitized = MatchDataSanitizer.sanitizeFirestoreData(input);
+      expect(sanitized['order'], 1.0);
+      expect(sanitized['matchTimeMinutes'], 4.0);
+      expect(sanitized['redScore'], 2);
+    });
 
     test(
       'healRepresentativeMatch heals corrupted or finished state when events emptyであること',

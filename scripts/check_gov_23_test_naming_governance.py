@@ -5,8 +5,9 @@
 ================================================================================
 ① 装飾絵文字完全撤廃規約（group, test, testWidgets 内の装飾絵文字の完全排除）
 ② テスト連番排除規約（先頭のナンバリング 1. 2. ① ② Step 1: 等の排除）
-③ 文末「〜こと」統一規約（test, testWidgets の末尾がすべて「こと」で完結すること）
-④ テスト種別タグ規約（group の最上位プレフィックス [Unit], [Widget], [Governance], [Golden], [E2E], [Security] 準拠）
+③ 文末「〜こと」統一＆文法規約（末尾「こと」統一、「〜べき」排除、二重語尾「ことこと」排除）
+④ 英語混在・英文タイトル排除規約（renders/verify/displays等の英文主体タイトルの排除と日本語統一）
+⑤ テスト種別タグ規約（group の最上位プレフィックス [Unit], [Widget], [Governance], [Golden], [E2E], [Security] 準拠）
 """
 
 import os
@@ -27,8 +28,20 @@ EMOJI_PATTERN = re.compile(
 
 # 先頭連番パターン
 NUMBERING_PATTERN = re.compile(
-    r'^(?:\d+[\.\-]\s*|\d+-\d+[\.\-]?\s*|[①-⑳]\s*|\[\d+\]\s*|#\d+\s*|Step\s*\d+(?:-\d+)?[:\.\s]*|Phase\s*\d+[:\s\-]*)',
+    r'^(?:\d+[\.\-:\s]+\s*|\d+-\d+[\.\-:\s]*\s*|[①-⑳]\s*|\[\d+\]\s*|#\d+\s*|Step\s*\d+(?:-\d+)?[:\.\s]*|Phase\s*\d+[:\s\-]*)',
     re.IGNORECASE
+)
+
+# 「〜べき」パターン
+BEKI_PATTERN = re.compile(r'べき[、。\s]*$')
+
+# 二重語尾パターン
+DOUBLE_KOTO_PATTERN = re.compile(r'(?:ことこと|であることこと|であることであること)')
+
+# 英文構文パターン（日本語化されていない英文主体のタイトル）
+ENGLISH_CLAUSE_PATTERN = re.compile(
+    r'\b(renders|displays|updates|preserves|handles|resolves|orders|extracts|sorts|calculates|formats|triggers|returns|swaps|applies|expands|contains|creates|deletes|fetches|loads|parses|validates|verifies|verify|should\s+not|should\s+show|when\s+tapped)\b',
+    re.I
 )
 
 ALLOWED_TAGS = {'[Unit]', '[Widget]', '[Governance]', '[Golden]', '[E2E]', '[Security]'}
@@ -38,7 +51,6 @@ def scan_dart_test_file(filepath):
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
 
-    # 関数呼び出しを正確にスキャン
     call_pattern = re.compile(r'\b(group|test|testWidgets)\s*\(\s*(r?(\"\"\"|\'\'\'|\"|\'))', re.MULTILINE)
 
     pos = 0
@@ -80,6 +92,7 @@ def audit_tests():
     emoji_violations = []
     numbering_violations = []
     koto_violations = []
+    english_violations = []
     tag_violations = []
 
     for tf in test_files:
@@ -103,25 +116,35 @@ def audit_tests():
                 if NUMBERING_PATTERN.search(title_clean):
                     numbering_violations.append((tf, fn_name, title_clean))
 
-                # ③ 文末「こと」チェック (test, testWidgets)
-                # 括弧閉じや空白を除いた末尾が「こと」であること
-                if not title_clean.endswith('こと'):
+                # ③ 文末「こと」＆文法チェック
+                # - 「〜こと」で終わっていること
+                # - 「〜べき」でないこと
+                # - 二重語尾でないこと
+                if (not title_clean.endswith('こと') or
+                    BEKI_PATTERN.search(title_clean) or
+                    DOUBLE_KOTO_PATTERN.search(title_clean)):
                     koto_violations.append((tf, fn_name, title_clean))
 
-    return emoji_violations, numbering_violations, koto_violations, tag_violations
+                # ④ 英文主体タイトルのチェック (ひらがなが極端に少なく英語述語を含む)
+                hiragana_count = len(re.findall(r'[\u3040-\u309F]', title_clean))
+                if hiragana_count < 5 and ENGLISH_CLAUSE_PATTERN.search(title_clean):
+                    english_violations.append((tf, fn_name, title_clean))
+
+    return emoji_violations, numbering_violations, koto_violations, english_violations, tag_violations
 
 def main():
     print("=" * 68)
     print(" 📊 【第23条 ガバナンス監査】🧪 テスト設計・タイトル命名規約 ＆ テストスイート整合性規約")
     print("=" * 68)
 
-    emoji_v, num_v, koto_v, tag_v = audit_tests()
+    emoji_v, num_v, koto_v, en_v, tag_v = audit_tests()
 
     rules = [
         ("① [装飾絵文字排除] group, test, testWidgets 内の装飾絵文字の完全排除", len(emoji_v) == 0, emoji_v),
         ("② [テスト連番排除] test, testWidgets 先頭の連番・ナンバリングの排除", len(num_v) == 0, num_v),
-        ("③ [文末「こと」統一] test, testWidgets の末尾がすべて「こと」で完結すること", len(koto_v) == 0, koto_v),
-        ("④ [テスト種別タグ] 最上位 group の [Unit]/[Widget]/[Governance]/[Golden]/[E2E]/[Security] プレフィックス準拠", len(tag_v) == 0, tag_v),
+        ("③ [文末「こと」統一＆文法規約] 「〜べき」排除、二重語尾排除、末尾「こと」統一", len(koto_v) == 0, koto_v),
+        ("④ [英語混在・英文タイトル排除] 英文主体のテストタイトル排除と日本語統一", len(en_v) == 0, en_v),
+        ("⑤ [テスト種別タグ] 最上位 group の [Unit]/[Widget]/[Governance]/[Golden]/[E2E]/[Security] プレフィックス準拠", len(tag_v) == 0, tag_v),
     ]
 
     all_passed = True

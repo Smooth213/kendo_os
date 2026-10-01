@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] NewMatchSmartAutocomplete ウィジェットテスト', () {
-    testWidgets('Renders text field with label and iconsであること', (
+    testWidgets('テキスト field with label and iconsが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final controller = TextEditingController();

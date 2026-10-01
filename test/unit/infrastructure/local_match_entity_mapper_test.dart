@@ -44,7 +44,7 @@ void main() {
     );
 
     test(
-      'toEntity & toModel correctly converts MatchModel with snapshots and eventsであること',
+      '【双方向変換】toEntityおよびtoModelによりsnapshots and events付きのMatchModelが正しく変換されること',
       () {
         final now = DateTime(2026, 9, 3, 11, 0, 0);
         final model = MatchModel(

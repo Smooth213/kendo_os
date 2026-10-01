@@ -6,48 +6,44 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MasterEmptyStateCard ウィジェットテスト', () {
-    testWidgets(
-      'Renders empty state texts and registration button when not readOnlyであること',
-      (WidgetTester tester) async {
-        bool buttonTapped = false;
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
+    testWidgets('【not readOnly】空状態 テキスト一覧 and registration buttonが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      bool buttonTapped = false;
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              theme: ThemeData(extensions: [themeColors]),
-              home: Scaffold(
-                body: MasterEmptyStateCard(
-                  primaryColor: Colors.purple,
-                  isReadOnly: false,
-                  iconWidget: const Icon(Icons.shield, size: 80),
-                  buttonWidget: ElevatedButton.icon(
-                    onPressed: () => buttonTapped = true,
-                    icon: const Icon(Icons.account_balance),
-                    label: const Text('道場名を登録する'),
-                  ),
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(extensions: [themeColors]),
+            home: Scaffold(
+              body: MasterEmptyStateCard(
+                primaryColor: Colors.purple,
+                isReadOnly: false,
+                iconWidget: const Icon(Icons.shield, size: 80),
+                buttonWidget: ElevatedButton.icon(
+                  onPressed: () => buttonTapped = true,
+                  icon: const Icon(Icons.account_balance),
+                  label: const Text('道場名を登録する'),
                 ),
               ),
             ),
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        expect(find.text('まだ選手が登録されていません'), findsOneWidget);
-        expect(
-          find.text('選手を追加する前に、まずはあなたたちの道場名・学校名を登録することから始めましょう！'),
-          findsOneWidget,
-        );
-        expect(find.text('道場名を登録する'), findsOneWidget);
+      expect(find.text('まだ選手が登録されていません'), findsOneWidget);
+      expect(
+        find.text('選手を追加する前に、まずはあなたたちの道場名・学校名を登録することから始めましょう！'),
+        findsOneWidget,
+      );
+      expect(find.text('道場名を登録する'), findsOneWidget);
 
-        await tester.tap(find.text('道場名を登録する'));
-        await tester.pump();
-        expect(buttonTapped, isTrue);
-      },
-    );
+      await tester.tap(find.text('道場名を登録する'));
+      await tester.pump();
+      expect(buttonTapped, isTrue);
+    });
 
     testWidgets('Hides registration button when isReadOnly is trueであること', (
       WidgetTester tester,

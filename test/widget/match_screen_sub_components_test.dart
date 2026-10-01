@@ -12,36 +12,33 @@ void main() {
   });
 
   group('[Widget] MatchScreen Sub Components テスト', () {
-    testWidgets(
-      'MatchViewOnlyNoticeBanner renders warning and switch buttonであること',
-      (tester) async {
-        bool claimed = false;
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchViewOnlyNoticeBanner(
-                isSomeoneElseOperating: true,
-                isApproved: false,
-                isReadOnly: false,
-                onClaimScorer: () {
-                  claimed = true;
-                },
-              ),
-            ),
-          ),
-        );
-
-        expect(find.text('他の記録員が入力中です'), findsOneWidget);
-        expect(find.text('自分に切り替える'), findsOneWidget);
-
-        await tester.tap(find.text('自分に切り替える'));
-        expect(claimed, isTrue);
-      },
-    );
-
-    testWidgets('MatchDaihyoOverlay renders button and calls callbackであること', (
+    testWidgets('【MatchViewOnlyNoticeBanner】警告バナーおよび切替ボタンが描画されること', (
       tester,
     ) async {
+      bool claimed = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchViewOnlyNoticeBanner(
+              isSomeoneElseOperating: true,
+              isApproved: false,
+              isReadOnly: false,
+              onClaimScorer: () {
+                claimed = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('他の記録員が入力中です'), findsOneWidget);
+      expect(find.text('自分に切り替える'), findsOneWidget);
+
+      await tester.tap(find.text('自分に切り替える'));
+      expect(claimed, isTrue);
+    });
+
+    testWidgets('【MatchDaihyoOverlay】ボタンが描画されコールバックが呼び出されること', (tester) async {
       final prefs = await SharedPreferences.getInstance();
       bool selected = false;
       await tester.pumpWidget(

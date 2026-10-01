@@ -10,7 +10,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 void main() {
   group('[Unit] BunaiksenInfiniteEngine Score carry-over & Rotation テスト', () {
     test(
-      'Verify that next generated match resets all events, scores, and timer statesであること',
+      'that next generated 試合 resets all events, scores, and timer statesこと',
       () async {
         final container = ProviderContainer();
 

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualIndexPane ウィジェットテスト', () {
-    testWidgets('Renders manual index list and filters items on searchであること', (
+    testWidgets('manual index list and filters items on searchが正しく描画されること', (
       tester,
     ) async {
       final controller = TextEditingController();

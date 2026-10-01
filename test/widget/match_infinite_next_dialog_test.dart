@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchInfiniteNextDialog ウィジェットテスト', () {
-    testWidgets('Renders MatchInfiniteNextDialog and triggers actionsであること', (
+    testWidgets('MatchInfiniteNextDialog and triggers actionsが正しく描画されること', (
       WidgetTester tester,
     ) async {
       bool finishClicked = false;

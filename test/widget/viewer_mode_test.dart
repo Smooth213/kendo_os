@@ -533,73 +533,68 @@ void main() {
       expect(find.byIcon(Icons.flash_on), findsNothing);
     });
 
-    testWidgets(
-      'ViewerHomeScreen displays current status and correctly renders elementsであること',
-      (WidgetTester tester) async {
-        // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
-        tester.view.physicalSize = const Size(1080, 4000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('【ViewerHomeScreen】現在のステータスが表示され各要素が正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      // ★ 画面サイズを縦長にして、スクロールが必要な検索アイコンが確実に描画されるようにする
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        await tester.pumpWidget(
-          createTestableWidget(
-            const ViewerHomeScreen(tournamentId: testTournamentId),
-          ),
-        );
-        await tester.pump(); // Streamの即時反映を待つ
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerHomeScreen(tournamentId: testTournamentId),
+        ),
+      );
+      await tester.pump(); // Streamの即時反映を待つ
+      await tester.pumpAndSettle();
 
-        expect(find.text('進行中'), findsWidgets);
-        expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.text('進行中'), findsWidgets);
+      expect(find.byIcon(Icons.search), findsOneWidget);
 
-        await tester.tap(find.byIcon(Icons.search));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.pumpAndSettle(); // ★ Widgetの描画完了を確実に待つ
-        expect(find.byType(TextField), findsOneWidget);
-        // スコアという文字はViewerHomeScreenに直接は無いため、検索フィールドのヒントテキスト等で検証
-        expect(find.text('選手名・チーム名で検索...'), findsOneWidget);
-      },
-    );
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle(); // ★ Widgetの描画完了を確実に待つ
+      expect(find.byType(TextField), findsOneWidget);
+      // スコアという文字はViewerHomeScreenに直接は無いため、検索フィールドのヒントテキスト等で検証
+      expect(find.text('選手名・チーム名で検索...'), findsOneWidget);
+    });
 
-    testWidgets(
-      'ViewerOfficialRecordScreen renders header and export buttonsであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 4000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('【ViewerOfficialRecordScreen】ヘッダーおよびエクスポートボタンが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        await tester.pumpWidget(
-          createTestableWidget(
-            const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
-          ),
-        );
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerOfficialRecordScreen(tournamentId: testTournamentId),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
 
-        debugDumpApp(); // ツリー内部構成の確認用（不要になれば削除してください）
+      debugDumpApp(); // ツリー内部構成の確認用（不要になれば削除してください）
 
-        await tapVisible(tester, const Key('viewer_tab_一般'));
+      await tapVisible(tester, const Key('viewer_tab_一般'));
 
-        expect(find.byKey(const Key('viewer_export_pdf_button')), findsWidgets);
-        expect(
-          find.byKey(const Key('viewer_export_image_button')),
-          findsWidgets,
-        );
-        // ★ 観客専用ビュアーでは成績サマリーが表示されないことの保証
-        expect(find.text('成績サマリー'), findsNothing);
-        expect(find.text('遠征・大会 成績サマリー'), findsNothing);
-      },
-    );
+      expect(find.byKey(const Key('viewer_export_pdf_button')), findsWidgets);
+      expect(find.byKey(const Key('viewer_export_image_button')), findsWidgets);
+      // ★ 観客専用ビュアーでは成績サマリーが表示されないことの保証
+      expect(find.text('成績サマリー'), findsNothing);
+      expect(find.text('遠征・大会 成績サマリー'), findsNothing);
+    });
 
-    testWidgets('Renders normal Team Match (Table Format)こと', (
+    testWidgets('normal チーム 試合 (テーブル Format)が正しく描画されること', (
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(1080, 4000);
@@ -652,7 +647,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders Individual League with SUMMARY (Flat List & Star Table)こと',
+      'Individual League with SUMMARY (Flat List & Star テーブル)が正しく描画されること',
       (WidgetTester tester) async {
         // ★ 追加：画面サイズを縦長にして、リスト下部の試合が確実に描画されるようにする
         tester.view.physicalSize = const Size(1080, 4000);
@@ -706,95 +701,93 @@ void main() {
       expect(find.text('佐藤', skipOffstage: false), findsWidgets);
     });
 
-    testWidgets(
-      'ViewerMatchScreen fallback renders UI when projection is loadingであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 4000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('【ViewerMatchScreen】投影データ読み込み中にフォールバックUIが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        await tester.pumpWidget(
-          createTestableWidget(
-            const ViewerMatchScreen(matchId: 'indiv_match_1'),
-            overrides: [
-              viewerMatchProjectionProvider.overrideWith((ref, id) {
-                final controller = StreamController<MatchProjection?>();
-                ref.onDispose(controller.close); // テスト終了時に安全にストリームを閉じてメモリリークを防止
-                return controller.stream;
-              }),
-            ],
-          ),
-        );
-
-        await tester.pump();
-
-        // ローディング状態であっても、キャッシュにデータがあるためUIがフォールバック描画されることを確認
-        expect(find.text('試合状況 (観戦)'), findsOneWidget);
-        expect(find.text('閲覧モード'), findsOneWidget);
-        expect(find.text('運営モードへ切替'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'ViewerMatchListTileCard correctly navigates to Scoreboard when "スコア" button is tappedであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1080, 4000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
-
-        // ★ 遷移を完全に再現するため、ViewerHome と TeamScoreboard を繋ぐ専用ルーターを構築
-        final router = GoRouter(
-          initialLocation: '/viewer-home/$testTournamentId',
-          routes: [
-            GoRoute(
-              path: '/viewer-home/:tournamentId',
-              builder: (context, state) => ViewerHomeScreen(
-                tournamentId: state.pathParameters['tournamentId']!,
-              ),
-            ),
-            GoRoute(
-              path: '/viewer-team/:groupName',
-              builder: (context, state) => ViewerTeamScoreboardScreen(
-                groupName: state.pathParameters['groupName']!,
-              ),
-            ),
+      await tester.pumpWidget(
+        createTestableWidget(
+          const ViewerMatchScreen(matchId: 'indiv_match_1'),
+          overrides: [
+            viewerMatchProjectionProvider.overrideWith((ref, id) {
+              final controller = StreamController<MatchProjection?>();
+              ref.onDispose(controller.close); // テスト終了時に安全にストリームを閉じてメモリリークを防止
+              return controller.stream;
+            }),
           ],
-        );
+        ),
+      );
 
-        await tester.pumpWidget(
-          createTestableWidget(const SizedBox(), customRouter: router),
-        );
-        await tester.pump();
-        await tester.pumpAndSettle();
+      await tester.pump();
 
-        // "スコア" ボタンが表示されていることを確認
-        final scoreButtonFinder = find.widgetWithText(
-          OutlinedButton,
-          'スコア',
-          skipOffstage: false,
-        );
-        expect(scoreButtonFinder, findsWidgets);
+      // ローディング状態であっても、キャッシュにデータがあるためUIがフォールバック描画されることを確認
+      expect(find.text('試合状況 (観戦)'), findsOneWidget);
+      expect(find.text('閲覧モード'), findsOneWidget);
+      expect(find.text('運営モードへ切替'), findsNothing);
+    });
 
-        // 画面内に見えている最初のスコアボタン（団体戦等）を確実に見つけてタップ
-        await tester.ensureVisible(scoreButtonFinder.first);
-        await tester.pumpAndSettle();
-        await tester.tap(scoreButtonFinder.first);
-        await tester.pumpAndSettle();
+    testWidgets('【ViewerMatchListTileCard】「スコア」ボタンタップ時にスコアボードへ正しく遷移すること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 4000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        // 遷移先の ViewerTeamScoreboardScreen がエラーなく表示され、タイトルが出ていることを確認
-        // （以前のバグではここで大会IDが取得できず「大会情報がありません」等のエラーやホワイトアウトになっていた）
-        expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
-      },
-    );
+      // ★ 遷移を完全に再現するため、ViewerHome と TeamScoreboard を繋ぐ専用ルーターを構築
+      final router = GoRouter(
+        initialLocation: '/viewer-home/$testTournamentId',
+        routes: [
+          GoRoute(
+            path: '/viewer-home/:tournamentId',
+            builder: (context, state) => ViewerHomeScreen(
+              tournamentId: state.pathParameters['tournamentId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/viewer-team/:groupName',
+            builder: (context, state) => ViewerTeamScoreboardScreen(
+              groupName: state.pathParameters['groupName']!,
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(const SizedBox(), customRouter: router),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // "スコア" ボタンが表示されていることを確認
+      final scoreButtonFinder = find.widgetWithText(
+        OutlinedButton,
+        'スコア',
+        skipOffstage: false,
+      );
+      expect(scoreButtonFinder, findsWidgets);
+
+      // 画面内に見えている最初のスコアボタン（団体戦等）を確実に見つけてタップ
+      await tester.ensureVisible(scoreButtonFinder.first);
+      await tester.pumpAndSettle();
+      await tester.tap(scoreButtonFinder.first);
+      await tester.pumpAndSettle();
+
+      // 遷移先の ViewerTeamScoreboardScreen がエラーなく表示され、タイトルが出ていることを確認
+      // （以前のバグではここで大会IDが取得できず「大会情報がありません」等のエラーやホワイトアウトになっていた）
+      expect(find.text('団体戦 スコア (観戦)'), findsOneWidget);
+    });
 
     testWidgets(
-      'ViewerTeamScoreboardScreen resolves groupName or matchId to tournamentId without errorsであること',
+      '【ViewerTeamScoreboardScreen】groupNameまたはmatchIdからtournamentIdがエラーなく解決されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 1.0;

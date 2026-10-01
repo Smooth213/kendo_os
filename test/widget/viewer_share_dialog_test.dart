@@ -5,7 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
   group('[Widget] ViewerShareDialog ウィジェットテスト', () {
-    testWidgets('Renders QR code and share buttonであること', (tester) async {
+    testWidgets('QR code and share buttonが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

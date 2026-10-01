@@ -4,56 +4,52 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 
 void main() {
   group('[Widget] MatchFinishedNavigationDialog テスト', () {
-    testWidgets(
-      'Displays clear distinctive buttons for new team match and adding matchesであること',
-      (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchFinishedNavigationDialog(
-                isRenseikai: true,
-                hasGroupName: false,
-                isKachinuki: false,
-                isDark: false,
-                onQuickNextMatch: () {},
-                onAddNextRenseikaiMatch: () {},
-                onGoHome: () {},
-              ),
+    testWidgets('新規団体戦および試合追加のための明確に区別されたボタン一覧が表示されること', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchFinishedNavigationDialog(
+              isRenseikai: true,
+              hasGroupName: false,
+              isKachinuki: false,
+              isDark: false,
+              onQuickNextMatch: () {},
+              onAddNextRenseikaiMatch: () {},
+              onGoHome: () {},
             ),
           ),
-        );
+        ),
+      );
 
-        // 上：別のチームと対戦（次の団体戦）
-        expect(find.text('別のチームと対戦（次の団体戦）'), findsOneWidget);
-        expect(find.byIcon(Icons.bolt), findsOneWidget);
+      // 上：別のチームと対戦（次の団体戦）
+      expect(find.text('別のチームと対戦（次の団体戦）'), findsOneWidget);
+      expect(find.byIcon(Icons.bolt), findsOneWidget);
 
-        // 下：試合を追加（現在のチームと続行）
-        expect(find.text('試合を追加（現在のチームと続行）'), findsOneWidget);
-        expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
-      },
-    );
+      // 下：試合を追加（現在のチームと続行）
+      expect(find.text('試合を追加（現在のチームと続行）'), findsOneWidget);
+      expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
+    });
 
-    testWidgets(
-      'Does not display quick next match button when onQuickNextMatch is null (Hon-sen tournament)こと',
-      (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchFinishedNavigationDialog(
-                isRenseikai: false,
-                hasGroupName: false,
-                isKachinuki: false,
-                isDark: false,
-                onQuickNextMatch: null, // 本戦モード時は null
-                onGoHome: () {},
-              ),
+    testWidgets('本戦大会時（onQuickNextMatchがnull）に次の試合ボタンが表示されないこと', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchFinishedNavigationDialog(
+              isRenseikai: false,
+              hasGroupName: false,
+              isKachinuki: false,
+              isDark: false,
+              onQuickNextMatch: null, // 本戦モード時は null
+              onGoHome: () {},
             ),
           ),
-        );
+        ),
+      );
 
-        // 本戦モードではクイック対戦ボタンが表示されないこと
-        expect(find.text('別のチームと対戦（次の団体戦）'), findsNothing);
-      },
-    );
+      // 本戦モードではクイック対戦ボタンが表示されないこと
+      expect(find.text('別のチームと対戦（次の団体戦）'), findsNothing);
+    });
   });
 }

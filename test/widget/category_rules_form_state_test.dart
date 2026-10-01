@@ -59,74 +59,66 @@ void main() {
       expect(CategoryRuleMatchHelper.formatRuleTitle('小学生の部', '   '), '小学生の部');
     });
 
-    test(
-      'representative match (代表戦) OFF is correctly saved and restored without automatically turning ONであること',
-      () {
-        // 1. トーナメント団体戦で代表戦をOFFにした場合
-        final formState = CategoryRulesFormState();
-        formState.editingMatchType = '団体戦';
-        formState.normalHasLeagueDaihyo = false;
-        formState.advancedHasLeagueDaihyo = false;
+    test('【代表戦】代表戦OFF設定が自動でONにならず正しく保存・復元されること', () {
+      // 1. トーナメント団体戦で代表戦をOFFにした場合
+      final formState = CategoryRulesFormState();
+      formState.editingMatchType = '団体戦';
+      formState.normalHasLeagueDaihyo = false;
+      formState.advancedHasLeagueDaihyo = false;
 
-        final savedRuleSet = formState.buildCategoryRuleSet('中学生男子の部');
+      final savedRuleSet = formState.buildCategoryRuleSet('中学生男子の部');
 
-        // MatchRule 内で両方のフラグが false になっていること
-        expect(savedRuleSet.normalRule.hasRepresentativeMatch, isFalse);
-        expect(savedRuleSet.normalRule.hasLeagueDaihyo, isFalse);
-        expect(savedRuleSet.advancedRule.hasRepresentativeMatch, isFalse);
-        expect(savedRuleSet.advancedRule.hasLeagueDaihyo, isFalse);
+      // MatchRule 内で両方のフラグが false になっていること
+      expect(savedRuleSet.normalRule.hasRepresentativeMatch, isFalse);
+      expect(savedRuleSet.normalRule.hasLeagueDaihyo, isFalse);
+      expect(savedRuleSet.advancedRule.hasRepresentativeMatch, isFalse);
+      expect(savedRuleSet.advancedRule.hasLeagueDaihyo, isFalse);
 
-        // 再度フォームに読み込んだ時、勝手に true (ON) に戻らないこと
-        final restoredState = CategoryRulesFormState();
-        restoredState.populateFromRuleSet('中学生男子の部', savedRuleSet);
+      // 再度フォームに読み込んだ時、勝手に true (ON) に戻らないこと
+      final restoredState = CategoryRulesFormState();
+      restoredState.populateFromRuleSet('中学生男子の部', savedRuleSet);
 
-        expect(restoredState.normalHasLeagueDaihyo, isFalse);
-        expect(restoredState.advancedHasLeagueDaihyo, isFalse);
-        expect(restoredState.editingMatchType, '団体戦');
+      expect(restoredState.normalHasLeagueDaihyo, isFalse);
+      expect(restoredState.advancedHasLeagueDaihyo, isFalse);
+      expect(restoredState.editingMatchType, '団体戦');
 
-        // 2. リーグ団体戦で代表戦をOFFにした場合
-        final leagueFormState = CategoryRulesFormState();
-        leagueFormState.editingMatchType = 'リーグ団体戦';
-        leagueFormState.normalHasLeagueDaihyo = false;
-        leagueFormState.advancedHasLeagueDaihyo = false;
+      // 2. リーグ団体戦で代表戦をOFFにした場合
+      final leagueFormState = CategoryRulesFormState();
+      leagueFormState.editingMatchType = 'リーグ団体戦';
+      leagueFormState.normalHasLeagueDaihyo = false;
+      leagueFormState.advancedHasLeagueDaihyo = false;
 
-        final leagueSavedRuleSet = leagueFormState.buildCategoryRuleSet(
-          '一般男子の部',
-        );
-        expect(leagueSavedRuleSet.normalRule.hasLeagueDaihyo, isFalse);
-        expect(leagueSavedRuleSet.normalRule.hasRepresentativeMatch, isFalse);
-        expect(leagueSavedRuleSet.advancedRule.hasLeagueDaihyo, isFalse);
-        expect(leagueSavedRuleSet.advancedRule.hasRepresentativeMatch, isFalse);
+      final leagueSavedRuleSet = leagueFormState.buildCategoryRuleSet('一般男子の部');
+      expect(leagueSavedRuleSet.normalRule.hasLeagueDaihyo, isFalse);
+      expect(leagueSavedRuleSet.normalRule.hasRepresentativeMatch, isFalse);
+      expect(leagueSavedRuleSet.advancedRule.hasLeagueDaihyo, isFalse);
+      expect(leagueSavedRuleSet.advancedRule.hasRepresentativeMatch, isFalse);
 
-        final leagueRestoredState = CategoryRulesFormState();
-        leagueRestoredState.populateFromRuleSet('一般男子の部', leagueSavedRuleSet);
+      final leagueRestoredState = CategoryRulesFormState();
+      leagueRestoredState.populateFromRuleSet('一般男子の部', leagueSavedRuleSet);
 
-        expect(leagueRestoredState.normalHasLeagueDaihyo, isFalse);
-        expect(leagueRestoredState.advancedHasLeagueDaihyo, isFalse);
-        expect(leagueRestoredState.editingMatchType, 'リーグ団体戦');
-      },
-    );
+      expect(leagueRestoredState.normalHasLeagueDaihyo, isFalse);
+      expect(leagueRestoredState.advancedHasLeagueDaihyo, isFalse);
+      expect(leagueRestoredState.editingMatchType, 'リーグ団体戦');
+    });
 
-    test(
-      'representative match (代表戦) ON is correctly saved and restoredであること',
-      () {
-        final formState = CategoryRulesFormState();
-        formState.editingMatchType = '団体戦';
-        formState.normalHasLeagueDaihyo = true;
-        formState.advancedHasLeagueDaihyo = true;
+    test('【代表戦】代表戦ON設定が正しく保存・復元されること', () {
+      final formState = CategoryRulesFormState();
+      formState.editingMatchType = '団体戦';
+      formState.normalHasLeagueDaihyo = true;
+      formState.advancedHasLeagueDaihyo = true;
 
-        final saved = formState.buildCategoryRuleSet('高校生女子の部');
-        expect(saved.normalRule.hasRepresentativeMatch, isTrue);
-        expect(saved.normalRule.hasLeagueDaihyo, isTrue);
-        expect(saved.advancedRule.hasRepresentativeMatch, isTrue);
-        expect(saved.advancedRule.hasLeagueDaihyo, isTrue);
+      final saved = formState.buildCategoryRuleSet('高校生女子の部');
+      expect(saved.normalRule.hasRepresentativeMatch, isTrue);
+      expect(saved.normalRule.hasLeagueDaihyo, isTrue);
+      expect(saved.advancedRule.hasRepresentativeMatch, isTrue);
+      expect(saved.advancedRule.hasLeagueDaihyo, isTrue);
 
-        final restored = CategoryRulesFormState();
-        restored.populateFromRuleSet('高校生女子の部', saved);
-        expect(restored.normalHasLeagueDaihyo, isTrue);
-        expect(restored.advancedHasLeagueDaihyo, isTrue);
-      },
-    );
+      final restored = CategoryRulesFormState();
+      restored.populateFromRuleSet('高校生女子の部', saved);
+      expect(restored.normalHasLeagueDaihyo, isTrue);
+      expect(restored.advancedHasLeagueDaihyo, isTrue);
+    });
 
     test(
       'comprehensive test: all rule parameters are fully saved and faithfully restoredであること',
@@ -300,7 +292,7 @@ void main() {
     );
 
     test(
-      'team match (団体戦) does not have normal match extension, only daihyo extension, and CategoryRuleChips does not show "延長1回"こと',
+      'チーム 試合 (団体戦) does not have normal 試合 extension, only daihyo extension, and CategoryRuleChips does not show "延長1回"こと',
       () {
         final form = CategoryRulesFormState();
         form.editingMatchType = '団体戦';
@@ -325,7 +317,7 @@ void main() {
     );
 
     testWidgets(
-      'CategoryRuleChips does not show extension badge for team match (even if rule has enchoCount)こと',
+      'CategoryRuleChips does not show extension badge for チーム 試合 (even if ルール has enchoCount)こと',
       (tester) async {
         final ruleSet = CategoryRuleSet(
           matchType: '団体戦',
@@ -354,28 +346,25 @@ void main() {
       },
     );
 
-    testWidgets(
-      'CategoryRuleChips shows extension badge for individual match when enchoCount > 0であること',
-      (tester) async {
-        final ruleSet = CategoryRuleSet(
-          matchType: '個人戦',
-          normalRule: const MatchRule(matchTimeMinutes: 3.0, enchoCount: 1),
-          advancedRule: const MatchRule(matchTimeMinutes: 3.0),
-          useAdvancedRule: false,
-        );
+    testWidgets('【CategoryRuleChips】延長回数>0の個人戦で延長バッジが表示されること', (tester) async {
+      final ruleSet = CategoryRuleSet(
+        matchType: '個人戦',
+        normalRule: const MatchRule(matchTimeMinutes: 3.0, enchoCount: 1),
+        advancedRule: const MatchRule(matchTimeMinutes: 3.0),
+        useAdvancedRule: false,
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CategoryRuleChips(ruleSet: ruleSet, isDark: false),
-            ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleChips(ruleSet: ruleSet, isDark: false),
           ),
-        );
+        ),
+      );
 
-        // 個人戦では延長バッジが表示されること
-        expect(find.textContaining('延長1回'), findsOneWidget);
-      },
-    );
+      // 個人戦では延長バッジが表示されること
+      expect(find.textContaining('延長1回'), findsOneWidget);
+    });
 
     test('ipponLimit = 1 correctly synchronizes isIpponShobu to trueであること', () {
       final formState = CategoryRulesFormState();

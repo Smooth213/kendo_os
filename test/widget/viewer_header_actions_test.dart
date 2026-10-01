@@ -10,95 +10,90 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] ViewerHeaderActions ウィジェットテスト', () {
-    testWidgets(
-      'ViewerHomeHeaderActions renders QR share button and opens dialog correctlyであること',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              theme: ThemeData(
-                extensions: [
-                  AppThemeColors.ofMode(isDark: false, mode: 'normal'),
-                ],
-              ),
-              home: Scaffold(
-                appBar: AppBar(
-                  actions: const [
-                    ViewerHomeHeaderActions(
-                      tournamentId: 't1',
-                      isDark: false,
-                      iconColor: Colors.black,
-                    ),
-                  ],
-                ),
-              ),
+    testWidgets('【ViewerHomeHeaderActions】QR共有ボタンが描画されダイアログが正しく開くこと', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
             ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        // QR共有ボタンが存在すること
-        final qrBtn = find.byIcon(Icons.qr_code_2);
-        expect(qrBtn, findsOneWidget);
-
-        // タップして共有ダイアログが表示されること
-        await tester.tap(qrBtn);
-        await tester.pumpAndSettle();
-
-        expect(find.byType(ViewerShareDialog), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'ViewerBunaiksenHeaderActions renders calendar button when not QR access and opens More menuであること',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              theme: ThemeData(
-                extensions: [
-                  AppThemeColors.ofMode(
+            home: Scaffold(
+              appBar: AppBar(
+                actions: const [
+                  ViewerHomeHeaderActions(
+                    tournamentId: 't1',
                     isDark: false,
-                    mode: 'bunaiksen_viewer',
+                    iconColor: Colors.black,
                   ),
                 ],
               ),
-              home: Scaffold(
-                appBar: AppBar(
-                  actions: const [
-                    ViewerBunaiksenHeaderActions(
-                      tournamentId: 'bunaiksen_20260829',
-                      dateDisplay: '2026年8月29日',
-                      dojoId: 'd1',
-                      isDark: false,
-                      isQrAccess: false,
-                      availableDates: {'20260829'},
-                    ),
-                  ],
-                ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // QR共有ボタンが存在すること
+      final qrBtn = find.byIcon(Icons.qr_code_2);
+      expect(qrBtn, findsOneWidget);
+
+      // タップして共有ダイアログが表示されること
+      await tester.tap(qrBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ViewerShareDialog), findsOneWidget);
+    });
+
+    testWidgets('【ViewerBunaiksenHeaderActions】カレンダーボタンが描画され詳細メニューが開くこと', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'bunaiksen_viewer'),
+              ],
+            ),
+            home: Scaffold(
+              appBar: AppBar(
+                actions: const [
+                  ViewerBunaiksenHeaderActions(
+                    tournamentId: 'bunaiksen_20260829',
+                    dateDisplay: '2026年8月29日',
+                    dojoId: 'd1',
+                    isDark: false,
+                    isQrAccess: false,
+                    availableDates: {'20260829'},
+                  ),
+                ],
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // カレンダーボタンが存在すること
-        expect(find.byIcon(Icons.calendar_month), findsOneWidget);
+      // カレンダーボタンが存在すること
+      expect(find.byIcon(Icons.calendar_month), findsOneWidget);
 
-        // 「…」ボタンが存在すること
-        final moreBtn = find.byIcon(Icons.more_horiz_rounded);
-        expect(moreBtn, findsOneWidget);
+      // 「…」ボタンが存在すること
+      final moreBtn = find.byIcon(Icons.more_horiz_rounded);
+      expect(moreBtn, findsOneWidget);
 
-        // タップしてメニューが展開されること
-        await tester.tap(moreBtn);
-        await tester.pumpAndSettle();
+      // タップしてメニューが展開されること
+      await tester.tap(moreBtn);
+      await tester.pumpAndSettle();
 
-        expect(find.text('部内戦 成績一覧'), findsOneWidget);
-        expect(find.text('観戦リンクを共有する'), findsOneWidget);
-        expect(find.text('表示設定'), findsOneWidget);
-      },
-    );
+      expect(find.text('部内戦 成績一覧'), findsOneWidget);
+      expect(find.text('観戦リンクを共有する'), findsOneWidget);
+      expect(find.text('表示設定'), findsOneWidget);
+    });
   });
 }

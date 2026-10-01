@@ -77,55 +77,51 @@ void main() {
       },
     );
 
-    testWidgets(
-      'confirmBulkDelete shows dialog and deletes selected items on confirmであること',
-      (tester) async {
-        final mockRepo = MockProgramRepository();
-        bool onDeletedCalled = false;
+    testWidgets('【confirmBulkDelete】確認ダイアログが表示され承認時に選択アイテムが削除されること', (
+      tester,
+    ) async {
+      final mockRepo = MockProgramRepository();
+      bool onDeletedCalled = false;
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [programRepositoryProvider.overrideWithValue(mockRepo)],
-            child: MaterialApp(
-              home: Scaffold(
-                body: Consumer(
-                  builder: (context, ref, child) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        ProgramDeleteDialogHelper.confirmBulkDelete(
-                          context: context,
-                          ref: ref,
-                          allPrograms: programs,
-                          selectedProgramIds: {'p1', 'p2'},
-                          onDeleted: () {
-                            onDeletedCalled = true;
-                          },
-                        );
-                      },
-                      child: const Text('一括削除ボタン'),
-                    );
-                  },
-                ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [programRepositoryProvider.overrideWithValue(mockRepo)],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, child) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      ProgramDeleteDialogHelper.confirmBulkDelete(
+                        context: context,
+                        ref: ref,
+                        allPrograms: programs,
+                        selectedProgramIds: {'p1', 'p2'},
+                        onDeleted: () {
+                          onDeletedCalled = true;
+                        },
+                      );
+                    },
+                    child: const Text('一括削除ボタン'),
+                  );
+                },
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('一括削除ボタン'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('一括削除ボタン'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('プログラムの一括削除'), findsOneWidget);
-        expect(
-          find.text('選択した 2件のプログラムを削除しますか？\nこの操作は取り消せません。'),
-          findsOneWidget,
-        );
+      expect(find.text('プログラムの一括削除'), findsOneWidget);
+      expect(find.text('選択した 2件のプログラムを削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
 
-        await tester.tap(find.text('すべて削除'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('すべて削除'));
+      await tester.pumpAndSettle();
 
-        expect(mockRepo.deletedIds, containsAll(['p1', 'p2']));
-        expect(onDeletedCalled, isTrue);
-      },
-    );
+      expect(mockRepo.deletedIds, containsAll(['p1', 'p2']));
+      expect(onDeletedCalled, isTrue);
+    });
   });
 }

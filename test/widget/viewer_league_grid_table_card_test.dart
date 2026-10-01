@@ -5,7 +5,7 @@ import 'package:kendo_os/features/viewer/components/viewer_league_grid_table_car
 
 void main() {
   group('[Widget] ViewerLeagueGridTableCard ウィジェットテスト', () {
-    testWidgets('Renders league grid table headers and ranksであること', (
+    testWidgets('league grid テーブル headers and ranksが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final match1 = MatchModel(

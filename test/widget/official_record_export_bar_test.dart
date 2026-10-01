@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 void main() {
   group('[Widget] OfficialRecordExportBar ウィジェットテスト', () {
-    testWidgets('Renders all 3 export buttons and handles callbacksであること', (
+    testWidgets('all 3 export ボタン一覧 and handles callbacksが正しく描画されること', (
       WidgetTester tester,
     ) async {
       bool pdfTapped = false;
@@ -76,71 +76,70 @@ void main() {
       expect(find.text('PDF'), findsOneWidget);
     });
 
-    testWidgets(
-      'Shows AppSwitch and switches labels when switch or label is tappedであること',
-      (WidgetTester tester) async {
-        OfficialRecordExportScope? selectedScope;
+    testWidgets('【AppSwitch】スイッチまたはラベルのタップ時にラベルが切り替わること', (
+      WidgetTester tester,
+    ) async {
+      OfficialRecordExportScope? selectedScope;
 
-        await tester.pumpWidget(
-          StatefulBuilder(
-            builder: (context, setState) {
-              return MaterialApp(
-                home: Scaffold(
-                  body: OfficialRecordExportBar(
-                    isExporting: false,
-                    isDark: false,
-                    hasMultipleCategories: true,
-                    exportScope:
-                        selectedScope ?? OfficialRecordExportScope.current,
-                    onScopeChanged: (scope) {
-                      setState(() {
-                        selectedScope = scope;
-                      });
-                    },
-                  ),
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            return MaterialApp(
+              home: Scaffold(
+                body: OfficialRecordExportBar(
+                  isExporting: false,
+                  isDark: false,
+                  hasMultipleCategories: true,
+                  exportScope:
+                      selectedScope ?? OfficialRecordExportScope.current,
+                  onScopeChanged: (scope) {
+                    setState(() {
+                      selectedScope = scope;
+                    });
+                  },
                 ),
-              );
-            },
-          ),
-        );
+              ),
+            );
+          },
+        ),
+      );
 
-        // 初期表示確認: スイッチOFF
-        expect(find.text('全カテゴリを一括出力'), findsOneWidget);
-        expect(find.byType(AppSwitch), findsOneWidget);
-        final switchWidgetInitial = tester.widget<AppSwitch>(
-          find.byType(AppSwitch),
-        );
-        expect(switchWidgetInitial.value, isFalse);
-        expect(find.text('PDF'), findsOneWidget);
-        expect(find.text('画像'), findsOneWidget);
-        expect(find.text('CSV'), findsOneWidget);
+      // 初期表示確認: スイッチOFF
+      expect(find.text('全カテゴリを一括出力'), findsOneWidget);
+      expect(find.byType(AppSwitch), findsOneWidget);
+      final switchWidgetInitial = tester.widget<AppSwitch>(
+        find.byType(AppSwitch),
+      );
+      expect(switchWidgetInitial.value, isFalse);
+      expect(find.text('PDF'), findsOneWidget);
+      expect(find.text('画像'), findsOneWidget);
+      expect(find.text('CSV'), findsOneWidget);
 
-        // ラベルまたはスイッチをタップ
-        await tester.tap(find.text('全カテゴリを一括出力'));
-        await tester.pumpAndSettle();
+      // ラベルまたはスイッチをタップ
+      await tester.tap(find.text('全カテゴリを一括出力'));
+      await tester.pumpAndSettle();
 
-        expect(selectedScope, OfficialRecordExportScope.all);
-        final switchWidgetActive = tester.widget<AppSwitch>(
-          find.byType(AppSwitch),
-        );
-        expect(switchWidgetActive.value, isTrue);
-        expect(find.text('PDF（全）'), findsOneWidget);
-        expect(find.text('画像（全）'), findsOneWidget);
-        expect(find.text('CSV（全）'), findsOneWidget);
+      expect(selectedScope, OfficialRecordExportScope.all);
+      final switchWidgetActive = tester.widget<AppSwitch>(
+        find.byType(AppSwitch),
+      );
+      expect(switchWidgetActive.value, isTrue);
+      expect(find.text('PDF（全）'), findsOneWidget);
+      expect(find.text('画像（全）'), findsOneWidget);
+      expect(find.text('CSV（全）'), findsOneWidget);
 
-        // スイッチ自体をタップして解除
-        await tester.tap(find.byType(AppSwitch));
-        await tester.pumpAndSettle();
+      // スイッチ自体をタップして解除
+      await tester.tap(find.byType(AppSwitch));
+      await tester.pumpAndSettle();
 
-        expect(selectedScope, OfficialRecordExportScope.current);
-        final switchWidgetInactive = tester.widget<AppSwitch>(
-          find.byType(AppSwitch),
-        );
-        expect(switchWidgetInactive.value, isFalse);
-        expect(find.text('PDF'), findsOneWidget);
-        expect(find.text('画像'), findsOneWidget);
-        expect(find.text('CSV'), findsOneWidget);
-      },
-    );
+      expect(selectedScope, OfficialRecordExportScope.current);
+      final switchWidgetInactive = tester.widget<AppSwitch>(
+        find.byType(AppSwitch),
+      );
+      expect(switchWidgetInactive.value, isFalse);
+      expect(find.text('PDF'), findsOneWidget);
+      expect(find.text('画像'), findsOneWidget);
+      expect(find.text('CSV'), findsOneWidget);
+    });
   });
 }

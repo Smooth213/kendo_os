@@ -20,7 +20,7 @@ void main() {
       expect(widget, isA<pw.Widget>());
     });
 
-    test('buildTeamResultCell handles draw and win casesであること', () {
+    test('【buildTeamResultCell】draw and win casesが適切に処理されること', () {
       final drawWidget = PdfTeamTableCellRenderer.buildTeamResultCell(
         'draw',
         ttfBold,
@@ -34,7 +34,7 @@ void main() {
       expect(winWidget, isNotNull);
     });
 
-    test('buildNameCell handles single and duplicated last namesであること', () {
+    test('【buildNameCell】single and duplicated last namesが適切に処理されること', () {
       final nameWidget = PdfTeamTableCellRenderer.buildNameCell('東京道場 : 佐藤 健', [
         '佐藤',
         '武田',

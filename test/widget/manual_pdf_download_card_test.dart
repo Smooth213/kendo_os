@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 void main() {
   group('[Widget] ManualPdfDownloadCard ウィジェットテスト', () {
     testWidgets(
-      'Renders download card and responds to download and text fallback tapsであること',
+      'download カード and responds to download and テキスト fallback tapsが正しく描画されること',
       (tester) async {
         bool downloadPressed = false;
         bool fallbackPressed = false;

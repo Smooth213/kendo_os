@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryLeaguePointsSection ウィジェットテスト', () {
-    testWidgets('Renders league points text fields and handles inputであること', (
+    testWidgets('league points テキスト fields and handles inputが正しく描画されること', (
       WidgetTester tester,
     ) async {
       double win = 3.0;

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('CategoryRuleFormSection renders title and time stepperであること', (
+  testWidgets('【CategoryRuleFormSection】タイトルおよび時間ステッパーが描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

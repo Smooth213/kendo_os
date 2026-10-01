@@ -64,82 +64,76 @@ void main() {
       fakeFirestore = FakeFirebaseFirestore();
     });
 
-    testWidgets(
-      'Web Environment: Should load match records from Firestoreであること',
-      (WidgetTester tester) async {
-        debugIsWebOverride = true; // Simulate Web
-        addTearDown(() => debugIsWebOverride = false);
+    testWidgets('【Web環境】Firestoreから試合記録が正しく読み込まれること', (
+      WidgetTester tester,
+    ) async {
+      debugIsWebOverride = true; // Simulate Web
+      addTearDown(() => debugIsWebOverride = false);
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        // Pre-populate match in Fake Cloud Firestore
-        await fakeFirestore
-            .collection('organizations')
-            .doc('test_dojo_id')
-            .collection('tournaments')
-            .doc(dateId)
-            .collection('matches')
-            .doc(mockMatch.id)
-            .set(mockMatch.toJson());
+      // Pre-populate match in Fake Cloud Firestore
+      await fakeFirestore
+          .collection('organizations')
+          .doc('test_dojo_id')
+          .collection('tournaments')
+          .doc(dateId)
+          .collection('matches')
+          .doc(mockMatch.id)
+          .set(mockMatch.toJson());
 
-        final container = ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-            bunaiksenViewDateProvider.overrideWith(
-              (ref) => DateTime(2026, 7, 3),
-            ),
-          ],
-          child: const MaterialApp(home: BunaiksenOfficialRecordScreen()),
-        );
+      final container = ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+          bunaiksenViewDateProvider.overrideWith((ref) => DateTime(2026, 7, 3)),
+        ],
+        child: const MaterialApp(home: BunaiksenOfficialRecordScreen()),
+      );
 
-        await tester.pumpWidget(container);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(container);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
-        // Verify loaded data
-        expect(find.text('この日の記録データはありません'), findsNothing);
-        expect(find.text('一般の部'), findsOneWidget);
-        expect(find.textContaining('選手A'), findsOneWidget);
-        expect(find.textContaining('選手B'), findsOneWidget);
-      },
-    );
+      // Verify loaded data
+      expect(find.text('この日の記録データはありません'), findsNothing);
+      expect(find.text('一般の部'), findsOneWidget);
+      expect(find.textContaining('選手A'), findsOneWidget);
+      expect(find.textContaining('選手B'), findsOneWidget);
+    });
 
-    testWidgets(
-      'Native Environment: Should load match records from Local Database (Isar)こと',
-      (WidgetTester tester) async {
-        debugIsWebOverride = false; // Simulate Native
+    testWidgets('【ネイティブ環境】ローカルDB（Isar）から試合記録が正しく読み込まれること', (
+      WidgetTester tester,
+    ) async {
+      debugIsWebOverride = false; // Simulate Native
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        final fakeRepo = FakeLocalMatchRepository([mockMatch]);
+      final fakeRepo = FakeLocalMatchRepository([mockMatch]);
 
-        final container = ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            localMatchRepositoryProvider.overrideWithValue(fakeRepo),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-            bunaiksenViewDateProvider.overrideWith(
-              (ref) => DateTime(2026, 7, 3),
-            ),
-          ],
-          child: const MaterialApp(home: BunaiksenOfficialRecordScreen()),
-        );
+      final container = ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          localMatchRepositoryProvider.overrideWithValue(fakeRepo),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+          bunaiksenViewDateProvider.overrideWith((ref) => DateTime(2026, 7, 3)),
+        ],
+        child: const MaterialApp(home: BunaiksenOfficialRecordScreen()),
+      );
 
-        await tester.pumpWidget(container);
-        await tester.pump();
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(container);
+      await tester.pump();
+      await tester.pumpAndSettle();
 
-        // Verify loaded data
-        expect(find.text('この日の記録データはありません'), findsNothing);
-        expect(find.text('一般の部'), findsOneWidget);
-        expect(find.textContaining('選手A'), findsOneWidget);
-        expect(find.textContaining('選手B'), findsOneWidget);
-      },
-    );
+      // Verify loaded data
+      expect(find.text('この日の記録データはありません'), findsNothing);
+      expect(find.text('一般の部'), findsOneWidget);
+      expect(find.textContaining('選手A'), findsOneWidget);
+      expect(find.textContaining('選手B'), findsOneWidget);
+    });
   });
 }

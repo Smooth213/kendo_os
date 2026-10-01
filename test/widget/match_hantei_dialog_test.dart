@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   group('[Widget] MatchHanteiDialog ウィジェットテスト', () {
     testWidgets(
-      'Renders MatchHanteiDialog and responds to selection (Red, White, Draw, Cancel)こと',
+      'MatchHanteiDialog and responds to 選択 (Red, White, Draw, Cancel)が正しく描画されること',
       (WidgetTester tester) async {
         String? selectedResult = 'initial';
 

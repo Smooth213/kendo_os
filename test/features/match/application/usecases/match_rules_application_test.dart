@@ -349,157 +349,151 @@ void main() {
       },
     );
 
-    test(
-      'deleteMatch on Web deletes directly from Firestore and updates optimistic UI stateであること',
-      () async {
-        // Simulate Web environment
-        debugIsWebOverride = true;
-        addTearDown(() {
-          debugIsWebOverride = false;
-        });
+    test('【deleteMatch】Web環境でFirestoreから直接削除され楽観的UI更新が行われること', () async {
+      // Simulate Web environment
+      debugIsWebOverride = true;
+      addTearDown(() {
+        debugIsWebOverride = false;
+      });
 
-        final matchToDelete = const MatchModel(
-          id: 'web_delete_match',
-          tournamentId: 'test_tournament_rules',
-          category: '小学生の部',
-          matchType: '個人戦',
-          redName: '赤',
-          whiteName: '白',
-          status: 'waiting',
-          organizationId: 'test_dojo_id',
-        );
+      final matchToDelete = const MatchModel(
+        id: 'web_delete_match',
+        tournamentId: 'test_tournament_rules',
+        category: '小学生の部',
+        matchType: '個人戦',
+        redName: '赤',
+        whiteName: '白',
+        status: 'waiting',
+        organizationId: 'test_dojo_id',
+      );
 
-        // Write match to Fake Firestore
-        await fakeFirestore
-            .collection('organizations')
-            .doc('test_dojo_id')
-            .collection('tournaments')
-            .doc('test_tournament_rules')
-            .collection('matches')
-            .doc(matchToDelete.id)
-            .set(matchToDelete.toJson());
+      // Write match to Fake Firestore
+      await fakeFirestore
+          .collection('organizations')
+          .doc('test_dojo_id')
+          .collection('tournaments')
+          .doc('test_tournament_rules')
+          .collection('matches')
+          .doc(matchToDelete.id)
+          .set(matchToDelete.toJson());
 
-        final container = ProviderContainer(
-          overrides: [
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-            currentTournamentIdProvider.overrideWith(
-              (ref) => 'test_tournament_rules',
-            ),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-            matchRepositoryProvider.overrideWith((ref) {
-              return MatchRepository(
-                fakeFirestore,
-                'test_dojo_id',
-                'test_tournament_rules',
-              );
-            }),
-          ],
-        );
+      final container = ProviderContainer(
+        overrides: [
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+          currentTournamentIdProvider.overrideWith(
+            (ref) => 'test_tournament_rules',
+          ),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+          matchRepositoryProvider.overrideWith((ref) {
+            return MatchRepository(
+              fakeFirestore,
+              'test_dojo_id',
+              'test_tournament_rules',
+            );
+          }),
+        ],
+      );
 
-        // Initialize the web matches list state with our match
-        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
-          matchToDelete,
-        ];
+      // Initialize the web matches list state with our match
+      container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+        matchToDelete,
+      ];
 
-        // Execute deleteMatch
-        await container
-            .read(matchCommandProvider)
-            .deleteMatch('web_delete_match');
+      // Execute deleteMatch
+      await container
+          .read(matchCommandProvider)
+          .deleteMatch('web_delete_match');
 
-        // Verify optimistic UI state update: match is removed from webCurrentTournamentMatchesProvider
-        final currentWebMatches = container.read(
-          webCurrentTournamentMatchesProvider,
-        );
-        expect(currentWebMatches, isEmpty);
+      // Verify optimistic UI state update: match is removed from webCurrentTournamentMatchesProvider
+      final currentWebMatches = container.read(
+        webCurrentTournamentMatchesProvider,
+      );
+      expect(currentWebMatches, isEmpty);
 
-        // Verify Firestore deletion: match document is deleted
-        final snap = await fakeFirestore
-            .collection('organizations')
-            .doc('test_dojo_id')
-            .collection('tournaments')
-            .doc('test_tournament_rules')
-            .collection('matches')
-            .doc(matchToDelete.id)
-            .get();
-        expect(snap.exists, isFalse);
-      },
-    );
+      // Verify Firestore deletion: match document is deleted
+      final snap = await fakeFirestore
+          .collection('organizations')
+          .doc('test_dojo_id')
+          .collection('tournaments')
+          .doc('test_tournament_rules')
+          .collection('matches')
+          .doc(matchToDelete.id)
+          .get();
+      expect(snap.exists, isFalse);
+    });
 
-    test(
-      'deleteMatch on Web dynamically updates currentTournamentIdProvider and currentDojoIdProvider from MatchModel when they are empty/incorrectであること',
-      () async {
-        // Simulate Web environment
-        debugIsWebOverride = true;
-        addTearDown(() {
-          debugIsWebOverride = false;
-        });
+    test('【deleteMatch】Web環境でプロバイダ情報が不足時にMatchModelから動的補完されること', () async {
+      // Simulate Web environment
+      debugIsWebOverride = true;
+      addTearDown(() {
+        debugIsWebOverride = false;
+      });
 
-        final matchToDelete = const MatchModel(
-          id: 'web_dynamic_delete_match',
-          tournamentId: 'correct_tournament_id',
-          category: '小学生の部',
-          matchType: '個人戦',
-          redName: '赤',
-          whiteName: '白',
-          status: 'waiting',
-          organizationId: 'correct_dojo_id',
-        );
+      final matchToDelete = const MatchModel(
+        id: 'web_dynamic_delete_match',
+        tournamentId: 'correct_tournament_id',
+        category: '小学生の部',
+        matchType: '個人戦',
+        redName: '赤',
+        whiteName: '白',
+        status: 'waiting',
+        organizationId: 'correct_dojo_id',
+      );
 
-        // Write match to Fake Firestore at the CORRECT path
-        await fakeFirestore
-            .collection('organizations')
-            .doc('correct_dojo_id')
-            .collection('tournaments')
-            .doc('correct_tournament_id')
-            .collection('matches')
-            .doc(matchToDelete.id)
-            .set(matchToDelete.toJson());
+      // Write match to Fake Firestore at the CORRECT path
+      await fakeFirestore
+          .collection('organizations')
+          .doc('correct_dojo_id')
+          .collection('tournaments')
+          .doc('correct_tournament_id')
+          .collection('matches')
+          .doc(matchToDelete.id)
+          .set(matchToDelete.toJson());
 
-        // Create container with initially EMPTY / WRONG paths
-        final container = ProviderContainer(
-          overrides: [
-            currentDojoIdProvider.overrideWith((ref) => 'initial_wrong_dojo'),
-            currentTournamentIdProvider.overrideWith(
-              (ref) => 'initial_wrong_tournament',
-            ),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-            matchRepositoryProvider.overrideWith((ref) {
-              final dojoId = ref.watch(currentDojoIdProvider);
-              final tournamentId = ref.watch(currentTournamentIdProvider);
-              return MatchRepository(fakeFirestore, dojoId, tournamentId);
-            }),
-          ],
-        );
+      // Create container with initially EMPTY / WRONG paths
+      final container = ProviderContainer(
+        overrides: [
+          currentDojoIdProvider.overrideWith((ref) => 'initial_wrong_dojo'),
+          currentTournamentIdProvider.overrideWith(
+            (ref) => 'initial_wrong_tournament',
+          ),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+          matchRepositoryProvider.overrideWith((ref) {
+            final dojoId = ref.watch(currentDojoIdProvider);
+            final tournamentId = ref.watch(currentTournamentIdProvider);
+            return MatchRepository(fakeFirestore, dojoId, tournamentId);
+          }),
+        ],
+      );
 
-        // Initialize the web matches list state with our match
-        container.read(webCurrentTournamentMatchesProvider.notifier).state = [
-          matchToDelete,
-        ];
+      // Initialize the web matches list state with our match
+      container.read(webCurrentTournamentMatchesProvider.notifier).state = [
+        matchToDelete,
+      ];
 
-        // Execute deleteMatch - this should dynamically repair the providers
-        await container
-            .read(matchCommandProvider)
-            .deleteMatch('web_dynamic_delete_match');
+      // Execute deleteMatch - this should dynamically repair the providers
+      await container
+          .read(matchCommandProvider)
+          .deleteMatch('web_dynamic_delete_match');
 
-        // Verify that providers were dynamically updated to correct values
-        expect(container.read(currentDojoIdProvider), 'correct_dojo_id');
-        expect(
-          container.read(currentTournamentIdProvider),
-          'correct_tournament_id',
-        );
+      // Verify that providers were dynamically updated to correct values
+      expect(container.read(currentDojoIdProvider), 'correct_dojo_id');
+      expect(
+        container.read(currentTournamentIdProvider),
+        'correct_tournament_id',
+      );
 
-        // Verify Firestore deletion: match document is deleted from the correct path
-        final snap = await fakeFirestore
-            .collection('organizations')
-            .doc('correct_dojo_id')
-            .collection('tournaments')
-            .doc('correct_tournament_id')
-            .collection('matches')
-            .doc(matchToDelete.id)
-            .get();
-        expect(snap.exists, isFalse);
-      },
-    );
+      // Verify Firestore deletion: match document is deleted from the correct path
+      final snap = await fakeFirestore
+          .collection('organizations')
+          .doc('correct_dojo_id')
+          .collection('tournaments')
+          .doc('correct_tournament_id')
+          .collection('matches')
+          .doc(matchToDelete.id)
+          .get();
+      expect(snap.exists, isFalse);
+    });
 
     test(
       'deleteMatch on Web does NOT overwrite active currentDojoIdProvider when match has default_orgであること',
@@ -572,7 +566,7 @@ void main() {
     );
 
     test(
-      'Team match creation with substitute player does NOT generate extra match slot for substituteであること',
+      'チーム 試合 creation with substitute 選手 does NOT generate extra 試合 slot for substituteこと',
       () {
         // Team playerNames has 6 players: 5 starters + 1 substitute
         final teamPlayerNames = [
@@ -613,37 +607,32 @@ void main() {
       },
     );
 
-    test(
-      'Registered team substitute players who are not in active match slots are correctly identified as bench waiting reserve players (teamSubstitutes)こと',
-      () {
-        final teamPlayerNames = [
-          '先鋒太郎',
-          '次鋒次郎',
-          '中堅三郎',
-          '副将四郎',
-          '大将五郎',
-          '補欠六郎',
-          '補欠七郎',
-        ];
+    test('【選手登録】試合枠外の登録控え選手がベンチ待機補欠（teamSubstitutes）として識別されること', () {
+      final teamPlayerNames = [
+        '先鋒太郎',
+        '次鋒次郎',
+        '中堅三郎',
+        '副将四郎',
+        '大将五郎',
+        '補欠六郎',
+        '補欠七郎',
+      ];
 
-        // Active starting players in the 5 created match slots
-        final activePlayerNames = {'先鋒太郎', '次鋒次郎', '中堅三郎', '副将四郎', '大将五郎'};
+      // Active starting players in the 5 created match slots
+      final activePlayerNames = {'先鋒太郎', '次鋒次郎', '中堅三郎', '副将四郎', '大将五郎'};
 
-        // Identify substitute (reserve) players: in team.playerNames but NOT in active starting slots
-        final teamSubstitutes = teamPlayerNames
-            .where(
-              (name) => name.isNotEmpty && !activePlayerNames.contains(name),
-            )
-            .toList();
+      // Identify substitute (reserve) players: in team.playerNames but NOT in active starting slots
+      final teamSubstitutes = teamPlayerNames
+          .where((name) => name.isNotEmpty && !activePlayerNames.contains(name))
+          .toList();
 
-        // Verify that starting 5 players are active in match slots
-        expect(activePlayerNames.length, equals(5));
+      // Verify that starting 5 players are active in match slots
+      expect(activePlayerNames.length, equals(5));
 
-        // Verify that 6th and 7th players are identified as waiting reserve players (ベンチ待機選手)
-        expect(teamSubstitutes, equals(['補欠六郎', '補欠七郎']));
-        expect(teamSubstitutes.contains('大将五郎'), isFalse);
-      },
-    );
+      // Verify that 6th and 7th players are identified as waiting reserve players (ベンチ待機選手)
+      expect(teamSubstitutes, equals(['補欠六郎', '補欠七郎']));
+      expect(teamSubstitutes.contains('大将五郎'), isFalse);
+    });
 
     test(
       'Renseikai candidate player chips filter by match category when same team name exists across categoriesであること',
@@ -706,133 +695,124 @@ void main() {
       },
     );
 
-    test(
-      'Verification that extension match decisions correctly set isEncho flag for score cards and official recordsであること',
-      () {
-        // 1. Regular match finished in regular time (not extension) -> isEncho = false
-        final regularFinishedMatch = const MatchModel(
-          id: 'm1',
-          matchType: '通常',
-          redName: '選手A',
-          whiteName: '選手B',
-          redScore: 2,
-          whiteScore: 1,
-          status: 'approved',
-          note: '',
-        );
-        expect(
-          MatchCalculatorHelper.isEnchoFromModel(regularFinishedMatch),
-          isFalse,
-        );
+    test('【延長判定】スコアカードおよび公式記録用で正しくisEnchoフラグが設定されること', () {
+      // 1. Regular match finished in regular time (not extension) -> isEncho = false
+      final regularFinishedMatch = const MatchModel(
+        id: 'm1',
+        matchType: '通常',
+        redName: '選手A',
+        whiteName: '選手B',
+        redScore: 2,
+        whiteScore: 1,
+        status: 'approved',
+        note: '',
+      );
+      expect(
+        MatchCalculatorHelper.isEnchoFromModel(regularFinishedMatch),
+        isFalse,
+      );
 
-        // 2. Representative match (代表戦) without extension (本戦決着) -> isEncho = false
-        final daihyoMatch = const MatchModel(
-          id: 'm2',
-          matchType: '代表戦',
-          redName: '代表A',
-          whiteName: '代表B',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'approved',
-          note: '',
-        );
-        expect(MatchCalculatorHelper.isEnchoFromModel(daihyoMatch), isFalse);
+      // 2. Representative match (代表戦) without extension (本戦決着) -> isEncho = false
+      final daihyoMatch = const MatchModel(
+        id: 'm2',
+        matchType: '代表戦',
+        redName: '代表A',
+        whiteName: '代表B',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'approved',
+        note: '',
+      );
+      expect(MatchCalculatorHelper.isEnchoFromModel(daihyoMatch), isFalse);
 
-        // 2-2. Representative match (代表戦) with extension -> isEncho = true
-        final daihyoEnchoMatch = const MatchModel(
-          id: 'm2_ext',
-          matchType: '代表戦',
-          redName: '代表A',
-          whiteName: '代表B',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'approved',
-          note: '代表戦 延長1回目',
-        );
-        expect(
-          MatchCalculatorHelper.isEnchoFromModel(daihyoEnchoMatch),
-          isTrue,
-        );
+      // 2-2. Representative match (代表戦) with extension -> isEncho = true
+      final daihyoEnchoMatch = const MatchModel(
+        id: 'm2_ext',
+        matchType: '代表戦',
+        redName: '代表A',
+        whiteName: '代表B',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'approved',
+        note: '代表戦 延長1回目',
+      );
+      expect(MatchCalculatorHelper.isEnchoFromModel(daihyoEnchoMatch), isTrue);
 
-        // 3. Match with note containing "延長" -> isEncho = true
-        final enchoNoteMatch = const MatchModel(
-          id: 'm3',
-          matchType: '通常',
-          redName: '選手C',
-          whiteName: '選手D',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'approved',
-          note: '延長戦にて決着',
-        );
-        expect(MatchCalculatorHelper.isEnchoFromModel(enchoNoteMatch), isTrue);
+      // 3. Match with note containing "延長" -> isEncho = true
+      final enchoNoteMatch = const MatchModel(
+        id: 'm3',
+        matchType: '通常',
+        redName: '選手C',
+        whiteName: '選手D',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'approved',
+        note: '延長戦にて決着',
+      );
+      expect(MatchCalculatorHelper.isEnchoFromModel(enchoNoteMatch), isTrue);
 
-        // 4. Kachinuki / Taisho extension match (大将延長戦) -> isEncho = true
-        final taishoEnchoMatch = const MatchModel(
-          id: 'm4',
-          matchType: '大将延長戦',
-          redName: '大将A',
-          whiteName: '大将B',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'approved',
-          note: '',
-        );
-        expect(
-          MatchCalculatorHelper.isEnchoFromModel(taishoEnchoMatch),
-          isTrue,
-        );
+      // 4. Kachinuki / Taisho extension match (大将延長戦) -> isEncho = true
+      final taishoEnchoMatch = const MatchModel(
+        id: 'm4',
+        matchType: '大将延長戦',
+        redName: '大将A',
+        whiteName: '大将B',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'approved',
+        note: '',
+      );
+      expect(MatchCalculatorHelper.isEnchoFromModel(taishoEnchoMatch), isTrue);
 
-        // 5. Match with hasExtension rule enabled but finished in regulation -> isEncho = false
-        final hasExtWinnerMatch = const MatchModel(
-          id: 'm5',
-          matchType: '通常',
-          redName: '選手E',
-          whiteName: '選手F',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'approved',
-          hasExtension: true,
-          extensionCount: 0,
-          note: '',
-        );
-        expect(
-          MatchCalculatorHelper.isEnchoFromModel(hasExtWinnerMatch),
-          isFalse,
-        );
+      // 5. Match with hasExtension rule enabled but finished in regulation -> isEncho = false
+      final hasExtWinnerMatch = const MatchModel(
+        id: 'm5',
+        matchType: '通常',
+        redName: '選手E',
+        whiteName: '選手F',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'approved',
+        hasExtension: true,
+        extensionCount: 0,
+        note: '',
+      );
+      expect(
+        MatchCalculatorHelper.isEnchoFromModel(hasExtWinnerMatch),
+        isFalse,
+      );
 
-        // 5-2. Match with actual extension -> isEncho = true
-        final actualExtMatch = const MatchModel(
-          id: 'm5_ext',
-          matchType: '通常',
-          redName: '選手E',
-          whiteName: '選手F',
-          redScore: 1,
-          whiteScore: 0,
-          status: 'approved',
-          hasExtension: true,
-          extensionCount: 1,
-          note: '延長1回目',
-        );
-        expect(MatchCalculatorHelper.isEnchoFromModel(actualExtMatch), isTrue);
+      // 5-2. Match with actual extension -> isEncho = true
+      final actualExtMatch = const MatchModel(
+        id: 'm5_ext',
+        matchType: '通常',
+        redName: '選手E',
+        whiteName: '選手F',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'approved',
+        hasExtension: true,
+        extensionCount: 1,
+        note: '延長1回目',
+      );
+      expect(MatchCalculatorHelper.isEnchoFromModel(actualExtMatch), isTrue);
 
-        // 6. Unfinished match should return false
-        final unfinishedEnchoMatch = const MatchModel(
-          id: 'm6',
-          matchType: '代表戦',
-          redName: '代表A',
-          whiteName: '代表B',
-          redScore: 0,
-          whiteScore: 0,
-          status: 'running',
-          note: '延長戦',
-        );
-        expect(
-          MatchCalculatorHelper.isEnchoFromModel(unfinishedEnchoMatch),
-          isFalse,
-        );
-      },
-    );
+      // 6. Unfinished match should return false
+      final unfinishedEnchoMatch = const MatchModel(
+        id: 'm6',
+        matchType: '代表戦',
+        redName: '代表A',
+        whiteName: '代表B',
+        redScore: 0,
+        whiteScore: 0,
+        status: 'running',
+        note: '延長戦',
+      );
+      expect(
+        MatchCalculatorHelper.isEnchoFromModel(unfinishedEnchoMatch),
+        isFalse,
+      );
+    });
 
     test(
       'Verification that court text and progress header memo are preserved on MatchModel noteであること',
@@ -855,56 +835,53 @@ void main() {
       },
     );
 
-    test(
-      'Verification that MatchEditSheet correctly detects match rule scene preset key for chip selectionであること',
-      () {
-        String detectPresetKey(MatchModel match) {
-          final r = match.rule ?? const MatchRule();
-          if (r.isRenseikai ||
-              r.matchScene == 'renseikai' ||
-              match.matchScene == 'renseikai') {
-            return 'renseikai';
-          } else if (r.matchScene == 'moushiawase' ||
-              match.matchScene == 'moushiawase') {
-            return 'moushiawase';
-          } else if (r.matchScene == 'honsen' || match.matchScene == 'honsen') {
-            return 'honsen';
-          } else {
-            return 'honsen';
-          }
+    test('【MatchEditSheet】チップ選択用の試合ルール・シーンプリセットキーが正しく検知されること', () {
+      String detectPresetKey(MatchModel match) {
+        final r = match.rule ?? const MatchRule();
+        if (r.isRenseikai ||
+            r.matchScene == 'renseikai' ||
+            match.matchScene == 'renseikai') {
+          return 'renseikai';
+        } else if (r.matchScene == 'moushiawase' ||
+            match.matchScene == 'moushiawase') {
+          return 'moushiawase';
+        } else if (r.matchScene == 'honsen' || match.matchScene == 'honsen') {
+          return 'honsen';
+        } else {
+          return 'honsen';
         }
+      }
 
-        const honsenMatch = MatchModel(
-          id: 'm11_1',
-          matchType: '先鋒',
-          redName: 'Aチーム : 先鋒A',
-          whiteName: 'Bチーム : 先鋒B',
-          matchScene: 'honsen',
-          rule: MatchRule(matchScene: 'honsen'),
-        );
-        expect(detectPresetKey(honsenMatch), equals('honsen'));
+      const honsenMatch = MatchModel(
+        id: 'm11_1',
+        matchType: '先鋒',
+        redName: 'Aチーム : 先鋒A',
+        whiteName: 'Bチーム : 先鋒B',
+        matchScene: 'honsen',
+        rule: MatchRule(matchScene: 'honsen'),
+      );
+      expect(detectPresetKey(honsenMatch), equals('honsen'));
 
-        const renseikaiMatch = MatchModel(
-          id: 'm11_2',
-          matchType: '先鋒',
-          redName: 'Aチーム : 先鋒A',
-          whiteName: 'Bチーム : 先鋒B',
-          matchScene: 'renseikai',
-          rule: MatchRule(matchScene: 'renseikai', isRenseikai: true),
-        );
-        expect(detectPresetKey(renseikaiMatch), equals('renseikai'));
+      const renseikaiMatch = MatchModel(
+        id: 'm11_2',
+        matchType: '先鋒',
+        redName: 'Aチーム : 先鋒A',
+        whiteName: 'Bチーム : 先鋒B',
+        matchScene: 'renseikai',
+        rule: MatchRule(matchScene: 'renseikai', isRenseikai: true),
+      );
+      expect(detectPresetKey(renseikaiMatch), equals('renseikai'));
 
-        const moushiawaseMatch = MatchModel(
-          id: 'm11_3',
-          matchType: '先鋒',
-          redName: 'Aチーム : 先鋒A',
-          whiteName: 'Bチーム : 先鋒B',
-          matchScene: 'moushiawase',
-          rule: MatchRule(matchScene: 'moushiawase', isRenseikai: false),
-        );
-        expect(detectPresetKey(moushiawaseMatch), equals('moushiawase'));
-      },
-    );
+      const moushiawaseMatch = MatchModel(
+        id: 'm11_3',
+        matchType: '先鋒',
+        redName: 'Aチーム : 先鋒A',
+        whiteName: 'Bチーム : 先鋒B',
+        matchScene: 'moushiawase',
+        rule: MatchRule(matchScene: 'moushiawase', isRenseikai: false),
+      );
+      expect(detectPresetKey(moushiawaseMatch), equals('moushiawase'));
+    });
 
     test(
       'Verification that Renseikai candidate player chips strictly include only own category team players and reserve playersであること',
@@ -992,7 +969,7 @@ void main() {
     );
 
     test(
-      'Verification that match rule scenes (renseikai, moushiawase, honsen) and hasHantei state are accurately saved and applied across environmentsであること',
+      'Verification that 試合 ルール scenes (renseikai, moushiawase, honsen) and hasHantei state are accurately saved and applied across environmentsこと',
       () {
         const initialMatch = MatchModel(
           id: 'm13_1',

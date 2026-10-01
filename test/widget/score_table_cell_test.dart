@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
   group('[Widget] ScoreTableCell ウィジェットテスト', () {
-    testWidgets('Renders PointBoxes for red and white with pointsであること', (
+    testWidgets('PointBoxes for red and white with pointsが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
@@ -34,35 +34,31 @@ void main() {
       expect(find.byType(PointBox), findsNWidgets(2));
     });
 
-    testWidgets(
-      'Renders draw mark  when match finished with equal scoreであること',
-      (WidgetTester tester) async {
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
+    testWidgets('【試合 終了済み with equal スコア】draw markが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(extensions: [themeColors]),
-            home: const Scaffold(
-              body: ScoreTableCell(
-                isFinished: true,
-                redScore: 0,
-                whiteScore: 0,
-                redPoints: [],
-                whitePoints: [],
-                isDark: false,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: [themeColors]),
+          home: const Scaffold(
+            body: ScoreTableCell(
+              isFinished: true,
+              redScore: 0,
+              whiteScore: 0,
+              redPoints: [],
+              whitePoints: [],
+              isDark: false,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('✕'), findsOneWidget);
-      },
-    );
+      expect(find.text('✕'), findsOneWidget);
+    });
 
-    testWidgets('Renders encho badges 延 / 長 when isEncho is trueであること', (
+    testWidgets('【isEncho is true】encho badges 延 / 長が正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

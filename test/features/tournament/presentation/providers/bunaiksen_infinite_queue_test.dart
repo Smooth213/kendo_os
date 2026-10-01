@@ -76,7 +76,7 @@ void main() {
       },
     );
 
-    test('Shuffling the queue preserves all elements and countであること', () {
+    test('キューのシャッフル時に全要素および件数が保持されること', () {
       final originalList = ['山田', '佐藤', '田中', '鈴木', '高橋'];
       queueNotifier.setPlayers(originalList);
 
@@ -87,7 +87,7 @@ void main() {
       expect(shuffledList, containsAll(originalList));
     });
 
-    test('Reordering via Drag and Drop works correctly for both directionsであること', () {
+    test('ドラッグ＆ドロップによる並び替えが双方向で正常に動作すること', () {
       // Yamada (0), Sato (1), Tanaka (2), Suzuki (3)
       queueNotifier.setPlayers(['山田', '佐藤', '田中', '鈴木']);
 

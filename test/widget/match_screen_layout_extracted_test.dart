@@ -8,9 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] MatchScreen Extracted Components テスト', () {
-    testWidgets('MatchHeaderTitle renders matchType and namesであること', (
-      tester,
-    ) async {
+    testWidgets('【MatchHeaderTitle】試合形式および選手名が正しく描画されること', (tester) async {
       final match = MatchModel(
         id: 'm1',
         matchOrder: 1,

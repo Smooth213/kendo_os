@@ -40,90 +40,78 @@ void main() {
       await setupTestFirebase();
     });
 
-    test(
-      'Should return isEcoMode=true when enableLiquidGlass is disabledであること',
-      () {
-        final container = ProviderContainer(
-          overrides: [
-            settingsProvider.overrideWith(
-              () => FakeSettingsNotifier(
-                const SettingsModel(enableLiquidGlass: false),
+    test('【enableLiquidGlass is disabled】isEcoMode=trueが返却されること', () {
+      final container = ProviderContainer(
+        overrides: [
+          settingsProvider.overrideWith(
+            () => FakeSettingsNotifier(
+              const SettingsModel(enableLiquidGlass: false),
+            ),
+          ),
+          batteryStateProvider.overrideWith(
+            () => FakeBatteryNotifier(
+              const BatteryStateData(
+                batteryLevel: 100,
+                isInPowerSaveMode: false,
               ),
             ),
-            batteryStateProvider.overrideWith(
-              () => FakeBatteryNotifier(
-                const BatteryStateData(
-                  batteryLevel: 100,
-                  isInPowerSaveMode: false,
-                ),
-              ),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-        expect(container.read(isEcoModeProvider), isTrue);
-      },
-    );
+      expect(container.read(isEcoModeProvider), isTrue);
+    });
 
-    test(
-      'Should return isEcoMode=true when battery level is low (<= 20%)こと',
-      () async {
-        final container = ProviderContainer(
-          overrides: [
-            settingsProvider.overrideWith(
-              () => FakeSettingsNotifier(
-                const SettingsModel(enableLiquidGlass: true),
+    test('【battery level is low (<= 20%)】isEcoMode=trueが返却されること', () async {
+      final container = ProviderContainer(
+        overrides: [
+          settingsProvider.overrideWith(
+            () => FakeSettingsNotifier(
+              const SettingsModel(enableLiquidGlass: true),
+            ),
+          ),
+          batteryStateProvider.overrideWith(
+            () => FakeBatteryNotifier(
+              const BatteryStateData(
+                batteryLevel: 20,
+                isInPowerSaveMode: false,
               ),
             ),
-            batteryStateProvider.overrideWith(
-              () => FakeBatteryNotifier(
-                const BatteryStateData(
-                  batteryLevel: 20,
-                  isInPowerSaveMode: false,
-                ),
-              ),
-            ),
-          ],
-        );
-        addTearDown(container.dispose);
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-        // Await future resolution for async notifier provider
-        await container.read(batteryStateProvider.future);
-        expect(container.read(isEcoModeProvider), isTrue);
-      },
-    );
+      // Await future resolution for async notifier provider
+      await container.read(batteryStateProvider.future);
+      expect(container.read(isEcoModeProvider), isTrue);
+    });
 
-    test(
-      'Should return isEcoMode=true when OS power saver mode is activeであること',
-      () async {
-        final container = ProviderContainer(
-          overrides: [
-            settingsProvider.overrideWith(
-              () => FakeSettingsNotifier(
-                const SettingsModel(enableLiquidGlass: true),
-              ),
+    test('【OS power saver mode is active】isEcoMode=trueが返却されること', () async {
+      final container = ProviderContainer(
+        overrides: [
+          settingsProvider.overrideWith(
+            () => FakeSettingsNotifier(
+              const SettingsModel(enableLiquidGlass: true),
             ),
-            batteryStateProvider.overrideWith(
-              () => FakeBatteryNotifier(
-                const BatteryStateData(
-                  batteryLevel: 80,
-                  isInPowerSaveMode: true,
-                ),
-              ),
+          ),
+          batteryStateProvider.overrideWith(
+            () => FakeBatteryNotifier(
+              const BatteryStateData(batteryLevel: 80, isInPowerSaveMode: true),
             ),
-          ],
-        );
-        addTearDown(container.dispose);
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-        // Await future resolution for async notifier provider
-        await container.read(batteryStateProvider.future);
-        expect(container.read(isEcoModeProvider), isTrue);
-      },
-    );
+      // Await future resolution for async notifier provider
+      await container.read(batteryStateProvider.future);
+      expect(container.read(isEcoModeProvider), isTrue);
+    });
 
     test(
-      'Should return isEcoMode=false when settings are normal and battery is highであること',
+      '【settings are normal and battery is high】isEcoMode=falseが返却されること',
       () async {
         final container = ProviderContainer(
           overrides: [
@@ -150,48 +138,47 @@ void main() {
       },
     );
 
-    testWidgets(
-      'LiquidBackground should render static layout when Eco Mode is activeであること',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              settingsProvider.overrideWith(
-                () => FakeSettingsNotifier(
-                  const SettingsModel(enableLiquidGlass: true),
-                ),
-              ),
-              batteryStateProvider.overrideWith(
-                () => FakeBatteryNotifier(
-                  const BatteryStateData(
-                    batteryLevel: 15,
-                    isInPowerSaveMode: false,
-                  ), // Low battery -> Eco Mode
-                ),
-              ),
-            ],
-            child: const MaterialApp(
-              home: LiquidBackground(
-                child: Text('Content inside LiquidBackground'),
+    testWidgets('【LiquidBackground】static layout when Eco Mode is activeが描画されること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(
+              () => FakeSettingsNotifier(
+                const SettingsModel(enableLiquidGlass: true),
               ),
             ),
+            batteryStateProvider.overrideWith(
+              () => FakeBatteryNotifier(
+                const BatteryStateData(
+                  batteryLevel: 15,
+                  isInPowerSaveMode: false,
+                ), // Low battery -> Eco Mode
+              ),
+            ),
+          ],
+          child: const MaterialApp(
+            home: LiquidBackground(
+              child: Text('Content inside LiquidBackground'),
+            ),
           ),
-        );
+        ),
+      );
 
-        // Let microtasks run and re-pump to render target state after future resolves
-        await tester.pump();
+      // Let microtasks run and re-pump to render target state after future resolves
+      await tester.pump();
 
-        // Verify that the child is built
-        expect(find.text('Content inside LiquidBackground'), findsOneWidget);
+      // Verify that the child is built
+      expect(find.text('Content inside LiquidBackground'), findsOneWidget);
 
-        // In Eco Mode, a simple container is returned (no backdrop filter blur is created)
-        expect(find.byType(BackdropFilter), findsNothing);
-        expect(find.text('エコモード'), findsOneWidget);
-      },
-    );
+      // In Eco Mode, a simple container is returned (no backdrop filter blur is created)
+      expect(find.byType(BackdropFilter), findsNothing);
+      expect(find.text('エコモード'), findsOneWidget);
+    });
 
     testWidgets(
-      'LiquidBackground should render animated layout with blur when Eco Mode is inactiveであること',
+      '【LiquidBackground】animated layout with blur when Eco Mode is inactiveが描画されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           ProviderScope(
@@ -237,7 +224,7 @@ void main() {
     );
 
     testWidgets(
-      'SettingsScreen should display Eco Mode switch and toggle settings correctlyであること',
+      '【SettingsScreen】Eco Mode switch and toggle settings correctlyが表示されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
 

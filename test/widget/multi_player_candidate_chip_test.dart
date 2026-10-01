@@ -4,32 +4,31 @@ import 'package:kendo_os/shared/widgets/multi_player_candidate_chip.dart';
 
 void main() {
   group('[Widget] MultiPlayerCandidateTile ウィジェットテスト', () {
-    testWidgets(
-      'renders name and subtitle, and responds to checkbox tapであること',
-      (tester) async {
-        bool? changedValue;
+    testWidgets('name and subtitle, and responds to checkbox tapが正しく描画されること', (
+      tester,
+    ) async {
+      bool? changedValue;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MultiPlayerCandidateTile(
-                name: '山田 太郎',
-                subtitle: '中学2年',
-                isSelected: false,
-                accentColor: Colors.red,
-                onChanged: (val) => changedValue = val,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MultiPlayerCandidateTile(
+              name: '山田 太郎',
+              subtitle: '中学2年',
+              isSelected: false,
+              accentColor: Colors.red,
+              onChanged: (val) => changedValue = val,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('山田 太郎'), findsOneWidget);
-        expect(find.text('中学2年'), findsOneWidget);
+      expect(find.text('山田 太郎'), findsOneWidget);
+      expect(find.text('中学2年'), findsOneWidget);
 
-        await tester.tap(find.text('山田 太郎'));
-        await tester.pump();
-        expect(changedValue, isTrue);
-      },
-    );
+      await tester.tap(find.text('山田 太郎'));
+      await tester.pump();
+      expect(changedValue, isTrue);
+    });
   });
 }

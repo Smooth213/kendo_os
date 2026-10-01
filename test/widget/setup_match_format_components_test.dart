@@ -9,31 +9,27 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] SetupMatchFormat Components ウィジェットテスト', () {
-    testWidgets(
-      'MatchFormatDynamicHeader renders header texts and progressであること',
-      (tester) async {
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
+    testWidgets('【MatchFormatDynamicHeader】ヘッダーテキストおよび進行状況が正しく描画されること', (
+      tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchFormatDynamicHeader(
-                currentPage: 0,
-                themeColors: themeColors,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchFormatDynamicHeader(
+              currentPage: 0,
+              themeColors: themeColors,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('試合ルールの設定'), findsOneWidget);
-        expect(find.byType(LinearProgressIndicator), findsOneWidget);
-      },
-    );
+      expect(find.text('試合ルールの設定'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    });
 
-    testWidgets('MatchFormatSectionHeader renders title and accent barであること', (
+    testWidgets('【MatchFormatSectionHeader】タイトルおよびアクセントバーが正しく描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -71,49 +67,45 @@ void main() {
       expect(find.text('小学生 低学年 (1-4年)'), findsOneWidget);
     });
 
-    testWidgets(
-      'MatchFormatTeamSelectionCard renders team info and triggers callbacksであること',
-      (tester) async {
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
-        const team = TeamModel(
-          id: 'team1',
-          tournamentId: 't1',
-          teamName: '洗心道場 A',
-          category: '小学生',
-          matchType: '5人制',
-          playerNames: ['先鋒', '次鋒', '中堅', '副将', '大将'],
-        );
+    testWidgets('【MatchFormatTeamSelectionCard】チーム情報が描画されコールバックが正常に動作すること', (
+      tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      const team = TeamModel(
+        id: 'team1',
+        tournamentId: 't1',
+        teamName: '洗心道場 A',
+        category: '小学生',
+        matchType: '5人制',
+        playerNames: ['先鋒', '次鋒', '中堅', '副将', '大将'],
+      );
 
-        bool tappedSelect = false;
+      bool tappedSelect = false;
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchFormatTeamSelectionCard(
-                team: team,
-                isSelected: true,
-                themeColors: themeColors,
-                textColor: Colors.black,
-                isDark: false,
-                onSelect: () {
-                  tappedSelect = true;
-                },
-                onEdit: () {},
-                onDelete: () {},
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchFormatTeamSelectionCard(
+              team: team,
+              isSelected: true,
+              themeColors: themeColors,
+              textColor: Colors.black,
+              isDark: false,
+              onSelect: () {
+                tappedSelect = true;
+              },
+              onEdit: () {},
+              onDelete: () {},
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('洗心道場 A'), findsOneWidget);
+      expect(find.text('洗心道場 A'), findsOneWidget);
 
-        await tester.tap(find.text('洗心道場 A'));
-        await tester.pump();
-        expect(tappedSelect, isTrue);
-      },
-    );
+      await tester.tap(find.text('洗心道場 A'));
+      await tester.pump();
+      expect(tappedSelect, isTrue);
+    });
   });
 }

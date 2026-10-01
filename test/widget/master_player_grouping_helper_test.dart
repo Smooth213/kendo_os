@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
 void main() {
   group('[Widget] MasterPlayerGroupingHelper テスト', () {
-    test('getCategoryName returns correct category for each gradeであること', () {
+    test('【getCategoryName】correct 部門 for each gradeが返却されること', () {
       expect(MasterPlayerGroupingHelper.getCategoryName(-1), '初心者の部');
       expect(MasterPlayerGroupingHelper.getCategoryName(0), '幼年の部');
       expect(MasterPlayerGroupingHelper.getCategoryName(3), '小学生低学年の部');

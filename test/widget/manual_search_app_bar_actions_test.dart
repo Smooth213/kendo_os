@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 void main() {
   group('[Widget] ManualSearchAppBarActions ウィジェットテスト', () {
     testWidgets(
-      'Renders search icon when showSearch is true and isSearching is falseであること',
+      '【showSearch is true and isSearching is false】search iconが正しく描画されること',
       (tester) async {
         bool searchStarted = false;
 
@@ -37,7 +37,7 @@ void main() {
     );
 
     testWidgets(
-      'Renders navigation and clear buttons when searching with queryであること',
+      '【searching with query】navigation and clear buttonsが正しく描画されること',
       (tester) async {
         bool prevPressed = false;
         bool nextPressed = false;

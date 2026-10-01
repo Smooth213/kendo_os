@@ -4,29 +4,28 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 
 void main() {
   group('[Widget] MatchFormatOptionCard & SetupReadOnlyRuleRow ウィジェットテスト', () {
-    testWidgets(
-      'Renders MatchFormatOptionCard with title, icon, and childであること',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: MatchFormatOptionCard(
-                title: '試合形式設定',
-                icon: Icons.sports_kabaddi,
-                color: Colors.blue,
-                child: Text('5人制団体戦'),
-              ),
+    testWidgets('MatchFormatOptionCard with タイトル, icon, and childが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: MatchFormatOptionCard(
+              title: '試合形式設定',
+              icon: Icons.sports_kabaddi,
+              color: Colors.blue,
+              child: Text('5人制団体戦'),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('試合形式設定'), findsOneWidget);
-        expect(find.byIcon(Icons.sports_kabaddi), findsOneWidget);
-        expect(find.text('5人制団体戦'), findsOneWidget);
-      },
-    );
+      expect(find.text('試合形式設定'), findsOneWidget);
+      expect(find.byIcon(Icons.sports_kabaddi), findsOneWidget);
+      expect(find.text('5人制団体戦'), findsOneWidget);
+    });
 
-    testWidgets('Renders SetupReadOnlyRuleRow with label and valueであること', (
+    testWidgets('SetupReadOnlyRuleRow with label and valueが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

@@ -11,105 +11,104 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets(
-    'MatchEditRuleAndMemoTab renders rule summary and switches correctlyであること',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+  testWidgets('【MatchEditRuleAndMemoTab】ルール概要が描画され切り替えが正常に行えること', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
-      bool ipponToggled = false;
-      bool hanteiToggled = false;
-      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+    bool ipponToggled = false;
+    bool hanteiToggled = false;
+    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            theme: ThemeData.light().copyWith(extensions: [themeColors]),
-            home: Scaffold(
-              body: MatchEditRuleAndMemoTab(
-                primaryAccent: AppKendoColors.blueAccent,
-                isDark: false,
-                textColor: AppKendoColors.pureBlack,
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: ThemeData.light().copyWith(extensions: [themeColors]),
+          home: Scaffold(
+            body: MatchEditRuleAndMemoTab(
+              primaryAccent: AppKendoColors.blueAccent,
+              isDark: false,
+              textColor: AppKendoColors.pureBlack,
+              tournamentId: 't1',
+              match: const MatchModel(
+                id: 'm1',
                 tournamentId: 't1',
-                match: const MatchModel(
-                  id: 'm1',
-                  tournamentId: 't1',
-                  matchType: 'individual',
-                  category: '一般の部',
-                  redName: '選手A',
-                  whiteName: '選手B',
-                ),
-                selectedPresetKey: 'honsen',
-                selectedPresetRule: const MatchRule(
-                  matchTimeMinutes: 3.0,
-                  isIpponShobu: false,
-                  hasHantei: true,
-                ),
-                matchTime: 3.0,
-                isRunningTime: false,
-                isIpponShobu: false,
-                hasExtension: true,
-                enchoTime: 2.0,
-                enchoCount: 1,
-                isEnchoUnlimited: false,
-                hasHantei: true,
-                hasRepresentativeMatch: false,
-                isDaihyoIpponShobu: true,
-                daihyoHasExtension: true,
-                daihyoEnchoTime: 3.0,
-                daihyoEnchoCount: -2,
-                isDaihyoEnchoUnlimited: true,
-                daihyoHasHantei: false,
-                renseikaiType: '一試合制',
-                onPresetSelected: (rule, key) {},
-                onMatchTimeChanged: (val) {},
-                onRunningTimeChanged: (_) {},
-                onIpponShobuChanged: (val) {
-                  ipponToggled = val;
-                },
-                onExtensionChanged: (_) {},
-                onEnchoTimeChanged: (_) {},
-                onEnchoCountChanged: (_) {},
-                onEnchoUnlimitedChanged: (_) {},
-                onHanteiChanged: (val) {
-                  hanteiToggled = val;
-                },
-                onRepresentativeMatchChanged: (_) {},
-                onDaihyoIpponShobuChanged: (_) {},
-                onDaihyoMatchTimeChanged: (_) {},
-                onDaihyoExtensionChanged: (_) {},
-                onDaihyoEnchoTimeChanged: (_) {},
-                onDaihyoEnchoCountChanged: (_) {},
-                onDaihyoEnchoUnlimitedChanged: (_) {},
-                onDaihyoHanteiChanged: (_) {},
-                onRenseikaiTypeChanged: (_) {},
+                matchType: 'individual',
+                category: '一般の部',
+                redName: '選手A',
+                whiteName: '選手B',
               ),
+              selectedPresetKey: 'honsen',
+              selectedPresetRule: const MatchRule(
+                matchTimeMinutes: 3.0,
+                isIpponShobu: false,
+                hasHantei: true,
+              ),
+              matchTime: 3.0,
+              isRunningTime: false,
+              isIpponShobu: false,
+              hasExtension: true,
+              enchoTime: 2.0,
+              enchoCount: 1,
+              isEnchoUnlimited: false,
+              hasHantei: true,
+              hasRepresentativeMatch: false,
+              isDaihyoIpponShobu: true,
+              daihyoHasExtension: true,
+              daihyoEnchoTime: 3.0,
+              daihyoEnchoCount: -2,
+              isDaihyoEnchoUnlimited: true,
+              daihyoHasHantei: false,
+              renseikaiType: '一試合制',
+              onPresetSelected: (rule, key) {},
+              onMatchTimeChanged: (val) {},
+              onRunningTimeChanged: (_) {},
+              onIpponShobuChanged: (val) {
+                ipponToggled = val;
+              },
+              onExtensionChanged: (_) {},
+              onEnchoTimeChanged: (_) {},
+              onEnchoCountChanged: (_) {},
+              onEnchoUnlimitedChanged: (_) {},
+              onHanteiChanged: (val) {
+                hanteiToggled = val;
+              },
+              onRepresentativeMatchChanged: (_) {},
+              onDaihyoIpponShobuChanged: (_) {},
+              onDaihyoMatchTimeChanged: (_) {},
+              onDaihyoExtensionChanged: (_) {},
+              onDaihyoEnchoTimeChanged: (_) {},
+              onDaihyoEnchoCountChanged: (_) {},
+              onDaihyoEnchoUnlimitedChanged: (_) {},
+              onDaihyoHanteiChanged: (_) {},
+              onRenseikaiTypeChanged: (_) {},
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      // Verify Unified Form headers and switch options
-      expect(find.text('🏷️ 試合ルール設定からワンタップ選択'), findsOneWidget);
-      expect(find.text('⏱️ 試合時間 ＆ 基本形式'), findsOneWidget);
-      expect(find.text('勝負形式'), findsOneWidget);
-      expect(find.text('1本勝負'), findsOneWidget);
-      expect(find.text('判定の適用'), findsOneWidget);
+    // Verify Unified Form headers and switch options
+    expect(find.text('🏷️ 試合ルール設定からワンタップ選択'), findsOneWidget);
+    expect(find.text('⏱️ 試合時間 ＆ 基本形式'), findsOneWidget);
+    expect(find.text('勝負形式'), findsOneWidget);
+    expect(find.text('1本勝負'), findsOneWidget);
+    expect(find.text('判定の適用'), findsOneWidget);
 
-      // Toggle match format
-      await tester.tap(find.text('1本勝負'));
-      await tester.pumpAndSettle();
-      expect(ipponToggled, isTrue);
+    // Toggle match format
+    await tester.tap(find.text('1本勝負'));
+    await tester.pumpAndSettle();
+    expect(ipponToggled, isTrue);
 
-      await tester.tap(find.text('判定の適用'));
-      await tester.pumpAndSettle();
-      expect(hanteiToggled, isFalse);
-    },
-  );
+    await tester.tap(find.text('判定の適用'));
+    await tester.pumpAndSettle();
+    expect(hanteiToggled, isFalse);
+  });
 
   testWidgets(
     '設定していないルール（マルチシーンOFF時の錬成・申合せ、他部門ルール）が表示されず、設定済みルールのみが選択肢となり、延長戦が勝手にONにならないこと',

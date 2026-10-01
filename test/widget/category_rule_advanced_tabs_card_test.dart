@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_advanced_tabs_card.dart';
 
 void main() {
-  testWidgets('CategoryRuleAdvancedTabsCard renders tabs and viewsであること', (
+  testWidgets('【CategoryRuleAdvancedTabsCard】各種タブおよびビューが正しく描画されること', (
     tester,
   ) async {
     await tester.pumpWidget(

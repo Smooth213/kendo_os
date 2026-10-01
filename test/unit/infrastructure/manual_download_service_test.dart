@@ -44,74 +44,62 @@ void main() {
   });
 
   group('[Unit] ManualDownloadService テスト', () {
-    test(
-      'isFileDownloaded should return false when file does not existであること',
-      () async {
-        final exists = await downloadService.isFileDownloaded(testFileName);
-        expect(exists, isFalse);
-      },
-    );
+    test('isFileDownloaded 【file does not exist】falseが返却されること', () async {
+      final exists = await downloadService.isFileDownloaded(testFileName);
+      expect(exists, isFalse);
+    });
 
-    test(
-      'downloadManual should download file and trigger onProgressであること',
-      () async {
-        // 1. モックデータを作成 (100バイト)
-        final dummyData = List<int>.generate(100, (i) => i);
+    test('【downloadManual】ファイルがダウンロードされonProgressがトリガーされること', () async {
+      // 1. モックデータを作成 (100バイト)
+      final dummyData = List<int>.generate(100, (i) => i);
 
-        // 2. HTTPクライアントをモック
-        // http.runWithClient を使ってモッククライアントを注入します
-        final mockClient = MockClient((request) async {
-          return http.Response.bytes(dummyData, 200);
+      // 2. HTTPクライアントをモック
+      // http.runWithClient を使ってモッククライアントを注入します
+      final mockClient = MockClient((request) async {
+        return http.Response.bytes(dummyData, 200);
+      });
+
+      final List<double> progressLog = [];
+
+      // 3. モッククライアントを用いて実行 (http.runWithClient)
+      final downloadedFile = await http.runWithClient(() async {
+        return await downloadService.downloadManual(testFileName, testUrl, (
+          progress,
+        ) {
+          progressLog.add(progress);
         });
+      }, () => mockClient);
 
-        final List<double> progressLog = [];
+      // 4. 検証
+      expect(downloadedFile, isNotNull);
+      expect(await downloadedFile!.exists(), isTrue);
+      expect(await downloadedFile.readAsBytes(), Uint8List.fromList(dummyData));
 
-        // 3. モッククライアントを用いて実行 (http.runWithClient)
-        final downloadedFile = await http.runWithClient(() async {
-          return await downloadService.downloadManual(testFileName, testUrl, (
-            progress,
-          ) {
-            progressLog.add(progress);
-          });
-        }, () => mockClient);
+      // 進捗コールバックが呼ばれたことを検証
+      expect(progressLog, isNotEmpty);
+      expect(progressLog.last, closeTo(1.0, 0.01));
 
-        // 4. 検証
-        expect(downloadedFile, isNotNull);
-        expect(await downloadedFile!.exists(), isTrue);
-        expect(
-          await downloadedFile.readAsBytes(),
-          Uint8List.fromList(dummyData),
-        );
+      // isFileDownloaded が true に変わることを検証
+      final exists = await downloadService.isFileDownloaded(testFileName);
+      expect(exists, isTrue);
+    });
 
-        // 進捗コールバックが呼ばれたことを検証
-        expect(progressLog, isNotEmpty);
-        expect(progressLog.last, closeTo(1.0, 0.01));
+    test('getLocalFile 【downloaded, and null otherwise】Fileが返却されること', () async {
+      // ダウンロード前
+      var file = await downloadService.getLocalFile(testFileName);
+      expect(file, isNull);
 
-        // isFileDownloaded が true に変わることを検証
-        final exists = await downloadService.isFileDownloaded(testFileName);
-        expect(exists, isTrue);
-      },
-    );
+      // 手動でファイルを置いてダウンロード済みに見せかける
+      final localFile = File('${tempDir.path}/$testFileName');
+      await localFile.writeAsString('dummy content');
 
-    test(
-      'getLocalFile should return File when downloaded, and null otherwiseであること',
-      () async {
-        // ダウンロード前
-        var file = await downloadService.getLocalFile(testFileName);
-        expect(file, isNull);
+      // ダウンロード後
+      file = await downloadService.getLocalFile(testFileName);
+      expect(file, isNotNull);
+      expect(await file!.readAsString(), 'dummy content');
+    });
 
-        // 手動でファイルを置いてダウンロード済みに見せかける
-        final localFile = File('${tempDir.path}/$testFileName');
-        await localFile.writeAsString('dummy content');
-
-        // ダウンロード後
-        file = await downloadService.getLocalFile(testFileName);
-        expect(file, isNotNull);
-        expect(await file!.readAsString(), 'dummy content');
-      },
-    );
-
-    test('deleteLocalFile should delete the file from storageであること', () async {
+    test('【deleteLocalFile】ストレージからファイルが正常に削除されること', () async {
       // 手動でファイルを配置
       final localFile = File('${tempDir.path}/$testFileName');
       await localFile.writeAsString('dummy content');

@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] NewMatchTeamSelectorCard ウィジェットテスト', () {
-    testWidgets('Renders organization dropdown and triggers selectionであること', (
+    testWidgets('organization dropdown and triggers selectionが正しく描画されること', (
       WidgetTester tester,
     ) async {
       Organization? selectedOrg;

@@ -57,9 +57,7 @@ void main() {
       expect(find.text('部内戦ルール設定'), findsOneWidget);
     });
 
-    testWidgets('BunaiksenSetupScreen renders properly with all tabsであること', (
-      tester,
-    ) async {
+    testWidgets('【BunaiksenSetupScreen】全タブとともに適切に描画されること', (tester) async {
       tester.view.physicalSize = const Size(1200, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());

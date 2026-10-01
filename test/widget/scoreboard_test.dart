@@ -154,81 +154,76 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Scoreboard does not show Draw/Tie badge when the match is in progress, but shows it when finished as a tieであること',
-      (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(1200, 1000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('【スコアボード】試合進行中は引分バッジが表示されず、引分終了時に正しく表示されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        // 1. In-progress match
-        final inProgressMatch = MatchModel(
-          id: 'match_in_progress',
-          tournamentId: 'bunaiksen_20260703',
-          groupName: 'infinite_20260703',
-          redName: '選手A',
-          whiteName: '選手B',
-          matchType: '無限勝ち抜き',
-          status: 'in_progress',
-          isKachinuki: true,
-          redScore: 0,
-          whiteScore: 0,
-          events: const [],
-          redRemaining: const [],
-          whiteRemaining: const [],
-        );
+      // 1. In-progress match
+      final inProgressMatch = MatchModel(
+        id: 'match_in_progress',
+        tournamentId: 'bunaiksen_20260703',
+        groupName: 'infinite_20260703',
+        redName: '選手A',
+        whiteName: '選手B',
+        matchType: '無限勝ち抜き',
+        status: 'in_progress',
+        isKachinuki: true,
+        redScore: 0,
+        whiteScore: 0,
+        events: const [],
+        redRemaining: const [],
+        whiteRemaining: const [],
+      );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              settingsProvider.overrideWith(() => MockSettingsNotifier()),
-              matchViewStateUserIdProvider.overrideWith(
-                (ref) => 'test_user_id',
-              ),
-              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-              matchListProvider.overrideWithValue([inProgressMatch]),
-              scoreboardMatchIdProvider.overrideWithValue('match_in_progress'),
-              scoreboardMatchProvider.overrideWithValue(inProgressMatch),
-              scoreboardNameTapProvider.overrideWithValue((side) {}),
-            ],
-            child: const MaterialApp(home: Scaffold(body: MatchScoreboard())),
-          ),
-        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(() => MockSettingsNotifier()),
+            matchViewStateUserIdProvider.overrideWith((ref) => 'test_user_id'),
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+            matchListProvider.overrideWithValue([inProgressMatch]),
+            scoreboardMatchIdProvider.overrideWithValue('match_in_progress'),
+            scoreboardMatchProvider.overrideWithValue(inProgressMatch),
+            scoreboardNameTapProvider.overrideWithValue((side) {}),
+          ],
+          child: const MaterialApp(home: Scaffold(body: MatchScoreboard())),
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // Verify that the "引き分け" text overlay is NOT present in the tree
-        expect(find.text('引き分け'), findsNothing);
+      // Verify that the "引き分け" text overlay is NOT present in the tree
+      expect(find.text('引き分け'), findsNothing);
 
-        // 2. Finished tie match
-        final finishedTieMatch = inProgressMatch.copyWith(status: 'finished');
+      // 2. Finished tie match
+      final finishedTieMatch = inProgressMatch.copyWith(status: 'finished');
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              settingsProvider.overrideWith(() => MockSettingsNotifier()),
-              matchViewStateUserIdProvider.overrideWith(
-                (ref) => 'test_user_id',
-              ),
-              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-              matchListProvider.overrideWithValue([finishedTieMatch]),
-              scoreboardMatchIdProvider.overrideWithValue('match_in_progress'),
-              scoreboardMatchProvider.overrideWithValue(finishedTieMatch),
-              scoreboardNameTapProvider.overrideWithValue((side) {}),
-            ],
-            child: const MaterialApp(home: Scaffold(body: MatchScoreboard())),
-          ),
-        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(() => MockSettingsNotifier()),
+            matchViewStateUserIdProvider.overrideWith((ref) => 'test_user_id'),
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+            matchListProvider.overrideWithValue([finishedTieMatch]),
+            scoreboardMatchIdProvider.overrideWithValue('match_in_progress'),
+            scoreboardMatchProvider.overrideWithValue(finishedTieMatch),
+            scoreboardNameTapProvider.overrideWithValue((side) {}),
+          ],
+          child: const MaterialApp(home: Scaffold(body: MatchScoreboard())),
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // Verify that the "引き分け" text overlay IS present in the tree
-        expect(find.text('引き分け'), findsOneWidget);
-      },
-    );
+      // Verify that the "引き分け" text overlay IS present in the tree
+      expect(find.text('引き分け'), findsOneWidget);
+    });
 
     testWidgets(
       '【視認性保証テスト】ダークモード時において、白側選手名および白側取得部位（メ）が暗灰色(separatorColor)ではなく高コントラストなtextColor(白)で描画されること',

@@ -31,7 +31,7 @@ void main() {
       expect(find.text('表示に関する説明文です'), findsOneWidget);
     });
 
-    testWidgets('SettingsBlock renders children and dividerであること', (
+    testWidgets('【SettingsBlock】子要素および区切り線が正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

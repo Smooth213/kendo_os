@@ -48,7 +48,7 @@ void main() {
       ]);
     });
 
-    test('calculateTeamSize handles individual and team formatsであること', () {
+    test('【calculateTeamSize】individual and チーム formatsが適切に処理されること', () {
       expect(
         MatchFormatSetupHelper.calculateTeamSize(
           matchType: '個人戦',

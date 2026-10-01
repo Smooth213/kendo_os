@@ -6,71 +6,69 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryRuleDetailBottomSheet ウィジェットテスト', () {
-    testWidgets(
-      'Renders standard rules detail sheet with correct labelsであること',
-      (WidgetTester tester) async {
-        final ruleSet = const CategoryRuleSet(
-          normalRule: MatchRule(
-            matchTimeMinutes: 3.0,
-            isEnchoUnlimited: true,
-            hasHantei: false,
-          ),
-        );
+    testWidgets('standard ルール設定 detail sheet with correct labelsが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      final ruleSet = const CategoryRuleSet(
+        normalRule: MatchRule(
+          matchTimeMinutes: 3.0,
+          isEnchoUnlimited: true,
+          hasHantei: false,
+        ),
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CategoryRuleDetailBottomSheet(
-                categoryName: '中学男子の部',
-                ruleSet: ruleSet,
-                isDark: false,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleDetailBottomSheet(
+              categoryName: '中学男子の部',
+              ruleSet: ruleSet,
+              isDark: false,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('中学男子の部 のルール設定'), findsOneWidget);
-        expect(find.text('通常戦ルール'), findsOneWidget);
-        expect(find.text('試合時間'), findsOneWidget);
-        expect(find.text('閉じる'), findsOneWidget);
-      },
-    );
+      expect(find.text('中学男子の部 のルール設定'), findsOneWidget);
+      expect(find.text('通常戦ルール'), findsOneWidget);
+      expect(find.text('試合時間'), findsOneWidget);
+      expect(find.text('閉じる'), findsOneWidget);
+    });
 
-    testWidgets(
-      'Renders team match details with representative match settingsであること',
-      (WidgetTester tester) async {
-        final ruleSet = const CategoryRuleSet(
-          matchType: '団体戦',
-          normalRule: MatchRule(
-            matchTimeMinutes: 4.0,
-            hasRepresentativeMatch: true,
-            isDaihyoIpponShobu: true,
-            daihyoMatchTimeMinutes: 3.0,
-            daihyoEnchoCount: -2,
-          ),
-        );
+    testWidgets('チーム 試合 details with representative 試合 settingsが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      final ruleSet = const CategoryRuleSet(
+        matchType: '団体戦',
+        normalRule: MatchRule(
+          matchTimeMinutes: 4.0,
+          hasRepresentativeMatch: true,
+          isDaihyoIpponShobu: true,
+          daihyoMatchTimeMinutes: 3.0,
+          daihyoEnchoCount: -2,
+        ),
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CategoryRuleDetailBottomSheet(
-                categoryName: '高校男子団体の部',
-                ruleSet: ruleSet,
-                isDark: true,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryRuleDetailBottomSheet(
+              categoryName: '高校男子団体の部',
+              ruleSet: ruleSet,
+              isDark: true,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('高校男子団体の部 のルール設定'), findsOneWidget);
-        expect(find.text('団体戦・チーム設定'), findsOneWidget);
-        expect(find.text('代表戦'), findsOneWidget);
-        expect(find.text('代表戦勝負形式'), findsOneWidget);
-        expect(find.text('代表戦時間'), findsOneWidget);
-      },
-    );
+      expect(find.text('高校男子団体の部 のルール設定'), findsOneWidget);
+      expect(find.text('団体戦・チーム設定'), findsOneWidget);
+      expect(find.text('代表戦'), findsOneWidget);
+      expect(find.text('代表戦勝負形式'), findsOneWidget);
+      expect(find.text('代表戦時間'), findsOneWidget);
+    });
 
-    testWidgets('Renders subtitle and comment when providedであること', (
+    testWidgets('【provided】subtitle and commentが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final ruleSet = const CategoryRuleSet(

@@ -72,7 +72,7 @@ void main() {
     );
 
     test(
-      'formatFromMatchGroup produces correct text for team match with live positionであること',
+      'formatFromMatchGroup produces correct テキスト for チーム 試合 with live positionこと',
       () {
         final m1 = MatchModel(
           id: 'm1',
@@ -183,9 +183,7 @@ void main() {
   });
 
   group('BandGroupEditDialog ウィジェットテスト', () {
-    testWidgets('BandGroupEditDialog renders without errorであること', (
-      tester,
-    ) async {
+    testWidgets('【BandGroupEditDialog】エラーなく正常に描画されること', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -208,7 +206,7 @@ void main() {
     });
 
     testWidgets(
-      'BandGroupSelectSheet opens and can trigger BandGroupEditDialog without errorであること',
+      'BandGroupSelectSheet opens and can trigger BandGroupEditDialog エラーなくこと',
       (tester) async {
         await tester.pumpWidget(
           ProviderScope(

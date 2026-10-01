@@ -5,19 +5,29 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Governance] 第23条 テスト設計・タイトル命名規約 ＆ テストスイート整合性ガバナンステスト', () {
-    // 装飾絵文字の検出正規表現
+    // ① 装飾絵文字の検出正規表現
     final emojiRegex = RegExp(
       r'[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{FE0F}\u{203C}\u{2049}\u{2139}]',
       unicode: true,
     );
 
-    // 先頭連番正規表現
+    // ② 先頭連番正規表現
     final numberingRegex = RegExp(
-      r'^(?:\d+[\.\-]\s*|\d+-\d+[\.\-]?\s*|[①-⑳]\s*|\[\d+\]\s*|#\d+\s*|Step\s*\d+(?:-\d+)?[:\.\s]*|Phase\s*\d+[:\s\-]*)',
+      r'^(?:\d+[\.\-:\s]+\s*|\d+-\d+[\.\-:\s]*\s*|[①-⑳]\s*|\[\d+\]\s*|#\d+\s*|Step\s*\d+(?:-\d+)?[:\.\s]*|Phase\s*\d+[:\s\-]*)',
       caseSensitive: false,
     );
 
-    // 最上位種別タグ正規表現
+    // ③ 「〜べき」および二重語尾
+    final bekiRegex = RegExp(r'べき[、。\s]*$');
+    final doubleKotoRegex = RegExp(r'(?:ことこと|であることこと|であることであること)');
+
+    // ④ 英語構文タイトル正規表現
+    final englishClauseRegex = RegExp(
+      r'\b(renders|displays|updates|preserves|handles|resolves|orders|extracts|sorts|calculates|formats|triggers|returns|swaps|applies|expands|contains|creates|deletes|fetches|loads|parses|validates|verifies|verify|should\s+not|should\s+show|when\s+tapped)\b',
+      caseSensitive: false,
+    );
+
+    // ⑤ 最上位種別タグ正規表現
     final tagRegex = RegExp(
       r'^\[(Unit|Widget|Governance|Golden|E2E|Security)\]',
     );
@@ -75,7 +85,7 @@ void main() {
           .toList();
     }
 
-    test('【装飾絵文字排除】test配下のすべてのテストおよびグループ名に装飾絵文字が含まれていないこと', () {
+    test('【①装飾絵文字排除】test配下のすべてのテストおよびグループ名に装飾絵文字が含まれていないこと', () {
       final files = getTestFiles();
       final violations = <String>[];
 
@@ -95,7 +105,7 @@ void main() {
       );
     });
 
-    test('【連番排除】test配下のすべてのテストタイトルの先頭に連番やナンバリングが存在しないこと', () {
+    test('【②連番排除】test配下のすべてのテストタイトルの先頭に連番やナンバリングが存在しないこと', () {
       final files = getTestFiles();
       final violations = <String>[];
 
@@ -118,7 +128,7 @@ void main() {
       );
     });
 
-    test('【文末統一】test配下のすべてのテストタイトルの末尾が「こと」で完結していること', () {
+    test('【③文末統一＆文法規約】末尾が「こと」で終わり、「〜べき」や二重語尾が存在しないこと', () {
       final files = getTestFiles();
       final violations = <String>[];
 
@@ -127,7 +137,9 @@ void main() {
         for (final item in items) {
           if (item.fnName != 'group') {
             final cleanTitle = item.title.trim();
-            if (!cleanTitle.endsWith('こと')) {
+            if (!cleanTitle.endsWith('こと') ||
+                bekiRegex.hasMatch(cleanTitle) ||
+                doubleKotoRegex.hasMatch(cleanTitle)) {
               violations.add('${item.filePath}: ${item.fnName}("$cleanTitle")');
             }
           }
@@ -137,12 +149,41 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: '文末が「こと」で終わっていないテストが存在します:\n${violations.take(10).join('\n')}',
+        reason:
+            '文末が「こと」でないか、「〜べき」または二重語尾を含むテストが存在します:\n${violations.take(10).join('\n')}',
+      );
+    });
+
+    test('【④英文タイトル排除】英文主体のテストタイトルが存在せず日本語に統一されていること', () {
+      final files = getTestFiles();
+      final violations = <String>[];
+
+      for (final f in files) {
+        final items = extractTestItems(f.readAsStringSync(), f.path);
+        for (final item in items) {
+          if (item.fnName != 'group') {
+            final cleanTitle = item.title.trim();
+            // ひらがな文字数が5文字未満かつ英語の動詞・述語を含む場合は英文タイトルと判定
+            final hiraganaMatches = RegExp(
+              r'[\u3040-\u309F]',
+            ).allMatches(cleanTitle);
+            if (hiraganaMatches.length < 5 &&
+                englishClauseRegex.hasMatch(cleanTitle)) {
+              violations.add('${item.filePath}: ${item.fnName}("$cleanTitle")');
+            }
+          }
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason: '英文主体のテストタイトルが存在します:\n${violations.take(10).join('\n')}',
       );
     });
 
     test(
-      '【種別タグ】最上位groupが規約タグ([Unit], [Widget], [Governance], [Golden], [E2E], [Security])で始まっていること',
+      '【⑤種別タグ】最上位groupが規約タグ([Unit], [Widget], [Governance], [Golden], [E2E], [Security])で始まっていること',
       () {
         final files = getTestFiles();
         final violations = <String>[];

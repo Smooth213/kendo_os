@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/manual/manu
 
 void main() {
   group('[Widget] ManualSearchAppBarTitle ウィジェットテスト', () {
-    testWidgets('Renders normal title when isSearching is falseであること', (
+    testWidgets('【isSearching is false】normal titleが正しく描画されること', (
       tester,
     ) async {
       final controller = TextEditingController();
@@ -27,9 +27,7 @@ void main() {
       expect(find.byType(TextField), findsNothing);
     });
 
-    testWidgets('Renders search input when isSearching is trueであること', (
-      tester,
-    ) async {
+    testWidgets('【isSearching is true】search inputが正しく描画されること', (tester) async {
       final controller = TextEditingController();
       String changedText = '';
 

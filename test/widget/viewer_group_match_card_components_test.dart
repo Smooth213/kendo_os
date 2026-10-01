@@ -5,38 +5,37 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_group_ma
 
 void main() {
   group('[Widget] ViewerGroupMatchCard Components テスト', () {
-    testWidgets(
-      'ViewerGroupMatchScoreSummary renders team names and scoreであること',
-      (tester) async {
-        const match = MatchModel(
-          id: 'm1',
-          tournamentId: 't1',
-          matchType: '先鋒',
-          redName: '練馬道場 : 山田',
-          whiteName: '杉並道場 : 田中',
-          redScore: 2,
-          whiteScore: 0,
-          status: 'finished',
-        );
+    testWidgets('【ViewerGroupMatchScoreSummary】チーム名およびスコアが正しく描画されること', (
+      tester,
+    ) async {
+      const match = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: '先鋒',
+        redName: '練馬道場 : 山田',
+        whiteName: '杉並道場 : 田中',
+        redScore: 2,
+        whiteScore: 0,
+        status: 'finished',
+      );
 
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: ViewerGroupMatchScoreSummary(
-                groupList: [match],
-                rTeam: '練馬道場',
-                wTeam: '杉並道場',
-                ownTeams: ['練馬道場'],
-                titleColor: Colors.black,
-              ),
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ViewerGroupMatchScoreSummary(
+              groupList: [match],
+              rTeam: '練馬道場',
+              wTeam: '杉並道場',
+              ownTeams: ['練馬道場'],
+              titleColor: Colors.black,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('練馬道場'), findsOneWidget);
-        expect(find.text('杉並道場'), findsOneWidget);
-        expect(find.text('1'), findsOneWidget); // 1勝
-      },
-    );
+      expect(find.text('練馬道場'), findsOneWidget);
+      expect(find.text('杉並道場'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget); // 1勝
+    });
   });
 }

@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/components/kachinuki/k
 
 void main() {
   group('[Widget] KachinukiTeamLifeCard ウィジェットテスト', () {
-    testWidgets('Renders team names, title, and shields correctlyであること', (
+    testWidgets('チーム names, タイトル, and shields correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -32,7 +32,7 @@ void main() {
     });
 
     testWidgets(
-      'Renders in dark mode with styled shields without assertion errorsであること',
+      'ダークモードで with styled shields without assertion errorsが正しく描画されること',
       (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(

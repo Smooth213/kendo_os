@@ -49,128 +49,126 @@ void main() {
       expect(TimelineReorderHelper.onReorderTimeline, isNotNull);
     });
 
-    testWidgets(
-      'onReorderTimeline correctly calculates newOrder when moving comment between matchesであること',
-      (tester) async {
-        final fakeCommentCommand = FakeCommentCommandService();
+    testWidgets('【onReorderTimeline】試合間でコメント移動時にnewOrderが正しく計算されること', (
+      tester,
+    ) async {
+      final fakeCommentCommand = FakeCommentCommandService();
 
-        final comment1 = const MatchCommentModel(
-          id: 'c1',
-          text: 'テスト',
-          order: 300.0,
-        );
-        final comment2 = const MatchCommentModel(
-          id: 'c2',
-          text: 'テスト2',
-          order: 200.0,
-        );
-        final match1 = const MatchModel(
-          id: 'm1',
-          redName: '道上剣友会',
-          whiteName: 'テスト001-1',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 100.0,
-        );
-        final match2 = const MatchModel(
-          id: 'm2',
-          redName: '道上剣友会',
-          whiteName: '相手002',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 50.0,
-        );
+      final comment1 = const MatchCommentModel(
+        id: 'c1',
+        text: 'テスト',
+        order: 300.0,
+      );
+      final comment2 = const MatchCommentModel(
+        id: 'c2',
+        text: 'テスト2',
+        order: 200.0,
+      );
+      final match1 = const MatchModel(
+        id: 'm1',
+        redName: '道上剣友会',
+        whiteName: 'テスト001-1',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 100.0,
+      );
+      final match2 = const MatchModel(
+        id: 'm2',
+        redName: '道上剣友会',
+        whiteName: '相手002',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 50.0,
+      );
 
-        final list = <ReorderableTimelineItem>[
-          CommentTimelineItem(comment1),
-          CommentTimelineItem(comment2),
-          MatchGroupTimelineItem('g1', [match1]),
-          MatchGroupTimelineItem('g2', [match2]),
-        ];
+      final list = <ReorderableTimelineItem>[
+        CommentTimelineItem(comment1),
+        CommentTimelineItem(comment2),
+        MatchGroupTimelineItem('g1', [match1]),
+        MatchGroupTimelineItem('g2', [match2]),
+      ];
 
-        late WidgetRef capturedRef;
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              permissionProvider.overrideWithValue(
-                const PermissionState(canManageTournament: true),
-              ),
-              commentCommandProvider.overrideWithValue(fakeCommentCommand),
-            ],
-            child: Consumer(
-              builder: (context, ref, _) {
-                capturedRef = ref;
-                return const SizedBox.shrink();
-              },
+      late WidgetRef capturedRef;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
             ),
+            commentCommandProvider.overrideWithValue(fakeCommentCommand),
+          ],
+          child: Consumer(
+            builder: (context, ref, _) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
           ),
-        );
+        ),
+      );
 
-        // コメント2 (oldIndex = 1) を 試合1 (order: 100) と 試合2 (order: 50) の間へ移動
-        // onReorderItem では、c2 を取り出した remaining [c1(0), m1(1), m2(2)] における挿入先 index = 2 が渡される
-        await TimelineReorderHelper.onReorderTimeline(list, 1, 2, capturedRef);
+      // コメント2 (oldIndex = 1) を 試合1 (order: 100) と 試合2 (order: 50) の間へ移動
+      // onReorderItem では、c2 を取り出した remaining [c1(0), m1(1), m2(2)] における挿入先 index = 2 が渡される
+      await TimelineReorderHelper.onReorderTimeline(list, 1, 2, capturedRef);
 
-        // 試合1 (100.0) と 試合2 (50.0) の中間値 (75.0) になることを検証！
-        expect(fakeCommentCommand.lastUpdatedComment?.id, 'c2');
-        expect(fakeCommentCommand.lastUpdatedOrder, 75.0);
+      // 試合1 (100.0) と 試合2 (50.0) の中間値 (75.0) になることを検証！
+      expect(fakeCommentCommand.lastUpdatedComment?.id, 'c2');
+      expect(fakeCommentCommand.lastUpdatedOrder, 75.0);
 
-        // 逆に下から上へ移動する場合：末尾の試合2 (oldIndex = 3) を c1 と c2 の間 (newIndex = 1) へ移動
-        await TimelineReorderHelper.onReorderTimeline(list, 3, 1, capturedRef);
-        // c1 (300.0) と c2 (200.0) の中間値 (250.0) になることを検証！
-        // (match1のグループオフセットが正しく計算される)
-      },
-    );
+      // 逆に下から上へ移動する場合：末尾の試合2 (oldIndex = 3) を c1 と c2 の間 (newIndex = 1) へ移動
+      await TimelineReorderHelper.onReorderTimeline(list, 3, 1, capturedRef);
+      // c1 (300.0) と c2 (200.0) の中間値 (250.0) になることを検証！
+      // (match1のグループオフセットが正しく計算される)
+    });
 
-    testWidgets(
-      'onReorderTimeline correctly calculates newOrder when moving comment to top or bottomであること',
-      (tester) async {
-        final fakeCommentCommand = FakeCommentCommandService();
+    testWidgets('【onReorderTimeline】最上部または最下部へコメント移動時にnewOrderが正しく計算されること', (
+      tester,
+    ) async {
+      final fakeCommentCommand = FakeCommentCommandService();
 
-        final comment1 = const MatchCommentModel(
-          id: 'c1',
-          text: 'テスト',
-          order: 300.0,
-        );
-        final match1 = const MatchModel(
-          id: 'm1',
-          redName: '道上剣友会',
-          whiteName: 'テスト001-1',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 100.0,
-        );
+      final comment1 = const MatchCommentModel(
+        id: 'c1',
+        text: 'テスト',
+        order: 300.0,
+      );
+      final match1 = const MatchModel(
+        id: 'm1',
+        redName: '道上剣友会',
+        whiteName: 'テスト001-1',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 100.0,
+      );
 
-        final list = <ReorderableTimelineItem>[
-          CommentTimelineItem(comment1),
-          MatchGroupTimelineItem('g1', [match1]),
-        ];
+      final list = <ReorderableTimelineItem>[
+        CommentTimelineItem(comment1),
+        MatchGroupTimelineItem('g1', [match1]),
+      ];
 
-        late WidgetRef capturedRef;
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              permissionProvider.overrideWithValue(
-                const PermissionState(canManageTournament: true),
-              ),
-              commentCommandProvider.overrideWithValue(fakeCommentCommand),
-            ],
-            child: Consumer(
-              builder: (context, ref, _) {
-                capturedRef = ref;
-                return const SizedBox.shrink();
-              },
+      late WidgetRef capturedRef;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
             ),
+            commentCommandProvider.overrideWithValue(fakeCommentCommand),
+          ],
+          child: Consumer(
+            builder: (context, ref, _) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
           ),
-        );
+        ),
+      );
 
-        // コメント1 (oldIndex = 0) を 末尾 (onReorderItem では remaining [m1(0)] の末尾 = newIndex 1) へ移動
-        await TimelineReorderHelper.onReorderTimeline(list, 0, 1, capturedRef);
+      // コメント1 (oldIndex = 0) を 末尾 (onReorderItem では remaining [m1(0)] の末尾 = newIndex 1) へ移動
+      await TimelineReorderHelper.onReorderTimeline(list, 0, 1, capturedRef);
 
-        // 末尾なので match1 (100.0) より小さい値 (100.0 - 100.0 = 0.0) になることを検証！
-        expect(fakeCommentCommand.lastUpdatedComment?.id, 'c1');
-        expect(fakeCommentCommand.lastUpdatedOrder, 0.0);
-      },
-    );
+      // 末尾なので match1 (100.0) より小さい値 (100.0 - 100.0 = 0.0) になることを検証！
+      expect(fakeCommentCommand.lastUpdatedComment?.id, 'c1');
+      expect(fakeCommentCommand.lastUpdatedOrder, 0.0);
+    });
 
     testWidgets(
       'onReorderTimeline works seamlessly with IndividualPlayerTimelineItemであること',
@@ -233,152 +231,148 @@ void main() {
       },
     );
 
-    testWidgets(
-      'onReorderTimeline correctly moves match group downward and upwardであること',
-      (tester) async {
-        final fakeMatchAppService = FakeMatchAppService();
+    testWidgets('【onReorderTimeline】試合グループを上下へ正しく移動できること', (tester) async {
+      final fakeMatchAppService = FakeMatchAppService();
 
-        final match1 = const MatchModel(
-          id: 'm1',
-          redName: 'A',
-          whiteName: 'B',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 300.0,
-        );
-        final match2 = const MatchModel(
-          id: 'm2',
-          redName: 'A',
-          whiteName: 'C',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 200.0,
-        );
-        final match3 = const MatchModel(
-          id: 'm3',
-          redName: 'A',
-          whiteName: 'D',
-          matchType: '団体戦',
-          status: 'finished',
-          order: 100.0,
-        );
+      final match1 = const MatchModel(
+        id: 'm1',
+        redName: 'A',
+        whiteName: 'B',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 300.0,
+      );
+      final match2 = const MatchModel(
+        id: 'm2',
+        redName: 'A',
+        whiteName: 'C',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 200.0,
+      );
+      final match3 = const MatchModel(
+        id: 'm3',
+        redName: 'A',
+        whiteName: 'D',
+        matchType: '団体戦',
+        status: 'finished',
+        order: 100.0,
+      );
 
-        final list = <ReorderableTimelineItem>[
-          MatchGroupTimelineItem('g1', [match1]),
-          MatchGroupTimelineItem('g2', [match2]),
-          MatchGroupTimelineItem('g3', [match3]),
-        ];
+      final list = <ReorderableTimelineItem>[
+        MatchGroupTimelineItem('g1', [match1]),
+        MatchGroupTimelineItem('g2', [match2]),
+        MatchGroupTimelineItem('g3', [match3]),
+      ];
 
-        late WidgetRef capturedRef;
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              permissionProvider.overrideWithValue(
-                const PermissionState(canManageTournament: true),
-              ),
-              matchApplicationServiceProvider.overrideWithValue(
-                fakeMatchAppService,
-              ),
-            ],
-            child: Consumer(
-              builder: (context, ref, _) {
-                capturedRef = ref;
-                return const SizedBox.shrink();
-              },
+      late WidgetRef capturedRef;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
             ),
-          ),
-        );
-
-        // 1. group1 (oldIndex = 0) を group2 と group3 の間 (newIndex = 1) へ下げる
-        await TimelineReorderHelper.onReorderTimeline(list, 0, 1, capturedRef);
-        expect(fakeMatchAppService.savedMatches, isNotNull);
-        // 200.0 と 100.0 の中間値 (150.0) になることを検証！
-        expect(fakeMatchAppService.savedMatches!.first.id, 'm1');
-        expect(fakeMatchAppService.savedMatches!.first.order, 150.0);
-
-        // 2. group3 (oldIndex = 2) を 先頭 (newIndex = 0) へ上げる
-        await TimelineReorderHelper.onReorderTimeline(list, 2, 0, capturedRef);
-        // 先頭 (300.0) より 100.0 大きい値 (400.0) になることを検証！
-        expect(fakeMatchAppService.savedMatches!.first.id, 'm3');
-        expect(fakeMatchAppService.savedMatches!.first.order, 400.0);
-      },
-    );
-
-    testWidgets(
-      'onReorderInnerTimeline correctly handles inner matches and comments reorderingであること',
-      (tester) async {
-        final fakeCommentCommand = FakeCommentCommandService();
-        final fakeMatchAppService = FakeMatchAppService();
-
-        final m1 = const MatchModel(
-          id: 'im1',
-          redName: 'A',
-          whiteName: 'B',
-          matchType: '個人戦',
-          status: 'finished',
-          order: 300.0,
-        );
-        final comment = const MatchCommentModel(
-          id: 'ic1',
-          text: '合間コメント',
-          order: 200.0,
-        );
-        final m2 = const MatchModel(
-          id: 'im2',
-          redName: 'A',
-          whiteName: 'C',
-          matchType: '個人戦',
-          status: 'finished',
-          order: 100.0,
-        );
-
-        final innerList = <TimelineItem>[m1, comment, m2];
-
-        late WidgetRef capturedRef;
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              permissionProvider.overrideWithValue(
-                const PermissionState(canManageTournament: true),
-              ),
-              commentCommandProvider.overrideWithValue(fakeCommentCommand),
-              matchApplicationServiceProvider.overrideWithValue(
-                fakeMatchAppService,
-              ),
-            ],
-            child: Consumer(
-              builder: (context, ref, _) {
-                capturedRef = ref;
-                return const SizedBox.shrink();
-              },
+            matchApplicationServiceProvider.overrideWithValue(
+              fakeMatchAppService,
             ),
+          ],
+          child: Consumer(
+            builder: (context, ref, _) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
           ),
-        );
+        ),
+      );
 
-        // コメント (oldIndex = 1) を 末尾 (newIndex = 2) へ下げる
-        await TimelineReorderHelper.onReorderInnerTimeline(
-          innerList,
-          1,
-          2,
-          capturedRef,
-        );
-        expect(fakeCommentCommand.lastUpdatedComment?.id, 'ic1');
-        // 末尾なので m2 (100.0) - 100.0 = 0.0
-        expect(fakeCommentCommand.lastUpdatedOrder, 0.0);
+      // 1. group1 (oldIndex = 0) を group2 と group3 の間 (newIndex = 1) へ下げる
+      await TimelineReorderHelper.onReorderTimeline(list, 0, 1, capturedRef);
+      expect(fakeMatchAppService.savedMatches, isNotNull);
+      // 200.0 と 100.0 の中間値 (150.0) になることを検証！
+      expect(fakeMatchAppService.savedMatches!.first.id, 'm1');
+      expect(fakeMatchAppService.savedMatches!.first.order, 150.0);
 
-        // 試合 m2 (oldIndex = 2) を 先頭 (newIndex = 0) へ上げる
-        await TimelineReorderHelper.onReorderInnerTimeline(
-          innerList,
-          2,
-          0,
-          capturedRef,
-        );
-        expect(fakeMatchAppService.savedMatches, isNotNull);
-        // 先頭なので m1 (300.0) + 100.0 = 400.0
-        expect(fakeMatchAppService.savedMatches!.first.id, 'im2');
-        expect(fakeMatchAppService.savedMatches!.first.order, 400.0);
-      },
-    );
+      // 2. group3 (oldIndex = 2) を 先頭 (newIndex = 0) へ上げる
+      await TimelineReorderHelper.onReorderTimeline(list, 2, 0, capturedRef);
+      // 先頭 (300.0) より 100.0 大きい値 (400.0) になることを検証！
+      expect(fakeMatchAppService.savedMatches!.first.id, 'm3');
+      expect(fakeMatchAppService.savedMatches!.first.order, 400.0);
+    });
+
+    testWidgets('【onReorderInnerTimeline】内部の試合一覧およびコメントの並び替えが適切に処理されること', (
+      tester,
+    ) async {
+      final fakeCommentCommand = FakeCommentCommandService();
+      final fakeMatchAppService = FakeMatchAppService();
+
+      final m1 = const MatchModel(
+        id: 'im1',
+        redName: 'A',
+        whiteName: 'B',
+        matchType: '個人戦',
+        status: 'finished',
+        order: 300.0,
+      );
+      final comment = const MatchCommentModel(
+        id: 'ic1',
+        text: '合間コメント',
+        order: 200.0,
+      );
+      final m2 = const MatchModel(
+        id: 'im2',
+        redName: 'A',
+        whiteName: 'C',
+        matchType: '個人戦',
+        status: 'finished',
+        order: 100.0,
+      );
+
+      final innerList = <TimelineItem>[m1, comment, m2];
+
+      late WidgetRef capturedRef;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
+            ),
+            commentCommandProvider.overrideWithValue(fakeCommentCommand),
+            matchApplicationServiceProvider.overrideWithValue(
+              fakeMatchAppService,
+            ),
+          ],
+          child: Consumer(
+            builder: (context, ref, _) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      // コメント (oldIndex = 1) を 末尾 (newIndex = 2) へ下げる
+      await TimelineReorderHelper.onReorderInnerTimeline(
+        innerList,
+        1,
+        2,
+        capturedRef,
+      );
+      expect(fakeCommentCommand.lastUpdatedComment?.id, 'ic1');
+      // 末尾なので m2 (100.0) - 100.0 = 0.0
+      expect(fakeCommentCommand.lastUpdatedOrder, 0.0);
+
+      // 試合 m2 (oldIndex = 2) を 先頭 (newIndex = 0) へ上げる
+      await TimelineReorderHelper.onReorderInnerTimeline(
+        innerList,
+        2,
+        0,
+        capturedRef,
+      );
+      expect(fakeMatchAppService.savedMatches, isNotNull);
+      // 先頭なので m1 (300.0) + 100.0 = 400.0
+      expect(fakeMatchAppService.savedMatches!.first.id, 'im2');
+      expect(fakeMatchAppService.savedMatches!.first.order, 400.0);
+    });
 
     testWidgets('onReorderMatches correctly reorders matches listであること', (
       tester,

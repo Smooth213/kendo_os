@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 
 void main() {
   group('[Widget] MatchCardHeaderRow ウィジェットテスト', () {
-    testWidgets('Renders action buttons and status badge with spacerであること', (
+    testWidgets('action ボタン一覧 and status badge with spacerが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -22,7 +22,7 @@ void main() {
       expect(find.text('STATUS'), findsOneWidget);
     });
 
-    testWidgets('Renders leading widget when providedであること', (
+    testWidgets('【provided】leading widgetが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

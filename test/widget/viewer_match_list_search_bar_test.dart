@@ -4,49 +4,48 @@ import 'package:kendo_os/features/viewer/presentation/components/viewer_match_li
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets(
-    'ViewerMatchListSearchBar renders search button and sort buttonであること',
-    (tester) async {
-      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-      bool toggledSort = false;
-      bool openedSearch = false;
-      bool toggledExpandAll = false;
+  testWidgets('【ViewerMatchListSearchBar】検索ボタンおよびソートボタンが正しく描画されること', (
+    tester,
+  ) async {
+    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+    bool toggledSort = false;
+    bool openedSearch = false;
+    bool toggledExpandAll = false;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: ViewerMatchListSearchBar(
-              isSearchVisible: false,
-              searchQuery: '',
-              isSortAscending: true,
-              isAllExpanded: false,
-              onSearchQueryChanged: (_) {},
-              onOpenSearch: () => openedSearch = true,
-              onCloseSearch: () {},
-              onToggleSort: () => toggledSort = true,
-              onToggleExpandAll: () => toggledExpandAll = true,
-            ),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.light().copyWith(extensions: [themeColors]),
+        home: Scaffold(
+          body: ViewerMatchListSearchBar(
+            isSearchVisible: false,
+            searchQuery: '',
+            isSortAscending: true,
+            isAllExpanded: false,
+            onSearchQueryChanged: (_) {},
+            onOpenSearch: () => openedSearch = true,
+            onCloseSearch: () {},
+            onToggleSort: () => toggledSort = true,
+            onToggleExpandAll: () => toggledExpandAll = true,
           ),
         ),
-      );
+      ),
+    );
 
-      expect(find.text('試合リスト'), findsOneWidget);
-      expect(find.text('カテゴリ昇順'), findsOneWidget);
-      expect(find.text('全て開く'), findsOneWidget);
-      expect(find.byIcon(Icons.search), findsOneWidget);
+    expect(find.text('試合リスト'), findsOneWidget);
+    expect(find.text('カテゴリ昇順'), findsOneWidget);
+    expect(find.text('全て開く'), findsOneWidget);
+    expect(find.byIcon(Icons.search), findsOneWidget);
 
-      await tester.tap(find.text('カテゴリ昇順'));
-      await tester.pump();
-      expect(toggledSort, isTrue);
+    await tester.tap(find.text('カテゴリ昇順'));
+    await tester.pump();
+    expect(toggledSort, isTrue);
 
-      await tester.tap(find.text('全て開く'));
-      await tester.pump();
-      expect(toggledExpandAll, isTrue);
+    await tester.tap(find.text('全て開く'));
+    await tester.pump();
+    expect(toggledExpandAll, isTrue);
 
-      await tester.tap(find.byIcon(Icons.search));
-      await tester.pump();
-      expect(openedSearch, isTrue);
-    },
-  );
+    await tester.tap(find.byIcon(Icons.search));
+    await tester.pump();
+    expect(openedSearch, isTrue);
+  });
 }

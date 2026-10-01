@@ -29,7 +29,7 @@ void main() {
       expect(find.byIcon(Icons.drag_handle), findsOneWidget);
     });
 
-    testWidgets('Renders reserve player tile correctly in dark modeであること', (
+    testWidgets('reserve 選手 tile correctly ダークモードでが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

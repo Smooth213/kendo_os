@@ -21,26 +21,25 @@ void main() {
       expect(find.text('田'), findsOneWidget);
     });
 
-    testWidgets(
-      'Renders RotatedBox for hyphen and brackets, with initialであること',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: ViewerVerticalPlayerNameCell(
-                  text: 'リーダー(A)',
-                  initial: 'Y',
-                  isDark: true,
-                ),
+    testWidgets('RotatedBox for hyphen and brackets, with initialが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ViewerVerticalPlayerNameCell(
+                text: 'リーダー(A)',
+                initial: 'Y',
+                isDark: true,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.byType(RotatedBox), findsWidgets);
-        expect(find.text('Y'), findsOneWidget);
-      },
-    );
+      expect(find.byType(RotatedBox), findsWidgets);
+      expect(find.text('Y'), findsOneWidget);
+    });
   });
 }

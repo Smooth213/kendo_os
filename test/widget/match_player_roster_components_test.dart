@@ -44,47 +44,46 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets(
-      'MatchPlayerRosterListSection displays active and sub playersであること',
-      (tester) async {
-        final p1 = PlayerModel(
-          id: 'p1',
-          lastName: '田中',
-          firstName: '太郎',
-          lastNameKana: '',
-          firstNameKana: '',
-          grade: 5,
-        );
-        final p2 = PlayerModel(
-          id: 'p2',
-          lastName: '佐藤',
-          firstName: '次郎',
-          lastNameKana: '',
-          firstNameKana: '',
-          grade: 5,
-        );
+    testWidgets('【MatchPlayerRosterListSection】出場選手および補欠選手が正しく表示されること', (
+      tester,
+    ) async {
+      final p1 = PlayerModel(
+        id: 'p1',
+        lastName: '田中',
+        firstName: '太郎',
+        lastNameKana: '',
+        firstNameKana: '',
+        grade: 5,
+      );
+      final p2 = PlayerModel(
+        id: 'p2',
+        lastName: '佐藤',
+        firstName: '次郎',
+        lastNameKana: '',
+        firstNameKana: '',
+        grade: 5,
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: MatchPlayerRosterListSection(
-                sameCatActive: [p1],
-                dojoListSubstitutes: [p2],
-                otherCategoryPlayers: const [],
-                activePlayerNames: {'田中 太郎'},
-                playerPositions: {'田中 太郎': '先鋒'},
-                currentPlayerName: '田中 太郎',
-                onPlayerSelected: (player, isSub) {},
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MatchPlayerRosterListSection(
+              sameCatActive: [p1],
+              dojoListSubstitutes: [p2],
+              otherCategoryPlayers: const [],
+              activePlayerNames: {'田中 太郎'},
+              playerPositions: {'田中 太郎': '先鋒'},
+              currentPlayerName: '田中 太郎',
+              onPlayerSelected: (player, isSub) {},
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('田中 太郎'), findsOneWidget);
-        expect(find.text('佐藤 次郎'), findsOneWidget);
-        expect(find.text('出場中の選手 (交代・スワップ)'), findsOneWidget);
-        expect(find.text('同カテゴリの控え選手'), findsOneWidget);
-      },
-    );
+      expect(find.text('田中 太郎'), findsOneWidget);
+      expect(find.text('佐藤 次郎'), findsOneWidget);
+      expect(find.text('出場中の選手 (交代・スワップ)'), findsOneWidget);
+      expect(find.text('同カテゴリの控え選手'), findsOneWidget);
+    });
   });
 }

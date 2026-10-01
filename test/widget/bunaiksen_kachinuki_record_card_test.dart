@@ -6,7 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 
 void main() {
   group('[Widget] BunaiksenKachinukiRecordCard ウィジェットテスト', () {
-    testWidgets('Renders kachinuki card with title and canvasであること', (
+    testWidgets('kachinuki カード with タイトル and canvasが正しく描画されること', (
       tester,
     ) async {
       final match = MatchModel(
@@ -39,9 +39,7 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('Renders empty widget when matches is emptyであること', (
-      tester,
-    ) async {
+    testWidgets('【試合一覧 is empty】empty widgetが正しく描画されること', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(

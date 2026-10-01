@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/bul
 
 void main() {
   group('[Widget] BulkRuleTargetSelectSection ウィジェットテスト', () {
-    testWidgets('Renders filters, units and triggers callbacksであること', (
+    testWidgets('filters, units and triggers callbacksが正しく描画されること', (
       tester,
     ) async {
       String selectedCategory = 'すべて';

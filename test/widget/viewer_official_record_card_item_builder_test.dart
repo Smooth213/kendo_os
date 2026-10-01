@@ -6,33 +6,30 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[Widget] ViewerOfficialRecordCardItemBuilder テスト', () {
-    test(
-      'generateDescriptiveLeagueTitle generates title correctly for team leagueであること',
-      () {
-        final matches = [
-          const MatchListProjection(
-            id: 'm1',
-            tournamentId: 't1',
-            matchOrder: 1,
-            redName: '東京道場 : 佐藤',
-            whiteName: '大阪道場 : 鈴木',
-            redScore: 2,
-            whiteScore: 0,
-            status: 'finished',
-            matchType: '先鋒',
-            note: '',
-          ),
-        ];
+    test('【generateDescriptiveLeagueTitle】団体リーグ戦のタイトルが正しく生成されること', () {
+      final matches = [
+        const MatchListProjection(
+          id: 'm1',
+          tournamentId: 't1',
+          matchOrder: 1,
+          redName: '東京道場 : 佐藤',
+          whiteName: '大阪道場 : 鈴木',
+          redScore: 2,
+          whiteScore: 0,
+          status: 'finished',
+          matchType: '先鋒',
+          note: '',
+        ),
+      ];
 
-        final title =
-            ViewerOfficialRecordCardItemBuilder.generateDescriptiveLeagueTitle(
-              matches,
-              ['東京道場'],
-            );
+      final title =
+          ViewerOfficialRecordCardItemBuilder.generateDescriptiveLeagueTitle(
+            matches,
+            ['東京道場'],
+          );
 
-        expect(title, contains('東京道場'));
-        expect(title, contains('2チームリーグ'));
-      },
-    );
+      expect(title, contains('東京道場'));
+      expect(title, contains('2チームリーグ'));
+    });
   });
 }

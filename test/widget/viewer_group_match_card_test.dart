@@ -12,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('ViewerGroupMatchCard renders group title and match listであること', (
+  testWidgets('【ViewerGroupMatchCard】グループタイトルおよび試合一覧が正しく描画されること', (
     tester,
   ) async {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

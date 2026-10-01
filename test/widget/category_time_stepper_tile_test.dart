@@ -5,7 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 void main() {
   group('[Widget] CategoryTimeStepperTile ウィジェットテスト', () {
     testWidgets(
-      'Renders time stepper tile with title and formatted minutesであること',
+      'time stepper tile with タイトル and formatted minutesが正しく描画されること',
       (WidgetTester tester) async {
         double currentTime = 3.0;
 

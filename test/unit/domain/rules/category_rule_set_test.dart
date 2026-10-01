@@ -32,23 +32,20 @@ void main() {
       expect(decoded.advancedRule.isEnchoUnlimited, isTrue);
     });
 
-    test(
-      'TournamentModel handles empty categoryRules correctly for backward compatibilityであること',
-      () {
-        final tournament = TournamentModel(
-          id: 'test_id',
-          organizationId: 'org_123',
-          name: 'Test Tournament',
-          date: DateTime.now(),
-          venue: 'Test Venue',
-        );
+    test('【TournamentModel】後方互換性のため空のcategoryRulesが適切に処理されること', () {
+      final tournament = TournamentModel(
+        id: 'test_id',
+        organizationId: 'org_123',
+        name: 'Test Tournament',
+        date: DateTime.now(),
+        venue: 'Test Venue',
+      );
 
-        final json = tournament.toJson();
-        final decoded = TournamentModel.fromJson(json);
+      final json = tournament.toJson();
+      final decoded = TournamentModel.fromJson(json);
 
-        expect(decoded.categoryRules, isEmpty);
-      },
-    );
+      expect(decoded.categoryRules, isEmpty);
+    });
 
     test(
       'TournamentModel serializes and deserializes categoryRules map correctlyであること',
@@ -82,7 +79,7 @@ void main() {
     );
   });
 
-  group('Keyword detection analysis テスト for advanced rounds', () {
+  group('[Unit] 上位回戦（準決勝・決勝等）のキーワード検知分析テスト', () {
     bool isAdvancedMatch(String note) {
       final cleanNote = note.toLowerCase();
       final keywords = [

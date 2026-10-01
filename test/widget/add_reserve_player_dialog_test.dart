@@ -4,43 +4,42 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/dia
 
 void main() {
   group('[Widget] AddReservePlayerDialog ウィジェットテスト', () {
-    testWidgets(
-      'Renders available players list and select returns player nameであること',
-      (WidgetTester tester) async {
-        String? selectedName;
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () async {
-                    selectedName = await showDialog<String>(
-                      context: context,
-                      builder: (ctx) => const AddReservePlayerDialog(
-                        availablePlayers: ['佐藤', '鈴木', '高橋'],
-                      ),
-                    );
-                  },
-                  child: const Text('Open'),
-                ),
+    testWidgets('available 選手一覧 list and select returns 選手 nameが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      String? selectedName;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () async {
+                  selectedName = await showDialog<String>(
+                    context: context,
+                    builder: (ctx) => const AddReservePlayerDialog(
+                      availablePlayers: ['佐藤', '鈴木', '高橋'],
+                    ),
+                  );
+                },
+                child: const Text('Open'),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('控え選手の追加'), findsOneWidget);
-        expect(find.text('佐藤'), findsOneWidget);
-        expect(find.text('鈴木'), findsOneWidget);
+      expect(find.text('控え選手の追加'), findsOneWidget);
+      expect(find.text('佐藤'), findsOneWidget);
+      expect(find.text('鈴木'), findsOneWidget);
 
-        await tester.tap(find.text('鈴木'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('鈴木'));
+      await tester.pumpAndSettle();
 
-        expect(selectedName, equals('鈴木'));
-      },
-    );
+      expect(selectedName, equals('鈴木'));
+    });
 
     testWidgets('Manual input textfield adds helper playerであること', (
       WidgetTester tester,

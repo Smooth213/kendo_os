@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('[Widget] ViewerSettingsBottomSheet ウィジェットテスト', () {
-    testWidgets('Renders theme options and liquid glass switchであること', (
+    testWidgets('theme options and liquid glass switchが正しく描画されること', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});

@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   group('[Widget] BunaiksenTeamMemberList ウィジェットテスト', () {
     testWidgets(
-      'renders positions and members correctly and triggers clear on tapであること',
+      'positions and members correctly and triggers clear on tapが正しく描画されること',
       (tester) async {
         final themeColors = AppThemeColors.ofMode(
           isDark: false,

@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] BulkRuleDetailSettingCards ウィジェットテスト', () {
-    testWidgets('Renders cards and triggers change callbacksであること', (
+    testWidgets('cards and triggers change callbacksが正しく描画されること', (
       tester,
     ) async {
       double matchTime = 3.0;

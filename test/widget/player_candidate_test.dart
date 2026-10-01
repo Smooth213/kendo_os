@@ -9,7 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 
 void main() {
-  group('[Widget] Player Candidate 統合テスト under Any Dojo Name', () {
+  group('[Widget] 選手候補選択 統合テスト', () {
     late FakeFirebaseFirestore fakeFirestore;
 
     setUp(() {
@@ -251,7 +251,7 @@ void main() {
     );
 
     testWidgets(
-      'SmartPlayerInput - Filtering by Category Chips and Sorting (Bunaiksen Mode)こと',
+      'SmartPlayerInput - Filtering by 部門 チップ一覧 and Sorting (部内戦 Mode)こと',
       (WidgetTester tester) async {
         // Set larger screen size to ensure all items are visible without scrolling
         tester.view.physicalSize = const Size(800, 1000);

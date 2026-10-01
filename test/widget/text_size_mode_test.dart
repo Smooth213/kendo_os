@@ -5,19 +5,16 @@ import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 
 void main() {
-  testWidgets(
-    'SettingsModel contains textSizeMode and updates correctlyであること',
-    (tester) async {
-      const settings = SettingsModel();
-      expect(settings.textSizeMode, 'normal');
+  testWidgets('【SettingsModel】textSizeModeが含まれ正しく更新されること', (tester) async {
+    const settings = SettingsModel();
+    expect(settings.textSizeMode, 'normal');
 
-      final largeSettings = settings.copyWith(textSizeMode: 'large');
-      expect(largeSettings.textSizeMode, 'large');
+    final largeSettings = settings.copyWith(textSizeMode: 'large');
+    expect(largeSettings.textSizeMode, 'large');
 
-      final extraLargeSettings = settings.copyWith(textSizeMode: 'extraLarge');
-      expect(extraLargeSettings.textSizeMode, 'extraLarge');
-    },
-  );
+    final extraLargeSettings = settings.copyWith(textSizeMode: 'extraLarge');
+    expect(extraLargeSettings.textSizeMode, 'extraLarge');
+  });
 
   testWidgets('SettingsScreen displays text size selectorであること', (
     tester,

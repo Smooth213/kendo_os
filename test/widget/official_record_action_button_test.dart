@@ -4,7 +4,7 @@ import 'package:kendo_os/features/viewer/components/official_record_action_butto
 
 void main() {
   group('[Widget] OfficialRecordActionButton ウィジェットテスト', () {
-    testWidgets('Renders icon and label, triggers onTap callbackであること', (
+    testWidgets('icon and label, triggers onTap callbackが正しく描画されること', (
       WidgetTester tester,
     ) async {
       bool tapped = false;

@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
   group('[Widget] TeamStatusMemberOrderRow ウィジェットテスト', () {
-    testWidgets('renders red and white players and teams correctlyであること', (
+    testWidgets('red and white 選手一覧 and チーム一覧 correctlyが正しく描画されること', (
       tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');

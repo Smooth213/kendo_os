@@ -4,7 +4,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 void main() {
   group('[Widget] KachinukiSpanBuilder 単体テスト', () {
-    test('parseName handles formatted and normal namesであること', () {
+    test('【parseName】formatted and normal namesが適切に処理されること', () {
       expect(KachinukiSpanBuilder.parseName('青龍館: 山田 太郎'), {
         'last': '山田',
         'first': '太郎',

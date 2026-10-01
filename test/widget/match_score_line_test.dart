@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
   group('[Widget] MatchScoreLine ウィジェットテスト', () {
-    testWidgets('Renders empty space when no points and not drawであること', (
+    testWidgets('【no points and not draw】empty spaceが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -27,7 +27,7 @@ void main() {
       expect(find.text('×'), findsNothing);
     });
 
-    testWidgets('Renders score marks with dash separator correctlyであること', (
+    testWidgets('スコア marks with dash separator correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -51,7 +51,7 @@ void main() {
       expect(find.text('×'), findsNothing);
     });
 
-    testWidgets('Renders draw mark × correctly when 0-0 finishedであること', (
+    testWidgets('【0-0 終了済み】draw mark × correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

@@ -22,7 +22,7 @@ void main() {
       expect(find.text('これはテスト本文です。'), findsOneWidget);
     });
 
-    testWidgets('Renders loading indicator when isLoading is trueであること', (
+    testWidgets('【isLoading is true】読み込み中 indicatorが正しく描画されること', (
       tester,
     ) async {
       await tester.pumpWidget(

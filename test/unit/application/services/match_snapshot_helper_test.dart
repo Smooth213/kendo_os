@@ -7,42 +7,39 @@ void main() {
   group('[Unit] MatchSnapshotHelper 単体テスト', () {
     const helper = MatchSnapshotHelper();
 
-    test(
-      'addSnapshotToMatch adds a snapshot to match with correct version and reasonであること',
-      () {
-        final initialMatch = MatchModel(
-          id: 'match-1',
-          tournamentId: 'tour-1',
-          matchOrder: 1,
-          matchType: '先鋒',
-          status: 'in_progress',
-          redName: '選手A',
-          whiteName: '選手B',
-          events: [
-            ScoreEvent(
-              id: 'e1',
-              side: Side.red,
-              strikeType: StrikeType.men,
-              isIppon: true,
-              timestamp: DateTime.now(),
-              sequence: 1,
-            ),
-          ],
-        );
+    test('addSnapshotToMatchにより正しいバージョンと理由でスナップショットが追加されること', () {
+      final initialMatch = MatchModel(
+        id: 'match-1',
+        tournamentId: 'tour-1',
+        matchOrder: 1,
+        matchType: '先鋒',
+        status: 'in_progress',
+        redName: '選手A',
+        whiteName: '選手B',
+        events: [
+          ScoreEvent(
+            id: 'e1',
+            side: Side.red,
+            strikeType: StrikeType.men,
+            isIppon: true,
+            timestamp: DateTime.now(),
+            sequence: 1,
+          ),
+        ],
+      );
 
-        final updatedMatch = helper.addSnapshotToMatch(
-          initialMatch,
-          'テストスナップショット',
-        );
+      final updatedMatch = helper.addSnapshotToMatch(
+        initialMatch,
+        'テストスナップショット',
+      );
 
-        expect(updatedMatch.snapshots.length, 1);
-        final snapshot = updatedMatch.snapshots.first;
-        expect(snapshot.matchId, 'match-1');
-        expect(snapshot.reason, 'テストスナップショット');
-        expect(snapshot.version, 1);
-        expect(snapshot.events.length, 1);
-      },
-    );
+      expect(updatedMatch.snapshots.length, 1);
+      final snapshot = updatedMatch.snapshots.first;
+      expect(snapshot.matchId, 'match-1');
+      expect(snapshot.reason, 'テストスナップショット');
+      expect(snapshot.version, 1);
+      expect(snapshot.events.length, 1);
+    });
 
     test(
       'addSnapshotToMatch caps snapshots at 1 item by default (sliding window for light memory/DB footprint)こと',

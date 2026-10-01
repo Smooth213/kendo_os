@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 void main() {
   group('[Widget] MatchPlayersScoreRow ウィジェットテスト', () {
-    testWidgets('Renders player names and score line correctlyであること', (
+    testWidgets('選手 names and スコア line correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

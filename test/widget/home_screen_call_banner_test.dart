@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   group('[Widget] HomeScreenCallBanner ウィジェットテスト', () {
     testWidgets(
-      'Renders HomeScreenCallBanner with inProgress and next matchesであること',
+      'HomeScreenCallBanner with inProgress and next matchesが正しく描画されること',
       (WidgetTester tester) async {
         const match1 = MatchModel(
           id: 'm1',
@@ -64,32 +64,28 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Renders nothing when both inProgress and waiting are emptyであること',
-      (WidgetTester tester) async {
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
+    testWidgets('【both inProgress and 待機中 are empty】nothingが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(extensions: [themeColors]),
-            home: Scaffold(
-              body: HomeScreenCallBanner(
-                uniqueInProgress: const [],
-                uniqueWaiting: const [],
-                themeColors: themeColors,
-                isDark: false,
-                enableLiquidGlass: false,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(extensions: [themeColors]),
+          home: Scaffold(
+            body: HomeScreenCallBanner(
+              uniqueInProgress: const [],
+              uniqueWaiting: const [],
+              themeColors: themeColors,
+              isDark: false,
+              enableLiquidGlass: false,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('進行中'), findsNothing);
-        expect(find.text('次試合'), findsNothing);
-      },
-    );
+      expect(find.text('進行中'), findsNothing);
+      expect(find.text('次試合'), findsNothing);
+    });
   });
 }

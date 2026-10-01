@@ -6,7 +6,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   group('[Widget] NewMatchHeadingNotesCard ウィジェットテスト', () {
     testWidgets(
-      'Renders heading presets and triggers preset toggle and clearであること',
+      'heading presets and triggers preset toggle and clearが正しく描画されること',
       (WidgetTester tester) async {
         final courtController = TextEditingController();
         final noteController = TextEditingController();

@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] BulkRulePresetCard ウィジェットテスト', () {
-    testWidgets('Renders category chips and scene sub chips correctlyであること', (
+    testWidgets('部門 チップ一覧 and scene sub チップ一覧 correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       String? selectedCat;
@@ -61,7 +61,7 @@ void main() {
       expect(selectedScene, 'renseikai');
     });
 
-    testWidgets('Renders category chips with subtitle and resolves (2)こと', (
+    testWidgets('部門 チップ一覧 with subtitle and resolves (2)が正しく描画されること', (
       WidgetTester tester,
     ) async {
       final categoryRules = {
@@ -101,7 +101,7 @@ void main() {
       expect(find.text('小学生の部 (予選リーグ)'), findsOneWidget);
     });
 
-    testWidgets('Renders empty widget when categoryRules is emptyであること', (
+    testWidgets('【categoryRules is empty】empty widgetが正しく描画されること', (
       WidgetTester tester,
     ) async {
       final themeColors = AppThemeColors.ofMode(isDark: true, mode: 'normal');

@@ -25,36 +25,33 @@ void main() {
       expect(helper, isNotNull);
     });
 
-    test(
-      'executeUndo handles empty events gracefully without throwingであること',
-      () async {
-        final container = ProviderContainer(
-          overrides: [isarProvider.overrideWithValue(null)],
-        );
-        addTearDown(container.dispose);
-        final ref = container.read(Provider((ref) => ref));
+    test('【executeUndo】空イベント時に例外をスローせず安全に処理されること', () async {
+      final container = ProviderContainer(
+        overrides: [isarProvider.overrideWithValue(null)],
+      );
+      addTearDown(container.dispose);
+      final ref = container.read(Provider((ref) => ref));
 
-        final persistenceHelper = MatchPersistenceHelper(ref);
-        final addScoreUseCase = container.read(addScoreUseCaseProvider);
+      final persistenceHelper = MatchPersistenceHelper(ref);
+      final addScoreUseCase = container.read(addScoreUseCaseProvider);
 
-        final helper = MatchUndoHelper(ref, addScoreUseCase, persistenceHelper);
+      final helper = MatchUndoHelper(ref, addScoreUseCase, persistenceHelper);
 
-        const currentUser = User(
-          id: 'u1',
-          role: Role.admin,
-          organizationId: 'org1',
-        );
+      const currentUser = User(
+        id: 'u1',
+        role: Role.admin,
+        organizationId: 'org1',
+      );
 
-        // 存在しない試合IDでのUndo実行（例外なく安全終了）
-        await expectLater(
-          helper.executeUndo(
-            matchId: 'non_existent_match',
-            currentUser: currentUser,
-            traceId: 'trace-1',
-          ),
-          completes,
-        );
-      },
-    );
+      // 存在しない試合IDでのUndo実行（例外なく安全終了）
+      await expectLater(
+        helper.executeUndo(
+          matchId: 'non_existent_match',
+          currentUser: currentUser,
+          traceId: 'trace-1',
+        ),
+        completes,
+      );
+    });
   });
 }

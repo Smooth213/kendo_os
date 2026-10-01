@@ -26,47 +26,46 @@ void main() {
     ),
   ];
 
-  testWidgets(
-    'OrderSetupPlayerSelectBottomSheet renders options and playersであること',
-    (tester) async {
-      String? selectedResult;
+  testWidgets('【OrderSetupPlayerSelectBottomSheet】選択肢および選手一覧が描画されること', (
+    tester,
+  ) async {
+    String? selectedResult;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () async {
-                  selectedResult = await OrderSetupPlayerSelectBottomSheet.show(
-                    context,
-                    masterPlayers: testPlayers,
-                    themeColors: AppThemeColors.ofMode(
-                      isDark: false,
-                      mode: 'normal',
-                    ),
-                  );
-                },
-                child: const Text('Open'),
-              ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () async {
+                selectedResult = await OrderSetupPlayerSelectBottomSheet.show(
+                  context,
+                  masterPlayers: testPlayers,
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'normal',
+                  ),
+                );
+              },
+              child: const Text('Open'),
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('選手の選択'), findsOneWidget);
-      expect(find.text('未定（空枠）'), findsOneWidget);
-      expect(find.text('欠員（不戦敗）'), findsOneWidget);
-      expect(find.text('直接入力（助っ人など）'), findsOneWidget);
-      expect(find.text('山田 太郎'), findsOneWidget);
-      expect(find.text('佐藤 次郎'), findsOneWidget);
+    expect(find.text('選手の選択'), findsOneWidget);
+    expect(find.text('未定（空枠）'), findsOneWidget);
+    expect(find.text('欠員（不戦敗）'), findsOneWidget);
+    expect(find.text('直接入力（助っ人など）'), findsOneWidget);
+    expect(find.text('山田 太郎'), findsOneWidget);
+    expect(find.text('佐藤 次郎'), findsOneWidget);
 
-      await tester.tap(find.text('山田 太郎'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('山田 太郎'));
+    await tester.pumpAndSettle();
 
-      expect(selectedResult, '山田 太郎');
-    },
-  );
+    expect(selectedResult, '山田 太郎');
+  });
 }

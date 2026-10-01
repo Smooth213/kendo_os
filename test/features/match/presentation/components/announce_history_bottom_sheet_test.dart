@@ -43,171 +43,168 @@ void main() {
       );
     }
 
-    testWidgets(
-      'Should show both all and staff notifications in staff roomであること',
-      (WidgetTester tester) async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+    testWidgets('both all and staff notifications in staff roomが表示されること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        // Add emergency announcement targeted to 'all'
-        await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_999',
-          'title': '全員向け避難警報',
-          'body': 'グラウンドへ避難してください。',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'all',
-          'isRead': false,
-        });
+      // Add emergency announcement targeted to 'all'
+      await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_999',
+        'title': '全員向け避難警報',
+        'body': 'グラウンドへ避難してください。',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'all',
+        'isRead': false,
+      });
 
-        // Add emergency announcement targeted to 'staff'
-        await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_999',
-          'title': 'スタッフ連絡',
-          'body': '第2コートの審判交代をお願いします。',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'staff',
-          'isRead': false,
-        });
+      // Add emergency announcement targeted to 'staff'
+      await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_999',
+        'title': 'スタッフ連絡',
+        'body': '第2コートの審判交代をお願いします。',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'staff',
+        'isRead': false,
+      });
 
-        // Render button
-        await tester.pumpWidget(
-          createTestTarget(
-            container: container,
-            tournamentId: 'tourney_999',
-            isStaffRoom: true,
-          ),
-        );
-        await tester.pumpAndSettle();
+      // Render button
+      await tester.pumpWidget(
+        createTestTarget(
+          container: container,
+          tournamentId: 'tourney_999',
+          isStaffRoom: true,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Tap button to open bottom sheet
-        await tester.tap(find.text('Open Bottom Sheet'));
-        await tester.pumpAndSettle();
+      // Tap button to open bottom sheet
+      await tester.tap(find.text('Open Bottom Sheet'));
+      await tester.pumpAndSettle();
 
-        // Both should be found
-        expect(find.text('全員向け避難警報'), findsOneWidget);
-        expect(find.text('【スタッフ限定】'), findsOneWidget);
-      },
-    );
+      // Both should be found
+      expect(find.text('全員向け避難警報'), findsOneWidget);
+      expect(find.text('【スタッフ限定】'), findsOneWidget);
+    });
 
-    testWidgets(
-      'Should show only all notifications in non-staff room (viewer)こと',
-      (WidgetTester tester) async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+    testWidgets('only all notifications in non-staff room (viewer)が表示されること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        // Add emergency announcement targeted to 'all'
-        await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_999',
-          'title': '全員向け避難警報',
-          'body': 'グラウンドへ避難してください。',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'all',
-          'isRead': false,
-        });
+      // Add emergency announcement targeted to 'all'
+      await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_999',
+        'title': '全員向け避難警報',
+        'body': 'グラウンドへ避難してください。',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'all',
+        'isRead': false,
+      });
 
-        // Add emergency announcement targeted to 'staff'
-        await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_999',
-          'title': 'スタッフ連絡',
-          'body': '第2コートの審判交代をお願いします。',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'staff',
-          'isRead': false,
-        });
+      // Add emergency announcement targeted to 'staff'
+      await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_999',
+        'title': 'スタッフ連絡',
+        'body': '第2コートの審判交代をお願いします。',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'staff',
+        'isRead': false,
+      });
 
-        // Render button for viewer
-        await tester.pumpWidget(
-          createTestTarget(
-            container: container,
-            tournamentId: 'tourney_999',
-            isStaffRoom: false,
-          ),
-        );
-        await tester.pumpAndSettle();
+      // Render button for viewer
+      await tester.pumpWidget(
+        createTestTarget(
+          container: container,
+          tournamentId: 'tourney_999',
+          isStaffRoom: false,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Tap button to open bottom sheet
-        await tester.tap(find.text('Open Bottom Sheet'));
-        await tester.pumpAndSettle();
+      // Tap button to open bottom sheet
+      await tester.tap(find.text('Open Bottom Sheet'));
+      await tester.pumpAndSettle();
 
-        // 'all' is found, but 'staff' is filtered out
-        expect(find.text('全員向け避難警報'), findsOneWidget);
-        expect(find.text('【スタッフ限定】'), findsNothing);
-      },
-    );
+      // 'all' is found, but 'staff' is filtered out
+      expect(find.text('全員向け避難警報'), findsOneWidget);
+      expect(find.text('【スタッフ限定】'), findsNothing);
+    });
 
-    testWidgets(
-      'Tapping unread card should mark it as read and clear pink dotであること',
-      (WidgetTester tester) async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            firestoreProvider.overrideWithValue(fakeFirestore),
-          ],
-        );
+    testWidgets('未読カードのタップ時に既読マークが付与され未読バッジが消去されること', (
+      WidgetTester tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          firestoreProvider.overrideWithValue(fakeFirestore),
+        ],
+      );
 
-        // Add unread announcement
-        final docRef = await fakeFirestore.collection('announcements').add({
-          'tournamentId': 'tourney_999',
-          'title': '避難警報',
-          'body': 'グラウンドへ避難してください。',
-          'timestamp': Timestamp.now(),
-          'type': 'emergency',
-          'target': 'all',
-          'isRead': false,
-        });
+      // Add unread announcement
+      final docRef = await fakeFirestore.collection('announcements').add({
+        'tournamentId': 'tourney_999',
+        'title': '避難警報',
+        'body': 'グラウンドへ避難してください。',
+        'timestamp': Timestamp.now(),
+        'type': 'emergency',
+        'target': 'all',
+        'isRead': false,
+      });
 
-        await tester.pumpWidget(
-          createTestTarget(
-            container: container,
-            tournamentId: 'tourney_999',
-            isStaffRoom: true,
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        createTestTarget(
+          container: container,
+          tournamentId: 'tourney_999',
+          isStaffRoom: true,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        // Open bottom sheet
-        await tester.tap(find.text('Open Bottom Sheet'));
-        await tester.pumpAndSettle();
+      // Open bottom sheet
+      await tester.tap(find.text('Open Bottom Sheet'));
+      await tester.pumpAndSettle();
 
-        // Find unread indicator (pink dot Container)
-        final pinkDotFinder = find.byWidgetPredicate((widget) {
-          if (widget is Container && widget.decoration is BoxDecoration) {
-            final boxDec = widget.decoration as BoxDecoration;
-            return boxDec.color == const Color(0xFFFF69B4) &&
-                boxDec.shape == BoxShape.circle;
-          }
-          return false;
-        });
+      // Find unread indicator (pink dot Container)
+      final pinkDotFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final boxDec = widget.decoration as BoxDecoration;
+          return boxDec.color == const Color(0xFFFF69B4) &&
+              boxDec.shape == BoxShape.circle;
+        }
+        return false;
+      });
 
-        expect(pinkDotFinder, findsOneWidget);
+      expect(pinkDotFinder, findsOneWidget);
 
-        // Tap the card to read
-        await tester.tap(find.text('避難警報'));
-        await tester.pumpAndSettle();
+      // Tap the card to read
+      await tester.tap(find.text('避難警報'));
+      await tester.pumpAndSettle();
 
-        // Pink dot should disappear (local read cache updates UI immediately)
-        expect(pinkDotFinder, findsNothing);
+      // Pink dot should disappear (local read cache updates UI immediately)
+      expect(pinkDotFinder, findsNothing);
 
-        // Verify local state notifier got updated with read doc ID
-        expect(container.read(readAnnouncementsProvider), contains(docRef.id));
+      // Verify local state notifier got updated with read doc ID
+      expect(container.read(readAnnouncementsProvider), contains(docRef.id));
 
-        // Verify Firestore database doc remains unchanged (false) to preserve local-only read state
-        final updatedSnapshot = await docRef.get();
-        expect(updatedSnapshot.data()?['isRead'], isFalse);
-      },
-    );
+      // Verify Firestore database doc remains unchanged (false) to preserve local-only read state
+      final updatedSnapshot = await docRef.get();
+      expect(updatedSnapshot.data()?['isRead'], isFalse);
+    });
 
     testWidgets(
       'NotificationBellButton should display sakura pink dot if unread notifications existであること',

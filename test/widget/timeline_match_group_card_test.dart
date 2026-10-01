@@ -11,7 +11,7 @@ void main() {
 
   group('[Widget] TimelineMatchGroupCard ウィジェットテスト', () {
     testWidgets(
-      'renders TimelineMatchGroupCard successfully and shows 編集 on swipeであること',
+      'TimelineMatchGroupCard successfully and shows 編集 on swipeが正しく描画されること',
       (tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

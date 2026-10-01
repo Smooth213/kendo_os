@@ -76,7 +76,7 @@ class FakeSyncEngine implements SyncEngine {
 void main() {
   group('[Widget] MatchScreen Renseikai ChoiceChips Player Selection ウィジェットテスト', () {
     testWidgets(
-      'Dialog should present own-team players as ChoiceChips and update TextField on tapであること',
+      '【ダイアログ】present own-チーム 選手一覧 as ChoiceChips and update TextField on tapすること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -292,7 +292,7 @@ void main() {
     );
 
     testWidgets(
-      'Bottom sheet should present "確定して終了" button and transition to Match Finished dialog on tapであること',
+      'ボトムシート should present "確定して終了" ボタン and transition to 試合 終了済み ダイアログ on tapこと',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -420,7 +420,7 @@ void main() {
     );
 
     testWidgets(
-      'Renseikai time-based mode should display side-by-side timers (Match Timer and Total Timer)こと',
+      'Renseikai time-based 【mode】side-by-side timers (Match Timer and Total Timer)が表示されること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -534,7 +534,7 @@ void main() {
     );
 
     testWidgets(
-      'SyncStatusBar should be rendered for operators (scorer/admin) and hidden for viewersであること',
+      '【SyncStatusBar】be rendered for operators (scorer/管理者) and hidden for viewersすること',
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;

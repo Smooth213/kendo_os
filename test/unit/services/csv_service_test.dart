@@ -110,7 +110,7 @@ void main() {
     );
 
     test(
-      'generateMultiCategoryCsvBytesAsync returns valid UTF-8 bytes with BOMであること',
+      '【generateMultiCategoryCsvBytesAsync】BOM付きの有効なUTF-8バイト列が返却されること',
       () async {
         final bytes = await CsvService.generateMultiCategoryCsvBytesAsync([
           (

@@ -49,7 +49,7 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('[Widget] Theme Integration & Color 検証', () {
+  group('[Widget] テーマ統合 ＆ カラー設定検証', () {
     testWidgets('StartScreen ダーク・ライト両モードでテーマが正しく適用されること', (
       WidgetTester tester,
     ) async {
@@ -109,7 +109,7 @@ void main() {
     });
 
     testWidgets(
-      'CreateTournamentScreen is themed correctly with Indigo focus and gradient colorsであること',
+      '【CreateTournamentScreen】Indigoフォーカスおよびグラデーションカラーでテーマが正しく適用されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -163,7 +163,7 @@ void main() {
     });
 
     testWidgets(
-      'OrderSetupScreen and BunaiksenSetupScreen render without crashes under Bunaiksen modeであること',
+      '【部内戦モード】OrderSetupScreenおよびBunaiksenSetupScreenがクラッシュせずに正しく描画されること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

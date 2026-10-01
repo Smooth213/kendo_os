@@ -5,7 +5,7 @@ import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_score_table
 
 void main() {
   group('[Widget] ViewerBunaiksenScoreTableCard ウィジェットテスト', () {
-    testWidgets('Renders score table card with red and white teamsであること', (
+    testWidgets('スコア テーブル カード with red and white teamsが正しく描画されること', (
       tester,
     ) async {
       final matches = [

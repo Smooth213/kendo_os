@@ -9,7 +9,7 @@ void main() {
     await initializeDateFormatting('ja');
   });
 
-  test('formats expedition summary correctly for LINE sharingであること', () {
+  test('遠征サマリーがLINE共有用に正しくフォーマットされること', () {
     final matches = [
       MatchModel(
         id: 'm1',

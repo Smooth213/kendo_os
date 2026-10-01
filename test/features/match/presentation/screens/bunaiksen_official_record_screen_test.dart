@@ -57,7 +57,7 @@ void main() {
       'bunaiksen_${DateFormat('yyyyMMdd').format(testDate)}';
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen team score table should display "赤" and "白"こと',
+    'BunaiksenOfficialRecordScreen team score 【table】"赤" and "白"が表示されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
@@ -109,7 +109,7 @@ void main() {
   );
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen league table should use BunaiksenHelper for pointsであること',
+    '【BunaiksenOfficialRecordScreen】部内戦公式記録のリーグ表でBunaiksenHelperが勝点計算に使用されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(
@@ -232,61 +232,60 @@ void main() {
     },
   );
 
-  testWidgets(
-    'BunaiksenOfficialRecordScreen should display empty cell for "欠員"こと',
-    (WidgetTester tester) async {
-      final matches = [
-        createMockMatch(
-          redName: 'チームA:山田太郎',
-          whiteName: 'チームB:(欠員)',
-          matchType: '先鋒',
+  testWidgets('【BunaiksenOfficialRecordScreen】empty cell for "欠員"が表示されること', (
+    WidgetTester tester,
+  ) async {
+    final matches = [
+      createMockMatch(
+        redName: 'チームA:山田太郎',
+        whiteName: 'チームB:(欠員)',
+        matchType: '先鋒',
+      ),
+    ];
+
+    final categoryGroups = {
+      '一般': {'団体戦A': matches},
+    };
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const BunaiksenOfficialRecordScreen(),
         ),
-      ];
+      ],
+    );
 
-      final categoryGroups = {
-        '一般': {'団体戦A': matches},
-      };
-
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const BunaiksenOfficialRecordScreen(),
-          ),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bunaiksenViewDateProvider.overrideWith((ref) => testDate),
+          bunaiksenRecordCategoryGroupsProvider(
+            testTournamentId,
+          ).overrideWith((ref) => categoryGroups),
+          settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            bunaiksenViewDateProvider.overrideWith((ref) => testDate),
-            bunaiksenRecordCategoryGroupsProvider(
-              testTournamentId,
-            ).overrideWith((ref) => categoryGroups),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-          ],
-          child: MaterialApp.router(
-            theme: ThemeData(splashFactory: NoSplash.splashFactory),
-            routerConfig: router,
-          ),
+        child: MaterialApp.router(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
+          routerConfig: router,
         ),
-      );
+      ),
+    );
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      final tableWidget = tester.widget<Table>(find.byType(Table).first);
-      final whiteNameRow = tableWidget
-          .children[3]; // 0:header, 1:red names, 2:scores, 3:white names
-      final nameCellWidget = whiteNameRow.children[1] as Container;
+    final tableWidget = tester.widget<Table>(find.byType(Table).first);
+    final whiteNameRow = tableWidget
+        .children[3]; // 0:header, 1:red names, 2:scores, 3:white names
+    final nameCellWidget = whiteNameRow.children[1] as Container;
 
-      // It should be an empty container, not a widget with text "(欠員)"
-      expect(nameCellWidget.child, isNull);
-      expect(find.text('(欠員)'), findsNothing);
-    },
-  );
+    // It should be an empty container, not a widget with text "(欠員)"
+    expect(nameCellWidget.child, isNull);
+    expect(find.text('(欠員)'), findsNothing);
+  });
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen should display initial for same last namesであること',
+    '【BunaiksenOfficialRecordScreen】initial for same last namesが表示されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(
@@ -372,7 +371,7 @@ void main() {
   );
 
   testWidgets(
-    'BunaiksenOfficialRecordScreen should show and hide loading dialog on PDF exportであること',
+    'BunaiksenOfficialRecordScreen and hide loading dialog on PDF exportが表示されること',
     (WidgetTester tester) async {
       final matches = [
         createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),

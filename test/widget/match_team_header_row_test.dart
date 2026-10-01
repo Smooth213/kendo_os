@@ -23,7 +23,7 @@ void main() {
       expect(find.text('相手道場'), findsOneWidget);
     });
 
-    testWidgets('Renders fallback label when team name is emptyであること', (
+    testWidgets('【チーム name is empty】fallback labelが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(

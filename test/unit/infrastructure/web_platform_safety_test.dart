@@ -356,38 +356,35 @@ void main() {
       }
     });
 
-    test(
-      'Bunaiksen and Standard Viewer Routing Isolation (通常観客席と部内戦観客席のルーティング分離検証)こと',
-      () {
-        // 【歴史】通常大会と部内戦で共有URL(QR)のパスを混ぜた結果、想定外の画面が開いたり
-        // UIが崩れたりする障害が発生した。両者は完全に別々のURLパス空間として定義されなければならない。
-        const standardViewerUrl = 'https://kendo-os.web.app/viewer-home/t_123';
-        const bunaiksenViewerUrl =
-            'https://kendo-os.web.app/bunaiksen-viewer-home/bunaiksen_123';
+    test('【ルーティング隔離】通常観客席と部内戦観客席のルーティング分離検証が正常に機能すること', () {
+      // 【歴史】通常大会と部内戦で共有URL(QR)のパスを混ぜた結果、想定外の画面が開いたり
+      // UIが崩れたりする障害が発生した。両者は完全に別々のURLパス空間として定義されなければならない。
+      const standardViewerUrl = 'https://kendo-os.web.app/viewer-home/t_123';
+      const bunaiksenViewerUrl =
+          'https://kendo-os.web.app/bunaiksen-viewer-home/bunaiksen_123';
 
-        // 1. パスの分離検証
-        expect(standardViewerUrl.contains('/viewer-home/'), isTrue);
-        expect(standardViewerUrl.contains('/bunaiksen-viewer-home/'), isFalse);
+      // 1. パスの分離検証
+      expect(standardViewerUrl.contains('/viewer-home/'), isTrue);
+      expect(standardViewerUrl.contains('/bunaiksen-viewer-home/'), isFalse);
 
-        expect(bunaiksenViewerUrl.contains('/bunaiksen-viewer-home/'), isTrue);
-        expect(
-          bunaiksenViewerUrl.contains('/viewer-home/'),
-          isFalse,
-          reason: 'URLの包含関係によってルーティングが混線する可能性があります',
-        );
+      expect(bunaiksenViewerUrl.contains('/bunaiksen-viewer-home/'), isTrue);
+      expect(
+        bunaiksenViewerUrl.contains('/viewer-home/'),
+        isFalse,
+        reason: 'URLの包含関係によってルーティングが混線する可能性があります',
+      );
 
-        // 2. IDのプレフィックス分離検証（設計思想の確認）
-        final standardId = standardViewerUrl.split('/').last;
-        final bunaiksenId = bunaiksenViewerUrl.split('/').last;
+      // 2. IDのプレフィックス分離検証（設計思想の確認）
+      final standardId = standardViewerUrl.split('/').last;
+      final bunaiksenId = bunaiksenViewerUrl.split('/').last;
 
-        expect(
-          bunaiksenId.startsWith('bunaiksen_'),
-          isTrue,
-          reason: '部内戦の大会IDは bunaiksen_ プレフィックスから始まる必要があります',
-        );
-        expect(standardId.startsWith('bunaiksen_'), isFalse);
-      },
-    );
+      expect(
+        bunaiksenId.startsWith('bunaiksen_'),
+        isTrue,
+        reason: '部内戦の大会IDは bunaiksen_ プレフィックスから始まる必要があります',
+      );
+      expect(standardId.startsWith('bunaiksen_'), isFalse);
+    });
 
     test(
       'Reorder Match Order Precision Bug (巨大な浮動小数点での情報落ちによる並び替え無効化の防止)こと',

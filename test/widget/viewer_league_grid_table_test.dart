@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/application/projections/match_projection.dart';
 
 void main() {
   group('[Widget] ViewerLeagueGridTable ウィジェットテスト', () {
-    testWidgets('Renders league grid card with matchesであること', (tester) async {
+    testWidgets('league grid カード with matchesが正しく描画されること', (tester) async {
       final matches = [
         const MatchListProjection(
           id: 'm1',

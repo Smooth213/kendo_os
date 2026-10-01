@@ -123,71 +123,70 @@ void main() {
     expect(ruleText, findsOneWidget);
   });
 
-  testWidgets(
-    'Onboarding checklist dynamic checks update when teams and rules are setであること',
-    (WidgetTester tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+  testWidgets('チーム一覧およびルール設定完了時にオンボーディングの動的チェックが更新されること', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
 
-      final populatedTournament = mockTournament.copyWith(
-        categoryRules: {'小学生の部': const CategoryRuleSet()},
-      );
-      when(
-        () => mockTournamentRepo.getTournamentStream(any()),
-      ).thenAnswer((_) => Stream.value(populatedTournament));
+    final populatedTournament = mockTournament.copyWith(
+      categoryRules: {'小学生の部': const CategoryRuleSet()},
+    );
+    when(
+      () => mockTournamentRepo.getTournamentStream(any()),
+    ).thenAnswer((_) => Stream.value(populatedTournament));
 
-      final mockTeams = <TeamModel>[
-        TeamModel(
-          id: 'team1',
-          teamName: '少年剣道A',
-          category: '小学生の部',
-          tournamentId: 'test_tournament_123',
-        ),
-      ];
+    final mockTeams = <TeamModel>[
+      TeamModel(
+        id: 'team1',
+        teamName: '少年剣道A',
+        category: '小学生の部',
+        tournamentId: 'test_tournament_123',
+      ),
+    ];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
-            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
-            syncEngineProvider.overrideWithValue(mockSyncEngine),
-            dojoRoomSyncProvider.overrideWithValue(null),
-            commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
-            permissionProvider.overrideWith(
-              (ref) => const AppPermissions(
-                isReadOnly: false,
-                canManageTournament: true,
-                canCreateMatch: true,
-                canChangeSettings: true,
-                canDeleteData: true,
-              ),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          tournamentRepositoryProvider.overrideWithValue(mockTournamentRepo),
+          playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+          localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+          syncEngineProvider.overrideWithValue(mockSyncEngine),
+          dojoRoomSyncProvider.overrideWithValue(null),
+          commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
+          permissionProvider.overrideWith(
+            (ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
             ),
-            currentDojoIdProvider.overrideWith((ref) => 'dojo_123'),
-            currentTournamentIdProvider.overrideWith(
-              (ref) => 'test_tournament_123',
-            ),
-            matchListByTournamentProvider.overrideWith(
-              (ref, id) => Stream.value(<MatchModel>[]),
-            ),
-            registeredTeamsProvider.overrideWith(
-              (ref, id) => Stream.value(mockTeams),
-            ),
-          ],
-          child: const MaterialApp(
-            home: HomeScreen(tournamentId: 'test_tournament_123'),
           ),
+          currentDojoIdProvider.overrideWith((ref) => 'dojo_123'),
+          currentTournamentIdProvider.overrideWith(
+            (ref) => 'test_tournament_123',
+          ),
+          matchListByTournamentProvider.overrideWith(
+            (ref, id) => Stream.value(<MatchModel>[]),
+          ),
+          registeredTeamsProvider.overrideWith(
+            (ref, id) => Stream.value(mockTeams),
+          ),
+        ],
+        child: const MaterialApp(
+          home: HomeScreen(tournamentId: 'test_tournament_123'),
         ),
-      );
+      ),
+    );
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      // 1. チーム(25%) + ルール(25%) + 作成(25%) = 75% 完了 になっていること
-      expect(find.text('大会準備ステップ'), findsOneWidget);
-      expect(find.text('75% 完了'), findsOneWidget);
-    },
-  );
+    // 1. チーム(25%) + ルール(25%) + 作成(25%) = 75% 完了 になっていること
+    expect(find.text('大会準備ステップ'), findsOneWidget);
+    expect(find.text('75% 完了'), findsOneWidget);
+  });
 
   testWidgets('Checklist is completely hidden when matches existであること', (
     WidgetTester tester,

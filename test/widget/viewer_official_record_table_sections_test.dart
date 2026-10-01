@@ -8,45 +8,44 @@ import 'package:kendo_os/features/viewer/components/viewer_official_record_table
 
 void main() {
   group('[Widget] ViewerOfficialRecordTableSections ウィジェットテスト', () {
-    testWidgets(
-      'ViewerOfficialScoreTableCard renders team title and table properlyであること',
-      (tester) async {
-        final matches = [
-          const MatchListProjection(
-            id: 'm1',
-            tournamentId: 't1',
-            matchOrder: 1,
-            matchType: '先鋒',
-            redName: 'チームA : 山田',
-            whiteName: 'チームB : 田中',
-            redScore: 2,
-            whiteScore: 1,
-            status: 'finished',
-            note: '1回戦',
-            isKachinuki: false,
-          ),
-        ];
+    testWidgets('【ViewerOfficialScoreTableCard】チームタイトルおよびスコアテーブルが適切に描画されること', (
+      tester,
+    ) async {
+      final matches = [
+        const MatchListProjection(
+          id: 'm1',
+          tournamentId: 't1',
+          matchOrder: 1,
+          matchType: '先鋒',
+          redName: 'チームA : 山田',
+          whiteName: 'チームB : 田中',
+          redScore: 2,
+          whiteScore: 1,
+          status: 'finished',
+          note: '1回戦',
+          isKachinuki: false,
+        ),
+      ];
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
-            ],
-            child: MaterialApp(
-              home: Scaffold(
-                body: ViewerOfficialScoreTableCard(
-                  groupName: 'group1',
-                  matches: matches,
-                  isDark: false,
-                ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ViewerOfficialScoreTableCard(
+                groupName: 'group1',
+                matches: matches,
+                isDark: false,
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('【団体戦】 チームA vs チームB (1回戦)'), findsOneWidget);
-      },
-    );
+      expect(find.text('【団体戦】 チームA vs チームB (1回戦)'), findsOneWidget);
+    });
 
     testWidgets(
       'ViewerOfficialIndividualListCard renders individual match item properlyであること',

@@ -65,79 +65,75 @@ void main() {
       },
     );
 
-    testWidgets(
-      'UI Layer - setup_match_format_screen renders detailed representative settings under league modeであること',
-      (WidgetTester tester) async {
-        // Set large size to build all lazy ListView items
-        tester.view.physicalSize = const Size(1200, 1600);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('【setup_match_format_screen】リーグ戦モードで詳細な代表戦設定が描画されること', (
+      WidgetTester tester,
+    ) async {
+      // Set large size to build all lazy ListView items
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        final testTeam = const TeamModel(
-          id: 'team_1',
-          tournamentId: 'test_tournament',
-          category: '小学生の部',
-          teamName: '千代田チーム',
-          matchType: 'リーグ団体戦',
-          playerNames: ['山田', '佐藤', '鈴木'],
-        );
+      final testTeam = const TeamModel(
+        id: 'team_1',
+        tournamentId: 'test_tournament',
+        category: '小学生の部',
+        teamName: '千代田チーム',
+        matchType: 'リーグ団体戦',
+        playerNames: ['山田', '佐藤', '鈴木'],
+      );
 
-        // Render setup screen with Riverpod overrides
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              settingsProvider.overrideWith(() => MockSettingsNotifier()),
-              currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
-              playerRepositoryProvider.overrideWith((ref) {
-                final dojoId = ref.watch(currentDojoIdProvider);
-                return PlayerRepository(
-                  dojoId: dojoId,
-                  firestore: fakeFirestore,
-                );
-              }),
-              teamRepositoryProvider.overrideWith((ref) {
-                final dojoId = ref.watch(currentDojoIdProvider);
-                return TeamRepository(dojoId: dojoId, firestore: fakeFirestore);
-              }),
-              // Direct override of the family provider
-              registeredTeamsProvider('test_tournament').overrideWith((ref) {
-                return Stream.value([testTeam]);
-              }),
-            ],
-            child: const MaterialApp(
-              home: SetupMatchFormatScreen(tournamentId: 'test_tournament'),
-            ),
+      // Render setup screen with Riverpod overrides
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(() => MockSettingsNotifier()),
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+            playerRepositoryProvider.overrideWith((ref) {
+              final dojoId = ref.watch(currentDojoIdProvider);
+              return PlayerRepository(dojoId: dojoId, firestore: fakeFirestore);
+            }),
+            teamRepositoryProvider.overrideWith((ref) {
+              final dojoId = ref.watch(currentDojoIdProvider);
+              return TeamRepository(dojoId: dojoId, firestore: fakeFirestore);
+            }),
+            // Direct override of the family provider
+            registeredTeamsProvider('test_tournament').overrideWith((ref) {
+              return Stream.value([testTeam]);
+            }),
+          ],
+          child: const MaterialApp(
+            home: SetupMatchFormatScreen(tournamentId: 'test_tournament'),
           ),
-        );
+        ),
+      );
 
-        // Wait for stream to emit value and rebuild UI
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+      // Wait for stream to emit value and rebuild UI
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
-        // Page 0 should display the team "千代田チーム"
-        expect(find.text('千代田チーム'), findsOneWidget);
+      // Page 0 should display the team "千代田チーム"
+      expect(find.text('千代田チーム'), findsOneWidget);
 
-        // Select the team "千代田チーム"
-        await tester.tap(find.text('千代田チーム'));
-        await tester.pumpAndSettle();
+      // Select the team "千代田チーム"
+      await tester.tap(find.text('千代田チーム'));
+      await tester.pumpAndSettle();
 
-        // Tap '次へ進む' to go to Page 2 (Summary & Details Page)
-        expect(find.text('次へ進む'), findsOneWidget);
-        await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
+      // Tap '次へ進む' to go to Page 2 (Summary & Details Page)
+      expect(find.text('次へ進む'), findsOneWidget);
+      await tester.tap(find.text('次へ進む'));
+      await tester.pumpAndSettle();
 
-        // Page 2 should display match formats (confirming "リーグ団体戦" is selected/applied)
-        expect(find.text('試合方式'), findsOneWidget);
-        expect(find.text('リーグ団体戦'), findsAtLeast(1));
+      // Page 2 should display match formats (confirming "リーグ団体戦" is selected/applied)
+      expect(find.text('試合方式'), findsOneWidget);
+      expect(find.text('リーグ団体戦'), findsAtLeast(1));
 
-        // We should see representative match rule and league points summary
-        // Note: '代表戦' is now shown as '同点代表戦' and 'リーグ勝ち点' → '勝ち点'
-        expect(find.text('同点代表戦'), findsOneWidget);
-        expect(find.text('勝ち点'), findsOneWidget);
-      },
-    );
+      // We should see representative match rule and league points summary
+      // Note: '代表戦' is now shown as '同点代表戦' and 'リーグ勝ち点' → '勝ち点'
+      expect(find.text('同点代表戦'), findsOneWidget);
+      expect(find.text('勝ち点'), findsOneWidget);
+    });
   });
 }

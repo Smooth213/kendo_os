@@ -4,7 +4,7 @@ import 'package:kendo_os/features/match/application/services/match_persistence_h
 
 void main() {
   group('[Unit] MatchPersistenceHelper 単体テスト', () {
-    test('Can be instantiated properly with Refであること', () {
+    test('Refを用いて正常にインスタンス化できること', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

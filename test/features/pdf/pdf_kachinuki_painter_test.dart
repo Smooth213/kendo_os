@@ -7,7 +7,7 @@ import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_painter.dart';
 void main() {
   group('[Unit] PDF Kachinuki Painter Color 検証 テスト', () {
     test(
-      'Verify Red team uses PdfColors.red700 and Red player name uses PdfColors.blackであること',
+      'Red チーム uses PdfColors.red700 and Red 選手 name uses PdfColors.blackこと',
       () {
         final ttf = pw.Font.helvetica();
         final ttfBold = pw.Font.helveticaBold();

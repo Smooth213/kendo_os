@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] ViewerBunaiksenCategoryContent ウィジェットテスト', () {
-    testWidgets('Renders PDF and Share action buttons and match cardであること', (
+    testWidgets('PDF and Share action ボタン一覧 and 試合 cardが正しく描画されること', (
       tester,
     ) async {
       final matches = [

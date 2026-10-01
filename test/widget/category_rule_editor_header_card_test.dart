@@ -3,44 +3,43 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart';
 
 void main() {
-  testWidgets(
-    'CategoryRuleEditorHeaderCard renders category and switchesであること',
-    (tester) async {
-      final subtitleController = TextEditingController();
-      final commentController = TextEditingController();
+  testWidgets('【CategoryRuleEditorHeaderCard】部門情報およびスイッチが正しく描画されること', (
+    tester,
+  ) async {
+    final subtitleController = TextEditingController();
+    final commentController = TextEditingController();
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: CategoryRuleEditorHeaderCard(
-                category: '一般男子の部',
-                textColor: Colors.black,
-                matchType: '個人戦',
-                isMultiScene: false,
-                useAdvancedRule: false,
-                subtitleController: subtitleController,
-                commentController: commentController,
-                onMatchTypeChanged: (_) {},
-                onMultiSceneChanged: (_) {},
-                onUseAdvancedRuleChanged: (_) {},
-              ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: CategoryRuleEditorHeaderCard(
+              category: '一般男子の部',
+              textColor: Colors.black,
+              matchType: '個人戦',
+              isMultiScene: false,
+              useAdvancedRule: false,
+              subtitleController: subtitleController,
+              commentController: commentController,
+              onMatchTypeChanged: (_) {},
+              onMultiSceneChanged: (_) {},
+              onUseAdvancedRuleChanged: (_) {},
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      expect(find.text('対象部門'), findsOneWidget);
-      expect(find.text('一般男子の部'), findsOneWidget);
-      expect(find.text('🏷️ サブタイトル（任意）'), findsOneWidget);
-      expect(find.text('💬 ルールコメント・特記事項（任意）'), findsOneWidget);
-      expect(find.text('試合方式'), findsOneWidget);
-      expect(find.text('準決勝・決勝は別ルールにする'), findsOneWidget);
-    },
-  );
+    expect(find.text('対象部門'), findsOneWidget);
+    expect(find.text('一般男子の部'), findsOneWidget);
+    expect(find.text('🏷️ サブタイトル（任意）'), findsOneWidget);
+    expect(find.text('💬 ルールコメント・特記事項（任意）'), findsOneWidget);
+    expect(find.text('試合方式'), findsOneWidget);
+    expect(find.text('準決勝・決勝は別ルールにする'), findsOneWidget);
+  });
 
   testWidgets(
-    'CategoryRuleEditorHeaderCard previews title with (2) omitted when distinctであること',
+    '【CategoryRuleEditorHeaderCard】識別可能な場合に(2)を省略してタイトルプレビューが表示されること',
     (tester) async {
       final subtitleController = TextEditingController(text: '決勝トーナメント');
       final commentController = TextEditingController();

@@ -5,7 +5,7 @@ import 'package:kendo_os/shared/domain/entities/program_model.dart';
 
 void main() {
   testWidgets(
-    'ProgramViewerMaterialPlaceholder renders title and material info textであること',
+    '【ProgramViewerMaterialPlaceholder】タイトルおよびMaterial情報テキストが描画されること',
     (WidgetTester tester) async {
       final program = ProgramModel(
         id: 'prog1',

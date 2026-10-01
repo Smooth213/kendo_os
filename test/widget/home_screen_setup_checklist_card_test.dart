@@ -8,7 +8,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 void main() {
   group('[Widget] HomeScreenSetupChecklistCard ウィジェットテスト', () {
     testWidgets(
-      'Renders HomeScreenSetupChecklistCard with completed and uncompleted stepsであること',
+      'HomeScreenSetupChecklistCard with completed and uncompleted stepsが正しく描画されること',
       (WidgetTester tester) async {
         final sampleTournament = TournamentModel(
           id: 'tour_1',

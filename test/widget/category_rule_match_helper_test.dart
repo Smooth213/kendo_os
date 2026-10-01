@@ -3,23 +3,14 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 
 void main() {
   group('[Widget] CategoryRuleMatchHelper テスト', () {
-    test(
-      'isAdvancedMatchName correctly detects finals and semi-finalsであること',
-      () {
-        expect(
-          CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 決勝戦'),
-          isTrue,
-        );
-        expect(
-          CategoryRuleMatchHelper.isAdvancedMatchName('第2コート 準決勝第1試合'),
-          isTrue,
-        );
-        expect(
-          CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 1回戦'),
-          isFalse,
-        );
-      },
-    );
+    test('【isAdvancedMatchName】決勝・準決勝が正しく検知されること', () {
+      expect(CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 決勝戦'), isTrue);
+      expect(
+        CategoryRuleMatchHelper.isAdvancedMatchName('第2コート 準決勝第1試合'),
+        isTrue,
+      );
+      expect(CategoryRuleMatchHelper.isAdvancedMatchName('第1コート 1回戦'), isFalse);
+    });
 
     test('buildMatchRule creates valid MatchRule instanceであること', () {
       final rule = CategoryRuleMatchHelper.buildMatchRule(

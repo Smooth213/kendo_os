@@ -16,7 +16,7 @@ void main() {
       );
     });
 
-    testWidgets('RenseikaiPlayerInputField renders choices and fieldであること', (
+    testWidgets('【RenseikaiPlayerInputField】選択肢および入力欄が正しく描画されること', (
       tester,
     ) async {
       final ctrl = TextEditingController();

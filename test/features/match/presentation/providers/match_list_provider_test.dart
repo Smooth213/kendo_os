@@ -66,43 +66,40 @@ void main() {
   }
 
   group('[Unit] MatchListProvider テスト', () {
-    test(
-      'matchStreamProvider should return matches from local repositoryであること',
-      () async {
-        final container = createContainer();
+    test('matchStreamProvider matches from local repositoryが返却されること', () async {
+      final container = createContainer();
 
-        final mockMatches = [
-          const MatchModel(
-            id: '1',
-            tournamentId: 't1',
-            redName: '赤',
-            whiteName: '白',
-            matchType: '団体戦',
-            status: 'ready',
-            order: 1.0,
-          ),
-        ];
+      final mockMatches = [
+        const MatchModel(
+          id: '1',
+          tournamentId: 't1',
+          redName: '赤',
+          whiteName: '白',
+          matchType: '団体戦',
+          status: 'ready',
+          order: 1.0,
+        ),
+      ];
 
-        // ストリーム型を明示的に指定
-        when(
-          mockRemote.watchActiveMatches(),
-        ).thenAnswer((_) => Stream<List<MatchModel>>.empty());
-        when(
-          mockRemote.getStaticMatches(),
-        ).thenAnswer((_) async => <MatchModel>[]);
-        when(
-          mockLocal.watchMatches(),
-        ).thenAnswer((_) => Stream.value(mockMatches));
-        when(
-          mockLocal.watchAllLocalMatches(),
-        ).thenAnswer((_) => Stream.value(mockMatches));
+      // ストリーム型を明示的に指定
+      when(
+        mockRemote.watchActiveMatches(),
+      ).thenAnswer((_) => Stream<List<MatchModel>>.empty());
+      when(
+        mockRemote.getStaticMatches(),
+      ).thenAnswer((_) async => <MatchModel>[]);
+      when(
+        mockLocal.watchMatches(),
+      ).thenAnswer((_) => Stream.value(mockMatches));
+      when(
+        mockLocal.watchAllLocalMatches(),
+      ).thenAnswer((_) => Stream.value(mockMatches));
 
-        // matchStreamProviderはStreamProviderなので .future で値を取得可能
-        final result = await container.read(matchStreamProvider.future);
+      // matchStreamProviderはStreamProviderなので .future で値を取得可能
+      final result = await container.read(matchStreamProvider.future);
 
-        expect(result.length, 1);
-        expect(result.first.id, '1');
-      },
-    );
+      expect(result.length, 1);
+      expect(result.first.id, '1');
+    });
   });
 }

@@ -3,7 +3,7 @@ import 'package:kendo_os/shared/utils/name_formatter.dart';
 
 void main() {
   group('[Unit] NameFormatter テスト', () {
-    test('parse extracts last and first names correctlyであること', () {
+    test('【parse】姓と名が正しく抽出されること', () {
       final res1 = NameFormatter.parse('佐藤 太郎');
       expect(res1['last'], '佐藤');
       expect(res1['first'], '太郎');

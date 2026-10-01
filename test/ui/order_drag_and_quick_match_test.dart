@@ -26,68 +26,66 @@ void main() {
     ).thenAnswer((_) => Stream.value([]));
   });
 
-  group('[Widget] Order Drag & Drop Reordering & Bunaiksen Quick Match テスト', () {
-    testWidgets(
-      'Verify OrderSetupScreen renders ReorderableListView with drag handle iconsであること',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+  group('[Widget] オーダー並び替え ＆ 部内戦クイックマッチ機能テスト', () {
+    testWidgets('【OrderSetupScreen】ドラッグハンドル付きのReorderableListViewが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              currentDojoIdProvider.overrideWith((ref) => 'test204'),
-              playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-              isarProvider.overrideWithValue(null),
-              opponentTeamHistoryProvider.overrideWithValue([]),
-              dojoRoomSyncProvider.overrideWith((ref) {}),
-              matchRuleProvider.overrideWith(() => MatchRuleNotifier()),
-            ],
-            child: const MaterialApp(
-              home: OrderSetupScreen(tournamentId: 'test_t1'),
-            ),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            currentDojoIdProvider.overrideWith((ref) => 'test204'),
+            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+            isarProvider.overrideWithValue(null),
+            opponentTeamHistoryProvider.overrideWithValue([]),
+            dojoRoomSyncProvider.overrideWith((ref) {}),
+            matchRuleProvider.overrideWith(() => MatchRuleNotifier()),
+          ],
+          child: const MaterialApp(
+            home: OrderSetupScreen(tournamentId: 'test_t1'),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
 
-        // OrderSetupScreen が正常に構築されること
-        expect(find.byType(OrderSetupScreen), findsOneWidget);
-        expect(find.text('オーダー編成'), findsOneWidget);
-      },
-    );
+      // OrderSetupScreen が正常に構築されること
+      expect(find.byType(OrderSetupScreen), findsOneWidget);
+      expect(find.text('オーダー編成'), findsOneWidget);
+    });
+
+    testWidgets('【BunaiksenHomeScreen】1秒クイックマッチボタンが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            currentDojoIdProvider.overrideWith((ref) => 'test204'),
+            isarProvider.overrideWithValue(null),
+            dojoRoomSyncProvider.overrideWith((ref) {}),
+          ],
+          child: const MaterialApp(home: BunaiksenHomeScreen()),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      // 「クイック対戦を始める」ボタンが存在すること
+      final quickButton = find.text('クイック対戦を始める');
+      expect(quickButton, findsOneWidget);
+    });
 
     testWidgets(
-      'Verify BunaiksenHomeScreen renders 1-second quick match buttonであること',
-      (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              currentDojoIdProvider.overrideWith((ref) => 'test204'),
-              isarProvider.overrideWithValue(null),
-              dojoRoomSyncProvider.overrideWith((ref) {}),
-            ],
-            child: const MaterialApp(home: BunaiksenHomeScreen()),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-
-        // 「クイック対戦を始める」ボタンが存在すること
-        final quickButton = find.text('クイック対戦を始める');
-        expect(quickButton, findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'Verify BunaiksenHomeScreen Quick Match Sheet Flow (Default 2min, Stepper +/- & 1-Ippon Format)こと',
+      '【BunaiksenHomeScreen】クイックマッチシート（初期2分・増減ステッパー・一本勝負形式）が正常に機能すること',
       (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();

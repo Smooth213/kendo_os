@@ -55,7 +55,7 @@ void main() {
   const testTournamentId = 'bunaiksen_20250101';
 
   testWidgets(
-    'ViewerBunaiksenOfficialRecordScreen team score table should display "赤" and "白"こと',
+    'ViewerBunaiksenOfficialRecordScreen team score 【table】"赤" and "白"が表示されること',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
@@ -118,7 +118,7 @@ void main() {
   );
 
   testWidgets(
-    'ViewerBunaiksenOfficialRecordScreen should display empty cell for "欠員"こと',
+    '【ViewerBunaiksenOfficialRecordScreen】empty cell for "欠員"が表示されること',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
@@ -180,7 +180,7 @@ void main() {
   );
 
   testWidgets(
-    'ViewerBunaiksenOfficialRecordScreen should display initial for same last namesであること',
+    '【ViewerBunaiksenOfficialRecordScreen】initial for same last namesが表示されること',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;
@@ -277,7 +277,7 @@ void main() {
   );
 
   testWidgets(
-    'ViewerBunaiksenOfficialRecordScreen should show and hide loading dialog on PDF exportであること',
+    'ViewerBunaiksenOfficialRecordScreen and hide loading dialog on PDF exportが表示されること',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4000);
       tester.view.devicePixelRatio = 1.0;

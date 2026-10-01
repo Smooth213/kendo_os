@@ -4,7 +4,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/car
 
 void main() {
   group('[Widget] MatchCardNoteRow ウィジェットテスト', () {
-    testWidgets('Renders note and matchType correctlyであること', (
+    testWidgets('note and matchType correctlyが正しく描画されること', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -23,24 +23,23 @@ void main() {
       expect(find.textContaining('【先鋒】'), findsOneWidget);
     });
 
-    testWidgets(
-      'Renders nothing when note and type are empty or defaultであること',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
-              body: MatchCardNoteRow(
-                displayNote: '',
-                matchType: '選手',
-                noteColor: Colors.grey,
-              ),
+    testWidgets('【note and type are empty or default】nothingが正しく描画されること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: MatchCardNoteRow(
+              displayNote: '',
+              matchType: '選手',
+              noteColor: Colors.grey,
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.byType(MatchCardNoteRow), findsOneWidget);
-        expect(find.textContaining('【選手】'), findsNothing);
-      },
-    );
+      expect(find.byType(MatchCardNoteRow), findsOneWidget);
+      expect(find.textContaining('【選手】'), findsNothing);
+    });
   });
 }

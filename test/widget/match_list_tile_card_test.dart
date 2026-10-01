@@ -9,7 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
   group('[Widget] MatchListTileCard ウィジェットテスト', () {
-    testWidgets('Renders MatchListTileCard with team and player namesであること', (
+    testWidgets('MatchListTileCard with チーム and 選手 namesが正しく描画されること', (
       WidgetTester tester,
     ) async {
       const sampleMatch = MatchModel(
