@@ -28,7 +28,7 @@ class ImageCompressor {
         'quality': quality,
       });
     } catch (e) {
-      debugPrint('⚠️ [ImageCompressor] 圧縮処理中に例外が発生しました。フォールバックします: $e');
+      debugPrint('[WARN] [ImageCompressor] 圧縮処理中に例外が発生しました。フォールバックします: $e');
       return null;
     }
   }
@@ -44,7 +44,7 @@ class ImageCompressor {
     final img.Image? image = img.decodeImage(inputBytes);
     if (image == null) {
       // HEICなど未サポートの形式の場合は、呼び出し元でオリジナルを使うように null を返す
-      debugPrint('⚠️ [ImageCompressor] 未サポートまたは破損画像のため、デコードをスキップしました。');
+      debugPrint('[WARN] [ImageCompressor] 未サポートまたは破損画像のため、デコードをスキップしました。');
       return null;
     }
 

@@ -104,7 +104,7 @@ class QuickMemoStorageService {
           );
         }
       } catch (e) {
-        debugPrint('⚠️ [QuickMemoStorage] loadMemo (local) error: $e');
+        debugPrint('[WARN] [QuickMemoStorage] loadMemo (local) error: $e');
       }
     }
 
@@ -153,7 +153,7 @@ class QuickMemoStorageService {
           _saveToCloud(uid, resolvedId, localData);
         }
       } catch (e) {
-        debugPrint('⚠️ [QuickMemoStorage] loadMemo (cloud) error: $e');
+        debugPrint('[WARN] [QuickMemoStorage] loadMemo (cloud) error: $e');
       }
     }
 
@@ -247,7 +247,7 @@ class QuickMemoStorageService {
       };
       await prefs.setString(key, jsonEncode(map));
     } catch (e) {
-      debugPrint('⚠️ [QuickMemoStorage] _saveToLocal error: $e');
+      debugPrint('[WARN] [QuickMemoStorage] _saveToLocal error: $e');
     }
   }
 
@@ -272,7 +272,7 @@ class QuickMemoStorageService {
           );
         })
         .catchError((e) {
-          debugPrint('⚠️ [QuickMemoStorage] _saveToCloud error: $e');
+          debugPrint('[WARN] [QuickMemoStorage] _saveToCloud error: $e');
         });
   }
 
@@ -285,7 +285,7 @@ class QuickMemoStorageService {
       final key = '$_keyPrefix$resolvedId';
       await prefs.remove(key);
     } catch (e) {
-      debugPrint('⚠️ [QuickMemoStorage] clearMemo local error: $e');
+      debugPrint('[WARN] [QuickMemoStorage] clearMemo local error: $e');
     }
 
     final uid = _linkedUid;
@@ -297,7 +297,7 @@ class QuickMemoStorageService {
           .doc(resolvedId)
           .delete()
           .catchError((e) {
-            debugPrint('⚠️ [QuickMemoStorage] clearMemo cloud error: $e');
+            debugPrint('[WARN] [QuickMemoStorage] clearMemo cloud error: $e');
           });
     }
   }

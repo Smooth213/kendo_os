@@ -15,171 +15,177 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 
 void main() {
-  // 1. 決定論的テスト用の共通モック試合データ（個人戦データ）
-  final mockMatches = [
-    MatchModel(
-      id: 'equivalence_test_match_1',
-      tournamentId: 'target_tournament_123',
-      category: '小学生の部',
-      groupName: '助っ人101',
-      redName: '助っ人101 : 剣道太郎',
-      whiteName: '相手101 : 相手選手',
-      matchType: '個人戦', // ピュア個人戦フラグ
-      status: 'waiting',
-      order: 1.0,
-      note: '',
-    ),
-  ];
+  group('[Widget] HomeScreenComprehensiveEquivalence 等価性検証', () {
+    // 1. 決定論的テスト用の共通モック試合データ（個人戦データ）
+    final mockMatches = [
+      MatchModel(
+        id: 'equivalence_test_match_1',
+        tournamentId: 'target_tournament_123',
+        category: '小学生の部',
+        groupName: '助っ人101',
+        redName: '助っ人101 : 剣道太郎',
+        whiteName: '相手101 : 相手選手',
+        matchType: '個人戦', // ピュア個人戦フラグ
+        status: 'waiting',
+        order: 1.0,
+        note: '',
+      ),
+    ];
 
-  // 2. 監査対象となる4大権限マトリクスの定義
-  final roleMatrices = {
-    '最高管理者': const AppPermissions(
-      isReadOnly: false,
-      canManageTournament: true,
-      canCreateMatch: true,
-      canChangeSettings: true,
-      canDeleteData: true,
-    ),
-    '大会運営者': const AppPermissions(
-      isReadOnly: false,
-      canManageTournament: true,
-      canCreateMatch: true,
-      canChangeSettings: false,
-      canDeleteData: false,
-    ),
-    '試合記録者': const AppPermissions(
-      isReadOnly: false,
-      canManageTournament: false,
-      canCreateMatch: false,
-      canChangeSettings: false,
-      canDeleteData: false,
-    ),
-    '一般観客席': const AppPermissions(
-      isReadOnly: true,
-      canManageTournament: false,
-      canCreateMatch: false,
-      canChangeSettings: false,
-      canDeleteData: false,
-    ),
-  };
+    // 2. 監査対象となる4大権限マトリクスの定義
+    final roleMatrices = {
+      '最高管理者': const AppPermissions(
+        isReadOnly: false,
+        canManageTournament: true,
+        canCreateMatch: true,
+        canChangeSettings: true,
+        canDeleteData: true,
+      ),
+      '大会運営者': const AppPermissions(
+        isReadOnly: false,
+        canManageTournament: true,
+        canCreateMatch: true,
+        canChangeSettings: false,
+        canDeleteData: false,
+      ),
+      '試合記録者': const AppPermissions(
+        isReadOnly: false,
+        canManageTournament: false,
+        canCreateMatch: false,
+        canChangeSettings: false,
+        canDeleteData: false,
+      ),
+      '一般観客席': const AppPermissions(
+        isReadOnly: true,
+        canManageTournament: false,
+        canCreateMatch: false,
+        canChangeSettings: false,
+        canDeleteData: false,
+      ),
+    };
 
-  roleMatrices.forEach((roleName, mockedPermission) {
-    testWidgets('$roleName 権限に関して、ネイティブアプリ基準のデザイン・階層・コンポーネント配置の完全等価性が正しく検証されること', (
-      WidgetTester tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
+    roleMatrices.forEach((roleName, mockedPermission) {
+      testWidgets('$roleName 権限に関して、ネイティブアプリ基準のデザイン・階層・コンポーネント配置の完全等価性が正しく検証されること', (
+        WidgetTester tester,
+      ) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
 
-      // 3. 権限プロバイダおよびデータプロバイダの強制オーバーライド
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            matchListByTournamentProvider.overrideWith(
-              (ref, id) => Stream.value(mockMatches),
+        // 3. 権限プロバイダおよびデータプロバイダの強制オーバーライド
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              matchListByTournamentProvider.overrideWith(
+                (ref, id) => Stream.value(mockMatches),
+              ),
+              matchListProvider.overrideWith((ref) => mockMatches),
+              permissionProvider.overrideWith((ref) => mockedPermission),
+              isarProvider.overrideWithValue(null),
+              commentStreamProvider.overrideWith(
+                (ref, arg) => Stream.value([]),
+              ),
+              tournamentProvider.overrideWith((ref, id) => Stream.value(null)),
+              customTeamNamesProvider.overrideWith(
+                (ref) => Stream.value(const <String>[]),
+              ),
+              searchQueryProvider.overrideWith((ref) => ''),
+              isSearchVisibleProvider.overrideWith((ref) => false),
+            ],
+            child: MaterialApp(
+              theme: ThemeData(
+                brightness: Brightness.dark,
+                splashFactory: NoSplash.splashFactory,
+              ),
+              home: const HomeScreen(tournamentId: 'target_tournament_123'),
             ),
-            matchListProvider.overrideWith((ref) => mockMatches),
-            permissionProvider.overrideWith((ref) => mockedPermission),
-            isarProvider.overrideWithValue(null),
-            commentStreamProvider.overrideWith((ref, arg) => Stream.value([])),
-            tournamentProvider.overrideWith((ref, id) => Stream.value(null)),
-            customTeamNamesProvider.overrideWith(
-              (ref) => Stream.value(const <String>[]),
-            ),
-            searchQueryProvider.overrideWith((ref) => ''),
-            isSearchVisibleProvider.overrideWith((ref) => false),
-          ],
-          child: MaterialApp(
-            theme: ThemeData(
-              brightness: Brightness.dark,
-              splashFactory: NoSplash.splashFactory,
-            ),
-            home: const HomeScreen(tournamentId: 'target_tournament_123'),
           ),
-        ),
-      );
+        );
 
-      // 初期ビルドと非同期ストリームの解決を待機
-      await tester.pump();
-      await tester.pumpAndSettle();
+        // 初期ビルドと非同期ストリームの解決を待機
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      // -----------------------------------------------------------------------
-      // 📌 監査項目①: 遷移先・包含ファイルの完全同一性検証
-      // -----------------------------------------------------------------------
-      // 全ての権限において、共通のホームコンポーネントがツリーの正しい位置にマウントされているかを検証
-      expect(find.byType(HomeScreen), findsOneWidget);
-      expect(find.byType(MatchTimelineList), findsOneWidget);
+        // -----------------------------------------------------------------------
+        // 📌 監査項目①: 遷移先・包含ファイルの完全同一性検証
+        // -----------------------------------------------------------------------
+        // 全ての権限において、共通のホームコンポーネントがツリーの正しい位置にマウントされているかを検証
+        expect(find.byType(HomeScreen), findsOneWidget);
+        expect(find.byType(MatchTimelineList), findsOneWidget);
 
-      // -----------------------------------------------------------------------
-      // 📌 監査項目②: 権限に応じたボタン配置・操作パネルのネイティブ等価性検証
-      // -----------------------------------------------------------------------
-      if (mockedPermission.isReadOnly) {
-        // 「一般観客席」はネイティブの要件通り、操作メニューが絶対に配置されないこと
-        expect(find.byType(OperatorActionButtons), findsNothing);
-      } else {
-        // 「最高管理者」「大会運営者」「試合記録者」は操作メニューがネイティブ基準通りに100%配置されていること
-        expect(find.byType(OperatorActionButtons), findsOneWidget);
-      }
+        // -----------------------------------------------------------------------
+        // 📌 監査項目②: 権限に応じたボタン配置・操作パネルのネイティブ等価性検証
+        // -----------------------------------------------------------------------
+        if (mockedPermission.isReadOnly) {
+          // 「一般観客席」はネイティブの要件通り、操作メニューが絶対に配置されないこと
+          expect(find.byType(OperatorActionButtons), findsNothing);
+        } else {
+          // 「最高管理者」「大会運営者」「試合記録者」は操作メニューがネイティブ基準通りに100%配置されていること
+          expect(find.byType(OperatorActionButtons), findsOneWidget);
+        }
 
-      // -----------------------------------------------------------------------
-      // 📌 監査項目③: アコーディオンの階層デザインおよびマテリアルカラー等価性検証
-      // -----------------------------------------------------------------------
-      // Web特有のテーマ剥がれによる先祖返りを防ぐため、固定テーマコンポーネントが全権限で機能しているか
-      expect(find.byType(ExpansionTileTheme), findsWidgets);
+        // -----------------------------------------------------------------------
+        // 📌 監査項目③: アコーディオンの階層デザインおよびマテリアルカラー等価性検証
+        // -----------------------------------------------------------------------
+        // Web特有のテーマ剥がれによる先祖返りを防ぐため、固定テーマコンポーネントが全権限で機能しているか
+        expect(find.byType(ExpansionTileTheme), findsWidgets);
 
-      final tileThemeWidget = tester.widget<ExpansionTileTheme>(
-        find.byType(ExpansionTileTheme).first,
-      );
-      // iOS / ネイティブアプリのTrue Blackに準拠したテーマ定義が静的にバインドされているかを厳格監査
-      expect(tileThemeWidget.data.backgroundColor, const Color(0xFF1C1C1E));
-      expect(
-        tileThemeWidget.data.collapsedBackgroundColor,
-        const Color(0xFF1C1C1E),
-      );
+        final tileThemeWidget = tester.widget<ExpansionTileTheme>(
+          find.byType(ExpansionTileTheme).first,
+        );
+        // iOS / ネイティブアプリのTrue Blackに準拠したテーマ定義が静的にバインドされているかを厳格監査
+        expect(tileThemeWidget.data.backgroundColor, const Color(0xFF1C1C1E));
+        expect(
+          tileThemeWidget.data.collapsedBackgroundColor,
+          const Color(0xFF1C1C1E),
+        );
 
-      // -----------------------------------------------------------------------
-      // 📌 監査項目④: リストカードコンポーネントの配置同一性検証
-      // -----------------------------------------------------------------------
-      // アコーディオンが閉じている場合を考慮して展開を試みる
-      if (find.byType(MatchListTileCard).evaluate().isEmpty) {
-        final tileFinder = find.byType(ExpansionTile);
-        if (tileFinder.evaluate().isNotEmpty) {
-          final tile = tileFinder.first;
-          await tester.ensureVisible(tile);
-          await tester.pumpAndSettle();
-          final listTileFinder = find.descendant(
-            of: tile,
-            matching: find.byType(ListTile),
-          );
-          if (listTileFinder.evaluate().isNotEmpty) {
-            await tester.tap(listTileFinder.first);
-          } else {
-            await tester.tap(tile);
+        // -----------------------------------------------------------------------
+        // 📌 監査項目④: リストカードコンポーネントの配置同一性検証
+        // -----------------------------------------------------------------------
+        // アコーディオンが閉じている場合を考慮して展開を試みる
+        if (find.byType(MatchListTileCard).evaluate().isEmpty) {
+          final tileFinder = find.byType(ExpansionTile);
+          if (tileFinder.evaluate().isNotEmpty) {
+            final tile = tileFinder.first;
+            await tester.ensureVisible(tile);
+            await tester.pumpAndSettle();
+            final listTileFinder = find.descendant(
+              of: tile,
+              matching: find.byType(ListTile),
+            );
+            if (listTileFinder.evaluate().isNotEmpty) {
+              await tester.tap(listTileFinder.first);
+            } else {
+              await tester.tap(tile);
+            }
+            await tester.pumpAndSettle();
           }
-          await tester.pumpAndSettle();
         }
-      }
 
-      // 反映漏れや消失を防ぐため、独立型 Widget である MatchListTileCard が正しくマウントされているか
-      expect(find.byType(MatchListTileCard), findsWidgets);
+        // 反映漏れや消失を防ぐため、独立型 Widget である MatchListTileCard が正しくマウントされているか
+        expect(find.byType(MatchListTileCard), findsWidgets);
 
-      // 個人戦アコーディオンの証である CircleAvatar が描画されているか
-      expect(find.byType(CircleAvatar), findsOneWidget);
+        // 個人戦アコーディオンの証である CircleAvatar が描画されているか
+        expect(find.byType(CircleAvatar), findsOneWidget);
 
-      // -----------------------------------------------------------------------
-      // 📌 監査項目⑤: スワイプ操作（編集・削除ボタン）の露出制御ガード検証
-      // -----------------------------------------------------------------------
-      if (mockedPermission.isReadOnly) {
-        // 「応援・保護者・選手（Viewer）」は、ネイティブアプリのガバナンス通り Slidable（編集・削除アクション）が無効化される、または配置されないこと
-        final slidableFinder = find.byType(Slidable);
-        if (slidableFinder.evaluate().isNotEmpty) {
-          final slidableWidget = tester.widget<Slidable>(slidableFinder.first);
-          expect(slidableWidget.enabled, isFalse);
+        // -----------------------------------------------------------------------
+        // 📌 監査項目⑤: スワイプ操作（編集・削除ボタン）の露出制御ガード検証
+        // -----------------------------------------------------------------------
+        if (mockedPermission.isReadOnly) {
+          // 「応援・保護者・選手（Viewer）」は、ネイティブアプリのガバナンス通り Slidable（編集・削除アクション）が無効化される、または配置されないこと
+          final slidableFinder = find.byType(Slidable);
+          if (slidableFinder.evaluate().isNotEmpty) {
+            final slidableWidget = tester.widget<Slidable>(
+              slidableFinder.first,
+            );
+            expect(slidableWidget.enabled, isFalse);
+          }
+        } else {
+          // 「代表・管理者」「監督・引率責任者」「スコア・記録係」はスワイプ操作（Slidable）が有効化されていること
+          expect(find.byType(Slidable), findsWidgets);
         }
-      } else {
-        // 「代表・管理者」「監督・引率責任者」「スコア・記録係」はスワイプ操作（Slidable）が有効化されていること
-        expect(find.byType(Slidable), findsWidgets);
-      }
+      });
     });
   });
 }

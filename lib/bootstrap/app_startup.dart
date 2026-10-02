@@ -88,7 +88,7 @@ class AppStartup {
         } catch (_) {}
       }
       container.read(metricsProvider).recordError();
-      debugPrint('⚠️ UIエラー: ${details.exception}');
+      debugPrint('[WARN] UIエラー: ${details.exception}');
     };
 
     PlatformDispatcher.instance.onError = (error, stack) {
@@ -100,7 +100,7 @@ class AppStartup {
         } catch (_) {}
       }
       container.read(metricsProvider).recordError();
-      debugPrint('⚠️ 裏側エラー: $error');
+      debugPrint('[WARN] 裏側エラー: $error');
       return true;
     };
 
@@ -176,8 +176,8 @@ class AppStartup {
   }
 
   static void handleFatalInitError(Object e, StackTrace stackTrace) {
-    debugPrint('🔥 [Fatal Init Error] 起動時に致命的なエラーが発生しました: $e');
-    debugPrint('🔥 [Fatal Init StackTrace]\n$stackTrace');
+    debugPrint('[FATAL] [Fatal Init Error] 起動時に致命的なエラーが発生しました: $e');
+    debugPrint('[FATAL] [Fatal Init StackTrace]\n$stackTrace');
 
     final errorStr = e.toString();
     String displayMessage =
@@ -226,14 +226,14 @@ class AppStartup {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         );
-        debugPrint('🚀 Firebase [DEFAULT] をクリーンに新規初期化しました。');
+        debugPrint('[Firebase] [DEFAULT] をクリーンに新規初期化しました。');
       } else {
         debugPrint(
           '📢 Firebase [DEFAULT] はすでに常駐しているため、初期化呼び出しを完全にスキップして既存インスタンスを安全に100%再利用します。',
         );
       }
     } catch (e) {
-      debugPrint('⚠️ Firebase初期化のキャッチ: $e');
+      debugPrint('[WARN] Firebase初期化のキャッチ: $e');
     }
 
     if (!kIsWeb) {
@@ -248,9 +248,9 @@ class AppStartup {
         } catch (_) {}
         return true;
       };
-      debugPrint('🚀 [Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
+      debugPrint('[Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
     } else {
-      debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外トラックを確立しました');
+      debugPrint('[WebAnalytics] Webアプリ版のブラウザ例外トラックを確立しました');
     }
 
     // 🛡️ 既存セッションの安全な復元と匿名認証（ノンブロッキング非同期実行）
@@ -267,7 +267,7 @@ class AppStartup {
               );
             }
           } catch (e) {
-            debugPrint('ℹ️ [Auth] Web getRedirectResult: $e');
+            debugPrint('[INFO] [Auth] Web getRedirectResult: $e');
           }
         }
 
@@ -287,7 +287,7 @@ class AppStartup {
               throw TimeoutException('Auth 認証タイムアウト（オフライン運用に切り替えます）');
             },
           );
-          debugPrint('🛡️ [Auth] 初回起動: 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
+          debugPrint('[Auth] 初回起動: 匿名ゲスト認証を自動確立しました（ルーム参加準備完了）');
         } else {
           final isGoogle = existingUser.providerData.any(
             (p) => p.providerId == 'google.com',
@@ -297,7 +297,7 @@ class AppStartup {
           );
         }
       } catch (e) {
-        debugPrint('⚠️ [Auth] 認証復元/初期化処理のキャッチ: $e');
+        debugPrint('[WARN] [Auth] 認証復元/初期化処理のキャッチ: $e');
       }
     }());
   }
@@ -350,16 +350,16 @@ class AppStartup {
           await FirebaseFirestore.instance.terminate();
           await FirebaseFirestore.instance.clearPersistence();
           await prefs.setBool('has_cleared_corrupted_firestore_cache_v3', true);
-          debugPrint('🧹 [Firestore] 古いローカルキャッシュを強制ワイプしました');
+          debugPrint('[Firestore] 古いローカルキャッシュを強制ワイプしました');
         }
         await FirebaseFirestore.instance.enableNetwork().timeout(
           const Duration(seconds: 1),
           onTimeout: () =>
-              debugPrint('⏳ [Firestore] ネットワーク開通接続タイムアウト（ローカルモード移行）'),
+              debugPrint('[Firestore] ネットワーク開通接続タイムアウト（ローカルモード移行）'),
         );
       }
     } catch (e) {
-      debugPrint('⚠️ [Firestore] 現場継続エンジンの初期化をスキップして起動を継続します: $e');
+      debugPrint('[WARN] [Firestore] 現場継続エンジンの初期化をスキップして起動を継続します: $e');
     }
   }
 
@@ -379,7 +379,7 @@ class AppStartup {
     try {
       GoogleFonts.config.allowRuntimeFetching = allowRuntimeFetching;
     } catch (e) {
-      debugPrint('⚠️ [FontOptimization] 設定エラー: $e');
+      debugPrint('[WARN] [FontOptimization] 設定エラー: $e');
     }
   }
 
@@ -388,9 +388,9 @@ class AppStartup {
   static void enforceOfflineFontFallback() {
     try {
       GoogleFonts.config.allowRuntimeFetching = false;
-      debugPrint('🛡️ [FontOptimization] オフライン向けシステムフォント即時フォールバックを有効化しました');
+      debugPrint('[FontOptimization] オフライン向けシステムフォント即時フォールバックを有効化しました');
     } catch (e) {
-      debugPrint('⚠️ [FontOptimization] フォールバック設定エラー: $e');
+      debugPrint('[WARN] [FontOptimization] フォールバック設定エラー: $e');
     }
   }
 
@@ -424,7 +424,7 @@ class AppStartup {
             .catchError((_) {}),
       );
     } catch (e) {
-      debugPrint('ℹ️ [Prewarm] アセット事前ウォームアップスキップ: $e');
+      debugPrint('[INFO] [Prewarm] アセット事前ウォームアップスキップ: $e');
     }
   }
 }

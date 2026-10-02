@@ -52,284 +52,286 @@ MatchModel createMockMatch({
 }
 
 void main() {
-  const testTournamentId = 'bunaiksen_20250101';
+  group('[Widget] ViewerBunaiksenOfficialRecordScreen 単体検証', () {
+    const testTournamentId = 'bunaiksen_20250101';
 
-  testWidgets(
-    'ViewerBunaiksenOfficialRecordScreen team score tableにおいて "赤" and "白"が表示されること',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-      final matches = [
-        createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
-      ];
+    testWidgets(
+      'ViewerBunaiksenOfficialRecordScreen team score tableにおいて "赤" and "白"が表示されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+        final matches = [
+          createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
+        ];
 
-      final Map<String, Map<String, List<MatchModel>>> categoryGroups = {
-        '一般': {'団体戦A': matches},
-      };
+        final Map<String, Map<String, List<MatchModel>>> categoryGroups = {
+          '一般': {'団体戦A': matches},
+        };
 
-      // テスト用のダミールーターを用意
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) =>
-                const ViewerBunaiksenOfficialRecordScreen(
-                  tournamentId: testTournamentId,
-                ),
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            bunaiksenRecordCategoryGroupsProvider(
-              testTournamentId,
-            ).overrideWith((ref) => categoryGroups),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-            currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+        // テスト用のダミールーターを用意
+        final router = GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  const ViewerBunaiksenOfficialRecordScreen(
+                    tournamentId: testTournamentId,
+                  ),
+            ),
           ],
-          child: MaterialApp.router(
-            theme: ThemeData(splashFactory: NoSplash.splashFactory),
-            routerConfig: router,
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              bunaiksenRecordCategoryGroupsProvider(
+                testTournamentId,
+              ).overrideWith((ref) => categoryGroups),
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+            ],
+            child: MaterialApp.router(
+              theme: ThemeData(splashFactory: NoSplash.splashFactory),
+              routerConfig: router,
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      // Find the score table
-      expect(find.byType(Table), findsOneWidget);
+        // Find the score table
+        expect(find.byType(Table), findsOneWidget);
 
-      // Check for "赤" and "白" labels
-      expect(find.text('赤'), findsOneWidget);
-      expect(find.text('白'), findsOneWidget);
+        // Check for "赤" and "白" labels
+        expect(find.text('赤'), findsOneWidget);
+        expect(find.text('白'), findsOneWidget);
 
-      // Ensure team names are NOT used as row labels
-      expect(find.text('チームRed'), findsNothing);
-      expect(find.text('チームWhite'), findsNothing);
-    },
-  );
+        // Ensure team names are NOT used as row labels
+        expect(find.text('チームRed'), findsNothing);
+        expect(find.text('チームWhite'), findsNothing);
+      },
+    );
 
-  testWidgets(
-    'ViewerBunaiksenOfficialRecordScreenにおいて empty cell for "欠員"が表示されること',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-      final matches = [
-        createMockMatch(
-          redName: 'チームA:山田太郎',
-          whiteName: 'チームB:(欠員)',
-          matchType: '先鋒',
-        ),
-      ];
-
-      final categoryGroups = {
-        '一般': {'団体戦A': matches},
-      };
-
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) =>
-                const ViewerBunaiksenOfficialRecordScreen(
-                  tournamentId: testTournamentId,
-                ),
+    testWidgets(
+      'ViewerBunaiksenOfficialRecordScreenにおいて empty cell for "欠員"が表示されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+        final matches = [
+          createMockMatch(
+            redName: 'チームA:山田太郎',
+            whiteName: 'チームB:(欠員)',
+            matchType: '先鋒',
           ),
-        ],
-      );
+        ];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            bunaiksenRecordCategoryGroupsProvider(
-              testTournamentId,
-            ).overrideWith((ref) => categoryGroups),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-            currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+        final categoryGroups = {
+          '一般': {'団体戦A': matches},
+        };
+
+        final router = GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  const ViewerBunaiksenOfficialRecordScreen(
+                    tournamentId: testTournamentId,
+                  ),
+            ),
           ],
-          child: MaterialApp.router(
-            theme: ThemeData(splashFactory: NoSplash.splashFactory),
-            routerConfig: router,
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              bunaiksenRecordCategoryGroupsProvider(
+                testTournamentId,
+              ).overrideWith((ref) => categoryGroups),
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+            ],
+            child: MaterialApp.router(
+              theme: ThemeData(splashFactory: NoSplash.splashFactory),
+              routerConfig: router,
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      final tableWidget = tester.widget<Table>(find.byType(Table).first);
-      final whiteNameRow = tableWidget.children[3];
-      final nameCellWidget = whiteNameRow.children[1] as Container;
+        final tableWidget = tester.widget<Table>(find.byType(Table).first);
+        final whiteNameRow = tableWidget.children[3];
+        final nameCellWidget = whiteNameRow.children[1] as Container;
 
-      expect(nameCellWidget.child, isNull);
-      expect(find.text('(欠員)'), findsNothing);
-    },
-  );
+        expect(nameCellWidget.child, isNull);
+        expect(find.text('(欠員)'), findsNothing);
+      },
+    );
 
-  testWidgets(
-    'ViewerBunaiksenOfficialRecordScreenにおいて initial for same last namesが表示されること',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-      final matches = [
-        createMockMatch(
-          id: 'm1',
-          order: 1,
-          matchType: '先鋒',
-          redName: 'チームA:山田 太郎',
-          whiteName: 'チームB:佐藤 一',
-        ),
-        createMockMatch(
-          id: 'm2',
-          order: 2,
-          matchType: '次鋒',
-          redName: 'チームA:山田 花子',
-          whiteName: 'チームB:鈴木 二',
-        ),
-      ];
-
-      final categoryGroups = {
-        '一般': {'団体戦A': matches},
-      };
-
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) =>
-                const ViewerBunaiksenOfficialRecordScreen(
-                  tournamentId: testTournamentId,
-                ),
+    testWidgets(
+      'ViewerBunaiksenOfficialRecordScreenにおいて initial for same last namesが表示されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+        final matches = [
+          createMockMatch(
+            id: 'm1',
+            order: 1,
+            matchType: '先鋒',
+            redName: 'チームA:山田 太郎',
+            whiteName: 'チームB:佐藤 一',
           ),
-        ],
-      );
+          createMockMatch(
+            id: 'm2',
+            order: 2,
+            matchType: '次鋒',
+            redName: 'チームA:山田 花子',
+            whiteName: 'チームB:鈴木 二',
+          ),
+        ];
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            bunaiksenRecordCategoryGroupsProvider(
-              testTournamentId,
-            ).overrideWith((ref) => categoryGroups),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-            currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+        final categoryGroups = {
+          '一般': {'団体戦A': matches},
+        };
+
+        final router = GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  const ViewerBunaiksenOfficialRecordScreen(
+                    tournamentId: testTournamentId,
+                  ),
+            ),
           ],
-          child: MaterialApp.router(
-            theme: ThemeData(splashFactory: NoSplash.splashFactory),
-            routerConfig: router,
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              bunaiksenRecordCategoryGroupsProvider(
+                testTournamentId,
+              ).overrideWith((ref) => categoryGroups),
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+            ],
+            child: MaterialApp.router(
+              theme: ThemeData(splashFactory: NoSplash.splashFactory),
+              routerConfig: router,
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      final initialTaroFinder = find.text('太');
-      expect(initialTaroFinder, findsOneWidget);
-      final rowTaroFinder = find.ancestor(
-        of: initialTaroFinder,
-        matching: find.byType(Row),
-      );
-      expect(
-        find.descendant(of: rowTaroFinder, matching: find.text('山')),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(of: rowTaroFinder, matching: find.text('田')),
-        findsOneWidget,
-      );
+        final initialTaroFinder = find.text('太');
+        expect(initialTaroFinder, findsOneWidget);
+        final rowTaroFinder = find.ancestor(
+          of: initialTaroFinder,
+          matching: find.byType(Row),
+        );
+        expect(
+          find.descendant(of: rowTaroFinder, matching: find.text('山')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: rowTaroFinder, matching: find.text('田')),
+          findsOneWidget,
+        );
 
-      final initialHanakoFinder = find.text('花');
-      expect(initialHanakoFinder, findsOneWidget);
-      final rowHanakoFinder = find.ancestor(
-        of: initialHanakoFinder,
-        matching: find.byType(Row),
-      );
-      expect(
-        find.descendant(of: rowHanakoFinder, matching: find.text('山')),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(of: rowHanakoFinder, matching: find.text('田')),
-        findsOneWidget,
-      );
+        final initialHanakoFinder = find.text('花');
+        expect(initialHanakoFinder, findsOneWidget);
+        final rowHanakoFinder = find.ancestor(
+          of: initialHanakoFinder,
+          matching: find.byType(Row),
+        );
+        expect(
+          find.descendant(of: rowHanakoFinder, matching: find.text('山')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: rowHanakoFinder, matching: find.text('田')),
+          findsOneWidget,
+        );
 
-      expect(find.text('一'), findsNothing);
-      expect(find.text('二'), findsNothing);
-    },
-  );
+        expect(find.text('一'), findsNothing);
+        expect(find.text('二'), findsNothing);
+      },
+    );
 
-  testWidgets(
-    'ViewerBunaiksenOfficialRecordScreen and hide loading dialog on PDF exportが表示されること',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 4000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-      final matches = [
-        createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
-      ];
+    testWidgets(
+      'ViewerBunaiksenOfficialRecordScreen and hide loading dialog on PDF exportが表示されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+        final matches = [
+          createMockMatch(redName: 'チームRed:選手1', whiteName: 'チームWhite:選手1'),
+        ];
 
-      final Map<String, Map<String, List<MatchModel>>> categoryGroups = {
-        '一般': {'団体戦A': matches},
-      };
+        final Map<String, Map<String, List<MatchModel>>> categoryGroups = {
+          '一般': {'団体戦A': matches},
+        };
 
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) =>
-                const ViewerBunaiksenOfficialRecordScreen(
-                  tournamentId: testTournamentId,
-                ),
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            bunaiksenRecordCategoryGroupsProvider(
-              testTournamentId,
-            ).overrideWith((ref) => categoryGroups),
-            settingsProvider.overrideWith(() => MockSettingsNotifier()),
-            dojoRoomSyncProvider.overrideWith((ref) {}),
-            currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
-            currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+        final router = GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  const ViewerBunaiksenOfficialRecordScreen(
+                    tournamentId: testTournamentId,
+                  ),
+            ),
           ],
-          child: MaterialApp.router(
-            theme: ThemeData(splashFactory: NoSplash.splashFactory),
-            routerConfig: router,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
 
-      final pdfButton = find.text('PDF印刷').first;
-      await tester.tap(pdfButton);
-      await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      await tester.pumpAndSettle();
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-    },
-  );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              bunaiksenRecordCategoryGroupsProvider(
+                testTournamentId,
+              ).overrideWith((ref) => categoryGroups),
+              settingsProvider.overrideWith(() => MockSettingsNotifier()),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+              currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+              currentUserRoleProvider.overrideWith((ref) => UserRole.viewer),
+            ],
+            child: MaterialApp.router(
+              theme: ThemeData(splashFactory: NoSplash.splashFactory),
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final pdfButton = find.text('PDF印刷').first;
+        await tester.tap(pdfButton);
+        await tester.pump();
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        await tester.pumpAndSettle();
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      },
+    );
+  });
 }

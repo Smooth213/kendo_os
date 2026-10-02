@@ -48,7 +48,7 @@ class ClipboardProgramHelper {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ [ClipboardProgramHelper] 取得エラー: $e');
+      debugPrint('[WARN] [ClipboardProgramHelper] 取得エラー: $e');
     }
 
     return null;
@@ -83,7 +83,7 @@ class ClipboardProgramHelper {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ [ClipboardProgramHelper] ファイルパス取得失敗: $e');
+      debugPrint('[WARN] [ClipboardProgramHelper] ファイルパス取得失敗: $e');
     }
     return null;
   }
@@ -94,7 +94,7 @@ class ClipboardProgramHelper {
     try {
       return await Pasteboard.image;
     } catch (e) {
-      debugPrint('⚠️ [ClipboardProgramHelper] 画像取得失敗: $e');
+      debugPrint('[WARN] [ClipboardProgramHelper] 画像取得失敗: $e');
       return null;
     }
   }
@@ -143,7 +143,7 @@ class ClipboardProgramHelper {
         bytes: response.bodyBytes,
       );
     } catch (e) {
-      debugPrint('⚠️ [ClipboardProgramHelper] URLダウンロード失敗: $e');
+      debugPrint('[WARN] [ClipboardProgramHelper] URLダウンロード失敗: $e');
       return null;
     }
   }
@@ -183,7 +183,7 @@ class ClipboardProgramHelper {
         );
       }
     } catch (e) {
-      debugPrint('⚠️ [ClipboardProgramHelper] file:// 読込失敗: $e');
+      debugPrint('[WARN] [ClipboardProgramHelper] file:// 読込失敗: $e');
     }
     return null;
   }

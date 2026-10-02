@@ -167,7 +167,7 @@ class TimelineAnnounceSender {
         }
       }
     } catch (e) {
-      debugPrint('🚨 [AnnounceDialog] 送信エラー: $e');
+      debugPrint('[ERROR] [AnnounceDialog] 送信エラー: $e');
       if (parentContext.mounted) {
         AppSnackBar.showError(parentContext, '処理に失敗しました: ${e.toString()}');
       }

@@ -75,7 +75,7 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ [ReadAnnouncementsNotifier] cloud sync error: $e');
+      debugPrint('[WARN] [ReadAnnouncementsNotifier] cloud sync error: $e');
     }
   }
 
@@ -119,7 +119,9 @@ class ReadAnnouncementsNotifier extends StateNotifier<List<String>> {
           'updatedAt': DateTime.now().toIso8601String(),
         }, SetOptions(merge: true))
         .catchError((e) {
-          debugPrint('⚠️ [ReadAnnouncementsNotifier] sync to cloud error: $e');
+          debugPrint(
+            '[WARN] [ReadAnnouncementsNotifier] sync to cloud error: $e',
+          );
         });
   }
 }

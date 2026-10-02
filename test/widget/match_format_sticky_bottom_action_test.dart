@@ -8,78 +8,80 @@ import 'package:kendo_os/shared/widgets/glass_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  group('[Widget] MatchFormatStickyBottomAction 単体検証', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
 
-  const dummyThemeColors = AppThemeColors(
-    primaryAccent: Colors.indigo,
-    softAccent: Colors.indigoAccent,
-    cardBackground: Colors.white,
-    scaffoldBackground: Colors.white,
-    textColor: Colors.black,
-    subTextColor: Colors.grey,
-    separatorColor: Colors.grey,
-    inputBackground: Colors.white,
-    hintColor: Colors.grey,
-    rosePink: Colors.pink,
-    successColor: Colors.green,
-    warningColor: Colors.orange,
-    errorColor: Colors.red,
-    infoColor: Colors.blue,
-  );
+    const dummyThemeColors = AppThemeColors(
+      primaryAccent: Colors.indigo,
+      softAccent: Colors.indigoAccent,
+      cardBackground: Colors.white,
+      scaffoldBackground: Colors.white,
+      textColor: Colors.black,
+      subTextColor: Colors.grey,
+      separatorColor: Colors.grey,
+      inputBackground: Colors.white,
+      hintColor: Colors.grey,
+      rosePink: Colors.pink,
+      successColor: Colors.green,
+      warningColor: Colors.orange,
+      errorColor: Colors.red,
+      infoColor: Colors.blue,
+    );
 
-  testWidgets('試合形式ボトムアクションの最初のページが正しく描画されること', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('試合形式ボトムアクションの最初のページが正しく描画されること', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData(extensions: const [dummyThemeColors]),
-          home: Scaffold(
-            body: MatchFormatStickyBottomAction(
-              currentPage: 0,
-              isLastPage: false,
-              themeColors: dummyThemeColors,
-              onPrevious: () {},
-              onNextOrComplete: () {},
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData(extensions: const [dummyThemeColors]),
+            home: Scaffold(
+              body: MatchFormatStickyBottomAction(
+                currentPage: 0,
+                isLastPage: false,
+                themeColors: dummyThemeColors,
+                onPrevious: () {},
+                onNextOrComplete: () {},
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(GlassButton), findsOneWidget);
-    expect(find.text('次へ進む'), findsOneWidget);
-    expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
-  });
+      expect(find.byType(GlassButton), findsOneWidget);
+      expect(find.text('次へ進む'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);
+    });
 
-  testWidgets('試合形式ボトムアクションの最終ページが正しく描画されること', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('試合形式ボトムアクションの最終ページが正しく描画されること', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData(extensions: const [dummyThemeColors]),
-          home: Scaffold(
-            body: MatchFormatStickyBottomAction(
-              currentPage: 1,
-              isLastPage: true,
-              themeColors: dummyThemeColors,
-              onPrevious: () {},
-              onNextOrComplete: () {},
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData(extensions: const [dummyThemeColors]),
+            home: Scaffold(
+              body: MatchFormatStickyBottomAction(
+                currentPage: 1,
+                isLastPage: true,
+                themeColors: dummyThemeColors,
+                onPrevious: () {},
+                onNextOrComplete: () {},
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(GlassButton), findsOneWidget);
-    expect(find.text('このルールで枠を作成'), findsOneWidget);
-    expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+      expect(find.byType(GlassButton), findsOneWidget);
+      expect(find.text('このルールで枠を作成'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    });
   });
 }

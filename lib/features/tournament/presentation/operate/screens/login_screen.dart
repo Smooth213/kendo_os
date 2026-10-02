@@ -215,12 +215,12 @@ class LoginScreen extends ConsumerWidget {
                   ),
                   onPressed: () async {
                     try {
-                      debugPrint("🔘 [LoginScreen] ログインボタン押下");
+                      debugPrint("[LoginScreen] ログインボタン押下");
                       await ref.read(authRepositoryProvider).signInWithGoogle();
                       if (!context.mounted) return;
                       context.go('/');
                     } catch (e) {
-                      debugPrint("❌ [LoginScreen] ログインエラー: $e");
+                      debugPrint("[ERROR] [LoginScreen] ログインエラー: $e");
                       if (!context.mounted) return;
                       AppSnackBar.showError(
                         context,

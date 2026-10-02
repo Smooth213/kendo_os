@@ -5,40 +5,42 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/ord
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('オーダー設定リーグ参加者リストが正しく描画されること', (WidgetTester tester) async {
-    final participants = ['自チーム', '相手チームA'];
-    final teamOrders = <String, List<String>>{
-      '自チーム': ['選手1', '選手2'],
-    };
+  group('[Widget] OrderSetupLeagueParticipantsSection 単体検証', () {
+    testWidgets('オーダー設定リーグ参加者リストが正しく描画されること', (WidgetTester tester) async {
+      final participants = ['自チーム', '相手チームA'];
+      final teamOrders = <String, List<String>>{
+        '自チーム': ['選手1', '選手2'],
+      };
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: OrderSetupLeagueParticipantsSection(
-                themeColors: AppThemeColors.ofMode(
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: OrderSetupLeagueParticipantsSection(
+                  themeColors: AppThemeColors.ofMode(
+                    isDark: false,
+                    mode: 'normal',
+                  ),
+                  leagueParticipants: participants,
+                  leagueTeamOrders: teamOrders,
+                  positions: const ['先鋒', '中堅', '大将'],
+                  ruleTeamName: '自チーム',
+                  matchType: '団体戦',
+                  opponentTeamSuggestions: const ['相手チームA', '相手チームB'],
+                  onParticipantsChanged: () {},
                   isDark: false,
-                  mode: 'normal',
                 ),
-                leagueParticipants: participants,
-                leagueTeamOrders: teamOrders,
-                positions: const ['先鋒', '中堅', '大将'],
-                ruleTeamName: '自チーム',
-                matchType: '団体戦',
-                opponentTeamSuggestions: const ['相手チームA', '相手チームB'],
-                onParticipantsChanged: () {},
-                isDark: false,
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('1. リーグ参加者リストの作成'), findsOneWidget);
-    expect(find.text('自チーム'), findsOneWidget);
-    expect(find.text('相手チームA'), findsOneWidget);
-    expect(find.text('リストに追加'), findsOneWidget);
+      expect(find.text('1. リーグ参加者リストの作成'), findsOneWidget);
+      expect(find.text('自チーム'), findsOneWidget);
+      expect(find.text('相手チームA'), findsOneWidget);
+      expect(find.text('リストに追加'), findsOneWidget);
+    });
   });
 }

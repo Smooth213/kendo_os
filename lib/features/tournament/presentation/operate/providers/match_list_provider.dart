@@ -25,7 +25,7 @@ final webCurrentTournamentIdProvider = StateProvider<String?>((ref) => null);
 
 final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
   if (kIsWeb || debugIsWebOverride) {
-    debugPrint('🌐 [Web Environment Detected] Isarの代わりにメモリ/クラウド監視ラインを確立します');
+    debugPrint('[Web Environment Detected] Isarの代わりにメモリ/クラウド監視ラインを確立します');
     return Stream.value([]);
   }
 
@@ -113,7 +113,7 @@ final matchListByTournamentProvider = StreamProvider.family
             });
             return MatchDataSanitizer.healRepresentativeMatch(match);
           } catch (e) {
-            debugPrint('🚨 [Parse Error] ID:${doc.id} -> $e');
+            debugPrint('[ERROR] [Parse Error] ID:${doc.id} -> $e');
             return null;
           }
         }
@@ -154,7 +154,7 @@ final matchListByTournamentProvider = StreamProvider.family
                   });
                 },
                 onError: (e) {
-                  debugPrint('🚨 [Match Query Error] Web: $e');
+                  debugPrint('[ERROR] [Match Query Error] Web: $e');
                   if (!controller.isClosed) {
                     controller.add([]);
                   }

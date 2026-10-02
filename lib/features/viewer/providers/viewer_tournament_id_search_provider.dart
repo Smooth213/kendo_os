@@ -46,7 +46,7 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
           return tournamentsSnap.docs.first.id;
         }
       } catch (e) {
-        debugPrint('🚨 [Organization Tournaments Scan Error] $e');
+        debugPrint('[ERROR] [Organization Tournaments Scan Error] $e');
       }
     }
 
@@ -82,7 +82,7 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
         }
       }
     } catch (e) {
-      debugPrint('🚨 [collectionGroup matches Error] $e');
+      debugPrint('[ERROR] [collectionGroup matches Error] $e');
     }
 
     final fallbackMatches = ref.read(matchListProvider);
@@ -92,7 +92,7 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
 
     return 'default_tournament';
   } catch (e) {
-    debugPrint('🚨 [_webTournamentIdSearchProvider Error] $e');
+    debugPrint('[ERROR] [_webTournamentIdSearchProvider Error] $e');
     return 'default_tournament';
   }
 });

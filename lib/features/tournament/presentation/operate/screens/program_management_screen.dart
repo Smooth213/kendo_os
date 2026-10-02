@@ -377,7 +377,7 @@ class _ProgramManagementScreenState
           return programAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, stack) {
-              debugPrint('🔥 Local Projection Error: $err');
+              debugPrint('[ERROR] Local Projection Error: $err');
               return const Center(child: Text('プログラムデータの読み込みに失敗しました。'));
             },
             data: (programs) {

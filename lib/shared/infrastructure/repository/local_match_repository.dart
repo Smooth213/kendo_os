@@ -75,7 +75,7 @@ class LocalMatchRepository {
             .findFirst();
         if (entity != null) return await _loadModelWithArchivedEvents(entity);
       } catch (e, stack) {
-        debugPrint('🔥 [Critical] ローカルDBからの読み込みに失敗しました: $e');
+        debugPrint('[CRITICAL] ローカルDBからの読み込みに失敗しました: $e');
         FirebaseCrashlytics.instance
             .recordError(e, stack, reason: 'Local DB Read Failure')
             .catchError((_) {});
@@ -86,7 +86,7 @@ class LocalMatchRepository {
       try {
         final entity = LocalMatchEntityMapper.toEntity(recovered);
         await _isar.writeTxn(() => _isar.matchEntitys.put(entity));
-        debugPrint('🛡️ [Self-Healing] スナップショットからIsarへ自己修復完了: $matchId');
+        debugPrint('[Self-Healing] スナップショットからIsarへ自己修復完了: $matchId');
       } catch (_) {}
     }
     return recovered;
@@ -224,7 +224,7 @@ class LocalMatchRepository {
     MatchModel match,
     String reason,
   ) async {
-    debugPrint('🔥 [Storage Error] $reason: $e');
+    debugPrint('[ERROR] [Storage Error] $reason: $e');
     FirebaseCrashlytics.instance
         .recordError(e, stack, reason: reason)
         .catchError((_) {});

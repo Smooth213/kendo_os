@@ -32,7 +32,7 @@ class LocalMatchMicroBatch {
     try {
       await flush();
     } catch (error, stack) {
-      debugPrint('⚠️ [Adaptive Micro-Batch] フラッシュ失敗: $error\n$stack');
+      debugPrint('[WARN] [Adaptive Micro-Batch] フラッシュ失敗: $error\n$stack');
     }
   }
 
@@ -62,7 +62,7 @@ class LocalMatchMicroBatch {
       for (final match in matches) {
         if (_buffer[match.id] == match) _buffer.remove(match.id);
       }
-      debugPrint('💾 [Adaptive Micro-Batch] ${matches.length} 件を一括フラッシュしました');
+      debugPrint('[Adaptive Micro-Batch] ${matches.length} 件を一括フラッシュしました');
     } finally {
       if (identical(_flushInFlight, flushFuture)) _flushInFlight = null;
     }

@@ -12,78 +12,80 @@ import 'package:kendo_os/shared/infrastructure/repository/local_match_repository
 import '../../../helpers/test_isar_helper.dart';
 
 void main() {
-  TestIsarContext? isarContext;
-  late Isar isar;
-  late LocalMatchRepository repository;
-  Directory? snapshotDirectory;
+  group('[Unit] LocalMatchRepositoryTwin 単体検証', () {
+    TestIsarContext? isarContext;
+    late Isar isar;
+    late LocalMatchRepository repository;
+    Directory? snapshotDirectory;
 
-  setUpAll(() async {
-    final ctx = await TestIsarHelper.openContext(
-      schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
-      prefix: 'isar_twin_repo',
-    );
-    isarContext = ctx;
-    isar = ctx.isar;
-    final dir = Directory.systemTemp.createTempSync('snapshot_twin_repo_');
-    snapshotDirectory = dir;
-    repository = LocalMatchRepository(isar);
-    TwinMatchPersistenceHelper.customDirectory = dir;
-    TwinMatchPersistenceHelper.isWebOverride = false;
-  });
+    setUpAll(() async {
+      final ctx = await TestIsarHelper.openContext(
+        schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
+        prefix: 'isar_twin_repo',
+      );
+      isarContext = ctx;
+      isar = ctx.isar;
+      final dir = Directory.systemTemp.createTempSync('snapshot_twin_repo_');
+      snapshotDirectory = dir;
+      repository = LocalMatchRepository(isar);
+      TwinMatchPersistenceHelper.customDirectory = dir;
+      TwinMatchPersistenceHelper.isWebOverride = false;
+    });
 
-  tearDownAll(() async {
-    TwinMatchPersistenceHelper.customDirectory = null;
-    TwinMatchPersistenceHelper.isWebOverride = null;
-    await isarContext?.dispose();
-    if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
-      snapshotDirectory!.deleteSync(recursive: true);
-    }
-  });
-
-  setUp(() async {
-    await isarContext?.clear();
-    if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
-      for (final file in snapshotDirectory!.listSync().whereType<File>()) {
-        file.deleteSync();
+    tearDownAll(() async {
+      TwinMatchPersistenceHelper.customDirectory = null;
+      TwinMatchPersistenceHelper.isWebOverride = null;
+      await isarContext?.dispose();
+      if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
+        snapshotDirectory!.deleteSync(recursive: true);
       }
-    }
-  });
+    });
 
-  test('通常のsaveMatchesBulkはIsarとTwinスナップショットへ保存すること', () async {
-    const match = MatchModel(
-      id: 'bulk-twin-normal',
-      matchType: 'individual',
-      redName: '赤選手',
-      whiteName: '白選手',
-      status: 'finished',
-    );
+    setUp(() async {
+      await isarContext?.clear();
+      if (snapshotDirectory != null && snapshotDirectory!.existsSync()) {
+        for (final file in snapshotDirectory!.listSync().whereType<File>()) {
+          file.deleteSync();
+        }
+      }
+    });
 
-    await repository.saveMatchesBulk([match]);
+    test('通常のsaveMatchesBulkはIsarとTwinスナップショットへ保存すること', () async {
+      const match = MatchModel(
+        id: 'bulk-twin-normal',
+        matchType: 'individual',
+        redName: '赤選手',
+        whiteName: '白選手',
+        status: 'finished',
+      );
 
-    expect(await isar.matchEntitys.count(), 1);
-    await _waitForSnapshot(snapshotDirectory!, match.id);
-    final recovered = await TwinMatchPersistenceHelper.recoverMatch(match.id);
-    expect(recovered?.id, match.id);
-  });
+      await repository.saveMatchesBulk([match]);
 
-  test('skipTwin=trueはIsarへ保存するがTwinスナップショットを作成しないこと', () async {
-    const match = MatchModel(
-      id: 'bulk-twin-skipped',
-      matchType: 'individual',
-      redName: '赤選手',
-      whiteName: '白選手',
-      status: 'synced',
-    );
+      expect(await isar.matchEntitys.count(), 1);
+      await _waitForSnapshot(snapshotDirectory!, match.id);
+      final recovered = await TwinMatchPersistenceHelper.recoverMatch(match.id);
+      expect(recovered?.id, match.id);
+    });
 
-    await repository.saveMatchesBulk([match], skipTwin: true);
+    test('skipTwin=trueはIsarへ保存するがTwinスナップショットを作成しないこと', () async {
+      const match = MatchModel(
+        id: 'bulk-twin-skipped',
+        matchType: 'individual',
+        redName: '赤選手',
+        whiteName: '白選手',
+        status: 'synced',
+      );
 
-    expect(await isar.matchEntitys.count(), 1);
-    final snapshotFiles = snapshotDirectory!
-        .listSync()
-        .whereType<File>()
-        .where((file) => file.path.contains(match.id))
-        .toList();
-    expect(snapshotFiles, isEmpty);
+      await repository.saveMatchesBulk([match], skipTwin: true);
+
+      expect(await isar.matchEntitys.count(), 1);
+      final snapshotFiles = snapshotDirectory!
+          .listSync()
+          .whereType<File>()
+          .where((file) => file.path.contains(match.id))
+          .toList();
+      expect(snapshotFiles, isEmpty);
+    });
   });
 }
 

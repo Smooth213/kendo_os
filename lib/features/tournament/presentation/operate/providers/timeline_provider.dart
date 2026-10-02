@@ -73,12 +73,14 @@ final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, Str
             );
           }
         } catch (e) {
-          debugPrint('⚠️ [Comment Stream Downstream] コメント同期中にエラーが発生しました: $e');
+          debugPrint(
+            '[WARN] [Comment Stream Downstream] コメント同期中にエラーが発生しました: $e',
+          );
         }
       }
     },
     onError: (e) {
-      debugPrint('⚠️ [Comment Stream Downstream] コメント監視エラー: $e');
+      debugPrint('[WARN] [Comment Stream Downstream] コメント監視エラー: $e');
     },
   );
 

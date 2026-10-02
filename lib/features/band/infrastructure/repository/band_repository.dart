@@ -47,7 +47,7 @@ class BandRepository {
           return groups;
         })
         .handleError((error) {
-          debugPrint('⚠️ [BandRepository] watchBandGroups エラー: $error');
+          debugPrint('[WARN] [BandRepository] watchBandGroups エラー: $error');
           return <BandGroupModel>[];
         });
   }
@@ -107,7 +107,7 @@ class BandRepository {
 
       await _saveToLocalCache(updatedList);
     } catch (e) {
-      debugPrint('❌ [BandRepository] saveBandGroup 保存失敗: $e');
+      debugPrint('[ERROR] [BandRepository] saveBandGroup 保存失敗: $e');
       rethrow;
     }
   }
@@ -125,7 +125,7 @@ class BandRepository {
 
       await _saveToLocalCache(updatedList);
     } catch (e) {
-      debugPrint('❌ [BandRepository] deleteBandGroup 削除失敗: $e');
+      debugPrint('[ERROR] [BandRepository] deleteBandGroup 削除失敗: $e');
       rethrow;
     }
   }
@@ -139,7 +139,7 @@ class BandRepository {
       }, SetOptions(merge: true));
       await _saveToLocalCache(groups);
     } catch (e) {
-      debugPrint('❌ [BandRepository] saveAllGroups 保存失敗: $e');
+      debugPrint('[ERROR] [BandRepository] saveAllGroups 保存失敗: $e');
       rethrow;
     }
   }

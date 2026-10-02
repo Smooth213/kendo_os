@@ -68,13 +68,13 @@ class SyncEngine {
     _isBackground = true;
     _stopSyncLoop();
     _debounceSyncTimer?.cancel();
-    debugPrint('💤 [Sync Engine] アプリバックグラウンド検知: Firestore下流処理をスリープ移行');
+    debugPrint('[Sync Engine] アプリバックグラウンド検知: Firestore下流処理をスリープ移行');
   }
 
   void _handleForeground() {
     if (_isBackground) {
       _isBackground = false;
-      debugPrint('⚡ [Sync Engine] アプリフォアグラウンド復帰: Firestoreリスナー再同期と即時キャッチアップ開始');
+      debugPrint('[Sync Engine] アプリフォアグラウンド復帰: Firestoreリスナー再同期と即時キャッチアップ開始');
       _bindListeners();
       syncNow();
     }
@@ -116,7 +116,7 @@ class SyncEngine {
     // 🔑 Firebase認証状態が確立した際にも自動再バインド
     if (!_isTestEnvironment()) {
       _ref.listen(authStateProvider, (prev, next) {
-        debugPrint('🔑 [Sync Engine] Firebase認証状態の変化を検知しました');
+        debugPrint('[Sync Engine] Firebase認証状態の変化を検知しました');
         _bindListeners();
       });
     }
@@ -155,7 +155,7 @@ class SyncEngine {
       try {
         if (Firebase.apps.isNotEmpty &&
             FirebaseAuth.instance.currentUser == null) {
-          debugPrint('⏳ [Sync Engine] Firebase認証が未確立のため、Firestore監視を保留します。');
+          debugPrint('[Sync Engine] Firebase認証が未確立のため、Firestore監視を保留します。');
           return;
         }
       } catch (_) {}
@@ -196,7 +196,7 @@ class SyncEngine {
         });
       },
       onError: (e) {
-        debugPrint('⚠️ [Sync Engine Downstream] トーナメント試合監視エラー: $e');
+        debugPrint('[WARN] [Sync Engine Downstream] トーナメント試合監視エラー: $e');
       },
     );
 
@@ -274,7 +274,7 @@ class SyncEngine {
       // 未送信データが存在する場合はタイマーループが確実に回っていることを保証
       _startSyncLoop();
 
-      debugPrint('🔄 [Sync Engine] 未送信キューを検知しました: ${pendingActions.length} 件');
+      debugPrint('[Sync Engine] 未送信キューを検知しました: ${pendingActions.length} 件');
 
       for (final action in pendingActions) {
         // 重複送信防止（eventId / commandId の完全一致検証によるFirestoreべき等性担保）
@@ -316,7 +316,7 @@ class SyncEngine {
         _stopSyncLoop();
       }
     } catch (e) {
-      debugPrint('🔥 [Sync Engine Critical] キュー処理中に例外が発生しました: $e');
+      debugPrint('[ERROR] [Sync Engine Critical] キュー処理中に例外が発生しました: $e');
     } finally {
       _isProcessing = false;
     }

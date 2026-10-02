@@ -78,7 +78,7 @@ class EmergencyCrashPreserver {
         '🚨 [Crash Preserver] Native: 緊急クラッシュ退避ファイルを保存しました: ${dumpFile.path}',
       );
     } catch (e) {
-      debugPrint('💥 [Crash Preserver] 緊急退避の書き込みに失敗しました: $e');
+      debugPrint('[ERROR] [Crash Preserver] 緊急退避の書き込みに失敗しました: $e');
     }
   }
 
@@ -103,7 +103,7 @@ class EmergencyCrashPreserver {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ [Crash Preserver] クラッシュダンプの読み出しに失敗しました: $e');
+      debugPrint('[WARN] [Crash Preserver] クラッシュダンプの読み出しに失敗しました: $e');
     }
     return null;
   }

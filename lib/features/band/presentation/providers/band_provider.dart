@@ -128,7 +128,7 @@ class BandLauncherHelper {
 
     final uri = Uri.tryParse(normalizedUrl);
     if (uri == null) {
-      debugPrint('❌ [BandLauncher] 無効なURL: $normalizedUrl');
+      debugPrint('[ERROR] [BandLauncher] 無効なURL: $normalizedUrl');
       return false;
     }
 
@@ -176,12 +176,12 @@ class BandLauncherHelper {
         webOnlyWindowName: windowName,
       );
       if (!launched) {
-        debugPrint('⚠️ [BandLauncher] externalApplication での起動に失敗: $uri');
+        debugPrint('[WARN] [BandLauncher] externalApplication での起動に失敗: $uri');
         return false;
       }
       return true;
     } catch (e) {
-      debugPrint('❌ [BandLauncher] launchUrl 失敗: $e');
+      debugPrint('[ERROR] [BandLauncher] launchUrl 失敗: $e');
       return false;
     }
   }

@@ -4,48 +4,50 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets('部門ルール団体戦セクションに代表戦設定が正しく描画されること', (tester) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+  group('[Widget] CategoryRuleTeamSection 単体検証', () {
+    testWidgets('部門ルール団体戦セクションに代表戦設定が正しく描画されること', (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: CategoryRuleTeamSection(
-              isLeague: true,
-              isNormal: true,
-              categoryKey: '一般',
-              themeColors: themeColors,
-              hasLeagueDaihyo: true,
-              isDaihyoIpponShobu: true,
-              daihyoMatchTime: 3.0,
-              daihyoHasExtension: true,
-              daihyoEnchoTime: 3.0,
-              daihyoEnchoCount: -2,
-              daihyoHasHantei: true,
-              winPoint: 3.0,
-              lossPoint: 0.0,
-              drawPoint: 1.0,
-              onHasLeagueDaihyoChanged: (_) {},
-              onIsDaihyoIpponShobuChanged: (_) {},
-              onDaihyoMatchTimeChanged: (_) {},
-              onDaihyoHasExtensionChanged: (_) {},
-              onDaihyoEnchoTimeChanged: (_) {},
-              onDaihyoEnchoCountChanged: (_) {},
-              onDaihyoHasHanteiChanged: (_) {},
-              onWinPointChanged: (_) {},
-              onLossPointChanged: (_) {},
-              onDrawPointChanged: (_) {},
-              formatMinutes: (m) => '$m分',
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CategoryRuleTeamSection(
+                isLeague: true,
+                isNormal: true,
+                categoryKey: '一般',
+                themeColors: themeColors,
+                hasLeagueDaihyo: true,
+                isDaihyoIpponShobu: true,
+                daihyoMatchTime: 3.0,
+                daihyoHasExtension: true,
+                daihyoEnchoTime: 3.0,
+                daihyoEnchoCount: -2,
+                daihyoHasHantei: true,
+                winPoint: 3.0,
+                lossPoint: 0.0,
+                drawPoint: 1.0,
+                onHasLeagueDaihyoChanged: (_) {},
+                onIsDaihyoIpponShobuChanged: (_) {},
+                onDaihyoMatchTimeChanged: (_) {},
+                onDaihyoHasExtensionChanged: (_) {},
+                onDaihyoEnchoTimeChanged: (_) {},
+                onDaihyoEnchoCountChanged: (_) {},
+                onDaihyoHasHanteiChanged: (_) {},
+                onWinPointChanged: (_) {},
+                onLossPointChanged: (_) {},
+                onDrawPointChanged: (_) {},
+                formatMinutes: (m) => '$m分',
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('代表戦あり（団体戦用）'), findsOneWidget);
-    expect(find.text('１本勝負 (デフォルト)'), findsOneWidget);
-    expect(find.text('代表戦の延長を有効にする'), findsOneWidget);
-    expect(find.text('代表戦の判定を有効にする'), findsOneWidget);
+      expect(find.text('代表戦あり（団体戦用）'), findsOneWidget);
+      expect(find.text('１本勝負 (デフォルト)'), findsOneWidget);
+      expect(find.text('代表戦の延長を有効にする'), findsOneWidget);
+      expect(find.text('代表戦の判定を有効にする'), findsOneWidget);
+    });
   });
 }

@@ -25,7 +25,9 @@ class ProgramViewStateService {
     try {
       _prefs = await SharedPreferences.getInstance();
     } catch (e) {
-      debugPrint('⚠️ [ProgramViewStateService] SharedPreferences 初期化スキップ: $e');
+      debugPrint(
+        '[WARN] [ProgramViewStateService] SharedPreferences 初期化スキップ: $e',
+      );
     }
   }
 
@@ -34,7 +36,7 @@ class ProgramViewStateService {
     try {
       _prefs = prefs ?? await SharedPreferences.getInstance();
     } catch (e) {
-      debugPrint('⚠️ [ProgramViewStateService] init エラー: $e');
+      debugPrint('[WARN] [ProgramViewStateService] init エラー: $e');
     }
   }
 
@@ -58,7 +60,7 @@ class ProgramViewStateService {
         return valid;
       }
     } catch (e) {
-      debugPrint('⚠️ [ProgramViewStateService] 破損データ検出、デフォルト値へ自己修復: $e');
+      debugPrint('[WARN] [ProgramViewStateService] 破損データ検出、デフォルト値へ自己修復: $e');
     }
     return defaultIndex;
   }
@@ -71,7 +73,9 @@ class ProgramViewStateService {
     try {
       _prefs?.setInt(_idxKey(tournamentId), validIndex);
     } catch (e) {
-      debugPrint('⚠️ [ProgramViewStateService] setLastProgramIndex 保存エラー: $e');
+      debugPrint(
+        '[WARN] [ProgramViewStateService] setLastProgramIndex 保存エラー: $e',
+      );
     }
   }
 
@@ -90,7 +94,7 @@ class ProgramViewStateService {
         return valid;
       }
     } catch (e) {
-      debugPrint('⚠️ [ProgramViewStateService] 破損ページ番号検出、1ページ目へ自己修復: $e');
+      debugPrint('[WARN] [ProgramViewStateService] 破損ページ番号検出、1ページ目へ自己修復: $e');
     }
     return defaultPage;
   }
@@ -103,7 +107,9 @@ class ProgramViewStateService {
     try {
       _prefs?.setInt(_pageKey(programKey), validPage);
     } catch (e) {
-      debugPrint('⚠️ [ProgramViewStateService] setLastPageNumber 保存エラー: $e');
+      debugPrint(
+        '[WARN] [ProgramViewStateService] setLastPageNumber 保存エラー: $e',
+      );
     }
   }
 

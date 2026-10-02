@@ -66,7 +66,7 @@ class UserDataCloudSyncManager {
     _authSubscription = auth.userChanges().listen((user) {
       if (user != null &&
           user.providerData.any((p) => p.providerId == 'google.com')) {
-        debugPrint('☁️ [CloudSyncManager] Googleアカウント検知 ➔ 全データ同期を実行');
+        debugPrint('[CloudSyncManager] Googleアカウント検知 -> 全データ同期を実行');
         syncAll();
       }
     });
@@ -94,9 +94,9 @@ class UserDataCloudSyncManager {
         syncInputHistoryFromCloud(uid),
         syncTimerPreferencesFromCloud(uid),
       ]);
-      debugPrint('✅ [CloudSyncManager] 全4大データのクラウド同期が完了しました');
+      debugPrint('[CloudSyncManager] 全4大データのクラウド同期が完了しました');
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] syncAll エラー (ローカル優先で継続): $e');
+      debugPrint('[WARN] [CloudSyncManager] syncAll エラー (ローカル優先で継続): $e');
     } finally {
       _isSyncing = false;
     }
@@ -128,7 +128,7 @@ class UserDataCloudSyncManager {
           .read(settingsProvider.notifier)
           .applyCloudSettings(cloudSettings);
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] syncPreferences エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] syncPreferences エラー: $e');
     }
   }
 
@@ -141,7 +141,7 @@ class UserDataCloudSyncManager {
       data['updatedAt'] = FieldValue.serverTimestamp();
       await _prefDoc(uid).set(data, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] pushPreferences エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] pushPreferences エラー: $e');
     }
   }
 
@@ -175,7 +175,7 @@ class UserDataCloudSyncManager {
       final merged = _ref.read(dojoRoomHistoryProvider);
       await pushDojoHistoryToCloud(merged);
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] syncDojoHistory エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] syncDojoHistory エラー: $e');
     }
   }
 
@@ -189,7 +189,7 @@ class UserDataCloudSyncManager {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] pushDojoHistory エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] pushDojoHistory エラー: $e');
     }
   }
 
@@ -222,7 +222,7 @@ class UserDataCloudSyncManager {
       final merged = _ref.read(teamNameHistoryProvider);
       await pushInputHistoryToCloud(merged);
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] syncInputHistory エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] syncInputHistory エラー: $e');
     }
   }
 
@@ -236,7 +236,7 @@ class UserDataCloudSyncManager {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] pushInputHistory エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] pushInputHistory エラー: $e');
     }
   }
 
@@ -257,7 +257,7 @@ class UserDataCloudSyncManager {
         _ref.read(dockTimerProvider.notifier).restoreInitialSeconds(seconds);
       }
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] syncTimerPreferences エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] syncTimerPreferences エラー: $e');
     }
   }
 
@@ -271,7 +271,7 @@ class UserDataCloudSyncManager {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('⚠️ [CloudSyncManager] pushTimerPreferences エラー: $e');
+      debugPrint('[WARN] [CloudSyncManager] pushTimerPreferences エラー: $e');
     }
   }
 }

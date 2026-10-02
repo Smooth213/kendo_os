@@ -61,21 +61,23 @@ void main() {
       try {
         container.read(notificationServiceProvider).initializeNotification();
       } catch (e) {
-        debugPrint('⚠️ [Notification] Startup initialization failed: $e');
+        debugPrint('[WARN] [Notification] Startup initialization failed: $e');
       }
 
       // ☁️ Google連携アカウント設定・履歴のクラウド自動同期マネージャー起動
       try {
         container.read(userDataCloudSyncManagerProvider).initialize();
       } catch (e) {
-        debugPrint('⚠️ [UserDataCloudSync] Startup initialization failed: $e');
+        debugPrint(
+          '[WARN] [UserDataCloudSync] Startup initialization failed: $e',
+        );
       }
 
       // 🔊 【Phase 8】オーディオPre-warming（ノンブロッキング非同期で事前暖機）
       try {
         unawaited(container.read(soundServiceProvider).prewarm());
       } catch (e) {
-        debugPrint('⚠️ [SoundService] Prewarm failed: $e');
+        debugPrint('[WARN] [SoundService] Prewarm failed: $e');
       }
 
       // ⚡ 【Plan 1-5】アセット・フォント・シェーダーの事前ウォームアップ（ノンブロッキング非同期）

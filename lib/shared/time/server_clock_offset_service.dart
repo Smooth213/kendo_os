@@ -61,7 +61,7 @@ class ServerClockOffsetService {
       );
       return _offset;
     } catch (e) {
-      debugPrint('🌐 [ServerClockOffset] Sync fallback (offline or error): $e');
+      debugPrint('[ServerClockOffset] Sync fallback (offline or error): $e');
       // オフライン・失敗時は例外を投げず、安全に既存の offset (または 0) を維持
       return _offset;
     }

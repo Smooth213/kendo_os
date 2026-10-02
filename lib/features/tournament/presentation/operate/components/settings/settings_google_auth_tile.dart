@@ -37,7 +37,7 @@ class _SettingsGoogleAuthTileState
         );
       }
     } catch (e) {
-      debugPrint('ℹ️ [SettingsGoogleAuthTile] Redirect check: $e');
+      debugPrint('[INFO] [SettingsGoogleAuthTile] Redirect check: $e');
     }
   }
 

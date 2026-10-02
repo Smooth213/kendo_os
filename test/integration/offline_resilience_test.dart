@@ -301,7 +301,7 @@ void main() {
             debugPrint(
               '🔥 [DEBUG TEST] FirebasePlatform.instance type during exception: ${FirebasePlatform.instance.runtimeType}',
             );
-            debugPrint('🔥 [DEBUG TEST] CAUGHT EXCEPTION: $e');
+            debugPrint('[DEBUG TEST] CAUGHT EXCEPTION: $e');
           }
           expect(hasThrown, true, reason: 'ローカルDBクローズのため例外がスローされること');
 

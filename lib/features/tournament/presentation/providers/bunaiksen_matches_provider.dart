@@ -127,7 +127,7 @@ final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>(
   try {
     firestore = ref.watch(firestoreProvider);
   } catch (e) {
-    debugPrint('⚠️ [日付同期] Firestore取得失敗: $e');
+    debugPrint('[WARN] [日付同期] Firestore取得失敗: $e');
   }
 
   if (firestore == null) {
@@ -144,7 +144,7 @@ final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>(
             .toSet();
       });
     } catch (e) {
-      debugPrint('⚠️ [日付同期] LocalRepository取得失敗: $e');
+      debugPrint('[WARN] [日付同期] LocalRepository取得失敗: $e');
       return Stream.value(const <String>{});
     }
   }
@@ -191,7 +191,7 @@ final bunaiksenMatchesProvider = Provider.family
       } else {
         final allMatches = ref.watch(matchListProvider);
 
-        debugPrint('🔍🔍 [剣道OS ログ] Isarデータパイプラインリアルタイム監視 🔍🔍');
+        debugPrint('[KendoOS Log] Isarデータパイプラインリアルタイム監視');
         debugPrint(' 1. 画面側から要求された日付ID = "$targetTournamentId"');
         debugPrint(' 2. 現在Isarローカルディスクに保存されている総試合数 = ${allMatches.length} 件');
 
@@ -199,7 +199,7 @@ final bunaiksenMatchesProvider = Provider.family
             .where((m) => m.tournamentId == targetTournamentId)
             .toList();
         debugPrint(' 3. 条件に合致して画面へ美しく表示する試合数 = ${matches.length} 件');
-        debugPrint('🔍🔍 [剣道OS ログ] 監視終了 🔍🔍');
+        debugPrint('[KendoOS Log] 監視終了');
       }
 
       final sorted = List<MatchModel>.from(matches);

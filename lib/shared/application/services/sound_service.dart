@@ -42,7 +42,7 @@ class SoundService {
       await _tts.setSpeechRate(0.6); // 高齢審判員にも聞き取りやすい速度
       await _tts.setVolume(1.0);
     } catch (e) {
-      debugPrint('⚠️ [SoundService] TTS初期化スキップ (モック/Web環境): $e');
+      debugPrint('[WARN] [SoundService] TTS初期化スキップ (モック/Web環境): $e');
     }
   }
 
@@ -54,9 +54,9 @@ class SoundService {
       await _audioPlayer.setPlayerMode(PlayerMode.lowLatency);
       await _audioPlayer.setSource(_redScoreSource);
       _isPrewarmed = true;
-      debugPrint('🔊 [SoundService] オーディオプリウォーミング完了（低遅延モード確立）');
+      debugPrint('[SoundService] オーディオプリウォーミング完了（低遅延モード確立）');
     } catch (e) {
-      debugPrint('⚠️ [SoundService] プリウォーミングスキップ: $e');
+      debugPrint('[WARN] [SoundService] プリウォーミングスキップ: $e');
     }
   }
 
@@ -69,7 +69,7 @@ class SoundService {
         ).build(),
       );
     } catch (e) {
-      debugPrint('⚠️ [SoundService] オーディオコンテキスト設定スキップ: $e');
+      debugPrint('[WARN] [SoundService] オーディオコンテキスト設定スキップ: $e');
     }
   }
 
@@ -79,7 +79,7 @@ class SoundService {
       await _tts.stop();
       await _tts.speak(text);
     } catch (e) {
-      debugPrint('⚠️ [SoundService] 音声読み上げスキップ: $e');
+      debugPrint('[WARN] [SoundService] 音声読み上げスキップ: $e');
     }
   }
 
@@ -89,7 +89,7 @@ class SoundService {
       await _audioPlayer.stop();
       await _audioPlayer.play(source, mode: PlayerMode.lowLatency);
     } catch (e) {
-      debugPrint('⚠️ [SoundService] 効果音再生スキップ: $e');
+      debugPrint('[WARN] [SoundService] 効果音再生スキップ: $e');
     }
   }
 

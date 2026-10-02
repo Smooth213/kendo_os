@@ -31,7 +31,9 @@ final safeViewerTimelineProvider = Provider.family
       final String? errorMessage = asyncMatches.error?.toString();
 
       if (hasError) {
-        debugPrint('🚨 [safeViewerTimelineProvider] エラーを検知しました: $errorMessage');
+        debugPrint(
+          '[ERROR] [safeViewerTimelineProvider] エラーを検知しました: $errorMessage',
+        );
       }
 
       final matches = List<MatchModel>.from(asyncMatches.valueOrNull ?? [])

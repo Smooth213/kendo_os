@@ -106,7 +106,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
     try {
       _prefs?.setInt(prefKeyInitialSeconds, seconds);
     } catch (e) {
-      debugPrint('⚠️ [DockTimer] SharedPreferences save error: $e');
+      debugPrint('[WARN] [DockTimer] SharedPreferences save error: $e');
     }
   }
 
@@ -294,7 +294,7 @@ class DockTimerNotifier extends StateNotifier<DockTimerState> {
       final soundService = _ref.read(soundServiceProvider);
       soundService.playFinishFanfare();
     } catch (e) {
-      debugPrint('⚠️ [DockTimer] Finish sound error: $e');
+      debugPrint('[WARN] [DockTimer] Finish sound error: $e');
     }
   }
 }

@@ -201,7 +201,7 @@ class DockItemsOrderNotifier extends StateNotifier<List<DockItemType>> {
         }
       }
     } catch (e) {
-      debugPrint('ℹ️ [DockOrder] Cloud sync skipped: $e');
+      debugPrint('[INFO] [DockOrder] Cloud sync skipped: $e');
     }
   }
 
@@ -247,7 +247,7 @@ class DockItemsOrderNotifier extends StateNotifier<List<DockItemType>> {
             'updatedAt': DateTime.now().toIso8601String(),
           }, SetOptions(merge: true))
           .catchError((e) {
-            debugPrint('⚠️ [DockOrder] Cloud sync error: $e');
+            debugPrint('[WARN] [DockOrder] Cloud sync error: $e');
           });
     }
   }

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('dummy compiler passing testこと', () {});
+  group('[Unit] OfficialRecordPdfService 連携検証', () {
+    test('dummy compiler passing testこと', () {});
+  });
 }

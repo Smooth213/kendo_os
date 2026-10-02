@@ -135,9 +135,9 @@ class _CreateTournamentScreenState
       if (_formKey.currentState!.validate()) {
         try {
           final dojoId = ref.read(currentDojoIdProvider);
-          debugPrint('🔥 [DEBUG] 現在の道場ID: "$dojoId"');
+          debugPrint('[ERROR] [DEBUG] 現在の道場ID: "$dojoId"');
           final uid = FirebaseAuth.instance.currentUser?.uid;
-          debugPrint('🔥 [DEBUG] 現在のUID: "$uid"');
+          debugPrint('[ERROR] [DEBUG] 現在のUID: "$uid"');
 
           final hasTeams = _teams.isNotEmpty;
           final roster = ref.read(playerListProvider).value ?? <PlayerModel>[];
@@ -194,7 +194,7 @@ class _CreateTournamentScreenState
               : '/team-registration/$newId';
           context.push(targetRoute);
         } catch (e) {
-          debugPrint('🔥 [ERROR] 大会保存エラー: $e');
+          debugPrint('[ERROR] [ERROR] 大会保存エラー: $e');
           if (mounted) {
             AppSnackBar.showError(context, '保存エラー: $e');
           }

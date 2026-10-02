@@ -53,14 +53,14 @@ void cancelGlobalAnnouncements({String? tournamentId}) {
     for (final key in keysToRemove) {
       _activeSubscriptions[key]?.cancel();
       _activeSubscriptions.remove(key);
-      debugPrint('🧹 [cancelGlobalAnnouncements] アナウンス購読を明示的に解除: $key');
+      debugPrint('[cancelGlobalAnnouncements] アナウンス購読を明示的に解除: $key');
     }
   } else {
     for (final sub in _activeSubscriptions.values) {
       sub.cancel();
     }
     _activeSubscriptions.clear();
-    debugPrint('🧹 [cancelGlobalAnnouncements] 全アナウンス購読を明示的に解除');
+    debugPrint('[cancelGlobalAnnouncements] 全アナウンス購読を明示的に解除');
   }
 }
 
@@ -146,7 +146,7 @@ void _showAnnounceDialog(
       if (isRecent &&
           !_shownAnnounceIds.contains(pending.id) &&
           context.mounted) {
-        debugPrint('📢 [PopupManager] 保留されていた次のアナウンスを連鎖表示します: ${pending.id}');
+        debugPrint('[PopupManager] 保留されていた次のアナウンスを連鎖表示します: ${pending.id}');
         _showAnnounceDialog(context, ref, pending, pendingTarget);
       }
     }
@@ -169,7 +169,7 @@ void listenGlobalAnnouncements(
 
     final key = '${tournamentId}_$isStaffRoom';
     if (_activeSubscriptions.containsKey(key)) {
-      debugPrint('📢 [listenGlobalAnnouncements] 既に監視中のためスキップ - key: "$key"');
+      debugPrint('[listenGlobalAnnouncements] 既に監視中のためスキップ - key: "$key"');
       return; // 🛡️ 防衛線：既にこの画面種別でストリーム購読済みの場合は即時リターン（重複を回避）
     }
 

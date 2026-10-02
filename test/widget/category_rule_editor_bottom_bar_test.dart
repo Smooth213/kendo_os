@@ -7,43 +7,45 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+  group('[Widget] CategoryRuleEditorBottomBar 単体検証', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
 
-  testWidgets('CategoryRuleEditorBottomBarにおいて 各種ボタンが描画されタップが正常に動作すること', (
-    tester,
-  ) async {
-    bool saved = false;
-    bool cancelled = false;
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('CategoryRuleEditorBottomBarにおいて 各種ボタンが描画されタップが正常に動作すること', (
+      tester,
+    ) async {
+      bool saved = false;
+      bool cancelled = false;
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: CategoryRuleEditorBottomBar(
-              enableLiquidGlass: false,
-              onCancel: () => cancelled = true,
-              onSave: () => saved = true,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: CategoryRuleEditorBottomBar(
+                enableLiquidGlass: false,
+                onCancel: () => cancelled = true,
+                onSave: () => saved = true,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('キャンセル'), findsOneWidget);
-    expect(find.text('設定を保存'), findsOneWidget);
+      expect(find.text('キャンセル'), findsOneWidget);
+      expect(find.text('設定を保存'), findsOneWidget);
 
-    await tester.tap(find.text('キャンセル'));
-    await tester.pump();
-    expect(cancelled, isTrue);
+      await tester.tap(find.text('キャンセル'));
+      await tester.pump();
+      expect(cancelled, isTrue);
 
-    await tester.tap(find.text('設定を保存'));
-    await tester.pump();
-    expect(saved, isTrue);
+      await tester.tap(find.text('設定を保存'));
+      await tester.pump();
+      expect(saved, isTrue);
+    });
   });
 }

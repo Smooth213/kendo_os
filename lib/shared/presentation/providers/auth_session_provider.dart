@@ -72,7 +72,7 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
         );
       }
     } catch (e) {
-      debugPrint('⚠️ [Auth] members へのロール自動登録に失敗: $e');
+      debugPrint('[WARN] [Auth] members へのロール自動登録に失敗: $e');
     }
   }
 

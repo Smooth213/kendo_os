@@ -264,12 +264,15 @@ void main() {
 
         for (final f in files) {
           final items = extractTestItems(f.readAsStringSync(), f.path);
+          final hasTests = items.any((i) => i.fnName != 'group');
           final topGroup = items.where((i) => i.fnName == 'group').firstOrNull;
           if (topGroup != null) {
             final cleanTitle = topGroup.title.trim();
             if (!tagRegex.hasMatch(cleanTitle)) {
               violations.add('${topGroup.filePath}: group("$cleanTitle")');
             }
+          } else if (hasTests) {
+            violations.add('${f.path}: 最上位 group が存在せず直書きされています');
           }
         }
 
@@ -277,7 +280,7 @@ void main() {
           violations,
           isEmpty,
           reason:
-              '最上位groupが規約タグで始まっていないファイルが存在します:\n${violations.take(10).join('\n')}',
+              '最上位groupが規約タグで始まっていないか、最上位groupが存在しないファイルが存在します:\n${violations.take(10).join('\n')}',
         );
       },
     );

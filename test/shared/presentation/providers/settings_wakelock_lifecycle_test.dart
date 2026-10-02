@@ -13,167 +13,173 @@ class MockSharedPreferences extends Mock implements SharedPreferences {}
 class MockSoundService extends Mock implements SoundService {}
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  group('[Widget] SettingsWakelockLifecycle 単体検証', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
 
-  final List<bool> toggleCalls = [];
+    final List<bool> toggleCalls = [];
 
-  setUpAll(() {
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-    final codec = WakelockPlusApi.pigeonChannelCodec;
+    setUpAll(() {
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      final codec = WakelockPlusApi.pigeonChannelCodec;
 
-    messenger.setMockMessageHandler(
-      'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
-      (ByteData? message) async {
-        if (message != null) {
-          final decoded = codec.decodeMessage(message);
-          if (decoded is List && decoded.isNotEmpty) {
-            final arg = decoded[0];
-            if (arg is ToggleMessage) {
-              toggleCalls.add(arg.enable ?? false);
+      messenger.setMockMessageHandler(
+        'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
+        (ByteData? message) async {
+          if (message != null) {
+            final decoded = codec.decodeMessage(message);
+            if (decoded is List && decoded.isNotEmpty) {
+              final arg = decoded[0];
+              if (arg is ToggleMessage) {
+                toggleCalls.add(arg.enable ?? false);
+              }
             }
           }
-        }
-        return codec.encodeMessage(<Object?>[null]);
-      },
-    );
+          return codec.encodeMessage(<Object?>[null]);
+        },
+      );
 
-    Future<ByteData?> isEnabledHandler(ByteData? message) async {
-      return codec.encodeMessage(<Object?>[IsEnabledMessage(enabled: false)]);
-    }
+      Future<ByteData?> isEnabledHandler(ByteData? message) async {
+        return codec.encodeMessage(<Object?>[IsEnabledMessage(enabled: false)]);
+      }
 
-    messenger.setMockMessageHandler(
-      'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.isEnabled',
-      isEnabledHandler,
-    );
-  });
+      messenger.setMockMessageHandler(
+        'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.isEnabled',
+        isEnabledHandler,
+      );
+    });
 
-  late MockSharedPreferences mockPrefs;
-  late MockSoundService mockSoundService;
+    late MockSharedPreferences mockPrefs;
+    late MockSoundService mockSoundService;
 
-  setUp(() {
-    toggleCalls.clear();
-    mockPrefs = MockSharedPreferences();
-    mockSoundService = MockSoundService();
+    setUp(() {
+      toggleCalls.clear();
+      mockPrefs = MockSharedPreferences();
+      mockSoundService = MockSoundService();
 
-    when(() => mockPrefs.getString(any())).thenReturn(null);
-    when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
-    when(() => mockSoundService.configureAudio(any())).thenAnswer((_) async {});
-  });
+      when(() => mockPrefs.getString(any())).thenReturn(null);
+      when(
+        () => mockPrefs.setString(any(), any()),
+      ).thenAnswer((_) async => true);
+      when(
+        () => mockSoundService.configureAudio(any()),
+      ).thenAnswer((_) async {});
+    });
 
-  testWidgets('バックグラウンド遷移時にWakelockを無効化し、フォアグラウンド復帰時に再有効化されること', (
-    tester,
-  ) async {
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(mockPrefs),
-        soundServiceProvider.overrideWithValue(mockSoundService),
-      ],
-    );
-    addTearDown(container.dispose);
+    testWidgets('バックグラウンド遷移時にWakelockを無効化し、フォアグラウンド復帰時に再有効化されること', (
+      tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
+          soundServiceProvider.overrideWithValue(mockSoundService),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    // 初期化（sleepPrevent: true）
-    final notifier = container.read(settingsProvider.notifier);
-    await notifier.updateField(sleepPrevent: true);
-    await tester.pumpAndSettle();
+      // 初期化（sleepPrevent: true）
+      final notifier = container.read(settingsProvider.notifier);
+      await notifier.updateField(sleepPrevent: true);
+      await tester.pumpAndSettle();
 
-    toggleCalls.clear();
+      toggleCalls.clear();
 
-    // バックグラウンドへ移行 (resumed -> inactive -> hidden -> paused)
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pumpAndSettle();
+      // バックグラウンドへ移行 (resumed -> inactive -> hidden -> paused)
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pumpAndSettle();
 
-    expect(
-      toggleCalls,
-      contains(false),
-      reason: 'バックグラウンド(paused)移行時にWakelockがdisableされること',
-    );
+      expect(
+        toggleCalls,
+        contains(false),
+        reason: 'バックグラウンド(paused)移行時にWakelockがdisableされること',
+      );
 
-    toggleCalls.clear();
+      toggleCalls.clear();
 
-    // フォアグラウンドへ復帰 (paused -> hidden -> inactive -> resumed)
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpAndSettle();
+      // フォアグラウンドへ復帰 (paused -> hidden -> inactive -> resumed)
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
 
-    expect(
-      toggleCalls,
-      contains(true),
-      reason: 'フォアグラウンド(resumed)復帰時にWakelockが再有効化(enable)されること',
-    );
-  });
+      expect(
+        toggleCalls,
+        contains(true),
+        reason: 'フォアグラウンド(resumed)復帰時にWakelockが再有効化(enable)されること',
+      );
+    });
 
-  testWidgets('sleepPrevent が false の場合、フォアグラウンド復帰時にもWakelockは有効化されないこと', (
-    tester,
-  ) async {
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(mockPrefs),
-        soundServiceProvider.overrideWithValue(mockSoundService),
-      ],
-    );
-    addTearDown(container.dispose);
+    testWidgets('sleepPrevent が false の場合、フォアグラウンド復帰時にもWakelockは有効化されないこと', (
+      tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
+          soundServiceProvider.overrideWithValue(mockSoundService),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final notifier = container.read(settingsProvider.notifier);
-    await notifier.updateField(sleepPrevent: false);
-    await tester.pumpAndSettle();
+      final notifier = container.read(settingsProvider.notifier);
+      await notifier.updateField(sleepPrevent: false);
+      await tester.pumpAndSettle();
 
-    toggleCalls.clear();
+      toggleCalls.clear();
 
-    // バックグラウンドへ移行
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pumpAndSettle();
+      // バックグラウンドへ移行
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pumpAndSettle();
 
-    toggleCalls.clear();
+      toggleCalls.clear();
 
-    // フォアグラウンドへ復帰
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpAndSettle();
+      // フォアグラウンドへ復帰
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
 
-    expect(
-      toggleCalls.contains(true),
-      isFalse,
-      reason: 'sleepPreventがfalseの場合、resumed復帰時でもenableされないこと',
-    );
-  });
+      expect(
+        toggleCalls.contains(true),
+        isFalse,
+        reason: 'sleepPreventがfalseの場合、resumed復帰時でもenableされないこと',
+      );
+    });
 
-  testWidgets('inactive または hidden 状態でもWakelockが解除されること', (tester) async {
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(mockPrefs),
-        soundServiceProvider.overrideWithValue(mockSoundService),
-      ],
-    );
-    addTearDown(container.dispose);
+    testWidgets('inactive または hidden 状態でもWakelockが解除されること', (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
+          soundServiceProvider.overrideWithValue(mockSoundService),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final notifier = container.read(settingsProvider.notifier);
-    await notifier.updateField(sleepPrevent: true);
-    await tester.pumpAndSettle();
+      final notifier = container.read(settingsProvider.notifier);
+      await notifier.updateField(sleepPrevent: true);
+      await tester.pumpAndSettle();
 
-    toggleCalls.clear();
+      toggleCalls.clear();
 
-    // inactive状態
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    await tester.pumpAndSettle();
-    expect(toggleCalls, contains(false));
+      // inactive状態
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pumpAndSettle();
+      expect(toggleCalls, contains(false));
 
-    toggleCalls.clear();
+      toggleCalls.clear();
 
-    // hidden状態
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    await tester.pumpAndSettle();
-    expect(toggleCalls, contains(false));
+      // hidden状態
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.pumpAndSettle();
+      expect(toggleCalls, contains(false));
 
-    // 復帰
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpAndSettle();
+      // 復帰
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+    });
   });
 }

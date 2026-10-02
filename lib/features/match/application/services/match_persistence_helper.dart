@@ -87,7 +87,7 @@ class MatchPersistenceHelper {
           );
         }
       } catch (e, st) {
-        debugPrint('⚠️ [MatchPersistenceHelper] Firestore直接取得エラー: $e\n$st');
+        debugPrint('[WARN] [MatchPersistenceHelper] Firestore直接取得エラー: $e\n$st');
       }
     }
     return match;
@@ -105,7 +105,7 @@ class MatchPersistenceHelper {
         final version = await matchRepo.saveMatch(match);
         return version;
       } catch (e) {
-        debugPrint('⚠️ [Save Retry] Attempt $attempts failed: $e');
+        debugPrint('[WARN] [Save Retry] Attempt $attempts failed: $e');
         if (attempts >= maxAttempts) rethrow;
         await Future.delayed(Duration(milliseconds: 300 * attempts));
       }
@@ -295,7 +295,7 @@ class MatchPersistenceHelper {
         final isarProjectionStore = _ref.read(isarProjectionStoreProvider);
         await isarProjectionStore.saveMatchProjection(match);
       } catch (e) {
-        debugPrint('⚠️ [Projection Cache] Isar Projection 書き込み失敗: $e');
+        debugPrint('[WARN] [Projection Cache] Isar Projection 書き込み失敗: $e');
       }
     }
   }

@@ -360,7 +360,7 @@ class ViewerHomeScreen extends ConsumerWidget {
         ),
       );
     } catch (e, stack) {
-      debugPrint('🚨 [ViewerHomeScreen] UI例外を捕捉: $e\n$stack');
+      debugPrint('[ERROR] [ViewerHomeScreen] UI例外を捕捉: $e\n$stack');
       return Scaffold(
         backgroundColor: bgColor,
         body: Center(

@@ -52,73 +52,77 @@ class FakeSyncEngine implements SyncEngine {
 }
 
 void main() {
-  testWidgets('自動終了した勝ち抜き試合の確定ボタンタップ時に次試合設定ダイアログが表示されること', (
-    WidgetTester tester,
-  ) async {
-    // Set larger physical size so the bottom button is visible and hit-testable
-    tester.view.physicalSize = const Size(800, 1200);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
+  group('[Widget] BunaiksenInfiniteConfirm 検証', () {
+    testWidgets('自動終了した勝ち抜き試合の確定ボタンタップ時に次試合設定ダイアログが表示されること', (
+      WidgetTester tester,
+    ) async {
+      // Set larger physical size so the bottom button is visible and hit-testable
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      // Set settings in mock preferences to single-tap confirmation
+      SharedPreferences.setMockInitialValues({
+        'kendo_sync_settings': '{"confirmBehavior":"single"}',
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      final finishedMatch = MatchModel(
+        id: 'infinite_match_1',
+        tournamentId: 'bunaiksen_20260703',
+        groupName: 'infinite_20260703',
+        matchType: '無限勝ち抜き',
+        redName: '選手A',
+        whiteName: '選手B',
+        redScore: 2,
+        whiteScore: 0,
+        status: 'finished', // auto-finished
+        isKachinuki: true,
+      );
+
+      final fakeRepo = FakeLocalMatchRepository([finishedMatch]);
+
+      final container = ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          localMatchRepositoryProvider.overrideWithValue(fakeRepo),
+          syncEngineProvider.overrideWithValue(FakeSyncEngine()),
+          matchListProvider.overrideWithValue([finishedMatch]),
+          currentDojoIdProvider.overrideWith((ref) => 'test203'),
+          currentUserRoleProvider.overrideWithValue(UserRole.admin),
+          matchViewStateUserIdProvider.overrideWith((ref) => 'test_user'),
+          bunaiksenInfiniteQueueProvider.overrideWith((ref) {
+            final notifier = BunaiksenInfiniteQueueNotifier();
+            notifier.setPlayers(['選手C', '選手D']);
+            return notifier;
+          }),
+        ],
+        child: const MaterialApp(
+          home: MatchScreen(matchId: 'infinite_match_1'),
+        ),
+      );
+
+      await tester.pumpWidget(container);
+      await tester.pumpAndSettle();
+
+      // Find the confirm button (shows as "確定・部内戦ホームへ")
+      final confirmBtn = find.text('確定・部内戦ホームへ');
+      expect(confirmBtn, findsOneWidget);
+
+      // Tap confirm (now single-tap is active)
+      await tester.tap(confirmBtn);
+
+      // Wait for all transitions (showing/popping loading indicator, then showing next dialog) to settle
+      await tester.pumpAndSettle();
+
+      // Now we should see the "無限稽古: 次の試合" dialog
+      expect(find.text('無限稽古: 次の試合'), findsOneWidget);
+      expect(find.text('挑戦(白): 選手C'), findsOneWidget);
+      expect(find.text('無限稽古を終了'), findsOneWidget);
+      expect(find.text('すぐに次の試合を開始'), findsOneWidget);
     });
-
-    // Set settings in mock preferences to single-tap confirmation
-    SharedPreferences.setMockInitialValues({
-      'kendo_sync_settings': '{"confirmBehavior":"single"}',
-    });
-    final prefs = await SharedPreferences.getInstance();
-
-    final finishedMatch = MatchModel(
-      id: 'infinite_match_1',
-      tournamentId: 'bunaiksen_20260703',
-      groupName: 'infinite_20260703',
-      matchType: '無限勝ち抜き',
-      redName: '選手A',
-      whiteName: '選手B',
-      redScore: 2,
-      whiteScore: 0,
-      status: 'finished', // auto-finished
-      isKachinuki: true,
-    );
-
-    final fakeRepo = FakeLocalMatchRepository([finishedMatch]);
-
-    final container = ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        localMatchRepositoryProvider.overrideWithValue(fakeRepo),
-        syncEngineProvider.overrideWithValue(FakeSyncEngine()),
-        matchListProvider.overrideWithValue([finishedMatch]),
-        currentDojoIdProvider.overrideWith((ref) => 'test203'),
-        currentUserRoleProvider.overrideWithValue(UserRole.admin),
-        matchViewStateUserIdProvider.overrideWith((ref) => 'test_user'),
-        bunaiksenInfiniteQueueProvider.overrideWith((ref) {
-          final notifier = BunaiksenInfiniteQueueNotifier();
-          notifier.setPlayers(['選手C', '選手D']);
-          return notifier;
-        }),
-      ],
-      child: const MaterialApp(home: MatchScreen(matchId: 'infinite_match_1')),
-    );
-
-    await tester.pumpWidget(container);
-    await tester.pumpAndSettle();
-
-    // Find the confirm button (shows as "確定・部内戦ホームへ")
-    final confirmBtn = find.text('確定・部内戦ホームへ');
-    expect(confirmBtn, findsOneWidget);
-
-    // Tap confirm (now single-tap is active)
-    await tester.tap(confirmBtn);
-
-    // Wait for all transitions (showing/popping loading indicator, then showing next dialog) to settle
-    await tester.pumpAndSettle();
-
-    // Now we should see the "無限稽古: 次の試合" dialog
-    expect(find.text('無限稽古: 次の試合'), findsOneWidget);
-    expect(find.text('挑戦(白): 選手C'), findsOneWidget);
-    expect(find.text('無限稽古を終了'), findsOneWidget);
-    expect(find.text('すぐに次の試合を開始'), findsOneWidget);
   });
 }

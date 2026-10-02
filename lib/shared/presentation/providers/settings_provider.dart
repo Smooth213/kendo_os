@@ -179,9 +179,9 @@ class SettingsNotifier extends Notifier<SettingsModel> {
       // ※ audit_provider.dart が AuditLog(action: action, details: detail) を
       //Firestoreへ送るメソッドを持っている前提
       // ref.read(auditProvider.notifier).addLog(action, detail);
-      debugPrint('📝 [AuditLog] $action: $detail'); // デバッグ用
+      debugPrint('[AuditLog] $action: $detail'); // デバッグ用
     } catch (e) {
-      debugPrint('🔥 AuditLog recording failed: $e');
+      debugPrint('[ERROR] [AuditLog] AuditLog recording failed: $e');
     }
   }
 
@@ -366,7 +366,7 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
         isInPowerSaveMode: isLowPower,
       );
     } catch (e) {
-      debugPrint('🔋 Battery info unavailable: $e');
+      debugPrint('[BATTERY] Battery info unavailable: $e');
       return const BatteryStateData(
         batteryLevel: 100,
         isInPowerSaveMode: false,

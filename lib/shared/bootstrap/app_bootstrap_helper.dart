@@ -94,16 +94,18 @@ class AppBootstrapHelper {
         if (Firebase.apps.isEmpty) {
           try {
             await Firebase.initializeApp();
-            debugPrint('⚡ [Sync] optionsなしでネイティブの既存 [DEFAULT] をロード同期しました。');
+            debugPrint(
+              '[Sync Engine] optionsなしでネイティブの既存 [DEFAULT] をロード同期しました。',
+            );
           } catch (_) {
             await Firebase.initializeApp(
               options: DefaultFirebaseOptions.currentPlatform,
             );
-            debugPrint('🚀 Firebase [DEFAULT] をオプション指定でクリーンに新規初期化しました。');
+            debugPrint('[Firebase] [DEFAULT] をオプション指定でクリーンに新規初期化しました。');
           }
         }
       } catch (e) {
-        debugPrint('⚠️ Firebase初期化のキャッチ: $e');
+        debugPrint('[WARN] Firebase初期化のキャッチ: $e');
       }
 
       try {
@@ -125,12 +127,12 @@ class AppBootstrapHelper {
             } catch (_) {}
             return true;
           };
-          debugPrint('🚀 [Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
+          debugPrint('[Crashlytics] ネイティブ環境の致命的クラッシュ監視ラインを活性化しました');
         } else {
-          debugPrint('🚀 [Web WebAnalytics] Webアプリ版のブラウザ例外例外トラックを確立しました');
+          debugPrint('[WebAnalytics] Webアプリ版のブラウザ例外例外トラックを確立しました');
         }
       } catch (e) {
-        debugPrint('⚠️ [Crashlytics] 初期化に失敗: $e');
+        debugPrint('[WARN] [Crashlytics] 初期化に失敗: $e');
       }
 
       try {
@@ -151,9 +153,9 @@ class AppBootstrapHelper {
                 final cred = await FirebaseAuth.instance
                     .signInAnonymously()
                     .timeout(const Duration(seconds: 3));
-                debugPrint('🛡️ [Auth] Web匿名認証を同期確立しました: ${cred.user?.uid}');
+                debugPrint('[Auth] Web匿名認証を同期確立しました: ${cred.user?.uid}');
               } catch (e) {
-                debugPrint('⚠️ [Auth] Web同期匿名認証エラー: $e');
+                debugPrint('[WARN] [Auth] Web同期匿名認証エラー: $e');
               }
             } else {
               unawaited(
@@ -165,18 +167,18 @@ class AppBootstrapHelper {
                       );
                     })
                     .catchError((e) {
-                      debugPrint('⚠️ [Auth] バックグラウンド匿名認証エラー: $e');
+                      debugPrint('[WARN] [Auth] バックグラウンド匿名認証エラー: $e');
                     }),
               );
             }
           } else {
-            debugPrint('🛡️ [Auth] 既存の認証セッション(${user.uid})を再利用します');
+            debugPrint('[Auth] 既存の認証セッション(${user.uid})を再利用します');
           }
         } else {
-          debugPrint('🛡️ [Auth] 即時認証セッション(${existingUser.uid})を再利用します');
+          debugPrint('[Auth] 即時認証セッション(${existingUser.uid})を再利用します');
         }
       } catch (e) {
-        debugPrint('⚠️ [Auth] 初期匿名認証スキップ/エラー: $e');
+        debugPrint('[WARN] [Auth] 初期匿名認証スキップ/エラー: $e');
       }
 
       try {
@@ -239,11 +241,11 @@ class AppBootstrapHelper {
                 minRatio: 2.0,
               ),
             );
-            debugPrint('🚀 [Isar] 新規にIsarインスタンスをオープンしました（MMAP 128MiB最適化）。');
+            debugPrint('[Isar] 新規にIsarインスタンスをオープンしました（MMAP 128MiB最適化）。');
           }
         }
       } catch (e) {
-        debugPrint('⚠️ [Isar Init] エラー: $e');
+        debugPrint('[WARN] [Isar Init] エラー: $e');
       }
     }
 

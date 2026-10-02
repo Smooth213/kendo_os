@@ -37,7 +37,7 @@ final programListProvider = StreamProvider.family<List<ProgramModel>, String>((
       final orgIndex = pathSegments.indexOf('organizations');
       if (orgIndex != -1 && pathSegments.length > orgIndex + 1) {
         resolvedDojoId = pathSegments[orgIndex + 1];
-        debugPrint('🎯 [programListProvider] 大会所属道場IDを自動特定: $resolvedDojoId');
+        debugPrint('[programListProvider] 大会所属道場IDを自動特定: $resolvedDojoId');
 
         // グローバルの currentDojoIdProvider も自動同期補正
         Future.microtask(() {
@@ -48,7 +48,7 @@ final programListProvider = StreamProvider.family<List<ProgramModel>, String>((
       }
     }
   } catch (e) {
-    debugPrint('⚠️ [programListProvider] 道場ID自動探索エラー: $e');
+    debugPrint('[WARN] [programListProvider] 道場ID自動探索エラー: $e');
   }
 
   if (resolvedDojoId != null && resolvedDojoId.isNotEmpty) {

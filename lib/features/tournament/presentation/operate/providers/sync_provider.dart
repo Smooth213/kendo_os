@@ -62,11 +62,11 @@ class SyncEngine {
             state == AppLifecycleState.inactive ||
             state == AppLifecycleState.hidden) {
           SyncBackupHelper.autoBackupToJson(ref.read(matchListProvider));
-          debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。強制同期を試行...');
+          debugPrint('[Lifecycle] アプリがバックグラウンドに移行しました。強制同期を試行...');
           syncNow();
         }
         if (state == AppLifecycleState.resumed) {
-          debugPrint('☀️ [Lifecycle] アプリ復帰。Drift監視とReconnect Replayを開始...');
+          debugPrint('[Lifecycle] アプリ復帰。Drift監視とReconnect Replayを開始...');
           _performReconnectReplay();
         }
       },
@@ -95,7 +95,7 @@ class SyncEngine {
   }
 
   Future<void> forceSync() async {
-    debugPrint('🔄 [Sync Engine] 手動同期(forceSync)を強制的に開始します...');
+    debugPrint('[Sync Engine] 手動同期(forceSync)を強制的に開始します...');
     await _syncWithRetry(1);
   }
 
@@ -112,7 +112,7 @@ class SyncEngine {
       final firestore = ref.read(firestoreProvider);
       final dojoId = ref.read(currentDojoIdProvider);
       if (dojoId.isEmpty) {
-        debugPrint('⚠️ [Sync Engine] 道場IDが空のため同期をスキップします');
+        debugPrint('[WARN] [Sync Engine] 道場IDが空のため同期をスキップします');
         _isDone();
         return;
       }
@@ -124,7 +124,9 @@ class SyncEngine {
             lastDojoId.isNotEmpty &&
             lastDojoId != dojoId) {
           await prefs.setString('global_last_dojo_id_v4', dojoId);
-          debugPrint('⚠️ [Sync Engine] 道場ID切り替え検知 ($lastDojoId -> $dojoId)');
+          debugPrint(
+            '[WARN] [Sync Engine] 道場ID切り替え検知 ($lastDojoId -> $dojoId)',
+          );
           if (!kIsWeb) {
             try {
               final isar = Isar.getInstance();
@@ -147,7 +149,7 @@ class SyncEngine {
       final pendingMatches = await localRepo.getPendingMatches();
       if (pendingMatches.isEmpty) return;
 
-      debugPrint('🔄 [Sync Engine] ${pendingMatches.length}件を同期開始...');
+      debugPrint('[Sync Engine] ${pendingMatches.length}件を同期開始...');
       final matchesToSync = <MatchModel>[];
       for (final pendingMatch in pendingMatches) {
         final match = await localRepo.getMatch(pendingMatch.id);
@@ -193,7 +195,7 @@ class SyncEngine {
                   );
                   remoteMatch = MatchModel.fromJson(sanitizedRemoteData);
                 } catch (e) {
-                  debugPrint('🔥 [Sync Engine] リモートデータの解析エラー: $e');
+                  debugPrint('[ERROR] [Sync Engine] リモートデータの解析エラー: $e');
                   targetVersion = remoteVersion + 1;
                   final uploadData = match
                       .copyWith(
@@ -245,7 +247,7 @@ class SyncEngine {
                     ),
                   );
                 }
-                debugPrint('✅ [Sync Engine] CRDTマージ完了＆保存待機 ID:${match.id}');
+                debugPrint('[Sync Engine] CRDTマージ完了＆保存待機 ID:${match.id}');
                 return;
               }
               targetVersion = remoteVersion + 1;
@@ -302,7 +304,7 @@ class SyncEngine {
         );
       }
     } catch (e) {
-      debugPrint('🔥 [Sync Engine] 同期失敗: $e');
+      debugPrint('[ERROR] [Sync Engine] 同期失敗: $e');
       hasError = true;
     } finally {
       _isDone();
@@ -323,7 +325,7 @@ class SyncEngine {
         } else {
           // 指数バックオフ (1s, 2s, 4s, 8s, 16s... 最大30s)
           final delaySeconds = (1 << (_consecutiveFailures - 1)).clamp(1, 30);
-          debugPrint('⏳ [Sync Engine] 指数バックオフ待機: $delaySeconds秒後に再試行します');
+          debugPrint('[Sync Engine] 指数バックオフ待機: $delaySeconds秒後に再試行します');
           _retryTimer?.cancel();
           _retryTimer = Timer(Duration(seconds: delaySeconds), () => syncNow());
         }
@@ -369,9 +371,9 @@ class SyncEngine {
       for (final match in pendingMatches) {
         await localRepo.markAsSynced(match.id);
       }
-      debugPrint('✅ [Sync Engine] 競合状態をクリアしました（サーバー優先）');
+      debugPrint('[Sync Engine] 競合状態をクリアしました（サーバー優先）');
     } catch (e) {
-      debugPrint('🔥 [Sync Engine] 競合クリアエラー: $e');
+      debugPrint('[ERROR] [Sync Engine] 競合クリアエラー: $e');
     }
   }
 

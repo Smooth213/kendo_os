@@ -52,7 +52,9 @@ class ProjectionStore {
             );
             return MatchProjectionMapper.toProjection(match, analysis);
           } catch (e) {
-            debugPrint('⚠️ [ProjectionStore] 試合($matchId)プロジェクション変換エラー: $e');
+            debugPrint(
+              '[WARN] [ProjectionStore] 試合($matchId)プロジェクション変換エラー: $e',
+            );
             return null;
           }
         });

@@ -114,7 +114,7 @@ class TestIsarHelper {
       _isCoreInitialized = true;
     } catch (e) {
       // ignore: avoid_print
-      print('⚠️ [TestIsarHelper] initializeIsarCore warning: $e');
+      print('[WARN] [TestIsarHelper] initializeIsarCore warning: $e');
     } finally {
       HttpOverrides.global = previousOverrides;
     }

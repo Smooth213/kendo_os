@@ -85,7 +85,7 @@ class MatchRepository {
       if (!doc.exists || doc.data() == null) return null;
       return await _readMatch(doc);
     } catch (e) {
-      debugPrint('🔥 [MatchRepository getMatch Error] 試合ID: $matchId: $e');
+      debugPrint('[ERROR] [MatchRepository getMatch Error] 試合ID: $matchId: $e');
       return null;
     }
   }

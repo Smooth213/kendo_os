@@ -41,10 +41,10 @@ class AuthRepository {
   // ★ 監査官による復元: Googleログイン
   Future<void> signInWithGoogle() async {
     try {
-      debugPrint("🔍 [Auth] Googleサインイン開始...");
+      debugPrint("[Auth] Googleサインイン開始...");
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        debugPrint("⚠️ [Auth] ユーザーがサインインをキャンセルしました");
+        debugPrint("[WARN] [Auth] ユーザーがサインインをキャンセルしました");
         return;
       }
 
@@ -56,9 +56,9 @@ class AuthRepository {
       );
 
       await _auth.signInWithCredential(credential);
-      debugPrint("✅ [Auth] Googleログイン成功");
+      debugPrint("[Auth] Googleログイン成功");
     } catch (e, stack) {
-      debugPrint("🔥 [Auth] Googleログイン失敗: $e\n$stack");
+      debugPrint("[ERROR] [Auth] Googleログイン失敗: $e\n$stack");
       rethrow;
     }
   }

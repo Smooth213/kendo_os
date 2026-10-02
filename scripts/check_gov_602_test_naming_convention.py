@@ -120,6 +120,8 @@ def audit_tests():
     for tf in test_files:
         items = scan_dart_test_file(tf)
         has_top_group = False
+        has_tests = any(fn_name != 'group' for fn_name, _, _ in items)
+
         for fn_name, title, _ in items:
             title_clean = title.strip()
 
@@ -158,6 +160,10 @@ def audit_tests():
                 hiragana_count = len(re.findall(r'[\u3040-\u309F]', title_clean))
                 if (hiragana_count < 6 and ENGLISH_CLAUSE_PATTERN.search(title_clean)) or (title_clean.startswith(('should', 'can ', 'renders', 'verify', 'displays'))):
                     english_violations.append((tf, fn_name, title_clean))
+
+        # ⑥ 最上位groupの存在必須化（直書き完全禁止）
+        if has_tests and not has_top_group:
+            tag_violations.append((tf, 'group', '最上位 group が存在せず直書きされています'))
 
     return emoji_violations, numbering_violations, bracket_violations, koto_violations, english_violations, tag_violations
 

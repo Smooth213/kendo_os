@@ -376,7 +376,7 @@ class TournamentTeamAutoRegisterService {
         teamNameHistoryNotifier?.addHistory(team.teamName);
         count++;
       } catch (e) {
-        debugPrint('🔥 [ERROR] チーム一括自動登録エラー (${team.teamName}): $e');
+        debugPrint('[ERROR] [ERROR] チーム一括自動登録エラー (${team.teamName}): $e');
       }
     }
 

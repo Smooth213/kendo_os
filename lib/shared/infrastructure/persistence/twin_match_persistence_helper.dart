@@ -78,7 +78,7 @@ class TwinMatchPersistenceHelper {
 
       await _rotateFilesAsync(dir, match.id);
     } catch (e) {
-      debugPrint('⚠️ [TwinEngine] スナップショット保存に失敗しました: $e');
+      debugPrint('[WARN] [TwinEngine] スナップショット保存に失敗しました: $e');
     }
   }
 
@@ -124,7 +124,7 @@ class TwinMatchPersistenceHelper {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ [TwinEngine] スナップショットからの自己復元に失敗しました: $e');
+      debugPrint('[WARN] [TwinEngine] スナップショットからの自己復元に失敗しました: $e');
     }
     return null;
   }
@@ -169,7 +169,7 @@ class TwinMatchPersistenceHelper {
         } catch (_) {}
       }
     } catch (e) {
-      debugPrint('⚠️ [TwinEngine] 全試合スナップショット復元に失敗しました: $e');
+      debugPrint('[WARN] [TwinEngine] 全試合スナップショット復元に失敗しました: $e');
     }
     return recovered;
   }

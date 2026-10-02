@@ -64,7 +64,7 @@ class MatchTimer {
   /// Tickerを停止し、CPU起床を0にして待機バッテリー消費を完全抑制
   void enterColdSleep() {
     if (_ticker != null && _ticker!.isActive) {
-      debugPrint('🌙 [MatchTimer] enterColdSleep: Tickerを一時停止（完全コールドスリープ）');
+      debugPrint('[MatchTimer] enterColdSleep: Tickerを一時停止（完全コールドスリープ）');
       _ticker?.cancel();
       _ticker = null;
     }
@@ -166,7 +166,7 @@ class MatchTimer {
   }
 
   void stopLocalTicker(String matchId) {
-    debugPrint('🕒 [MatchTimer] stopLocalTicker requested. matchId=$matchId');
+    debugPrint('[MatchTimer] stopLocalTicker requested. matchId=$matchId');
     // ★ 修正: 手動操作直後に、クラウドの古いデータで強制停止されるのを防ぐ
     if (ref
             .read(timeSourceProvider)
@@ -312,7 +312,7 @@ class MatchTimer {
   /// アプリがバックグラウンドから復帰した際、あるいは通信復旧時に古いUI状態（stale state）を破棄し、
   /// タイムソースの絶対真実に基づいて残り秒数を決定論的に再プロジェクション（再計算）します。
   void syncOnAppResume(String matchId) {
-    debugPrint('🕒 [MatchTimer] syncOnAppResume triggered. matchId=$matchId');
+    debugPrint('[MatchTimer] syncOnAppResume triggered. matchId=$matchId');
     final match = _getMatch(matchId);
     if (match == null) return;
 

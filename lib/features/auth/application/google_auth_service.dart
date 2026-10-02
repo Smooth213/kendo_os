@@ -82,7 +82,7 @@ class GoogleAuthService {
       }
       return null;
     } catch (e) {
-      debugPrint('ℹ️ [GoogleAuthService] checkRedirectResult: $e');
+      debugPrint('[INFO] [GoogleAuthService] checkRedirectResult: $e');
       return null;
     }
   }
@@ -125,7 +125,9 @@ class GoogleAuthService {
           }
         } catch (popupErr) {
           if (_isPopupBlocked(popupErr)) {
-            debugPrint('⚠️ [GoogleAuthService] Web: Popup blocked by browser');
+            debugPrint(
+              '[WARN] [GoogleAuthService] Web: Popup blocked by browser',
+            );
             throw Exception('popup-blocked');
           }
           rethrow;
@@ -157,7 +159,7 @@ class GoogleAuthService {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ [GoogleAuthService] linkOrSignIn error: $e');
+      debugPrint('[WARN] [GoogleAuthService] linkOrSignIn error: $e');
       rethrow;
     }
   }
@@ -173,13 +175,13 @@ class GoogleAuthService {
       );
       if (isLinked) {
         await user.unlink('google.com');
-        debugPrint('✅ [GoogleAuthService] Unlinked Google provider');
+        debugPrint('[GoogleAuthService] Unlinked Google provider');
       }
       if (!kIsWeb) {
         await _googleSignIn.signOut();
       }
     } catch (e) {
-      debugPrint('⚠️ [GoogleAuthService] unlink error: $e');
+      debugPrint('[WARN] [GoogleAuthService] unlink error: $e');
       rethrow;
     }
   }

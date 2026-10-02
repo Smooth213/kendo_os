@@ -11,48 +11,52 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
-  testWidgets('BunaiksenHomeScreenにおいて 初期状態で本日の日付および「今日の部内戦」が表示されること', (
-    WidgetTester tester,
-  ) async {
-    // 1. Setup mock preferences
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+  group('[Widget] BunaiksenDefaultToday 検証', () {
+    testWidgets('BunaiksenHomeScreenにおいて 初期状態で本日の日付および「今日の部内戦」が表示されること', (
+      WidgetTester tester,
+    ) async {
+      // 1. Setup mock preferences
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-    // 2. We compute today's dateId
-    final today = DateTime.now();
-    final yyyy = today.year.toString();
-    final mm = today.month.toString().padLeft(2, '0');
-    final dd = today.day.toString().padLeft(2, '0');
-    final todayDateId = 'bunaiksen_$yyyy$mm$dd';
+      // 2. We compute today's dateId
+      final today = DateTime.now();
+      final yyyy = today.year.toString();
+      final mm = today.month.toString().padLeft(2, '0');
+      final dd = today.day.toString().padLeft(2, '0');
+      final todayDateId = 'bunaiksen_$yyyy$mm$dd';
 
-    final container = ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        // Do NOT override bunaiksenViewDateProvider so it uses the default DateTime.now()
-        bunaiksenAvailableDatesProvider.overrideWith(
-          (ref) => Stream.value(<String>{}),
-        ),
-        bunaiksenMatchesProvider(todayDateId).overrideWithValue(<MatchModel>[]),
-        currentDojoIdProvider.overrideWith((ref) => 'test203'),
-      ],
-      child: const MaterialApp(home: BunaiksenHomeScreen()),
-    );
+      final container = ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          // Do NOT override bunaiksenViewDateProvider so it uses the default DateTime.now()
+          bunaiksenAvailableDatesProvider.overrideWith(
+            (ref) => Stream.value(<String>{}),
+          ),
+          bunaiksenMatchesProvider(
+            todayDateId,
+          ).overrideWithValue(<MatchModel>[]),
+          currentDojoIdProvider.overrideWith((ref) => 'test203'),
+        ],
+        child: const MaterialApp(home: BunaiksenHomeScreen()),
+      );
 
-    await tester.pumpWidget(container);
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(container);
+      await tester.pumpAndSettle();
 
-    // 3. Verify that the bunaiksenViewDateProvider default value is indeed today
-    final WidgetRef ref =
-        tester.element(find.byType(BunaiksenHomeScreen)) as WidgetRef;
-    final viewDate = ref.read(bunaiksenViewDateProvider);
+      // 3. Verify that the bunaiksenViewDateProvider default value is indeed today
+      final WidgetRef ref =
+          tester.element(find.byType(BunaiksenHomeScreen)) as WidgetRef;
+      final viewDate = ref.read(bunaiksenViewDateProvider);
 
-    expect(viewDate.year, equals(today.year));
-    expect(viewDate.month, equals(today.month));
-    expect(viewDate.day, equals(today.day));
+      expect(viewDate.year, equals(today.year));
+      expect(viewDate.month, equals(today.month));
+      expect(viewDate.day, equals(today.day));
 
-    // 4. Verify that the app bar title is displayed with today's date
-    final expectedTitle = '$yyyy/$mm/$dd 部内戦';
-    expect(find.text(expectedTitle), findsOneWidget);
-    expect(find.text('本日の試合はまだありません'), findsOneWidget);
+      // 4. Verify that the app bar title is displayed with today's date
+      final expectedTitle = '$yyyy/$mm/$dd 部内戦';
+      expect(find.text(expectedTitle), findsOneWidget);
+      expect(find.text('本日の試合はまだありません'), findsOneWidget);
+    });
   });
 }

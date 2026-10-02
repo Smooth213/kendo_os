@@ -23,9 +23,11 @@ class StrokeRepository {
   Future<void> addStroke(StrokeModel stroke) async {
     try {
       await _strokesCollection.doc(stroke.id).set(stroke.toMap());
-      debugPrint('✅ 線を保存しました: ID=${stroke.id}, ProgramID=${stroke.programId}');
+      debugPrint(
+        '[StrokeRepository] 線を保存しました: ID=${stroke.id}, ProgramID=${stroke.programId}',
+      );
     } catch (e) {
-      debugPrint('❌ 保存エラー: $e');
+      debugPrint('[ERROR] [StrokeRepository] 保存エラー: $e');
     }
   }
 
@@ -53,7 +55,7 @@ class StrokeRepository {
   /// 特定のプログラムに引かれた線をすべて消去する
   Future<void> clearStrokes(String programId) async {
     try {
-      debugPrint('🧹 全消去命令を送信: ProgramID=$programId');
+      debugPrint('[StrokeRepository] 全消去命令を送信: ProgramID=$programId');
       final snapshot = await _strokesCollection
           .where('programId', isEqualTo: programId)
           .get();
@@ -67,16 +69,16 @@ class StrokeRepository {
         batch.delete(doc.reference);
       }
       await batch.commit();
-      debugPrint('✅ 全消去完了');
+      debugPrint('全消去完了');
     } catch (e) {
-      debugPrint('❌ 全消去エラー: $e');
+      debugPrint('[ERROR] 全消去エラー: $e');
     }
   }
 
   /// 直前に引かれた線を1つだけ取り消す（Undo）
   Future<void> undoLastStroke(String programId) async {
     try {
-      debugPrint('🔙 Undo命令を送信: ProgramID=$programId');
+      debugPrint('Undo命令を送信: ProgramID=$programId');
 
       // ★ 物理調停：descending: true の複合インデックス未定義による無言のエラーを完全に回避するため、
       // 既存のwatchStrokesと同じ昇順（descending: false）クエリで全件取得し、インメモリで最後の共有ペンを削除します。
@@ -93,12 +95,12 @@ class StrokeRepository {
 
       if (sharedStrokes.isNotEmpty) {
         await sharedStrokes.last.reference.delete();
-        debugPrint('✅ 削除完了');
+        debugPrint('削除完了');
       } else {
-        debugPrint('⚠️ 削除対象が見つかりません');
+        debugPrint('[WARN] 削除対象が見つかりません');
       }
     } catch (e) {
-      debugPrint('❌ Undoエラー: $e');
+      debugPrint('[ERROR] Undoエラー: $e');
     }
   }
 
@@ -106,9 +108,9 @@ class StrokeRepository {
   Future<void> deleteStroke(String id) async {
     try {
       await _strokesCollection.doc(id).delete();
-      debugPrint('✅ 線を削除しました: ID=$id');
+      debugPrint('線を削除しました: ID=$id');
     } catch (e) {
-      debugPrint('❌ 削除エラー: $e');
+      debugPrint('[ERROR] 削除エラー: $e');
     }
   }
 }

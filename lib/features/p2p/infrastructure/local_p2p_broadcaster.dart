@@ -60,7 +60,7 @@ class LocalP2pBroadcaster {
 
       return 'http://$_localIp:$_port';
     } catch (e) {
-      debugPrint('🔥 [P2P Server Error] Failed to start: $e');
+      debugPrint('[ERROR] [P2P Server Error] Failed to start: $e');
       _isRunning = false;
       return null;
     }

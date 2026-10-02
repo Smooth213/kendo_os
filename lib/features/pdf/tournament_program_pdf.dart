@@ -19,7 +19,7 @@ class TournamentProgramPdfEngine {
     );
 
     if (matches.isEmpty) {
-      debugPrint('🖨️ [PDF Engine] 試合データが空のため、空のプログラムひな形をメモリ上にレンダリングしました。');
+      debugPrint('[PDF Engine] 試合データが空のため、空のプログラムひな形をメモリ上にレンダリングしました。');
       return Uint8List(0);
     }
 
@@ -41,7 +41,7 @@ class TournamentProgramPdfEngine {
       // 擬似的にクリーンなメモリバイナリ（遅延生成データ）を即座にUIへ供給
       return Uint8List.fromList(utf8.encode(buffer.toString()));
     } catch (e) {
-      debugPrint('🔥 [PDF Engine Error] メモリ上での遅延生成に失敗しました: $e');
+      debugPrint('[ERROR] [PDF Engine Error] メモリ上での遅延生成に失敗しました: $e');
       return null;
     }
   }

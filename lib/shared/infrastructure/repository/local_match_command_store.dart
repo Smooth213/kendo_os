@@ -221,7 +221,7 @@ class LocalMatchCommandStore {
         }
       });
     } catch (e) {
-      debugPrint('⚠️ [LocalMatchCommandStore] 保留コマンド削除エラー: $e');
+      debugPrint('[WARN] [LocalMatchCommandStore] 保留コマンド削除エラー: $e');
     }
   }
 

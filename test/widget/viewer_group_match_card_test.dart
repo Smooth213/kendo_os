@@ -8,50 +8,52 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+  group('[Widget] ViewerGroupMatchCard 単体検証', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
 
-  testWidgets('ViewerGroupMatchCardにおいて グループタイトルおよび試合一覧が正しく描画されること', (
-    tester,
-  ) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('ViewerGroupMatchCardにおいて グループタイトルおよび試合一覧が正しく描画されること', (
+      tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    final match = MatchModel(
-      id: 'm1',
-      tournamentId: 't1',
-      matchType: 'team',
-      order: 1,
-      redName: 'チームA: 先鋒',
-      whiteName: 'チームB: 先鋒',
-      groupName: 'Aグループ',
-      status: 'in_progress',
-      note: '1回戦',
-    );
+      final match = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: 'team',
+        order: 1,
+        redName: 'チームA: 先鋒',
+        whiteName: 'チームB: 先鋒',
+        groupName: 'Aグループ',
+        status: 'in_progress',
+        note: '1回戦',
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: ViewerGroupMatchCard(
-                groupKey: 'Aグループ',
-                groupList: [match],
-                matchLabel: '団体戦',
-                ownTeams: const ['チームA'],
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: ViewerGroupMatchCard(
+                  groupKey: 'Aグループ',
+                  groupList: [match],
+                  matchLabel: '団体戦',
+                  ownTeams: const ['チームA'],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('チームA'), findsOneWidget);
-    expect(find.text('チームB'), findsOneWidget);
-    expect(find.text('試合中 (LIVE)'), findsOneWidget);
-    expect(find.text('1回戦'), findsOneWidget);
+      expect(find.text('チームA'), findsOneWidget);
+      expect(find.text('チームB'), findsOneWidget);
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
+      expect(find.text('1回戦'), findsOneWidget);
+    });
   });
 }

@@ -76,10 +76,10 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
   // ★ 修正: watchだと集計データが更新されるたびに通信リスナーが再起動（無限ループ）してしまうため、readに変更
   final store = ref.read(projectionStoreProvider);
 
-  debugPrint('📡 [DojoRoomSync] ダウンストリーム同期起動: 道場ID = $dojoId');
+  debugPrint('[DojoRoomSync] ダウンストリーム同期起動: 道場ID = $dojoId');
 
   if (dojoId.isEmpty) {
-    debugPrint('⚠️ [DojoRoomSync] 道場IDが空のため待機します');
+    debugPrint('[WARN] [DojoRoomSync] 道場IDが空のため待機します');
     return;
   }
 
@@ -112,7 +112,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
               await isar.writeTxn(() async {
                 // ★ 修正: isar.clear() は監視ストリームを破壊しUIの更新を止めてしまうため無効化
               });
-              debugPrint('🧹 [DojoRoomSync] Isarワイプをスキップしました（ストリーム保護）');
+              debugPrint('[DojoRoomSync] Isarワイプをスキップしました（ストリーム保護）');
             } else {
               debugPrint(
                 '⚠️ [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します',
@@ -127,10 +127,10 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
                 await localRepo.deleteMatch(m.id);
               }
             } catch (e) {
-              debugPrint('🔥 [DojoRoomSync] セーフティネット削除エラー: $e');
+              debugPrint('[ERROR] [DojoRoomSync] セーフティネット削除エラー: $e');
             }
           } catch (e) {
-            debugPrint('🔥 [DojoRoomSync] Isarのワイプに失敗しました: $e');
+            debugPrint('[ERROR] [DojoRoomSync] Isarのワイプに失敗しました: $e');
           }
         }
       }
@@ -140,7 +140,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
         await prefs.setString('global_last_dojo_id_v4', dojoId);
       }
     } catch (e) {
-      debugPrint('⚠️ [DojoRoomSync] SharedPreferencesアクセスエラー: $e');
+      debugPrint('[WARN] [DojoRoomSync] SharedPreferencesアクセスエラー: $e');
     }
 
     // ★ 追加: 非同期パージ中に道場IDが再び切り替わったり画面が閉じられた場合、
@@ -189,7 +189,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
                       );
                     }
                   } catch (e) {
-                    debugPrint('⚠️ [DojoRoomSync] データ変換/保存エラー: $e');
+                    debugPrint('[WARN] [DojoRoomSync] データ変換/保存エラー: $e');
                   }
                 } else if (change.type == DocumentChangeType.removed) {
                   // ★ 追加: クラウド側で削除された試合があればローカルからも消去し、古いデータが残らないようにする
@@ -207,11 +207,11 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
               }
             },
             onError: (error) {
-              debugPrint('🔥 [DojoRoomSync] 致命的な通信エラー: $error');
+              debugPrint('[ERROR] [DojoRoomSync] 致命的な通信エラー: $error');
             },
           );
     } catch (e) {
-      debugPrint('⚠️ [DojoRoomSync] Firestoreへの接続をスキップしました: $e');
+      debugPrint('[WARN] [DojoRoomSync] Firestoreへの接続をスキップしました: $e');
     }
   }
 

@@ -4,61 +4,66 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
-  testWidgets(
-    'MatchFormatHeadingAndNoteSectionにおいて プリセットチップおよびテキストフィールドが描画されること',
-    (tester) async {
-      final courtCtrl = TextEditingController(text: '第1試合場');
-      final noteCtrl = TextEditingController(text: '特記事項なし');
-      String? toggledPreset;
+  group('[Widget] MatchFormatHeadingAndNoteSection 単体検証', () {
+    testWidgets(
+      'MatchFormatHeadingAndNoteSectionにおいて プリセットチップおよびテキストフィールドが描画されること',
+      (tester) async {
+        final courtCtrl = TextEditingController(text: '第1試合場');
+        final noteCtrl = TextEditingController(text: '特記事項なし');
+        String? toggledPreset;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MatchFormatHeadingAndNoteSection(
-              themeColors: AppThemeColors.ofMode(isDark: false, mode: 'normal'),
-              courtController: courtCtrl,
-              noteController: noteCtrl,
-              onToggleHeadingPreset: (preset) {
-                toggledPreset = preset;
-              },
-              isDark: false,
-              buildTextFieldDecoration:
-                  ({
-                    required String labelText,
-                    required String hintText,
-                    Widget? prefixIcon,
-                  }) {
-                    return InputDecoration(
-                      labelText: labelText,
-                      hintText: hintText,
-                      prefixIcon: prefixIcon,
-                    );
-                  },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: MatchFormatHeadingAndNoteSection(
+                themeColors: AppThemeColors.ofMode(
+                  isDark: false,
+                  mode: 'normal',
+                ),
+                courtController: courtCtrl,
+                noteController: noteCtrl,
+                onToggleHeadingPreset: (preset) {
+                  toggledPreset = preset;
+                },
+                isDark: false,
+                buildTextFieldDecoration:
+                    ({
+                      required String labelText,
+                      required String hintText,
+                      Widget? prefixIcon,
+                    }) {
+                      return InputDecoration(
+                        labelText: labelText,
+                        hintText: hintText,
+                        prefixIcon: prefixIcon,
+                      );
+                    },
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('試合場・進行見出しの一括設定'), findsOneWidget);
-      expect(find.text('第1試合場'), findsWidgets);
-      expect(find.text('1回戦'), findsOneWidget);
+        expect(find.text('試合場・進行見出しの一括設定'), findsOneWidget);
+        expect(find.text('第1試合場'), findsWidgets);
+        expect(find.text('1回戦'), findsOneWidget);
 
-      await tester.tap(find.text('1回戦'));
-      await tester.pump();
+        await tester.tap(find.text('1回戦'));
+        await tester.pump();
 
-      expect(toggledPreset, '1回戦');
+        expect(toggledPreset, '1回戦');
 
-      // カンマチップの存在と動作確認
-      expect(find.text('， (カンマ)'), findsOneWidget);
-      await tester.tap(find.text('， (カンマ)'));
-      await tester.pump();
-      expect(courtCtrl.text, '第1試合場, ');
+        // カンマチップの存在と動作確認
+        expect(find.text('， (カンマ)'), findsOneWidget);
+        await tester.tap(find.text('， (カンマ)'));
+        await tester.pump();
+        expect(courtCtrl.text, '第1試合場, ');
 
-      // カンマボタンの存在と動作確認
-      expect(find.text('カンマ（,）'), findsOneWidget);
-      await tester.tap(find.text('カンマ（,）'));
-      await tester.pump();
-      expect(noteCtrl.text, '特記事項なし, ');
-    },
-  );
+        // カンマボタンの存在と動作確認
+        expect(find.text('カンマ（,）'), findsOneWidget);
+        await tester.tap(find.text('カンマ（,）'));
+        await tester.pump();
+        expect(noteCtrl.text, '特記事項なし, ');
+      },
+    );
+  });
 }

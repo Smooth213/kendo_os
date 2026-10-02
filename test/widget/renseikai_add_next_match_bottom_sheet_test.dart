@@ -18,58 +18,60 @@ class MockPlayerRepository extends Mock implements PlayerRepository {}
 class MockTeamRepository extends Mock implements TeamRepository {}
 
 void main() {
-  late MockPlayerRepository mockPlayerRepo;
-  late MockTeamRepository mockTeamRepo;
+  group('[Widget] RenseikaiAddNextMatchBottomSheet 単体検証', () {
+    late MockPlayerRepository mockPlayerRepo;
+    late MockTeamRepository mockTeamRepo;
 
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-    mockPlayerRepo = MockPlayerRepository();
-    mockTeamRepo = MockTeamRepository();
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      mockPlayerRepo = MockPlayerRepository();
+      mockTeamRepo = MockTeamRepository();
 
-    when(
-      () => mockPlayerRepo.getPlayers(),
-    ).thenAnswer((_) => Stream.value(<PlayerModel>[]));
-    when(
-      () => mockTeamRepo.watchTeamsByTournament(any()),
-    ).thenAnswer((_) => Stream.value(<TeamModel>[]));
-  });
+      when(
+        () => mockPlayerRepo.getPlayers(),
+      ).thenAnswer((_) => Stream.value(<PlayerModel>[]));
+      when(
+        () => mockTeamRepo.watchTeamsByTournament(any()),
+      ).thenAnswer((_) => Stream.value(<TeamModel>[]));
+    });
 
-  testWidgets('錬成会次試合追加ボトムシートが正しく描画されること', (tester) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('錬成会次試合追加ボトムシートが正しく描画されること', (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    final match = MatchModel(
-      id: 'm1',
-      tournamentId: 't1',
-      matchType: '錬成会',
-      order: 1,
-      redName: 'チームA : 選手1',
-      whiteName: 'チームB : 選手2',
-      status: 'finished',
-      note: '',
-    );
+      final match = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: '錬成会',
+        order: 1,
+        redName: 'チームA : 選手1',
+        whiteName: 'チームB : 選手2',
+        status: 'finished',
+        note: '',
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          matchListProvider.overrideWith((ref) => [match]),
-          playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
-          teamRepositoryProvider.overrideWithValue(mockTeamRepo),
-        ],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: RenseikaiAddNextMatchBottomSheet(currentMatch: match),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => [match]),
+            playerRepositoryProvider.overrideWithValue(mockPlayerRepo),
+            teamRepositoryProvider.overrideWithValue(mockTeamRepo),
+          ],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: RenseikaiAddNextMatchBottomSheet(currentMatch: match),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);
-    expect(find.text('決定して開始'), findsOneWidget);
-    expect(find.text('キャンセル'), findsOneWidget);
+      expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);
+      expect(find.text('決定して開始'), findsOneWidget);
+      expect(find.text('キャンセル'), findsOneWidget);
+    });
   });
 }

@@ -8,50 +8,52 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+  group('[Widget] ViewerIndividualPlayerCard 単体検証', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
 
-  testWidgets('ViewerIndividualPlayerCardにおいて 選手名と試合一覧が正しく描画されること', (
-    tester,
-  ) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('ViewerIndividualPlayerCardにおいて 選手名と試合一覧が正しく描画されること', (
+      tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    final match = MatchModel(
-      id: 'm1',
-      tournamentId: 't1',
-      matchType: 'individual',
-      order: 1,
-      redName: '選手A',
-      whiteName: '選手B',
-      status: 'in_progress',
-      note: '',
-    );
+      final match = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: 'individual',
+        order: 1,
+        redName: '選手A',
+        whiteName: '選手B',
+        status: 'in_progress',
+        note: '',
+      );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: ViewerIndividualPlayerCard(
-              playerName: '選手A',
-              playerMatches: [match],
-              matchLabel: '個人戦',
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: ViewerIndividualPlayerCard(
+                playerName: '選手A',
+                playerMatches: [match],
+                matchLabel: '個人戦',
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('選'), findsOneWidget);
-    expect(
-      find.byWidgetPredicate(
-        (w) => w is RichText && w.text.toPlainText().contains('選手A'),
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('試合中 (LIVE)'), findsOneWidget);
+      expect(find.text('選'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is RichText && w.text.toPlainText().contains('選手A'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
+    });
   });
 }

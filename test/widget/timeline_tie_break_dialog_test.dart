@@ -14,63 +14,65 @@ class DummyTeam {
 }
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+  group('[Widget] TimelineTieBreakDialog 単体検証', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
 
-  testWidgets('タイブレークダイアログが正しく描画されること', (tester) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('タイブレークダイアログが正しく描画されること', (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    final firstMatch = MatchModel(
-      id: 'm1',
-      tournamentId: 't1',
-      matchType: '先鋒戦',
-      order: 1,
-      redName: 'チームA : 選手1',
-      whiteName: 'チームB : 選手2',
-      status: 'pending',
-      note: '',
-    );
+      final firstMatch = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: '先鋒戦',
+        order: 1,
+        redName: 'チームA : 選手1',
+        whiteName: 'チームB : 選手2',
+        status: 'pending',
+        note: '',
+      );
 
-    final tieTeams = [DummyTeam('チームA'), DummyTeam('チームB')];
-    final baseRule = MatchRule();
+      final tieTeams = [DummyTeam('チームA'), DummyTeam('チームB')];
+      final baseRule = MatchRule();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: Scaffold(
-            body: Consumer(
-              builder: (context, ref, child) {
-                return ElevatedButton(
-                  onPressed: () {
-                    TimelineTieBreakDialog.show(
-                      context,
-                      ref,
-                      firstMatch,
-                      tieTeams,
-                      baseRule,
-                    );
-                  },
-                  child: const Text('決定戦ダイアログを開く'),
-                );
-              },
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, child) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      TimelineTieBreakDialog.show(
+                        context,
+                        ref,
+                        firstMatch,
+                        tieTeams,
+                        baseRule,
+                      );
+                    },
+                    child: const Text('決定戦ダイアログを開く'),
+                  );
+                },
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('決定戦ダイアログを開く'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('決定戦ダイアログを開く'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('決定戦の形式を選択'), findsOneWidget);
-    expect(find.text('代表戦（1名）'), findsOneWidget);
-    expect(find.text('チーム再試合'), findsOneWidget);
-    expect(find.text('何もしない'), findsOneWidget);
+      expect(find.text('決定戦の形式を選択'), findsOneWidget);
+      expect(find.text('代表戦（1名）'), findsOneWidget);
+      expect(find.text('チーム再試合'), findsOneWidget);
+      expect(find.text('何もしない'), findsOneWidget);
+    });
   });
 }

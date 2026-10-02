@@ -12,7 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 /// 🌟 アプリがバックグラウンドや完全に閉じている時にFCMを受信した際のトップレベルハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // バックグラウンド時は完全にOS管理下となるため、最低限のパケット解析ログのみを残します
-  debugPrint('🛡️ [NotificationService] バックグラウンドFCMを受信: ${message.messageId}');
+  debugPrint('[NotificationService] バックグラウンドFCMを受信: ${message.messageId}');
 }
 
 class NotificationService {
@@ -68,7 +68,7 @@ class NotificationService {
 
       _setupFcmListeners();
     } catch (e) {
-      debugPrint('⚠️ [NotificationService] Initialization skipped: $e');
+      debugPrint('[WARN] [NotificationService] Initialization skipped: $e');
     }
   }
 
@@ -76,7 +76,7 @@ class NotificationService {
   void _setupFcmListeners() {
     try {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-        debugPrint('📩 [NotificationService] フォアグラウンドFCMを受信しました。');
+        debugPrint('[NotificationService] フォアグラウンドFCMを受信しました。');
 
         final data = message.data;
         final String type = data['type'] as String? ?? 'emergency';
@@ -89,7 +89,7 @@ class NotificationService {
         // ※簡易判定として、ここでは settingsProvider が存在する一般環境ベースでフィルタリングします
         final bool isStaffRoom = data['isStaffRoom'] == 'true'; // パケット側の属性
         if (target == 'staff' && !isStaffRoom) {
-          debugPrint('🛡️ [Filter] スタッフ限定通知のため、一般閲覧者の端末でのバナー発火を拒否（パージ）しました。');
+          debugPrint('[Filter] スタッフ限定通知のため、一般閲覧者の端末でのバナー発火を拒否（パージ）しました。');
           return;
         }
 
@@ -139,7 +139,9 @@ class NotificationService {
         }
       });
     } catch (e) {
-      debugPrint('⚠️ [NotificationService] Failed to set up FCM listener: $e');
+      debugPrint(
+        '[WARN] [NotificationService] Failed to set up FCM listener: $e',
+      );
     }
   }
 

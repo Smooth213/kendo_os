@@ -129,7 +129,9 @@ class MatchCommandQueue {
           _errorCounts.remove(cmd.id);
         } catch (e) {
           _errorCounts[cmd.id] = (_errorCounts[cmd.id] ?? 0) + 1;
-          debugPrint('🔥 [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e');
+          debugPrint(
+            '[ERROR] [CommandQueue] 処理失敗 (${_errorCounts[cmd.id]}回目): $e',
+          );
 
           // 失敗したコマンドは即座にIsarへ確実に永続化（データ消失防止）
           await localRepo.savePendingCommand(cmd);
@@ -138,7 +140,7 @@ class MatchCommandQueue {
           if (errStr.contains('DomainException') ||
               errStr.contains('取り消すイベントがありません') ||
               errStr.contains('既に規定本数に達しています')) {
-            debugPrint('🛡️ [CommandQueue] ドメインルールの制約によりコマンドを破棄します: $errStr');
+            debugPrint('[CommandQueue] ドメインルールの制約によりコマンドを破棄します: $errStr');
             _queue.removeAt(0);
             await localRepo.deleteCommand(cmd.id);
             _errorCounts.remove(cmd.id);
@@ -154,7 +156,7 @@ class MatchCommandQueue {
           }
 
           if (errCount >= 3) {
-            debugPrint('🚨 [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
+            debugPrint('[ERROR] [CommandQueue] 失敗上限到達。デッドレターキューへ退避: ${cmd.id}');
             ref.read(deadLetterQueueProvider.notifier).addErrorCommand(cmd);
             _queue.removeAt(0);
             await localRepo.deleteCommand(cmd.id);

@@ -43,7 +43,7 @@ class IsarProjectionStore {
       }
       await _isar.matchProjectionEntitys.put(entity);
     });
-    debugPrint('💾 [Isar Projection] 試合キャッシュをディスクに同期しました: ${match.id}');
+    debugPrint('[Isar Projection] 試合キャッシュをディスクに同期しました: ${match.id}');
   }
 
   // キャッシュから特定の大会の全プロジェクションを高速復元

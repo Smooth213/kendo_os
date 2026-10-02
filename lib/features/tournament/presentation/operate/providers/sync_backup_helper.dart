@@ -59,7 +59,7 @@ class SyncBackupHelper {
         '💾 [Auto Backup] 自動バックアップ完了: ${file.path} (Gzip圧縮版: ${gzFile.path}, 削減率: ${savings.toStringAsFixed(1)}%)',
       );
     } catch (e) {
-      debugPrint('🔥 [Auto Backup] 自動バックアップ失敗: $e');
+      debugPrint('[ERROR] [Auto Backup] 自動バックアップ失敗: $e');
     }
   }
 
@@ -70,7 +70,7 @@ class SyncBackupHelper {
       final bytes = await gzFile.readAsBytes();
       return PayloadCompressionHelper.decompressToString(bytes);
     } catch (e) {
-      debugPrint('🔥 [Auto Backup] Gzipバックアップ読み込み失敗: $e');
+      debugPrint('[ERROR] [Auto Backup] Gzipバックアップ読み込み失敗: $e');
       return null;
     }
   }
@@ -84,12 +84,12 @@ class SyncBackupHelper {
       for (final match in pendingMatches) {
         if (match.lastUpdatedAt != null &&
             now.difference(match.lastUpdatedAt!).inDays > 30) {
-          debugPrint('🧹 [Cleanup] 30日以上経過した古い未送信データを同期対象から除外します: ${match.id}');
+          debugPrint('[Cleanup] 30日以上経過した古い未送信データを同期対象から除外します: ${match.id}');
           await localRepo.markAsSynced(match.id);
         }
       }
     } catch (e) {
-      debugPrint('🔥 [Cleanup] 古い未送信データクリーンアップエラー: $e');
+      debugPrint('[ERROR] [Cleanup] 古い未送信データクリーンアップエラー: $e');
     }
   }
 
@@ -111,18 +111,18 @@ class SyncBackupHelper {
             rebuiltMatch.whiteScore != match.whiteScore;
         if (hasDrift) {
           driftCount++;
-          debugPrint('⚠️ [Drift Monitor] 試合 ${match.id} に矛盾検知。修復します。');
+          debugPrint('[WARN] [Drift Monitor] 試合 ${match.id} に矛盾検知。修復します。');
           await localRepo.saveMatch(rebuiltMatch);
         }
       }
 
       if (driftCount > 0) {
-        debugPrint('🛠️ [Self-Healing] $driftCount 件の試合を自動修復しました。');
+        debugPrint('[Self-Healing] $driftCount 件の試合を自動修復しました。');
       } else {
-        debugPrint('✅ [Drift Monitor] すべての試合状態は歴史(Events)と完全に一致しています。');
+        debugPrint('[Drift Monitor] すべての試合状態は歴史(Events)と完全に一致しています。');
       }
     } catch (e) {
-      debugPrint('🔥 [Reconnect Replay] 復旧・監査プロセス中にエラーが発生しました: $e');
+      debugPrint('[ERROR] [Reconnect Replay] 復旧・監査プロセス中にエラーが発生しました: $e');
     }
   }
 

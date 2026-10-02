@@ -11,45 +11,47 @@ import 'package:kendo_os/shared/presentation/providers/current_sync_context_prov
 import 'package:kendo_os/features/match/domain/match_model.dart';
 
 void main() {
-  testWidgets('部内戦カレンダーピッカーで初期日付が選択可能範囲外でもクラッシュしないこと', (
-    WidgetTester tester,
-  ) async {
-    // 1. Setup mock preferences
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+  group('[Widget] BunaiksenCalendarPickerCrash 検証', () {
+    testWidgets('部内戦カレンダーピッカーで初期日付が選択可能範囲外でもクラッシュしないこと', (
+      WidgetTester tester,
+    ) async {
+      // 1. Setup mock preferences
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-    // 2. We set viewDate to 2026-06-22 (which is NOT today and NOT in available dates)
-    final viewDate = DateTime(2026, 6, 22);
+      // 2. We set viewDate to 2026-06-22 (which is NOT today and NOT in available dates)
+      final viewDate = DateTime(2026, 6, 22);
 
-    // We define empty available dates (so 2026-06-22 is NOT selectable)
-    final Set<String> availableDates = {};
+      // We define empty available dates (so 2026-06-22 is NOT selectable)
+      final Set<String> availableDates = {};
 
-    final container = ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        bunaiksenViewDateProvider.overrideWith((ref) => viewDate),
-        bunaiksenAvailableDatesProvider.overrideWith(
-          (ref) => Stream.value(availableDates),
-        ),
-        bunaiksenMatchesProvider(
-          'bunaiksen_20260622',
-        ).overrideWithValue(<MatchModel>[]),
-        currentDojoIdProvider.overrideWith((ref) => 'test203'),
-      ],
-      child: const MaterialApp(home: BunaiksenHomeScreen()),
-    );
+      final container = ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          bunaiksenViewDateProvider.overrideWith((ref) => viewDate),
+          bunaiksenAvailableDatesProvider.overrideWith(
+            (ref) => Stream.value(availableDates),
+          ),
+          bunaiksenMatchesProvider(
+            'bunaiksen_20260622',
+          ).overrideWithValue(<MatchModel>[]),
+          currentDojoIdProvider.overrideWith((ref) => 'test203'),
+        ],
+        child: const MaterialApp(home: BunaiksenHomeScreen()),
+      );
 
-    await tester.pumpWidget(container);
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(container);
+      await tester.pumpAndSettle();
 
-    // 3. Find the calendar IconButton and tap it
-    final calendarFinder = find.byTooltip('日付選択');
-    expect(calendarFinder, findsOneWidget);
+      // 3. Find the calendar IconButton and tap it
+      final calendarFinder = find.byTooltip('日付選択');
+      expect(calendarFinder, findsOneWidget);
 
-    await tester.tap(calendarFinder);
-    await tester.pumpAndSettle();
+      await tester.tap(calendarFinder);
+      await tester.pumpAndSettle();
 
-    // 4. Verify that the date picker dialog has opened successfully and no assertion crash occurred
-    expect(find.byType(DatePickerDialog), findsOneWidget);
+      // 4. Verify that the date picker dialog has opened successfully and no assertion crash occurred
+      expect(find.byType(DatePickerDialog), findsOneWidget);
+    });
   });
 }

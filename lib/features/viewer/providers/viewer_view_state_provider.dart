@@ -115,7 +115,9 @@ final viewerMatchProjectionProvider = StreamProvider.family
             );
             yield MatchProjectionMapper.toProjection(match, analysis);
           } catch (e) {
-            debugPrint('⚠️ [Viewer Web Bypass Error] Projection変換に失敗しました: $e');
+            debugPrint(
+              '[WARN] [Viewer Web Bypass Error] Projection変換に失敗しました: $e',
+            );
             yield null;
           }
         }

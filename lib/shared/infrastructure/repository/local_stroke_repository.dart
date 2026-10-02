@@ -199,7 +199,7 @@ class LocalStrokeRepository {
             .collection('strokes')
             .doc(deleteId)
             .delete();
-        debugPrint('✅ 個人線を削除しました(Web): ID=$deleteId');
+        debugPrint('[StrokeRepository] 個人線を削除しました(Web): ID=$deleteId');
       }
       return;
     }
@@ -208,7 +208,7 @@ class LocalStrokeRepository {
       await _isar.writeTxn(() async {
         await _isar.localStrokeModels.delete(id);
       });
-      debugPrint('✅ 個人線を削除しました(Native): ID=$id');
+      debugPrint('[StrokeRepository] 個人線を削除しました(Native): ID=$id');
     }
   }
 }

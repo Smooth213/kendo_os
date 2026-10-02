@@ -7,30 +7,32 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+  group('[Widget] ViewerQuickActionButtons 単体検証', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+    });
 
-  testWidgets('観客用クイックアクションボタンが正しく描画されること', (tester) async {
-    final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('観客用クイックアクションボタンが正しく描画されること', (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        child: MaterialApp(
-          theme: ThemeData.light().copyWith(extensions: [themeColors]),
-          home: const Scaffold(
-            body: ViewerQuickActionButtons(
-              tournamentId: 't1',
-              enableLiquidGlass: false,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: const Scaffold(
+              body: ViewerQuickActionButtons(
+                tournamentId: 't1',
+                enableLiquidGlass: false,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('試合結果一覧'), findsOneWidget);
-    expect(find.text('大会プログラム'), findsOneWidget);
+      expect(find.text('試合結果一覧'), findsOneWidget);
+      expect(find.text('大会プログラム'), findsOneWidget);
+    });
   });
 }

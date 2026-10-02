@@ -46,7 +46,7 @@ class MatchCommandService {
           .read(matchApplicationServiceProvider)
           .recordRetirement(match.id, retiredSide);
     } catch (e) {
-      debugPrint('🔥 [Command Error] recordRetirement: $e');
+      debugPrint('[ERROR] [Command Error] recordRetirement: $e');
       rethrow;
     }
   }
@@ -68,7 +68,7 @@ class MatchCommandService {
             .finishMatchManually(currentMatch.id);
       }
     } catch (e) {
-      debugPrint('🔥 [Command Error] completeMatchWithHantei: $e');
+      debugPrint('[ERROR] [Command Error] completeMatchWithHantei: $e');
       rethrow;
     }
   }
@@ -220,14 +220,14 @@ class MatchCommandService {
             .addIppon(matchId, side, type);
       }
     } catch (e) {
-      debugPrint('🔥 [Command Error] addScoreEvent: $e');
+      debugPrint('[ERROR] [Command Error] addScoreEvent: $e');
     } finally {
       ref.read(isMatchCommandProcessingProvider.notifier).state = false;
     }
   }
 
   Future<void> undoLastEvent(String matchId) async {
-    debugPrint('🔙 [Undo Start] matchId=$matchId');
+    debugPrint('[Undo Start] matchId=$matchId');
     final now = DateTime.now();
 
     if (_lastUndoTime != null &&
@@ -247,7 +247,7 @@ class MatchCommandService {
     try {
       await ref.read(matchApplicationServiceProvider).undo(matchId);
     } catch (e) {
-      debugPrint('🔥 [Command Error] undoLastEvent: $e');
+      debugPrint('[ERROR] [Command Error] undoLastEvent: $e');
       ref.read(matchCommandErrorProvider.notifier).state = '履歴の取り消しに失敗しました: $e';
     } finally {
       _isUndoing = false;
@@ -309,7 +309,7 @@ class MatchCommandService {
         ref.read(syncEngineProvider).syncNow();
       }
     } catch (e) {
-      debugPrint('🔥 [Command Error] bulkUpdateMatchRules: $e');
+      debugPrint('[ERROR] [Command Error] bulkUpdateMatchRules: $e');
       ref.read(matchCommandErrorProvider.notifier).state =
           'ルールの表示・一括更新に失敗しました: $e';
       rethrow;

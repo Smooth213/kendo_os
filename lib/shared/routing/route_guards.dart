@@ -67,7 +67,7 @@ class RoleInjector extends ConsumerWidget {
     if (dojoId != null && dojoId!.isNotEmpty && currentDojoId != dojoId) {
       Future.microtask(() {
         ref.read(currentDojoIdProvider.notifier).state = dojoId!;
-        debugPrint('🏢 [Role Injector] テナントID($dojoId)確定');
+        debugPrint('[Role Injector] テナントID($dojoId)確定');
       });
     }
 
@@ -77,7 +77,7 @@ class RoleInjector extends ConsumerWidget {
         currentTournamentId != tournamentId) {
       Future.microtask(() {
         ref.read(webCurrentTournamentIdProvider.notifier).state = tournamentId!;
-        debugPrint('🎯 [Role Injector] 大会ID($tournamentId)確定');
+        debugPrint('[Role Injector] 大会ID($tournamentId)確定');
       });
     }
 
@@ -143,7 +143,7 @@ class _ViewerAuthGateState extends State<ViewerAuthGate> {
         const Duration(seconds: 4),
       );
     } catch (e) {
-      debugPrint('⚠️ [ViewerAuthGate] 匿名認証試行エラー/タイムアウト: $e');
+      debugPrint('[WARN] [ViewerAuthGate] 匿名認証試行エラー/タイムアウト: $e');
     }
 
     // タイムアウトやエラーが発生した場合でも、後続のリカバリに委ねるため描画許可

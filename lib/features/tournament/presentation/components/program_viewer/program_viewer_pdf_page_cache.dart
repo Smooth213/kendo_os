@@ -80,7 +80,9 @@ class ProgramViewerPdfPageCache {
       document.dispose();
       return count;
     } catch (e) {
-      debugPrint('🚨 [ProgramViewerPdfPageCache] parseDocumentInfo error: $e');
+      debugPrint(
+        '[ERROR] [ProgramViewerPdfPageCache] parseDocumentInfo error: $e',
+      );
       _pageCountCache[url] = 1;
       return 1;
     }

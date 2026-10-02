@@ -55,7 +55,7 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
       '🔎 [viewerTournamentProvider] root doc exists: ${rootTournamentDoc.exists}',
     );
     if (rootTournamentDoc.exists) {
-      debugPrint('🔎 [viewerTournamentProvider] found in tournaments/$id');
+      debugPrint('[viewerTournamentProvider] found in tournaments/$id');
       yield* firestore.collection('tournaments').doc(id).snapshots().map((doc) {
         if (!doc.exists) return null;
         return TournamentModel.fromJson({...doc.data()!, 'id': doc.id});
@@ -114,7 +114,7 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
 
     yield null;
   } catch (e, st) {
-    debugPrint('🚨 [viewerTournamentProvider] エラー: $e\n$st');
+    debugPrint('[ERROR] [viewerTournamentProvider] エラー: $e\n$st');
     yield null;
   }
 });
