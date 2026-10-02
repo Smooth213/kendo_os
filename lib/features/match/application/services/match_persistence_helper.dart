@@ -233,8 +233,16 @@ class MatchPersistenceHelper {
       _ref.read(webCurrentTournamentMatchesProvider.notifier).state =
           newMatches;
 
-      for (final m in webSafeMatches) {
-        await saveToFirestoreWithRetry(m);
+      try {
+        final matchRepo = _ref.read(matchRepositoryProvider);
+        await matchRepo.saveMatchesBatch(webSafeMatches);
+      } catch (e) {
+        debugPrint(
+          '⚠️ [MatchPersistenceHelper] Web一括バッチ保存失敗。個別リトライへフォールバック: $e',
+        );
+        for (final m in webSafeMatches) {
+          await saveToFirestoreWithRetry(m);
+        }
       }
     } else {
       final localRepo = _ref.read(localMatchRepositoryProvider);

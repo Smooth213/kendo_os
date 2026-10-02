@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
@@ -13,6 +14,11 @@ class ManualPrintShareService {
     File? file,
     required String fileName,
   }) async {
+    if (kIsWeb) {
+      // Web環境では印刷プラグイン直接呼び出しを回避し安全に終了
+      debugPrint('Web環境では印刷プラグイン呼び出しをスキップします');
+      return;
+    }
     if (isAsset) {
       final data = await rootBundle.load(assetPath!);
       await Printing.layoutPdf(

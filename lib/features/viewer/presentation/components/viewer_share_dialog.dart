@@ -31,8 +31,11 @@ class ViewerShareDialog extends StatelessWidget {
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
     final String path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
     final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
-    final String shareUrl =
-        'https://kendo-os-beta.web.app/$path/$tournamentId?role=viewer&dojoId=$safeDojo';
+    final String shareUrl = Uri.https(
+      'kendo-os-beta.web.app',
+      '/$path/$tournamentId',
+      {'role': 'viewer', 'dojoId': safeDojo},
+    ).toString();
 
     return QrShareDialog(
       title: isBunaiksen ? '部内戦観戦リンク' : '大会観戦リンク',

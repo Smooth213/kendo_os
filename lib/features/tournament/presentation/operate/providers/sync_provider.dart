@@ -59,7 +59,8 @@ class SyncEngine {
     final lifecycleListener = AppLifecycleListener(
       onStateChange: (AppLifecycleState state) {
         if (state == AppLifecycleState.paused ||
-            state == AppLifecycleState.inactive) {
+            state == AppLifecycleState.inactive ||
+            state == AppLifecycleState.hidden) {
           SyncBackupHelper.autoBackupToJson(ref.read(matchListProvider));
           debugPrint('🌙 [Lifecycle] アプリがバックグラウンドに移行しました。強制同期を試行...');
           syncNow();

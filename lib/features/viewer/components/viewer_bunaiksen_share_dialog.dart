@@ -14,8 +14,11 @@ class ViewerBunaiksenShareDialog {
   }) {
     final dojoId = ref.read(currentDojoIdProvider);
     final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
-    final String shareUrl =
-        'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo';
+    final String shareUrl = Uri.https(
+      'kendo-os-beta.web.app',
+      '/bunaiksen-viewer-home/$tournamentId',
+      {'role': 'viewer', 'dojoId': safeDojo},
+    ).toString();
 
     QrShareDialog.show(
       context,

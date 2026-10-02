@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全29大ガバナンス個別監査 (1/29 〜 29/29: 100% PASS)
+# 1. 全31大ガバナンス個別監査 (1/31 〜 31/31: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全29大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全29大ガバナンス個別監査を実行中..."
+# 1. 全31大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全31大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全29大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全31大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -283,12 +283,41 @@ flutter test test/governance/design_system_governance_test.dart \
               test/e2e/master_organization_provisioning_isolation_e2e_test.dart \
               test/e2e/composite_occ_auto_repair_concurrency_convergence_test.dart \
               test/e2e/composite_dock_timer_wheel_and_keyboard_input_test.dart \
-              test/governance/firestore_indexes_governance_test.dart
+              test/governance/firestore_indexes_governance_test.dart \
+              test/unit/overtime_hansoku_carryover_rule_test.dart \
+              test/unit/multi_player_fusensho_tiebreak_resolution_test.dart \
+              test/unit/kanji_ivs_surrogate_pair_fuzzing_test.dart \
+              test/unit/startup_service_timeout_offline_fallback_test.dart \
+              test/widget/hold_confirm_button_gesture_deviation_test.dart \
+              test/unit/bunaiksen_midnight_date_boundary_resolution_test.dart \
+              test/unit/pwa_indexeddb_quota_exceeded_fallback_test.dart \
+              test/unit/services/web_share_api_fallback_to_download_test.dart \
+              test/unit/match_concurrent_point_input_occ_test.dart \
+              test/unit/program_viewer_large_pdf_page_cache_test.dart \
+              test/unit/player_batch_promotion_boundary_test.dart \
+              test/unit/pdf_raster_memory_budget_test.dart \
+              test/governance/manual_route_integrity_governance_test.dart \
+              test/governance/url_qr_encoding_safety_governance_test.dart \
+              test/governance/web_unsupported_plugin_leak_governance_test.dart \
+              test/governance/blob_url_leak_governance_test.dart \
+              test/golden/pixel_representative_match_transition_scoreboard_golden_test.dart \
+              test/golden/pixel_quick_memo_scale_extremes_golden_test.dart \
+              test/golden/pixel_ultra_wide_display_scoreboard_golden_test.dart \
+              test/golden/pixel_high_contrast_sunlight_mode_golden_test.dart \
+              test/golden/pixel_vertical_name_complex_foreign_golden_test.dart \
+              test/e2e/bunaiksen_streak_30_leaderboard_e2e_test.dart \
+              test/e2e/timer_pause_across_app_lifecycle_sleep_e2e_test.dart \
+              test/e2e/official_record_bulk_export_pipeline_e2e_test.dart \
+              test/e2e/external_keyboard_timer_shortcuts_e2e_test.dart \
+              test/integration/overtime_hansoku_carryover_composite_test.dart \
+              test/integration/team_league_fusensho_double_disqualification_composite_test.dart \
+              test/integration/disk_full_emergency_buffer_flush_composite_test.dart \
+              test/integration/bunaiksen_official_record_mixed_status_export_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全29大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全31大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

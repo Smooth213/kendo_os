@@ -41,6 +41,7 @@ class SyncEngine {
   StreamSubscription? _matchesSubscription;
   StreamSubscription? _bunaiksenSubscription;
   AppLifecycleListener? _lifecycleListener;
+  bool _isBackground = false;
 
   SyncEngine(this._ref) {
     // 🌟 Firestoreダウンストリーム監視の初期設定
@@ -50,19 +51,33 @@ class SyncEngine {
 
   void _setupLifecycleListener() {
     _lifecycleListener = AppLifecycleListener(
-      onPause: _stopSyncLoop,
-      onInactive: _stopSyncLoop,
-      onHide: _stopSyncLoop,
+      onPause: _handleBackground,
+      onInactive: _handleBackground,
+      onHide: _handleBackground,
       onDetach: () {
-        _stopSyncLoop();
+        _handleBackground();
         try {
           _ref.read(localMatchRepositoryProvider).flushMicroBatch();
         } catch (_) {}
       },
-      onResume: () {
-        syncNow();
-      },
+      onResume: _handleForeground,
     );
+  }
+
+  void _handleBackground() {
+    _isBackground = true;
+    _stopSyncLoop();
+    _debounceSyncTimer?.cancel();
+    debugPrint('💤 [Sync Engine] アプリバックグラウンド検知: Firestore下流処理をスリープ移行');
+  }
+
+  void _handleForeground() {
+    if (_isBackground) {
+      _isBackground = false;
+      debugPrint('⚡ [Sync Engine] アプリフォアグラウンド復帰: Firestoreリスナー再同期と即時キャッチアップ開始');
+      _bindListeners();
+      syncNow();
+    }
   }
 
   void _startSyncLoop() {
@@ -161,6 +176,7 @@ class SyncEngine {
 
     _matchesSubscription = matchesCollection.snapshots().listen(
       (snapshot) {
+        if (_isBackground) return;
         _pendingMatchesSnapshot = snapshot;
         _debounceSyncTimer?.cancel();
         // ★ 最適化 (Web/Native共通): 連続するFirestoreイベントを50ms以内でバッチ集約
@@ -196,6 +212,7 @@ class SyncEngine {
 
       _bunaiksenSubscription = bunaiksenDoc.snapshots().listen(
         (snapshot) async {
+          if (_isBackground) return;
           if (snapshot.exists && snapshot.data() != null) {
             debugPrint(
               '⚡ [Sync Engine Downstream] 特設部内大会ドキュメントの更新を受信しました: ${snapshot.id}',

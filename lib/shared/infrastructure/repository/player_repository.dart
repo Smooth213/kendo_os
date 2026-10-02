@@ -55,14 +55,15 @@ class PlayerRepository {
     await _playersCollection.doc(playerId).delete();
   }
 
-  // ★⑤ 魔法のボタン用：全員を一括進級させる！
+  // ★⑤ 魔法のボタン用：全員を一括進級させる！（Firestore 500件バッチ制限安全分割）
   Future<void> promoteAllPlayers({String organization = ''}) async {
     final snapshot = await _playersCollection
         .where('organization', isEqualTo: organization)
         .get();
 
-    // 複数データを一気に更新するためのバッチ処理（途中で失敗せんように）
-    final batch = _firestore.batch();
+    const int batchLimit = 450;
+    WriteBatch batch = _firestore.batch();
+    int opCount = 0;
 
     for (var doc in snapshot.docs) {
       int currentGrade = doc.data()['grade'] as int? ?? 99;
@@ -70,15 +71,23 @@ class PlayerRepository {
       if (currentGrade < 16) {
         // 未就学〜大学3年まではそのまま +1
         batch.update(doc.reference, {'grade': currentGrade + 1});
+        opCount++;
       } else if (currentGrade == 16) {
         // 大学4年(16) は 一般(99) にする
         batch.update(doc.reference, {'grade': 99});
+        opCount++;
       }
-      // すでに一般(99)の人はそのまま放置
+
+      if (opCount >= batchLimit) {
+        await batch.commit();
+        batch = _firestore.batch();
+        opCount = 0;
+      }
     }
 
-    // 変更を一斉に保存！
-    await batch.commit();
+    if (opCount > 0) {
+      await batch.commit();
+    }
   }
 
   // --- よく使う自チーム名（カスタムチーム名）の管理機能 ---

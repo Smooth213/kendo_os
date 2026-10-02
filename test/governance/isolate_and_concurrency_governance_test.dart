@@ -198,9 +198,14 @@ void main() {
           reason: 'SyncEngine に AppLifecycleListener が配備されていなければならない',
         );
         expect(
-          content.contains('onPause: _stopSyncLoop'),
+          content.contains('onPause: _handleBackground'),
           isTrue,
-          reason: 'paused時にタイマーループを停止しなければならない',
+          reason: 'paused時に_handleBackgroundでコールドスリープに移行しなければならない',
+        );
+        expect(
+          content.contains('_stopSyncLoop()'),
+          isTrue,
+          reason: 'バックグラウンド移行時にタイマーループ(_stopSyncLoop)を停止しなければならない',
         );
         expect(
           content.contains('_lifecycleListener?.dispose()'),

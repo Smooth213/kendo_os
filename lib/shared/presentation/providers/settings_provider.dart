@@ -20,9 +20,14 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 // 設定を管理するNotifier
 class SettingsNotifier extends Notifier<SettingsModel> {
   static const _key = 'kendo_sync_settings';
+  AppLifecycleListener? _lifecycleListener;
 
   @override
   SettingsModel build() {
+    ref.onDispose(() {
+      _lifecycleListener?.dispose();
+    });
+
     final SharedPreferences prefs;
     try {
       prefs = ref.watch(sharedPreferencesProvider);
@@ -48,6 +53,20 @@ class SettingsNotifier extends Notifier<SettingsModel> {
     // 初期化時にスリープ防止設定を適用
     _applyWakelock(initialSettings.sleepPrevent);
     KendoHaptics.isEnabled = initialSettings.haptic;
+
+    _lifecycleListener = AppLifecycleListener(
+      onStateChange: (AppLifecycleState lifecycleState) {
+        if (lifecycleState == AppLifecycleState.paused ||
+            lifecycleState == AppLifecycleState.inactive ||
+            lifecycleState == AppLifecycleState.hidden) {
+          _applyWakelock(false);
+        } else if (lifecycleState == AppLifecycleState.resumed) {
+          if (state.sleepPrevent) {
+            _applyWakelock(true);
+          }
+        }
+      },
+    );
 
     return initialSettings;
   }
@@ -332,7 +351,8 @@ class BatteryNotifier extends AutoDisposeAsyncNotifier<BatteryStateData> {
       _lifecycleListener = AppLifecycleListener(
         onStateChange: (AppLifecycleState state) {
           if (state == AppLifecycleState.paused ||
-              state == AppLifecycleState.inactive) {
+              state == AppLifecycleState.inactive ||
+              state == AppLifecycleState.hidden) {
             _stopPeriodicTimer();
           } else if (state == AppLifecycleState.resumed) {
             _refreshBattery();

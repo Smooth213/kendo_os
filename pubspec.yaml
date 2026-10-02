@@ -111,6 +111,7 @@ dev_dependencies:
   firebase_core_platform_interface: any
   firebase_crashlytics_platform_interface: any
   share_plus_platform_interface: any
+  wakelock_plus_platform_interface: any
   flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the

@@ -84,8 +84,11 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
         : (isDark ? const Color(0xFF2DD4BF) : AppKendoColors.teal);
 
     final path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
-    final shareUrl =
-        'https://kendo-os-beta.web.app/$path/${widget.tournamentId}?role=viewer&dojoId=$dojoId';
+    final shareUrl = Uri.https(
+      'kendo-os-beta.web.app',
+      '/$path/${widget.tournamentId}',
+      {'role': 'viewer', 'dojoId': dojoId},
+    ).toString();
 
     return DockDraggableSheet(
       initialChildSize: 0.72,

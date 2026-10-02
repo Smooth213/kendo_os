@@ -296,8 +296,11 @@ class HomeScreen extends ConsumerWidget {
     final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
     final isBunaiksen = tournamentId.startsWith('bunaiksen_');
     final path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
-    final String shareUrl =
-        'https://kendo-os-beta.web.app/$path/$tournamentId?role=viewer&dojoId=$safeDojo';
+    final String shareUrl = Uri.https(
+      'kendo-os-beta.web.app',
+      '/$path/$tournamentId',
+      {'role': 'viewer', 'dojoId': safeDojo},
+    ).toString();
     showAppDialog(
       context: context,
       builder: (ctx) => HomeScreenQrDialog(

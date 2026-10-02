@@ -260,9 +260,12 @@ class ViewerMatchScreen extends ConsumerWidget {
     final dojoId = ref.read(currentDojoIdProvider);
     final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
     final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
-    final String shareUrl = isBunaiksen
-        ? 'https://kendo-os-beta.web.app/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo'
-        : 'https://kendo-os-beta.web.app/viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo';
+    final String path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
+    final String shareUrl = Uri.https(
+      'kendo-os-beta.web.app',
+      '/$path/$tournamentId',
+      {'role': 'viewer', 'dojoId': safeDojo},
+    ).toString();
 
     QrShareDialog.show(
       context,

@@ -9755,3 +9755,521 @@ Shell: ⚠️ [ImageCompressor] 未サポートまたは破損画像のため、
 23:07 +2976: /Users/saradafumiaki/Documents/Apps/kendo_os/test/replay/timeline_replay_test.dart: [Unit] Timeline Replay & Merge Conflict テスト Timeline Merge Conflict Determinismこと
 23:07 +2977: /Users/saradafumiaki/Documents/Apps/kendo_os/test/replay/replay_deterministic_test.dart: [Unit] Replay Deterministic 完全化 イベントソートの決定的確認においてReplay fuzz test - ランダム順序でのリプレイこと
 23:07 +2978: /Users/saradafumiaki/Documents/Apps/kendo_os/test/replay/replay_deterministic_test.dart: [Unit] Replay Deterministic 完全化 Undo deterministic test - Undoが混ざった状態での決定性こと
+23:09 +2979: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: (setUpAll)
+23:09 +2979: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: [Unit] PdfLeagueTable ウィジェットテスト 試合リストが空の場合、SizedBoxが返されること
+23:09 +2980: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: [Unit] PdfLeagueTable ウィジェットテスト 個人戦リーグのセルは、取得技を「縦並び(Column)」で表示すること
+23:09 +2981: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: [Unit] PdfLeagueTable ウィジェットテスト 団体戦リーグのセルは、取得本数/勝者数を「縦並び(Column)」で表示すること
+23:09 +2982: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: [Unit] PdfLeagueTable ウィジェットテスト 団体戦リーグのセルで引き分け(draw)の場合、例外なく描画が完了すること
+23:09 +2983: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: [Unit] PdfLeagueTable ウィジェットテスト 全試合が完了していない(waitingがある)場合、勝敗の図形は描画されないこと
+23:09 +2984: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: [Unit] PdfLeagueTable ウィジェットテスト リーグ戦の勝ち点はMatchRuleに基づいて計算されること
+23:09 +2985: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_league_table_test.dart: (tearDownAll)
+23:11 +2985: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/official_record_screen_test.dart: dummy compiler passing testこと
+23:11 +2986: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_japanese_render_test.dart: [Unit] に関して、PDF 日本語レンダリング＆豆腐文字完全防止テスト 日本語文字列および「×」マークが、pdfエンジンの例外を投げずに100%決定論的にビルドできること
+23:11 +2986: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/promotion_120hz_display_sync_test.dart: [Governance] 120Hz ProMotion ディスプレイ完全同期ガバナンステスト フレームバジェット（許容時間）がリフレッシュレートに対して正確に計算されること
+📱 [ProMotion Frame Budget Benchmark]
+  - 120Hz ProMotion: 8.33 ms/フレーム (iPad Pro / iPhone Pro)
+  - 90Hz High-Refresh: 11.11 ms/フレーム
+  - 60Hz Standard: 16.67 ms/フレーム
+23:12 +2987: /Users/saradafumiaki/Documents/Apps/kendo_os/test/application/services/pdf/pdf_japanese_render_test.dart: [Unit] に関して、PDF 日本語レンダリング＆豆腐文字完全防止テスト 日本語文字列および「×」マークが、pdfエンジンの例外を投げずに100%決定論的にビルドできること
+23:12 +2988: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/promotion_120hz_display_sync_test.dart: [Governance] 120Hz ProMotion ディスプレイ完全同期ガバナンステスト デフォルト環境（テスト環境等）で安全に60.0Hzフォールバックされること
+23:12 +2989: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/promotion_120hz_display_sync_test.dart: [Governance] 120Hz ProMotion ディスプレイ完全同期ガバナンステスト 最適なアニメーション時間の算出とスクロール物理の取得こと
+23:12 +2990: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/promotion_120hz_display_sync_test.dart: [Governance] 120Hz ProMotion ディスプレイ完全同期ガバナンステスト 120FPS Ticker アニメーションが 8.33ms ステップで滑らかに完了すること
+23:13 +2991: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/multi_year_archive_historical_search_perf_test.dart: [Governance] 数万件（10,000件）過去大会アーカイブ選手通算履歴高速検索パフォーマンステスト 10,000件の試合データから特定選手の全対戦履歴を50ms未満で高速検索・通算勝率集計できること
+23:13 +2992: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase23_recovery_test.dart: [Governance] 災害復旧完全保証：物理境界を超えたデータ再構築 バックアップ&リストアにおいて 全試合データの整合性が正しく検証されること
+23:13 +2993: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase23_recovery_test.dart: [Governance] 災害復旧完全保証：物理境界を超えたデータ再構築 端末間移行において 進行中ステータスの完全継承が正しく検証されること
+23:15 +2994: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: [Governance] スクロール先読みキャッシュ (cacheExtent) 画面サイズ1500.0および1000.0において cacheExtent値が正しく計算できること
+23:15 +2995: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: [Governance] スクロール先読みキャッシュ (cacheExtent) program_management_screen の itemExtent が妥当な値こと
+23:15 +2996: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) 同一データのリストが渡された場合は false を返すこと
+23:15 +2997: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) スコアが変化した場合は true を返すこと
+23:15 +2998: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) status が in_progress→finished に変化した場合は true を返すこと
+23:15 +2999: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) isDark が切り替わった場合は true を返すこと
+23:15 +3000: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) 試合が追加された場合（リスト長変化）は true を返すこと
+23:15 +3001: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) note（延長など）が変化した場合は true を返すこと
+23:15 +3002: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: A: KachinukiBracketPainter.shouldRepaint (Web/Native共通) PointDisplay参照が異なりスコア/status/nameが同一なら false を返すこと（PointDisplay.== 未実装の安全保証 - Web/Native共通）
+23:15 +3003: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: B: StrokePainter.shouldRepaint ロジック (Web/Native共通) 同一ストロークリスト参照では false を返すこと
+23:15 +3004: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: B: StrokePainter.shouldRepaint ロジック (Web/Native共通) ストロークが追加された場合（長さ変化）は true を返すこと
+23:15 +3005: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: B: StrokePainter.shouldRepaint ロジック (Web/Native共通) 描画中の点列が変化した場合は true を返すこと
+23:15 +3006: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: B: StrokePainter.shouldRepaint ロジック (Web/Native共通) ペン色が変わった場合は true を返すこと
+23:15 +3007: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: デバウンスバッチ処理 (Web/Native共通) 50ms以内の連続イベントは1回にまとめて処理されること
+23:15 +3008: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: デバウンスバッチ処理 (Web/Native共通) 50msを超える間隔のイベントは独立して処理されること
+23:15 +3009: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: デバウンスバッチ処理 (Web/Native共通) Web環境でIsarがnullの場合もデバウンス処理の型安全性が保たれること
+23:15 +3010: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/rendering_optimization_test.dart: パフォーマンス境界値: 大量データ時の shouldRepaint コスト 100試合リストの shouldRepaint 比較が 1ms 未満で完了すること
+23:16 +3011: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/font_asset_optimization_test.dart: [Governance] Performance Governanceに関して、フォント・アセット最適化テスト PdfFontLoader がメモ化キャッシュにより2回目以降を即座（同一インスタンス）に返却すること
+23:16 +3012: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/font_asset_optimization_test.dart: [Governance] Performance Governanceに関して、フォント・アセット最適化テスト PdfFontLoader.clearCache でキャッシュが安全に破棄され再生成できること
+23:16 +3013: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/font_asset_optimization_test.dart: [Governance] Performance Governanceに関して、フォント・アセット最適化テスト AppStartup.configureFontOptimization が GoogleFonts の設定を制御できること
+23:16 +3014: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/mega_scale_1000_matches_heap_gc_test.dart: [Governance] 1,000試合メガ大会 メモリヒープ・GCスループット耐久テスト 1,000試合・5,000スコアイベントの一括生成・集計が300ms未満で高速完了すること
+23:17 +3015: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/payload_compression_bandwidth_test.dart: [Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト 100試合の大会同期データが Gzip 圧縮により 70% 以上削減されること
+📊 [Payload Compression Benchmark]
+  - 元データサイズ: 75.97 KB (77791 bytes)
+  - Gzip圧縮サイズ: 2.99 KB (3058 bytes)
+  - 削減率: 96.07%
+  - 圧縮所要時間: 6906 μs (6 ms)
+23:17 +3016: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/payload_compression_bandwidth_test.dart: [Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト Zero Data Lossにおいて Gzip 圧縮・解凍のラウンドトリップでデータが 100% 完全復元されること
+23:17 +3017: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/payload_compression_bandwidth_test.dart: [Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト バイト配列レベルの圧縮・解凍が可逆かつマジックバイトを正しく検出すること
+23:17 +3018: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/payload_compression_bandwidth_test.dart: [Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト Firestore/WebSocket用において Base64 シリアライズ / デシリアライズが完全一致すること
+23:17 +3019: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/payload_compression_bandwidth_test.dart: [Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト 空配列や極小データの安全なエッジケース処理こと
+23:17 +3020: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/payload_compression_bandwidth_test.dart: [Governance] 通信パケット・同期ペイロード極小化 Gzip 圧縮・解凍ガバナンステスト SyncBackupHelper で Gzip 圧縮バックアップを保存・復元できること
+23:19 +3021: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト 初期状態では高精度レスポンスの通常モードが適用されること
+23:19 +3022: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト バッテリー低下時（30%以下/15%以下）にエコ冷却および極限省電力へ自動遷移すること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 1000ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 100ms)
+23:19 +3023: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト ユーザー操作記録（recordUserActivity）によりアクティブ状態へ即座に復帰すること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (Tick間隔: 1000ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 100ms)
+23:19 +3024: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト tick 間引き（100ms vs 500ms vs 1000ms）でもタイマー計算の絶対精度が 100% 維持されること
+23:19 +3025: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト CPUウェイクアップ削減率の検証: エコ冷却で80%削減、極限省電力で90%削減こと
+🔋 [Thermal Governor Power Benchmark]
+  - 通常モード: 10.0 回/秒 (100ms)
+  - エコ冷却モード: 2.0 回/秒 (500ms, CPUウェイクアップ削減: 80.0%)
+  - 極限省電力モード: 1.0 回/秒 (1000ms, CPUウェイクアップ削減: 90.0%)
+23:19 +3026: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト 最重要ガバナンスにおいて 優先順位「温度 ＞ 手動 ＞ 自動」が厳格に適用されること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: normal, 温度: ThermalSensorStatus.serious, 低電力: true, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (設定: normal, 温度: ThermalSensorStatus.critical, 低電力: true, Tick: 1000ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (設定: normal, 温度: ThermalSensorStatus.nominal, 低電力: true, Tick: 100ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: ecoCooling, 温度: ThermalSensorStatus.nominal, 低電力: true, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (設定: ultraSave, 温度: ThermalSensorStatus.nominal, 低電力: true, Tick: 1000ms)
+23:19 +3027: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト 自動モード時、OS低電力モードON且つ電池残量で「エコ冷却」と「極限省電力」が自動で切り替わること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: true, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: true, Tick: 1000ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: true, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 100ms)
+23:20 +3028: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト 自動モード時、41℃（Serious）でエコ冷却、45℃（Critical）で極限省電力、39℃復帰で通常へ戻ること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: auto, 温度: ThermalSensorStatus.serious, 低電力: false, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (設定: auto, 温度: ThermalSensorStatus.critical, 低電力: false, Tick: 1000ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 100ms)
+23:20 +3029: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/adaptive_power_saving_thermal_test.dart: [Governance] アダプティブ省電力・サーマル冷却ガバナンステスト トースト通知イベントが重複連発せず適切に配信されること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (設定: auto, 温度: ThermalSensorStatus.serious, 低電力: false, Tick: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (設定: auto, 温度: ThermalSensorStatus.critical, 低電力: false, Tick: 1000ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (設定: auto, 温度: ThermalSensorStatus.nominal, 低電力: false, Tick: 100ms)
+23:22 +3030: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/isolate_compute_governance_test.dart: [Governance] Performance Governanceに関して、重計算Isolate分離テスト KendoComputeHelper.run が重計算を正しく実行し結果を返却すること
+23:22 +3031: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/isolate_compute_governance_test.dart: [Governance] Performance Governanceに関して、重計算Isolate分離テスト CsvService.generateCsvBytesAsync が大量試合データを別スレッドでCSVバイナリ化できること
+23:22 +3032: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/isolate_compute_governance_test.dart: [Governance] Performance Governanceに関して、重計算Isolate分離テスト KendoComputeHelper による大量JSONシリアライズがデータ欠損なく完了すること
+23:23 +3033: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/full_marathon_72_hours_memory_zero_leak_test.dart: [Governance] 72時間連続稼働マラソン メモリリークゼロ・破棄サイクル検証テスト 1,000回の試合開始・終了・disposeサイクルを高速反復しても未解放オブジェクトがゼロこと
+23:23 +3034: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト サンシャインモードのカラーパレットが直射日光下の最高視認性（純白×漆黒）を満たしていること
+☀️ [Sunshine Theme Spec]
+  - Scaffold Background: Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)
+  - Text Color: Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  - Separator Color: Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  - High Contrast Ratio: 21:1 (Max WCAG AAA Compliant)
+23:23 +3035: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ThermalStatusBadge が各省電力モードに応じたアイコン・ラベルを表示すること
+23:23 +3035: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/aot_prefer_inline_microbenchmark_test.dart: [Governance] Dart AOT コンパイル関数インライン化マイクロベンチマーク＆整合性テスト 超高速・ゼロアロケーションにおいてcalculateRemainingSeconds 100,000回連続呼び出しマイクロベンチマークこと
+🏎️ [AOT Inline Benchmark: calculateRemainingSeconds]
+  - 実行回数: 100000 回
+  - 総所要時間: 11 ms (11590 μs)
+  - 1回あたりの呼出コスト: 0.116 μs
+  - 算出残り秒数: 135 秒
+23:23 +3036: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ThermalStatusBadge が各省電力モードに応じたアイコン・ラベルを表示すること
+23:23 +3037: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ThermalStatusBadge が各省電力モードに応じたアイコン・ラベルを表示すること
+23:23 +3038: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ThermalStatusBadge が各省電力モードに応じたアイコン・ラベルを表示すること
+23:23 +3039: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ThermalStatusBadge が各省電力モードに応じたアイコン・ラベルを表示すること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (Tick間隔: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (Tick間隔: 1000ms)
+23:24 +3040: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト 3モード全て（ 高速 / 冷却 / 省電力）でトグルスイッチ同一サイズ（64x31）で描画されること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (Tick間隔: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ultraSave (Tick間隔: 1000ms)
+23:24 +3041: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ThermalStatusBadge をタップした際に安心解説ボトムシートが展開されること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (Tick間隔: 500ms)
+23:24 +3042: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ライトモード白背景時でも通常モードのバッジがくっきりと視認可能こと
+23:24 +3043: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト SettingsScreen で「外観テーマ」タイルが横1行で美しく描画され、 サンシャインを選択できること
+23:25 +3044: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト SettingsScreen 内のサーマルバッジがトグルスイッチと同一の高さ(31px)で整列し、タップで解説シートが開くこと
+23:25 +3045: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sunshine_theme_and_thermal_badge_test.dart: [Governance] 設定・安心感の可視化において サンシャイン高コントラスト＆サーマルバッジ検証テスト ミニステータスバッジ（isSwitchSize: false）がコンパクトなサイズ（高さ31px未満）で描画されること
+23:26 +3046: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト (setUpAll)
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+23:26 +3046: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること
+23:26 +3047: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること
+23:26 +3048: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト saveMatchesBulk: 大量試合データ（50件）を一括バッチputAllで正確に永続化できること
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+23:26 +3049: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト saveMatchesBulk: 既存エンティティが存在する場合に既存IDを引き継いで重複なく上書き更新されること
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+23:26 +3050: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト markMatchesAsSynced: 複数試合の同期ステートを一括putAllでSyncState.syncedへ移行できること
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+⚠️ [TwinEngine] スナップショット保存に失敗しました: MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
+23:26 +3051: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/db_io_batch_optimization_test.dart: [Governance] Performance Governanceに関して、DB・I/O バッチ最適化テスト (tearDownAll)
+23:27 +3051: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/ai_strike_assist_metadata_latency_test.dart: [Governance] AI打突アシストメタデータ受信 メインスレッド低遅延（60FPS維持）パフォーマンステスト 秒間60フレームのAIメタデータパケット受信時、1フレームあたり処理時間が1ms未満でUIを一切阻害しないこと
+23:27 +3052: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase21_memory_leak_test.dart
+23:30 +3052: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase21_memory_leak_test.dart: [Governance] メモリリーク監視要塞：disposeの完全徹底検証 Timer/Streamにおいて disposeによるリスナー解放の整合性こと
+23:30 +3053: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase21_memory_leak_test.dart: [Governance] メモリリーク監視要塞：disposeの完全徹底検証 Widgetにおいて 100回画面遷移後のライフサイクル健全性こと
+23:31 +3054: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sound_service_prewarm_test.dart: (setUpAll)
+23:31 +3054: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sound_service_prewarm_test.dart: [Governance] Performance Governanceに関して、音声再生ゼロ遅延化＆Pre-warmingテスト SoundService.prewarm が正常に実行され事前暖機ステートが確立すること
+🔊 [SoundService] オーディオプリウォーミング完了（低遅延モード確立）
+23:31 +3055: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sound_service_prewarm_test.dart: [Governance] Performance Governanceに関して、音声再生ゼロ遅延化＆Pre-warmingテスト 効果音の連続呼び出しが単一の共有プレイヤーを再利用して低遅延再生されること
+🔊 [SoundService] オーディオプリウォーミング完了（低遅延モード確立）
+23:31 +3056: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sound_service_prewarm_test.dart: [Governance] Performance Governanceに関して、音声再生ゼロ遅延化＆Pre-warmingテスト TTS音声読み上げが安全に呼び出されること
+23:31 +3057: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/sound_service_prewarm_test.dart: (tearDownAll)
+23:32 +3057: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/isar_mmap_ram_speed_query_test.dart: [Governance] Isar メモリマップトIOおよびページサイズ最適化ガバナンステスト MMAP 1024MiB 仮想メモリ空間上での 1,000 件一括書き込み＆RAM速度検索が正しく検証されること
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+🗄️ [Isar MMAP Performance Benchmark]
+  - 1,000件バッチ書込所要時間: 145 ms
+  - 1件あたり書込時間: 145.16 μs
+  - 1,000件からの特定カテゴリー検索（250件ヒット）所要時間: 31260 μs (31 ms)
+23:32 +3058: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:32 +3059: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:33 +3060: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:33 +3061: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:33 +3062: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:33 +3063: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:33 +3064: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchScoreboard が RepaintBoundary を持ち、画面全体の再描画を遮断していること
+23:33 +3065: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト MatchTimerSection が RepaintBoundary を持ち、毎秒タイマー再描画を隔離していること
+23:33 +3066: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/repaint_boundary_governance_test.dart: [Governance] Performance Governanceに関して、RepaintBoundary 描画境界分離テスト LargeViewerScoreboard が RepaintBoundary を持ち、観戦描画負荷を最小化していること
+23:33 +3067: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase8_performance_gate_test.dart
+23:36 +3067: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase8_performance_gate_test.dart: [Governance] 大規模性能試験・パフォーマンスゲート要塞 Projection性能において 3000試合の巨大データ配列に対するメモリ検索・フィルタリング構築時間が、Performance Gate規定の「200ms」未満で高速完了すること
+23:36 +3068: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase8_performance_gate_test.dart: [Governance] 大規模性能試験・パフォーマンスゲート要塞 PDF性能において 100ページの巨大プログラム冊子が読み込まれた際、メタデータの展開およびビューポート計算の内部プロセスタイムが、規定の「2sec (2000ms)」未満に収まること
+23:36 +3069: /Users/saradafumiaki/Documents/Apps/kendo_os/test/performance/phase8_performance_gate_test.dart: [Governance] 大規模性能試験・パフォーマンスゲート要塞 リーグ表性能において 50チーム（総当たり最大1225総当たりセッション）規模の巨大集計マトリクスにおいて、勝率および順位計算のフォーマット処理が「200ms」未満で完了すること
+23:38 +3070: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/radio_blackout_standalone_full_day_e2e_test.dart: [E2E] 電波完全暗黒（終日圏外）スタンドアロン完走＆夜間一括同期 E2Eテスト 朝から夕方まで圏外で50試合消化 夜間にWi-Fi接続で50試合一括同期完了こと
+23:38 +3071: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan7_perfection_e2e_test.dart: [E2E] Plan 7 E2Eにおいて 極限最適化・低負荷・絶対安定性 総合結合実証テスト E2E-1: バックグラウンド不要ストリーム完全解放実証において viewerMatchProjectionProvider および下流プロバイダが autoDispose であり、監視終了後に安全にリソースが解放されること
+23:38 +3072: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/blackout_zero_data_loss_crash_recovery_e2e_test.dart: [E2E] 4コート同時進行・全端末強制電源断（Blackout）ゼロデータ損失復旧E2Eテスト 4コート同時進行中に強制電源断が発生しても再起動時に全コートのスコア・絶対時間タイマー状態が完全復旧すること
+🚨 [Crash Preserver] Native: 緊急クラッシュ退避ファイルを保存しました: /var/folders/hh/1g2yms7d3890gm5lz8l0jmj80000gn/T/blackout_e2e_test_fom8Ij/emergency_crash_dump.json
+23:38 +3073: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan7_perfection_e2e_test.dart: [E2E] Plan 7 E2Eにおいて 極限最適化・低負荷・絶対安定性 総合結合実証テスト E2E-2: PIN再認証ダイアログ・ライフサイクル完全破棄実証において CriticalActionGuard でPINダイアログを開き、入力・認証後にダイアログが破棄され、コントローラーが確実に解放されること
+23:40 +3074: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan7_perfection_e2e_test.dart: [E2E] Plan 7 E2Eにおいて 極限最適化・低負荷・絶対安定性 総合結合実証テスト E2E-3: 一斉発信ダイアログ・popアニメーション安全破棄実証において TimelineUnifiedAnnounceDialog が pop アニメーション後も used after being disposed 例外なく正常終了すること
+23:40 +3075: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan7_perfection_e2e_test.dart: [E2E] Plan 7 E2Eにおいて 極限最適化・低負荷・絶対安定性 総合結合実証テスト E2E-4: UIレンダリング境界隔離実証において DockDraggableSheet で RepaintBoundary が正しく配置されていること
+23:41 +3076: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/pwa_stream_reconnect_resilience_e2e_test.dart: [E2E] Web/PWA Viewer スリープ復帰・時計スキュー補正・最新状態再同期耐障害性テスト 端末スリープ中の切断と5秒の時計スキュー発生後、復帰時にServerClockOffsetが補正され、最新プロジェクション状態へ即時収束すること
+23:41 +3077: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/pwa_stream_reconnect_resilience_e2e_test.dart: [E2E] Web/PWA Viewer スリープ復帰・時計スキュー補正・最新状態再同期耐障害性テスト 端末スリープ中の切断と5秒の時計スキュー発生後、復帰時にServerClockOffsetが補正され、最新プロジェクション状態へ即時収束すること
+🌐 [ServerClockOffset] Offset updated: 5000ms
+23:41 +3078: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/pwa_stream_reconnect_resilience_e2e_test.dart: [E2E] Web/PWA Viewer スリープ復帰・時計スキュー補正・最新状態再同期耐障害性テスト 端末スリープ中の切断と5秒の時計スキュー発生後、復帰時にServerClockOffsetが補正され、最新プロジェクション状態へ即時収束すること
+23:41 +3079: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/pwa_stream_reconnect_resilience_e2e_test.dart: [E2E] Web/PWA Viewer スリープ復帰・時計スキュー補正・最新状態再同期耐障害性テスト 端末スリープ中の切断と5秒の時計スキュー発生後、復帰時にServerClockOffsetが補正され、最新プロジェクション状態へ即時収束すること
+23:44 +3080: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/expedition_multi_court_scoring_aggregation_e2e_test.dart: [E2E] 複数コート遠征打突自動集計および詳細モーダル連携結合テスト 複数コートでの試合スコアから自チーム打突内訳が集計されボトムシートで閲覧できること
+23:46 +3081: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/sudden_court_migration_viewer_notify_e2e_test.dart: [E2E] 急遽コート振替（A→Bコート）観客Viewer呼出バナー・試合一覧即時追従E2Eテスト 第1試合場から第2試合場への急遽振替時に、観客側Viewerのプロジェクションとコート情報がリロードなしで即時追従すること
+23:47 +3082: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/corrupted_match_emergency_isolation_e2e_test.dart: [E2E] 試合データ破損緊急隔離およびフェイルセーフ二次破壊阻止テスト 試合ステータスが破損状態の際に赤色警告バナーが表示され編集が隔離遮断され救済エクスポートが許可されること
+23:47 +3083: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/corrupted_match_emergency_isolation_e2e_test.dart: [E2E] 試合データ破損緊急隔離およびフェイルセーフ二次破壊阻止テスト 試合ステータスが破損状態の際に赤色警告バナーが表示され編集が隔離遮断され救済エクスポートが許可されること
+23:47 +3084: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/ultimate_final_quality_gate_all_pass_test.dart: [E2E] 第2期52シナリオ到達・全14大監査総合品質ゲート完全突破 E2Eテスト 全14大ガバナンス監査基準（行数・Null Safety・Freezed・アーキテクチャ）の適合性の決定論的が正しく検証されること
+23:48 +3085: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart
+23:50 +3085: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 タイマーI/Oバッファリングに関して、稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること
+23:51 +3086: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 タイマーI/Oバッファリングに関して、稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること
+23:51 +3087: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 タイマーI/Oバッファリングに関して、稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること
+23:51 +3088: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 PDF LRUメモリ保護に関して、10ページ以上連続アクセスしても上限8ページに制限され、clearUrl で即時解放されること
+🚨 [ProgramViewerPdfPageCache] parseDocumentInfo error: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: Invalid argument (position): Invalid position: -1
+23:51 +3089: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 スナップショットサイズ爆縮に関して、25回連続で操作を行ってもスナップショットが最新1件のみ保持され、DB肥大化がゼロこと
+23:51 +3090: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 通信リーク根絶に関して、matchListByTournamentProvider は autoDispose であり、監視終了後に安全にリソースがクリーンアップされること
+23:51 +3091: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 緊急バックアップ実ファイル3世代ローテーションに関して、連続保存失敗時も実ディスク上に最新3世代のみが維持されディスク肥大化がゼロこと
+23:51 +3092: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 試合タイマー適正化E2Eに関して、通常試合は1000ms（毎秒1回）間引き、代表戦・延長戦のみ100ms高精度Tickが適用されること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (Tick間隔: 500ms)
+23:51 +3093: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 VRR＆タッチ即時復帰E2Eに関して、操作後静止でVRRスロットリングし、画面タップで即座に60fpsへ復帰すること
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.ecoCooling (Tick間隔: 500ms)
+🔋 [Thermal Governor] モード移行: ThermalPowerMode.normal (Tick間隔: 100ms)
+23:52 +3094: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 適応型マイクロバッチングE2Eに関して、微小更新がメモリ集約され、得点クリティカル契機で即時フラッシュされること
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+23:52 +3095: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan2_low_load_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証 P2P差分デルタ伝送E2Eに関して、broadcastMatchDelta で差分ペイロードが安全に構築・送信されること
+23:52 +3096: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/rapid_fire_score_responsiveness_e2e_test.dart: [E2E] Plan 1 高速スコア連打・Jank撲滅＆バッチ同期 E2Eテスト 高速スコア連打シナリオに関して、スコアの連続打突操作（赤・白の一本、取り消し）が遅延なく消化され、最終スコアが完全に整合すること
+23:52 +3097: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/rapid_fire_score_responsiveness_e2e_test.dart: [E2E] Plan 1 高速スコア連打・Jank撲滅＆バッチ同期 E2Eテスト 団体戦セレクター等価遮断シナリオに関して、複数試合が存在するトーナメントで、他グループや同一内容の更新時にリスナーへの再通知が0回こと
+23:52 +3098: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/rapid_fire_score_responsiveness_e2e_test.dart: [E2E] Plan 1 高速スコア連打・Jank撲滅＆バッチ同期 E2Eテスト 複数未同期マッチの一括バルク同期シナリオに関して、オフライン状態で蓄積された全試合がバッチ処理によりアトミックに同期完了ステートへ更新されること
+23:52 +3099: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_multi_court_offline_sync_expedition_e2e_test.dart: [E2E] 複数コート並行 × ネットワーク途絶復帰CRDTマージ × 遠征記録リアルタイム合算 第1コート(常時接続)と第2コート(オフライン断線)の並行進行後、復帰時CRDT決定論的マージ＆遠征記録完全合算こと
+23:55 +3100: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/micro_batch_extreme_rapid_score_flush_e2e_test.dart: (setUpAll)
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+23:55 +3100: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_redo_offline_crdt_convergence_test.dart
+23:55 +3100: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/micro_batch_extreme_rapid_score_flush_e2e_test.dart: [E2E] 極限連打スコア入力マイクロバッチ永続化 E2Eシナリオテスト 毎秒20回以上のスコア連打およびタイマー切替時にマイクロバッチが破綻せずIsarとTwinへ完全永続化されること
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+💾 [Adaptive Micro-Batch] 1 件を一括フラッシュしました
+23:56 +3101: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/micro_batch_extreme_rapid_score_flush_e2e_test.dart: (tearDownAll)
+23:57 +3101: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_redo_offline_crdt_convergence_test.dart: [E2E] 複合Redoオフライン切断およびCRDT競合収束テスト 回線切断下でのUndoおよびRedo操作が再接続時にリモートの新規打突と衝突せず決定論的に収束すること
+23:58 +3102: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/multi_court_concurrent_stress_e2e_test.dart: [E2E] 8コート一斉同時進行・非同期ストリーム詰まりゼロ E2Eテスト 8コートから一斉に同時打突イベントが発生しても、各コートのキューが完全に独立して並行処理されること
+23:58 +3103: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/operator_to_viewer_realtime_sync_e2e_test.dart: [E2E] 運営者入力 〜 観客席Webビューア即時追従E2Eテスト 運営者の得点入力がStreamを通じて観客席Webビューアへ即時伝播・同期されること
+23:59 +3104: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/tournament_full_lifecycle_journey_e2e_test.dart
+24:01 +3104: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/bunaiksen_kachinuki_full_flow_e2e_test.dart: [E2E] E2E 4/5において 部内戦・勝ち抜き戦（勝ち残り）完全フロー実践E2Eテスト 赤5名 vs 白5名の勝ち抜き戦において、勝者残留・引分両者退場・大将戦決着のフローが完全保証されること
+24:02 +3105: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/tournament_full_lifecycle_journey_e2e_test.dart: [E2E] 大会ライフサイクル完全貫通ジャーニーE2Eテスト 大会作成〜試合進行〜結果承認〜公式記録PDF〜観客共有の完全貫通ジャーニーこと
+24:03 +3106: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart: [E2E] 複合動的権限降格およびリアルタイム操作遮断テスト 試合操作中にOperatorからViewerへ降格された際に即時操作遮断され観戦画面へ切り替わること
+24:03 +3107: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart: [E2E] 複合動的権限降格およびリアルタイム操作遮断テスト 試合操作中にOperatorからViewerへ降格された際に即時操作遮断され観戦画面へ切り替わること
+24:04 +3108: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart: [E2E] 複合動的権限降格およびリアルタイム操作遮断テスト 試合操作中にOperatorからViewerへ降格された際に即時操作遮断され観戦画面へ切り替わること
+24:04 +3109: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart: [E2E] 複合動的権限降格およびリアルタイム操作遮断テスト 大会セキュリティレベルがLockedへ緊急変更された場合に全入力が遮断されること
+24:07 +3110: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/cloud_total_loss_local_p2p_rebuild_e2e_test.dart: [E2E] クラウド全損 Local P2P メガ復元 E2Eテスト クラウドが完全死滅しても、コート1・コート2端末のローカルダンプ突合で大会データが100%復元されること
+24:07 +3111: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/multi_tenant_dock_program_state_isolation_e2e_test.dart: [E2E] マルチテナント 道場ルーム切り替えにおけるドック状態完全隔離復元テスト 複数道場ルーム間の切り替えにおいて閲覧プログラムおよびページ位置が完全に隔離されること
+24:07 +3112: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/multi_tenant_dock_program_state_isolation_e2e_test.dart: [E2E] マルチテナント 道場ルーム切り替えにおけるドック状態完全隔離復元テスト 道場IDやプログラムキーが同一のプレフィックスを持つ場合にも部分一致で混信しないこと
+24:10 +3113: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_court_reassignment_live_sync_e2e_test.dart: [E2E] 複合E2Eにおいて コート急遽振替 × タイマー保持 × 観客PWAライブ追従E2Eテスト 第1コート進行中試合の第3コートへの急遽振替時に、タイマー絶対時間・スコア・PendingEventsが完全保持され、観客PWAが即時追従すること
+24:10 +3114: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/official_record_export_all_categories_e2e_test.dart: [E2E] 公式記録 複数カテゴリ混在大会 全カテゴリ一括出力フロー完全検証 4カテゴリ混在データから全カテゴリ一括CSV文字列およびバイト配列が欠損なく生成されること
+24:10 +3115: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/official_record_export_all_categories_e2e_test.dart: [E2E] 公式記録 複数カテゴリ混在大会 全カテゴリ一括出力フロー完全検証 UI上での全カテゴリエクスポートトグル切替・プログレス表示・完了通知のライフサイクルが正しく検証されること
+24:11 +3116: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/global_crash_emergency_trap_and_recovery_e2e_test.dart: [E2E] グローバル例外トラップ＆緊急退避復旧E2Eテスト Native環境で例外トラップ時にクラッシュダンプが保存され再起動後に完全復元されること
+Zone Error: Bad state: 予期せぬクリティカルクラッシュ発生
+🚨 [Crash Preserver] Native: 緊急クラッシュ退避ファイルを保存しました: /var/folders/hh/1g2yms7d3890gm5lz8l0jmj80000gn/T/crash_e2e_test_m5zJf1/emergency_crash_dump.json
+24:11 +3117: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/global_crash_emergency_trap_and_recovery_e2e_test.dart: [E2E] グローバル例外トラップ＆緊急退避復旧E2Eテスト Web環境で未捕捉エラー発生時にSharedPreferencesに退避され復旧できること
+🚨 [Crash Preserver] Web: 緊急クラッシュ退避データを保存しました (ID: match_crash_web_e2e)
+24:12 +3118: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/event_signature_tamper_quarantine_e2e_test.dart: (setUpAll)
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+24:12 +3118: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/event_signature_tamper_quarantine_e2e_test.dart: [E2E] イベント電子署名改ざん隔離および自己修復 E2Eシナリオテスト 悪意あるスコア改ざん発生時にクランティン隔離され正規イベント再同期で自己修復されること
+🛡️ [Quarantine SafeMode] イベント(ID: evt-tampered-fake)の署名不一致を検知。隔離退避します。
+🛡️ [Security Quarantine] 署名不一致データを緊急JSONに隔離退避しました ID: e2e-tamper-match-001
+24:12 +3119: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/event_signature_tamper_quarantine_e2e_test.dart: (tearDownAll)
+24:14 +3119: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_bunaiksen_dynamic_entry_and_retirement_e2e_test.dart: [E2E] 部内戦（勝ち残り戦）動的途中エントリー ＆ 負傷棄権 ＆ 連勝記録即時更新 待機キュー運用・連勝進行・途中負傷棄権・動的エントリー追加・連勝リセットのフルサイクルが正しく検証されること
+24:15 +3120: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_occ_auto_repair_concurrency_convergence_test.dart: [E2E] OCC楽観的排他制御＆自動修復並行収束テスト 並行書き込みによる競合発生時にexecuteWithRetryが最新状態を再取得して整合収束すること
+24:15 +3121: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_occ_auto_repair_concurrency_convergence_test.dart: [E2E] OCC楽観的排他制御＆自動修復並行収束テスト 3回連続で競合し続けた場合はConcurrencyExceptionが正しくスローされること
+24:17 +3122: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/post_finish_gogi_strike_rollback_flow_e2e_test.dart: [E2E] 試合確定後・審判団合議打突取消（Rollback）＆延長戦再開E2Eテスト 試合確定（Finished）後に審判団合議で直前打突が取り消され、試合が再開されること
+24:17 +3123: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/mid_tournament_rule_dynamic_propagation_test.dart: [E2E] 大会途中レギュレーション動的変更・過去試合非汚染伝播 E2Eテスト 途中でルール変更（4分三本勝負 3分一本勝負）時、終了済試合は不変で未実施試合のみ新ルールが適用されること
+24:19 +3124: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/final_monolithic_85_grand_master_e2e_test.dart: [E2E] Kendo OS 全85大極限テストシナリオ完全制覇 グランドマスター E2Eテスト 全85大極限テストシナリオ（全9フェーズ）が1つの欠損もなく完全網羅されていることの決定論的証明こと
+24:19 +3125: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_room_id_collision_resolution_flow_test.dart: [E2E] 道場ルームID重複検知および解決フロー 複合シナリオテスト ルームID重複警告ダイアログにおいてキャンセル選択時に部屋接続が中断され再採番へ戻ること
+24:20 +3126: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_room_id_collision_resolution_flow_test.dart: [E2E] 道場ルームID重複検知および解決フロー 複合シナリオテスト ルームID重複警告ダイアログにおいてこのまま接続選択時に確定処理が安全に実行されること
+24:22 +3127: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: (setUpAll)
+24:22 +3127: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: [E2E] 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞 描画〜ボトムシート即時反映E2Eにおいて 全画面で描画されたストロークが、ボトムシート起動時に同一用紙位置へ即時反映されること
+24:22 +3128: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: [E2E] 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞 描画〜ボトムシート即時反映E2Eにおいて 全画面で描画されたストロークが、ボトムシート起動時に同一用紙位置へ即時反映されること
+24:22 +3129: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: [E2E] 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞 描画〜ボトムシート即時反映E2Eにおいて 全画面で描画されたストロークが、ボトムシート起動時に同一用紙位置へ即時反映されること
+24:23 +3130: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: [E2E] 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞 縦横混在ページ送りE2Eにおいて 1ページ目（縦）から2ページ目（横）へ移動時、用紙とペンが独立して完全に同期すること
+24:23 +3131: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: [E2E] 縦横混在PDF×手書きペン完全同期 E2E統合操作シナリオ要塞 閲覧専用モード整合性E2Eにおいて 観客（Viewer）席で手書きペンが完全一致で閲覧でき、編集ツールが物理排除されていること
+24:23 +3132: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/program_viewer_pen_sync_e2e_test.dart: (tearDownAll)
+24:25 +3132: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/event_history_partition_e2e_test.dart: [E2E] イベント履歴分割E2E 長期イベント履歴を分割保存し、再読込後に全件復元して削除できること
+24:26 +3133: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: (setUpAll)
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+24:26 +3133: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-1: 保留コマンド自律消去・Poison Pill根絶において 同期完了した試合の保留コマンドがIsarから漏れなく自動消去され、キュー滞留がゼロ化すること
+24:26 +3134: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-2: UI局所化・Jank防止において settingsProvider.select((s) => s.themeMode) により、他設定（バイブ・確認ダイアログ等）変更でルート再ビルドが発生しないこと
+24:26 +3135: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/phase19_conflict_e2e_test.dart: [E2E] 同時編集競合要塞：マルチデバイス同期 2端末同時更新において 論理時計による順序制御が正しく検証できること
+24:26 +3135: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-2: UI局所化・Jank防止において settingsProvider.select((s) => s.themeMode) により、他設定（バイブ・確認ダイアログ等）変更でルート再ビルドが発生しないこと
+⚠️ [SoundService] TTS初期化スキップ (モック/Web環境): MissingPluginException(No implementation found for method setLanguage on channel flutter_tts)
+24:26 +3136: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-3: バックグラウンド待機時タイマー沈黙・復帰再開において BatteryNotifier が AppLifecycleState に連動して安全に動作すること
+24:26 +3137: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-3: バックグラウンド待機時タイマー沈黙・復帰再開において BatteryNotifier が AppLifecycleState に連動して安全に動作すること
+24:26 +3137: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-2: UI局所化・Jank防止において settingsProvider.select((s) => s.themeMode) により、他設定（バイブ・確認ダイアログ等）変更でルート再ビルドが発生しないこと
+⚠️ [SoundService] オーディオコンテキスト設定スキップ: MissingPluginException(No implementation found for method init on channel xyz.luan/audioplayers.global)
+⚠️ [SoundService] オーディオコンテキスト設定スキップ: MissingPluginException(No implementation found for method init on channel xyz.luan/audioplayers.global)
+⚠️ [SoundService] オーディオコンテキスト設定スキップ: MissingPluginException(No implementation found for method init on channel xyz.luan/audioplayers.global)
+⚠️ [SoundService] オーディオコンテキスト設定スキップ: MissingPluginException(No implementation found for method init on channel xyz.luan/audioplayers.global)
+⚠️ [SoundService] オーディオコンテキスト設定スキップ: MissingPluginException(No implementation found for method init on channel xyz.luan/audioplayers.global)
+⚠️ [SoundService] オーディオコンテキスト設定スキップ: MissingPluginException(No implementation found for method init on channel xyz.luan/audioplayers.global)
+24:26 +3138: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-4: 空Txn根絶・I/O半減実証において 通常試合（<=200件）保存時に過去アーカイブが存在しない場合はIsarへの不要なwriteTxnが発生せず、正常に保存・復元できること
+24:26 +3139: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-5: Poison Pill自律パージ実証において 不正ペイロードの毒薬コマンドがIsarキューから自律パージされ、後続正常コマンドが滞留なく処理されること
+📢 [Sync Engine] dojoId または tournamentId が未確定のため、Firestore監視を保留します。
+🔄 [Sync Engine] 未送信キューを検知しました: 2 件
+🛡️ [Sync Engine] ペイロードの復元に失敗しました（破損データ）。毒薬キュー化防止のため自律パージします: type 'Null' is not a subtype of type 'String' in type cast
+24:26 +3140: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-6: 保留コマンドバルク保存＆バルクパージ実証において savePendingCommandsBulk による一括書き込みと deleteAll による一括パージがアトミックに動作すること
+24:26 +3141: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: [E2E] Plan 4 E2Eにおいて 4大極限最適化・安定化（軽快・低負荷・絶対安定）統合実証テスト E2E-7: 既読アナウンスID上限トリム実証において ReadAnnouncementsNotifier が200件を超過した古いIDを自動トリムし、メモリ肥大化を完全抑止すること
+24:26 +3142: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan4_extreme_optimization_e2e_test.dart: (tearDownAll)
+24:26 +3142: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_kachinuki_daihyosen_court_reassign_offline_test.dart: [E2E] 勝ち抜き代表戦・動的コート振替・オフラインCRDT収束 極限複合テスト 勝ち抜き戦大将引き分け代表戦の発生からコート振替およびオフライン競合CRDT収束が完全整合すること
+24:26 +3143: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/team_match_representative_decision_e2e_test.dart
+24:28 +3143: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/team_match_representative_decision_e2e_test.dart: [E2E] 団体戦 同点→代表戦（1本勝負）指名・決着E2Eテスト 5人制団体戦で勝者数・総取得本数が完全に同点となるシナリオの集計こと
+24:28 +3144: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/team_match_representative_decision_e2e_test.dart: [E2E] 団体戦 同点→代表戦（1本勝負）指名・決着E2Eテスト 代表戦の自動生成と時間無制限一本勝負（一本先取で即時決着）の完全フローこと
+24:30 +3145: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/multi_player_team_match_e2e_test.dart: [E2E] 多人数団体戦（8人制・9人制）生成・整列・代表戦ライフサイクル完全検証 8人制団体戦（偶数・中堅なし）: 試合作成からソート・勝敗集計のライフサイクルこと
+24:30 +3146: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/multi_player_team_match_e2e_test.dart: [E2E] 多人数団体戦（8人制・9人制）生成・整列・代表戦ライフサイクル完全検証 9人制団体戦（奇数・中央中堅あり）: 同点 代表戦発生時の整列と決着E2Eライフサイクルこと
+24:30 +3147: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_dock_slot_drag_swap_persistence_test.dart: [E2E] 常設ドックスロットドラッグスワップ永続化複合テスト ドックスロットのドラッグスワップが計算エンジンにより判定され永続化と画面回転復元が行われること
+24:32 +3148: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan1_ui_responsiveness_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン1: UIレスポンス高速化・局所再描画・非同期バックオフ検証 他コート更新遮断に関して、別コートの試合が頻繁に更新されても、操作中コートの singleMatchProvider は一切リビルドされないこと
+24:32 +3149: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan1_ui_responsiveness_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン1: UIレスポンス高速化・局所再描画・非同期バックオフ検証 非同期バックオフ & 即時再送に関して、通信断の指数バックオフ待機中であっても、電波復帰シグナルで即時にキューがフラッシュされること
+24:32 +3150: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan1_ui_responsiveness_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン1: UIレスポンス高速化・局所再描画・非同期バックオフ検証 団体戦グループ局所化に関して、同一トーナメント内でも、別グループの更新が自グループのセレクターに影響しないこと
+24:33 +3151: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_quick_memo_zoom_rotation_stress_test.dart: [E2E] クイックメモ ズーム・キーボード連打・画面回転・LRUストレステスト ズーム拡大中のキーボード出現消失連打および縦横画面回転において描画破綻なく追従すること
+24:34 +3152: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_quick_memo_zoom_rotation_stress_test.dart: [E2E] クイックメモ ズーム・キーボード連打・画面回転・LRUストレステスト ズーム拡大中のキーボード出現消失連打および縦横画面回転において描画破綻なく追従すること
+24:36 +3153: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_stability_resilience_e2e_test.dart: [E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト E2E-1: 試合操作中にクラッシュが発生しても直前状態が退避され、再開時に復旧できること
+🚨 [Crash Preserver] Native: 緊急クラッシュ退避ファイルを保存しました: /var/folders/hh/1g2yms7d3890gm5lz8l0jmj80000gn/T/plan3_e2e_IPnEbF/emergency_crash_dump.json
+24:36 +3154: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_robustness_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン3: 堅牢性・同期整合性・データ完全性検証 タイマーミリ秒端数精度の完全維持に関して、30回連続でタイマー開始・停止（はじめ・やめ）を繰り返しても累積ズレが0msこと
+24:36 +3155: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_stability_resilience_e2e_test.dart: [E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト E2E-2: DB（Isar）レコードが欠落してもツイン永続化スナップショットから自己修復（Self-Healing）できること
+24:36 +3155: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_robustness_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン3: 堅牢性・同期整合性・データ完全性検証 Clock Skew 補正に関して、サーバー時刻オフセットが適用され、正確なサーバー同期時刻が取得できること
+🌐 [ServerClockOffset] Offset updated: 5000ms
+24:36 +3156: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_stability_resilience_e2e_test.dart: [E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト E2E-2: DB（Isar）レコードが欠落してもツイン永続化スナップショットから自己修復（Self-Healing）できること
+24:36 +3157: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_robustness_e2e_test.dart: [E2E] E2E / 統合シナリオにおいて プラン3: 堅牢性・同期整合性・データ完全性検証 CRDT 3者マージ＆LWWタイマー調停に関して、リモート確定・ローカル確定・ローカル未送信の3者が完全ユニークマージされ、タイマーが最新状態に調停されること
+24:36 +3158: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_stability_resilience_e2e_test.dart: [E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト 同一IDのコマンドが短時間に複数回投入されても、完全べき等性により重複実行が防止されること
+24:36 +3159: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_stability_resilience_e2e_test.dart: [E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト 同一IDのコマンドが短時間に複数回投入されても、完全べき等性により重複実行が防止されること
+24:36 +3160: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/plan3_stability_resilience_e2e_test.dart: [E2E] Plan 3 E2Eにおいて 不壊・絶対安定・高耐障害性 総合結合テスト 同一IDのコマンドが短時間に複数回投入されても、完全べき等性により重複実行が防止されること
+🔥 [Sync Engine] 同期失敗: [core/no-app] No Firebase App '[DEFAULT]' has been created - call Firebase.initializeApp()
+⚠️ [Sync Engine] 同期失敗回数: 1 / 5
+⏳ [Sync Engine] 指数バックオフ待機: 1秒後に再試行します
+🛡️ [CommandQueue] 重複コマンドを検知し安全にスキップしました (Idempotency Key: idempotent-cmd-uuid-001)
+🔥 [Sync Engine] 同期失敗: [core/no-app] No Firebase App '[DEFAULT]' has been created - call Firebase.initializeApp()
+⚠️ [Sync Engine] 同期失敗回数: 2 / 5
+⏳ [Sync Engine] 指数バックオフ待機: 2秒後に再試行します
+🛡️ [CommandQueue] 重複コマンドを検知し安全にスキップしました (Idempotency Key: idempotent-cmd-uuid-001)
+24:39 +3161: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_expedition_multi_court_scene_report_test.dart: [E2E] 遠征複数コート混在シーンおよび代表戦帳票一括出力 複合シナリオテスト 複数コート進行と本戦錬成申合せ混在および代表戦決着から帳票出力まで整合すること
+24:39 +3162: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/band_live_share_e2e_test.dart: [E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト シナリオ1: チーム試合状況カードにおいて BANDボタンタップ クリップボードコピー シート展開 グループ選択起動の完全連携こと
+24:40 +3163: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/band_live_share_e2e_test.dart: [E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト シナリオ1: チーム試合状況カードにおいて BANDボタンタップ クリップボードコピー シート展開 グループ選択起動の完全連携こと
+24:40 +3164: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/band_live_share_e2e_test.dart: [E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト シナリオ2: タイムライン個人戦において BANDボタンタップ 個人戦コピー コピーのみで閉じるフローこと
+24:40 +3165: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/band_live_share_e2e_test.dart: [E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト シナリオ3: 未登録状態において 空メッセージ表示 その場で即時グループ追加ダイアログ展開こと
+24:41 +3166: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/band_live_share_e2e_test.dart: [E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト シナリオ4: システム設定画面において BAND設定タイル 一括管理シート ダイアログ起動のライフサイクルが正しく検証されること
+24:41 +3167: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/band_live_share_e2e_test.dart: [E2E] BAND LIVE配信連携・対戦カード自動コピー機能 完全保証テスト シナリオ4: システム設定画面において BAND設定タイル 一括管理シート ダイアログ起動のライフサイクルが正しく検証されること
+24:42 +3168: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/network_flapping_continuous_crdt_resilience_test.dart: [E2E] 激しいネットワークフラッピング（100回接続/切断）CRDT収束 E2Eテスト 100回のオンライン/オフライン切り替わり下で生成されたスコアイベントが1件も脱落せず時系列順に整列されること
+24:42 +3169: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/hall_wide_emergency_evacuation_broadcast_test.dart: [E2E] 体育館地震・火災 本部一斉緊急中断＆避難画面ブロードキャストE2Eテスト 本部緊急避難指令受信時、1秒以内にタイマー強制停止＆全コート警告画面オーバーレイこと
+24:45 +3170: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_offline_fifo_sync_projection_convergence_test.dart: [E2E] 複合オフラインFIFO同期およびプロジェクション決定論的収束テスト 体育館断線下の連続入力が再接続時にFIFO順序で送信されプロジェクションハッシュが完全収束すること
+24:45 +3171: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart: [E2E] 部内戦 リアルタイム試合進行・観戦記録自動更新・エクスポート統合テスト 試合結果確定に伴い観戦側星取表が即座に自動再集計されPDFエクスポートが活性化すること
+24:46 +3172: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart: [E2E] 部内戦 リアルタイム試合進行・観戦記録自動更新・エクスポート統合テスト 試合結果確定に伴い観戦側星取表が即座に自動再集計されPDFエクスポートが活性化すること
+24:46 +3173: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart: [E2E] 部内戦 リアルタイム試合進行・観戦記録自動更新・エクスポート統合テスト 試合結果確定に伴い観戦側星取表が即座に自動再集計されPDFエクスポートが活性化すること
+24:46 +3174: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart: [E2E] 部内戦 リアルタイム試合進行・観戦記録自動更新・エクスポート統合テスト 試合結果確定に伴い観戦側星取表が即座に自動再集計されPDFエクスポートが活性化すること
+24:48 +3175: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/team_match_status_e2e_test.dart: [E2E] チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト 総合E2Eシナリオにおいて 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること
+24:49 +3176: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/team_match_status_e2e_test.dart: [E2E] チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト 総合E2Eシナリオにおいて 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること
+24:49 +3177: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/team_match_status_e2e_test.dart: [E2E] チーム試合状況 全試合形式（個人・リーグ・勝抜・団体）完全保証テスト 総合E2Eシナリオにおいて 個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること
+24:50 +3178: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/emergency_order_substitution_e2e_test.dart: (setUpAll)
+24:50 +3178: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/emergency_order_substitution_e2e_test.dart: [E2E] E2E 3/5において 試合開始直前 選手急遽差替・オーダー変更 完全保証E2Eテスト 先鋒戦の直前差替において、過去の試合を汚染せず新選手名が帳票・PDFまで一貫波及すること
+24:51 +3179: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/emergency_order_substitution_e2e_test.dart: (tearDownAll)
+24:51 +3179: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/pwa_deep_sleep_wake_catchup_e2e_test.dart: [E2E] 観客PWA ディープスリープ復帰・30試合一括差分キャッチアップE2Eテスト 画面ロックで長時間放置後に30試合分の差分イベントを一括受信してもプロジェクションが破綻せず最新状態に同期すること
+🌐 [ServerClockOffset] Offset updated: 7200000ms
+24:53 +3180: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_kachinuki_full_sweep_and_daihyosen_e2e_test.dart: [E2E] 勝ち抜き戦 5人抜き全勝スイープ ＆ 大将引き分け代表戦 フルライフサイクル検証 全勝スイープE2Eに関して、先鋒1名による5人抜き達成・連勝バッジ・公式記録投影ライフサイクルこと
+24:53 +3181: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_kachinuki_full_sweep_and_daihyosen_e2e_test.dart: [E2E] 勝ち抜き戦 5人抜き全勝スイープ ＆ 大将引き分け代表戦 フルライフサイクル検証 大将延長代表戦E2Eに関して、先鋒〜副将相引き分け→大将戦相引き分け→大将延長戦完全決着ライフサイクルこと
+24:54 +3182: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_multi_player_fusensho_daihyosen_export_test.dart: [E2E] 多人数団体戦 不戦勝多発・代表戦決着・一括帳票エクスポート複合テスト 多人数団体戦で不戦勝が多発し代表戦へもつれ込んだ記録がCSV帳票へ完全出力されること
+24:56 +3183: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/admin_host_handover_seamless_e2e_test.dart: [E2E] 大会本部端末電池切れ サブ端末へのAdminホスト権限引き継ぎ E2Eテスト 旧端末（iPad A）から新端末（iPad B）へPIN引き継ぎ実行後、旧端末が降格し新端末がAdminに昇格すること
+24:56 +3184: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/admin_host_handover_seamless_e2e_test.dart: [E2E] 大会本部端末電池切れ サブ端末へのAdminホスト権限引き継ぎ E2Eテスト 不正なPINでの乗っ取り試行が拒絶されること
+24:56 +3185: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/dock_program_persistence_e2e_test.dart: [E2E] ドックプログラム閲覧位置端末永続化 ＆ 全画面ビューア連携 E2E検証 ドック展開 → ページ送り → ボトムシート終了 → 再展開復元 → 全画面遷移 → 全画面ページ送り → 画面復帰 → 端末再起動後完全復元シナリオこと
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+24:58 +3186: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/dock_program_persistence_e2e_test.dart: [E2E] ドックプログラム閲覧位置端末永続化 ＆ 全画面ビューア連携 E2E検証 ドック展開 → ページ送り → ボトムシート終了 → 再展開復元 → 全画面遷移 → 全画面ページ送り → 画面復帰 → 端末再起動後完全復元シナリオこと
+24:58 +3187: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_dock_timer_wheel_and_keyboard_input_test.dart: [E2E] ドックタイマー ホイール選択＆手入力キーボード同期複合テスト キーボード手入力とホイールピッカーの両方でタイマー時間が正確に更新反映されること
+24:58 +3187: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/dock_program_persistence_e2e_test.dart: [E2E] ドックプログラム閲覧位置端末永続化 ＆ 全画面ビューア連携 E2E検証 E2Eにおいて 複数ページ進行後に「最初のページに戻る」をタップ → 1ページ目復帰 ＆ ドック再展開 ＆ 全画面ビューア連携 ＆ アプリ再起動後も1ページ目維持シナリオこと
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+🚨 [ProgramViewerPdfBody] Failed to load source bytes: Exception: Failed to load PDF bytes from https://example.com/e2e_schedule.pdf: status 400
+24:59 +3188: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_dock_timer_wheel_and_keyboard_input_test.dart: [E2E] ドックタイマー ホイール選択＆手入力キーボード同期複合テスト キーボード手入力とホイールピッカーの両方でタイマー時間が正確に更新反映されること
+25:00 +3189: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/dock_quick_memo_zoom_and_sheet_expansion_e2e_test.dart: [E2E] クイックメモ ズーム＆パン操作・キーボード自動全開・全画面復元 E2E結合実証テスト ドック展開 → 2本指ズーム＆パン → 拡大描画 → テキスト切り替えでシート自動全開 → 全画面遷移で完全復元シナリオこと
+25:03 +3190: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/phase14_live_tournament_e2e_test.dart: [E2E] 大会当日運営シナリオE2E・現場カオス完全制覇テスト要塞 シナリオ1: 団体リーグ戦において 大会作成 リーグ作成 複数試合進行 順位確定 結果出力までの全ステートが独立性を保ち正常に遷移完了すること
+25:03 +3191: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/phase14_live_tournament_e2e_test.dart: [E2E] 大会当日運営シナリオE2E・現場カオス完全制覇テスト要塞 シナリオ2: 勝ち抜き代表戦において 勝ち抜き戦の全ポジション終了後に同点となり、代表戦(無制限延長)へ突入 決着による大会終了ステートへ数学的に収束すること
+25:03 +3192: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/phase14_live_tournament_e2e_test.dart: [E2E] 大会当日運営シナリオE2E・現場カオス完全制覇テスト要塞 シナリオ3: 個人戦において 個人戦トーナメント 予選リーグ 3位決定戦・決勝戦にいたる独立リレーショナル状態がデグレを起こさずプロジェクションされること
+25:03 +3193: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/phase14_live_tournament_e2e_test.dart: [E2E] 大会当日運営シナリオE2E・現場カオス完全制覇テスト要塞 シナリオ4: 100試合同期保留バースト合流において 完全オフライン状態で100試合分のスコア入力を未送信（localOnly）のままキューに保留し、オンライン復旧時に1ビットの欠落もなく一括バースト同期が完了すること
+25:03 +3194: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_large_text_multi_player_team_match_e2e_test.dart: [E2E] 文字拡大モード(1.35x) × 7人制団体戦 × 反則累積・不戦勝 × 代表戦 × CSV一括出力 ドメイン＆極限シナリオに関して、7人制団体戦で反則累積一本・不戦勝・大将戦同点・代表戦サドンデス完全決着こと
+25:03 +3195: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_large_text_multi_player_team_match_e2e_test.dart: [E2E] 文字拡大モード(1.35x) × 7人制団体戦 × 反則累積・不戦勝 × 代表戦 × CSV一括出力 UI・アクセシビリティに関して、文字拡大モード(特大 1.35x)下での7人制結果表示・オーバーフローゼロが正しく検証されること
+25:04 +3196: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_simultaneous_score_input_undo_convergence_test.dart: [E2E] 分散競合E2Eにおいて ミリ秒同時打突入力 × 直後Undo双方向収束テスト 主審(A)と副審(B)によるミリ秒同時打突入力が決定論的に同一順序へ収束し、直後のUndoが双方で完全に双方向同期されること
+25:07 +3197: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/twin_match_persistence_e2e_test.dart: (setUpAll)
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+25:07 +3197: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/twin_match_persistence_e2e_test.dart: 一括保存後にIsarレコードが欠落してもTwinから自己修復できること
+🛡️ [Self-Healing] スナップショットからIsarへ自己修復完了: e2e-twin-recovery
+25:08 +3198: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_dynamic_rule_change_and_export_e2e_test.dart: [E2E] 複合ルール動的変更および既存試合不変性CSV出力結合テスト 大会途中でルールが変更されても完了済み過去試合のスコアとルール定義が保持され新旧混在CSVが安全に出力されること
+25:08 +3199: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/twin_match_persistence_e2e_test.dart: (tearDownAll)
+25:08 +3199: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/tournament_final_archive_zip_pack_e2e_test.dart: [E2E] 大会終了 全帳票PDF一括アーカイブ・ZIP化・閲覧専用凍結 E2Eテスト 大会終了処理時、必要な公式PDF・CSVがすべて揃い、大会ステータスが読み取り専用に凍結されること
+25:09 +3200: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/composite_deep_link_internal_guard_security_test.dart: [E2E] ディープリンク多層防衛およびセキュリティガード複合テスト 不正なディープリンクアクセス時に多層防御ガードが連動し水際で安全遮断されること
+25:09 +3201: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/web_history_back_forward_dialog_stack_e2e_test.dart: [E2E] Webブラウザ極限 - ブラウザ履歴戻る/ダイアログスタック安全制御テスト 多重モーダルが開かれた状態でポップ操作が実行された際、最前面のダイアログから順に閉じること
+25:10 +3202: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/web_history_back_forward_dialog_stack_e2e_test.dart: [E2E] Webブラウザ極限 - ブラウザ履歴戻る/ダイアログスタック安全制御テスト 多重モーダルが開かれた状態でポップ操作が実行された際、最前面のダイアログから順に閉じること
+25:12 +3203: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:12 +3204: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:12 +3205: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:12 +3206: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3207: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3208: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3209: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3210: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3211: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3212: /Users/saradafumiaki/Documents/Apps/kendo_os/test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart: [E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること
+25:13 +3213: /Users/saradafumiaki/Documents/Apps/kendo_os/test/chaos/drift_attack_test.dart: [E2E] Drift & Projection Attack Semantic Drift Attack Simulationこと
+25:13 +3214: /Users/saradafumiaki/Documents/Apps/kendo_os/test/chaos/drift_attack_test.dart: [E2E] Drift & Projection Attack Projection Corruption Detectionこと
+25:13 +3215: loading /Users/saradafumiaki/Documents/Apps/kendo_os/test/chaos/rogue_ai_simulation_test.dart
+25:15 +3215: /Users/saradafumiaki/Documents/Apps/kendo_os/test/chaos/rogue_ai_simulation_test.dart: [E2E] Rogue AI & Hallucination テスト Forbidden Pattern Detectionこと
+25:15 +3216: /Users/saradafumiaki/Documents/Apps/kendo_os/test/chaos/rogue_ai_simulation_test.dart: [E2E] Rogue AI & Hallucination テスト AI Hallucination (Non-existent API) Checkこと
+25:16 +3217: /Users/saradafumiaki/Documents/Apps/kendo_os/test/helpers/test_isar_helper_test.dart: [Unit] TestIsarHelper 単体テスト オープン、クリア、および安全な破棄が正常に行われること
+IsarCore using libmdbx: v0.13.8-temp-upstream-fix
+25:17 +3218: /Users/saradafumiaki/Documents/Apps/kendo_os/test/helpers/test_isar_helper_test.dart: [Unit] TestIsarHelper 単体テスト オープン、クリア、および安全な破棄が正常に行われること
+25:17 +3219: /Users/saradafumiaki/Documents/Apps/kendo_os/test/helpers/test_isar_helper_test.dart: [Unit] TestIsarHelper 単体テスト オープン、クリア、および安全な破棄が正常に行われること
+25:18 +3220: /Users/saradafumiaki/Documents/Apps/kendo_os/test/endurance/phase7_long_term_endurance_test.dart: [E2E] 長時間運営耐久・経時ストレステスト要塞 連続タイマー12時間において 12時間（43,200秒）が丸ごと経過した極限コンテキストにおいても、経過Msの絶対逆算プロジェクションにオーバーフローや型丸めバグが発生しないこと
+25:18 +3221: /Users/saradafumiaki/Documents/Apps/kendo_os/test/endurance/phase7_long_term_endurance_test.dart: [E2E] 長時間運営耐久・経時ストレステスト要塞 Memory Leak構造監視において 10,000回連続でスコアイベントの copyWith 追記を繰り返しても、ドメイン状態が非破壊原則(Immutable)を守り、ヒープの異常増殖やリスナーリークを起こさないこと
+25:18 +3222: /Users/saradafumiaki/Documents/Apps/kendo_os/test/endurance/phase7_long_term_endurance_test.dart: [E2E] 長時間運営耐久・経時ストレステスト要塞 Memory Leak構造監視において 10,000回連続でスコアイベントの copyWith 追記を繰り返しても、ドメイン状態が非破壊原則(Immutable)を守り、ヒープの異常増殖やリスナーリークを起こさないこと
+25:18 +3223: /Users/saradafumiaki/Documents/Apps/kendo_os/test/endurance/phase7_long_term_endurance_test.dart: [E2E] 長時間運営耐久・経時ストレステスト要塞 Memory Leak構造監視において 10,000回連続でスコアイベントの copyWith 追記を繰り返しても、ドメイン状態が非破壊原則(Immutable)を守り、ヒープの異常増殖やリスナーリークを起こさないこと
+25:18 +3224: /Users/saradafumiaki/Documents/Apps/kendo_os/test/endurance/phase7_long_term_endurance_test.dart: [E2E] 長時間運営耐久・経時ストレステスト要塞 Memory Leak構造監視において 10,000回連続でスコアイベントの copyWith 追記を繰り返しても、ドメイン状態が非破壊原則(Immutable)を守り、ヒープの異常増殖やリスナーリークを起こさないこと
+25:19 +3225: /Users/saradafumiaki/Documents/Apps/kendo_os/test/endurance/phase7_long_term_endurance_test.dart: [E2E] 長時間運営耐久・経時ストレステスト要塞 Suspend/Resume 100回往復において アプリのバックグラウンド（停泊）とフォアグラウンド（復帰）の往復が100回連続で発生しても、キャッシュ汚染を起こさずドメインの絶対時間から残り秒数が決定論的に再計算され続けること
+25:19 +3226: All tests passed!

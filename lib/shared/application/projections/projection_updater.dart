@@ -11,10 +11,12 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
 final projectionUpdaterProvider = Provider<ProjectionUpdater>((ref) {
-  return ProjectionUpdater(
+  final updater = ProjectionUpdater(
     eventStore: ref.read(eventStoreProvider),
     projectionStore: ref.read(projectionStoreProvider),
   );
+  ref.onDispose(() => updater.stopAll());
+  return updater;
 });
 
 /// B-3: EventStoreの変更を監視し、非同期にProjectionを生成・保存するエンジン

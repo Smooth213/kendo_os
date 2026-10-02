@@ -255,16 +255,18 @@ class _DockTimerDisplayCardState extends State<DockTimerDisplayCard> {
                   ),
                   child: ClipRRect(
                     borderRadius: AppRadius.small,
-                    child: LinearProgressIndicator(
-                      value: widget.timerState.progress,
-                      minHeight: 6,
-                      backgroundColor: themeColors.separatorColor.withValues(
-                        alpha: 0.3,
-                      ),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isFinished
-                            ? AppKendoColors.hansokuRed
-                            : AppKendoColors.orangeAccent,
+                    child: RepaintBoundary(
+                      child: LinearProgressIndicator(
+                        value: widget.timerState.progress,
+                        minHeight: 6,
+                        backgroundColor: themeColors.separatorColor.withValues(
+                          alpha: 0.3,
+                        ),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isFinished
+                              ? AppKendoColors.hansokuRed
+                              : AppKendoColors.orangeAccent,
+                        ),
                       ),
                     ),
                   ),
@@ -286,61 +288,63 @@ class _DockTimerDisplayCardState extends State<DockTimerDisplayCard> {
               ? AppKendoColors.orangeAccent
               : widget.themeColors.textColor);
 
-    return Row(
-      key: const ValueKey('digital_display'),
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        DockTimerNumberBlock(
-          text: minStr,
-          controller: _minTextController,
-          focusNode: _minFocusNode,
-          isEditing: _inputMode == TimerCardInputMode.editMinutes,
-          isMinutes: true,
-          isRunning: widget.isRunning,
-          isStopwatch: widget.isStopwatch,
-          color: color,
-          themeColors: widget.themeColors,
-          onTap: () => _startEditing(true),
-          onTextChanged: _onTextChanged,
-          onSubmitted: () => _startEditing(false),
-        ),
-        Text(
-          ' : ',
-          style: TextStyle(
-            fontSize: AppFontSize.scoreboardTimer,
-            fontWeight: AppFontWeight.bold,
-            fontFamily: 'monospace',
+    return RepaintBoundary(
+      child: Row(
+        key: const ValueKey('digital_display'),
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DockTimerNumberBlock(
+            text: minStr,
+            controller: _minTextController,
+            focusNode: _minFocusNode,
+            isEditing: _inputMode == TimerCardInputMode.editMinutes,
+            isMinutes: true,
+            isRunning: widget.isRunning,
+            isStopwatch: widget.isStopwatch,
             color: color,
+            themeColors: widget.themeColors,
+            onTap: () => _startEditing(true),
+            onTextChanged: _onTextChanged,
+            onSubmitted: () => _startEditing(false),
           ),
-        ),
-        DockTimerNumberBlock(
-          text: secStr,
-          controller: _secTextController,
-          focusNode: _secFocusNode,
-          isEditing: _inputMode == TimerCardInputMode.editSeconds,
-          isMinutes: false,
-          isRunning: widget.isRunning,
-          isStopwatch: widget.isStopwatch,
-          color: color,
-          themeColors: widget.themeColors,
-          onTap: () => _startEditing(false),
-          onTextChanged: _onTextChanged,
-          onSubmitted: _commitTextEditing,
-        ),
-        if (_inputMode == TimerCardInputMode.editMinutes ||
-            _inputMode == TimerCardInputMode.editSeconds) ...[
-          const SizedBox(width: AppSpacing.sm),
-          IconButton(
-            onPressed: _commitTextEditing,
-            icon: const Icon(
-              Icons.check_circle,
-              color: AppKendoColors.orangeAccent,
-              size: 28,
+          Text(
+            ' : ',
+            style: TextStyle(
+              fontSize: AppFontSize.scoreboardTimer,
+              fontWeight: AppFontWeight.bold,
+              fontFamily: 'monospace',
+              color: color,
             ),
-            tooltip: '確定',
           ),
+          DockTimerNumberBlock(
+            text: secStr,
+            controller: _secTextController,
+            focusNode: _secFocusNode,
+            isEditing: _inputMode == TimerCardInputMode.editSeconds,
+            isMinutes: false,
+            isRunning: widget.isRunning,
+            isStopwatch: widget.isStopwatch,
+            color: color,
+            themeColors: widget.themeColors,
+            onTap: () => _startEditing(false),
+            onTextChanged: _onTextChanged,
+            onSubmitted: _commitTextEditing,
+          ),
+          if (_inputMode == TimerCardInputMode.editMinutes ||
+              _inputMode == TimerCardInputMode.editSeconds) ...[
+            const SizedBox(width: AppSpacing.sm),
+            IconButton(
+              onPressed: _commitTextEditing,
+              icon: const Icon(
+                Icons.check_circle,
+                color: AppKendoColors.orangeAccent,
+                size: 28,
+              ),
+              tooltip: '確定',
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 

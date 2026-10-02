@@ -187,6 +187,57 @@ class MatchRepository {
     }
   }
 
+  // 3-B. 複数試合を一括保存（WriteBatchによるアトミック保存・Web等の高速バルク同期用）
+  Future<void> saveMatchesBatch(List<MatchModel> matches) async {
+    if (matches.isEmpty) return;
+
+    WriteBatch batch = _firestore.batch();
+    int operationCount = 0;
+
+    for (final match in matches) {
+      final targetOrgId =
+          (match.organizationId.isNotEmpty &&
+              match.organizationId != 'default_org')
+          ? match.organizationId
+          : _dojoId;
+
+      final targetTournamentId =
+          (match.tournamentId != null && match.tournamentId!.isNotEmpty)
+          ? match.tournamentId!
+          : (_tournamentId.isNotEmpty ? _tournamentId : 'default_tournament');
+
+      final docRef = _firestore
+          .collection('organizations')
+          .doc(targetOrgId)
+          .collection('tournaments')
+          .doc(targetTournamentId)
+          .collection('matches')
+          .doc(match.id);
+
+      final archives = MatchEventCloudCodec.archiveData(match);
+
+      // Firestoreの1バッチ上限500操作を超えないよう400件上限で自動分割コミット
+      if (operationCount + 1 + archives.length > 400) {
+        await batch.commit();
+        batch = _firestore.batch();
+        operationCount = 0;
+      }
+
+      batch.set(docRef, MatchEventCloudCodec.matchData(match));
+      operationCount++;
+
+      for (final archive in archives) {
+        final chunkIndex = archive['chunkIndex'] as int;
+        batch.set(docRef.collection('events').doc('$chunkIndex'), archive);
+        operationCount++;
+      }
+    }
+
+    if (operationCount > 0) {
+      await batch.commit();
+    }
+  }
+
   // 4. 試合を削除
   Future<void> deleteMatch(String matchId) async {
     try {

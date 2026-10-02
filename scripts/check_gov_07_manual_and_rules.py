@@ -13,6 +13,10 @@ import sys
 SUB_AUDITS = [
     ("① アプリ内マニュアル＆取説整合性規約", ["python3", "scripts/check_manual_governance.py"]),
     ("② 独立カテゴリ・ルール設定フォールバック安全規約", ["python3", "scripts/check_category_rules_governance.py"]),
+    (
+        "③ マニュアルルートID・実体Markdown 1対1整合性静的保証規約",
+        ["flutter", "test", "test/governance/manual_route_integrity_governance_test.dart"],
+    ),
 ]
 
 def main():

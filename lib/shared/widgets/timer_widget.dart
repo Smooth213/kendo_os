@@ -254,21 +254,23 @@ class TimerWidget extends ConsumerWidget {
                 final seconds = ref.watch(
                   liveRemainingSecondsProvider(matchId),
                 );
-                return Text(
-                  _formatTime(seconds),
-                  textScaler: TextScaler.noScaling,
-                  style: TextStyle(
-                    fontSize: AppFontSize.scoreboardLarge,
-                    fontWeight: AppFontWeight.bold,
-                    // fontFamily: 'Courier',
-                    height: 1.1,
-                    // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調
-                    color: isInputLocked
-                        ? (isDark
-                              ? const Color(0x8AFFFFFF)
-                              : const Color(0x8A000000))
-                        : timerTextColor,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                return RepaintBoundary(
+                  child: Text(
+                    _formatTime(seconds),
+                    textScaler: TextScaler.noScaling,
+                    style: TextStyle(
+                      fontSize: AppFontSize.scoreboardLarge,
+                      fontWeight: AppFontWeight.bold,
+                      // fontFamily: 'Courier',
+                      height: 1.1,
+                      // ★ 修正：ロック時はテキストもグレーアウトして「非アクティブ」を強調
+                      color: isInputLocked
+                          ? (isDark
+                                ? const Color(0x8AFFFFFF)
+                                : const Color(0x8A000000))
+                          : timerTextColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 );
               },
