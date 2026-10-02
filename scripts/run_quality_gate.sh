@@ -31,7 +31,8 @@ echo ""
 # PHASE 2: 単体・結合・E2Eテスト要塞 (全スイート 100% PASS 保証)
 # ==============================================================================
 echo "🧪 [Phase 2/2] 単体・結合・E2Eテスト要塞を実行中..."
-flutter test test/governance/design_system_governance_test.dart \
+flutter test -j 6 --no-pub \
+             test/governance/design_system_governance_test.dart \
              test/governance/hint_text_theme_contrast_governance_test.dart \
              test/governance/qr_share_design_governance_test.dart \
              test/governance/text_scale_overflow_governance_test.dart \

@@ -54,7 +54,7 @@ def run_all_tests():
     else:
         print("💡 [Info] コミット時ガバナンス監査済みのため、重複実行をスキップしてテストを開始します。\n")
     
-    cmd = ["flutter", "test"] + test_args
+    cmd = ["flutter", "test", "-j", "6", "--no-pub"] + test_args
     print(f"🧪 Flutter テストスイート完全実行中... ({' '.join(cmd)})\n")
     
     master, slave = pty.openpty()

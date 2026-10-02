@@ -53,16 +53,15 @@ jobs:
         run: npm test
         working-directory: ./functions
 
-  # ⚡ STEP 2: テスト要塞の4並列 Sharding 実行（16分超 ➔ 約4分へ劇的短縮）
+  # ⚡ STEP 2: テスト要塞の6並列 Sharding 実行（完全並列化）
   test-shards:
     name: 🧪 テスト要塞並列実行 (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
     runs-on: ubuntu-latest
-    needs: [static-analysis]
     strategy:
       fail-fast: false
       matrix:
-        total-shards: [4]
-        shard-index: [0, 1, 2, 3]
+        total-shards: [6]
+        shard-index: [0, 1, 2, 3, 4, 5]
     steps:
       - name: 📥 リポジトリのチェックアウト
         uses: actions/checkout@v4
@@ -92,23 +91,3 @@ jobs:
           LD_LIBRARY_PATH: .:${{ github.workspace }}:/usr/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib
         run: flutter test --total-shards ${{ matrix.total-shards }} --shard-index ${{ matrix.shard-index }}
 
-  # ⚙️ STEP 3: Cloud Functions 自動テスト
-  cloud-functions:
-    name: ⚙️ Cloud Functions 自動テスト (Jest)
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 リポジトリのチェックアウト
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Node.js環境の構築 (Cloud Functions 用)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: 📦 Cloud Functions 依存パッケージの解決
-        run: npm ci
-        working-directory: ./functions
-
-      - name: 🧪 Cloud Functions 自動ユニットテスト (Jest)
-        run: npm test
-        working-directory: ./functions

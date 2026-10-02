@@ -118,7 +118,6 @@ jobs:
         run: |
           flutter test test/chaos/rogue_ai_simulation_test.dart
           flutter test test/chaos/drift_attack_test.dart
-          flutter test
         
       - name: "🔐 Step 12: Governance Hardening & Security"
         run: |
