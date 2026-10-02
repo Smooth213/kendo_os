@@ -53,15 +53,15 @@ jobs:
         run: npm test
         working-directory: ./functions
 
-  # ⚡ STEP 2: テスト要塞の6並列 Sharding 実行（完全並列化）
+  # ⚡ STEP 2: テスト要塞の12並列 Sharding 実行（完全並列化・約5分台への極限短縮）
   test-shards:
     name: 🧪 テスト要塞並列実行 (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        total-shards: [6]
-        shard-index: [0, 1, 2, 3, 4, 5]
+        total-shards: [12]
+        shard-index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     steps:
       - name: 📥 リポジトリのチェックアウト
         uses: actions/checkout@v4
