@@ -9,7 +9,7 @@ on:
 jobs:
   # 🔍 STEP 1: 静的解析・ガバナンス監査（最速1分で完了・構文/型エラーを即座に検知）
   static-analysis:
-    name: 🔍 静的解析＆ガバナンス監査 (Fast-Fail)
+    name: 🔍 Firebase & Flutter 静的解析＆ガバナンス監査 (Fast-Fail)
     runs-on: ubuntu-latest
     steps:
       - name: 📥 リポジトリのチェックアウト
@@ -20,25 +20,38 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: ⚙️ Node.js環境の構築 (Cloud Functions 用)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: 🚀 Flutter安定版環境の構築
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
 
-      - name: 📦 依存パッケージの解決
+      - name: 📦 Flutter 依存パッケージの解決
         run: flutter pub get
 
-      - name: 🛡️ 全23大ガバナンス監査の完全実行 (Unified Governance Runner 1/23 〜 23/23)
-        run: python3 scripts/run_all_governance.py
+      - name: 📦 Cloud Functions 依存パッケージの解決
+        run: npm ci
+        working-directory: ./functions
 
-      - name: 🧹 Dartコード・警告の全自動修復 (自動フォーマット & リント修復)
+      - name: 🧹 [1/4] Dartコード・警告の全自動修復 (自動フォーマット & リント修復)
         run: |
           dart fix --apply
           dart format .
 
-      - name: 🔍 静的解析空間の厳格監査 (Red Error保護)
+      - name: 🛡️ [2/4] 全31大ガバナンス法典 統合監査 (Unified Governance Runner 1/31 〜 31/31)
+        run: python3 scripts/run_all_governance.py
+
+      - name: 🔍 [3/4] Flutter 静的解析空間の厳格監査 (Red Error保護)
         run: flutter analyze --no-fatal-infos
+
+      - name: ⚙️ [4/4] Firebase Cloud Functions 自動ユニットテスト (Jest)
+        run: npm test
+        working-directory: ./functions
 
   # ⚡ STEP 2: テスト要塞の4並列 Sharding 実行（16分超 ➔ 約4分へ劇的短縮）
   test-shards:

@@ -16,31 +16,21 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全31大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全31大ガバナンス個別監査を実行中..."
-python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全31大ガバナンス個別監査: ALL PASS"
-echo ""
-
-# 2. 静的解析
-echo "🔍 [Step 2/3] Flutter 静的解析を実行中..."
-ANALYZE_STATUS=0
-ANALYZE_OUTPUT=$(flutter analyze 2>&1) || ANALYZE_STATUS=$?
-echo "$ANALYZE_OUTPUT"
-
-if [ $ANALYZE_STATUS -ne 0 ]; then
-  echo "❌ [Step 2/3] 静的解析: FAIL"
+# ==============================================================================
+# PHASE 1: 静的解析＆ガバナンス監査 (Fast-Fail)
+# ==============================================================================
+echo "🚀 [Phase 1/2] 静的解析＆ガバナンス監査 (Fast-Fail) を実行中..."
+./scripts/run_fast_fail.sh || {
+  echo "❌ [Phase 1/2] Fast-Fail 監査で問題が検出されました。"
   exit 1
-elif echo "$ANALYZE_OUTPUT" | grep -q "No issues found!"; then
-  echo "🟢 [Step 2/3] 静的解析: 🟢 PASS (0 issues, 警告ゼロ)"
-else
-  # 終了コード0（致命的エラーなし）だが、警告・info等の指摘がある場合
-  echo "🟢 [Step 2/3] 静的解析: 🟢 PASS（🟡警告あり）"
-fi
+}
+echo "✅ [Phase 1/2] Fast-Fail 監査: ALL PASS"
 echo ""
 
-# 3. 単体・E2Eテスト
-echo "🧪 [Step 3/3] 単体・結合・E2Eテストを実行中..."
+# ==============================================================================
+# PHASE 2: 単体・結合・E2Eテスト要塞 (全スイート 100% PASS 保証)
+# ==============================================================================
+echo "🧪 [Phase 2/2] 単体・結合・E2Eテスト要塞を実行中..."
 flutter test test/governance/design_system_governance_test.dart \
              test/governance/hint_text_theme_contrast_governance_test.dart \
              test/governance/qr_share_design_governance_test.dart \
