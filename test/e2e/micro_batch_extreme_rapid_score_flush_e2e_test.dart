@@ -89,7 +89,7 @@ void main() {
         await repository.saveMatchBatched(currentMatch);
       }
 
-      // 明示的フラッシュで完全永続化待機
+      // 明示的フラッシュで完全永続化待機（IsarおよびTwinの保留中キューを完全同期）
       await repository.flushMicroBatch();
 
       // 1. Isarからの取得検証
@@ -100,8 +100,7 @@ void main() {
       expect(isarMatch.redScore, 13);
       expect(isarMatch.whiteScore, 12);
 
-      // 2. Twinスナップショットからの取得復元検証（非同期キュー完了待機）
-      await Future.delayed(const Duration(milliseconds: 150));
+      // 2. Twinスナップショットからの取得復元検証（保留中書き込みフラッシュ保証）
       final twinMatch = await TwinMatchPersistenceHelper.recoverMatch(matchId);
       expect(twinMatch, isNotNull);
       expect(twinMatch!.id, matchId);

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第11条 ガバナンス監査】📜 リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約
+🥋 Kendo OS - 【第305条 ガバナンス監査】📜 リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約
 ================================================================================
 ① 選手候補入力（smart_player_input.dart）の ListView.builder 仮想化
 ② 選手一括選択入力（multi_player_select_input.dart）の ListView.builder 仮想化
@@ -15,7 +15,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第11条 ガバナンス監査】📜 リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約")
+    print(" 📊 【第305条 ガバナンス監査】📜 リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約")
     print("=" * 68)
 
     cmd = [
@@ -45,7 +45,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第11条 リスト仮想化 ＆ ビューポート描画最適化規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第305条 リスト仮想化 ＆ ビューポート描画最適化規約に違反があります)")
         print("=" * 68)
         print(res.stdout + res.stderr)
         sys.exit(1)

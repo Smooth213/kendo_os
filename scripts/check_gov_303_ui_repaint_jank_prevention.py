@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第9条 ガバナンス監査】⚡ UI再描画局所化 ＆ Jank防止規約
+🥋 Kendo OS - 【第303条 ガバナンス監査】⚡ UI再描画局所化 ＆ Jank防止規約
 ================================================================================
 ① main.dart の settingsProvider.select((s) => s.themeMode) 局所購読
 ② 動的 ProviderScope 排除＆Element再利用
@@ -16,7 +16,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第9条 ガバナンス監査】⚡ UI再描画局所化 ＆ Jank防止規約")
+    print(" 📊 【第303条 ガバナンス監査】⚡ UI再描画局所化 ＆ Jank防止規約")
     print("=" * 68)
 
     cmd = [
@@ -48,7 +48,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第9条 UI再描画局所化 ＆ Jank防止規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第303条 UI再描画局所化 ＆ Jank防止規約に違反があります)")
         print("=" * 68)
         print(res.stdout + res.stderr)
         sys.exit(1)

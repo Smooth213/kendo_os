@@ -39,7 +39,10 @@ class LocalMatchRepository {
   Future<void> saveMatchBatched(MatchModel match, {bool isCritical = false}) =>
       _microBatch.saveMatchBatched(match, isCritical: isCritical);
 
-  Future<void> flushMicroBatch() => _microBatch.flush();
+  Future<void> flushMicroBatch() async {
+    await _microBatch.flush();
+    await TwinMatchPersistenceHelper.flushPendingWrites();
+  }
 
   void dispose() => _microBatch.dispose();
 

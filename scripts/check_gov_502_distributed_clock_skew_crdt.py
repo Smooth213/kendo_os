@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第16条 ガバナンス監査】🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約
+🥋 Kendo OS - 【第502条 ガバナンス監査】🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約
 ================================================================================
 ① Clock Skew 時刻補正（server_clock_offset_service.dart 連携）
 ② CRDT 3者マージ＆LWWタイマー調停（sync_crdt_merger.dart）
@@ -18,7 +18,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第16条 ガバナンス監査】🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約")
+    print(" 📊 【第502条 ガバナンス監査】🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約")
     print("=" * 68)
 
     cmd1 = [
@@ -74,7 +74,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第16条 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第502条 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約に違反があります)")
         print("=" * 68)
         if not is_ok1:
             print(res1.stdout + res1.stderr)

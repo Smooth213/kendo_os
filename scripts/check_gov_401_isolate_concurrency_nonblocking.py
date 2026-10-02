@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第12条 ガバナンス監査】🧵 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約
+🥋 Kendo OS - 【第401条 ガバナンス監査】🧵 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約
 ================================================================================
 ① CRDT 非同期マージ（SyncCrdtMerger.mergeAndRebuildAsync & compute）
 ② PDF 生成の compute オフロード＆UIフリーズ撲滅
@@ -16,7 +16,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第12条 ガバナンス監査】🧵 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約")
+    print(" 📊 【第401条 ガバナンス監査】🧵 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約")
     print("=" * 68)
 
     cmd = [
@@ -49,7 +49,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第12条 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第401条 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約に違反があります)")
         print("=" * 68)
         print(res.stdout + res.stderr)
         sys.exit(1)

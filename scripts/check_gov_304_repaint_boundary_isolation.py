@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第10条 ガバナンス監査】🎨 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約
+🥋 Kendo OS - 【第304条 ガバナンス監査】🎨 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約
 ================================================================================
 ① 打突ボタンの RepaintBoundary ＆ 先行触覚ゼロ遅延
 ② スコア操作パネルの RepaintBoundary
@@ -16,7 +16,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第10条 ガバナンス監査】🎨 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約")
+    print(" 📊 【第304条 ガバナンス監査】🎨 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約")
     print("=" * 68)
 
     cmd = [
@@ -48,7 +48,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第10条 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第304条 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約に違反があります)")
         print("=" * 68)
         print(res.stdout + res.stderr)
         sys.exit(1)

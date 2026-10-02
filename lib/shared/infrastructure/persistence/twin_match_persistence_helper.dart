@@ -37,6 +37,23 @@ class TwinMatchPersistenceHelper {
     await current;
   }
 
+  /// 保留中のスナップショット書き込みキューの完了を待機
+  static Future<void> flushPendingWrites([String? matchId]) async {
+    if (matchId != null) {
+      final pending = _pendingWrites[matchId];
+      if (pending != null) {
+        try {
+          await pending;
+        } catch (_) {}
+      }
+    } else {
+      final writes = _pendingWrites.values.toList();
+      if (writes.isNotEmpty) {
+        await Future.wait(writes.map((f) => f.catchError((_) {})));
+      }
+    }
+  }
+
   static Future<void> _saveSnapshotInternal(MatchModel match) async {
     try {
       final jsonStr = jsonEncode(match.toJson());
@@ -67,6 +84,7 @@ class TwinMatchPersistenceHelper {
 
   /// 破損または消失時にスナップショットから最新の試合データを救出復元
   static Future<MatchModel?> recoverMatch(String matchId) async {
+    await flushPendingWrites(matchId);
     try {
       if (_isWeb) {
         final prefs = await SharedPreferences.getInstance();
@@ -113,6 +131,7 @@ class TwinMatchPersistenceHelper {
 
   /// ディレクトリ内の全スナップショットから全試合データを復元
   static Future<List<MatchModel>> recoverAllMatches() async {
+    await flushPendingWrites();
     final List<MatchModel> recovered = [];
     try {
       if (_isWeb) {

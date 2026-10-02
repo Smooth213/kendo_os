@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第15条 ガバナンス監査】💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約
+🥋 Kendo OS - 【第206条 ガバナンス監査】💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約
 ================================================================================
 ① ローカルリポジトリのマイクロバッチング（saveMatchBatched / flushMicroBatch）
 ② 単一 writeTxn アトミック保存（saveMatchWithPendingCommand）
@@ -16,7 +16,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第15条 ガバナンス監査】💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約")
+    print(" 📊 【第206条 ガバナンス監査】💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約")
     print("=" * 68)
 
     cmd1 = [
@@ -64,7 +64,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第15条 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第206条 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約に違反があります)")
         print("=" * 68)
         print(res1.stdout + res1.stderr + res2.stdout + res2.stderr)
         sys.exit(1)

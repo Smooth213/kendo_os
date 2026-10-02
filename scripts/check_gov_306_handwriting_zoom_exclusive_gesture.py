@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第24条 ガバナンス監査】🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約
+🥋 Kendo OS - 【第306条 ガバナンス監査】🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約
 ================================================================================
 ① 1本指描画と2本指ズームの厳格なジェスチャー排他保証規約
 ② 拡大中のズームリセットボタン表示 ＆ タップによる等倍（100%）復帰保証規約
@@ -14,7 +14,7 @@ import sys
 
 def main():
     print("=" * 68)
-    print(" 📊 【第24条 ガバナンス監査】🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約")
+    print(" 📊 【第306条 ガバナンス監査】🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約")
     print("=" * 68)
 
     cmd = [
@@ -45,7 +45,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第24条 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第306条 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約に違反があります)")
         print("=" * 68)
         print(res.stdout + res.stderr)
         sys.exit(1)

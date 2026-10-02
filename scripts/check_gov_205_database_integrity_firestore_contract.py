@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🥋 Kendo OS - 【第29条 ガバナンス監査】🗄️ データベース整合性・Firestore複合クエリ ＆ インデックス契約完全保証規約
+🥋 Kendo OS - 【第205条 ガバナンス監査】🗄️ データベース整合性・Firestore複合クエリ ＆ インデックス契約完全保証規約
 ================================================================================
 ① firestore.indexes.json の妥当性・必須コレクション複合インデックス定義検証
 ② コード内 Firestore クエリ（where + orderBy）と indexes.json の完全整合性照合
@@ -39,7 +39,7 @@ def check_firestore_indexes_json():
 
 def main():
     print("=" * 68)
-    print(" 📊 【第29条 ガバナンス監査】🗄️ データベース整合性・Firestore複合クエリ ＆ インデックス契約完全保証規約")
+    print(" 📊 【第205条 ガバナンス監査】🗄️ データベース整合性・Firestore複合クエリ ＆ インデックス契約完全保証規約")
     print("=" * 68)
 
     ok_json, msg = check_firestore_indexes_json()
@@ -67,7 +67,7 @@ def main():
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (第29条 Firestoreインデックス契約に違反があります)")
+        print(" 🔴 監査結果: 違反 (第205条 Firestoreインデックス契約に違反があります)")
         print("=" * 68)
         if not ok_test:
             print(res.stdout + res.stderr)
