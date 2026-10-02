@@ -56,7 +56,7 @@ class ProgramViewerMediaCache {
         }
       } catch (e) {
         debugPrint(
-          '⚠️ [ProgramViewerMediaCache] SDK fetch failed, falling back to HTTP: $e',
+          '[WARN] [ProgramViewerMediaCache] SDK fetch failed, falling back to HTTP: $e',
         );
       }
     }

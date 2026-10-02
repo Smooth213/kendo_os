@@ -52,7 +52,7 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
       var user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         debugPrint(
-          '🛡️ [Auth] Current user is null. Performing fallback anonymous sign-in...',
+          '[Auth] Current user is null. Performing fallback anonymous sign-in...',
         );
         final creds = await FirebaseAuth.instance.signInAnonymously();
         user = creds.user;
@@ -68,7 +68,7 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
               'updatedAt': FieldValue.serverTimestamp(),
             }, SetOptions(merge: true));
         debugPrint(
-          '🛡️ [Auth] Firestore members に UID(${user.uid}) の role(${role.name}) を自動登録しました',
+          '[Auth] Firestore members に UID(${user.uid}) の role(${role.name}) を自動登録しました',
         );
       }
     } catch (e) {

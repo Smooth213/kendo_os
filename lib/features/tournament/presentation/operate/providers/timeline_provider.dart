@@ -60,7 +60,7 @@ final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, Str
           if (change.type == DocumentChangeType.removed) {
             await repo.deleteComment(commentId);
             debugPrint(
-              '⚡ [Comment Stream Downstream] Firestoreから削除されたコメントをIsarから削除しました: $commentId',
+              '[Comment Stream Downstream] Firestoreから削除されたコメントをIsarから削除しました: $commentId',
             );
           } else {
             final comment = MatchCommentModel.fromJson({
@@ -69,7 +69,7 @@ final commentStreamProvider = StreamProvider.family<List<MatchCommentModel>, Str
             });
             await repo.saveComment(comment);
             debugPrint(
-              '⚡ [Comment Stream Downstream] FirestoreからコメントをIsarに同期しました: $commentId',
+              '[Comment Stream Downstream] FirestoreからコメントをIsarに同期しました: $commentId',
             );
           }
         } catch (e) {

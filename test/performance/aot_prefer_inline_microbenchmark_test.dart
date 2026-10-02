@@ -44,7 +44,7 @@ void main() {
 
         // ignore: avoid_print
         print(
-          '🏎️ [AOT Inline Benchmark: calculateRemainingSeconds]\n'
+          '[AOT Inline Benchmark: calculateRemainingSeconds]\n'
           '  - 実行回数: $iterations 回\n'
           '  - 総所要時間: $elapsedMs ms ($elapsedUs μs)\n'
           '  - 1回あたりの呼出コスト: ${perCallUs.toStringAsFixed(3)} μs\n'

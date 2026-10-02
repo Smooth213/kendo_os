@@ -70,7 +70,7 @@ void main() {
 
       // ignore: avoid_print
       print(
-        '🗄️ [Isar MMAP Performance Benchmark]\n'
+        '[Isar MMAP Performance Benchmark]\n'
         '  - 1,000件バッチ書込所要時間: ${writeStopwatch.elapsedMilliseconds} ms\n'
         '  - 1件あたり書込時間: ${(writeStopwatch.elapsedMicroseconds / 1000).toStringAsFixed(2)} μs',
       );

@@ -66,7 +66,7 @@ class EmergencyCrashPreserver {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_webCrashDumpKey, jsonStr);
         debugPrint(
-          '🚨 [Crash Preserver] Web: 緊急クラッシュ退避データを保存しました (ID: ${match.id})',
+          '[ERROR] [Crash Preserver] Web: 緊急クラッシュ退避データを保存しました (ID: ${match.id})',
         );
         return;
       }
@@ -75,7 +75,7 @@ class EmergencyCrashPreserver {
       final dumpFile = File('${dir.path}/emergency_crash_dump.json');
       await dumpFile.writeAsString(jsonStr, flush: true);
       debugPrint(
-        '🚨 [Crash Preserver] Native: 緊急クラッシュ退避ファイルを保存しました: ${dumpFile.path}',
+        '[ERROR] [Crash Preserver] Native: 緊急クラッシュ退避ファイルを保存しました: ${dumpFile.path}',
       );
     } catch (e) {
       debugPrint('[ERROR] [Crash Preserver] 緊急退避の書き込みに失敗しました: $e');

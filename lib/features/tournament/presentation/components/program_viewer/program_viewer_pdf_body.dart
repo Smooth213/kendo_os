@@ -99,7 +99,7 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
         })
         .catchError((dynamic error) {
           debugPrint(
-            '🚨 [ProgramViewerPdfBody] Failed to load source bytes: $error',
+            '[ERROR] [ProgramViewerPdfBody] Failed to load source bytes: $error',
           );
         });
   }
@@ -223,7 +223,7 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
                               enableTextSelection: false,
                               onDocumentLoadFailed: (details) {
                                 debugPrint(
-                                  '🚨 PDF Single Page Load Failed: ${details.error} - ${details.description}',
+                                  '[ERROR] PDF Single Page Load Failed: ${details.error} - ${details.description}',
                                 );
                               },
                             ),

@@ -79,11 +79,11 @@ class MatchPersistenceHelper {
           safeConvertTimestamps(data);
           match = MatchModel.fromJson(data);
           debugPrint(
-            '🌐 [Web Sync] Firestoreから試合を復元成功: ${match.redName} vs ${match.whiteName}',
+            '[Web Sync] Firestoreから試合を復元成功: ${match.redName} vs ${match.whiteName}',
           );
         } else {
           debugPrint(
-            '⚠️ [MatchPersistenceHelper] Firestoreに試合データが存在しません: $matchId',
+            '[WARN] [MatchPersistenceHelper] Firestoreに試合データが存在しません: $matchId',
           );
         }
       } catch (e, st) {
@@ -238,7 +238,7 @@ class MatchPersistenceHelper {
         await matchRepo.saveMatchesBatch(webSafeMatches);
       } catch (e) {
         debugPrint(
-          '⚠️ [MatchPersistenceHelper] Web一括バッチ保存失敗。個別リトライへフォールバック: $e',
+          '[WARN] [MatchPersistenceHelper] Web一括バッチ保存失敗。個別リトライへフォールバック: $e',
         );
         for (final m in webSafeMatches) {
           await saveToFirestoreWithRetry(m);
@@ -281,7 +281,7 @@ class MatchPersistenceHelper {
       if (existingLocal != null) {
         if ((existingLocal.events.length) > match.events.length) {
           debugPrint(
-            '🛡️ [Conflict Resolution] 既存のローカルデータが新しいため上書きスキップ: ${match.id}',
+            '[Conflict Resolution] 既存のローカルデータが新しいため上書きスキップ: ${match.id}',
           );
           return;
         }

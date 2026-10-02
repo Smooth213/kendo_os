@@ -49,7 +49,7 @@ class MatchDataSanitizer {
           match.status == 'approved' ||
           match.status == 'corrupted') {
         debugPrint(
-          '🛡️ [代表戦レギュレーション救済ガード] 不正ステート (${match.status}) を検知したため、status = waiting, timerStartedAt = null に強制クレンジング修復しました。 (Match ID: ${match.id})',
+          '[代表戦レギュレーション救済ガード] 不正ステート (${match.status}) を検知したため、status = waiting, timerStartedAt = null に強制クレンジング修復しました。 (Match ID: ${match.id})',
         );
         return match.copyWith(status: 'waiting', timerStartedAt: null);
       }

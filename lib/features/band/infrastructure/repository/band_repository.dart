@@ -73,7 +73,7 @@ class BandRepository {
       }
     } catch (e) {
       debugPrint(
-        '⚠️ [BandRepository] getBandGroups Firestore取得失敗、キャッシュを確認: $e',
+        '[WARN] [BandRepository] getBandGroups Firestore取得失敗、キャッシュを確認: $e',
       );
     }
     return _loadFromLocalCache();

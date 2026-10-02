@@ -76,7 +76,7 @@ class GoogleAuthService {
       final cred = await auth.getRedirectResult();
       if (cred.user != null) {
         debugPrint(
-          '✅ [GoogleAuthService] Redirect result received: ${cred.user?.email}',
+          '[GoogleAuthService] Redirect result received: ${cred.user?.email}',
         );
         return cred;
       }
@@ -107,13 +107,13 @@ class GoogleAuthService {
             try {
               final result = await user.linkWithPopup(provider);
               debugPrint(
-                '✅ [GoogleAuthService] Web: Anonymous user linked to Google successfully',
+                '[GoogleAuthService] Web: Anonymous user linked to Google successfully',
               );
               return result;
             } catch (linkErr) {
               if (_isCredentialInUse(linkErr)) {
                 debugPrint(
-                  'ℹ️ [GoogleAuthService] Web: Credential in use, falling back to signInWithPopup',
+                  '[INFO] [GoogleAuthService] Web: Credential in use, falling back to signInWithPopup',
                 );
                 return await auth.signInWithPopup(provider);
               }

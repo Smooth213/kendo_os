@@ -299,7 +299,7 @@ void main() {
           } catch (e) {
             hasThrown = true;
             debugPrint(
-              '🔥 [DEBUG TEST] FirebasePlatform.instance type during exception: ${FirebasePlatform.instance.runtimeType}',
+              '[DEBUG TEST] FirebasePlatform.instance type during exception: ${FirebasePlatform.instance.runtimeType}',
             );
             debugPrint('[DEBUG TEST] CAUGHT EXCEPTION: $e');
           }

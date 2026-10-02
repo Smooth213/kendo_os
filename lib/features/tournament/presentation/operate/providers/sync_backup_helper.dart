@@ -56,7 +56,7 @@ class SyncBackupHelper {
         compressedSize: compressedBytes.length,
       );
       debugPrint(
-        '💾 [Auto Backup] 自動バックアップ完了: ${file.path} (Gzip圧縮版: ${gzFile.path}, 削減率: ${savings.toStringAsFixed(1)}%)',
+        '[Auto Backup] 自動バックアップ完了: ${file.path} (Gzip圧縮版: ${gzFile.path}, 削減率: ${savings.toStringAsFixed(1)}%)',
       );
     } catch (e) {
       debugPrint('[ERROR] [Auto Backup] 自動バックアップ失敗: $e');

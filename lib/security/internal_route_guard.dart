@@ -26,7 +26,7 @@ class InternalRouteGuard {
 
     if (isInternalPath(targetLocation) && isPublicBetaMode) {
       debugPrint(
-        '🚨 [Zero Trust Security Alert] 不正アクセスを検知: Public Beta モード下で内部画面 ($targetLocation) への侵入が試みられたため、強制遮断しホームへ強制リダイレクトしました。',
+        '[ERROR] [Zero Trust Security Alert] 不正アクセスを検知: Public Beta モード下で内部画面 ($targetLocation) への侵入が試みられたため、強制遮断しホームへ強制リダイレクトしました。',
       );
       return '/'; // 公開ホームへ強制送還
     }

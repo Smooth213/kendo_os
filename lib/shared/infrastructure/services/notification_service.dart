@@ -110,7 +110,7 @@ class NotificationService {
 
         if (!isAllowedByUserSettings) {
           debugPrint(
-            '🛡️ [Filter] ユーザー設定によってこの通知タイプ（$type）はOFFにされているため、バナー出力をブロックしました。',
+            '[Filter] ユーザー設定によってこの通知タイプ（$type）はOFFにされているため、バナー出力をブロックしました。',
           );
           return;
         }
@@ -153,7 +153,7 @@ class NotificationService {
     // 🛡️ テスト環境などFirebase未初期化時のクラッシュを水際で防止
     if (Firebase.apps.isEmpty) {
       debugPrint(
-        '⚠️ [NotificationService] Firebase is not initialized. Skipping push registration.',
+        '[WARN] [NotificationService] Firebase is not initialized. Skipping push registration.',
       );
       return;
     }
@@ -194,7 +194,7 @@ class NotificationService {
             if (dbKey != null && dbKey.isNotEmpty) {
               vapidKey = dbKey;
               debugPrint(
-                '🔔 [NotificationService] Loaded VAPID Key from Firestore: $vapidKey',
+                '[NotificationService] Loaded VAPID Key from Firestore: $vapidKey',
               );
             } else {
               try {
@@ -209,7 +209,7 @@ class NotificationService {
             }
           } catch (e) {
             debugPrint(
-              '⚠️ [NotificationService] Failed to load VAPID Key from Firestore: $e',
+              '[WARN] [NotificationService] Failed to load VAPID Key from Firestore: $e',
             );
             try {
               await firestore.collection('client_logs').add({
@@ -237,7 +237,7 @@ class NotificationService {
             .getToken(vapidKey: vapidKey.isNotEmpty ? vapidKey : null)
             .catchError((e) {
               debugPrint(
-                '⚠️ [NotificationService] Failed to get Web FCM Token: $e',
+                '[WARN] [NotificationService] Failed to get Web FCM Token: $e',
               );
               // Firestoreにエラーを記録
               firestore.collection('client_logs').add({
@@ -261,7 +261,7 @@ class NotificationService {
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
           debugPrint(
-            '🔔 [NotificationService] Web FCM Token registered successfully on Firestore',
+            '[NotificationService] Web FCM Token registered successfully on Firestore',
           );
         }
       } else {
@@ -278,12 +278,12 @@ class NotificationService {
           );
         }
         debugPrint(
-          '🔔 [NotificationService] Subscribed to Native FCM topics for tournament: $tournamentId (isStaff: $isStaff)',
+          '[NotificationService] Subscribed to Native FCM topics for tournament: $tournamentId (isStaff: $isStaff)',
         );
       }
     } catch (e) {
       debugPrint(
-        '⚠️ [NotificationService] Failed to register push notification: $e',
+        '[WARN] [NotificationService] Failed to register push notification: $e',
       );
       try {
         await firestore.collection('client_logs').add({

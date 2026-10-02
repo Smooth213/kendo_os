@@ -76,7 +76,7 @@ void main() {
 
       // ignore: avoid_print
       print(
-        '📊 [Payload Compression Benchmark]\n'
+        '[Payload Compression Benchmark]\n'
         '  - 元データサイズ: ${(originalSize / 1024).toStringAsFixed(2)} KB ($originalSize bytes)\n'
         '  - Gzip圧縮サイズ: ${(compressedSize / 1024).toStringAsFixed(2)} KB ($compressedSize bytes)\n'
         '  - 削減率: ${savingsPercent.toStringAsFixed(2)}%\n'

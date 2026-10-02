@@ -123,7 +123,7 @@ class MatchRepository {
       return MatchModel.fromJson(data);
     } catch (e, stack) {
       debugPrint(
-        '🔥 [MatchRepository Parse Error] 試合ID: ${doc.id}: $e\n$stack',
+        '[ERROR] [MatchRepository Parse Error] 試合ID: ${doc.id}: $e\n$stack',
       );
       return null;
     }

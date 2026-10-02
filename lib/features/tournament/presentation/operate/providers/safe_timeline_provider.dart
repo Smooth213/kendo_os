@@ -62,7 +62,7 @@ final safeTimelineProvider = Provider.family
         debugPrint('[safeTimelineProvider] 試合リスト抽出完了: ${matches.length} 件');
         if (matches.isEmpty) {
           debugPrint(
-            '🤔 [safeTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。',
+            '[safeTimelineProvider] 試合が0件です。クラウド側でデータが作成されていないか、検索クエリ・大会IDの不一致の可能性があります。',
           );
         }
       }

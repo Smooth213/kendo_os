@@ -188,7 +188,7 @@ class MatchCommandService {
           .read(matchApplicationServiceProvider)
           .saveMatchesBulk(updatedMatches);
       debugPrint(
-        '⚡ Team Renamed Bulk: $oldTeamName -> $newTeamName (${updatedMatches.length} matches)',
+        'Team Renamed Bulk: $oldTeamName -> $newTeamName (${updatedMatches.length} matches)',
       );
     }
   }

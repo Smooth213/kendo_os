@@ -42,7 +42,7 @@ class LocalMatchCommandStore {
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     } catch (e) {
       debugPrint(
-        '⚠️ [LocalMatchCommandStore] Web pending commands load error: $e',
+        '[WARN] [LocalMatchCommandStore] Web pending commands load error: $e',
       );
       return [];
     }
@@ -62,7 +62,7 @@ class LocalMatchCommandStore {
       await prefs.setString(_webPendingCommandsKey, jsonEncode(list));
     } catch (e) {
       debugPrint(
-        '⚠️ [LocalMatchCommandStore] Web pending commands save error: $e',
+        '[WARN] [LocalMatchCommandStore] Web pending commands save error: $e',
       );
     }
   }
@@ -76,7 +76,7 @@ class LocalMatchCommandStore {
       await prefs.setString(_webPendingCommandsKey, jsonEncode(list));
     } catch (e) {
       debugPrint(
-        '⚠️ [LocalMatchCommandStore] Web pending command delete error: $e',
+        '[WARN] [LocalMatchCommandStore] Web pending command delete error: $e',
       );
     }
   }
@@ -93,7 +93,7 @@ class LocalMatchCommandStore {
       await prefs.setString(_webPendingCommandsKey, jsonEncode(list));
     } catch (e) {
       debugPrint(
-        '⚠️ [LocalMatchCommandStore] Web pending commands for matches delete error: $e',
+        '[WARN] [LocalMatchCommandStore] Web pending commands for matches delete error: $e',
       );
     }
   }

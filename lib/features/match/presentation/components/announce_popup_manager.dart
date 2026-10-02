@@ -127,7 +127,7 @@ void _showAnnounceDialog(
     },
   ).then((_) {
     debugPrint(
-      '📢 [PopupManager] ダイアログが閉じられました。_isAnnounceDialogShowing を false にリセットします。',
+      '[PopupManager] ダイアログが閉じられました。_isAnnounceDialogShowing を false にリセットします。',
     );
     _isAnnounceDialogShowing = false;
 
@@ -163,7 +163,7 @@ void listenGlobalAnnouncements(
   try {
     final settings = ref.read(settingsProvider);
     debugPrint(
-      '📢 [listenGlobalAnnouncements] 開始 - tournamentId: "$tournamentId", isStaffRoom: $isStaffRoom, notifyOnEmergency: ${settings.notifyOnEmergency}',
+      '[listenGlobalAnnouncements] 開始 - tournamentId: "$tournamentId", isStaffRoom: $isStaffRoom, notifyOnEmergency: ${settings.notifyOnEmergency}',
     );
     if (!settings.notifyOnEmergency) return;
 
@@ -179,7 +179,7 @@ void listenGlobalAnnouncements(
         .toList();
     for (final staleKey in staleKeys) {
       debugPrint(
-        '🧹 [listenGlobalAnnouncements] 過去の大会の監視ストリームを自律クリーンアップ: $staleKey',
+        '[listenGlobalAnnouncements] 過去の大会の監視ストリームを自律クリーンアップ: $staleKey',
       );
       _activeSubscriptions[staleKey]?.cancel();
       _activeSubscriptions.remove(staleKey);
@@ -204,7 +204,7 @@ void listenGlobalAnnouncements(
         .snapshots()
         .listen((snapshot) {
           debugPrint(
-            '📢 [listenGlobalAnnouncements] Firestore受信 - docs数: ${snapshot.docs.length}',
+            '[listenGlobalAnnouncements] Firestore受信 - docs数: ${snapshot.docs.length}',
           );
           if (snapshot.docs.isEmpty) return;
 
@@ -221,7 +221,7 @@ void listenGlobalAnnouncements(
 
           if (targetDoc == null) {
             debugPrint(
-              '📢 [listenGlobalAnnouncements] 警告: emergency タイプのドキュメントが見つかりませんでした。',
+              '[listenGlobalAnnouncements] 警告: emergency タイプのドキュメントが見つかりませんでした。',
             );
             return;
           }
@@ -232,13 +232,13 @@ void listenGlobalAnnouncements(
           // 🌟 送り分けターゲットの抽出（デフォルトは全員向け 'all'）
           final String target = data['target'] as String? ?? 'all';
           debugPrint(
-            '📢 [listenGlobalAnnouncements] ドキュメント判定 - ID: ${doc.id}, target: $target',
+            '[listenGlobalAnnouncements] ドキュメント判定 - ID: ${doc.id}, target: $target',
           );
 
           // 🛡️ 防衛線：スタッフ限定通知（staff）であり、かつ現在の画面が観客席（isStaffRoom == false）なら完全スルー
           if (target == 'staff' && !isStaffRoom) {
             debugPrint(
-              '🛡️ [PopupManager] スタッフ限定アナウンスを検知したため、観客席でのポップアップをスキップしました。',
+              '[PopupManager] スタッフ限定アナウンスを検知したため、観客席でのポップアップをスキップしました。',
             );
             return;
           }
@@ -248,7 +248,7 @@ void listenGlobalAnnouncements(
           // 🛡️ 防衛線：自分自身が発信したお知らせである場合はポップアップを表示しない
           if (_mySentAnnounceIds.contains(announce.id)) {
             debugPrint(
-              '📢 [listenGlobalAnnouncements] 自身が送信したアナウンスのためスキップします - ID: ${announce.id}',
+              '[listenGlobalAnnouncements] 自身が送信したアナウンスのためスキップします - ID: ${announce.id}',
             );
             return;
           }
@@ -258,7 +258,7 @@ void listenGlobalAnnouncements(
           final bool isAlreadyRead =
               announce.isRead || readIds.contains(announce.id);
           debugPrint(
-            '📢 [listenGlobalAnnouncements] 既読チェック - isRead: ${announce.isRead}, contains: ${readIds.contains(announce.id)}',
+            '[listenGlobalAnnouncements] 既読チェック - isRead: ${announce.isRead}, contains: ${readIds.contains(announce.id)}',
           );
           if (isAlreadyRead) return;
 
@@ -269,7 +269,7 @@ void listenGlobalAnnouncements(
               listenerStartTime.millisecondsSinceEpoch - 2000;
           if (announceMs < listenerStartMs) {
             debugPrint(
-              '📢 [listenGlobalAnnouncements] 監視開始前の過去のお知らせのためスキップします - ID: ${announce.id}, announceMs: $announceMs, listenerStartMs: $listenerStartMs',
+              '[listenGlobalAnnouncements] 監視開始前の過去のお知らせのためスキップします - ID: ${announce.id}, announceMs: $announceMs, listenerStartMs: $listenerStartMs',
             );
             return;
           }
@@ -279,23 +279,23 @@ void listenGlobalAnnouncements(
           final int diffMs = (nowMs - announceMs).abs();
           final bool isRecent = diffMs < 30 * 60 * 1000;
           debugPrint(
-            '📢 [listenGlobalAnnouncements] 時間差チェック - nowMs: $nowMs, announceMs: $announceMs, diffMinutes: ${diffMs / 60000.0}, isRecent: $isRecent',
+            '[listenGlobalAnnouncements] 時間差チェック - nowMs: $nowMs, announceMs: $announceMs, diffMinutes: ${diffMs / 60000.0}, isRecent: $isRecent',
           );
 
           if (_shownAnnounceIds.contains(announce.id) || !isRecent) {
             debugPrint(
-              '📢 [listenGlobalAnnouncements] 既に表示済みまたは30分以上前のためスキップ - shown: ${_shownAnnounceIds.contains(announce.id)}, isRecent: $isRecent',
+              '[listenGlobalAnnouncements] 既に表示済みまたは30分以上前のためスキップ - shown: ${_shownAnnounceIds.contains(announce.id)}, isRecent: $isRecent',
             );
             return;
           }
 
           // 🛡️ 防衛線：既に別のポップアップが表示中である場合、このお知らせを保留バッファに格納してスルーする（連鎖表示へ）
           debugPrint(
-            '📢 [listenGlobalAnnouncements] 表示前最終チェック - _isAnnounceDialogShowing: $_isAnnounceDialogShowing, context.mounted: ${context.mounted}',
+            '[listenGlobalAnnouncements] 表示前最終チェック - _isAnnounceDialogShowing: $_isAnnounceDialogShowing, context.mounted: ${context.mounted}',
           );
           if (_isAnnounceDialogShowing) {
             debugPrint(
-              '📢 [listenGlobalAnnouncements] 警告: 既にダイアログが表示中のため、この通知を保留します。ID: ${announce.id}',
+              '[listenGlobalAnnouncements] 警告: 既にダイアログが表示中のため、この通知を保留します。ID: ${announce.id}',
             );
             _pendingAnnounce = announce;
             _pendingTarget = target;
@@ -310,7 +310,7 @@ void listenGlobalAnnouncements(
     _activeSubscriptions[key] = subscription;
   } catch (e) {
     debugPrint(
-      '⚠️ [listenGlobalAnnouncements] Firestore connection skipped: $e',
+      '[WARN] [listenGlobalAnnouncements] Firestore connection skipped: $e',
     );
   }
 }

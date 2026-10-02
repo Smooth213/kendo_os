@@ -114,7 +114,7 @@ class LocalMatchRepository {
       }
       await _saveEmergencyBackupWithRotation(targetMatch);
       debugPrint(
-        '🛡️ [Security Quarantine] 署名不一致データを緊急JSONに隔離退避しました ID: ${match.id}',
+        '[Security Quarantine] 署名不一致データを緊急JSONに隔離退避しました ID: ${match.id}',
       );
     }
     if (_isar != null) {

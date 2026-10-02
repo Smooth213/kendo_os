@@ -32,7 +32,7 @@ class PayloadCompressionHelper {
         return Uint8List.fromList(compressed);
       } catch (e) {
         debugPrint(
-          '⚠️ [Compression] io.gzip failed, falling back to archive: $e',
+          '[WARN] [Compression] io.gzip failed, falling back to archive: $e',
         );
       }
     }
@@ -56,7 +56,7 @@ class PayloadCompressionHelper {
         return Uint8List.fromList(decompressed);
       } catch (e) {
         debugPrint(
-          '⚠️ [Decompression] io.gzip failed, falling back to archive: $e',
+          '[WARN] [Decompression] io.gzip failed, falling back to archive: $e',
         );
       }
     }

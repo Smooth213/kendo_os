@@ -168,7 +168,7 @@ class ThermalPowerGovernor extends ChangeNotifier {
       _mode = newMode;
       enforceMemoryLimits();
       debugPrint(
-        '🔋 [Thermal Governor] モード移行: $newMode (Tick間隔: ${recommendedTickInterval.inMilliseconds}ms)',
+        '[BATTERY] [Thermal Governor] モード移行: $newMode (Tick間隔: ${recommendedTickInterval.inMilliseconds}ms)',
       );
       notifyListeners();
     }
@@ -311,7 +311,7 @@ class ThermalPowerGovernor extends ChangeNotifier {
       _mode = targetMode;
       enforceMemoryLimits();
       debugPrint(
-        '🔋 [Thermal Governor] モード移行: $targetMode (設定: $_preference, 温度: $_thermalStatus, 低電力: $_isOsLowPowerMode, Tick: ${recommendedTickInterval.inMilliseconds}ms)',
+        '[BATTERY] [Thermal Governor] モード移行: $targetMode (設定: $_preference, 温度: $_thermalStatus, 低電力: $_isOsLowPowerMode, Tick: ${recommendedTickInterval.inMilliseconds}ms)',
       );
       notifyListeners();
     }

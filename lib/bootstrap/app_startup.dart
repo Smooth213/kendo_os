@@ -229,7 +229,7 @@ class AppStartup {
         debugPrint('[Firebase] [DEFAULT] をクリーンに新規初期化しました。');
       } else {
         debugPrint(
-          '📢 Firebase [DEFAULT] はすでに常駐しているため、初期化呼び出しを完全にスキップして既存インスタンスを安全に100%再利用します。',
+          '[Firebase] [DEFAULT] はすでに常駐しているため、初期化呼び出しを完全にスキップして既存インスタンスを安全に100%再利用します。',
         );
       }
     } catch (e) {
@@ -263,7 +263,7 @@ class AppStartup {
                 .getRedirectResult();
             if (redirectUser.user != null) {
               debugPrint(
-                '🛡️ [Auth] Webリダイレクト認証ユーザーを確立しました: ${redirectUser.user?.email}',
+                '[Auth] Webリダイレクト認証ユーザーを確立しました: ${redirectUser.user?.email}',
               );
             }
           } catch (e) {
@@ -293,7 +293,7 @@ class AppStartup {
             (p) => p.providerId == 'google.com',
           );
           debugPrint(
-            '🛡️ [Auth] 既存セッションを正常復元しました (UID: ${existingUser.uid}, Google連携: $isGoogle, Email: ${existingUser.email})',
+            '[Auth] 既存セッションを正常復元しました (UID: ${existingUser.uid}, Google連携: $isGoogle, Email: ${existingUser.email})',
           );
         }
       } catch (e) {
@@ -341,7 +341,7 @@ class AppStartup {
           webExperimentalAutoDetectLongPolling: true,
         );
         debugPrint(
-          '🌐 [Firestore Web] ブラウザ永続キャッシュ（IndexedDB）と自動ロングポーリング検知を活性化しました。',
+          '[Firestore Web] ブラウザ永続キャッシュ（IndexedDB）と自動ロングポーリング検知を活性化しました。',
         );
       } else {
         final hasCleared =

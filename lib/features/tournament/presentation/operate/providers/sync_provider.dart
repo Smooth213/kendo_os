@@ -185,7 +185,7 @@ class SyncEngine {
 
               if (match.version < remoteVersion) {
                 debugPrint(
-                  '⚠️ [Sync Engine] 競合検知 ID:${match.id} -> 🛡️ CRDT自動マージを実行します',
+                  '[WARN] [Sync Engine] 競合検知 ID:${match.id} -> CRDT自動マージを実行します',
                 );
                 MatchModel remoteMatch;
                 try {
@@ -286,7 +286,7 @@ class SyncEngine {
             }
           } catch (e, stack) {
             debugPrint(
-              '🔥 [Sync Engine] 試合ID: ${match.id} のFirestoreアップロードに失敗しました: $e\n$stack',
+              '[ERROR] [Sync Engine] 試合ID: ${match.id} のFirestoreアップロードに失敗しました: $e\n$stack',
             );
             hasError = true;
           }
@@ -300,7 +300,7 @@ class SyncEngine {
           syncedMatchesToSave.map((m) => m.id),
         );
         debugPrint(
-          '⚡ [Sync Engine] ${syncedMatchesToSave.length}件の同期完了試合を単一トランザクションでIsarに一括反映＆保留コマンドをクリーンアップしました',
+          '[Sync Engine] ${syncedMatchesToSave.length}件の同期完了試合を単一トランザクションでIsarに一括反映＆保留コマンドをクリーンアップしました',
         );
       }
     } catch (e) {
@@ -311,11 +311,11 @@ class SyncEngine {
       if (hasError) {
         _consecutiveFailures++;
         debugPrint(
-          '⚠️ [Sync Engine] 同期失敗回数: $_consecutiveFailures / $maxConsecutiveFailures',
+          '[WARN] [Sync Engine] 同期失敗回数: $_consecutiveFailures / $maxConsecutiveFailures',
         );
         if (_consecutiveFailures >= maxConsecutiveFailures) {
           debugPrint(
-            '🚨 [Sync Engine] 連続失敗上限($maxConsecutiveFailures回)に達したためサーキットブレーカーが発動しました。30秒間クールダウンします。',
+            '[ERROR] [Sync Engine] 連続失敗上限($maxConsecutiveFailures回)に達したためサーキットブレーカーが発動しました。30秒間クールダウンします。',
           );
           _retryTimer?.cancel();
           _retryTimer = Timer(const Duration(seconds: 30), () {

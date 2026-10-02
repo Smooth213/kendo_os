@@ -109,7 +109,7 @@ class SyncEngine {
     // 🔑 認証セッション状態が変化した（ログイン成功など）際にも再バインドして再接続する
     _ref.listen<UserSession?>(authSessionProvider, (prev, next) {
       debugPrint(
-        '🔑 [Sync Engine] 認証セッション状態の変更を検知しました: ${prev?.role} -> ${next?.role}',
+        '[Sync Engine] 認証セッション状態の変更を検知しました: ${prev?.role} -> ${next?.role}',
       );
       _bindListeners();
     });
@@ -145,7 +145,7 @@ class SyncEngine {
 
     if (dojoId.isEmpty || activeTournamentId.isEmpty) {
       debugPrint(
-        '📢 [Sync Engine] dojoId または tournamentId が未確定のため、Firestore監視を保留します。',
+        '[Sync Engine] dojoId または tournamentId が未確定のため、Firestore監視を保留します。',
       );
       return;
     }
@@ -162,7 +162,7 @@ class SyncEngine {
     }
 
     debugPrint(
-      '🚀 [Sync Engine] Firestoreダウンストリーム監視を開始します (dojoId: $dojoId, tournamentId: $activeTournamentId)',
+      '[Sync Engine] Firestoreダウンストリーム監視を開始します (dojoId: $dojoId, tournamentId: $activeTournamentId)',
     );
 
     // 1. 通常のトーナメント戦の試合データ監視（16msバッチド・デバウンスでUIリビルドをフレーム同期）
@@ -215,7 +215,7 @@ class SyncEngine {
           if (_isBackground) return;
           if (snapshot.exists && snapshot.data() != null) {
             debugPrint(
-              '⚡ [Sync Engine Downstream] 特設部内大会ドキュメントの更新を受信しました: ${snapshot.id}',
+              '[Sync Engine Downstream] 特設部内大会ドキュメントの更新を受信しました: ${snapshot.id}',
             );
             await SyncDownstreamHelper.syncBunaiksenDocToIsar(
               snapshot: snapshot,
@@ -226,7 +226,7 @@ class SyncEngine {
         },
         onError: (e) {
           debugPrint(
-            '⚠️ [Sync Engine Downstream] 特設(bunaiksen)ドキュメント監視エラー: $e',
+            '[WARN] [Sync Engine Downstream] 特設(bunaiksen)ドキュメント監視エラー: $e',
           );
         },
       );
@@ -291,7 +291,7 @@ class SyncEngine {
           if (_retryCount >= 10) {
             // 🛡️ 【Poison Pill防御】リトライ上限（10回）を超過した異常コマンドは自律パージし、後続キューの永久ブロックを防止
             debugPrint(
-              '🛡️ [Sync Engine] コマンド ${action.id} のリトライが上限（10回）を超過しました。毒薬キュー化防止のため自律パージします。',
+              '[Sync Engine] コマンド ${action.id} のリトライが上限（10回）を超過しました。毒薬キュー化防止のため自律パージします。',
             );
             await localRepo.deleteCommand(action.id);
             _retryCount = 0;
@@ -303,7 +303,7 @@ class SyncEngine {
             Duration(seconds: backoffSeconds),
           );
           debugPrint(
-            '⚠️ [Sync Engine] 通信断の可能性。非同期バックオフを設定しました。次回試行時刻: $_nextAttemptAt (+$backoffSeconds秒)',
+            '[WARN] [Sync Engine] 通信断の可能性。非同期バックオフを設定しました。次回試行時刻: $_nextAttemptAt (+$backoffSeconds秒)',
           );
           // ⚡ 重要: スレッドをブロックせず即座にループを脱出（UIや他処理をフリーズさせない）
           break;
@@ -334,7 +334,7 @@ class SyncEngine {
           match = MatchModel.fromJson(action.payload);
         } catch (e) {
           debugPrint(
-            '🛡️ [Sync Engine] ペイロードの復元に失敗しました（破損データ）。毒薬キュー化防止のため自律パージします: $e',
+            '[Sync Engine] ペイロードの復元に失敗しました（破損データ）。毒薬キュー化防止のため自律パージします: $e',
           );
           return true;
         }
@@ -347,7 +347,7 @@ class SyncEngine {
             // 「クラウドは既に更新済みであり、本コマンドは陳腐化（Stale）している」と判定。
             // 安全に true（消化完了）を返し、Isarキューから削除（Self-Pruning）してバックオフ地獄（Poison Pill）を回避。
             debugPrint(
-              '🛡️ [Sync Engine] ConflictException検知: クラウドのバージョンを確認します (matchId: ${match.id})',
+              '[Sync Engine] ConflictException検知: クラウドのバージョンを確認します (matchId: ${match.id})',
             );
             final remoteMatch = await remoteRepo.getMatch(
               match.id,
@@ -356,7 +356,7 @@ class SyncEngine {
             );
             if (remoteMatch != null && remoteMatch.version >= match.version) {
               debugPrint(
-                '🛡️ [Sync Engine] クラウド側が既に新しいため (remote: ${remoteMatch.version} >= local: ${match.version})、Staleコマンドを自律パージします。',
+                '[Sync Engine] クラウド側が既に新しいため (remote: ${remoteMatch.version} >= local: ${match.version})、Staleコマンドを自律パージします。',
               );
               return true;
             }

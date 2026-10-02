@@ -24,7 +24,7 @@ class WebPlatformOptimizer {
   static void applyOptimizations() {
     if (!kIsWeb) return;
     debugPrint(
-      '🌐 [WebPlatformOptimizer] Safari & Chrome 2大ブラウザ最適化ラインを確立しました '
+      '[WebPlatformOptimizer] Safari & Chrome 2大ブラウザ最適化ラインを確立しました '
       '(Safari: $isWebSafari, Chrome: $isWebChrome)',
     );
   }

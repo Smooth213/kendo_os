@@ -89,7 +89,7 @@ class ProjectionStore {
               list.add(MatchProjectionMapper.toListProjection(match, analysis));
             } catch (e) {
               debugPrint(
-                '⚠️ [ProjectionStore] 試合ドキュメント(${doc.id})パース失敗をスキップ: $e',
+                '[WARN] [ProjectionStore] 試合ドキュメント(${doc.id})パース失敗をスキップ: $e',
               );
             }
           }

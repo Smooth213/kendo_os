@@ -13,7 +13,7 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
   final currentDojoId = ref.watch(currentDojoIdProvider);
 
   debugPrint(
-    '🔎 [viewerTournamentProvider] start - id: $id, currentDojoId: $currentDojoId',
+    '[viewerTournamentProvider] start - id: $id, currentDojoId: $currentDojoId',
   );
 
   try {
@@ -27,7 +27,7 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
 
       if (orgTournamentDoc.exists) {
         debugPrint(
-          '🔎 [viewerTournamentProvider] found in organizations/$currentDojoId/tournaments',
+          '[viewerTournamentProvider] found in organizations/$currentDojoId/tournaments',
         );
         yield* firestore
             .collection('organizations')
@@ -43,7 +43,7 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
       }
 
       debugPrint(
-        '⚠️ [viewerTournamentProvider] currentDojoId($currentDojoId) の大会が見つかりませんでした。フォールバック検索を継続します。',
+        '[WARN] [viewerTournamentProvider] currentDojoId($currentDojoId) の大会が見つかりませんでした。フォールバック検索を継続します。',
       );
     }
 
@@ -52,7 +52,7 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
         .doc(id)
         .get();
     debugPrint(
-      '🔎 [viewerTournamentProvider] root doc exists: ${rootTournamentDoc.exists}',
+      '[viewerTournamentProvider] root doc exists: ${rootTournamentDoc.exists}',
     );
     if (rootTournamentDoc.exists) {
       debugPrint('[viewerTournamentProvider] found in tournaments/$id');
@@ -70,13 +70,13 @@ final viewerTournamentProvider = StreamProvider.family.autoDispose<TournamentMod
         .get();
 
     debugPrint(
-      '🔎 [viewerTournamentProvider] collectionGroup tournaments found: ${groupTournamentQuery.docs.length}',
+      '[viewerTournamentProvider] collectionGroup tournaments found: ${groupTournamentQuery.docs.length}',
     );
 
     if (groupTournamentQuery.docs.isNotEmpty) {
       final docRef = groupTournamentQuery.docs.first.reference;
       debugPrint(
-        '🔎 [viewerTournamentProvider] found in collectionGroup at path: ${docRef.path}',
+        '[viewerTournamentProvider] found in collectionGroup at path: ${docRef.path}',
       );
       yield* docRef.snapshots().map((doc) {
         if (!doc.exists) return null;

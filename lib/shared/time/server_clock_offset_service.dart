@@ -18,7 +18,7 @@ class ServerClockOffsetService {
   void setOffset(Duration newOffset) {
     _offset = newOffset;
     debugPrint(
-      '🌐 [ServerClockOffset] Offset updated: ${_offset.inMilliseconds}ms',
+      '[ServerClockOffset] Offset updated: ${_offset.inMilliseconds}ms',
     );
   }
 
@@ -57,7 +57,7 @@ class ServerClockOffsetService {
 
       _offset = estimatedServerTime.difference(endTime);
       debugPrint(
-        '🌐 [ServerClockOffset] Synced with server! RTT: ${roundTripDuration.inMilliseconds}ms, Offset: ${_offset.inMilliseconds}ms',
+        '[ServerClockOffset] Synced with server! RTT: ${roundTripDuration.inMilliseconds}ms, Offset: ${_offset.inMilliseconds}ms',
       );
       return _offset;
     } catch (e) {

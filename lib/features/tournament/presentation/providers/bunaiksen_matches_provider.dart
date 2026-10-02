@@ -93,7 +93,7 @@ final bunaiksenMatchesStreamProvider = StreamProvider.family
                       await localRepo.saveMatchesBulk(healedMatches);
                     } catch (e) {
                       debugPrint(
-                        '⚠️ [bunaiksenMatchesStreamProvider] Isarキャッシュ書き込み失敗: $e',
+                        '[WARN] [bunaiksenMatchesStreamProvider] Isarキャッシュ書き込み失敗: $e',
                       );
                     }
                   }

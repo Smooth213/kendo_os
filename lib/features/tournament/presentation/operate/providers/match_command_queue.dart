@@ -96,7 +96,7 @@ class MatchCommandQueue {
     if (_processedCommandIds.contains(cmd.id) ||
         _queue.any((c) => c.id == cmd.id)) {
       debugPrint(
-        '🛡️ [CommandQueue] 重複コマンドを検知し安全にスキップしました (Idempotency Key: ${cmd.id})',
+        '[CommandQueue] 重複コマンドを検知し安全にスキップしました (Idempotency Key: ${cmd.id})',
       );
       return;
     }

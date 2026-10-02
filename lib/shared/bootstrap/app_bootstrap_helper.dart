@@ -84,7 +84,7 @@ class AppBootstrapHelper {
         for (int i = 0; i < 15; i++) {
           if (Firebase.apps.isNotEmpty) {
             debugPrint(
-              '⚡ [Sync] ネイティブのFirebaseインスタンスとの自動同期が完了しました (apps: ${Firebase.apps.length})',
+              '[Sync Engine] ネイティブのFirebaseインスタンスとの自動同期が完了しました (apps: ${Firebase.apps.length})',
             );
             break;
           }
@@ -163,7 +163,7 @@ class AppBootstrapHelper {
                     .signInAnonymously()
                     .then((cred) {
                       debugPrint(
-                        '🛡️ [Auth] 匿名ゲスト認証をバックグラウンド確立しました: ${cred.user?.uid}',
+                        '[Auth] 匿名ゲスト認証をバックグラウンド確立しました: ${cred.user?.uid}',
                       );
                     })
                     .catchError((e) {

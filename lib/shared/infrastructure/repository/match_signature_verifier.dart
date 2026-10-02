@@ -31,7 +31,7 @@ class MatchSignatureVerifier {
         }
         hasTampered = true;
         debugPrint(
-          '🛡️ [Quarantine SafeMode] イベント(ID: ${event.id})の署名不一致を検知。隔離退避します。',
+          '[Quarantine SafeMode] イベント(ID: ${event.id})の署名不一致を検知。隔離退避します。',
         );
         continue;
       }

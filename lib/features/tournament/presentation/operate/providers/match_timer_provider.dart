@@ -75,7 +75,7 @@ class MatchTimer {
     final currentId = _activeMatchId;
     if (currentId != null && _expectedIsRunning) {
       debugPrint(
-        '☀️ [MatchTimer] resumeFromColdSleep: 絶対時刻同期補正＆Ticker再開 ($currentId)',
+        '[MatchTimer] resumeFromColdSleep: 絶対時刻同期補正＆Ticker再開 ($currentId)',
       );
       syncOnAppResume(currentId);
     }
@@ -84,7 +84,7 @@ class MatchTimer {
   void startLocalTicker(String matchId, {bool isImmediateStart = false}) {
     _activeMatchId = matchId;
     debugPrint(
-      '🕒 [MatchTimer] startLocalTicker requested. matchId=$matchId, immediate=$isImmediateStart',
+      '[MatchTimer] startLocalTicker requested. matchId=$matchId, immediate=$isImmediateStart',
     );
     // ★ 修正: 手動操作の直後（2秒以内）にクラウドの古いデータによる自動再開（ゴースト再起動）を完全に防ぐ
     final diff = ref
@@ -94,7 +94,7 @@ class MatchTimer {
         .inSeconds;
     if (!isImmediateStart && diff < 2) {
       debugPrint(
-        '🕒 [MatchTimer] startLocalTicker BLOCKED (ghost restart prevention). diff=$diff sec',
+        '[MatchTimer] startLocalTicker BLOCKED (ghost restart prevention). diff=$diff sec',
       );
       return;
     }
@@ -104,7 +104,7 @@ class MatchTimer {
     // ★ 修正: 既にタイマーが動いている場合は再開を禁止
     if (_ticker != null && _ticker!.isActive) {
       debugPrint(
-        '🕒 [MatchTimer] startLocalTicker: Ticker already active. Ignoring.',
+        '[MatchTimer] startLocalTicker: Ticker already active. Ignoring.',
       );
       return;
     }
@@ -122,7 +122,7 @@ class MatchTimer {
     );
 
     debugPrint(
-      '🕒 [MatchTimer] startLocalTicker: Ticker STARTED (interval=${tickInterval.inMilliseconds}ms, highPrecision=$isHighPrecision).',
+      '[MatchTimer] startLocalTicker: Ticker STARTED (interval=${tickInterval.inMilliseconds}ms, highPrecision=$isHighPrecision).',
     );
     _ticker?.cancel();
     final fallbackStartedAt = ref.read(timeSourceProvider).now();
@@ -175,7 +175,7 @@ class MatchTimer {
             .inSeconds <
         2) {
       debugPrint(
-        '🕒 [MatchTimer] stopLocalTicker BLOCKED (ghost stop prevention).',
+        '[MatchTimer] stopLocalTicker BLOCKED (ghost stop prevention).',
       );
       return;
     }
@@ -196,7 +196,7 @@ class MatchTimer {
     }
 
     debugPrint(
-      '🕒 [MatchTimer] toggleTimer: Toggling timer to isRunning=$newIsRunning',
+      '[MatchTimer] toggleTimer: Toggling timer to isRunning=$newIsRunning',
     );
     _lastToggledAt = now;
     _expectedIsRunning = newIsRunning;
@@ -264,7 +264,7 @@ class MatchTimer {
 
       final derivedSeconds = updatedMatch.calculateRemainingSeconds(now);
       debugPrint(
-        '🕒 [MatchTimer] toggleTimer(STOP): newAccMs=$newAccMs (+${additionalMs}ms), derivedSeconds=$derivedSeconds',
+        '[MatchTimer] toggleTimer(STOP): newAccMs=$newAccMs (+${additionalMs}ms), derivedSeconds=$derivedSeconds',
       );
 
       ref.read(liveRemainingSecondsProvider(matchId).notifier).state =
@@ -326,7 +326,7 @@ class MatchTimer {
     // タイマーが本来稼働中であるべき（timerIsRunning == true）かつローカルの ticker が停止している場合は自動復旧
     if (match.timerIsRunning && (_ticker == null || !_ticker!.isActive)) {
       debugPrint(
-        '🕒 [MatchTimer] syncOnAppResume: Auto-restarting local ticker for running match.',
+        '[MatchTimer] syncOnAppResume: Auto-restarting local ticker for running match.',
       );
       startLocalTicker(matchId, isImmediateStart: true);
     }

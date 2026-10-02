@@ -22,7 +22,7 @@ void main() {
 
       // ignore: avoid_print
       print(
-        '📱 [ProMotion Frame Budget Benchmark]\n'
+        '[ProMotion Frame Budget Benchmark]\n'
         '  - 120Hz ProMotion: ${budget120.toStringAsFixed(2)} ms/フレーム (iPad Pro / iPhone Pro)\n'
         '  - 90Hz High-Refresh: ${budget90.toStringAsFixed(2)} ms/フレーム\n'
         '  - 60Hz Standard: ${budget60.toStringAsFixed(2)} ms/フレーム',

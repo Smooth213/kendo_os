@@ -67,7 +67,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
 
     if (!hasAuth && Firebase.apps.isNotEmpty) {
       debugPrint(
-        '⏳ [DojoRoomSync] Firebase認証確立待ちのため、Firestore同期を待機します (dojoId: $dojoId)',
+        '[DojoRoomSync] Firebase認証確立待ちのため、Firestore同期を待機します (dojoId: $dojoId)',
       );
       return;
     }
@@ -102,7 +102,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
         await prefs.setString('global_last_dojo_id_v4', dojoId);
 
         debugPrint(
-          '🔄 [DojoRoomSync] テナント切り替え検知: $lastDojoId -> $dojoId. 古いローカルデータを完全パージします。',
+          '[DojoRoomSync] テナント切り替え検知: $lastDojoId -> $dojoId. 古いローカルデータを完全パージします。',
         );
 
         if (!kIsWeb) {
@@ -115,7 +115,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
               debugPrint('[DojoRoomSync] Isarワイプをスキップしました（ストリーム保護）');
             } else {
               debugPrint(
-                '⚠️ [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します',
+                '[WARN] [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します',
               );
             }
 
@@ -158,7 +158,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
           .listen(
             (snapshot) {
               debugPrint(
-                '📡 [DojoRoomSync] データを検知: ${snapshot.docChanges.length}件の変更を受信',
+                '[DojoRoomSync] データを検知: ${snapshot.docChanges.length}件の変更を受信',
               );
               for (final change in snapshot.docChanges) {
                 if (change.type == DocumentChangeType.added ||
@@ -185,7 +185,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
                     if (!kIsWeb) {
                       ref.read(localMatchRepositoryProvider).saveMatch(match);
                       debugPrint(
-                        '✅ [DojoRoomSync] Isarへ試合データを保存完了: ID=${match.id}',
+                        '[DojoRoomSync] Isarへ試合データを保存完了: ID=${match.id}',
                       );
                     }
                   } catch (e) {
@@ -200,7 +200,7 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
                         .read(localMatchRepositoryProvider)
                         .deleteMatch(deletedId);
                     debugPrint(
-                      '🧹 [DojoRoomSync] クラウドでの削除を検知しローカルから消去: ID=$deletedId',
+                      '[DojoRoomSync] クラウドでの削除を検知しローカルから消去: ID=$deletedId',
                     );
                   }
                 }

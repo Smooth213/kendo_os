@@ -142,7 +142,7 @@ class ProgramViewerPdfPageCache {
       }
     } catch (e) {
       debugPrint(
-        '🚨 [ProgramViewerPdfPageCache] extractSinglePage fallback: $e',
+        '[ERROR] [ProgramViewerPdfPageCache] extractSinglePage fallback: $e',
       );
       return sourceBytes;
     }

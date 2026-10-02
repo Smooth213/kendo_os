@@ -78,7 +78,7 @@ final viewerMatchProjectionProvider = StreamProvider.family
       // =========================================================================
       if (kIsWeb) {
         debugPrint(
-          '🌐 [Viewer Web Bypass] Web環境のため、クラウドから対象の試合を直接監視してProjectionへ変換します: $matchId',
+          '[Viewer Web Bypass] Web環境のため、クラウドから対象の試合を直接監視してProjectionへ変換します: $matchId',
         );
         // 🌟 Webアプリ表示不具合修正パッチ（アーカイブ遅延対策）
         // 全試合ストリーム(matchStreamProvider)の完了を await するとブラウザが数分間フリーズしてしまうため、
@@ -270,7 +270,7 @@ final bunaiksenMatchesProvider = StreamProvider.family
                     return MatchModel.fromJson({...data, 'id': doc.id});
                   } catch (e, stack) {
                     debugPrint(
-                      '⚠️ [bunaiksenMatchesProvider] Error parsing match ${doc.id}: $e\n$stack',
+                      '[WARN] [bunaiksenMatchesProvider] Error parsing match ${doc.id}: $e\n$stack',
                     );
                     return null;
                   }

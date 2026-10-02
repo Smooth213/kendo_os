@@ -32,7 +32,7 @@ void main() {
 
       // ignore: avoid_print
       print(
-        '☀️ [Sunshine Theme Spec]\n'
+        '[Sunshine Theme Spec]\n'
         '  - Scaffold Background: ${sunshineColors.scaffoldBackground}\n'
         '  - Text Color: ${sunshineColors.textColor}\n'
         '  - Separator Color: ${sunshineColors.separatorColor}\n'

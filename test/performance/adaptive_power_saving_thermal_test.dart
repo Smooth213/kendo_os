@@ -96,7 +96,7 @@ void main() {
 
       // ignore: avoid_print
       print(
-        '🔋 [Thermal Governor Power Benchmark]\n'
+        '[Thermal Governor Power Benchmark]\n'
         '  - 通常モード: $normalTicksPerSec 回/秒 (100ms)\n'
         '  - エコ冷却モード: $ecoTicksPerSec 回/秒 (500ms, CPUウェイクアップ削減: ${ecoReduction.toStringAsFixed(1)}%)\n'
         '  - 極限省電力モード: $ultraTicksPerSec 回/秒 (1000ms, CPUウェイクアップ削減: ${ultraReduction.toStringAsFixed(1)}%)',

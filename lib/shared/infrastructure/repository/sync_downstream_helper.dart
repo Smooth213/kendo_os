@@ -33,7 +33,7 @@ class SyncDownstreamHelper {
               matches.add(match);
             } catch (e) {
               debugPrint(
-                '⚠️ [Sync Engine Downstream] bunaiksen doc inner match parse error: $e',
+                '[WARN] [Sync Engine Downstream] bunaiksen doc inner match parse error: $e',
               );
             }
           }
@@ -49,13 +49,13 @@ class SyncDownstreamHelper {
             tournamentId: tournamentId,
           );
           debugPrint(
-            '⚡ [Sync Engine Downstream] bunaiksenドキュメント直下のリストから ${healedMatches.length} 件の試合データをIsarに同期しました。',
+            '[Sync Engine Downstream] bunaiksenドキュメント直下のリストから ${healedMatches.length} 件の試合データをIsarに同期しました。',
           );
         }
       }
     } catch (e) {
       debugPrint(
-        '🔥 [Sync Engine Downstream Critical] bunaiksenドキュメント同期中にエラーが発生しました: $e',
+        '[ERROR] [Sync Engine Downstream Critical] bunaiksenドキュメント同期中にエラーが発生しました: $e',
       );
     }
   }
@@ -88,7 +88,7 @@ class SyncDownstreamHelper {
         } catch (e) {
           parseFailed = true;
           debugPrint(
-            '⚠️ [Sync Engine Downstream] Match parsing failed for doc ${doc.id}: $e',
+            '[WARN] [Sync Engine Downstream] Match parsing failed for doc ${doc.id}: $e',
           );
         }
       }
@@ -104,12 +104,12 @@ class SyncDownstreamHelper {
       );
       if (healedMatches.isNotEmpty) {
         debugPrint(
-          '⚡ [Sync Engine Downstream] Firestoreから ${healedMatches.length} 件の試合データをIsarに同期しました。',
+          '[Sync Engine Downstream] Firestoreから ${healedMatches.length} 件の試合データをIsarに同期しました。',
         );
       }
     } catch (e) {
       debugPrint(
-        '🔥 [Sync Engine Downstream Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
+        '[ERROR] [Sync Engine Downstream Critical] Isarへのバルクインサート中にエラーが発生しました: $e',
       );
     }
   }

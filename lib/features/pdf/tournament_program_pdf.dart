@@ -15,7 +15,7 @@ class TournamentProgramPdfEngine {
     required String type, // 'league', 'tournament', 'individual'
   }) async {
     debugPrint(
-      '🖨️ [PDF Engine] 保存用ディスクを一切汚さず、最新のIsarキャッシュからオンデマンドでPDFを組み立てます: $tournamentTitle',
+      '[PDF Engine] 保存用ディスクを一切汚さず、最新のIsarキャッシュからオンデマンドでPDFを組み立てます: $tournamentTitle',
     );
 
     if (matches.isEmpty) {

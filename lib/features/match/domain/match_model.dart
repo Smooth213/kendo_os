@@ -310,7 +310,7 @@ abstract class MatchModel with _$MatchModel implements TimelineItem {
         timerStartedAt: null,
       );
       debugPrint(
-        '🕒 [MatchModel] updateRemainingSeconds (isTimerStopping=true) => accMs: $accMs, new timerStartedAt: ${updated.timerStartedAt}',
+        '[MatchModel] updateRemainingSeconds (isTimerStopping=true) => accMs: $accMs, new timerStartedAt: ${updated.timerStartedAt}',
       );
       return updated;
     }

@@ -33,11 +33,11 @@ final matchStreamProvider = StreamProvider<List<MatchModel>>((ref) {
   return localRepository.watchAllLocalMatches().map((matches) {
     if (matches.isEmpty) {
       debugPrint(
-        '⏳ [Startup Restore] Isar内にローカルキャッシュがありません。クラウド同期をバックグラウンドで待機します。',
+        '[Startup Restore] Isar内にローカルキャッシュがありません。クラウド同期をバックグラウンドで待機します。',
       );
     } else {
       debugPrint(
-        '⚡ [Startup Restore] Isarローカルディスクから ${matches.length} 件の試合状態を一瞬で完全復元しました（電波ゼロOK）',
+        '[Startup Restore] Isarローカルディスクから ${matches.length} 件の試合状態を一瞬で完全復元しました（電波ゼロOK）',
       );
     }
     return matches;
@@ -95,7 +95,7 @@ final matchListByTournamentProvider = StreamProvider.family
         }
 
         debugPrint(
-          '🌐 [matchListByTournamentProvider] Webモード単方向直列監視開始 - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId"',
+          '[matchListByTournamentProvider] Webモード単方向直列監視開始 - dojoId: "$safeDojoId", tournamentId: "$safeTournamentId"',
         );
 
         final controller = StreamController<List<MatchModel>>();

@@ -268,7 +268,7 @@ class QuickMemoStorageService {
         }, SetOptions(merge: true))
         .then((_) {
           debugPrint(
-            '☁️ [QuickMemoStorage] Cloud synced successfully: $resolvedId (uid: $uid)',
+            '[QuickMemoStorage] Cloud synced successfully: $resolvedId (uid: $uid)',
           );
         })
         .catchError((e) {
