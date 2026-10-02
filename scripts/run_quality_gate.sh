@@ -3,7 +3,7 @@
 # 🥋 Kendo OS - 総合品質ゲート実行スクリプト (Quality Gate)
 # ==============================================================================
 # 以下の品質基準をすべてクリアしているかを一括検証します：
-# 1. 全28大ガバナンス個別監査 (1/28 〜 28/28: 100% PASS)
+# 1. 全29大ガバナンス個別監査 (1/29 〜 29/29: 100% PASS)
 # 2. Dart静的解析 (flutter analyze: 0 issues, 警告ゼロ)
 # 3. 単体・結合テスト (flutter test: 100% ALL PASS, エラーゼロ)
 # ==============================================================================
@@ -16,10 +16,10 @@ echo " 🥋 Kendo OS - 総合品質ゲート検証を開始します"
 echo "================================================================"
 echo ""
 
-# 1. 全28大ガバナンス個別監査
-echo "🚀 [Step 1/3] 全28大ガバナンス個別監査を実行中..."
+# 1. 全29大ガバナンス個別監査
+echo "🚀 [Step 1/3] 全29大ガバナンス個別監査を実行中..."
 python3 scripts/run_all_governance.py
-echo "✅ [Step 1/3] 全28大ガバナンス個別監査: ALL PASS"
+echo "✅ [Step 1/3] 全29大ガバナンス個別監査: ALL PASS"
 echo ""
 
 # 2. 静的解析
@@ -282,12 +282,13 @@ flutter test test/governance/design_system_governance_test.dart \
               test/e2e/global_crash_emergency_trap_and_recovery_e2e_test.dart \
               test/e2e/master_organization_provisioning_isolation_e2e_test.dart \
               test/e2e/composite_occ_auto_repair_concurrency_convergence_test.dart \
-              test/e2e/composite_dock_timer_wheel_and_keyboard_input_test.dart
+              test/e2e/composite_dock_timer_wheel_and_keyboard_input_test.dart \
+              test/governance/firestore_indexes_governance_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 
 echo "================================================================"
-echo " 🎉 祝！すべての品質ゲート（全28大監査・解析・テスト）を突破しました！"
+echo " 🎉 祝！すべての品質ゲート（全29大監査・解析・テスト）を突破しました！"
 echo "================================================================"
 echo "================================================================"
 echo ""

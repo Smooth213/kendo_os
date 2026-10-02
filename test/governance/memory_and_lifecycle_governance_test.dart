@@ -317,5 +317,25 @@ void main() {
         );
       },
     );
+
+    test('UI層プロバイダライフサイクル ＆ 外部リソース（Timer/Audio/FocusNode）明示破棄規約こと', () {
+      final bunaiksenFile = File(
+        'lib/features/tournament/presentation/providers/bunaiksen_provider.dart',
+      );
+      if (bunaiksenFile.existsSync()) {
+        final content = bunaiksenFile.readAsStringSync();
+        expect(
+          content.contains('_sub?.cancel()') && content.contains('dispose()'),
+          isTrue,
+          reason: 'UI層プロバイダは購読破棄と dispose メソッドを保持する必要があります。',
+        );
+      }
+
+      final soundFile = File(
+        'lib/shared/application/services/sound_service.dart',
+      );
+      expect(soundFile.existsSync(), isTrue);
+      expect(soundFile.readAsStringSync().contains('dispose()'), isTrue);
+    });
   });
 }

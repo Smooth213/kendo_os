@@ -43,6 +43,7 @@ def main():
         ("⑤ [プロバイダ管理] matchList / viewer / sound プロバイダの autoDispose ＆ keepAlive 規約", res1.returncode == 0),
         ("⑥ [非同期完全解放] リスナー・タイマー・コントローラー破棄漏れゼロ規約", res1.returncode == 0),
         ("⑦ [CQRSプロジェクション解放] ProjectionUpdater 監視ストリーム明示解除 ＆ リークゼロ規約", res2.returncode == 0),
+        ("⑧ [UI層・外部リソース解放] UI層Provider autoDispose ＆ タイマー・外部リソース完全解放規約", res1.returncode == 0),
     ]
 
     for label, ok in rules:

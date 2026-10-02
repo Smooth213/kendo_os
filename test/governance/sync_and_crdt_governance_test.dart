@@ -271,5 +271,33 @@ void main() {
         );
       },
     );
+
+    test(
+      '日時決定論規約に関して、 TimeSource および ServerClockOffsetService 経由での時刻決定論が保証されていること',
+      () {
+        final timeSourceFile = File('lib/shared/time/time_source.dart');
+        final systemTimeSourceFile = File(
+          'lib/shared/time/system_time_source.dart',
+        );
+        final clockServiceFile = File(
+          'lib/shared/time/server_clock_offset_service.dart',
+        );
+
+        expect(timeSourceFile.existsSync(), isTrue);
+        expect(systemTimeSourceFile.existsSync(), isTrue);
+        expect(clockServiceFile.existsSync(), isTrue);
+
+        final systemContent = systemTimeSourceFile.readAsStringSync();
+        expect(systemContent.contains('TimeSource'), isTrue);
+        expect(systemContent.contains('.add(offset)'), isTrue);
+
+        final crdtFile = File(
+          'lib/features/tournament/presentation/operate/providers/sync_crdt_merger.dart',
+        );
+        expect(crdtFile.existsSync(), isTrue);
+        final crdtContent = crdtFile.readAsStringSync();
+        expect(crdtContent.contains('chosenTimerStartedAt'), isTrue);
+      },
+    );
   });
 }
