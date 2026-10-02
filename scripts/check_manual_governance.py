@@ -94,7 +94,7 @@ def run_manual_governance():
         "test/golden/manual_ui_integrity_golden_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     tests_ok = (result.returncode == 0)
 

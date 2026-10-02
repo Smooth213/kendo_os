@@ -18,15 +18,11 @@ def main():
     print(" 📊 【第404条 ガバナンス監査】🧹 メモリ保護・LRU上限 ＆ リソース明示解放（リーク根絶）規約")
     print("=" * 68)
 
-    cmd1 = [
-        "flutter",
-        "test",
+    cmd1 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/memory_and_lifecycle_governance_test.dart",
         "--reporter=expanded",
     ]
-    cmd2 = [
-        "flutter",
-        "test",
+    cmd2 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/projection_updater_memory_leak_governance_test.dart",
         "--reporter=expanded",
     ]

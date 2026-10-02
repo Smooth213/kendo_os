@@ -7,8 +7,7 @@ import subprocess
 import sys
 
 def run_security_governance():
-    cmd = [
-        "flutter", "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/role_visibility_test.dart",
         "test/widget/hidden_feature_access_test.dart",
         "test/widget/ai_feature_hidden_test.dart",

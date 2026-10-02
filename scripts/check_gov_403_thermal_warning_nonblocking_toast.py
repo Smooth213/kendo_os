@@ -15,9 +15,7 @@ def main():
     print(" 📊 【第403条 ガバナンス監査】🚨 サーマル適応警告・省電力UIトースト非ブロッキング表示 ＆ メモリリークゼロ規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/thermal_toast_governance_test.dart",
         "--reporter=expanded",
     ]

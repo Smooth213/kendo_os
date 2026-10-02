@@ -7,8 +7,7 @@ import subprocess
 import sys
 
 def run_contrast_governance():
-    cmd = [
-        "flutter", "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/timer_widget_theme_contrast_test.dart",
         "test/widget/match_status_badge_theme_test.dart",
         "test/widget/large_viewer_scoreboard_visibility_test.dart",

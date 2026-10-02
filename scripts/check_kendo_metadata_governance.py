@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 def run_metadata_governance_check():
-    cmd = ["flutter", "test", "test/governance/kendo_core_governance_test.dart", "--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py", "test/governance/kendo_core_governance_test.dart", "--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
     output = result.stdout + result.stderr

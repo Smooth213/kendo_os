@@ -11,7 +11,7 @@ def run_share_url_governance():
         "test/governance/share_url_governance_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     passed_all = (result.returncode == 0)
 

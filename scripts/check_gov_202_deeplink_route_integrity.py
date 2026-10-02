@@ -18,15 +18,11 @@ def main():
     print(" 📊 【第202条 ガバナンス監査】🔐 ディープリンク・未認証URLルーティング完全性規約")
     print("=" * 68)
 
-    cmd1 = [
-        "flutter",
-        "test",
+    cmd1 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/route_guard_integrity_governance_test.dart",
         "--reporter=expanded",
     ]
-    cmd2 = [
-        "flutter",
-        "test",
+    cmd2 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/router_fallback_access_denied_governance_test.dart",
         "--reporter=expanded",
     ]

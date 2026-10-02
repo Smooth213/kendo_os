@@ -87,7 +87,7 @@ def main():
     for test_path in test_paths:
         if os.path.exists(test_path):
             res = subprocess.run(
-                ["flutter", "test", test_path],
+                ["python3", "scripts/gov_test_helper.py", test_path],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,

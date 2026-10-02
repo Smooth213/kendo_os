@@ -18,9 +18,7 @@ def main():
     print(" 📊 【第305条 ガバナンス監査】📜 リスト仮想化 ＆ ビューポート描画最適化（一括生成禁止）規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/list_virtualization_governance_test.dart",
         "--reporter=expanded",
     ]

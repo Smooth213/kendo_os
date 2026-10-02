@@ -21,27 +21,21 @@ def main():
     print(" 📊 【第502条 ガバナンス監査】🌐 分散同期整合性・Clock Skew補正 ＆ CRDT調停規約")
     print("=" * 68)
 
-    cmd1 = [
-        "flutter",
-        "test",
+    cmd1 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/sync_and_crdt_governance_test.dart",
         "--reporter=expanded",
     ]
     res1 = subprocess.run(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     is_ok1 = (res1.returncode == 0)
 
-    cmd2 = [
-        "flutter",
-        "test",
+    cmd2 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/projection_hash_and_sync_queue_governance_test.dart",
         "--reporter=expanded",
     ]
     res2 = subprocess.run(cmd2, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     is_ok2 = (res2.returncode == 0)
 
-    cmd3 = [
-        "flutter",
-        "test",
+    cmd3 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/sync_downstream_dirty_protection_governance_test.dart",
         "--reporter=expanded",
     ]

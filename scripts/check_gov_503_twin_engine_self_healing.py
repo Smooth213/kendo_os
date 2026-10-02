@@ -32,15 +32,11 @@ def main():
     is_offline_ok = (res_offline.returncode == 0)
 
     # 2. 完全耐障害性・自己修復テスト
-    cmd_main = [
-        "flutter",
-        "test",
+    cmd_main = ["python3", "scripts/gov_test_helper.py",
         "test/governance/resilience_and_twin_governance_test.dart",
         "--reporter=expanded",
     ]
-    cmd_trap = [
-        "flutter",
-        "test",
+    cmd_trap = ["python3", "scripts/gov_test_helper.py",
         "test/governance/global_error_handler_governance_test.dart",
         "--reporter=expanded",
     ]

@@ -17,9 +17,7 @@ def main():
     print(" 📊 【第306条 ガバナンス監査】🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/drawing_zoom_and_gesture_governance_test.dart",
         "test/unit/quick_memo_transformation_math_test.dart",
         "--reporter=expanded",

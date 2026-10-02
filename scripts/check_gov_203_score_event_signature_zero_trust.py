@@ -17,9 +17,7 @@ def main():
     print(" 📊 【第203条 ガバナンス監査】🔐 スコアイベント電子署名・改ざん隔離 ＆ ゼロトラストデータ完全性保証規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/event_signature_governance_test.dart",
         "--reporter=expanded",
     ]

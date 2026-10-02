@@ -13,7 +13,7 @@ def run_ios_pwa_touch_sync_governance():
     ]
 
     # 🛡️ 1. Flutter テストの実行
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     flutter_passed = (result.returncode == 0)
 

@@ -13,7 +13,7 @@ import sys
 SUB_AUDITS = [
     (
         "① ブラウザBlob URL即時解放・メモリリークゼロ規約",
-        ["flutter", "test", "test/governance/blob_url_leak_governance_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/governance/blob_url_leak_governance_test.dart"],
     ),
 ]
 

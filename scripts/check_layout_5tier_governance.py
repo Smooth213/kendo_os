@@ -7,8 +7,7 @@ import subprocess
 import sys
 
 def run_layout_governance():
-    cmd = [
-        "flutter", "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/five_tier_layout_preservation_test.dart",
         "test/widget/team_status_card_5tier_layout_test.dart",
         "test/widget/individual_player_card_5tier_layout_test.dart",

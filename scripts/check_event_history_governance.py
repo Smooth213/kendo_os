@@ -4,9 +4,7 @@ import sys
 
 
 def main():
-    command = [
-        'flutter',
-        'test',
+    command = ["python3", "scripts/gov_test_helper.py",
         'test/governance/event_history_partition_governance_test.dart',
         '--reporter=expanded',
     ]

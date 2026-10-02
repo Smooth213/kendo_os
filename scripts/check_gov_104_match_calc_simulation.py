@@ -15,19 +15,19 @@ import sys
 SUB_AUDITS = [
     (
         "① [設計憲法・アコーディオン・境界値防護] 試合数計算機 イミュータブルモデル・UI開閉・トークン遵守・500行境界規約",
-        ["flutter", "test", "test/governance/match_calculator_governance_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/governance/match_calculator_governance_test.dart"],
     ),
     (
         "② [UI表示・視認性] 試合数計算機 アコーディオン展開・チップ文字色・レイアウト完全性規約",
-        ["flutter", "test", "test/widget/match_calculator_display_and_layout_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/widget/match_calculator_display_and_layout_test.dart"],
     ),
     (
         "③ [計算エンジン完全性] 総試合数算出・コート割当・所要時間シミュレーション完全性規約",
-        ["flutter", "test", "test/unit/match_allocation_engine_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/unit/match_allocation_engine_test.dart"],
     ),
     (
         "④ [サークル方式・奇数バイ・3位決定戦] サークル方式総当たり（Berger Tables）・奇数バイ ＆ 3位決定戦生成規約",
-        ["flutter", "test", "test/governance/match_generation_helper_governance_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/governance/match_generation_helper_governance_test.dart"],
     ),
 ]
 

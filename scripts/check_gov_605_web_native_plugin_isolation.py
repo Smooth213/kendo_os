@@ -13,7 +13,7 @@ import sys
 SUB_AUDITS = [
     (
         "① Web非対応プラグイン直接呼出遮断・kIsWebガード境界規約",
-        ["flutter", "test", "test/governance/web_unsupported_plugin_leak_governance_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/governance/web_unsupported_plugin_leak_governance_test.dart"],
     ),
 ]
 

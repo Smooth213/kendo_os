@@ -62,7 +62,7 @@ def main():
 
     # flutter analyze での linter (use_build_context_synchronously) と Dart テストの整合性を確認
     import subprocess
-    cmd = ["flutter", "test", "test/governance/mounted_safety_governance_test.dart"]
+    cmd = ["python3", "scripts/gov_test_helper.py", "test/governance/mounted_safety_governance_test.dart"]
     res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     if res.returncode == 0:

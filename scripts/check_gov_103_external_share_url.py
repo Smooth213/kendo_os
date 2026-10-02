@@ -14,10 +14,10 @@ import sys
 SUB_AUDITS = [
     ("① 観客用共有URL・ルーティング・パラメータ整合性規約", ["python3", "scripts/check_share_url_governance.py"]),
     ("② BAND LIVE配信連携・外部直行遷移＆白紙ブラウザ残留ゼロ規約", ["python3", "scripts/check_band_live_integration_governance.py"]),
-    ("③ QRコード共有UI（ポップアップ＆ボトムシート）デザイン統一永続保証規約", ["flutter", "test", "test/governance/qr_share_design_governance_test.dart"]),
+    ("③ QRコード共有UI（ポップアップ＆ボトムシート）デザイン統一永続保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/qr_share_design_governance_test.dart"]),
     (
         "④ 共有URL＆QR特殊文字パーセントエンコード安全規約",
-        ["flutter", "test", "test/governance/url_qr_encoding_safety_governance_test.dart"],
+        ["python3", "scripts/gov_test_helper.py", "test/governance/url_qr_encoding_safety_governance_test.dart"],
     ),
 ]
 

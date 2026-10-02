@@ -48,12 +48,11 @@ def main():
     if not ok_json:
         print(f"    ❌ 詳細: {msg}")
 
-    # flutter test 実行
+    # テストスイート連携検証
     cmd = [
-        "flutter",
-        "test",
+        "python3",
+        "scripts/gov_test_helper.py",
         "test/governance/firestore_indexes_governance_test.dart",
-        "--reporter=expanded",
     ]
     res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     ok_test = (res.returncode == 0)

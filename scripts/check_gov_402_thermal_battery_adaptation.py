@@ -29,9 +29,7 @@ def main():
     is_thermal_ok = (res_thermal.returncode == 0)
 
     # 2. 低負荷＆タイマーガバナンステスト
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/low_load_and_timer_governance_test.dart",
         "--reporter=expanded",
     ]

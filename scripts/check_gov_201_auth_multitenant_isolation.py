@@ -14,9 +14,9 @@ SUB_AUDITS = [
     ("① セキュリティ＆ロール露出規制規約", ["python3", "scripts/check_security_governance.py"]),
     ("② マルチテナント道場・大会空間 隔離規約", ["python3", "scripts/check_tenant_isolation_governance.py"]),
     ("③ Firestore セキュリティルール＆ロール権限規約", ["python3", "scripts/check_firestore_rules_governance.py"]),
-    ("④ ロール権限一元統治 ＆ ハードコードロール比較完全排除規約", ["flutter", "test", "test/governance/role_permissions_centralized_governance_test.dart"]),
-    ("⑤ セキュリティガード網羅的アクセス制御 ＆ 空間隔離保証規約", ["flutter", "test", "test/governance/security_guards_access_control_governance_test.dart"]),
-    ("⑥ マスター組織登録 ＆ 道場空間完全分離規約", ["flutter", "test", "test/governance/master_organization_tenancy_governance_test.dart"]),
+    ("④ ロール権限一元統治 ＆ ハードコードロール比較完全排除規約", ["python3", "scripts/gov_test_helper.py", "test/governance/role_permissions_centralized_governance_test.dart"]),
+    ("⑤ セキュリティガード網羅的アクセス制御 ＆ 空間隔離保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/security_guards_access_control_governance_test.dart"]),
+    ("⑥ マスター組織登録 ＆ 道場空間完全分離規約", ["python3", "scripts/gov_test_helper.py", "test/governance/master_organization_tenancy_governance_test.dart"]),
 ]
 
 def main():

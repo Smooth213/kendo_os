@@ -7,8 +7,7 @@ import subprocess
 import sys
 
 def run_text_overflow_governance():
-    cmd = [
-        "flutter", "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/text_scale_overflow_governance_test.dart",
         "test/widget/all_screens_text_scale_no_overflow_test.dart",
         "--reporter=expanded"

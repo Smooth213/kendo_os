@@ -12,7 +12,7 @@ def run_tenant_isolation_governance():
         "test/unit/league_standings_integration_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     output = result.stdout + result.stderr
 

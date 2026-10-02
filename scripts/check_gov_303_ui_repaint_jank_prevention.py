@@ -19,9 +19,7 @@ def main():
     print(" 📊 【第303条 ガバナンス監査】⚡ UI再描画局所化 ＆ Jank防止規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/ui_rebuild_governance_test.dart",
         "--reporter=expanded",
     ]

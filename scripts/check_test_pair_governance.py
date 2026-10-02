@@ -20,7 +20,7 @@ def run_test_pair_governance():
         "test/unit/domain/rules/category_rule_summary_card_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     output = result.stdout + result.stderr
 

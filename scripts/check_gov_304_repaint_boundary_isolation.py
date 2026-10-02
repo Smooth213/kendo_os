@@ -19,9 +19,7 @@ def main():
     print(" 📊 【第304条 ガバナンス監査】🎨 レンダリング負荷隔離 ＆ RepaintBoundary最適化規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/rendering_boundary_governance_test.dart",
         "--reporter=expanded",
     ]

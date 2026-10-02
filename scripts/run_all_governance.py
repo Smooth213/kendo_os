@@ -12,13 +12,15 @@ kendo OS の全31大ガバナンス監査を「6大ドメイン・100番台法�
 - 第3章：UI・UX ＆ レンダリング最適化規約（第301条〜第306条）
 - 第4章：極限低負荷 ＆ サーマル・リソース管理規約（第401条〜第405条）
 - 第5章：現場通信 ＆ 耐障害性・分散調停規約（第501条〜第504条）
-- 第6章：プラットフォーム境界 ＆ コード品質規約（第601条〜第605条）
+- 第6章：プラットフォーム境界 ＆ コード品質規約（第601条〜第606条）
 """
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 import subprocess
 import sys
+import threading
 import time
 
 CHAPTER_NAMES = {
@@ -296,6 +298,13 @@ AUDIT_DEFINITIONS = [
         "name": "🌐 Web/ネイティブプラグイン完全隔離・バウンダリ漏洩ゼロ規約",
         "cmd": ["python3", "scripts/check_gov_605_web_native_plugin_isolation.py"],
     },
+    {
+        "id": 606,
+        "old_id": None,
+        "chapter_num": 6,
+        "name": "⚡ ガバナンススクリプト静的検査専念 ＆ 二重テスト起動完全禁止規約",
+        "cmd": ["python3", "scripts/check_gov_606_governance_runner_efficiency.py"],
+    },
 ]
 
 
@@ -324,6 +333,13 @@ def main():
         help="指定した章（1〜6 または domain, security, ui, perf, resilience, quality）のみを実行",
     )
     parser.add_argument(
+        "--jobs",
+        "-j",
+        type=int,
+        default=4,
+        help="並列実行ワーカー数 (デフォルト: 4)",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="各監査の詳細ログを逐次出力",
@@ -350,33 +366,23 @@ def main():
             print(f"❌ 監査条番号 第{args.only}条 は存在しません。")
             sys.exit(1)
 
+    workers = 1 if args.only else max(1, args.jobs)
+
     print("=" * 80)
     print(f" 🥋 Kendo OS - 全{len(AUDIT_DEFINITIONS)}大ガバナンス法典 統合ランナー (100番台体系)")
     print("=" * 80)
-    print(f" 実行対象: {len(target_audits)} 条項")
+    print(f" 実行対象: {len(target_audits)} 条項 | 並列実行: {workers} ワーカー")
     print("-" * 80)
 
-    results = []
-    chapter_results = {i: [] for i in range(1, 7)}
-    total_start = time.time()
-    current_chapter_num = None
+    completed_count = 0
+    print_lock = threading.Lock()
 
-    for idx, audit in enumerate(target_audits, 1):
-        audit_id = audit["id"]
-        audit_name = audit["name"]
-        chap_num = audit["chapter_num"]
-        chap_title = CHAPTER_NAMES[chap_num]
-        cmd = audit["cmd"]
-
-        if chap_num != current_chapter_num and not args.only:
-            current_chapter_num = chap_num
-            print(f"\n【{chap_title}】")
-
-        progress_str = f"[{idx:2d}/{len(target_audits)}]"
-        if args.verbose:
-            print(f"▶ 実行中 {progress_str} 第{audit_id:3d}条 {audit_name} ...")
-        else:
-            print(f" {progress_str} 第{audit_id:3d}条 {audit_name} ... ", end="", flush=True)
+    def run_worker(audit_item):
+        nonlocal completed_count
+        audit_id = audit_item["id"]
+        audit_name = audit_item["name"]
+        chap_num = audit_item["chapter_num"]
+        cmd = audit_item["cmd"]
 
         start_time = time.time()
         try:
@@ -388,17 +394,6 @@ def main():
             )
             duration = time.time() - start_time
             passed = (res.returncode == 0)
-
-            if passed:
-                print(f"🟢 PASS ({duration:.1f}s)")
-            else:
-                print(f"🔴 FAIL ({duration:.1f}s)")
-                if not args.verbose:
-                    print(f"\n--- [詳細ログ: 第{audit_id}条 {audit_name}] ---")
-                    print(res.stdout)
-                    print(res.stderr)
-                    print("-" * 40)
-
             record = {
                 "id": audit_id,
                 "chapter_num": chap_num,
@@ -408,11 +403,8 @@ def main():
                 "stdout": res.stdout,
                 "stderr": res.stderr,
             }
-            results.append(record)
-            chapter_results[chap_num].append(record)
         except Exception as e:
             duration = time.time() - start_time
-            print(f"💥 ERROR ({duration:.1f}s) -> {e}")
             record = {
                 "id": audit_id,
                 "chapter_num": chap_num,
@@ -422,8 +414,37 @@ def main():
                 "stdout": "",
                 "stderr": str(e),
             }
-            results.append(record)
-            chapter_results[chap_num].append(record)
+
+        with print_lock:
+            completed_count += 1
+            badge = "🟢 PASS" if record["passed"] else "🔴 FAIL"
+            print(f" [{completed_count:2d}/{len(target_audits)}] 第{audit_id:3d}条 {audit_name} ... {badge} ({duration:.1f}s)")
+            if not record["passed"] and not args.verbose:
+                print(f"\n--- [詳細ログ: 第{audit_id}条 {audit_name}] ---")
+                print(record["stdout"])
+                print(record["stderr"])
+                print("-" * 40)
+
+        return record
+
+    total_start = time.time()
+    results = []
+
+    if workers == 1:
+        for audit in target_audits:
+            results.append(run_worker(audit))
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = [executor.submit(run_worker, audit) for audit in target_audits]
+            for future in as_completed(futures):
+                results.append(future.result())
+
+    # 元の定義順（ID昇順）に並べ替え
+    results.sort(key=lambda r: r["id"])
+
+    chapter_results = {i: [] for i in range(1, 7)}
+    for r in results:
+        chapter_results[r["chapter_num"]].append(r)
 
     total_duration = time.time() - total_start
     all_passed = all(r["passed"] for r in results)

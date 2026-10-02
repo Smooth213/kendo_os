@@ -19,9 +19,7 @@ def main():
     print(" 📊 【第401条 ガバナンス監査】🧵 Isolate完全分離・非同期バックオフ ＆ 非ブロッキング処理規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/isolate_and_concurrency_governance_test.dart",
         "--reporter=expanded",
     ]

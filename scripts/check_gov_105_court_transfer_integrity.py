@@ -17,9 +17,7 @@ def main():
     print(" 📊 【第105条 ガバナンス監査】🔀 現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/court_reassignment_governance_test.dart",
         "--reporter=expanded",
     ]

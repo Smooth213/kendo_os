@@ -12,7 +12,7 @@ def run_pdf_layout_safety_governance():
         "test/widget/pdf_page_layout_helper_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     output = result.stdout + result.stderr
 

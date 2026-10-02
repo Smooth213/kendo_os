@@ -16,7 +16,7 @@ def run_dock_lifecycle_governance():
         "test/governance/screens_and_bottom_sheets_governance_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     passed_all = (result.returncode == 0)
 

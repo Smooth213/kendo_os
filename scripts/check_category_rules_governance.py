@@ -12,7 +12,7 @@ def run_category_rules_governance():
         "test/widget/category_rule_category_tile_test.dart",
     ]
 
-    cmd = ["flutter", "test"] + test_files + ["--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     passed_all = (result.returncode == 0)
 

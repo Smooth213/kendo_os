@@ -12,7 +12,7 @@ def run_architecture_governance():
     dart_res = subprocess.run(dart_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
     # 2. observability_crash_test.dart (モジュール疎結合保証)
-    test_cmd = ["flutter", "test", "test/unit/observability_crash_test.dart", "--reporter=expanded"]
+    test_cmd = ["python3", "scripts/gov_test_helper.py", "test/unit/observability_crash_test.dart", "--reporter=expanded"]
     test_res = subprocess.run(test_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
     passed_all = (dart_res.returncode == 0 and test_res.returncode == 0)

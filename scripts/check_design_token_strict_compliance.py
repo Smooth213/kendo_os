@@ -22,7 +22,7 @@ def main():
     token_res = subprocess.run(token_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     # 2. design_token_compliance_governance_test.dart の実行
-    test_cmd = ["flutter", "test", "test/governance/design_token_compliance_governance_test.dart"]
+    test_cmd = ["python3", "scripts/gov_test_helper.py", "test/governance/design_token_compliance_governance_test.dart"]
     test_res = subprocess.run(test_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     is_ok = (token_res.returncode == 0 and test_res.returncode == 0)

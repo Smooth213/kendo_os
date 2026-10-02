@@ -7,8 +7,7 @@ import subprocess
 import sys
 
 def run_resilience_governance():
-    cmd = [
-        "flutter", "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/offline/phase4_offline_tolerance_test.dart",
         "test/endurance/phase7_long_term_endurance_test.dart",
         "test/chaos/phase7_operational_chaos_test.dart",

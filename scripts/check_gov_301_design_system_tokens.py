@@ -17,10 +17,10 @@ SUB_AUDITS = [
     ("① デザインシステム トークン規約 (strict)", ["python3", "scripts/check_design_tokens.py", "--strict"]),
     ("② UIレイアウト 5段構造永続保持規約", ["python3", "scripts/check_layout_5tier_governance.py"]),
     ("③ テーマ視認性・白飛び黒潰れゼロ規約", ["python3", "scripts/check_theme_contrast_governance.py"]),
-    ("④ デザインシステム・視認性完全防護規約 (全39項目)", ["flutter", "test", "test/governance/design_system_governance_test.dart"]),
+    ("④ デザインシステム・視認性完全防護規約 (全39項目)", ["python3", "scripts/gov_test_helper.py", "test/governance/design_system_governance_test.dart"]),
     ("⑤ 文字拡大（標準・大・特大）文字切れ・省略（...）完全防止規約", ["python3", "scripts/check_text_overflow_governance.py"]),
     ("⑥ デザインシステムトークン厳格準拠規約", ["python3", "scripts/check_design_token_strict_compliance.py"]),
-    ("⑦ 全画面ヒントテキスト視認性・適正グレー保証規約", ["flutter", "test", "test/governance/hint_text_theme_contrast_governance_test.dart"]),
+    ("⑦ 全画面ヒントテキスト視認性・適正グレー保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/hint_text_theme_contrast_governance_test.dart"]),
 ]
 
 

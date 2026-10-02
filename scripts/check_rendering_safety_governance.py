@@ -31,8 +31,7 @@ def run_rendering_safety_governance():
     static_violations = check_static_reorderable_keys()
 
     # 2. 全画面・全ボトムシート UI レンダリング動的テスト
-    cmd = [
-        "flutter", "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/all_screens_rendering_safety_governance_test.dart",
         "--reporter=expanded"
     ]

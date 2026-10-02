@@ -19,21 +19,15 @@ def main():
     print(" 📊 【第206条 ガバナンス監査】💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約")
     print("=" * 68)
 
-    cmd1 = [
-        "flutter",
-        "test",
+    cmd1 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/io_batch_and_history_governance_test.dart",
         "--reporter=expanded",
     ]
-    cmd2 = [
-        "flutter",
-        "test",
+    cmd2 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/event_store_logical_clock_governance_test.dart",
         "--reporter=expanded",
     ]
-    cmd3 = [
-        "flutter",
-        "test",
+    cmd3 = ["python3", "scripts/gov_test_helper.py",
         "test/governance/match_aggregate_repository_governance_test.dart",
         "--reporter=expanded",
     ]

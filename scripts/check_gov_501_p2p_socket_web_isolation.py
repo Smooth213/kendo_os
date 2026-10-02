@@ -17,9 +17,7 @@ def main():
     print(" 📊 【第501条 ガバナンス監査】📶 現場P2Pローカル配信 ＆ ソケットライフサイクル・Webプラットフォーム完全隔離規約")
     print("=" * 68)
 
-    cmd = [
-        "flutter",
-        "test",
+    cmd = ["python3", "scripts/gov_test_helper.py",
         "test/governance/p2p_local_broadcast_governance_test.dart",
         "--reporter=expanded",
     ]

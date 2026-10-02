@@ -16,7 +16,7 @@ def main():
     print(" 📊 【第604条 ガバナンス監査】📦 重厚ライブラリ遅延読み込み＆初期バンドル最小化規約")
     print("=" * 68)
 
-    cmd = ["flutter", "test", "test/governance/deferred_loading_governance_test.dart", "--reporter=expanded"]
+    cmd = ["python3", "scripts/gov_test_helper.py", "test/governance/deferred_loading_governance_test.dart"]
     res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     is_ok = (res.returncode == 0)
 
