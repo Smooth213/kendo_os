@@ -11,18 +11,18 @@ void main() {
       int actionCounter = 0;
       bool isProcessing = false;
       DateTime? lastActionTime;
+      DateTime simulatedNow = DateTime(2026, 10, 2, 10, 0, 0);
 
       // 現場の防護付きボタン（Mutex / 300ms Debounce 実装）
       Future<void> handleTap() async {
-        final now = DateTime.now();
         if (isProcessing) return;
         if (lastActionTime != null &&
-            now.difference(lastActionTime!) <
+            simulatedNow.difference(lastActionTime!) <
                 const Duration(milliseconds: 300)) {
           return;
         }
         isProcessing = true;
-        lastActionTime = now;
+        lastActionTime = simulatedNow;
         actionCounter++;
         await Future.delayed(const Duration(milliseconds: 50));
         isProcessing = false;
@@ -45,9 +45,10 @@ void main() {
       final buttonFinder = find.byKey(const Key('protected_button'));
       expect(buttonFinder, findsOneWidget);
 
-      // 5msごとに20回の連打（水滴落下バーストシミュレーション）
+      // 5msごとに20回の連打（水滴落下バーストシミュレーション、合計100ms）
       for (int i = 0; i < 20; i++) {
         await tester.tap(buttonFinder);
+        simulatedNow = simulatedNow.add(const Duration(milliseconds: 5));
         await tester.pump(const Duration(milliseconds: 5));
       }
 
