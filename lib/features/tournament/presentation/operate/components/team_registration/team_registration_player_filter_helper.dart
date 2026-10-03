@@ -32,6 +32,8 @@ class TeamRegistrationPlayerFilterHelper {
       return player.grade >= 10 && player.grade <= 12;
     } else if (majorCategory == '大学・一般') {
       return player.grade >= 13;
+    } else if (majorCategory == 'その他') {
+      return true;
     }
     return true;
   }

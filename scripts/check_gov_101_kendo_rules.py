@@ -24,6 +24,7 @@ SUB_AUDITS = [
     ("⑥ 勝ち抜き戦（5人制 / 3人制）選択・適応・実行 総合保証規約", ["python3", "scripts/check_kachinuki_governance.py"]),
     ("⑦ 大会ルール設定バリデーション ＆ ルール永続化マイグレーション規約", ["python3", "scripts/check_tournament_rule_config_governance.py"]),
     ("⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/expedition_strike_decision_governance_test.dart"]),
+    ("⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/match_category_other_support_governance_test.dart"]),
 ]
 
 def main():

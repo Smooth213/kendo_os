@@ -339,6 +339,11 @@ class _SetupMatchFormatScreenState
                         _loadCategoryRules();
                       });
                     },
+                    onCustomCategoryChanged: (customName) {
+                      setState(() {
+                        _state.customCategoryName = customName;
+                      });
+                    },
                     onTeamSelected: (team) {
                       setState(() {
                         _state.selectedTeamId = team.id;

@@ -63,6 +63,8 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
   late int _currentIndex;
   final ProgramViewerMediaCache _mediaCache = ProgramViewerMediaCache.shared;
   late PdfViewerController _pdfController;
+  final TransformationController _transformationController =
+      TransformationController();
   int _pageNumber = 1;
   int _pageCount = 0;
   bool _hasRestoredInitialPage = false;
@@ -83,8 +85,15 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
 
   @override
   void dispose() {
+    _transformationController.dispose();
     _pdfController.dispose();
     super.dispose();
+  }
+
+  void _resetZoom() {
+    if (_transformationController.value != Matrix4.identity()) {
+      _transformationController.value = Matrix4.identity();
+    }
   }
 
   Future<Uint8List> _getPdfBytes(String url) {
@@ -268,6 +277,7 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
               ),
             ),
             onSelected: (_) {
+              _resetZoom();
               final newProg = programs[idx];
               final itemKey = newProg.id.isNotEmpty
                   ? newProg.id
@@ -309,50 +319,66 @@ class _ProgramBottomSheetState extends ConsumerState<ProgramBottomSheet> {
         alignment: Alignment.bottomCenter,
         children: [
           ClipRRect(
-            child: InteractiveViewer(
-              alignment: Alignment.center,
-              minScale: 0.8,
-              maxScale: 4.0,
-              child: Center(
-                child: ProgramViewerPdfBody(
-                  program: program,
-                  pageCount: effectivePageCount,
-                  pdfViewerController: _pdfController,
-                  sdkPdfBytesFuture: _getPdfBytes(program.fileUrl),
-                  onPageCountLoaded: (count) {
-                    if (_pageCount != count) {
+            child: GestureDetector(
+              onDoubleTap: _resetZoom,
+              child: InteractiveViewer(
+                key: ValueKey('sheet_iv_${program.id}_$_currentIndex'),
+                transformationController: _transformationController,
+                alignment: Alignment.center,
+                minScale: 1.0,
+                maxScale: 6.0,
+                boundaryMargin: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.giant * 4,
+                  vertical: AppSpacing.giant * 6,
+                ),
+                onInteractionEnd: (_) {
+                  final double currentScale = _transformationController.value
+                      .getMaxScaleOnAxis();
+                  if (currentScale <= 1.05) {
+                    _resetZoom();
+                  }
+                },
+                child: Center(
+                  child: ProgramViewerPdfBody(
+                    program: program,
+                    pageCount: effectivePageCount,
+                    pdfViewerController: _pdfController,
+                    sdkPdfBytesFuture: _getPdfBytes(program.fileUrl),
+                    onPageCountLoaded: (count) {
+                      if (_pageCount != count) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted && _pageCount != count) {
+                            setState(() => _pageCount = count);
+                          }
+                        });
+                      }
+                    },
+                    buildPageOverlay: (pIndex) => ProgramStrokeLayer(
+                      programId: itemProgramId,
+                      pageIndex: pIndex,
+                      penWidth: 10.0,
+                    ),
+                    initialPage: _pageNumber - 1,
+                    onPageChanged: (pIndex) {
+                      final newPage = pIndex + 1;
+                      if (_isInitialPageRestorePending &&
+                          newPage == 1 &&
+                          _pageNumber > 1) {
+                        // 🛡️ 初期レイアウト時の一時的な0発火による保存値破壊を防止
+                        return;
+                      }
+                      _isInitialPageRestorePending = false;
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted && _pageCount != count) {
-                          setState(() => _pageCount = count);
+                        if (mounted && _pageNumber != newPage) {
+                          setState(() => _pageNumber = newPage);
                         }
                       });
-                    }
-                  },
-                  buildPageOverlay: (pIndex) => ProgramStrokeLayer(
-                    programId: itemProgramId,
-                    pageIndex: pIndex,
-                    penWidth: 10.0,
+                      ProgramViewStateService.instance.setLastPageNumber(
+                        itemProgramId,
+                        newPage,
+                      );
+                    },
                   ),
-                  initialPage: _pageNumber - 1,
-                  onPageChanged: (pIndex) {
-                    final newPage = pIndex + 1;
-                    if (_isInitialPageRestorePending &&
-                        newPage == 1 &&
-                        _pageNumber > 1) {
-                      // 🛡️ 初期レイアウト時の一時的な0発火による保存値破壊を防止
-                      return;
-                    }
-                    _isInitialPageRestorePending = false;
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted && _pageNumber != newPage) {
-                        setState(() => _pageNumber = newPage);
-                      }
-                    });
-                    ProgramViewStateService.instance.setLastPageNumber(
-                      itemProgramId,
-                      newPage,
-                    );
-                  },
                 ),
               ),
             ),

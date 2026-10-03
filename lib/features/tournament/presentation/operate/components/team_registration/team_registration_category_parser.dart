@@ -19,6 +19,12 @@ class TeamRegistrationCategoryParser {
     if (majorCategory == '大学・一般') {
       return '$minorCategoryの部';
     }
+    if (majorCategory == 'その他') {
+      if (minorCategory == '全体') {
+        return 'その他の部';
+      }
+      return '$minorCategoryの部';
+    }
     return '$majorCategory$minorCategoryの部';
   }
 
@@ -34,6 +40,15 @@ class TeamRegistrationCategoryParser {
     if (['大学生', '一般', 'シニア'].contains(cleanCat)) {
       return (majorCategory: '大学・一般', minorCategory: cleanCat);
     }
+    if (cleanCat == 'その他' ||
+        cleanCat == '混成' ||
+        cleanCat == '混合' ||
+        cleanCat == '自由') {
+      return (
+        majorCategory: 'その他',
+        minorCategory: cleanCat == 'その他' ? '全体' : cleanCat,
+      );
+    }
     for (var major in ['幼年', '小学生', '中学生', '高校生']) {
       if (cleanCat.startsWith(major)) {
         final minor = cleanCat.substring(major.length);
@@ -43,6 +58,16 @@ class TeamRegistrationCategoryParser {
         );
       }
     }
-    return (majorCategory: '小学生', minorCategory: '低学年');
+    if (cleanCat.startsWith('その他')) {
+      final minor = cleanCat.substring(3);
+      return (
+        majorCategory: 'その他',
+        minorCategory: minor.isEmpty ? '全体' : minor,
+      );
+    }
+    return (
+      majorCategory: 'その他',
+      minorCategory: cleanCat.isNotEmpty ? cleanCat : '全体',
+    );
   }
 }

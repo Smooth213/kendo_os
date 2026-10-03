@@ -37,6 +37,8 @@ class MatchFormatFormState {
   String? selectedRuleKey;
   String? manualRoundTypeOverride;
 
+  String customCategoryName;
+
   MatchFormatFormState({
     this.matchType = '団体戦',
     this.hasExtension = false,
@@ -65,11 +67,22 @@ class MatchFormatFormState {
     this.selectedRuleScene = 'honsen',
     this.selectedRuleKey,
     this.manualRoundTypeOverride,
+    this.customCategoryName = '',
   });
 
   String getCategory() {
     if (selectedMajorCategory == '初心者') return '初心者の部';
     if (selectedMajorCategory == '幼年') return '幼年の部';
+    if (selectedMajorCategory == 'その他') {
+      if (customCategoryName.trim().isNotEmpty) {
+        final name = customCategoryName.trim();
+        return name.endsWith('の部') ? name : '$nameの部';
+      }
+      if (selectedMinorCategory == '直接入力' || selectedMinorCategory == '全体') {
+        return 'その他の部';
+      }
+      return '$selectedMinorCategoryの部';
+    }
     if (selectedMinorCategory == '全体') return '$selectedMajorCategoryの部';
     if (selectedMajorCategory == '大学・一般') return '$selectedMinorCategoryの部';
     return '$selectedMajorCategory$selectedMinorCategoryの部';

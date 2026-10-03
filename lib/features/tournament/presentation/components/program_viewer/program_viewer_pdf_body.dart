@@ -5,7 +5,6 @@ import 'package:kendo_os/features/tournament/presentation/components/program_vie
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 /// プログラムビューアのPDFレンダリング本体コンポーネント
@@ -24,6 +23,7 @@ class ProgramViewerPdfBody extends StatefulWidget {
   final Widget Function(int pageIndex) buildPageOverlay;
   final bool isDrawingMode;
   final bool isZoomed;
+  final bool isPinching;
   final ValueChanged<int>? onPageChanged;
   final int initialPage;
 
@@ -37,6 +37,7 @@ class ProgramViewerPdfBody extends StatefulWidget {
     required this.buildPageOverlay,
     this.isDrawingMode = false,
     this.isZoomed = false,
+    this.isPinching = false,
     this.onPageChanged,
     this.initialPage = 0,
   });
@@ -148,7 +149,7 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
     return PageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
-      physics: widget.isDrawingMode || widget.isZoomed
+      physics: widget.isDrawingMode || widget.isZoomed || widget.isPinching
           ? const NeverScrollableScrollPhysics()
           : const PageScrollPhysics(),
       itemCount: safePageCount,
@@ -167,52 +168,52 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
               key: ValueKey('${widget.program.fileUrl}_canvas_p$pageIndex'),
               width: canvasSize.width,
               height: canvasSize.height,
-              child: Stack(
-                children: [
-                  // 1. PDF単一ページ描画層
-                  // 単一ページPDFなので先行ページの向き・サイズ記憶によるオフセットズレは物理的に100%発生しない
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: FutureBuilder<Uint8List>(
-                        future: _sourceBytesFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Text(
-                                'PDFロード失敗: ${snapshot.error}',
-                                style: const TextStyle(
-                                  color: AppKendoColors.redAccent,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppKendoColors.pureWhite,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppKendoColors.pureBlack.withAlpha(50),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // 1. PDF単一ページ描画層
+                    // OSネイティブエンジン（Printing.raster）による日本語フォント完全描画を優先し、
+                    // 未対応環境では単一ページPDFのSfPdfViewerへ安全にフォールバック
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: FutureBuilder<Uint8List>(
+                          future: _sourceBytesFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text(
+                                  'PDFロード失敗: ${snapshot.error}',
+                                  style: const TextStyle(
+                                    color: AppKendoColors.redAccent,
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-                          if (!snapshot.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                color: AppKendoColors.ipponGold,
-                              ),
-                            );
-                          }
+                              );
+                            }
+                            if (!snapshot.hasData) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppKendoColors.ipponGold,
+                                ),
+                              );
+                            }
 
-                          // 当該ページのみを抽出した単一ページPDFバイナリ
-                          final Uint8List singlePageBytes =
-                              ProgramViewerPdfPageCache.shared
-                                  .getOrExtractSinglePage(
-                                    widget.program.fileUrl,
-                                    snapshot.data!,
-                                    pageIndex,
-                                  );
-
-                          return SfPdfViewerTheme(
-                            data: const SfPdfViewerThemeData(
-                              backgroundColor: AppKendoColors.transparent,
-                            ),
-                            child: SfPdfViewer.memory(
-                              singlePageBytes,
+                            return SfPdfViewer.memory(
+                              snapshot.data!,
                               key: ValueKey(
-                                '${widget.program.fileUrl}_single_p$pageIndex',
+                                '${widget.program.fileUrl}_src_p$pageIndex',
                               ),
-                              initialPageNumber: 1,
+                              initialPageNumber: pageIndex + 1,
                               pageLayoutMode: PdfPageLayoutMode.single,
                               scrollDirection: PdfScrollDirection.vertical,
                               pageSpacing: 0,
@@ -223,19 +224,19 @@ class _ProgramViewerPdfBodyState extends State<ProgramViewerPdfBody> {
                               enableTextSelection: false,
                               onDocumentLoadFailed: (details) {
                                 debugPrint(
-                                  '[ERROR] PDF Single Page Load Failed: ${details.error} - ${details.description}',
+                                  '[ERROR] PDF Load Failed: ${details.error} - ${details.description}',
                                 );
                               },
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
 
-                  // 2. そのページ専用の手書き描画レイヤー（用紙と完全に同一比率・同一キャンバスで一体化）
-                  Positioned.fill(child: widget.buildPageOverlay(pageIndex)),
-                ],
+                    // 2. そのページ専用の手書き描画レイヤー（用紙と完全に同一比率・同一キャンバスで一体化）
+                    Positioned.fill(child: widget.buildPageOverlay(pageIndex)),
+                  ],
+                ),
               ),
             ),
           ),

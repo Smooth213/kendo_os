@@ -17,9 +17,11 @@ class TeamRegistrationCategoryStep extends StatelessWidget {
   final ValueChanged<String> onMatchTypeChanged;
   final VoidCallback onToggleExtraMajorCategories;
   final VoidCallback onToggleExtraMatchTypes;
+  final String customCategoryName;
+  final ValueChanged<String>? onCustomCategoryChanged;
 
   static const List<String> mainMajorCategories = ['初心者', '幼年', '小学生', '中学生'];
-  static const List<String> extraMajorCategories = ['高校生', '大学・一般'];
+  static const List<String> extraMajorCategories = ['高校生', '大学・一般', 'その他'];
 
   static const List<String> mainMatchTypes = [
     '団体戦（5人制）',
@@ -49,6 +51,8 @@ class TeamRegistrationCategoryStep extends StatelessWidget {
     required this.onMatchTypeChanged,
     required this.onToggleExtraMajorCategories,
     required this.onToggleExtraMatchTypes,
+    this.customCategoryName = '',
+    this.onCustomCategoryChanged,
   });
 
   static List<String> getMinorCategories(String major) {
@@ -75,6 +79,9 @@ class TeamRegistrationCategoryStep extends StatelessWidget {
     }
     if (major == '大学・一般') {
       return ['全体', '大学生', '一般', 'シニア', '男子', '女子'];
+    }
+    if (major == 'その他') {
+      return ['混成', '混合', '自由', '全体'];
     }
     return ['全体'];
   }
@@ -165,6 +172,27 @@ class TeamRegistrationCategoryStep extends StatelessWidget {
             );
           }).toList(),
         ),
+        if (selectedMajorCategory == 'その他') ...[
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            initialValue: customCategoryName,
+            scrollPadding: EdgeInsets.zero,
+            decoration: InputDecoration(
+              labelText: 'カスタム部門名を入力（任意）',
+              hintText: '例: 小中学生混成、東西対抗、オープン など',
+              prefixIcon: Icon(
+                Icons.edit_note,
+                color: themeColors.primaryAccent,
+              ),
+              border: const OutlineInputBorder(borderRadius: AppRadius.medium),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+            ),
+            onChanged: onCustomCategoryChanged,
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
 
         // 生成されるカテゴリ名のプレビュー表示

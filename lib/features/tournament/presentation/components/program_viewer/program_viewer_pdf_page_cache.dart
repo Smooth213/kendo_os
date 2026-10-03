@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 /// PDFのマルチページ縦横混在バグを完全に回避するため、
@@ -13,6 +14,9 @@ class ProgramViewerPdfPageCache {
 
   /// URL -> (pageIndex -> 単一ページPDFのバイナリ)（挿入順を利用したLRUキャッシュ）
   final Map<String, Map<int, Uint8List>> _singlePageBytesCache = {};
+
+  /// URL -> (pageIndex -> OSネイティブ高精細ラスタライズ画像PNG)
+  final Map<String, Map<int, Uint8List>> _renderedPageImageCache = {};
 
   /// URL -> (pageIndex -> キャンバスサイズ)
   final Map<String, Map<int, Size>> _pageCanvasSizeCache = {};
@@ -99,43 +103,14 @@ class ProgramViewerPdfPageCache {
           return sourceBytes;
         }
         final int safeIndex = pageIndex.clamp(0, totalPages - 1);
-        final PdfPage sourcePage = sourceDoc.pages[safeIndex];
 
-        final rotationStr = sourcePage.rotation.name;
-        final bool isRotated =
-            rotationStr.contains('90') || rotationStr.contains('270');
-        final double effectiveWidth = isRotated
-            ? sourcePage.size.height
-            : sourcePage.size.width;
-        final double effectiveHeight = isRotated
-            ? sourcePage.size.width
-            : sourcePage.size.height;
-        final bool isLandscape = effectiveWidth > effectiveHeight;
-
-        final PdfDocument singleDoc = PdfDocument();
-        if (isLandscape && !isRotated) {
-          singleDoc.pageSettings.orientation = PdfPageOrientation.landscape;
-          singleDoc.pageSettings.size = Size(effectiveWidth, effectiveHeight);
-        } else {
-          singleDoc.pageSettings.size = sourcePage.size;
+        // 対象のページ以外を末尾から削除して、完全なフォント・リソース構造（CIDFont/TrueType/画像）を保持したまま単一ページ化
+        for (int i = totalPages - 1; i >= 0; i--) {
+          if (i != safeIndex) {
+            sourceDoc.pages.removeAt(i);
+          }
         }
-        if (sourcePage.rotation != PdfPageRotateAngle.rotateAngle0) {
-          singleDoc.pageSettings.rotate = sourcePage.rotation;
-        }
-        singleDoc.pageSettings.margins.all = 0;
-
-        final PdfPage newPage = singleDoc.pages.add();
-        newPage.rotation = sourcePage.rotation;
-
-        final PdfTemplate template = sourcePage.createTemplate();
-        newPage.graphics.drawPdfTemplate(
-          template,
-          Offset.zero,
-          sourcePage.size,
-        );
-
-        final List<int> savedBytes = singleDoc.saveSync();
-        singleDoc.dispose();
+        final List<int> savedBytes = sourceDoc.saveSync();
         return Uint8List.fromList(savedBytes);
       } finally {
         sourceDoc.dispose();
@@ -180,6 +155,39 @@ class ProgramViewerPdfPageCache {
     return singlePageBytes;
   }
 
+  /// OSネイティブ高精細ラスタライズ画像を取得（フォント非埋め込み日本語PDFもOSシステムフォントで完全描画）
+  Future<Uint8List?> getOrRenderPageImage(
+    String url,
+    Uint8List sourceBytes,
+    int pageIndex,
+  ) async {
+    final pageMap = _renderedPageImageCache.putIfAbsent(url, () => {});
+    if (pageMap.containsKey(pageIndex)) {
+      return pageMap[pageIndex];
+    }
+
+    try {
+      await for (final page in Printing.raster(
+        sourceBytes,
+        pages: [pageIndex],
+        dpi: 200,
+      )) {
+        final pngBytes = await page.toPng();
+        if (pageMap.length >= maxCachedPagesPerDoc) {
+          final oldestKey = pageMap.keys.first;
+          pageMap.remove(oldestKey);
+        }
+        pageMap[pageIndex] = pngBytes;
+        return pngBytes;
+      }
+    } catch (e) {
+      debugPrint(
+        '[WARN] [ProgramViewerPdfPageCache] Printing.raster error: $e',
+      );
+    }
+    return null;
+  }
+
   /// 指定したURLの現在キャッシュされている単一ページ数を取得（LRU検証・メモリ監視用）
   int getCachedSinglePageCount(String url) {
     return _singlePageBytesCache[url]?.length ?? 0;
@@ -188,6 +196,7 @@ class ProgramViewerPdfPageCache {
   /// 特定URLのPDF単一ページバイナリキャッシュを解放（keepDocumentInfo: false の場合はページ情報も破棄）
   void clearUrl(String url, {bool keepDocumentInfo = true}) {
     _singlePageBytesCache.remove(url);
+    _renderedPageImageCache.remove(url);
     if (!keepDocumentInfo) {
       _pageCanvasSizeCache.remove(url);
       _pageCountCache.remove(url);
@@ -197,6 +206,7 @@ class ProgramViewerPdfPageCache {
   /// 全キャッシュのクリア（メモリ解放用）
   void clear() {
     _singlePageBytesCache.clear();
+    _renderedPageImageCache.clear();
     _pageCanvasSizeCache.clear();
     _pageCountCache.clear();
   }

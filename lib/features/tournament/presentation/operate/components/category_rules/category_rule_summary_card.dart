@@ -171,13 +171,20 @@ class CategoryRuleSummaryCard extends StatelessWidget {
         if (isRenseikai) ...[
           buildSectionLabel('錬成会設定', accentColor),
           buildDetailRow(context, '進行方式', rule.renseikaiType, isDark),
-          if (rule.renseikaiType == '時間制')
+          if (rule.renseikaiType == '時間制') ...[
             buildDetailRow(
               context,
               '制限時間',
               '${rule.overallTimeMinutes}分',
               isDark,
             ),
+            buildDetailRow(
+              context,
+              '空欄選手（4人編成等）',
+              rule.skipEmptyRoster ? '自動スキップ＆継続' : 'スキップしない（不戦勝/空欄）',
+              isDark,
+            ),
+          ],
         ],
 
         // 試合ルール（個人戦のみ延長・判定を表示）

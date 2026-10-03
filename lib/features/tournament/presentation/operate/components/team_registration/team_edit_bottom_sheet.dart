@@ -69,6 +69,8 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
     '中学生女子',
     '高校生',
     '一般',
+    '混成',
+    'その他',
   ];
 
   final List<String> _matchTypes =
@@ -81,6 +83,11 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
     _selectedCategory = widget.team.category.trim().isNotEmpty
         ? widget.team.category.trim()
         : '小学生の部';
+    final cleanInitialCat = _selectedCategory.replaceAll('の部', '');
+    if (!_candidateCategories.contains(_selectedCategory) &&
+        !_candidateCategories.contains(cleanInitialCat)) {
+      _candidateCategories.insert(0, _selectedCategory);
+    }
     final rawMatchType = widget.team.matchType.trim().isNotEmpty
         ? widget.team.matchType.trim()
         : '団体戦（5人制）';

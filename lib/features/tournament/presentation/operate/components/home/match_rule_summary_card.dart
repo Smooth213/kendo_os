@@ -113,6 +113,34 @@ class MatchRuleSummaryCard extends StatelessWidget {
             ],
           ],
 
+          // ── 錬成会設定（錬成会時のみ）─────────────────
+          if (isRenseikaiMode) ...[
+            _divider(),
+            _section('錬成会設定'),
+            _row(
+              icon: Icons.repeat,
+              label: '進行方式',
+              value: currentRule.renseikaiType.isNotEmpty
+                  ? currentRule.renseikaiType
+                  : '時間制',
+            ),
+            if (currentRule.renseikaiType == '時間制' ||
+                currentRule.overallTimeMinutes > 0) ...[
+              _divider(),
+              _row(
+                icon: Icons.timelapse,
+                label: '総試合時間',
+                value: '${currentRule.overallTimeMinutes}分',
+              ),
+              _divider(),
+              _row(
+                icon: Icons.person_off_outlined,
+                label: '空欄選手（4人編成等）',
+                value: currentRule.skipEmptyRoster ? '自動スキップ＆継続' : 'スキップしない',
+              ),
+            ],
+          ],
+
           // ── 勝ち抜き戦設定 ──────────────────────────
           if (isKachinuki) ...[
             _divider(),

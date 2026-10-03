@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_controls.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
@@ -66,20 +67,21 @@ class ProgramViewerDrawingToolbar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'ペンの選択',
                     style: TextStyle(
                       fontSize: AppFontSize.headline,
                       fontWeight: AppFontWeight.bold,
+                      color: context.appColors.textColor,
                     ),
                   ),
                   const SizedBox(height: 20),
                   if (canUseSharedPen) ...[
-                    const Text(
+                    Text(
                       '📢 共有ペン (全員の画面に反映されます)',
                       style: TextStyle(
                         fontSize: AppFontSize.bodySmall,
-                        color: AppKendoColors.pureBlack,
+                        color: context.appColors.textColor,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),
@@ -109,11 +111,11 @@ class ProgramViewerDrawingToolbar extends StatelessWidget {
                     ),
                     const SizedBox(height: 25),
                   ],
-                  const Text(
+                  Text(
                     '📝 個人ペン (自分だけのメモです)',
                     style: TextStyle(
                       fontSize: AppFontSize.bodySmall,
-                      color: AppKendoColors.pureBlack,
+                      color: context.appColors.textColor,
                       fontWeight: AppFontWeight.bold,
                     ),
                   ),

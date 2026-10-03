@@ -27,6 +27,9 @@ class MatchFormatCategoryStep extends ConsumerWidget {
   final bool isDark;
   final Widget Function(String) buildSectionTitle;
 
+  final String customCategoryName;
+  final ValueChanged<String>? onCustomCategoryChanged;
+
   const MatchFormatCategoryStep({
     super.key,
     required this.tournamentId,
@@ -45,6 +48,8 @@ class MatchFormatCategoryStep extends ConsumerWidget {
     required this.themeColors,
     required this.isDark,
     required this.buildSectionTitle,
+    this.customCategoryName = '',
+    this.onCustomCategoryChanged,
   });
 
   @override
@@ -80,7 +85,7 @@ class MatchFormatCategoryStep extends ConsumerWidget {
                   selected: selectedMajorCategory == cat,
                   onSelected: (s) {
                     if (s) {
-                      onCategoryChanged(cat, '全体');
+                      onCategoryChanged(cat, cat == 'その他' ? '混成' : '全体');
                     }
                   },
                 ),
@@ -111,6 +116,27 @@ class MatchFormatCategoryStep extends ConsumerWidget {
             );
           }).toList(),
         ),
+        if (selectedMajorCategory == 'その他') ...[
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            initialValue: customCategoryName,
+            scrollPadding: EdgeInsets.zero,
+            decoration: InputDecoration(
+              labelText: 'カスタム部門名を入力（任意）',
+              hintText: '例: 小中学生混成、東西対抗、オープン など',
+              prefixIcon: Icon(
+                Icons.edit_note,
+                color: themeColors.primaryAccent,
+              ),
+              border: const OutlineInputBorder(borderRadius: AppRadius.medium),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+            ),
+            onChanged: onCustomCategoryChanged,
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
 
         // プレビュー表示
@@ -126,7 +152,7 @@ class MatchFormatCategoryStep extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            buildSectionTitle('3. 出場する自チームを選択'),
+            Expanded(child: buildSectionTitle('3. 出場する自チームを選択')),
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: TextButton.icon(

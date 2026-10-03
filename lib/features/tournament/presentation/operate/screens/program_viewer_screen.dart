@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_app_bar.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_canvas_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_image_body.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
-import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_page_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
@@ -50,7 +47,6 @@ class ProgramViewerScreen extends ConsumerStatefulWidget {
 
 class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   static const Color _yellowPenColor = Color(0xFFCA8A04);
-
   late PageController _pageController;
   late int _currentIndex;
   final Map<String, int> _pdfPageCounts = {};
@@ -65,6 +61,8 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   final TransformationController _transformationController =
       TransformationController();
   bool _isZoomed = false;
+  int _pointerCount = 0;
+  bool _isPinching = false;
 
   String _selectedTool = 'pen';
 
@@ -132,6 +130,11 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
   }
 
   void _handleTransformationChanged() {
+    final storage = _transformationController.value.storage;
+    if (storage.any((v) => v.isNaN || v.isInfinite)) {
+      _resetZoom();
+      return;
+    }
     final double scale = _transformationController.value.getMaxScaleOnAxis();
     final bool zoomed = scale > 1.01;
     if (zoomed != _isZoomed) {
@@ -141,8 +144,38 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
     }
   }
 
+  void _resetZoom() {
+    if (_transformationController.value != Matrix4.identity()) {
+      _transformationController.value = Matrix4.identity();
+    }
+    if (_isZoomed || _isPinching || _pointerCount > 0) {
+      setState(() {
+        _isZoomed = false;
+        _isPinching = false;
+        _pointerCount = 0;
+      });
+    }
+  }
+
+  void _handleProgramChanged(int newIndex) {
+    _resetZoom();
+    setState(() {
+      _currentIndex = newIndex;
+      _isDrawingMode = false;
+    });
+    if (_pageController.hasClients) _pageController.jumpToPage(newIndex);
+    if (widget.programs.isNotEmpty &&
+        widget.programs.first.tournamentId.isNotEmpty) {
+      ProgramViewStateService.instance.setLastProgramIndex(
+        widget.programs.first.tournamentId,
+        newIndex,
+      );
+    }
+  }
+
   void _handleFirstPage(String itemProgramId, String fileUrl) {
     AppHaptics.selection();
+    _resetZoom();
     setState(() {
       _pdfCurrentPages[itemProgramId] = 1;
       _pdfCurrentPages[fileUrl] = 1;
@@ -229,18 +262,12 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           pdfViewerController: _pdfViewerController,
           searchResult: _searchResult,
           activePenColor: activePenColor,
-          onSearchSubmitted: (value) {
-            setState(() {
-              _currentSearchText = value;
-              if (value.isEmpty && isFilePdf) {
-                _searchResult.clear();
-              }
-            });
-          },
+          onSearchSubmitted: (value) => setState(() {
+            _currentSearchText = value;
+            if (value.isEmpty && isFilePdf) _searchResult.clear();
+          }),
           onPdfSearchResult: (result) {
-            setState(() {
-              _searchResult = result;
-            });
+            setState(() => _searchResult = result);
             _searchResult.addListener(() {
               if (mounted) setState(() {});
             });
@@ -257,6 +284,7 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
           }),
           onFirstPagePressed: () =>
               _handleFirstPage(programId, currentProgram.fileUrl),
+          onProgramChanged: _handleProgramChanged,
         ),
         body: Column(
           children: [
@@ -270,168 +298,139 @@ class _ProgramViewerScreenState extends ConsumerState<ProgramViewerScreen> {
                 onSelectTool: (tool) => setState(() => _selectedTool = tool),
                 onSelectPenColor: (color) =>
                     setState(() => _selectedPenColor = color),
-                onUndo: () {
-                  if (activeIsShared) {
-                    ref
-                        .read(strokeRepositoryProvider)
-                        .undoLastStroke(programId);
-                  } else {
-                    ref
-                        .read(localStrokeRepositoryProvider)
-                        .undoLastStroke(programId);
-                  }
-                },
-                onClearAll: () {
-                  if (activeIsShared) {
-                    ref.read(strokeRepositoryProvider).clearStrokes(programId);
-                  } else {
-                    ref
-                        .read(localStrokeRepositoryProvider)
-                        .clearStrokes(programId);
-                  }
-                },
+                onUndo: () => activeIsShared
+                    ? ref
+                          .read(strokeRepositoryProvider)
+                          .undoLastStroke(programId)
+                    : ref
+                          .read(localStrokeRepositoryProvider)
+                          .undoLastStroke(programId),
+                onClearAll: () => activeIsShared
+                    ? ref.read(strokeRepositoryProvider).clearStrokes(programId)
+                    : ref
+                          .read(localStrokeRepositoryProvider)
+                          .clearStrokes(programId),
               ),
             Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                physics: _isDrawingMode || _isZoomed
-                    ? const NeverScrollableScrollPhysics()
-                    : const ClampingScrollPhysics(),
-                itemCount: displayPrograms.length,
-                onPageChanged: (index) => setState(() {
-                  _currentIndex = index;
-                  _isDrawingMode = false;
-                  if (displayPrograms.isNotEmpty &&
-                      displayPrograms.first.tournamentId.isNotEmpty) {
-                    ProgramViewStateService.instance.setLastProgramIndex(
-                      displayPrograms.first.tournamentId,
-                      index,
-                    );
+              child: Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerDown: (_) {
+                  if (++_pointerCount >= 2 && !_isPinching) {
+                    setState(() => _isPinching = true);
                   }
-                }),
-                itemBuilder: (context, index) {
-                  final program = displayPrograms[index];
+                },
+                onPointerUp: (_) {
+                  _pointerCount = (_pointerCount - 1).clamp(0, 10);
+                  if (_pointerCount < 2 && _isPinching) {
+                    setState(() => _isPinching = false);
+                  }
+                },
+                onPointerCancel: (_) {
+                  _pointerCount = (_pointerCount - 1).clamp(0, 10);
+                  if (_pointerCount < 2 && _isPinching) {
+                    setState(() => _isPinching = false);
+                  }
+                },
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: _isDrawingMode || _isZoomed
+                      ? const NeverScrollableScrollPhysics()
+                      : const ClampingScrollPhysics(),
+                  itemCount: displayPrograms.length,
+                  onPageChanged: (index) => setState(() {
+                    _currentIndex = index;
+                    _isDrawingMode = false;
+                    if (displayPrograms.isNotEmpty &&
+                        displayPrograms.first.tournamentId.isNotEmpty) {
+                      ProgramViewStateService.instance.setLastProgramIndex(
+                        displayPrograms.first.tournamentId,
+                        index,
+                      );
+                    }
+                  }),
+                  itemBuilder: (context, index) {
+                    final itemProgram = displayPrograms[index];
+                    final itemProgramId = itemProgram.id.isNotEmpty
+                        ? itemProgram.id
+                        : itemProgram.fileUrl;
 
-                  final isItemMaterialOnly =
-                      program.fileUrl.isEmpty ||
-                      !program.fileUrl.startsWith('http');
-                  if (isItemMaterialOnly) {
-                    return ProgramViewerMaterialPlaceholder(
-                      program: program,
+                    final targetInitialPage =
+                        _pdfCurrentPages[itemProgramId] ??
+                        _pdfCurrentPages[itemProgram.fileUrl] ??
+                        ProgramViewStateService.instance.getLastPageNumber(
+                          itemProgramId,
+                          defaultPage: 1,
+                        );
+                    final loadedCount =
+                        _pdfPageCounts[itemProgram.fileUrl] ??
+                        itemProgram.pageCount;
+                    final effectivePageCount = loadedCount >= targetInitialPage
+                        ? loadedCount
+                        : targetInitialPage;
+
+                    return ProgramViewerPageItem(
+                      program: itemProgram,
+                      index: index,
                       isDark: isDark,
-                    );
-                  }
-
-                  final isFilePdf =
-                      program.fileType == 'pdf' ||
-                      program.fileUrl.toLowerCase().contains('.pdf');
-                  final itemProgramId = program.id.isNotEmpty
-                      ? program.id
-                      : program.fileUrl;
-
-                  Widget buildCanvas({
-                    required double penWidth,
-                    int? pageIndex,
-                  }) {
-                    return ProgramViewerCanvasOverlay(
-                      programId: itemProgramId,
-                      pageIndex: isFilePdf ? (pageIndex ?? 0) : _currentIndex,
-                      penWidth: penWidth,
                       isDrawingMode: _isDrawingMode,
                       selectedTool: _selectedTool,
                       activePenColor: activePenColor,
                       activeIsShared: activeIsShared,
                       canUseSharedPen: canUseSharedPen,
-                    );
-                  }
+                      transformationController: _transformationController,
+                      pdfViewerController: _pdfViewerController,
+                      getCachedPdfBytesViaSdk: getCachedPdfBytesViaSdk,
+                      mediaCache: _mediaCache,
+                      initialPage: targetInitialPage - 1,
+                      pageCount: effectivePageCount,
+                      onPageCountLoaded: (count) {
+                        if (mounted &&
+                            _pdfPageCounts[itemProgram.fileUrl] != count) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(
+                                () =>
+                                    _pdfPageCounts[itemProgram.fileUrl] = count,
+                              );
+                            }
+                          });
+                        }
+                      },
+                      onPageChanged: (pIndex) {
+                        final newPage = pIndex + 1;
+                        if (newPage == 1 &&
+                            targetInitialPage > 1 &&
+                            (_pdfPageCounts[itemProgram.fileUrl] == null ||
+                                _pdfPageCounts[itemProgram.fileUrl]! <= 1)) {
+                          return;
+                        }
+                        void updatePages() {
+                          _pdfCurrentPages[itemProgramId] = newPage;
+                          _pdfCurrentPages[itemProgram.fileUrl] = newPage;
+                          if (mounted) setState(() {});
+                        }
 
-                  final targetInitialPage =
-                      _pdfCurrentPages[itemProgramId] ??
-                      _pdfCurrentPages[program.fileUrl] ??
-                      ProgramViewStateService.instance.getLastPageNumber(
-                        itemProgramId,
-                        defaultPage: 1,
-                      );
-                  final loadedCount =
-                      _pdfPageCounts[program.fileUrl] ?? program.pageCount;
-                  final effectivePageCount = loadedCount >= targetInitialPage
-                      ? loadedCount
-                      : targetInitialPage;
-
-                  final Widget childWidget = isFilePdf
-                      ? ProgramViewerPdfBody(
-                          program: program,
-                          pageCount: effectivePageCount,
-                          pdfViewerController: _pdfViewerController,
-                          sdkPdfBytesFuture: getCachedPdfBytesViaSdk(
-                            program.fileUrl,
-                          ),
-                          onPageCountLoaded: (count) {
-                            if (mounted &&
-                                _pdfPageCounts[program.fileUrl] != count) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  setState(() {
-                                    _pdfPageCounts[program.fileUrl] = count;
-                                  });
-                                }
-                              });
-                            }
-                          },
-                          buildPageOverlay: (pIndex) =>
-                              buildCanvas(penWidth: 10.0, pageIndex: pIndex),
-                          isDrawingMode: _isDrawingMode,
-                          isZoomed: _isZoomed,
-                          initialPage: targetInitialPage - 1,
-                          onPageChanged: (pIndex) {
-                            final newPage = pIndex + 1;
-                            if (newPage == 1 &&
-                                targetInitialPage > 1 &&
-                                (_pdfPageCounts[program.fileUrl] == null ||
-                                    _pdfPageCounts[program.fileUrl]! <= 1)) {
-                              return;
-                            }
-                            void updatePages() {
-                              _pdfCurrentPages[itemProgramId] = newPage;
-                              _pdfCurrentPages[program.fileUrl] = newPage;
-                              if (mounted) setState(() {});
-                            }
-
-                            if (WidgetsBinding.instance.schedulerPhase ==
-                                SchedulerPhase.persistentCallbacks) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                updatePages();
-                              });
-                            } else {
-                              updatePages();
-                            }
-                            ProgramViewStateService.instance.setLastPageNumber(
-                              itemProgramId,
-                              newPage,
-                            );
-                          },
-                        )
-                      : ProgramViewerImageBody(
-                          program: program,
-                          imageSizeFuture: _mediaCache.getCachedImageSize(
-                            program.fileUrl,
-                          ),
-                          safeUrl: _mediaCache.getSafeUrl(program.fileUrl),
-                          isSearchMode: _isSearchMode,
-                          currentSearchText: _currentSearchText,
-                          buildOverlayLayers: (w) => buildCanvas(penWidth: w),
+                        if (WidgetsBinding.instance.schedulerPhase ==
+                            SchedulerPhase.persistentCallbacks) {
+                          WidgetsBinding.instance.addPostFrameCallback(
+                            (_) => updatePages(),
+                          );
+                        } else {
+                          updatePages();
+                        }
+                        ProgramViewStateService.instance.setLastPageNumber(
+                          itemProgramId,
+                          newPage,
                         );
-
-                  return InteractiveViewer(
-                    transformationController: _transformationController,
-                    panEnabled: !_isDrawingMode,
-                    scaleEnabled: !_isDrawingMode,
-                    minScale: 1.0,
-                    maxScale: 5.0,
-                    alignment: Alignment.center,
-                    child: Center(child: childWidget),
-                  );
-                },
+                      },
+                      isZoomed: _isZoomed,
+                      isPinching: _isPinching,
+                      onResetZoom: _resetZoom,
+                      isSearchMode: _isSearchMode,
+                      currentSearchText: _currentSearchText,
+                    );
+                  },
+                ),
               ),
             ),
           ],

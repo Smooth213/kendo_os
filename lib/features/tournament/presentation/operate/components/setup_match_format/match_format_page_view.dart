@@ -38,6 +38,7 @@ class MatchFormatPageView extends StatelessWidget {
   final ValueChanged<String> onSetManualRoundType;
   final ValueChanged<String> onHeadingPresetToggled;
   final VoidCallback onClearCourt;
+  final ValueChanged<String>? onCustomCategoryChanged;
 
   const MatchFormatPageView({
     super.key,
@@ -64,6 +65,7 @@ class MatchFormatPageView extends StatelessWidget {
     required this.onSetManualRoundType,
     required this.onHeadingPresetToggled,
     required this.onClearCourt,
+    this.onCustomCategoryChanged,
   });
 
   @override
@@ -78,6 +80,8 @@ class MatchFormatPageView extends StatelessWidget {
           category: category,
           selectedMajorCategory: state.selectedMajorCategory,
           selectedMinorCategory: state.selectedMinorCategory,
+          customCategoryName: state.customCategoryName,
+          onCustomCategoryChanged: onCustomCategoryChanged,
           selectedTeamId: state.selectedTeamId,
           majorCategories: MatchFormatSetupHelper.majorCategories,
           getMinorCategories: MatchFormatSetupHelper.getMinorCategories,

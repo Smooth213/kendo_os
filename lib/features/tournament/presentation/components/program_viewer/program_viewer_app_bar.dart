@@ -30,6 +30,7 @@ class ProgramViewerAppBar extends StatelessWidget
   final VoidCallback onOpenSearch;
   final VoidCallback onToggleDrawingMode;
   final VoidCallback? onFirstPagePressed;
+  final ValueChanged<int>? onProgramChanged;
 
   const ProgramViewerAppBar({
     super.key,
@@ -52,6 +53,7 @@ class ProgramViewerAppBar extends StatelessWidget
     required this.onOpenSearch,
     required this.onToggleDrawingMode,
     this.onFirstPagePressed,
+    this.onProgramChanged,
   });
 
   @override
@@ -89,6 +91,7 @@ class ProgramViewerAppBar extends StatelessWidget
         pdfViewerController: pdfViewerController,
         onSearchSubmitted: onSearchSubmitted,
         onPdfSearchResult: onPdfSearchResult,
+        onProgramChanged: onProgramChanged,
       ),
       actions: [
         if (isSearchMode) ...[

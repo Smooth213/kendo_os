@@ -44,6 +44,8 @@ class _ProgramViewerCanvasOverlayState
   List<Offset> _currentPoints = [];
   List<StrokeModel> _cachedSharedStrokes = [];
   List<LocalStrokeModel> _cachedPrivateStrokes = [];
+  final Set<int> _activePointerIds = {};
+  bool _isMultiTouch = false;
 
   String get _effectiveProgramId => widget.pageIndex == 0
       ? widget.programId
@@ -135,6 +137,15 @@ class _ProgramViewerCanvasOverlayState
             child: Listener(
               behavior: HitTestBehavior.opaque,
               onPointerDown: (event) {
+                _activePointerIds.add(event.pointer);
+                // 2本以上の指が画面に触れた場合は拡大縮小ピンチ動作と判定
+                if (_activePointerIds.length > 1 || _isMultiTouch) {
+                  _isMultiTouch = true;
+                  if (_currentPoints.isNotEmpty) {
+                    setState(() => _currentPoints.clear());
+                  }
+                  return;
+                }
                 if (widget.selectedTool == 'eraser') {
                   _eraseStrokeAt(event.localPosition);
                 } else {
@@ -142,6 +153,9 @@ class _ProgramViewerCanvasOverlayState
                 }
               },
               onPointerMove: (event) {
+                if (_isMultiTouch || _activePointerIds.length > 1) {
+                  return;
+                }
                 if (widget.selectedTool == 'eraser') {
                   _eraseStrokeAt(event.localPosition);
                 } else {
@@ -149,6 +163,16 @@ class _ProgramViewerCanvasOverlayState
                 }
               },
               onPointerUp: (event) async {
+                _activePointerIds.remove(event.pointer);
+                if (_isMultiTouch) {
+                  if (_activePointerIds.isEmpty) {
+                    _isMultiTouch = false;
+                  }
+                  if (_currentPoints.isNotEmpty) {
+                    setState(() => _currentPoints.clear());
+                  }
+                  return;
+                }
                 if (widget.selectedTool == 'eraser') {
                   return;
                 }
@@ -189,6 +213,15 @@ class _ProgramViewerCanvasOverlayState
                         .read(localStrokeRepositoryProvider)
                         .addStroke(newLocalStroke);
                   }
+                }
+              },
+              onPointerCancel: (event) {
+                _activePointerIds.remove(event.pointer);
+                if (_activePointerIds.isEmpty) {
+                  _isMultiTouch = false;
+                }
+                if (_currentPoints.isNotEmpty) {
+                  setState(() => _currentPoints.clear());
                 }
               },
               child: const SizedBox.expand(),

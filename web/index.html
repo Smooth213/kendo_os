@@ -80,12 +80,38 @@
 
   <title>Kendo OS</title>
   <link rel="manifest" href="manifest.json">
-  <!-- Syncfusion Flutter PDF Viewer for Web (Updated to 3.11.174 to match plugin v28) -->
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" as="script">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Syncfusion Flutter PDF Viewer & Printing for Web (Complete CMap / standard fonts proxy) -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" as="script">
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script>
-    var pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var rawPdfjs = window['pdfjs-dist/build/pdf'];
+    var origGetDocument = rawPdfjs.getDocument;
+
+    rawPdfjs.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+    // 🛡️ Webpack getter-only な pdfjsLib.getDocument を Proxy で確実にインターセプト
+    // 日本語フォント（HiraginoSans等のIdentity-H / CFF）に必要な CMap および標準フォントを自動注入
+    // ★ disableFontFace = true により、WebKit/Safari の OTS による日本語フォント Drop（文字消失）を完全阻止し、Canvas パス直描画で100%文字表示を保証
+    window.pdfjsLib = new Proxy(rawPdfjs, {
+      get: function (target, prop) {
+        if (prop === 'getDocument') {
+          return function (src) {
+            try {
+              if (typeof src === 'object' && src !== null) {
+                src.cMapUrl = src.cMapUrl || 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/';
+                src.cMapPacked = true;
+                src.standardFontDataUrl = src.standardFontDataUrl || 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/';
+                src.disableFontFace = true; // WebKit/Safari OTSバイパス（日本語文字消滅を完全阻止）
+              }
+            } catch (e) {
+              console.warn('pdfjs getDocument hook error:', e);
+            }
+            return origGetDocument.call(target, src);
+          };
+        }
+        return target[prop];
+      }
+    });
 
     // 🌐 【Phase 7】IndexedDB 永続化保護（Safari 7日間データ消滅対策）
     if (navigator.storage && navigator.storage.persist) {
@@ -269,7 +295,7 @@
     // =========================================================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('flutter_service_worker.js?v=13', {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=16', {
           scope: '.'
         }).then(function (reg) {
           console.log('🛡️ [PWA ServiceWorker] 体育館オフライン防衛アセットキャッシュが有効です。');
@@ -285,7 +311,7 @@
     if ('caches' in window) {
       caches.keys().then(function (names) {
         for (var i = 0; i < names.length; i++) {
-          if (names[i].indexOf('v13') === -1) {
+          if (names[i].indexOf('v16') === -1) {
             caches.delete(names[i]);
           }
         }

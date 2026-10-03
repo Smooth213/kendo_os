@@ -57,49 +57,62 @@ class ProgramViewerImageBody extends StatelessWidget {
           child: SizedBox(
             width: displaySize.width,
             height: displaySize.height,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.network(
-                    safeUrl,
-                    fit: BoxFit.fill,
-                    cacheWidth: displaySize.width.toInt(),
-                    cacheHeight: displaySize.height.toInt(),
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: const Color(0xFFEEEEEE),
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 64,
-                            color: AppKendoColors.grey,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppKendoColors.pureWhite,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppKendoColors.pureBlack.withAlpha(50),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.network(
+                      safeUrl,
+                      fit: BoxFit.fill,
+                      cacheWidth: displaySize.width.toInt(),
+                      cacheHeight: displaySize.height.toInt(),
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: const Color(0xFFEEEEEE),
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 64,
+                              color: AppKendoColors.grey,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      },
+                    ),
+                  ),
+                  Builder(
+                    builder: (context) {
+                      final ocrWords = program.ocrWords;
+                      if (isSearchMode &&
+                          currentSearchText.isNotEmpty &&
+                          ocrWords != null) {
+                        return Positioned.fill(
+                          child: CustomPaint(
+                            painter: OcrHighlightPainter(
+                              ocrWords: ocrWords,
+                              searchText: currentSearchText,
+                              originalImageSize: imgSize,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
                     },
                   ),
-                ),
-                Builder(
-                  builder: (context) {
-                    final ocrWords = program.ocrWords;
-                    if (isSearchMode &&
-                        currentSearchText.isNotEmpty &&
-                        ocrWords != null) {
-                      return Positioned.fill(
-                        child: CustomPaint(
-                          painter: OcrHighlightPainter(
-                            ocrWords: ocrWords,
-                            searchText: currentSearchText,
-                            originalImageSize: imgSize,
-                          ),
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-                buildOverlayLayers(imagePenWidth),
-              ],
+                  buildOverlayLayers(imagePenWidth),
+                ],
+              ),
             ),
           ),
         );

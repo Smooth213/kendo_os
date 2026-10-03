@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
 import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
@@ -236,7 +236,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1)); // PDF描画エンジンの内部タイマーを消化
 
       // PDFビューアのコンテナがツリーに存在すること
-      expect(find.byType(SfPdfViewer), findsOneWidget);
+      expect(find.byType(ProgramViewerPdfBody), findsOneWidget);
+      expect(tester.takeException(), isNull);
 
       await tester.pump(const Duration(milliseconds: 500));
     });
@@ -593,32 +594,32 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100)); // 画像タイマー消化
 
-      // PageView の枚数が 1 であることを検証
-      final PageView pageView1 = tester.widget(find.byType(PageView));
-      expect(pageView1.childrenDelegate.estimatedChildCount, equals(1));
+      // リアルタイム更新前の表示プログラム検証（1枚目なので矢印ナビゲーションなし）
+      expect(find.textContaining('1枚目の画像 (1/1)'), findsOneWidget);
+      expect(find.byTooltip('次のプログラム'), findsNothing);
 
       // リアルタイムに2枚目を追加して流す
       streamController.add([p1, p2]);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100)); // 画像タイマー消化
 
-      // PageView の枚数が 2 に更新されることを検証
-      final PageView pageView2 = tester.widget(find.byType(PageView));
-      expect(pageView2.childrenDelegate.estimatedChildCount, equals(2));
+      // リアルタイム更新後: 2枚対応のAppBarナビゲーション（次のプログラムボタン）が出現することを検証
+      expect(find.textContaining('1枚目の画像 (1/2)'), findsOneWidget);
+      expect(find.byTooltip('次のプログラム'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 1)); // タイマー完全消化
     });
 
     testWidgets(
-      'ピンチズーム（拡大）中に PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
+      'ピンチズーム（拡大）中に PDF の縦スクロール PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
       (tester) async {
         final program = ProgramModel(
           id: 'p1',
           tournamentId: 't1',
-          title: 'テスト',
-          fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=zoom',
-          fileType: 'image',
-          pageCount: 1,
+          title: 'テストPDF',
+          fileUrl: 'https://example.com/test.pdf',
+          fileType: 'pdf',
+          pageCount: 2,
           createdAt: DateTime.now(),
         );
 
@@ -627,22 +628,30 @@ void main() {
         ).thenAnswer((_) => Stream.value([program]));
 
         await tester.pumpWidget(createViewerWidget([program]));
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 200));
 
-        // ズーム前：通常は ClampingScrollPhysics
-        final PageView initialPageView = tester.widget(find.byType(PageView));
-        expect(initialPageView.physics, isA<ClampingScrollPhysics>());
+        // ズーム前：通常は PageScrollPhysics
+        final pdfViewerFinder = find.byKey(const ValueKey('viewer_iv_p1_0'));
+        final pdfPageViewFinder = find.descendant(
+          of: pdfViewerFinder,
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is PageView && widget.scrollDirection == Axis.vertical,
+          ),
+        );
+        final PageView initialPageView = tester.widget(pdfPageViewFinder);
+        expect(initialPageView.physics, isA<PageScrollPhysics>());
 
-        // InteractiveViewer から TransformationController を取得してスケールを変更（ピンチズーム状態を模擬）
+        // InteractiveViewer の TransformationController でズーム状態を模擬
         final InteractiveViewer interactiveViewer = tester.widget(
-          find.byType(InteractiveViewer),
+          pdfViewerFinder,
         );
         final controller = interactiveViewer.transformationController!;
         controller.value = Matrix4.diagonal3Values(2.0, 2.0, 1.0);
         await tester.pump();
 
         // ズーム後：NeverScrollableScrollPhysics に切り替わっていることを確認
-        final PageView zoomedPageView = tester.widget(find.byType(PageView));
+        final PageView zoomedPageView = tester.widget(pdfPageViewFinder);
         expect(zoomedPageView.physics, isA<NeverScrollableScrollPhysics>());
 
         await tester.pump(const Duration(seconds: 1)); // タイマー消化

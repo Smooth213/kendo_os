@@ -29,11 +29,12 @@ def main():
     is_ok = (res.returncode == 0)
 
     rules = [
-        ("① [静的コード完全配線] 全 StateHolder / Helper クラスに skipEmptyRoster が欠落なく実装されていること", is_ok),
-        ("② [一括ルール設定同期] BulkRuleStateHolder が全ルールを完全同期し再構築時に欠落しないこと", is_ok),
-        ("③ [個別試合編集差分更新] MatchEditStateHolder が既存ルールロード・プリセット適用時に全項目を保持すること", is_ok),
-        ("④ [フォーマット設定同期] MatchFormatFormState がルール適用時に全項目を同期すること", is_ok),
-        ("⑤ [部門別ルール設定同期] CategoryRulesFormState がルールセットのロードと再構築で項目を保持すること", is_ok),
+        ("① [静的コード完全網羅] 全ルール編集画面および全表示画面に同期項目が欠落なく配線されていること", is_ok),
+        ("② [全画面循環同期保証] 全ルール編集画面間を循環同期しても全プロパティが欠落・先祖返りしないこと", is_ok),
+        ("③ [試合情報表示同期] RuleInfoBottomSheet に編集された全ルールが同期されて表示されること", is_ok),
+        ("④ [フォーマット表示同期] MatchFormatRuleSummaryCard に編集された全ルールが同期されて表示されること", is_ok),
+        ("⑤ [試合一覧表示同期] MatchRuleSummaryCard に編集された全ルールが同期されて表示されること", is_ok),
+        ("⑥ [部門別詳細表示同期] CategoryRuleSummaryCard に編集された全ルールが同期されて表示されること", is_ok),
     ]
 
     for label, ok in rules:

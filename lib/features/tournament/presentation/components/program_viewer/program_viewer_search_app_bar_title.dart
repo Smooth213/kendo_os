@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart'
     hide StrokeModel;
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -19,6 +20,7 @@ class ProgramViewerSearchAppBarTitle extends StatelessWidget {
   final PdfViewerController pdfViewerController;
   final ValueChanged<String> onSearchSubmitted;
   final ValueChanged<PdfTextSearchResult> onPdfSearchResult;
+  final ValueChanged<int>? onProgramChanged;
 
   const ProgramViewerSearchAppBarTitle({
     super.key,
@@ -33,6 +35,7 @@ class ProgramViewerSearchAppBarTitle extends StatelessWidget {
     required this.pdfViewerController,
     required this.onSearchSubmitted,
     required this.onPdfSearchResult,
+    this.onProgramChanged,
   });
 
   @override
@@ -65,6 +68,11 @@ class ProgramViewerSearchAppBarTitle extends StatelessWidget {
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+
     final int loadedCount =
         pdfPageCounts[currentProgram.fileUrl] ?? currentProgram.pageCount;
     final int totalPdfPages = loadedCount >= currentProgram.pageCount
@@ -80,11 +88,100 @@ class ProgramViewerSearchAppBarTitle extends StatelessWidget {
         ? ' - $curPdfPage/$totalPdfPages 頁'
         : '';
 
-    return Text(
+    final titleWidget = Text(
       '${currentProgram.title} (${safeIndex + 1}/$totalPrograms)$pageSuffix',
-      style: const TextStyle(
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
         fontWeight: AppFontWeight.bold,
         fontSize: AppFontSize.subhead,
+        color: themeColors.textColor,
+      ),
+    );
+
+    if (totalPrograms <= 1) {
+      return titleWidget;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xxs,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: themeColors.inputBackground,
+        borderRadius: AppRadius.capsule,
+        border: Border.all(color: themeColors.subtleBorderColor, width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Tooltip(
+            message: '前のプログラム',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: AppRadius.capsule,
+                onTap: safeIndex > 0
+                    ? () => onProgramChanged?.call(safeIndex - 1)
+                    : null,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: safeIndex > 0
+                        ? themeColors.textColor.withAlpha(20)
+                        : Colors.transparent,
+                  ),
+                  child: Icon(
+                    Icons.chevron_left_rounded,
+                    size: 20,
+                    color: safeIndex > 0
+                        ? themeColors.textColor
+                        : themeColors.disabledColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+              child: titleWidget,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Tooltip(
+            message: '次のプログラム',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: AppRadius.capsule,
+                onTap: safeIndex < totalPrograms - 1
+                    ? () => onProgramChanged?.call(safeIndex + 1)
+                    : null,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: safeIndex < totalPrograms - 1
+                        ? themeColors.textColor.withAlpha(20)
+                        : Colors.transparent,
+                  ),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: safeIndex < totalPrograms - 1
+                        ? themeColors.textColor
+                        : themeColors.disabledColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

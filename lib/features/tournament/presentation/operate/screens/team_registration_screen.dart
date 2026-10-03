@@ -43,12 +43,24 @@ class _TeamRegistrationScreenState
   // ★ 修正：2段階選択用の状態（初期値を「小学生」に）
   String _selectedMajorCategory = '小学生';
   String _selectedMinorCategory = '低学年';
+  String _customCategoryName = '';
 
-  String get _selectedCategory =>
-      TeamRegistrationCategoryParser.formatCategoryName(
-        majorCategory: _selectedMajorCategory,
-        minorCategory: _selectedMinorCategory,
-      );
+  String get _selectedCategory {
+    if (_selectedMajorCategory == 'その他') {
+      if (_customCategoryName.trim().isNotEmpty) {
+        final name = _customCategoryName.trim();
+        return name.endsWith('の部') ? name : '$nameの部';
+      }
+      if (_selectedMinorCategory == '全体') {
+        return 'その他の部';
+      }
+      return '$_selectedMinorCategoryの部';
+    }
+    return TeamRegistrationCategoryParser.formatCategoryName(
+      majorCategory: _selectedMajorCategory,
+      minorCategory: _selectedMinorCategory,
+    );
+  }
 
   bool _showExtraMajorCategories = false;
   bool _showExtraMatchTypes = false;
@@ -210,13 +222,17 @@ class _TeamRegistrationScreenState
                           selectedMajorCategory: _selectedMajorCategory,
                           selectedMinorCategory: _selectedMinorCategory,
                           selectedCategory: _selectedCategory,
+                          customCategoryName: _customCategoryName,
+                          onCustomCategoryChanged: (name) => setState(() {
+                            _customCategoryName = name;
+                          }),
                           matchType: _matchType,
                           showExtraMajorCategories: _showExtraMajorCategories,
                           showExtraMatchTypes: _showExtraMatchTypes,
                           themeColors: _themeColors,
                           onMajorCategoryChanged: (cat) => setState(() {
                             _selectedMajorCategory = cat;
-                            _selectedMinorCategory = '全体';
+                            _selectedMinorCategory = cat == 'その他' ? '混成' : '全体';
                           }),
                           onMinorCategoryChanged: (cat) => setState(() {
                             _selectedMinorCategory = cat;

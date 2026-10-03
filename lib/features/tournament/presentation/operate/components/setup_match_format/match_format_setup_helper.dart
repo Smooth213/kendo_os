@@ -13,6 +13,7 @@ class MatchFormatSetupHelper {
     '中学生',
     '高校生',
     '大学・一般',
+    'その他',
   ];
 
   static List<String> getMinorCategories(String major) {
@@ -40,6 +41,9 @@ class MatchFormatSetupHelper {
     if (major == '大学・一般') {
       return ['全体', '大学生', '一般', 'シニア', '男子', '女子'];
     }
+    if (major == 'その他') {
+      return ['混成', '混合', '自由', '全体', '直接入力'];
+    }
     return ['全体'];
   }
 
@@ -55,13 +59,23 @@ class MatchFormatSetupHelper {
     if (['大学生', '一般', 'シニア'].contains(cleanCat)) {
       return ('大学・一般', cleanCat);
     }
+    if (cleanCat == 'その他' ||
+        cleanCat == '混成' ||
+        cleanCat == '混合' ||
+        cleanCat == '自由') {
+      return ('その他', cleanCat == 'その他' ? '全体' : cleanCat);
+    }
     for (var major in ['小学生', '中学生', '高校生']) {
       if (cleanCat.startsWith(major)) {
         final minor = cleanCat.substring(major.length);
         return (major, minor.isEmpty ? '全体' : minor);
       }
     }
-    return ('小学生', '低学年');
+    if (cleanCat.startsWith('その他')) {
+      final minor = cleanCat.substring(3);
+      return ('その他', minor.isEmpty ? '全体' : minor);
+    }
+    return ('その他', '直接入力');
   }
 
   /// 数値を漢数字（1〜99）に変換するユーティリティ

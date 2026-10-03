@@ -83,31 +83,66 @@ class ProgramViewerPenOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isBlackPen = color == AppKendoColors.pureBlack;
+
+    final effectiveBorderColor = isSelected
+        ? (isBlackPen && isDark ? AppKendoColors.pureWhite : color)
+        : context.appColors.separatorColor;
+
+    final effectiveBgColor = isSelected
+        ? (isBlackPen && isDark
+              ? AppKendoColors.pureWhite.withAlpha(35)
+              : color.withAlpha(26))
+        : AppKendoColors.transparent;
+
+    final effectiveTextColor = isBlackPen && isDark
+        ? AppKendoColors.pureWhite
+        : color;
+
+    final Widget iconWidget = isBlackPen && isDark
+        ? Container(
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: AppKendoColors.pureWhite,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppKendoColors.pureBlack.withAlpha(80),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.edit,
+              color: AppKendoColors.pureBlack,
+              size: 20,
+            ),
+          )
+        : Icon(Icons.edit, color: color, size: 28);
+
     return Expanded(
       child: InkWell(
         onTap: onTap,
+        borderRadius: AppRadius.medium,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
           decoration: BoxDecoration(
-            color: isSelected
-                ? color.withAlpha(26)
-                : AppKendoColors.transparent,
+            color: effectiveBgColor,
             borderRadius: AppRadius.medium,
-            border: Border.all(
-              color: isSelected ? color : context.appColors.separatorColor,
-              width: 2,
-            ),
+            border: Border.all(color: effectiveBorderColor, width: 2),
           ),
           child: Column(
             children: [
-              Icon(Icons.edit, color: color, size: 28),
+              iconWidget,
               const SizedBox(height: AppSpacing.sm),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: color,
+                    color: effectiveTextColor,
                     fontWeight: isSelected
                         ? AppFontWeight.bold
                         : AppFontWeight.regular,
