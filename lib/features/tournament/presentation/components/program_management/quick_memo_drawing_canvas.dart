@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_canvas_painter.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_toolbar.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_paper_view.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_zoom_controls.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -328,83 +328,17 @@ class _QuickMemoDrawingCanvasState extends State<QuickMemoDrawingCanvas> {
                       clipBehavior: Clip.none,
                       children: [
                         // 📄 用紙そのものを画像のようにズーム＆パン
-                        Positioned(
-                          left: paperTopLeft.dx,
-                          top: paperTopLeft.dy,
-                          width:
-                              QuickMemoDrawingCanvas.baseCanvasSize.width *
-                              totalScale,
-                          height:
-                              QuickMemoDrawingCanvas.baseCanvasSize.height *
-                              totalScale,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: widget.isDark
-                                  ? const Color(0xFF161F2E)
-                                  : AppKendoColors.white,
-                              borderRadius: AppRadius.large,
-                              border: Border.all(
-                                color: widget.isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFCBD5E1),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppKendoColors.black.withValues(
-                                    alpha: widget.isDark ? 0.35 : 0.08,
-                                  ),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: FittedBox(
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                width:
-                                    QuickMemoDrawingCanvas.baseCanvasSize.width,
-                                height: QuickMemoDrawingCanvas
-                                    .baseCanvasSize
-                                    .height,
-                                child: Stack(
-                                  children: [
-                                    // 用紙内方眼グリッド
-                                    Positioned.fill(
-                                      child: RepaintBoundary(
-                                        child: CustomPaint(
-                                          painter: MemoGridBackgroundPainter(
-                                            isDark: widget.isDark,
-                                            gridColor: widget.isDark
-                                                ? const Color(0xFF243247)
-                                                : const Color(0xFFF1F5F9),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // 統一座標系での手書き描画
-                                    Positioned.fill(
-                                      child: CustomPaint(
-                                        painter: MemoCanvasPainter(
-                                          strokes: widget.strokes,
-                                          currentPoints: widget.currentPoints,
-                                          currentColor: widget.selectedColor,
-                                          currentWidth: widget.selectedWidth,
-                                        ),
-                                      ),
-                                    ),
-                                    if (widget.strokes.isEmpty &&
-                                        widget.currentPoints.isEmpty &&
-                                        !isZoomed)
-                                      QuickMemoEmptyGuidance(
-                                        textColor: widget.themeColors.textColor,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+                        QuickMemoPaperView(
+                          paperTopLeft: paperTopLeft,
+                          totalScale: totalScale,
+                          baseCanvasSize: QuickMemoDrawingCanvas.baseCanvasSize,
+                          isDark: widget.isDark,
+                          themeColors: widget.themeColors,
+                          strokes: widget.strokes,
+                          currentPoints: widget.currentPoints,
+                          selectedColor: widget.selectedColor,
+                          selectedWidth: widget.selectedWidth,
+                          isZoomed: isZoomed,
                         ),
 
                         // 👆 最前面のジェスチャー検出レイヤ（1本指描画 & 2本指ズーム/パン）

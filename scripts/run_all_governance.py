@@ -312,6 +312,13 @@ AUDIT_DEFINITIONS = [
         "name": "⚡ ガバナンススクリプト静的検査専念 ＆ 二重テスト起動完全禁止規約",
         "cmd": ["python3", "scripts/check_gov_606_governance_runner_efficiency.py"],
     },
+    {
+        "id": 607,
+        "old_id": None,
+        "chapter_num": 6,
+        "name": "🛡️ 非同期 BuildContext マウント安全性完全保証規約",
+        "cmd": ["python3", "scripts/check_gov_607_build_context_mounted_safety.py"],
+    },
 ]
 
 
