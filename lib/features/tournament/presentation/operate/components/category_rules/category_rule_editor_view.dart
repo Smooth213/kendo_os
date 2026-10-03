@@ -71,6 +71,8 @@ class CategoryRuleEditorView extends StatelessWidget {
   final double normalDrawPoint;
   final String normalRenseikaiType;
   final int normalOverallTime;
+  final bool normalSkipEmpty;
+  final bool renseikaiSkipEmpty;
   final double normalDaihyoMatchTime;
   final bool normalDaihyoHasExtension;
   final double normalDaihyoEnchoTime;
@@ -96,6 +98,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final double advancedDrawPoint;
   final String advancedRenseikaiType;
   final int advancedOverallTime;
+  final bool advancedSkipEmpty;
   final double advancedDaihyoMatchTime;
   final bool advancedDaihyoHasExtension;
   final double advancedDaihyoEnchoTime;
@@ -113,6 +116,8 @@ class CategoryRuleEditorView extends StatelessWidget {
   final ValueChanged<bool> onNormalIsRunningTimeChanged;
   final ValueChanged<String> onNormalRenseikaiTypeChanged;
   final ValueChanged<int> onNormalOverallTimeChanged;
+  final ValueChanged<bool>? onNormalSkipEmptyChanged;
+  final ValueChanged<bool>? onRenseikaiSkipEmptyChanged;
   final ValueChanged<String> onNormalKachinukiUnlimitedTypeChanged;
   final ValueChanged<bool> onNormalHasExtensionChanged;
   final ValueChanged<bool> onNormalIsEnchoUnlimitedChanged;
@@ -138,6 +143,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final ValueChanged<bool> onAdvancedIsRunningTimeChanged;
   final ValueChanged<String> onAdvancedRenseikaiTypeChanged;
   final ValueChanged<int> onAdvancedOverallTimeChanged;
+  final ValueChanged<bool>? onAdvancedSkipEmptyChanged;
   final ValueChanged<String> onAdvancedKachinukiUnlimitedTypeChanged;
   final ValueChanged<bool> onAdvancedHasExtensionChanged;
   final ValueChanged<bool> onAdvancedIsEnchoUnlimitedChanged;
@@ -156,7 +162,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final ValueChanged<double> onAdvancedDrawPointChanged;
   final ValueChanged<int> onAdvancedIpponLimitChanged;
   final ValueChanged<bool> onAdvancedIsIpponShobuChanged;
-  final ValueChanged<int> onAdvancedHansokuLimitChanged;
+  final ValueChanged<int>? onAdvancedHansokuLimitChanged;
   final ValueChanged<List<String>> onKeywordsChanged;
 
   final VoidCallback onCancel;
@@ -297,7 +303,13 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.onAdvancedDrawPointChanged,
     required this.onAdvancedIpponLimitChanged,
     required this.onAdvancedIsIpponShobuChanged,
-    required this.onAdvancedHansokuLimitChanged,
+    this.onAdvancedHansokuLimitChanged,
+    this.normalSkipEmpty = false,
+    this.advancedSkipEmpty = false,
+    this.renseikaiSkipEmpty = false,
+    this.onNormalSkipEmptyChanged,
+    this.onAdvancedSkipEmptyChanged,
+    this.onRenseikaiSkipEmptyChanged,
     required this.onKeywordsChanged,
     required this.onCancel,
     required this.onSave,

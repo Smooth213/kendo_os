@@ -36,6 +36,7 @@ class MatchFormatSaveHelper {
     double daihyoEnchoTime = 3.0,
     int daihyoEnchoCount = -2,
     bool daihyoHasHantei = false,
+    bool skipEmptyRoster = false,
     required String winPointText,
     required String lossPointText,
     required String drawPointText,
@@ -110,6 +111,7 @@ class MatchFormatSaveHelper {
       'winPoint': winPt,
       'lossPoint': lossPt,
       'drawPoint': drawPt,
+      'skipEmptyRoster': skipEmptyRoster,
     };
 
     final rule = MatchFormatSetupHelper.createMatchRule(
@@ -127,6 +129,7 @@ class MatchFormatSaveHelper {
       hasLeagueDaihyo: hasLeagueDaihyo,
       renseikaiType: renseikaiType,
       overallTimeMinutes: int.tryParse(overallTimeText) ?? 30,
+      skipEmptyRoster: skipEmptyRoster,
       isDaihyoIpponShobu: isDaihyoIpponShobu,
       isIpponShobu: isIpponShobu,
       ipponLimit: ipponLimit,

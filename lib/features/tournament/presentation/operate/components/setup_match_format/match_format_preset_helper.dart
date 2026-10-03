@@ -119,6 +119,7 @@ class MatchFormatPresetHelper {
       daihyoEnchoTime: state.daihyoEnchoTime,
       daihyoEnchoCount: state.daihyoEnchoCount,
       daihyoHasHantei: state.daihyoHasHantei,
+      skipEmptyRoster: state.skipEmptyRoster,
       winPointText: winPointText,
       lossPointText: lossPointText,
       drawPointText: drawPointText,

@@ -41,6 +41,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
   final double lossPoint;
   final double drawPoint;
   final int overallTimeMinutes;
+  final bool skipEmptyRoster;
   final TextEditingController courtController;
   final TextEditingController noteController;
   final AppThemeColors themeColors;
@@ -92,6 +93,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
     required this.lossPoint,
     required this.drawPoint,
     required this.overallTimeMinutes,
+    this.skipEmptyRoster = false,
     required this.courtController,
     required this.noteController,
     required this.themeColors,
@@ -318,6 +320,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
           daihyoEnchoCount: daihyoEnchoCount,
           daihyoEnchoTime: daihyoEnchoTime,
           daihyoHasHantei: daihyoHasHantei,
+          skipEmptyRoster: skipEmptyRoster,
           winPoint: winPoint,
           lossPoint: lossPoint,
           drawPoint: drawPoint,

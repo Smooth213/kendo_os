@@ -53,6 +53,7 @@ class MatchEditStateHolder {
 
   late String renseikaiType;
   late TextEditingController overallTimeController;
+  late bool skipEmptyRoster;
 
   late bool isKachinuki;
   late String kachinukiUnlimitedType;
@@ -272,6 +273,7 @@ class MatchEditStateHolder {
     overallTimeController = TextEditingController(
       text: r.overallTimeMinutes > 0 ? r.overallTimeMinutes.toString() : '30',
     );
+    skipEmptyRoster = r.skipEmptyRoster;
 
     isKachinuki = r.isKachinuki;
     kachinukiUnlimitedType = r.kachinukiUnlimitedType.isNotEmpty
@@ -368,6 +370,7 @@ class MatchEditStateHolder {
         : (key.contains('renseikai') ? '時間制' : '一試合制');
     overallTimeController.text =
         (rule.overallTimeMinutes > 0 ? rule.overallTimeMinutes : 30).toString();
+    skipEmptyRoster = rule.skipEmptyRoster;
     isKachinuki = rule.isKachinuki;
     kachinukiUnlimitedType = rule.kachinukiUnlimitedType.isNotEmpty
         ? rule.kachinukiUnlimitedType

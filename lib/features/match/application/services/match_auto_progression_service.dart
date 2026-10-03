@@ -81,6 +81,12 @@ class MatchAutoProgressionService {
     onAddIppon,
     required Future<void> Function(String matchId) onFinish,
   }) async {
+    final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
+    // ⚔️ 錬成会・空欄スキップ設定時は自動不戦勝を付与せず、対戦継続を優先する
+    if (rule.isRenseikai && rule.skipEmptyRoster) {
+      return;
+    }
+
     final fusenEvents = _domainService.generateAutoFusenEvents(match);
     for (var event in fusenEvents) {
       await onAddIppon(match.id, event.side, event.type);
@@ -133,12 +139,42 @@ class MatchAutoProgressionService {
     final currentIndex = groupMatches.indexWhere(
       (m) => m.id == finishedMatch.id,
     );
-    if (currentIndex != -1 && currentIndex < groupMatches.length - 1) {
-      final nextMatch = groupMatches[currentIndex + 1];
-      if (nextMatch.status == 'waiting') {
-        await onSaveAndSync(nextMatch.copyWith(status: 'in_progress'));
+    if (currentIndex != -1) {
+      int nextIndex = currentIndex + 1;
+      while (nextIndex < groupMatches.length) {
+        final nextMatch = groupMatches[nextIndex];
+        final nextRule =
+            nextMatch.rule ??
+            finishedMatch.rule ??
+            _ref.read(matchRuleProvider);
+
+        // ⚔️ 錬成会・空欄スキップ設定時: 双方が空欄/未定の場合はスキップ（終了扱い）にして次へ進める
+        if (nextRule != null &&
+            nextRule.isRenseikai &&
+            nextRule.skipEmptyRoster) {
+          final isRedEmpty = _isNameEffectivelyEmpty(nextMatch.redName);
+          final isWhiteEmpty = _isNameEffectivelyEmpty(nextMatch.whiteName);
+          if (isRedEmpty && isWhiteEmpty && nextMatch.status == 'waiting') {
+            await onSaveAndSync(nextMatch.copyWith(status: 'finished'));
+            nextIndex++;
+            continue;
+          }
+        }
+
+        if (nextMatch.status == 'waiting') {
+          await onSaveAndSync(nextMatch.copyWith(status: 'in_progress'));
+        }
+        break;
       }
     }
+  }
+
+  bool _isNameEffectivelyEmpty(String rawName) {
+    final trimmed = rawName.trim();
+    if (trimmed.isEmpty || trimmed == '欠員') return true;
+    final parts = trimmed.split(':');
+    final pName = parts.length > 1 ? parts.last.trim() : trimmed;
+    return pName.isEmpty || pName == '未定' || pName == '選手' || pName == '欠員';
   }
 }
 

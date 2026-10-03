@@ -106,6 +106,8 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       normalDrawPoint: formState.normalDrawPoint,
       normalRenseikaiType: formState.normalRenseikaiType,
       normalOverallTime: formState.normalOverallTime,
+      normalSkipEmpty: formState.normalSkipEmpty,
+      renseikaiSkipEmpty: formState.renseikaiSkipEmpty,
       normalDaihyoMatchTime: formState.normalDaihyoMatchTime,
       normalDaihyoHasExtension: formState.normalDaihyoHasExtension,
       normalDaihyoEnchoTime: formState.normalDaihyoEnchoTime,
@@ -129,6 +131,7 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       advancedDrawPoint: formState.advancedDrawPoint,
       advancedRenseikaiType: formState.advancedRenseikaiType,
       advancedOverallTime: formState.advancedOverallTime,
+      advancedSkipEmpty: formState.advancedSkipEmpty,
       advancedDaihyoMatchTime: formState.advancedDaihyoMatchTime,
       advancedDaihyoHasExtension: formState.advancedDaihyoHasExtension,
       advancedDaihyoEnchoTime: formState.advancedDaihyoEnchoTime,
@@ -149,6 +152,10 @@ class CategoryRuleEditorContainer extends StatelessWidget {
           setState(() => formState.normalRenseikaiType = val),
       onNormalOverallTimeChanged: (val) =>
           setState(() => formState.normalOverallTime = val),
+      onNormalSkipEmptyChanged: (val) =>
+          setState(() => formState.normalSkipEmpty = val),
+      onRenseikaiSkipEmptyChanged: (val) =>
+          setState(() => formState.renseikaiSkipEmpty = val),
       onNormalKachinukiUnlimitedTypeChanged: (val) =>
           setState(() => formState.normalKachinukiUnlimitedType = val),
       onNormalHasExtensionChanged: (val) =>
@@ -199,6 +206,8 @@ class CategoryRuleEditorContainer extends StatelessWidget {
           setState(() => formState.advancedRenseikaiType = val),
       onAdvancedOverallTimeChanged: (val) =>
           setState(() => formState.advancedOverallTime = val),
+      onAdvancedSkipEmptyChanged: (val) =>
+          setState(() => formState.advancedSkipEmpty = val),
       onAdvancedKachinukiUnlimitedTypeChanged: (val) =>
           setState(() => formState.advancedKachinukiUnlimitedType = val),
       onAdvancedHasExtensionChanged: (val) =>

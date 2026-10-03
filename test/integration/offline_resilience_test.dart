@@ -17,6 +17,7 @@ import 'package:firebase_crashlytics_platform_interface/firebase_crashlytics_pla
 import 'package:kendo_os/main.dart' show globalConnectivityProvider;
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
+import 'package:kendo_os/shared/infrastructure/persistence/twin_match_persistence_helper.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import '../helpers/test_isar_helper.dart';
 
@@ -231,6 +232,7 @@ void main() {
 
         // path_provider を FakePathProviderPlatform でモックする
         PathProviderPlatform.instance = FakePathProviderPlatform(dir.path);
+        TwinMatchPersistenceHelper.customDirectory = dir;
 
         final ctx = await TestIsarHelper.openContext(
           schemas: [MatchEntitySchema, MatchEventArchiveEntitySchema],
@@ -242,6 +244,8 @@ void main() {
       });
 
       tearDown(() async {
+        await TwinMatchPersistenceHelper.flushPendingWrites();
+        TwinMatchPersistenceHelper.customDirectory = null;
         await isarContext?.dispose();
         if (documentsDir != null && documentsDir!.existsSync()) {
           documentsDir!.deleteSync(recursive: true);
@@ -261,6 +265,7 @@ void main() {
 
         // 保存を実行
         await repository.saveMatch(match);
+        await TwinMatchPersistenceHelper.flushPendingWrites();
 
         // 直接Isarをクエリしてデータが存在することを確認
         final entityInIsar = await isar.matchEntitys
@@ -298,12 +303,9 @@ void main() {
             await repository.saveMatch(match);
           } catch (e) {
             hasThrown = true;
-            debugPrint(
-              '[DEBUG TEST] FirebasePlatform.instance type during exception: ${FirebasePlatform.instance.runtimeType}',
-            );
-            debugPrint('[DEBUG TEST] CAUGHT EXCEPTION: $e');
           }
           expect(hasThrown, true, reason: 'ローカルDBクローズのため例外がスローされること');
+          await TwinMatchPersistenceHelper.flushPendingWrites();
 
           // documentsDir 内に緊急バックアップファイル(twin_snapshot_*)が生成されているかチェック
           // 実装は TwinMatchPersistenceHelper.saveSnapshot() により

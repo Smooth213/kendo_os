@@ -55,6 +55,7 @@ class CategoryRuleFormSectionBuilder {
           ? view.normalRenseikaiType
           : view.advancedRenseikaiType,
       overallTime: isNormal ? view.normalOverallTime : view.advancedOverallTime,
+      skipEmptyRoster: isNormal ? view.normalSkipEmpty : view.advancedSkipEmpty,
       daihyoMatchTime: isNormal
           ? view.normalDaihyoMatchTime
           : view.advancedDaihyoMatchTime,
@@ -87,6 +88,9 @@ class CategoryRuleFormSectionBuilder {
       onOverallTimeChanged: isNormal
           ? view.onNormalOverallTimeChanged
           : view.onAdvancedOverallTimeChanged,
+      onSkipEmptyRosterChanged: isNormal
+          ? view.onNormalSkipEmptyChanged
+          : view.onAdvancedSkipEmptyChanged,
       onKachinukiUnlimitedTypeChanged: isNormal
           ? view.onNormalKachinukiUnlimitedTypeChanged
           : view.onAdvancedKachinukiUnlimitedTypeChanged,
@@ -140,7 +144,7 @@ class CategoryRuleFormSectionBuilder {
           : view.onAdvancedIpponLimitChanged,
       onHansokuLimitChanged: isNormal
           ? view.onNormalHansokuLimitChanged
-          : view.onAdvancedHansokuLimitChanged,
+          : (view.onAdvancedHansokuLimitChanged ?? (_) {}),
       onKeywordsChanged: view.onKeywordsChanged,
     );
   }

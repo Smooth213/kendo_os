@@ -40,6 +40,7 @@ class MatchRuleSettingForm extends StatelessWidget {
   // 5. 進行形式（一試合制 / 時間制）
   final String renseikaiType;
   final TextEditingController? overallTimeController;
+  final bool skipEmptyRoster;
 
   // 6. 特殊形式（勝ち抜き戦・リーグ勝ち点）
   final bool isKachinuki;
@@ -81,6 +82,7 @@ class MatchRuleSettingForm extends StatelessWidget {
   // コールバック: 進行形式
   final ValueChanged<String>? onRenseikaiTypeChanged;
   final ValueChanged<int>? onOverallTimeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
 
   // コールバック: 特殊形式
   final ValueChanged<bool>? onKachinukiChanged;
@@ -114,6 +116,7 @@ class MatchRuleSettingForm extends StatelessWidget {
     this.daihyoHasHantei = false,
     this.renseikaiType = '一試合制',
     this.overallTimeController,
+    this.skipEmptyRoster = false,
     this.isKachinuki = false,
     this.kachinukiUnlimitedType = '大将対大将',
     this.isLeague = false,
@@ -142,6 +145,7 @@ class MatchRuleSettingForm extends StatelessWidget {
     required this.onDaihyoHanteiChanged,
     this.onRenseikaiTypeChanged,
     this.onOverallTimeChanged,
+    this.onSkipEmptyRosterChanged,
     this.onKachinukiChanged,
     this.onKachinukiUnlimitedTypeChanged,
     this.onLeagueChanged,
@@ -173,6 +177,7 @@ class MatchRuleSettingForm extends StatelessWidget {
           hansokuLimit: hansokuLimit,
           renseikaiType: renseikaiType,
           overallTimeController: overallTimeController,
+          skipEmptyRoster: skipEmptyRoster,
           primaryAccent: primaryAccent,
           isDark: isDark,
           formatMinutes: formatMinutes,
@@ -183,6 +188,7 @@ class MatchRuleSettingForm extends StatelessWidget {
           onHansokuLimitChanged: onHansokuLimitChanged,
           onRenseikaiTypeChanged: onRenseikaiTypeChanged,
           onOverallTimeChanged: onOverallTimeChanged,
+          onSkipEmptyRosterChanged: onSkipEmptyRosterChanged,
         ),
         const SizedBox(height: AppSpacing.lg),
 

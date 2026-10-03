@@ -251,6 +251,7 @@ class MatchFormatSetupHelper {
     required double lossPoint,
     required double drawPoint,
     required String selectedRuleScene,
+    bool skipEmptyRoster = false,
   }) {
     final effectiveIsIpponShobu = isIpponShobu || ipponLimit == 1;
     return MatchRule(
@@ -271,6 +272,7 @@ class MatchFormatSetupHelper {
       hasLeagueDaihyo: hasLeagueDaihyo,
       renseikaiType: renseikaiType,
       overallTimeMinutes: overallTimeMinutes,
+      skipEmptyRoster: skipEmptyRoster,
       isDaihyoIpponShobu: isDaihyoIpponShobu,
       daihyoMatchTimeMinutes: daihyoMatchTime,
       daihyoHasExtension: daihyoHasExtension,

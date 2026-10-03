@@ -128,6 +128,7 @@ class MatchFormatPageView extends StatelessWidget {
           daihyoEnchoCount: state.daihyoEnchoCount,
           daihyoEnchoTime: state.daihyoEnchoTime,
           daihyoHasHantei: state.daihyoHasHantei,
+          skipEmptyRoster: state.skipEmptyRoster,
           winPoint: double.tryParse(winPointController.text) ?? 0,
           lossPoint: double.tryParse(lossPointController.text) ?? 0,
           drawPoint: double.tryParse(drawPointController.text) ?? 0,

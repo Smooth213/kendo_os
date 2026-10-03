@@ -215,6 +215,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   daihyoHasHantei: _state.daihyoHasHantei,
                   renseikaiType: _state.renseikaiType,
                   overallTimeController: _state.overallTimeController,
+                  skipEmptyRoster: _state.skipEmptyRoster,
                   isKachinuki: _state.isKachinuki,
                   kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
                   isLeague: _state.isLeague,
@@ -263,6 +264,8 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   onOverallTimeChanged: (v) => setState(() {
                     _state.overallTimeController.text = v.toString();
                   }),
+                  onSkipEmptyRosterChanged: (v) =>
+                      setState(() => _state.skipEmptyRoster = v),
                   onKachinukiChanged: (v) =>
                       setState(() => _state.isKachinuki = v),
                   onKachinukiUnlimitedTypeChanged: (v) =>
@@ -319,6 +322,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               renseikaiType: _state.renseikaiType,
               overallTimeMinutes:
                   int.tryParse(_state.overallTimeController.text) ?? 30,
+              skipEmptyRoster: _state.skipEmptyRoster,
               isKachinuki: _state.isKachinuki,
               kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
               isLeague: _state.isLeague,

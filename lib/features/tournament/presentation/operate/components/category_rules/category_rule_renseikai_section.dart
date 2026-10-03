@@ -13,11 +13,13 @@ class CategoryRuleRenseikaiSection extends StatelessWidget {
   final bool isRunningTime;
   final String renseikaiType;
   final int overallTime;
+  final bool skipEmptyRoster;
   final String kachinukiUnlimitedType;
 
   final ValueChanged<bool> onIsRunningTimeChanged;
   final ValueChanged<String> onRenseikaiTypeChanged;
   final ValueChanged<int> onOverallTimeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
   final ValueChanged<String> onKachinukiUnlimitedTypeChanged;
 
   const CategoryRuleRenseikaiSection({
@@ -29,10 +31,12 @@ class CategoryRuleRenseikaiSection extends StatelessWidget {
     required this.isRunningTime,
     required this.renseikaiType,
     required this.overallTime,
+    this.skipEmptyRoster = false,
     required this.kachinukiUnlimitedType,
     required this.onIsRunningTimeChanged,
     required this.onRenseikaiTypeChanged,
     required this.onOverallTimeChanged,
+    this.onSkipEmptyRosterChanged,
     required this.onKachinukiUnlimitedTypeChanged,
   });
 
@@ -89,6 +93,17 @@ class CategoryRuleRenseikaiSection extends StatelessWidget {
                 final i = int.tryParse(val) ?? 30;
                 onOverallTimeChanged(i);
               },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('空欄枠の自動スキップ＆継続対戦'),
+              subtitle: const Text(
+                '4人チーム等の人数不揃い時、空欄枠をスキップして相手の残枠に対戦選手をクイック選出して継続します',
+              ),
+              value: skipEmptyRoster,
+              activeThumbColor: AppKendoColors.indigo,
+              onChanged: onSkipEmptyRosterChanged,
             ),
           ],
           const Divider(height: 32),

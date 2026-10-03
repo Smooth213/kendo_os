@@ -50,6 +50,7 @@ _MatchRule _$MatchRuleFromJson(Map<String, dynamic> json) => _MatchRule(
   renseikaiType: json['renseikaiType'] as String? ?? '一試合制',
   overallTimeMinutes: (json['overallTimeMinutes'] as num?)?.toInt() ?? 30,
   matchScene: json['matchScene'] as String? ?? 'honsen',
+  skipEmptyRoster: json['skipEmptyRoster'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
@@ -87,4 +88,5 @@ Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
       'renseikaiType': instance.renseikaiType,
       'overallTimeMinutes': instance.overallTimeMinutes,
       'matchScene': instance.matchScene,
+      'skipEmptyRoster': instance.skipEmptyRoster,
     };

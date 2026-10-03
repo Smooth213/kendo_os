@@ -36,6 +36,7 @@ class BulkRuleFormSection extends StatelessWidget {
   final bool daihyoHasHantei;
   final String renseikaiType;
   final TextEditingController overallTimeController;
+  final bool skipEmptyRoster;
   final bool isKachinuki;
   final String kachinukiUnlimitedType;
   final bool isLeague;
@@ -64,6 +65,7 @@ class BulkRuleFormSection extends StatelessWidget {
   final ValueChanged<bool> onDaihyoHanteiChanged;
   final ValueChanged<String> onRenseikaiTypeChanged;
   final ValueChanged<int> onOverallTimeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
   final ValueChanged<bool> onKachinukiChanged;
   final ValueChanged<String> onKachinukiUnlimitedTypeChanged;
   final ValueChanged<bool> onLeagueChanged;
@@ -101,6 +103,7 @@ class BulkRuleFormSection extends StatelessWidget {
     required this.daihyoHasHantei,
     required this.renseikaiType,
     required this.overallTimeController,
+    this.skipEmptyRoster = false,
     required this.isKachinuki,
     required this.kachinukiUnlimitedType,
     required this.isLeague,
@@ -129,6 +132,7 @@ class BulkRuleFormSection extends StatelessWidget {
     required this.onDaihyoHanteiChanged,
     required this.onRenseikaiTypeChanged,
     required this.onOverallTimeChanged,
+    this.onSkipEmptyRosterChanged,
     required this.onKachinukiChanged,
     required this.onKachinukiUnlimitedTypeChanged,
     required this.onLeagueChanged,
@@ -199,6 +203,7 @@ class BulkRuleFormSection extends StatelessWidget {
           daihyoHasHantei: daihyoHasHantei,
           renseikaiType: renseikaiType,
           overallTimeController: overallTimeController,
+          skipEmptyRoster: skipEmptyRoster,
           isKachinuki: isKachinuki,
           kachinukiUnlimitedType: kachinukiUnlimitedType,
           isLeague: isLeague,
@@ -227,6 +232,7 @@ class BulkRuleFormSection extends StatelessWidget {
           onDaihyoHanteiChanged: onDaihyoHanteiChanged,
           onRenseikaiTypeChanged: onRenseikaiTypeChanged,
           onOverallTimeChanged: onOverallTimeChanged,
+          onSkipEmptyRosterChanged: onSkipEmptyRosterChanged,
           onKachinukiChanged: onKachinukiChanged,
           onKachinukiUnlimitedTypeChanged: onKachinukiUnlimitedTypeChanged,
           onLeagueChanged: onLeagueChanged,

@@ -64,6 +64,7 @@ abstract class MatchRule with _$MatchRule {
     @Default(30) int overallTimeMinutes,
     @Default('honsen')
     String matchScene, // ★ 追加: 'renseikai', 'honsen', 'moushiawase'
+    @Default(false) bool skipEmptyRoster, // ★ 追加: 時間制錬成会の空欄枠自動スキップ＆継続
   }) = _MatchRule;
 
   factory MatchRule.fromJson(Map<String, dynamic> json) =>

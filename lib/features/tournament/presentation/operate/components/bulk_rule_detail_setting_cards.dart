@@ -19,6 +19,7 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
   final bool isRenseikai;
   final String renseikaiType;
   final TextEditingController overallTimeController;
+  final bool skipEmptyRoster;
   final Color primaryAccent;
   final bool isDark;
 
@@ -33,6 +34,7 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
   final ValueChanged<bool> onDaihyoIpponShobuChanged;
   final ValueChanged<bool> onRenseikaiChanged;
   final ValueChanged<String> onRenseikaiTypeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
 
   const BulkRuleDetailSettingCards({
     super.key,
@@ -48,6 +50,7 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
     required this.isRenseikai,
     required this.renseikaiType,
     required this.overallTimeController,
+    this.skipEmptyRoster = false,
     required this.primaryAccent,
     required this.isDark,
     required this.onMatchTimeChanged,
@@ -61,6 +64,7 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
     required this.onDaihyoIpponShobuChanged,
     required this.onRenseikaiChanged,
     required this.onRenseikaiTypeChanged,
+    this.onSkipEmptyRosterChanged,
   });
 
   Widget _buildCardGroup({
@@ -385,6 +389,26 @@ class BulkRuleDetailSettingCards extends StatelessWidget {
                   ),
                 ],
               ),
+              if (renseikaiType == '時間制') ...[
+                const Divider(height: 20),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    '空欄枠の自動スキップ＆継続対戦',
+                    style: TextStyle(
+                      fontSize: AppFontSize.body,
+                      fontWeight: AppFontWeight.bold,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    '4人チーム等の人数不揃い時、空欄枠をスキップして相手の残枠に対戦選手をクイック選出して継続します',
+                    style: TextStyle(fontSize: AppFontSize.caption),
+                  ),
+                  value: skipEmptyRoster,
+                  activeTrackColor: primaryAccent,
+                  onChanged: onSkipEmptyRosterChanged,
+                ),
+              ],
             ],
           ],
         ),

@@ -32,6 +32,7 @@ class CategoryRulesFormState {
   bool renseikaiHasHantei = true;
   String renseikaiType = '一試合制';
   int renseikaiOverallTime = 30;
+  bool renseikaiSkipEmpty = false;
 
   double moushiawaseTime = 2.0;
   bool moushiawaseIsRunningTime = true;
@@ -58,6 +59,7 @@ class CategoryRulesFormState {
   double normalDrawPoint = 0.0;
   String normalRenseikaiType = '一試合制';
   int normalOverallTime = 30;
+  bool normalSkipEmpty = false;
 
   // 上位戦の設定
   double advancedTime = 3.0;
@@ -68,7 +70,7 @@ class CategoryRulesFormState {
   bool advancedHasHantei = false;
   bool advancedHasExtension = true;
   bool advancedIsEnchoUnlimited = true;
-  double advancedEnchoTime = 3.0;
+  double advancedEnchoTime = 2.0;
   int advancedEnchoCount = 0;
   String advancedKachinukiUnlimitedType = '大将対大将';
   bool advancedHasLeagueDaihyo = true;
@@ -78,6 +80,7 @@ class CategoryRulesFormState {
   double advancedDrawPoint = 0.0;
   String advancedRenseikaiType = '一試合制';
   int advancedOverallTime = 30;
+  bool advancedSkipEmpty = false;
 
   // 代表戦の詳細設定 (通常戦用)
   double normalDaihyoMatchTime = 0.0;
@@ -109,6 +112,7 @@ class CategoryRulesFormState {
     renseikaiHasHantei = rules.renseikaiRule.hasHantei;
     renseikaiType = rules.renseikaiRule.renseikaiType;
     renseikaiOverallTime = rules.renseikaiRule.overallTimeMinutes;
+    renseikaiSkipEmpty = rules.renseikaiRule.skipEmptyRoster;
 
     moushiawaseTime = rules.moushiawaseRule.matchTimeMinutes;
     moushiawaseIsRunningTime = rules.moushiawaseRule.isRunningTime;
@@ -146,6 +150,7 @@ class CategoryRulesFormState {
     normalDrawPoint = rules.normalRule.drawPoint;
     normalRenseikaiType = rules.normalRule.renseikaiType;
     normalOverallTime = rules.normalRule.overallTimeMinutes;
+    normalSkipEmpty = rules.normalRule.skipEmptyRoster;
 
     // 上位戦設定
     advancedTime = rules.advancedRule.matchTimeMinutes;
@@ -174,6 +179,7 @@ class CategoryRulesFormState {
     advancedDrawPoint = rules.advancedRule.drawPoint;
     advancedRenseikaiType = rules.advancedRule.renseikaiType;
     advancedOverallTime = rules.advancedRule.overallTimeMinutes;
+    advancedSkipEmpty = rules.advancedRule.skipEmptyRoster;
     editingAdvancedKeywords = List.from(rules.advancedKeywords);
 
     normalDaihyoMatchTime = rules.normalRule.daihyoMatchTimeMinutes;
@@ -260,6 +266,7 @@ class CategoryRulesFormState {
       daihyoHasHantei: isNormal
           ? normalDaihyoHasHantei
           : advancedDaihyoHasHantei,
+      skipEmptyRoster: isNormal ? normalSkipEmpty : advancedSkipEmpty,
     );
   }
 
@@ -286,6 +293,7 @@ class CategoryRulesFormState {
       renseikaiHasHantei: renseikaiHasHantei,
       renseikaiType: renseikaiType,
       renseikaiOverallTime: renseikaiOverallTime,
+      renseikaiSkipEmpty: renseikaiSkipEmpty,
       moushiawaseTime: moushiawaseTime,
       moushiawaseIsRunningTime: moushiawaseIsRunningTime,
       moushiawaseHasHantei: moushiawaseHasHantei,

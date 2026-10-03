@@ -96,6 +96,13 @@ AUDIT_DEFINITIONS = [
         "name": "🔀 現場動的運用・急遽コート振替 ＆ リアルタイム進行整合性保証規約",
         "cmd": ["python3", "scripts/check_gov_105_court_transfer_integrity.py"],
     },
+    {
+        "id": 106,
+        "old_id": None,
+        "chapter_num": 1,
+        "name": "🔄 全ルール設定画面間相互完全同期 ＆ 先祖返り・上書き防止規約",
+        "cmd": ["python3", "scripts/check_gov_106_rule_synchronization_integrity.py"],
+    },
 
     # ==========================================================================
     # 【第2章：セキュリティ ＆ データ整合性規約】（200番台）

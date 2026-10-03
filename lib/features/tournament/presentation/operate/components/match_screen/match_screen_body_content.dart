@@ -15,6 +15,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_timer_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_view_only_notice_banner.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_quick_assign_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
@@ -155,26 +156,38 @@ class MatchScreenBodyContent extends StatelessWidget {
                             ),
                           );
                           final scoreboardPart = RepaintBoundary(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxHeight: constraints.maxHeight * 0.28,
-                              ),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: SizedBox(
-                                  width: constraints.maxWidth,
-                                  child: MatchScoreboard(
-                                    matchId: match.id,
-                                    match: match,
-                                    onNameTap: (side) =>
-                                        MatchDialogHelper.showNameEditBottomSheet(
-                                          context: context,
-                                          match: match,
-                                          side: side,
-                                        ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                RenseikaiQuickAssignBar(
+                                  match: match,
+                                  rule: rule,
+                                  teamMatches: teamMatches,
+                                  isDark: isDark,
+                                  ref: ref,
+                                ),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: constraints.maxHeight * 0.28,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: SizedBox(
+                                      width: constraints.maxWidth,
+                                      child: MatchScoreboard(
+                                        matchId: match.id,
+                                        match: match,
+                                        onNameTap: (side) =>
+                                            MatchDialogHelper.showNameEditBottomSheet(
+                                              context: context,
+                                              match: match,
+                                              side: side,
+                                            ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
                           );
                           final isAllDone = teamMatches.isNotEmpty

@@ -14,6 +14,7 @@ class MatchRuleTimeSection extends StatelessWidget {
   final int hansokuLimit;
   final String renseikaiType;
   final TextEditingController? overallTimeController;
+  final bool skipEmptyRoster;
   final Color primaryAccent;
   final bool isDark;
   final String Function(double) formatMinutes;
@@ -25,6 +26,7 @@ class MatchRuleTimeSection extends StatelessWidget {
   final ValueChanged<int>? onHansokuLimitChanged;
   final ValueChanged<String>? onRenseikaiTypeChanged;
   final ValueChanged<int>? onOverallTimeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
 
   const MatchRuleTimeSection({
     super.key,
@@ -35,6 +37,7 @@ class MatchRuleTimeSection extends StatelessWidget {
     required this.hansokuLimit,
     required this.renseikaiType,
     this.overallTimeController,
+    this.skipEmptyRoster = false,
     required this.primaryAccent,
     required this.isDark,
     required this.formatMinutes,
@@ -45,6 +48,7 @@ class MatchRuleTimeSection extends StatelessWidget {
     this.onHansokuLimitChanged,
     this.onRenseikaiTypeChanged,
     this.onOverallTimeChanged,
+    this.onSkipEmptyRosterChanged,
   });
 
   @override
@@ -121,63 +125,90 @@ class MatchRuleTimeSection extends StatelessWidget {
           // 時間制の場合の全体制限時間
           if (isTimeBased) ...[
             Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
               margin: const EdgeInsets.only(bottom: AppSpacing.md),
               decoration: BoxDecoration(
-                color: primaryAccent.withValues(alpha: 0.08),
                 borderRadius: AppRadius.medium,
                 border: Border.all(
                   color: primaryAccent.withValues(alpha: 0.25),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '全体の制限時間: $currentOverallMins分',
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      fontWeight: AppFontWeight.bold,
-                      color: primaryAccent,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Wrap(
-                    spacing: AppSpacing.xs,
-                    runSpacing: AppSpacing.xs,
+              child: Material(
+                color: primaryAccent.withValues(alpha: 0.08),
+                borderRadius: AppRadius.medium,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (final m in [15, 20, 30, 40, 50, 60])
-                        AppChoiceChip(
-                          selected: currentOverallMins == m,
-                          label: Text('$m分'),
-                          onSelected: (selected) {
-                            if (selected) {
-                              overallTimeController?.text = m.toString();
-                              if (onOverallTimeChanged != null) {
-                                onOverallTimeChanged!(m);
-                              }
-                            }
-                          },
+                      Text(
+                        '全体の制限時間: $currentOverallMins分',
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          fontWeight: AppFontWeight.bold,
+                          color: primaryAccent,
                         ),
-                      AppActionChip(
-                        icon: Icons.edit,
-                        label: const Text('カスタム'),
-                        onPressed: () =>
-                            MatchRuleDialogHelper.showCustomMinutesDialog(
-                              context,
-                              title: '全体の制限時間の指定',
-                              currentMinutes: currentOverallMins,
-                              onConfirmed: (m) {
-                                overallTimeController?.text = m.toString();
-                                if (onOverallTimeChanged != null) {
-                                  onOverallTimeChanged!(m);
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Wrap(
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          for (final m in [15, 20, 30, 40, 50, 60])
+                            AppChoiceChip(
+                              selected: currentOverallMins == m,
+                              label: Text('$m分'),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  overallTimeController?.text = m.toString();
+                                  if (onOverallTimeChanged != null) {
+                                    onOverallTimeChanged!(m);
+                                  }
                                 }
                               },
                             ),
+                          AppActionChip(
+                            icon: Icons.edit,
+                            label: const Text('カスタム'),
+                            onPressed: () =>
+                                MatchRuleDialogHelper.showCustomMinutesDialog(
+                                  context,
+                                  title: '全体の制限時間の指定',
+                                  currentMinutes: currentOverallMins,
+                                  onConfirmed: (m) {
+                                    overallTimeController?.text = m.toString();
+                                    if (onOverallTimeChanged != null) {
+                                      onOverallTimeChanged!(m);
+                                    }
+                                  },
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      SwitchListTile.adaptive(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        title: const Text(
+                          '空欄の選手を自動スキップ',
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '4人チーム等の空欄枠を飛ばして次の選手と連続対戦します',
+                          style: TextStyle(
+                            fontSize: AppFontSize.nano,
+                            color: context.appColors.subTextColor,
+                          ),
+                        ),
+                        value: skipEmptyRoster,
+                        activeTrackColor: primaryAccent,
+                        onChanged: onSkipEmptyRosterChanged,
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ],

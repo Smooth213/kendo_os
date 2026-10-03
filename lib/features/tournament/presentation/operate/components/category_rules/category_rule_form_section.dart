@@ -36,6 +36,7 @@ class CategoryRuleFormSection extends StatelessWidget {
   final double drawPoint;
   final String renseikaiType;
   final int overallTime;
+  final bool skipEmptyRoster;
 
   final double daihyoMatchTime;
   final bool daihyoHasExtension;
@@ -51,6 +52,7 @@ class CategoryRuleFormSection extends StatelessWidget {
   final ValueChanged<bool> onIsIpponShobuChanged;
   final ValueChanged<String> onRenseikaiTypeChanged;
   final ValueChanged<int> onOverallTimeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
   final ValueChanged<String> onKachinukiUnlimitedTypeChanged;
 
   final ValueChanged<bool> onHasExtensionChanged;
@@ -101,6 +103,7 @@ class CategoryRuleFormSection extends StatelessWidget {
     required this.drawPoint,
     required this.renseikaiType,
     required this.overallTime,
+    this.skipEmptyRoster = false,
     required this.daihyoMatchTime,
     required this.daihyoHasExtension,
     required this.daihyoEnchoTime,
@@ -113,6 +116,7 @@ class CategoryRuleFormSection extends StatelessWidget {
     required this.onIsIpponShobuChanged,
     required this.onRenseikaiTypeChanged,
     required this.onOverallTimeChanged,
+    this.onSkipEmptyRosterChanged,
     required this.onKachinukiUnlimitedTypeChanged,
     required this.onHasExtensionChanged,
     required this.onIsEnchoUnlimitedChanged,
@@ -258,10 +262,12 @@ class CategoryRuleFormSection extends StatelessWidget {
             isRunningTime: isRunningTime,
             renseikaiType: renseikaiType,
             overallTime: overallTime,
+            skipEmptyRoster: skipEmptyRoster,
             kachinukiUnlimitedType: kachinukiUnlimitedType,
             onIsRunningTimeChanged: onIsRunningTimeChanged,
             onRenseikaiTypeChanged: onRenseikaiTypeChanged,
             onOverallTimeChanged: onOverallTimeChanged,
+            onSkipEmptyRosterChanged: onSkipEmptyRosterChanged,
             onKachinukiUnlimitedTypeChanged: onKachinukiUnlimitedTypeChanged,
           )
         else if (isIndividual)

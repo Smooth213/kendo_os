@@ -222,8 +222,14 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
             if (rule?.isRenseikai ?? false) ...[
               const Divider(height: 20),
               _buildRuleRow('進行方式', rule!.renseikaiType, context),
-              if (rule.renseikaiType == '時間制')
+              if (rule.renseikaiType == '時間制') ...[
                 _buildRuleRow('総試合時間', '${rule.overallTimeMinutes}分', context),
+                _buildRuleRow(
+                  '空欄選手（4人編成等）',
+                  rule.skipEmptyRoster ? '自動スキップ＆継続' : 'スキップしない（不戦勝/空欄）',
+                  context,
+                ),
+              ],
             ],
             if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
               const Divider(height: 20),

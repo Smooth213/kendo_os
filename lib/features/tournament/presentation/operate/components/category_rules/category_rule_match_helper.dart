@@ -100,6 +100,7 @@ class CategoryRuleMatchHelper {
     required double daihyoEnchoTime,
     required int daihyoEnchoCount,
     required bool daihyoHasHantei,
+    bool skipEmptyRoster = false,
   }) {
     final isIndiv =
         matchType == '個人戦' || matchType == 'リーグ個人戦' || matchType.contains('個人');
@@ -130,6 +131,7 @@ class CategoryRuleMatchHelper {
       isRenseikai: isRenseikai,
       renseikaiType: renseikaiType,
       overallTimeMinutes: overallTime,
+      skipEmptyRoster: skipEmptyRoster,
       isLeague: isLeague,
       daihyoMatchTimeMinutes: daihyoMatchTime,
       daihyoHasExtension: daihyoHasExtension,
@@ -207,6 +209,7 @@ class CategoryRuleMatchHelper {
     required bool renseikaiHasHantei,
     required String renseikaiType,
     required int renseikaiOverallTime,
+    bool renseikaiSkipEmpty = false,
     required double moushiawaseTime,
     required bool moushiawaseIsRunningTime,
     required bool moushiawaseHasHantei,
@@ -234,6 +237,7 @@ class CategoryRuleMatchHelper {
         isRenseikai: true,
         renseikaiType: renseikaiType,
         overallTimeMinutes: renseikaiOverallTime,
+        skipEmptyRoster: renseikaiSkipEmpty,
       ),
       moushiawaseRule: MatchRule(
         matchTimeMinutes: moushiawaseTime,
@@ -403,10 +407,24 @@ class CategoryRuleMatchHelper {
     required List<String> advancedKeywords,
   }) {
     return targetMatches.map((match) {
-      final isAdvanced =
-          useAdvancedRule &&
-          isAdvancedMatchName(match.note, customKeywords: advancedKeywords);
-      final activeRule = isAdvanced ? ruleSet.advancedRule : ruleSet.normalRule;
+      final isRenseikaiMatch =
+          match.matchScene == 'renseikai' ||
+          match.matchType.contains('錬成会') ||
+          ruleSet.matchType.contains('錬成会');
+      final isMoushiawaseMatch = match.matchScene == 'moushiawase';
+
+      final MatchRule activeRule;
+      if (isRenseikaiMatch) {
+        activeRule = ruleSet.renseikaiRule;
+      } else if (isMoushiawaseMatch) {
+        activeRule = ruleSet.moushiawaseRule;
+      } else {
+        final isAdvanced =
+            useAdvancedRule &&
+            isAdvancedMatchName(match.note, customKeywords: advancedKeywords);
+        activeRule = isAdvanced ? ruleSet.advancedRule : ruleSet.normalRule;
+      }
+
       return match.copyWith(
         matchTimeMinutes: activeRule.matchTimeMinutes,
         isRunningTime: activeRule.isRunningTime,

@@ -121,10 +121,18 @@ class OrderSetupMatchGenerator {
         for (int i = 0; i < positions.length; i++) {
           final String matchId = const Uuid().v4();
           final posName = positions[i];
-          String myP = selectedPlayers[i] ?? '未定';
-          if (myP.isEmpty) myP = '未定';
-          String opP = opponentPlayers[i]?.trim() ?? '';
-          if (opP.isEmpty) opP = '選手';
+          final rawMyP = selectedPlayers[i]?.trim() ?? '';
+          final rawOpP = opponentPlayers[i]?.trim() ?? '';
+
+          // ⚔️ 錬成会・空欄選手スキップ設定時: 双方が空欄枠の場合は試合を自動スキップ
+          if (rule.isRenseikai && rule.skipEmptyRoster) {
+            if (rawMyP.isEmpty && rawOpP.isEmpty) {
+              continue;
+            }
+          }
+
+          String myP = rawMyP.isNotEmpty ? rawMyP : '未定';
+          String opP = rawOpP.isNotEmpty ? rawOpP : '選手';
           final String myFull = '$myTeamName : $myP';
           final String opFull = '$opTeamName : $opP';
           String rName, wName;

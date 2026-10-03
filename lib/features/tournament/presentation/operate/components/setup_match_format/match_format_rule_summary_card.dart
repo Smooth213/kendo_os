@@ -30,6 +30,7 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
   final double winPoint;
   final double lossPoint;
   final double drawPoint;
+  final bool skipEmptyRoster;
   final String Function(double) formatMinutesText;
   final Widget Function(String, Color) buildSectionHeader;
 
@@ -57,6 +58,7 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
     required this.daihyoEnchoTime,
     required this.daihyoEnchoCount,
     required this.daihyoHasHantei,
+    this.skipEmptyRoster = false,
     required this.winPoint,
     required this.lossPoint,
     required this.drawPoint,
@@ -90,12 +92,18 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
               value: formatMinutesText(matchTime),
               accentColor: headerColor,
             ),
-            if (renseikaiType == '時間制')
+            if (renseikaiType == '時間制') ...[
               SetupReadOnlyRuleRow(
                 label: '全体の制限時間',
                 value: '$overallTimeMinutes分',
                 accentColor: headerColor,
               ),
+              SetupReadOnlyRuleRow(
+                label: '空欄選手（4人編成等）',
+                value: skipEmptyRoster ? '自動スキップ＆継続' : 'スキップしない（不戦勝/空欄）',
+                accentColor: headerColor,
+              ),
+            ],
           ],
 
           // ─── 試合ルール（錬成会以外） ───

@@ -290,6 +290,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                         daihyoHasHantei: _state.daihyoHasHantei,
                         renseikaiType: _state.renseikaiType,
                         overallTimeController: _state.overallTimeController,
+                        skipEmptyRoster: _state.skipEmptyRoster,
                         isKachinuki: _state.isKachinuki,
                         kachinukiUnlimitedType: _state.kachinukiUnlimitedType,
                         isLeague: _state.isLeague,
@@ -357,6 +358,8 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                         onOverallTimeChanged: (v) => setState(() {
                           _state.overallTimeController.text = v.toString();
                         }),
+                        onSkipEmptyRosterChanged: (v) =>
+                            setState(() => _state.skipEmptyRoster = v),
                         onKachinukiChanged: (v) =>
                             setState(() => _state.isKachinuki = v),
                         onKachinukiUnlimitedTypeChanged: (v) =>

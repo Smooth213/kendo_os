@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 class BulkRuleApplyHelper {
   static ({
     double matchTime,
+    bool isRunningTime,
     bool isIpponShobu,
     bool hasExtension,
     double enchoTime,
@@ -21,6 +22,7 @@ class BulkRuleApplyHelper {
     bool isRenseikai,
     String renseikaiType,
     int overallTimeMinutes,
+    bool skipEmptyRoster,
   })
   computeRuleParams({
     required MatchRule targetRule,
@@ -81,8 +83,11 @@ class BulkRuleApplyHelper {
         ? targetRule.overallTimeMinutes
         : 30;
 
+    final bool skipEmptyRoster = targetRule.skipEmptyRoster;
+
     return (
       matchTime: matchTime,
+      isRunningTime: targetRule.isRunningTime,
       isIpponShobu: isIpponShobu,
       hasExtension: hasExtension,
       enchoTime: enchoTime,
@@ -100,11 +105,13 @@ class BulkRuleApplyHelper {
       isRenseikai: isRenseikai,
       renseikaiType: renseikaiType,
       overallTimeMinutes: overallTimeMinutes,
+      skipEmptyRoster: skipEmptyRoster,
     );
   }
 
   static ({
     double matchTime,
+    bool isRunningTime,
     bool isIpponShobu,
     bool hasExtension,
     double enchoTime,
@@ -116,11 +123,15 @@ class BulkRuleApplyHelper {
     bool isRenseikai,
     String renseikaiType,
     int overallTimeMinutes,
+    bool skipEmptyRoster,
   })
   loadTemplate(dynamic match) {
     final r = match.rule ?? const MatchRule();
     return (
       matchTime: match.matchTimeMinutes as double,
+      isRunningTime:
+          (match.rule != null ? r.isRunningTime : (match.isRunningTime == true))
+              as bool,
       isIpponShobu: r.isIpponShobu as bool,
       hasExtension: match.hasExtension as bool,
       enchoTime: (match.extensionTimeMinutes ?? 3.0) as double,
@@ -132,6 +143,7 @@ class BulkRuleApplyHelper {
       isRenseikai: r.isRenseikai as bool,
       renseikaiType: r.renseikaiType as String,
       overallTimeMinutes: r.overallTimeMinutes as int,
+      skipEmptyRoster: r.skipEmptyRoster as bool,
     );
   }
 }

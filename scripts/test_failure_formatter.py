@@ -10,7 +10,9 @@ def parse_and_format_failures(output_text: str) -> str:
     Flutter testの出力から失敗箇所（ファイル名、行番号、テスト名、Expected/Actual）を抽出し、
     ターミナル最下部にわかりやすく整形表示するサマリー文字列を生成します。
     """
-    lines = output_text.splitlines()
+    # ANSI カラー・エスケープシーケンスを完全除去
+    clean_text = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', output_text)
+    lines = clean_text.splitlines()
     failures = []
     
     current_test_name = ""
@@ -34,7 +36,16 @@ def parse_and_format_failures(output_text: str) -> str:
         current_test_name = ""
         in_error = False
 
+    in_crashlytics = False
     for i, line in enumerate(lines):
+        if "----------------FIREBASE CRASHLYTICS----------------" in line:
+            in_crashlytics = True
+            continue
+        if in_crashlytics:
+            if "----------------------------------------------------" in line:
+                in_crashlytics = False
+            continue
+
         # EXCEPTION CAUGHT が来たら新しいエラーブロックの開始
         if "EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK" in line:
             add_failure_if_valid()
@@ -92,7 +103,7 @@ def parse_and_format_failures(output_text: str) -> str:
 
     if not failures:
         # パースできなかった場合の汎用抽出
-        loc_matches = re.findall(r'(test/[\w\./_-]+\.dart)\s+(\d+):(\d+)', output_text)
+        loc_matches = re.findall(r'(test/[\w\./_-]+\.dart)\s+(\d+):(\d+)', clean_text)
         if loc_matches:
             unique_locs = list(dict.fromkeys([f"{m[0]} ({m[1]}行目)" for m in loc_matches]))
             return "\n".join([f"  ❌ 失敗箇所: {loc}" for loc in unique_locs])

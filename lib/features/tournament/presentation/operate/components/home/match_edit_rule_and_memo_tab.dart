@@ -39,6 +39,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
     required this.daihyoHasHantei,
     required this.renseikaiType,
     this.overallTimeController,
+    this.skipEmptyRoster = false,
     this.isKachinuki = false,
     this.kachinukiUnlimitedType = '大将対大将',
     this.isLeague = false,
@@ -66,6 +67,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
     required this.onDaihyoHanteiChanged,
     required this.onRenseikaiTypeChanged,
     this.onOverallTimeChanged,
+    this.onSkipEmptyRosterChanged,
     this.onKachinukiChanged,
     this.onKachinukiUnlimitedTypeChanged,
     this.onLeagueChanged,
@@ -104,6 +106,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
 
   final String renseikaiType;
   final TextEditingController? overallTimeController;
+  final bool skipEmptyRoster;
 
   final bool isKachinuki;
   final String kachinukiUnlimitedType;
@@ -134,6 +137,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
   final ValueChanged<bool> onDaihyoHanteiChanged;
   final ValueChanged<String> onRenseikaiTypeChanged;
   final ValueChanged<int>? onOverallTimeChanged;
+  final ValueChanged<bool>? onSkipEmptyRosterChanged;
 
   final ValueChanged<bool>? onKachinukiChanged;
   final ValueChanged<String>? onKachinukiUnlimitedTypeChanged;
@@ -228,6 +232,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           daihyoHasHantei: daihyoHasHantei,
           renseikaiType: renseikaiType,
           overallTimeController: overallTimeController,
+          skipEmptyRoster: skipEmptyRoster,
           isKachinuki: isKachinuki,
           kachinukiUnlimitedType: kachinukiUnlimitedType,
           isLeague: isLeague,
@@ -256,6 +261,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
           onDaihyoHanteiChanged: onDaihyoHanteiChanged,
           onRenseikaiTypeChanged: onRenseikaiTypeChanged,
           onOverallTimeChanged: onOverallTimeChanged,
+          onSkipEmptyRosterChanged: onSkipEmptyRosterChanged,
           onKachinukiChanged: onKachinukiChanged,
           onKachinukiUnlimitedTypeChanged: onKachinukiUnlimitedTypeChanged,
           onLeagueChanged: onLeagueChanged,

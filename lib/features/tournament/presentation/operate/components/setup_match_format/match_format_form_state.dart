@@ -29,6 +29,7 @@ class MatchFormatFormState {
 
   int extCount;
   double extTime;
+  bool skipEmptyRoster;
 
   String selectedMajorCategory;
   String selectedMinorCategory;
@@ -47,6 +48,7 @@ class MatchFormatFormState {
     this.kachinukiUnlimitedType = '3人勝ち抜き',
     this.hasLeagueDaihyo = false,
     this.renseikaiType = '時間制',
+    this.skipEmptyRoster = false,
     this.isDaihyoIpponShobu = true,
     this.daihyoMatchTime = 3.0,
     this.daihyoHasExtension = false,
@@ -88,6 +90,7 @@ class MatchFormatFormState {
     hasHantei = rule.hasHantei;
     isRenseikai = rule.isRenseikai;
     renseikaiType = rule.renseikaiType;
+    skipEmptyRoster = rule.skipEmptyRoster;
     overallTimeController.text = rule.overallTimeMinutes.toString();
     winPointController.text = rule.winPoint.toString();
     lossPointController.text = rule.lossPoint.toString();

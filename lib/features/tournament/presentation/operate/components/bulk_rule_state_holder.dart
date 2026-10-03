@@ -35,6 +35,7 @@ class BulkRuleStateHolder {
   bool isRenseikai = false;
   String renseikaiType = '一試合制';
   final overallTimeController = TextEditingController(text: '30');
+  bool skipEmptyRoster = false;
 
   bool isKachinuki = false;
   String kachinukiUnlimitedType = '大将対大将';
@@ -80,6 +81,7 @@ class BulkRuleStateHolder {
     isRenseikai = res.isRenseikai;
     renseikaiType = res.renseikaiType;
     overallTimeController.text = res.overallTimeMinutes.toString();
+    skipEmptyRoster = res.skipEmptyRoster;
     isKachinuki = targetRule.isKachinuki;
     kachinukiUnlimitedType = targetRule.kachinukiUnlimitedType.isNotEmpty
         ? targetRule.kachinukiUnlimitedType
@@ -95,7 +97,7 @@ class BulkRuleStateHolder {
     final res = BulkRuleApplyHelper.loadTemplate(m);
     final r = m.rule ?? const MatchRule();
     matchTime = res.matchTime;
-    isRunningTime = r.isRunningTime;
+    isRunningTime = res.isRunningTime;
     isIpponShobu = res.isIpponShobu;
     ipponLimit = r.ipponLimit;
     hansokuLimit = r.hansokuLimit;
@@ -117,6 +119,7 @@ class BulkRuleStateHolder {
     isRenseikai = res.isRenseikai;
     renseikaiType = res.renseikaiType;
     overallTimeController.text = res.overallTimeMinutes.toString();
+    skipEmptyRoster = res.skipEmptyRoster;
     isKachinuki = r.isKachinuki;
     kachinukiUnlimitedType = r.kachinukiUnlimitedType.isNotEmpty
         ? r.kachinukiUnlimitedType
@@ -154,6 +157,7 @@ class BulkRuleStateHolder {
       isRenseikai: isRenseikai,
       renseikaiType: renseikaiType,
       overallTimeMinutes: int.tryParse(overallTimeController.text) ?? 30,
+      skipEmptyRoster: skipEmptyRoster,
       isKachinuki: isKachinuki,
       kachinukiUnlimitedType: kachinukiUnlimitedType,
       isLeague: isLeague,
