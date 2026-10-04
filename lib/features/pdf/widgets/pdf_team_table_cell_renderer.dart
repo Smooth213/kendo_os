@@ -171,13 +171,7 @@ class PdfTeamTableCellRenderer {
 
     final note = (m.note ?? '').toString();
     final matchType = (m.matchType ?? '').toString();
-    final isEncho =
-        isDone &&
-        (note.contains('延長') ||
-            matchType == '代表戦' ||
-            matchType == '大将延長戦' ||
-            matchType.contains('代表') ||
-            matchType.contains('延長'));
+    final isEncho = isDone && (note.contains('延長') || matchType.contains('延長'));
 
     return pw.Container(
       height: 60,

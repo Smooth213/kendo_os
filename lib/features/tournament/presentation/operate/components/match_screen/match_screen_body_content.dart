@@ -261,11 +261,11 @@ class MatchScreenBodyContent extends StatelessWidget {
                     if (showSyncBar) const SyncStatusBar(),
                   ],
                 ),
-                if (match.matchType == '代表戦')
-                  MatchDaihyoOverlay(
-                    onSelectDaihyo: () =>
-                        _showRepresentativeModal(context, match, teamMatches),
-                  ),
+                MatchDaihyoOverlay(
+                  match: match,
+                  onSelectDaihyo: () =>
+                      _showRepresentativeModal(context, match, teamMatches),
+                ),
                 MatchFloatingDockEntry(
                   tournamentId: match.tournamentId?.isNotEmpty == true
                       ? match.tournamentId!

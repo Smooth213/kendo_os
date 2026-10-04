@@ -45,6 +45,14 @@
     "/^grep -R --line-number --exclude-dir=\\.git --exclude-dir=build --exclude-dir=coverage --exclude-dir=\\.dart_tool 'Viewer Debug' \\. \\|\\| true$/": {
       "approve": true,
       "matchCommandLine": true
+    },
+    "/^flutter test test/widget/match_daihyo_overlay_test\\.dart$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^python3 scripts/check_gov_602_test_naming_convention\\.py$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
   },
   "yaml.schemas": {

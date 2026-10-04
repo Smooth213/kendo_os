@@ -82,6 +82,49 @@ void main() {
       expect(drawSymbolText.text.toPlainText(), '×');
     });
 
+    test('延長していない代表戦には延長表記を表示しないこと', () {
+      final matches = [
+        createMockMatch(
+          id: 'representative-match',
+          redName: '赤チーム : 山田',
+          whiteName: '白チーム : 鈴木',
+          redScore: 1,
+          matchType: '代表戦',
+          status: 'finished',
+        ),
+      ];
+
+      final result = PdfIndividualList.build('代表戦', matches, ttf, ttfBold);
+      final column = (result as pw.Container).child as pw.Column;
+      final rowContainer = column.children[1] as pw.Container;
+      final row = rowContainer.child as pw.Row;
+      final separatorText = (row.children[4] as pw.Padding).child as pw.Text;
+
+      expect(separatorText.text.toPlainText(), '-');
+    });
+
+    test('延長記録がある代表戦には延長表記を表示すること', () {
+      final matches = [
+        createMockMatch(
+          id: 'representative-match',
+          redName: '赤チーム : 山田',
+          whiteName: '白チーム : 鈴木',
+          redScore: 1,
+          matchType: '代表戦',
+          status: 'finished',
+          note: '延長戦',
+        ),
+      ];
+
+      final result = PdfIndividualList.build('代表戦', matches, ttf, ttfBold);
+      final column = (result as pw.Container).child as pw.Column;
+      final rowContainer = column.children[1] as pw.Container;
+      final row = rowContainer.child as pw.Row;
+      final separatorText = (row.children[4] as pw.Padding).child as pw.Text;
+
+      expect(separatorText.text.toPlainText(), '延長');
+    });
+
     test('ヘッダータイトルが正しく生成されること', () {
       // Case 1: Normal individual match
       final matches1 = [

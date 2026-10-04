@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_daihyo_overlay.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_view_only_notice_banner.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -52,6 +53,13 @@ void main() {
                 width: 800,
                 height: 600,
                 child: MatchDaihyoOverlay(
+                  match: const MatchModel(
+                    id: 'representative-match',
+                    matchType: '代表戦',
+                    redName: '赤チーム : 代表選手',
+                    whiteName: '白チーム : 代表選手',
+                    status: 'waiting',
+                  ),
                   onSelectDaihyo: () {
                     selected = true;
                   },

@@ -65,10 +65,7 @@ class PdfIndividualList {
       final noteStr = (m.note ?? '').toString();
       final typeStr = (m.matchType ?? '').toString();
       final isEncho =
-          isDone &&
-          (noteStr.contains('延長') ||
-              typeStr.contains('代表') ||
-              typeStr.contains('延長'));
+          isDone && (noteStr.contains('延長') || typeStr.contains('延長'));
 
       final ptsMap = PdfViewModel.calculatePointsRaw(m);
 
