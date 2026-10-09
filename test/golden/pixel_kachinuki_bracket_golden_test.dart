@@ -216,5 +216,117 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('勝ち抜き戦ブラケット：7人制・多人数戦（8試合連続展開・動的横幅拡張）の視覚的整合性が正しく検証されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1600, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      // 7人制・多人数戦の展開（8試合）
+      final matches = [
+        _makeMatchProjection(
+          id: 'k_multi_1',
+          redName: '紅組選抜 : 紅先鋒',
+          whiteName: '白組選抜 : 白先鋒',
+          redScore: 2,
+          whiteScore: 0,
+          redDisplays: const [
+            PointDisplay('メ', true),
+            PointDisplay('コ', false),
+          ],
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_2',
+          redName: '紅組選抜 : 紅先鋒',
+          whiteName: '白組選抜 : 白次鋒',
+          redScore: 1,
+          whiteScore: 0,
+          redDisplays: const [PointDisplay('メ', true)],
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_3',
+          redName: '紅組選抜 : 紅先鋒',
+          whiteName: '白組選抜 : 白五将',
+          redScore: 0,
+          whiteScore: 1,
+          whiteDisplays: const [PointDisplay('ド', true)],
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_4',
+          redName: '紅組選抜 : 紅次鋒',
+          whiteName: '白組選抜 : 白五将',
+          redScore: 0,
+          whiteScore: 0,
+          note: '引き分け',
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_5',
+          redName: '紅組選抜 : 紅五将',
+          whiteName: '白組選抜 : 白中堅',
+          redScore: 1,
+          whiteScore: 0,
+          redDisplays: const [PointDisplay('ツ', true)],
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_6',
+          redName: '紅組選抜 : 紅五将',
+          whiteName: '白組選抜 : 白三将',
+          redScore: 0,
+          whiteScore: 1,
+          note: '延長戦',
+          whiteDisplays: const [PointDisplay('メ', true)],
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_7',
+          redName: '紅組選抜 : 紅中堅',
+          whiteName: '白組選抜 : 白三将',
+          redScore: 2,
+          whiteScore: 0,
+          redDisplays: const [
+            PointDisplay('コ', true),
+            PointDisplay('メ', false),
+          ],
+        ),
+        _makeMatchProjection(
+          id: 'k_multi_8',
+          redName: '紅組選抜 : 紅中堅',
+          whiteName: '白組選抜 : 白副将',
+          redScore: 1,
+          whiteScore: 0,
+          redDisplays: const [PointDisplay('ド', true)],
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light(),
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 1400,
+                height: 250,
+                child: CustomPaint(
+                  painter: KachinukiBracketPainter(
+                    matches: matches,
+                    isDark: false,
+                  ),
+                  size: const Size(1400, 220),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CustomPaint), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

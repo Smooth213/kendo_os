@@ -241,7 +241,7 @@ void main() {
     // 柱2: 【適応保証 (Adaptation Guarantee)】
     // =========================================================================
     group('第2柱: スロット・ルール設定の適応保証', () {
-      test('スロット適応に関して、3人制と5人制で基準スロット定義および自動生成が正しく適応されること', () {
+      test('スロット適応に関して、3人制・5人制・多人数（7人制／それ以上）で基準スロット定義および自動生成が正しく適応されること', () {
         final slots3 = TournamentTeamAutoRegisterService.getBaseSlots(
           '勝ち抜き戦（3人制）',
         );
@@ -251,6 +251,20 @@ void main() {
           '勝ち抜き戦（5人制）',
         );
         expect(slots5, equals(['先鋒', '次鋒', '中堅', '副将', '大将']));
+
+        final slots7 = TournamentTeamAutoRegisterService.getBaseSlots(
+          '勝ち抜き戦（7人制）',
+        );
+        expect(slots7, equals(['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将']));
+
+        final slotsMore = TournamentTeamAutoRegisterService.getBaseSlots(
+          '勝ち抜き戦（それ以上）',
+          8,
+        );
+        expect(
+          slotsMore,
+          equals(['先鋒', '次鋒', '六将', '五将', '四将', '三将', '副将', '大将']),
+        );
 
         // 名簿照合によるスロット配置
         final List<PlayerModel> roster = [
@@ -627,6 +641,77 @@ void main() {
           rule,
         );
         expect(afterFinal, isNull, reason: '西軍5名全員敗退のため試合終了（null）となること');
+      });
+
+      test('7人制勝ち抜き戦において 初期試合生成から多人数勝ち抜きライフサイクルが正常に実行されること', () {
+        const rule = MatchRule(
+          isKachinuki: true,
+          matchTimeMinutes: 3.0,
+          positions: ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
+          teamName: '紅組',
+          category: '高校生の部',
+          kachinukiUnlimitedType: '大将対大将',
+        );
+
+        // 1. 初期試合生成（7名 vs 7名）
+        final initialMatches = OrderSetupMatchGenerator.generateMatches(
+          rule: rule,
+          opponentTeamInput: '白組',
+          selectedPlayers: {
+            0: '紅先鋒',
+            1: '紅次鋒',
+            2: '紅五将',
+            3: '紅中堅',
+            4: '紅三将',
+            5: '紅副将',
+            6: '紅大将',
+          },
+          opponentPlayers: {
+            0: '白先鋒',
+            1: '白次鋒',
+            2: '白五将',
+            3: '白中堅',
+            4: '白三将',
+            5: '白副将',
+            6: '白大将',
+          },
+          leagueTeamOrders: {},
+          leagueParticipants: [],
+          tournamentId: 'tour_kachinuki_7',
+          isOwnTeamRed: true,
+          isStartNow: true,
+          positions: ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
+          matchType: '勝ち抜き戦（7人制）',
+          baseOrder: 1.0,
+        );
+
+        expect(initialMatches.length, equals(1));
+        final bout1 = initialMatches.first;
+        expect(bout1.isKachinuki, isTrue);
+        expect(bout1.redName, equals('紅組 : 紅先鋒'));
+        expect(bout1.whiteName, equals('白組 : 白先鋒'));
+        expect(bout1.redRemaining.length, equals(6));
+        expect(bout1.whiteRemaining.length, equals(6));
+
+        // 2. 紅先鋒が白先鋒・白次鋒を連破（2人抜き）
+        final bout1Fin = bout1.copyWith(redScore: 2, whiteScore: 0);
+        final bout2 = domainService.generateNextKachinukiMatch(bout1Fin, rule)!;
+        expect(bout2.redName, equals('紅組 : 紅先鋒'));
+        expect(bout2.whiteName, equals('白組 : 白次鋒'));
+        expect(bout2.whiteRemaining.length, equals(5));
+
+        final bout2Fin = bout2.copyWith(redScore: 1, whiteScore: 0);
+        final bout3 = domainService.generateNextKachinukiMatch(bout2Fin, rule)!;
+        expect(bout3.redName, equals('紅組 : 紅先鋒'));
+        expect(bout3.whiteName, equals('白組 : 白五将'));
+        expect(bout3.whiteRemaining.length, equals(4));
+
+        // 3. 白五将が紅先鋒を破る（白五将残留、紅次鋒出場）
+        final bout3Fin = bout3.copyWith(redScore: 0, whiteScore: 2);
+        final bout4 = domainService.generateNextKachinukiMatch(bout3Fin, rule)!;
+        expect(bout4.redName, equals('紅組 : 紅次鋒'));
+        expect(bout4.whiteName, equals('白組 : 白五将'));
+        expect(bout4.redRemaining.length, equals(5));
       });
     });
   });

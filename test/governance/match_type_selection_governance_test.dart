@@ -47,13 +47,13 @@ void main() {
         );
       }
 
-      // candidateMatchTypes から旧「勝ち抜き戦」単体が除去され全9形式であること
+      // candidateMatchTypes から旧「勝ち抜き戦」単体が除去され全11形式であること
       expect(
         allCandidateTypes.contains('勝ち抜き戦'),
         isFalse,
         reason: 'candidateMatchTypes から単独の「勝ち抜き戦」が除去されていること',
       );
-      expect(allCandidateTypes.length, equals(9));
+      expect(allCandidateTypes.length, equals(11));
       expect(
         TeamRegistrationCategoryStep.extraMatchTypes.contains('勝ち抜き戦'),
         isFalse,
@@ -228,7 +228,7 @@ void main() {
     // [UI監査] チーム新規登録ウィザード (TeamRegistrationCategoryStep) の全形式網羅検証
     // =========================================================================
     test(
-      'UI監査に関して、 TeamRegistrationCategoryStep の main + extra で全9形式が完全に網羅されていること',
+      'UI監査に関して、 TeamRegistrationCategoryStep の main + extra で全11形式が完全に網羅されていること',
       () {
         final combined = [
           ...TeamRegistrationCategoryStep.mainMatchTypes,
@@ -248,7 +248,7 @@ void main() {
     // =========================================================================
     // [ドメイン整合性監査] 全形式に対するスロット数と自動判定の整合性検証
     // =========================================================================
-    test('ドメイン整合性に関して、 全9形式それぞれに対して基準スロットおよび自動判定が決定論的に動作すること', () {
+    test('ドメイン整合性に関して、 全11形式それぞれに対して基準スロットおよび自動判定が決定論的に動作すること', () {
       // 0. 旧形式の正規化検証
       expect(
         TournamentTeamAutoRegisterService.normalizeMatchType('勝ち抜き戦'),
@@ -257,6 +257,14 @@ void main() {
       expect(
         TournamentTeamAutoRegisterService.normalizeMatchType('勝ち抜き戦（3人制）'),
         equals('勝ち抜き戦（3人制）'),
+      );
+      expect(
+        TournamentTeamAutoRegisterService.normalizeMatchType('勝ち抜き戦（7人制）'),
+        equals('勝ち抜き戦（7人制）'),
+      );
+      expect(
+        TournamentTeamAutoRegisterService.normalizeMatchType('勝ち抜き戦（それ以上）'),
+        equals('勝ち抜き戦（それ以上）'),
       );
       // 1. 各試合形式の基準スロット定義の検証
       expect(TournamentTeamAutoRegisterService.getBaseSlots('個人戦'), ['選手']);
@@ -283,6 +291,25 @@ void main() {
       expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（3人制）'), [
         '先鋒',
         '中堅',
+        '大将',
+      ]);
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（7人制）'), [
+        '先鋒',
+        '次鋒',
+        '五将',
+        '中堅',
+        '三将',
+        '副将',
+        '大将',
+      ]);
+      expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦（それ以上）', 8), [
+        '先鋒',
+        '次鋒',
+        '六将',
+        '五将',
+        '四将',
+        '三将',
+        '副将',
         '大将',
       ]);
       expect(TournamentTeamAutoRegisterService.getBaseSlots('勝ち抜き戦'), [
@@ -341,6 +368,33 @@ void main() {
       expect(
         TournamentTeamAutoRegisterService.determineMatchType(eightMemberTeam),
         equals('団体戦（それ以上）'),
+      );
+
+      // 勝ち抜き戦の多人数（7人制・それ以上）の自動判定
+      final kachinukiSevenTeam = ParsedTeamOrder(
+        teamName: '勝ち抜き7人制チーム',
+        members: List.generate(
+          7,
+          (i) => ParsedTeamMember(position: '', name: '選手$i'),
+        ),
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(
+          kachinukiSevenTeam,
+        ),
+        equals('勝ち抜き戦（7人制）'),
+      );
+
+      final kachinukiMoreTeam = ParsedTeamOrder(
+        teamName: '勝ち抜き多人数チーム',
+        members: List.generate(
+          8,
+          (i) => ParsedTeamMember(position: '', name: '選手$i'),
+        ),
+      );
+      expect(
+        TournamentTeamAutoRegisterService.determineMatchType(kachinukiMoreTeam),
+        equals('勝ち抜き戦（それ以上）'),
       );
 
       // 2. matchType が明示指定されたチームはそのまま最優先されること

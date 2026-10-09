@@ -8,6 +8,12 @@ class BulkRuleDataHelper {
     if (m.isKachinuki ||
         m.matchType == '無限勝ち抜き' ||
         m.matchType.contains('勝ち抜き')) {
+      if (m.matchType.contains('それ以上')) {
+        return '勝ち抜き戦（それ以上）';
+      }
+      if (m.matchType.contains('7人制')) {
+        return '勝ち抜き戦（7人制）';
+      }
       if (m.matchType.contains('3人制')) {
         return '勝ち抜き戦（3人制）';
       }

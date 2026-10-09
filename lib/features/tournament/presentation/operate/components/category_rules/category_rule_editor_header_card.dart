@@ -191,16 +191,25 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
               'リーグ団体戦',
               '勝ち抜き戦（5人制）',
               '勝ち抜き戦（3人制）',
+              '勝ち抜き戦（7人制）',
+              '勝ち抜き戦（それ以上）',
             ];
             final effectiveMatchType = matchType == '勝ち抜き戦'
                 ? '勝ち抜き戦（5人制）'
                 : (availableTypes.contains(matchType)
                       ? matchType
-                      : (matchType.contains('3人制') && matchType.contains('勝ち抜き')
-                            ? '勝ち抜き戦（3人制）'
-                            : (matchType.contains('勝ち抜き')
-                                  ? '勝ち抜き戦（5人制）'
-                                  : '団体戦')));
+                      : (matchType.contains('それ以上') &&
+                                matchType.contains('勝ち抜き')
+                            ? '勝ち抜き戦（それ以上）'
+                            : (matchType.contains('7人制') &&
+                                      matchType.contains('勝ち抜き')
+                                  ? '勝ち抜き戦（7人制）'
+                                  : (matchType.contains('3人制') &&
+                                            matchType.contains('勝ち抜き')
+                                        ? '勝ち抜き戦（3人制）'
+                                        : (matchType.contains('勝ち抜き')
+                                              ? '勝ち抜き戦（5人制）'
+                                              : '団体戦')))));
 
             return DropdownButtonFormField<String>(
               initialValue: effectiveMatchType,
@@ -227,6 +236,14 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
                 DropdownMenuItem(
                   value: '勝ち抜き戦（3人制）',
                   child: Text('勝ち抜き戦（3人制）'),
+                ),
+                DropdownMenuItem(
+                  value: '勝ち抜き戦（7人制）',
+                  child: Text('勝ち抜き戦（7人制）'),
+                ),
+                DropdownMenuItem(
+                  value: '勝ち抜き戦（それ以上）',
+                  child: Text('勝ち抜き戦（それ以上）'),
                 ),
               ],
               onChanged: (val) {

@@ -37,14 +37,44 @@ REQUIRED_PATTERNS = [
         "candidateMatchTypes に 勝ち抜き戦（3人制） が含まれていること",
     ),
     (
+        "lib/features/tournament/domain/share_import/tournament_team_auto_register_service.dart",
+        "勝ち抜き戦（7人制）",
+        "candidateMatchTypes に 勝ち抜き戦（7人制） が含まれていること",
+    ),
+    (
+        "lib/features/tournament/domain/share_import/tournament_team_auto_register_service.dart",
+        "勝ち抜き戦（それ以上）",
+        "candidateMatchTypes に 勝ち抜き戦（それ以上） が含まれていること",
+    ),
+    (
         "lib/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart",
         "勝ち抜き戦（3人制）",
         "TeamRegistrationCategoryStep の mainMatchTypes に 勝ち抜き戦（3人制） が配置されていること",
     ),
     (
+        "lib/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart",
+        "勝ち抜き戦（7人制）",
+        "TeamRegistrationCategoryStep の extraMatchTypes に 勝ち抜き戦（7人制） が配置されていること",
+    ),
+    (
+        "lib/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart",
+        "勝ち抜き戦（それ以上）",
+        "TeamRegistrationCategoryStep の extraMatchTypes に 勝ち抜き戦（それ以上） が配置されていること",
+    ),
+    (
         "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
         "勝ち抜き戦（3人制）",
         "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦（3人制） が配置されていること",
+    ),
+    (
+        "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
+        "勝ち抜き戦（7人制）",
+        "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦（7人制） が配置されていること",
+    ),
+    (
+        "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
+        "勝ち抜き戦（それ以上）",
+        "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦（それ以上） が配置されていること",
     ),
     (
         "lib/features/tournament/presentation/components/kachinuki/kachinuki_bracket_painter.dart",

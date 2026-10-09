@@ -35,6 +35,8 @@ class TeamRegistrationCategoryStep extends StatelessWidget {
     'リーグ個人戦',
     '団体戦（7人制）',
     '団体戦（それ以上）',
+    '勝ち抜き戦（7人制）',
+    '勝ち抜き戦（それ以上）',
   ];
 
   const TeamRegistrationCategoryStep({
