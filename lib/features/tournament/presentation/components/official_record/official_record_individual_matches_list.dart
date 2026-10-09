@@ -14,6 +14,7 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
   final Color? cardColor;
   final bool isDark;
   final bool applySort;
+  final String highlightQuery;
 
   const OfficialRecordIndividualMatchesList({
     super.key,
@@ -22,6 +23,7 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
     this.cardColor,
     required this.isDark,
     required this.applySort,
+    this.highlightQuery = '',
   });
 
   @override
@@ -253,6 +255,7 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
       matches: matchItems,
       cardColor: cardColor,
       isDark: isDark,
+      highlightQuery: highlightQuery,
     );
   }
 }

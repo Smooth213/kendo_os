@@ -319,6 +319,13 @@ AUDIT_DEFINITIONS = [
         "name": "🛡️ 非同期 BuildContext マウント安全性完全保証規約",
         "cmd": ["python3", "scripts/check_gov_607_build_context_mounted_safety.py"],
     },
+    {
+        "id": 608,
+        "old_id": None,
+        "chapter_num": 6,
+        "name": "⚖️ CI環境パリティ ＆ Fast-Fail実行整合性完全保証規約",
+        "cmd": ["python3", "scripts/check_gov_608_ci_parity_fast_fail.py"],
+    },
 ]
 
 

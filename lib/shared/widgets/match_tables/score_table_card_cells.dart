@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/name_formatter.dart';
@@ -69,20 +70,47 @@ Widget buildScoreTableTeamResultCell(
   );
 }
 
-Widget buildScoreTableTeamCell(String name, Color color) => Center(
-  child: Padding(
-    padding: const EdgeInsets.all(AppSpacing.xs),
-    child: Text(
-      name,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        color: color,
-        fontWeight: AppFontWeight.bold,
-        fontSize: AppFontSize.caption,
+Widget buildScoreTableTeamCell(
+  String name,
+  Color color, {
+  String highlightQuery = '',
+  bool isDark = false,
+}) {
+  final cleanQuery = highlightQuery.trim().toLowerCase().replaceAll(
+    RegExp(r'\s+'),
+    '',
+  );
+  final cleanTeamName = name.toLowerCase().replaceAll(RegExp(r'\s+'), '');
+  final bool isHighlighted =
+      cleanQuery.isNotEmpty && cleanTeamName.contains(cleanQuery);
+  final highlightColor = isDark
+      ? const Color(0xFFFFD54F).withValues(alpha: 0.35)
+      : const Color(0xFFFFF59D);
+
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 200),
+    decoration: BoxDecoration(
+      color: isHighlighted ? highlightColor : Colors.transparent,
+      border: isHighlighted
+          ? Border.all(color: AppKendoColors.amber, width: 1.5)
+          : null,
+    ),
+    child: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: Text(
+          name,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color,
+            fontWeight: AppFontWeight.bold,
+            fontSize: AppFontSize.caption,
+          ),
+        ),
       ),
     ),
-  ),
-);
+  );
+}
 
 Widget buildScoreTableNameCell(
   String rawName,
@@ -90,6 +118,7 @@ Widget buildScoreTableNameCell(
   List<String> teamLastNames, {
   bool isDaihyo = false,
   VoidCallback? onTap,
+  String highlightQuery = '',
 }) {
   if (rawName.contains('欠員')) {
     return Container(
@@ -106,12 +135,48 @@ Widget buildScoreTableNameCell(
       teamLastNames.where((n) => n == parsed['last']).length > 1 &&
       parsed['first']!.isNotEmpty;
 
-  final cell = Container(
-    color: isDaihyo
-        ? (isDark
-              ? const Color(0xFFE53935).withValues(alpha: 0.15)
-              : const Color(0xFFFFF5F5))
-        : Colors.transparent,
+  final cleanQuery = highlightQuery.trim().toLowerCase().replaceAll(
+    RegExp(r'\s+'),
+    '',
+  );
+  final last = (parsed['last'] ?? '').toLowerCase();
+  final first = (parsed['first'] ?? '').toLowerCase();
+  final fullCombined = (last + first).replaceAll(RegExp(r'\s+'), '');
+  final rawClean = rawName.toLowerCase().replaceAll(RegExp(r'\s+'), '');
+  final initialDisplay = showInitial && first.isNotEmpty
+      ? '$last${first.substring(0, 1)}'
+      : last;
+
+  final bool isHighlighted =
+      cleanQuery.isNotEmpty &&
+      (rawClean.contains(cleanQuery) ||
+          fullCombined.contains(cleanQuery) ||
+          last.contains(cleanQuery) ||
+          first.contains(cleanQuery) ||
+          initialDisplay.contains(cleanQuery));
+
+  final highlightColor = isDark
+      ? const Color(0xFFFFD54F).withValues(alpha: 0.35)
+      : const Color(0xFFFFF59D);
+
+  Color cellBgColor = isDaihyo
+      ? (isDark
+            ? const Color(0xFFE53935).withValues(alpha: 0.15)
+            : const Color(0xFFFFF5F5))
+      : Colors.transparent;
+
+  if (isHighlighted) {
+    cellBgColor = highlightColor;
+  }
+
+  final cell = AnimatedContainer(
+    duration: const Duration(milliseconds: 200),
+    decoration: BoxDecoration(
+      color: cellBgColor,
+      border: isHighlighted
+          ? Border.all(color: AppKendoColors.amber, width: 1.5)
+          : null,
+    ),
     child: Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(

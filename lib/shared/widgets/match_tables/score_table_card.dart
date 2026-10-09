@@ -14,6 +14,7 @@ class ScoreTableCard extends StatelessWidget {
   final List<ScoreTableMatchItem> matches;
   final Color? cardColor;
   final bool isDark;
+  final String highlightQuery;
 
   const ScoreTableCard({
     super.key,
@@ -21,6 +22,7 @@ class ScoreTableCard extends StatelessWidget {
     required this.matches,
     this.cardColor,
     required this.isDark,
+    this.highlightQuery = '',
   });
 
   @override
@@ -36,6 +38,36 @@ class ScoreTableCard extends StatelessWidget {
         ? const Color(0xFFE53935).withValues(alpha: 0.15)
         : const Color(0xFFFFF5F5);
 
+    final cleanQuery = highlightQuery.trim().toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      '',
+    );
+    final bool isCardMatched =
+        cleanQuery.isNotEmpty &&
+        (info.headerTitle
+                .toLowerCase()
+                .replaceAll(RegExp(r'\s+'), '')
+                .contains(cleanQuery) ||
+            info.sideLabelRed
+                .toLowerCase()
+                .replaceAll(RegExp(r'\s+'), '')
+                .contains(cleanQuery) ||
+            info.sideLabelWhite
+                .toLowerCase()
+                .replaceAll(RegExp(r'\s+'), '')
+                .contains(cleanQuery) ||
+            matches.any(
+              (m) =>
+                  m.redName
+                      .toLowerCase()
+                      .replaceAll(RegExp(r'\s+'), '')
+                      .contains(cleanQuery) ||
+                  m.whiteName
+                      .toLowerCase()
+                      .replaceAll(RegExp(r'\s+'), '')
+                      .contains(cleanQuery),
+            ));
+
     // ⚡ 【Plan 1-3】RepaintBoundaryによる巨大スコアテーブルカードの描画キャッシュとラスタライズ分離
     return RepaintBoundary(
       child: Card(
@@ -47,7 +79,10 @@ class ScoreTableCard extends StatelessWidget {
         color: cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.large,
-          side: BorderSide(color: borderColor),
+          side: BorderSide(
+            color: isCardMatched ? AppKendoColors.amber : borderColor,
+            width: isCardMatched ? 1.5 : 1.0,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -168,6 +203,8 @@ class ScoreTableCard extends StatelessWidget {
                           isDark
                               ? const Color(0xFFE53935)
                               : const Color(0xFFE53935),
+                          highlightQuery: highlightQuery,
+                          isDark: isDark,
                         ),
                         ...matches.map(
                           (m) => buildScoreTableNameCell(
@@ -182,6 +219,7 @@ class ScoreTableCard extends StatelessWidget {
                                 .toList(),
                             isDaihyo: m.matchType == '代表戦',
                             onTap: m.onTap,
+                            highlightQuery: highlightQuery,
                           ),
                         ),
                         buildScoreTableSummaryCell(
@@ -222,6 +260,8 @@ class ScoreTableCard extends StatelessWidget {
                           isDark
                               ? context.appColors.subTextColor
                               : context.appColors.subTextColor,
+                          highlightQuery: highlightQuery,
+                          isDark: isDark,
                         ),
                         ...matches.map(
                           (m) => buildScoreTableNameCell(
@@ -236,6 +276,7 @@ class ScoreTableCard extends StatelessWidget {
                                 .toList(),
                             isDaihyo: m.matchType == '代表戦',
                             onTap: m.onTap,
+                            highlightQuery: highlightQuery,
                           ),
                         ),
                         buildScoreTableSummaryCell(

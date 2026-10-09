@@ -34,6 +34,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
   final bool isBottomSheet;
   final bool isReadOnly;
   final WidgetRef ref;
+  final String highlightQuery;
 
   const OfficialRecordCategoryTabView({
     super.key,
@@ -57,6 +58,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
     required this.isBottomSheet,
     required this.isReadOnly,
     required this.ref,
+    this.highlightQuery = '',
   });
 
   void _handleExport(BuildContext context, String type) {
@@ -146,6 +148,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
                             bouts,
                             cardColor: cardColor,
                             isDark: isDark,
+                            highlightQuery: highlightQuery,
                           ),
                 );
               } else if (matches.isNotEmpty &&
@@ -161,6 +164,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
                   cardColor: cardColor,
                   isDark: isDark,
                   applySort: true,
+                  highlightQuery: highlightQuery,
                 );
               } else {
                 return OfficialRecordScoreTableBuilder.buildScoreTable(
@@ -168,6 +172,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
                   matches,
                   cardColor: cardColor,
                   isDark: isDark,
+                  highlightQuery: highlightQuery,
                 );
               }
             },

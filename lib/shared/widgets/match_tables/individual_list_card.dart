@@ -51,6 +51,7 @@ class IndividualListCard extends StatelessWidget {
   final List<IndividualMatchItem> matches;
   final Color? cardColor;
   final bool isDark;
+  final String highlightQuery;
 
   const IndividualListCard({
     super.key,
@@ -59,6 +60,7 @@ class IndividualListCard extends StatelessWidget {
     required this.matches,
     this.cardColor,
     required this.isDark,
+    this.highlightQuery = '',
   });
 
   @override
@@ -71,6 +73,36 @@ class IndividualListCard extends StatelessWidget {
     final headerBgColor = themeColors.inputBackground;
     final textColor = themeColors.textColor;
 
+    final cleanQuery = highlightQuery.trim().toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      '',
+    );
+    final bool isCardMatched =
+        cleanQuery.isNotEmpty &&
+        (headerTitle
+                .toLowerCase()
+                .replaceAll(RegExp(r'\s+'), '')
+                .contains(cleanQuery) ||
+            matches.any(
+              (m) =>
+                  m.redName
+                      .toLowerCase()
+                      .replaceAll(RegExp(r'\s+'), '')
+                      .contains(cleanQuery) ||
+                  m.whiteName
+                      .toLowerCase()
+                      .replaceAll(RegExp(r'\s+'), '')
+                      .contains(cleanQuery) ||
+                  m.redTeam
+                      .toLowerCase()
+                      .replaceAll(RegExp(r'\s+'), '')
+                      .contains(cleanQuery) ||
+                  m.whiteTeam
+                      .toLowerCase()
+                      .replaceAll(RegExp(r'\s+'), '')
+                      .contains(cleanQuery),
+            ));
+
     // ⚡ 【Plan 1-3】RepaintBoundaryによる個人戦リストカードの描画キャッシュとラスタライズ分離
     return RepaintBoundary(
       child: Card(
@@ -82,7 +114,10 @@ class IndividualListCard extends StatelessWidget {
         color: cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.large,
-          side: BorderSide(color: borderColor),
+          side: BorderSide(
+            color: isCardMatched ? AppKendoColors.amber : borderColor,
+            width: isCardMatched ? 1.5 : 1.0,
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -260,6 +295,36 @@ class IndividualListCard extends StatelessWidget {
 
                 if (m.onTap != null) {
                   rowContent = InkWell(onTap: m.onTap, child: rowContent);
+                }
+
+                final bool isRowMatched =
+                    cleanQuery.isNotEmpty &&
+                    (m.redName
+                            .toLowerCase()
+                            .replaceAll(RegExp(r'\s+'), '')
+                            .contains(cleanQuery) ||
+                        m.whiteName
+                            .toLowerCase()
+                            .replaceAll(RegExp(r'\s+'), '')
+                            .contains(cleanQuery) ||
+                        m.redTeam
+                            .toLowerCase()
+                            .replaceAll(RegExp(r'\s+'), '')
+                            .contains(cleanQuery) ||
+                        m.whiteTeam
+                            .toLowerCase()
+                            .replaceAll(RegExp(r'\s+'), '')
+                            .contains(cleanQuery));
+
+                final rowHighlightColor = isDark
+                    ? const Color(0xFFFFD54F).withValues(alpha: 0.25)
+                    : const Color(0xFFFFF9C4);
+
+                if (isRowMatched) {
+                  rowContent = Container(
+                    color: rowHighlightColor,
+                    child: rowContent,
+                  );
                 }
 
                 if (m.isSummary && !m.hasOwnTeam) {

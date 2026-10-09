@@ -10,11 +10,13 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 export 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_category_tab_view.dart'
     show isExportingProvider, exportingTypeProvider;
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
@@ -75,6 +77,15 @@ class OfficialRecordScreen extends ConsumerStatefulWidget {
 
 class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
   OfficialRecordExportScope _exportScope = OfficialRecordExportScope.current;
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -265,8 +276,54 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         isBottomSheet: widget.isBottomSheet,
         isReadOnly: permissions.isReadOnly,
         ref: ref,
+        highlightQuery: _searchQuery,
       );
     }).toList();
+
+    final searchTextField = AppTextField(
+      controller: _searchController,
+      autofocus: true,
+      hintText: '選手名・チーム名を検索...',
+      suffixIcon: _searchQuery.isNotEmpty
+          ? IconButton(
+              icon: Icon(Icons.cancel, size: 18, color: themeColors.hintColor),
+              tooltip: '入力をクリア',
+              onPressed: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+            )
+          : null,
+      onChanged: (val) => setState(() => _searchQuery = val.trim()),
+    );
+
+    final searchActions = [
+      if (!_isSearching)
+        IconButton(
+          icon: const Icon(Icons.search),
+          tooltip: '選手・チームを検索',
+          color: headerTextColor,
+          onPressed: () => setState(() => _isSearching = true),
+        )
+      else
+        IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: '検索終了',
+          color: headerTextColor,
+          onPressed: () {
+            _searchController.clear();
+            setState(() {
+              _isSearching = false;
+              _searchQuery = '';
+            });
+          },
+        ),
+      if (!_isSearching)
+        ManualHelpButton(
+          manualPath: 'docs/manuals/operator/official_record.md',
+          color: headerTextColor,
+        ),
+    ];
 
     return DefaultTabController(
       length: categories.length,
@@ -280,7 +337,48 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
                     icon: Icons.table_chart_rounded,
                     iconColor: AppKendoColors.amber,
                     onFullScreen: widget.onFullScreen,
+                    extraActions: [
+                      IconButton(
+                        icon: Icon(
+                          _isSearching ? Icons.close : Icons.search,
+                          size: 20,
+                          color: headerTextColor,
+                        ),
+                        onPressed: () {
+                          if (_isSearching) {
+                            _searchController.clear();
+                            setState(() {
+                              _isSearching = false;
+                              _searchQuery = '';
+                            });
+                          } else {
+                            setState(() => _isSearching = true);
+                          }
+                        },
+                      ),
+                    ],
                   ),
+                  if (_isSearching)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
+                        decoration: BoxDecoration(
+                          color: themeColors.inputBackground,
+                          borderRadius: AppRadius.medium,
+                          border: Border.all(
+                            color: AppKendoColors.amber,
+                            width: 1,
+                          ),
+                        ),
+                        child: searchTextField,
+                      ),
+                    ),
                   tabWidget,
                   Expanded(child: TabBarView(children: tabViews)),
                 ],
@@ -290,8 +388,10 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               child: Scaffold(
                 backgroundColor: AppKendoColors.transparent,
                 appBar: AppHeader(
-                  title: screenTitle,
+                  title: _isSearching ? null : screenTitle,
+                  titleWidget: _isSearching ? searchTextField : null,
                   backgroundColor: cardColor,
+                  actions: searchActions,
                   bottom: tabWidget,
                 ),
                 body: Stack(

@@ -11,6 +11,7 @@ class OfficialRecordScoreTableBuilder {
     List<MatchModel> matches, {
     Color? cardColor,
     bool isDark = false,
+    String highlightQuery = '',
   }) {
     if (matches.isEmpty) return const SizedBox.shrink();
 
@@ -129,6 +130,7 @@ class OfficialRecordScoreTableBuilder {
       matches: matchItems,
       cardColor: cardColor,
       isDark: isDark,
+      highlightQuery: highlightQuery,
     );
   }
 }
