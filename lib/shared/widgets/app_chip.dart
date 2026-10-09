@@ -42,10 +42,11 @@ class AppChoiceChip extends StatelessWidget {
 
     final effectiveSelectedColor =
         customSelectedColor ?? selectedColor ?? themeColors.softAccent;
-    final unselectedTextColor = themeColors.textColor;
+    final unselectedTextColor = labelStyle?.color ?? themeColors.textColor;
     final effectiveTextColor = selected
         ? (customTextColor ??
-              (customSelectedColor != null
+              labelStyle?.color ??
+              ((customSelectedColor != null || selectedColor != null)
                   ? AppKendoColors.pureWhite
                   : themeColors.primaryAccent))
         : unselectedTextColor;
@@ -59,7 +60,7 @@ class AppChoiceChip extends StatelessWidget {
           fontSize: AppFontSize.bodySmall,
           fontWeight: selected ? AppFontWeight.semiBold : AppFontWeight.regular,
           color: effectiveTextColor,
-        ),
+        ).merge(labelStyle),
         child: label,
       ),
       selected: selected,

@@ -318,13 +318,22 @@ class LocalMatchRepository {
   }
 
   Future<void> deleteMatch(String matchId) async {
-    if (_isar == null) return;
+    await deleteMatchesBulk([matchId]);
+  }
+
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    if (_isar == null || matchIds.isEmpty) return;
     await _isar.writeTxn(() async {
-      await _isar.matchEntitys.filter().firestoreIdEqualTo(matchId).deleteAll();
-      await _isar.matchEventArchiveEntitys
-          .filter()
-          .matchIdEqualTo(matchId)
-          .deleteAll();
+      for (final matchId in matchIds) {
+        await _isar.matchEntitys
+            .filter()
+            .firestoreIdEqualTo(matchId)
+            .deleteAll();
+        await _isar.matchEventArchiveEntitys
+            .filter()
+            .matchIdEqualTo(matchId)
+            .deleteAll();
+      }
     });
   }
 

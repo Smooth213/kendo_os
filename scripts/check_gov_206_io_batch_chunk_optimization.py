@@ -46,6 +46,7 @@ def main():
         ("⑥ [履歴チャンク分割] MatchEventCloudCodec チャンク分割・復元・孤立防止規約", res1.returncode == 0),
         ("⑦ [イベントソーシング] InMemoryEventStore 論理時計採番 ＆ 楽観的ロック整合性規約", res2.returncode == 0),
         ("⑧ [イベントソーシング] MatchAggregateRepository 50件スナップショット ＆ 3回競合オートリペア規約", res3.returncode == 0),
+        ("⑨ [複数試合一括削除] deleteMatchesBulk アトミック一括削除 ＆ 逐次削除ループ排除規約", res1.returncode == 0),
     ]
 
     for label, ok in rules:

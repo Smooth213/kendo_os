@@ -188,5 +188,43 @@ void main() {
       expect(repository.contains('batch.delete(chunk.reference)'), isTrue);
       expect(rules.contains('match /events/{eventChunkId}'), isTrue);
     });
+
+    test('複数試合一括削除に関して、 deleteMatchesBulk によるアトミック一括削除がリポジトリおよびUI層に適用されていること', () {
+      final localRepoFile = File(
+        'lib/shared/infrastructure/repository/local_match_repository.dart',
+      );
+      final remoteRepoFile = File(
+        'lib/shared/infrastructure/repository/match_repository.dart',
+      );
+      final cmdProviderFile = File(
+        'lib/features/tournament/presentation/operate/providers/match_command_provider.dart',
+      );
+      final groupCardFile = File(
+        'lib/features/tournament/presentation/operate/components/timeline/timeline_match_group_card.dart',
+      );
+
+      expect(localRepoFile.existsSync(), isTrue);
+      expect(remoteRepoFile.existsSync(), isTrue);
+      expect(cmdProviderFile.existsSync(), isTrue);
+      expect(groupCardFile.existsSync(), isTrue);
+
+      final localContent = localRepoFile.readAsStringSync();
+      final remoteContent = remoteRepoFile.readAsStringSync();
+      final cmdContent = cmdProviderFile.readAsStringSync();
+      final groupCardContent = groupCardFile.readAsStringSync();
+
+      expect(localContent.contains('Future<void> deleteMatchesBulk('), isTrue);
+      expect(remoteContent.contains('Future<void> deleteMatchesBulk('), isTrue);
+      expect(cmdContent.contains('Future<void> deleteMatchesBulk('), isTrue);
+      expect(groupCardContent.contains('deleteMatchesBulk('), isTrue);
+
+      // UI層で逐次削除ループ（for ... deleteMatch）が禁止されていること
+      expect(
+        RegExp(
+          r'for\s*\([^)]+\)\s*\{[^}]*deleteMatch\(',
+        ).hasMatch(groupCardContent),
+        isFalse,
+      );
+    });
   });
 }

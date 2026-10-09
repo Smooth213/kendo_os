@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
@@ -150,10 +151,27 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           ),
                         );
                         if (confirm == true) {
-                          for (var m in groupList) {
+                          final targetIds = <String>{};
+                          for (final m in groupList) {
+                            if (m.id.isNotEmpty) targetIds.add(m.id);
+                          }
+                          final allMatches = ref.read(matchListProvider);
+                          for (final m in allMatches) {
+                            if (m.tournamentId == tournamentId &&
+                                (m.groupName == groupId ||
+                                    (m.groupName != null &&
+                                        m.groupName!.isNotEmpty &&
+                                        m.groupName ==
+                                            groupList
+                                                .firstOrNull
+                                                ?.groupName))) {
+                              targetIds.add(m.id);
+                            }
+                          }
+                          if (targetIds.isNotEmpty) {
                             await ref
                                 .read(matchCommandProvider)
-                                .deleteMatch(m.id);
+                                .deleteMatchesBulk(targetIds.toList());
                           }
                         }
                       },

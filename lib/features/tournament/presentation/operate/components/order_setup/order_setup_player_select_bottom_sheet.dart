@@ -203,9 +203,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                 hintText: '名前で絞り込み...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
-                fillColor: widget.isDark
-                    ? const Color(0xFFFFFFFF)
-                    : const Color(0xFFF2F2F7),
+                fillColor: widget.themeColors.inputBackground,
                 border: OutlineInputBorder(
                   borderRadius: AppRadius.small,
                   borderSide: BorderSide.none,

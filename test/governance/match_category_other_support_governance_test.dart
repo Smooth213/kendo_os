@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_filter_helper.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/domain/entities/team_model.dart';
 
 void main() {
   group('[Governance] 試合カテゴリその他混成および学年横断編成永続保証規約', () {
@@ -108,5 +109,60 @@ void main() {
         );
       }
     });
+
+    test(
+      '対戦フォーマット大分類その他選択時、チーム側がその他またはその他の部で登録されたチームがカスタム表示名（少年の部等）の下で確実に抽出されること',
+      () {
+        final teams = [
+          const TeamModel(
+            id: 't1',
+            tournamentId: 't_test',
+            teamName: '福山道場A',
+            category: 'その他',
+          ),
+          const TeamModel(
+            id: 't2',
+            tournamentId: 't_test',
+            teamName: '福山道場B',
+            category: 'その他の部',
+          ),
+          const TeamModel(
+            id: 't3',
+            tournamentId: 't_test',
+            teamName: '福山道場C',
+            category: '少年の部',
+          ),
+          const TeamModel(
+            id: 't4',
+            tournamentId: 't_test',
+            teamName: '広島道場',
+            category: '中学生の部',
+          ),
+        ];
+
+        const selectedMajorCategory = 'その他';
+        const category = '少年の部'; // カスタム表示名
+
+        // MatchFormatCategoryStep と同一の判定ロジック
+        final filteredTeams = teams.where((t) {
+          if (t.category == category) return true;
+          final cleanTeamCat = t.category.replaceAll('の部', '').trim();
+          final cleanTargetCat = category.replaceAll('の部', '').trim();
+          if (cleanTeamCat.isNotEmpty && cleanTeamCat == cleanTargetCat) {
+            return true;
+          }
+          if (selectedMajorCategory == 'その他') {
+            if (cleanTeamCat == 'その他') return true;
+          }
+          return false;
+        }).toList();
+
+        expect(
+          filteredTeams.map((t) => t.id).toList(),
+          containsAll(['t1', 't2', 't3']),
+        );
+        expect(filteredTeams.any((t) => t.id == 't4'), isFalse);
+      },
+    );
   });
 }

@@ -165,6 +165,7 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
       '中学生女子の部',
       '高校生の部',
       '一般の部',
+      'その他',
     ];
 
     final accentColor =

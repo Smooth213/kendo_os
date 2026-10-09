@@ -1356,6 +1356,33 @@ void main() {
         );
       },
     );
+
+    test(
+      '入力欄視認性: InputDecoration の fillColor においてダークモード時に白背景 (0xFFFFFFFF / Colors.white) が指定されていないこと',
+      () {
+        final violations = <String>[];
+        final pattern = RegExp(
+          r'fillColor:\s*[^,\n]*isDark\s*\?[^,\n]*(?:0xFFFFFFFF|Colors\.white)(?!\s*\.\s*(?:withAlpha|withOpacity|withValues))',
+        );
+
+        for (final file in dartFiles) {
+          final content = file.readAsStringSync();
+          if (pattern.hasMatch(content)) {
+            violations.add(file.path);
+          }
+        }
+
+        expect(
+          violations,
+          isEmpty,
+          reason:
+              '入力欄の fillColor にダークモード時の白背景が指定されています。'
+              'ダークモードの入力文字（白）と重なって完全不可視になるため、'
+              'themeColors.inputBackground 等を使用してください。\n'
+              '違反ファイル:\n${violations.join('\n')}',
+        );
+      },
+    );
   });
 }
 

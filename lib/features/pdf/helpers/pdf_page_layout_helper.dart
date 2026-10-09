@@ -361,9 +361,25 @@ class PdfPageLayoutHelper {
           m.matchType == '選手' ||
           m.matchType.contains('個人戦'),
     );
+
+    // 7人制以上の多人数戦（代表戦を除くポジション数が5超、または総試合数が6超）判定
+    final regularMatchesCount = matches
+        .where((m) => m.matchType != '代表戦')
+        .length;
+    final bool isWide1 =
+        !isIndiv && (regularMatchesCount > 5 || matches.length > 6);
+
     final pw.Widget table1 = isIndiv
         ? PdfIndividualList.build(groupName, matches, ttf, ttfBold)
         : PdfTeamTable.build(groupName, matches, ttf, ttfBold);
+
+    if (isWide1) {
+      // 多人数戦の場合は1行ぶち抜き（フル幅横展開）で単独配置
+      contentWidgets.add(table1);
+      contentWidgets.add(pw.SizedBox(height: 16));
+      return i;
+    }
+
     pw.Widget table2 = pw.SizedBox();
 
     if (i + 1 < groupDataList.length) {
@@ -379,13 +395,22 @@ class PdfPageLayoutHelper {
             nextIsKachinuki = nextFirst.isKachinuki;
           } catch (_) {}
         }
-        if (!(nextIsKachinuki || nextFirst.note.contains('[リーグ戦]'))) {
-          final isNextIndiv = nextMatches.any(
-            (m) =>
-                m.matchType == 'individual' ||
-                m.matchType == '選手' ||
-                m.matchType.contains('個人戦'),
-          );
+
+        final isNextIndiv = nextMatches.any(
+          (m) =>
+              m.matchType == 'individual' ||
+              m.matchType == '選手' ||
+              m.matchType.contains('個人戦'),
+        );
+        final nextRegularCount = nextMatches
+            .where((m) => m.matchType != '代表戦')
+            .length;
+        final bool isWide2 =
+            !isNextIndiv && (nextRegularCount > 5 || nextMatches.length > 6);
+
+        if (!(nextIsKachinuki ||
+            nextFirst.note.contains('[リーグ戦]') ||
+            isWide2)) {
           table2 = isNextIndiv
               ? PdfIndividualList.build(
                   nextGroup['groupName'],

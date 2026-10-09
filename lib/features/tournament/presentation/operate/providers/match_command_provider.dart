@@ -92,43 +92,55 @@ class MatchCommandService {
   }
 
   Future<void> deleteMatch(String matchId) async {
+    await deleteMatchesBulk([matchId]);
+  }
+
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    if (matchIds.isEmpty) return;
+    final idsSet = matchIds.toSet();
+
     // ignore: invalid_use_of_visible_for_testing_member
     if (kIsWeb || debugIsWebOverride) {
       final currentMatches = ref.read(webCurrentTournamentMatchesProvider);
 
-      final matchToDelete = currentMatches.firstWhere(
-        (m) => m.id == matchId,
-        orElse: () => const MatchModel(
-          id: '',
-          status: '',
-          matchType: '',
-          redName: '',
-          whiteName: '',
-        ),
-      );
-      if (matchToDelete.id.isNotEmpty) {
-        if (matchToDelete.tournamentId != null &&
-            matchToDelete.tournamentId!.isNotEmpty &&
-            matchToDelete.tournamentId != 'default_tournament') {
-          ref.read(currentTournamentIdProvider.notifier).state =
-              matchToDelete.tournamentId!;
-        }
-        if (matchToDelete.organizationId.isNotEmpty &&
-            matchToDelete.organizationId != 'default_org') {
-          ref.read(currentDojoIdProvider.notifier).state =
-              matchToDelete.organizationId;
+      for (final matchId in matchIds) {
+        final matchToDelete = currentMatches.firstWhere(
+          (m) => m.id == matchId,
+          orElse: () => const MatchModel(
+            id: '',
+            status: '',
+            matchType: '',
+            redName: '',
+            whiteName: '',
+          ),
+        );
+        if (matchToDelete.id.isNotEmpty) {
+          if (matchToDelete.tournamentId != null &&
+              matchToDelete.tournamentId!.isNotEmpty &&
+              matchToDelete.tournamentId != 'default_tournament') {
+            ref.read(currentTournamentIdProvider.notifier).state =
+                matchToDelete.tournamentId!;
+          }
+          if (matchToDelete.organizationId.isNotEmpty &&
+              matchToDelete.organizationId != 'default_org') {
+            ref.read(currentDojoIdProvider.notifier).state =
+                matchToDelete.organizationId;
+          }
         }
       }
 
       final updatedMatches = currentMatches
-          .where((m) => m.id != matchId)
+          .where((m) => !idsSet.contains(m.id))
           .toList();
       ref.read(webCurrentTournamentMatchesProvider.notifier).state =
           updatedMatches;
 
-      await ref.read(matchRepositoryProvider).deleteMatch(matchId);
+      await ref.read(matchRepositoryProvider).deleteMatchesBulk(matchIds);
     } else {
-      await ref.read(localMatchRepositoryProvider).deleteMatch(matchId);
+      await ref.read(localMatchRepositoryProvider).deleteMatchesBulk(matchIds);
+      try {
+        await ref.read(matchRepositoryProvider).deleteMatchesBulk(matchIds);
+      } catch (_) {}
     }
   }
 

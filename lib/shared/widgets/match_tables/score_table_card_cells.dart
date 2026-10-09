@@ -75,6 +75,7 @@ Widget buildScoreTableTeamCell(
   Color color, {
   String highlightQuery = '',
   bool isDark = false,
+  bool isMultiPlayer = false,
 }) {
   final cleanQuery = highlightQuery.trim().toLowerCase().replaceAll(
     RegExp(r'\s+'),
@@ -86,6 +87,10 @@ Widget buildScoreTableTeamCell(
   final highlightColor = isDark
       ? const Color(0xFFFFD54F).withValues(alpha: 0.35)
       : const Color(0xFFFFF59D);
+
+  final double fontSize = isMultiPlayer
+      ? (name.length > 8 ? 9.5 : 10.5)
+      : AppFontSize.caption;
 
   return AnimatedContainer(
     duration: const Duration(milliseconds: 200),
@@ -104,7 +109,7 @@ Widget buildScoreTableTeamCell(
           style: TextStyle(
             color: color,
             fontWeight: AppFontWeight.bold,
-            fontSize: AppFontSize.caption,
+            fontSize: fontSize,
           ),
         ),
       ),

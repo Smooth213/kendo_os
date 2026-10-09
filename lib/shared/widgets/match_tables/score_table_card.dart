@@ -68,6 +68,8 @@ class ScoreTableCard extends StatelessWidget {
                       .contains(cleanQuery),
             ));
 
+    final bool isMultiPlayer = matches.length > 5;
+
     // ⚡ 【Plan 1-3】RepaintBoundaryによる巨大スコアテーブルカードの描画キャッシュとラスタライズ分離
     return RepaintBoundary(
       child: Card(
@@ -148,7 +150,7 @@ class ScoreTableCard extends StatelessWidget {
                 Table(
                   border: TableBorder.all(color: borderColor, width: 1),
                   columnWidths: {
-                    0: const FlexColumnWidth(1.2),
+                    0: FlexColumnWidth(isMultiPlayer ? 1.6 : 1.2),
                     for (int i = 1; i <= matches.length; i++)
                       i: const FlexColumnWidth(1.0),
                     matches.length + 1: const FlexColumnWidth(0.8),
@@ -205,6 +207,7 @@ class ScoreTableCard extends StatelessWidget {
                               : const Color(0xFFE53935),
                           highlightQuery: highlightQuery,
                           isDark: isDark,
+                          isMultiPlayer: isMultiPlayer,
                         ),
                         ...matches.map(
                           (m) => buildScoreTableNameCell(
@@ -262,6 +265,7 @@ class ScoreTableCard extends StatelessWidget {
                               : context.appColors.subTextColor,
                           highlightQuery: highlightQuery,
                           isDark: isDark,
+                          isMultiPlayer: isMultiPlayer,
                         ),
                         ...matches.map(
                           (m) => buildScoreTableNameCell(

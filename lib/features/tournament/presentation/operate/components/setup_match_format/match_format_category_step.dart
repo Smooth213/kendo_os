@@ -180,9 +180,26 @@ class MatchFormatCategoryStep extends ConsumerWidget {
             .watch(registeredTeamsProvider(tournamentId))
             .when(
               data: (teams) {
-                final filteredTeams = teams
-                    .where((t) => t.category == category)
-                    .toList();
+                final filteredTeams = teams.where((t) {
+                  // 1. 完全一致
+                  if (t.category == category) return true;
+
+                  // 2. 「の部」のゆらぎ吸収（例:「その他」と「その他の部」）
+                  final cleanTeamCat = t.category.replaceAll('の部', '').trim();
+                  final cleanTargetCat = category.replaceAll('の部', '').trim();
+                  if (cleanTeamCat.isNotEmpty &&
+                      cleanTeamCat == cleanTargetCat) {
+                    return true;
+                  }
+
+                  // 3. 大分類が「その他」の場合、チーム側で「その他」として登録されたチームは、
+                  // カスタム表示カテゴリ名（例:「少年の部」）に関わらず同一の「その他」グループとしてマッチ
+                  if (selectedMajorCategory == 'その他') {
+                    if (cleanTeamCat == 'その他') return true;
+                  }
+
+                  return false;
+                }).toList();
 
                 if (filteredTeams.isEmpty) {
                   return Container(

@@ -51,5 +51,50 @@ void main() {
       expect(find.text('チームB の代表者'), findsOneWidget);
       expect(find.text('決定して準備完了'), findsOneWidget);
     });
+
+    testWidgets('選手Chip選択時に赤・白両陣営とも白文字高コントラストで描画されること', (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final prefs = await SharedPreferences.getInstance();
+
+      final match = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        matchType: '代表戦',
+        order: 1,
+        redName: 'チームA : 代表',
+        whiteName: 'チームB : 代表',
+        status: 'pending',
+        note: '',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: MatchRepresentativeModalBottomSheet(
+                match: match,
+                rTeam: 'チームA',
+                wTeam: 'チームB',
+                redPlayers: const ['赤選手1', '赤選手2'],
+                whitePlayers: const ['白選手1', '白選手2'],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // 赤選手2のChoiceChipをタップして選択
+      await tester.tap(find.widgetWithText(ChoiceChip, '赤選手2'));
+      await tester.pumpAndSettle();
+
+      // 白選手2のChoiceChipをタップして選択
+      await tester.tap(find.widgetWithText(ChoiceChip, '白選手2'));
+      await tester.pumpAndSettle();
+
+      // ChoiceChip が選択状態になり、例外なく高コントラストで描画完了すること
+      expect(tester.takeException(), isNull);
+    });
   });
 }

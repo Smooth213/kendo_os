@@ -202,5 +202,58 @@ void main() {
         1,
       );
     });
+
+    test('多人数戦（5人制・7人制・11人制）におけるテーブル寸法とA4枠内収容が数学的に保証されること', () {
+      List<MatchModel> generateMatches(int count) {
+        final posList = [
+          '先鋒',
+          '次鋒',
+          '五将',
+          '中堅',
+          '三将',
+          '副将',
+          '大将',
+          '八将',
+          '九将',
+          '十将',
+          '十一将',
+        ];
+        return List.generate(count, (i) {
+          final pos = i < posList.length ? posList[i] : '選手$i';
+          return createMockMatch(
+            id: 'm_$i',
+            redName: '福山市剣道連盟:山田',
+            whiteName: '廿日市剣道連盟:佐藤',
+            matchType: pos,
+          );
+        });
+      }
+
+      // 1. 5人制 (isWide == false) -> 通常レイアウト
+      final fiveMatches = generateMatches(5);
+      final widget5 = PdfTeamTable.build('5人制', fiveMatches, ttf, ttfBold);
+      expect(widget5, isA<pw.Container>());
+
+      // 2. 7人制 (isWide == true, 自然幅 72 + 7*36 + 36 = 360pt < 490pt)
+      final sevenMatches = generateMatches(7);
+      final widget7 = PdfTeamTable.build('7人制', sevenMatches, ttf, ttfBold);
+      expect(widget7, isA<pw.Container>());
+      final container7 = widget7 as pw.Container;
+      final column7 = container7.child as pw.Column;
+      final tableBox7 = column7.children[1] as pw.SizedBox;
+      // 自然な適正幅でコンパクトに描画されること (無理に490ptまで引き伸ばされない)
+      expect(tableBox7.width, lessThan(490.0));
+      expect(tableBox7.width, 360.0);
+
+      // 3. 11人制 (isWide == true, 自然幅 72 + 11*36 + 36 = 504pt > 490pt -> スケールダウン)
+      final elevenMatches = generateMatches(11);
+      final widget11 = PdfTeamTable.build('11人制', elevenMatches, ttf, ttfBold);
+      expect(widget11, isA<pw.Container>());
+      final container11 = widget11 as pw.Container;
+      final column11 = container11.child as pw.Column;
+      final tableBox11 = column11.children[1] as pw.SizedBox;
+      // A4最大幅 (490.0pt) を超えずに完全収容されること
+      expect(tableBox11.width, closeTo(490.0, 0.01));
+    });
   });
 }

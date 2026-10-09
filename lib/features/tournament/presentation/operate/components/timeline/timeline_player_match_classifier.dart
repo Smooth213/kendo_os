@@ -40,8 +40,19 @@ class TimelinePlayerMatchClassifier {
               firstMatch.matchType == '選手' ||
               firstMatch.matchType.contains('個人戦'));
 
+      final bool isTeamPosition =
+          firstMatch.matchType.contains('将') ||
+          firstMatch.matchType == '先鋒' ||
+          firstMatch.matchType == '次鋒' ||
+          firstMatch.matchType == '中堅' ||
+          firstMatch.matchType == '副将' ||
+          firstMatch.matchType == '大将' ||
+          firstMatch.matchType == '代表戦';
+
       if (!isPureIndividual &&
-          (entry.value.length > 1 || firstMatch.isKachinuki)) {
+          (entry.value.length > 1 ||
+              firstMatch.isKachinuki ||
+              isTeamPosition)) {
         actualGroupedMatches[entry.key] = entry.value;
       } else if (isLeagueMatch) {
         actualGroupedMatches[entry.key] = entry.value;

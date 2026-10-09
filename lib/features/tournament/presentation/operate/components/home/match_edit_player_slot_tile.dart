@@ -86,8 +86,8 @@ class MatchEditPlayerSlotTile extends StatelessWidget {
                     hintText: '白 選手名',
                     filled: true,
                     fillColor: isDark
-                        ? const Color(0xFFFFFFFF).withAlpha(15)
-                        : const Color(0xFFF2F2F7),
+                        ? context.appColors.textColor.withValues(alpha: 0.06)
+                        : context.appColors.inputBackground,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: AppSpacing.sm,

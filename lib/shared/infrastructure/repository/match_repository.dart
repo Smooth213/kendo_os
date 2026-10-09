@@ -240,17 +240,42 @@ class MatchRepository {
 
   // 4. 試合を削除
   Future<void> deleteMatch(String matchId) async {
+    await deleteMatchesBulk([matchId]);
+  }
+
+  // 4-1. 複数の試合を一括削除
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    if (matchIds.isEmpty) return;
     try {
-      final matchRef = _collectionRef.doc(matchId);
-      final eventChunks = await matchRef.collection('events').get();
-      final batch = _firestore.batch();
-      for (final chunk in eventChunks.docs) {
-        batch.delete(chunk.reference);
+      var batch = _firestore.batch();
+      int operationCount = 0;
+
+      for (final matchId in matchIds) {
+        final matchRef = _collectionRef.doc(matchId);
+        final eventChunks = await matchRef.collection('events').get();
+        for (final chunk in eventChunks.docs) {
+          batch.delete(chunk.reference);
+          operationCount++;
+          if (operationCount >= 400) {
+            await batch.commit();
+            batch = _firestore.batch();
+            operationCount = 0;
+          }
+        }
+        batch.delete(matchRef);
+        operationCount++;
+        if (operationCount >= 400) {
+          await batch.commit();
+          batch = _firestore.batch();
+          operationCount = 0;
+        }
       }
-      batch.delete(matchRef);
-      await batch.commit();
+
+      if (operationCount > 0) {
+        await batch.commit();
+      }
     } catch (e) {
-      debugPrint('Repository削除エラー: $e');
+      debugPrint('Repository一括削除エラー: $e');
       rethrow;
     }
   }

@@ -101,130 +101,160 @@ class PdfTeamTable {
 
     // ★ Phase 6-1: A4横幅最適化ガード
     // 7人制や9人制など、試合数（列数）が極端に多くなった場合でも、文字が重なってA4の印刷可能幅から
-    // はみ出るのを物理的に防ぐため、列数に応じてフォントサイズとタイトルサイズを決定論的に自動縮小（スケール）させます。
-    final double dynamicFontSize = matches.length > 5 ? 7.5 : 9.0;
-    final double dynamicTitleSize = matches.length > 5 ? 9.5 : 11.0;
+    final regularMatchesCount = matches
+        .where((m) => m.matchType != '代表戦')
+        .length;
+    final bool isWide = regularMatchesCount > 5 || matches.length > 6;
 
-    final Map<int, pw.TableColumnWidth> columnWidths = {
-      0: const pw.FlexColumnWidth(1.4),
-      for (int i = 1; i <= matches.length; i++)
-        i: const pw.FlexColumnWidth(1.0),
-      matches.length + 1: const pw.FlexColumnWidth(1.0),
-    };
+    // A4の最大描画可能幅（マージン左右各40pt、安全最大幅 490pt）
+    const double maxAvailableWidth = 490.0;
+
+    // 多人数戦の基本列幅（無理に引き伸ばさない自然で適切な幅）
+    const double baseTeamWidth = 72.0;
+    const double baseMatchWidth = 36.0;
+    const double baseSummaryWidth = 36.0;
+
+    final double naturalTotalWidth =
+        baseTeamWidth + (matches.length * baseMatchWidth) + baseSummaryWidth;
+
+    // A4最大幅を超えた場合のみ均等縮小（超えない場合は 1.0 の自然なサイズ）
+    final double scale = isWide && naturalTotalWidth > maxAvailableWidth
+        ? (maxAvailableWidth / naturalTotalWidth)
+        : 1.0;
+
+    final double effectiveTeamWidth = baseTeamWidth * scale;
+    final double effectiveMatchWidth = baseMatchWidth * scale;
+    final double effectiveSummaryWidth = baseSummaryWidth * scale;
+    final double tableWidth = isWide
+        ? naturalTotalWidth * scale
+        : double.infinity;
+
+    final double dynamicFontSize = isWide
+        ? (8.5 * scale)
+        : (matches.length > 5 ? 7.5 : 9.0);
+    final double dynamicTitleSize = isWide
+        ? 10.5
+        : (matches.length > 5 ? 9.5 : 11.0);
+
+    final Map<int, pw.TableColumnWidth> columnWidths = isWide
+        ? {
+            0: pw.FixedColumnWidth(effectiveTeamWidth),
+            for (int i = 1; i <= matches.length; i++)
+              i: pw.FixedColumnWidth(effectiveMatchWidth),
+            matches.length + 1: pw.FixedColumnWidth(effectiveSummaryWidth),
+          }
+        : {
+            0: const pw.FlexColumnWidth(1.4),
+            for (int i = 1; i <= matches.length; i++)
+              i: const pw.FlexColumnWidth(1.0),
+            matches.length + 1: const pw.FlexColumnWidth(1.0),
+          };
 
     // ★ Phase 6-1: 改ページ崩れの完全封鎖（pw.Container）
     // 1つの対戦表がページの最下部で不自然に真っ二つに分断されるのを100%防止するため、
     // 表のひとかたまりを pw.Container で包み、ページ内に収まらない場合は自動で次のページへ安全に送出します。
+    final tableWidget = pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.black, width: 1),
+      columnWidths: columnWidths,
+      children: [
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+          children: [
+            pw.SizedBox(),
+            ...matches.map(
+              (m) => pw.Center(
+                child: pw.Padding(
+                  padding: const pw.EdgeInsets.all(AppSpacing.xs),
+                  child: pw.Text(
+                    m.matchType,
+                    style: pw.TextStyle(
+                      fontSize: dynamicFontSize,
+                      fontWeight: pw.FontWeight.bold,
+                      font: ttfBold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            pw.Center(
+              child: pw.Padding(
+                padding: const pw.EdgeInsets.all(AppSpacing.xs),
+                child: pw.Text(
+                  '本/勝',
+                  style: pw.TextStyle(fontSize: dynamicFontSize, font: ttfBold),
+                ),
+              ),
+            ),
+          ],
+        ),
+        pw.TableRow(
+          children: [
+            PdfTeamTableCellRenderer.buildTeamCell(
+              redTeam,
+              PdfColors.red900,
+              ttfBold,
+            ),
+            ...matches.map(
+              (m) => PdfTeamTableCellRenderer.buildNameCell(
+                m.redName,
+                rLasts,
+                ttf,
+              ),
+            ),
+            PdfTeamTableCellRenderer.buildSummaryCell(matches, true, ttfBold),
+          ],
+        ),
+        pw.TableRow(
+          children: [
+            pw.SizedBox(),
+            ...matches.map(
+              (m) => PdfTeamTableCellRenderer.buildScoreCell(m, ttfBold),
+            ),
+            PdfTeamTableCellRenderer.buildTeamResultCell(teamWinner, ttfBold),
+          ],
+        ),
+        pw.TableRow(
+          children: [
+            PdfTeamTableCellRenderer.buildTeamCell(
+              whiteTeam,
+              PdfColors.black,
+              ttfBold,
+            ),
+            ...matches.map(
+              (m) => PdfTeamTableCellRenderer.buildNameCell(
+                m.whiteName,
+                wLasts,
+                ttf,
+              ),
+            ),
+            PdfTeamTableCellRenderer.buildSummaryCell(matches, false, ttfBold),
+          ],
+        ),
+      ],
+    );
+
+    final titleBarWidget = pw.Container(
+      padding: const pw.EdgeInsets.all(AppSpacing.subValue),
+      color: PdfColors.grey200,
+      width: isWide ? tableWidth : double.infinity,
+      child: pw.Text(
+        titleText,
+        style: pw.TextStyle(
+          fontWeight: pw.FontWeight.bold,
+          font: ttfBold,
+          fontSize: dynamicTitleSize,
+        ),
+      ),
+    );
+
     return pw.Container(
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Container(
-            padding: const pw.EdgeInsets.all(AppSpacing.subValue),
-            color: PdfColors.grey200,
-            width: double.infinity,
-            child: pw.Text(
-              titleText,
-              style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                font: ttfBold,
-                fontSize: dynamicTitleSize,
-              ),
-            ),
-          ),
-          pw.Table(
-            border: pw.TableBorder.all(color: PdfColors.black, width: 1),
-            columnWidths: columnWidths,
-            children: [
-              pw.TableRow(
-                decoration: const pw.BoxDecoration(color: PdfColors.grey100),
-                children: [
-                  pw.SizedBox(),
-                  ...matches.map(
-                    (m) => pw.Center(
-                      child: pw.Padding(
-                        padding: const pw.EdgeInsets.all(AppSpacing.xs),
-                        child: pw.Text(
-                          m.matchType,
-                          style: pw.TextStyle(
-                            fontSize: dynamicFontSize,
-                            fontWeight: pw.FontWeight.bold,
-                            font: ttfBold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  pw.Center(
-                    child: pw.Padding(
-                      padding: const pw.EdgeInsets.all(AppSpacing.xs),
-                      child: pw.Text(
-                        '本/勝',
-                        style: pw.TextStyle(
-                          fontSize: dynamicFontSize,
-                          font: ttfBold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  PdfTeamTableCellRenderer.buildTeamCell(
-                    redTeam,
-                    PdfColors.red900,
-                    ttfBold,
-                  ),
-                  ...matches.map(
-                    (m) => PdfTeamTableCellRenderer.buildNameCell(
-                      m.redName,
-                      rLasts,
-                      ttf,
-                    ),
-                  ),
-                  PdfTeamTableCellRenderer.buildSummaryCell(
-                    matches,
-                    true,
-                    ttfBold,
-                  ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.SizedBox(),
-                  ...matches.map(
-                    (m) => PdfTeamTableCellRenderer.buildScoreCell(m, ttfBold),
-                  ),
-                  PdfTeamTableCellRenderer.buildTeamResultCell(
-                    teamWinner,
-                    ttfBold,
-                  ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  PdfTeamTableCellRenderer.buildTeamCell(
-                    whiteTeam,
-                    PdfColors.black,
-                    ttfBold,
-                  ),
-                  ...matches.map(
-                    (m) => PdfTeamTableCellRenderer.buildNameCell(
-                      m.whiteName,
-                      wLasts,
-                      ttf,
-                    ),
-                  ),
-                  PdfTeamTableCellRenderer.buildSummaryCell(
-                    matches,
-                    false,
-                    ttfBold,
-                  ),
-                ],
-              ),
-            ],
-          ),
+          titleBarWidget,
+          isWide
+              ? pw.SizedBox(width: tableWidth, child: tableWidget)
+              : tableWidget,
         ],
       ),
     );

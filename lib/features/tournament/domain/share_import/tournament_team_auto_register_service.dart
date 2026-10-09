@@ -176,6 +176,7 @@ class TournamentTeamAutoRegisterService {
     '中学生の部',
     '高校生の部',
     '一般の部',
+    'その他',
   ];
 
   /// チームのカテゴリまたはチーム名から公式な部門名を決定論的に解決

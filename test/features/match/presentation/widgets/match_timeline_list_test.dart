@@ -36,12 +36,18 @@ class FakeMatchRepository implements MatchRepository {
   Future<void> deleteMatch(String matchId) async {}
 
   @override
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {}
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class FakeLocalMatchRepository implements LocalMatchRepository {
   @override
   Future<void> deleteMatch(String matchId) async {}
+
+  @override
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {}
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
