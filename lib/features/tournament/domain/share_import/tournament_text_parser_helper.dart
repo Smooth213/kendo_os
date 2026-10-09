@@ -17,6 +17,12 @@ class TournamentTextParserHelper {
     '選手',
     '個人',
     '個人戦',
+    '打太刀',
+    '仕太刀',
+    '元立ち',
+    '元立',
+    '掛かり手',
+    '掛手',
   ];
 
   /// 大会識別のキーワード
@@ -28,6 +34,9 @@ class TournamentTextParserHelper {
     '杯',
     '個人戦',
     '個人',
+    '形',
+    '剣道形',
+    '基本技',
   ];
 
   /// 会場識別のキーワード
@@ -85,17 +94,49 @@ class TournamentTextParserHelper {
     return line.replaceFirst(RegExp(r'^(?:住所|所在地)[　\s:：]+'), '').trim();
   }
 
+  /// 形・木刀・基本技セクションヘッダーか判定
+  static bool isKataHeader(String line) {
+    final c = cleanTeamHeader(line);
+    if (c.contains('剣道形') ||
+        c.contains('日本剣道形') ||
+        c.contains('形の部') ||
+        c.contains('形競技') ||
+        c.contains('木刀') ||
+        c.contains('基本技')) {
+      return true;
+    }
+    if (c.contains('形') &&
+        (c.contains('部') ||
+            c.contains('戦') ||
+            c.contains('競技') ||
+            c.contains('小') ||
+            c.contains('中') ||
+            c.contains('高') ||
+            c.contains('生') ||
+            c.contains('一般'))) {
+      return true;
+    }
+    return false;
+  }
+
   /// ポジション & 選手名の抽出
   static ParsedTeamMember? extractMember(String line) {
     final pattern = RegExp(
-      r'^(先鋒|次鋒|五将|中堅|三将|副将|大将|補欠|補|選手|個人|個人戦|氏名)[　\s:：]+(.+)$',
+      r'^(先鋒|次鋒|五将|中堅|三将|副将|大将|補欠|補|選手|個人|個人戦|氏名|打太刀|仕太刀|元立ち|元立|掛かり手|掛手)[　\s:：]+(.+)$',
     );
     final match = pattern.firstMatch(line.trim());
     if (match != null) {
       final rawPos = match.group(1)!;
-      final position = (rawPos == '氏名' || rawPos == '個人' || rawPos == '個人戦')
-          ? '選手'
-          : rawPos;
+      final String position;
+      if (rawPos == '氏名' || rawPos == '個人' || rawPos == '個人戦') {
+        position = '選手';
+      } else if (rawPos == '元立') {
+        position = '元立ち';
+      } else if (rawPos == '掛手') {
+        position = '掛かり手';
+      } else {
+        position = rawPos;
+      }
       final rawName = match.group(2)!;
       final cleanName = cleanPlayerName(rawName);
       if (cleanName.isNotEmpty) {
@@ -103,6 +144,62 @@ class TournamentTextParserHelper {
       }
     }
     return null;
+  }
+
+  /// 形・基本技セクションにおいて、メンバーリストをペア（打太刀・仕太刀、または縦並び2名）に統合
+  /// ※通常の個人戦では絶対に呼び出されず、個人戦と混同しない完全排他ロジック
+  static List<ParsedTeamMember> pairKataMembers(
+    List<ParsedTeamMember> members,
+  ) {
+    if (members.isEmpty) return [];
+
+    final List<ParsedTeamMember> paired = [];
+    int i = 0;
+
+    while (i < members.length) {
+      final current = members[i];
+
+      // すでに名前に中黒（・）やスラッシュ（/）がある場合は既にペア表記なのでそのまま
+      if (current.name.contains('・') ||
+          current.name.contains(' / ') ||
+          current.name.contains('/')) {
+        paired.add(ParsedTeamMember(position: '選手', name: current.name));
+        i++;
+        continue;
+      }
+
+      // 次のメンバーが存在する場合
+      if (i + 1 < members.length) {
+        final next = members[i + 1];
+
+        // 1. 打太刀 + 仕太刀 / 元立ち + 掛かり手 のペアリング
+        final isKataRolePair =
+            (current.position == '打太刀' && next.position == '仕太刀') ||
+            (current.position == '仕太刀' && next.position == '打太刀') ||
+            (current.position == '元立ち' && next.position == '掛かり手') ||
+            (current.position == '掛かり手' && next.position == '元立ち');
+
+        // 2. プレーンな選手行が2行連続している場合（縦書きペア）
+        final isPlainConsecutive =
+            (current.position == '選手' || current.position == '個人') &&
+            (next.position == '選手' || next.position == '個人') &&
+            !next.name.contains('・') &&
+            !next.name.contains('/');
+
+        if (isKataRolePair || isPlainConsecutive) {
+          final pairName = '${current.name}・${next.name}';
+          paired.add(ParsedTeamMember(position: '選手', name: pairName));
+          i += 2;
+          continue;
+        }
+      }
+
+      // ペアにならなかった単独選手はそのまま追加（安全フォールバック）
+      paired.add(ParsedTeamMember(position: '選手', name: current.name));
+      i++;
+    }
+
+    return paired;
   }
 
   /// 個人戦ヘッダー配下の選手名（ポジション接頭辞なし、番号/箇条書き付き等）を抽出
@@ -173,7 +270,8 @@ class TournamentTextParserHelper {
       final nextLine = lines[next].trim();
       if (nextLine.isEmpty) continue;
       if (extractMember(nextLine) != null) return true;
-      if (trimmed.contains('個人') && extractIndividualMember(nextLine) != null) {
+      if ((trimmed.contains('個人') || isKataHeader(trimmed)) &&
+          extractIndividualMember(nextLine) != null) {
         return true;
       }
       break;
@@ -194,14 +292,23 @@ class TournamentTextParserHelper {
       'リーグ',
       '個人戦',
       '個人',
+      '形',
+      '剣道形',
+      '日本剣道形',
+      '基本技',
+      '木刀',
     ];
     return teamKeywords.any((kw) => trimmed.contains(kw)) &&
-        trimmed.length <= 20;
+        trimmed.length <= 25;
   }
 
   /// 単独のセクション見出しから試合形式を検出
   static String? detectSectionMatchType(String line) {
     final c = cleanTeamHeader(line);
+    // 形・基本技セクションは個人戦（旗判定・ペア枠）として分類
+    if (isKataHeader(line)) {
+      return '個人戦';
+    }
     if (c == '個人戦' || c == '個人' || c == '個人戦の部' || c == '個人の部') {
       return '個人戦';
     }

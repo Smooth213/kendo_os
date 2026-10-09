@@ -318,5 +318,87 @@ void main() {
       expect(find.text('45分'), findsOneWidget);
       expect(find.text('自動スキップ＆継続'), findsOneWidget);
     });
+
+    test('形・基本判定ルール（isKataMatch）が部門ルールセット・試合モデル・サマリーカード間で欠落なく同期されること', () {
+      // 1. 形試合ルールの定義
+      const kataRule = MatchRule(
+        isKataMatch: true,
+        matchTimeMinutes: 0,
+        isRunningTime: false,
+        hasHantei: true,
+      );
+
+      // 2. 部門ルールセットへの組み込み
+      const kataRuleSet = CategoryRuleSet(
+        matchType: '個人戦',
+        normalRule: kataRule,
+      );
+      expect(kataRuleSet.normalRule.isKataMatch, isTrue);
+
+      // 3. 試合モデルへの継承
+      final kataMatch = MatchModel(
+        id: 'kata_sync_match',
+        matchType: '個人',
+        redName: '山田・佐藤',
+        whiteName: '高橋・田中',
+        rule: kataRuleSet.normalRule,
+      );
+      expect(kataMatch.rule?.isKataMatch, isTrue);
+
+      // 4. copyWith における isKataMatch 保持検証
+      final modifiedRule = kataMatch.rule!.copyWith(teamName: '新道場');
+      expect(modifiedRule.isKataMatch, isTrue);
+      expect(modifiedRule.teamName, '新道場');
+    });
+
+    testWidgets('形試合ルールがMatchFormatRuleSummaryCardで旗判定・時間なしとして同期描画されること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: MatchFormatRuleSummaryCard(
+                displayRuleName: '形競技ルール',
+                isAdvanced: false,
+                themeColors: AppThemeColors.ofMode(
+                  isDark: false,
+                  mode: 'normal',
+                ),
+                isRenseikai: false,
+                renseikaiType: '一試合制',
+                matchTime: 0,
+                overallTimeMinutes: '0',
+                matchType: '個人戦',
+                isRunningTime: false,
+                isIpponShobu: false,
+                ipponLimit: 2,
+                hansokuLimit: 2,
+                extensionText: 'なし',
+                hasHantei: true,
+                isKataMatch: true,
+                kachinukiUnlimitedType: 'なし',
+                hasLeagueDaihyo: false,
+                isDaihyoIpponShobu: false,
+                daihyoMatchTime: 0,
+                daihyoHasExtension: false,
+                daihyoEnchoTime: 0,
+                daihyoEnchoCount: 0,
+                daihyoHasHantei: false,
+                winPoint: 3,
+                lossPoint: 0,
+                drawPoint: 1,
+                formatMinutesText: (m) => '$m分',
+                buildSectionHeader: (title, color) => Text(title),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('🥋 形・基本技（審判3名 旗判定）'), findsOneWidget);
+      expect(find.text('⏱️ 時間計測なし'), findsOneWidget);
+      expect(find.text('🚩 旗数判定（赤3-0白, 2-1, 1-2, 0-3）'), findsOneWidget);
+    });
   });
 }

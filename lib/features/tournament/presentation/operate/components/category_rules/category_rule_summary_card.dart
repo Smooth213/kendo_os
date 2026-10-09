@@ -90,7 +90,9 @@ class CategoryRuleSummaryCard extends StatelessWidget {
     final bool isRenseikai = matchType == '錬成会' || (rule.isRenseikai);
 
     String formatText;
-    if (isRenseikai) {
+    if (rule.isKataMatch) {
+      formatText = matchType == 'リーグ個人戦' ? 'リーグ戦（形・基本判定）' : '形・基本判定（ペア）';
+    } else if (isRenseikai) {
       formatText = '錬成会';
     } else if (isKachinuki) {
       formatText = matchType.isNotEmpty ? matchType : '勝ち抜き戦';
@@ -104,12 +106,17 @@ class CategoryRuleSummaryCard extends StatelessWidget {
       formatText = '個人戦';
     }
 
-    final timeDesc =
-        '${fmtMins(rule.matchTimeMinutes)} (${rule.isRunningTime ? "通し/空回し" : "都度ストップ"})';
-    final ipponDesc = rule.isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)';
+    final timeDesc = rule.isKataMatch
+        ? '時間制限なし'
+        : '${fmtMins(rule.matchTimeMinutes)} (${rule.isRunningTime ? "通し/空回し" : "都度ストップ"})';
+    final ipponDesc = rule.isKataMatch
+        ? '3名審判旗判定'
+        : (rule.isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)');
 
     String enchoDesc;
-    if (rule.isEnchoUnlimited) {
+    if (rule.isKataMatch) {
+      enchoDesc = 'なし';
+    } else if (rule.isEnchoUnlimited) {
       enchoDesc = 'あり (無制限)';
     } else if (rule.enchoCount > 0 || rule.enchoTimeMinutes > 0) {
       enchoDesc =
@@ -118,7 +125,9 @@ class CategoryRuleSummaryCard extends StatelessWidget {
       enchoDesc = 'なし';
     }
 
-    final hanteiDesc = rule.hasHantei ? 'あり' : 'なし';
+    final hanteiDesc = rule.isKataMatch
+        ? 'あり (旗判定)'
+        : (rule.hasHantei ? 'あり' : 'なし');
 
     String daihyoEnchoDesc;
     if (!rule.daihyoHasExtension) {

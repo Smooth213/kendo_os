@@ -78,6 +78,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final double normalDaihyoEnchoTime;
   final int normalDaihyoEnchoCount;
   final bool normalDaihyoHasHantei;
+  final bool normalIsKataMatch;
 
   // 上位戦ルールパラメータ
   final double advancedTime;
@@ -104,6 +105,7 @@ class CategoryRuleEditorView extends StatelessWidget {
   final double advancedDaihyoEnchoTime;
   final int advancedDaihyoEnchoCount;
   final bool advancedDaihyoHasHantei;
+  final bool advancedIsKataMatch;
   final TextEditingController keywordsController;
   final TextEditingController subtitleController;
   final TextEditingController commentController;
@@ -113,6 +115,7 @@ class CategoryRuleEditorView extends StatelessWidget {
 
   // ルール変更コールバック (通常戦)
   final ValueChanged<double> onNormalMatchTimeChanged;
+  final ValueChanged<bool>? onNormalIsKataMatchChanged;
   final ValueChanged<bool> onNormalIsRunningTimeChanged;
   final ValueChanged<String> onNormalRenseikaiTypeChanged;
   final ValueChanged<int> onNormalOverallTimeChanged;
@@ -140,6 +143,7 @@ class CategoryRuleEditorView extends StatelessWidget {
 
   // ルール変更コールバック (上位戦)
   final ValueChanged<double> onAdvancedMatchTimeChanged;
+  final ValueChanged<bool>? onAdvancedIsKataMatchChanged;
   final ValueChanged<bool> onAdvancedIsRunningTimeChanged;
   final ValueChanged<String> onAdvancedRenseikaiTypeChanged;
   final ValueChanged<int> onAdvancedOverallTimeChanged;
@@ -224,12 +228,14 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.normalDrawPoint,
     required this.normalRenseikaiType,
     required this.normalOverallTime,
+    this.normalIsKataMatch = false,
     required this.normalDaihyoMatchTime,
     required this.normalDaihyoHasExtension,
     required this.normalDaihyoEnchoTime,
     required this.normalDaihyoEnchoCount,
     required this.normalDaihyoHasHantei,
     required this.advancedTime,
+    this.advancedIsKataMatch = false,
     required this.advancedIsRunningTime,
     required this.advancedIsIpponShobu,
     required this.advancedIpponLimit,
@@ -259,6 +265,7 @@ class CategoryRuleEditorView extends StatelessWidget {
     this.onSubtitleChanged,
     this.onCommentChanged,
     required this.onNormalMatchTimeChanged,
+    this.onNormalIsKataMatchChanged,
     required this.onNormalIsRunningTimeChanged,
     required this.onNormalRenseikaiTypeChanged,
     required this.onNormalOverallTimeChanged,
@@ -282,6 +289,7 @@ class CategoryRuleEditorView extends StatelessWidget {
     required this.onNormalIsIpponShobuChanged,
     required this.onNormalHansokuLimitChanged,
     required this.onAdvancedMatchTimeChanged,
+    this.onAdvancedIsKataMatchChanged,
     required this.onAdvancedIsRunningTimeChanged,
     required this.onAdvancedRenseikaiTypeChanged,
     required this.onAdvancedOverallTimeChanged,

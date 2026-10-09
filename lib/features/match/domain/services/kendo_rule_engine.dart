@@ -129,7 +129,7 @@ class KendoRuleEngine {
     res = ruleSet.time.apply(ruleCtx);
     if (res.transition != null) currentContext = res.transition!.updatedState;
 
-    final displays = _buildDisplays(activeEvents, currentContext);
+    final displays = _buildDisplays(activeEvents, currentContext, safeRule);
 
     return MatchAnalysis(context: currentContext, displays: displays);
   }
@@ -293,8 +293,9 @@ class KendoRuleEngine {
 
   Map<Side, List<PointDisplay>> _buildDisplays(
     List<ScoreEvent> activeEvents,
-    MatchContext finalContext,
-  ) {
+    MatchContext finalContext, [
+    MatchRule? rule,
+  ]) {
     List<PointDisplay> redDisplays = [];
     List<PointDisplay> whiteDisplays = [];
     bool isFirstOfMatch = true;
@@ -332,17 +333,31 @@ class KendoRuleEngine {
           }
         }
       } else if (e.isFusen) {
-        if (e.side == Side.red) {
-          redDisplays.add(PointDisplay('◯', isFirstOfMatch));
-          if (!e.isRetirement) {
-            redDisplays.add(PointDisplay('◯', false));
+        if (rule?.isKataMatch == true) {
+          if (e.side == Side.red) {
+            redDisplays.add(PointDisplay('○', isFirstOfMatch));
+            whiteDisplays.add(const PointDisplay('×', false));
+          } else if (e.side == Side.white) {
+            whiteDisplays.add(PointDisplay('○', isFirstOfMatch));
+            redDisplays.add(const PointDisplay('×', false));
           }
-        } else if (e.side == Side.white) {
-          whiteDisplays.add(PointDisplay('◯', isFirstOfMatch));
-          if (!e.isRetirement) {
-            whiteDisplays.add(PointDisplay('◯', false));
+        } else {
+          if (e.side == Side.red) {
+            redDisplays.add(PointDisplay('◯', isFirstOfMatch));
+            if (!e.isRetirement) {
+              redDisplays.add(PointDisplay('◯', false));
+            }
+          } else if (e.side == Side.white) {
+            whiteDisplays.add(PointDisplay('◯', isFirstOfMatch));
+            if (!e.isRetirement) {
+              whiteDisplays.add(PointDisplay('◯', false));
+            }
           }
         }
+        isFirstOfMatch = false;
+      } else if (e.isKataJudge) {
+        redDisplays.add(PointDisplay('${e.redFlags}', isFirstOfMatch));
+        whiteDisplays.add(PointDisplay('${e.whiteFlags}', false));
         isFirstOfMatch = false;
       } else {
         final mark = _getPointMark(e);

@@ -73,6 +73,27 @@ class MatchCommandService {
     }
   }
 
+  /// 形・基本判定試合の旗判定コマンド
+  Future<void> addKataJudge(
+    String matchId,
+    int redFlags,
+    int whiteFlags,
+  ) async {
+    if (ref.read(isMatchCommandProcessingProvider)) return;
+    ref.read(isMatchCommandProcessingProvider.notifier).state = true;
+
+    try {
+      await ref
+          .read(matchApplicationServiceProvider)
+          .addKataJudge(matchId, redFlags, whiteFlags);
+    } catch (e) {
+      debugPrint('[ERROR] [Command Error] addKataJudge: $e');
+      ref.read(matchCommandErrorProvider.notifier).state = '旗判定の記録に失敗しました: $e';
+    } finally {
+      ref.read(isMatchCommandProcessingProvider.notifier).state = false;
+    }
+  }
+
   Future<bool> claimScorer(String matchId, String userId) async {
     return await ref
         .read(matchApplicationServiceProvider)

@@ -1,3 +1,4 @@
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
@@ -31,7 +32,11 @@ class PdfIndividualList {
     final scenePrefix = TeamProgressHelper.getScenePrefixFromDynamic(
       matches.first,
     );
-    String headerTitle = '$scenePrefix${isLeague ? '【リーグ個人戦】' : '【個人戦】'}';
+    final isKata = matches.any(
+      (m) => m is MatchModel && m.rule?.isKataMatch == true,
+    );
+    String headerTitle =
+        '$scenePrefix${isKata ? '【形・基本判定】' : (isLeague ? '【リーグ個人戦】' : '【個人戦】')}';
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     }
@@ -68,6 +73,26 @@ class PdfIndividualList {
           isDone && (noteStr.contains('延長') || typeStr.contains('延長'));
 
       final ptsMap = PdfViewModel.calculatePointsRaw(m);
+      final isKataMatch = m is MatchModel && m.rule?.isKataMatch == true;
+      final bool isFusen =
+          ptsMap['red']!.any(
+            (p) =>
+                p.mark == '○' ||
+                p.mark == '◯' ||
+                p.mark == '×' ||
+                p.mark == '✕',
+          ) ||
+          ptsMap['white']!.any(
+            (p) =>
+                p.mark == '○' ||
+                p.mark == '◯' ||
+                p.mark == '×' ||
+                p.mark == '✕',
+          );
+      final String centerLabel = isKataMatch
+          ? (isFusen ? '不戦' : '判定')
+          : (isDraw ? '×' : (isEncho ? '延長' : '-'));
+      final double centerFontSize = (isKataMatch || isEncho) ? 10 : 16;
 
       // ★ Phase 6-1: 選手名テキストの Overflow 防壁化
       // 非常に長い道場名やフルネームが入り込んだ場合でも、テキストの自動折り返しによって行の高さが想定を超えて膨らみ、
@@ -137,10 +162,10 @@ class PdfIndividualList {
                   horizontal: AppSpacing.subValue,
                 ),
                 child: pw.Text(
-                  isDraw ? '×' : (isEncho ? '延長' : '-'),
+                  centerLabel,
                   style: pw.TextStyle(
                     font: ttfBold,
-                    fontSize: isEncho ? 10 : 16,
+                    fontSize: centerFontSize,
                     color: PdfColors.grey700,
                   ),
                 ),

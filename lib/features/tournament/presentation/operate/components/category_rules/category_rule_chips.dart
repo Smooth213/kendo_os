@@ -214,9 +214,12 @@ class CategoryRuleChips extends StatelessWidget {
 
     // 単一シーンの場合
     final bool isIndividual = ruleSet.matchType.contains('個人');
-    final String typeLabel = isIndividual
-        ? '🥋 個人戦'
-        : (ruleSet.matchType.contains('錬成') ? '⚔️ 錬成' : '👥 団体戦');
+    final bool isKata = ruleSet.normalRule.isKataMatch;
+    final String typeLabel = isKata
+        ? '🥋 形・基本判定'
+        : (isIndividual
+              ? '🥋 個人戦'
+              : (ruleSet.matchType.contains('錬成') ? '⚔️ 錬成' : '👥 団体戦'));
     final Color typeColor = isIndividual
         ? const Color(0xFF00838F) // 落ち着いたシアンインディゴ
         : (ruleSet.matchType.contains('錬成') ? renseikaiColor : honsenColor);
@@ -229,27 +232,33 @@ class CategoryRuleChips extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             _buildSceneTag(label: typeLabel, color: typeColor),
-            _buildDetailBadge(
-              context: context,
-              label: '⏱️ ${formatMinutes(ruleSet.normalRule.matchTimeMinutes)}',
-            ),
-            if (ruleSet.normalRule.isIpponShobu)
-              _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
-            if (ruleSet.normalRule.isRunningTime)
-              _buildDetailBadge(context: context, label: '🔄 通し'),
-            if (ruleSet.normalRule.hasRepresentativeMatch && !isIndividual)
-              _buildDetailBadge(context: context, label: '🥋 代表戦有'),
-            if (isIndividual &&
-                (ruleSet.normalRule.isEnchoUnlimited ||
-                    ruleSet.normalRule.enchoCount > 0))
+            if (isKata) ...[
+              _buildDetailBadge(context: context, label: '⏱️ 時間なし'),
+              _buildDetailBadge(context: context, label: '🚩 旗判定'),
+            ] else ...[
               _buildDetailBadge(
                 context: context,
-                label: ruleSet.normalRule.isEnchoUnlimited
-                    ? '⏳ 延長無制限'
-                    : '⏳ 延長${ruleSet.normalRule.enchoCount}回',
+                label:
+                    '⏱️ ${formatMinutes(ruleSet.normalRule.matchTimeMinutes)}',
               ),
-            if (ruleSet.normalRule.hasHantei)
-              _buildDetailBadge(context: context, label: '⚖️ 判定有'),
+              if (ruleSet.normalRule.isIpponShobu)
+                _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
+              if (ruleSet.normalRule.isRunningTime)
+                _buildDetailBadge(context: context, label: '🔄 通し'),
+              if (ruleSet.normalRule.hasRepresentativeMatch && !isIndividual)
+                _buildDetailBadge(context: context, label: '🥋 代表戦有'),
+              if (isIndividual &&
+                  (ruleSet.normalRule.isEnchoUnlimited ||
+                      ruleSet.normalRule.enchoCount > 0))
+                _buildDetailBadge(
+                  context: context,
+                  label: ruleSet.normalRule.isEnchoUnlimited
+                      ? '⏳ 延長無制限'
+                      : '⏳ 延長${ruleSet.normalRule.enchoCount}回',
+                ),
+              if (ruleSet.normalRule.hasHantei)
+                _buildDetailBadge(context: context, label: '⚖️ 判定有'),
+            ],
           ],
         ),
         if (ruleSet.useAdvancedRule)
@@ -259,29 +268,34 @@ class CategoryRuleChips extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _buildSceneTag(label: '🔥 上位戦', color: honsenColor),
-                _buildDetailBadge(
-                  context: context,
-                  label:
-                      '⏱️ ${formatMinutes(ruleSet.advancedRule.matchTimeMinutes)}',
-                ),
-                if (ruleSet.advancedRule.isIpponShobu)
-                  _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
-                if (ruleSet.advancedRule.isRunningTime)
-                  _buildDetailBadge(context: context, label: '🔄 通し'),
-                if (ruleSet.advancedRule.hasRepresentativeMatch &&
-                    !isIndividual)
-                  _buildDetailBadge(context: context, label: '🥋 代表戦有'),
-                if (isIndividual &&
-                    (ruleSet.advancedRule.isEnchoUnlimited ||
-                        ruleSet.advancedRule.enchoCount > 0))
+                if (ruleSet.advancedRule.isKataMatch) ...[
+                  _buildDetailBadge(context: context, label: '⏱️ 時間なし'),
+                  _buildDetailBadge(context: context, label: '🚩 旗判定'),
+                ] else ...[
                   _buildDetailBadge(
                     context: context,
-                    label: ruleSet.advancedRule.isEnchoUnlimited
-                        ? '⏳ 延長無制限'
-                        : '⏳ 延長${ruleSet.advancedRule.enchoCount}回',
+                    label:
+                        '⏱️ ${formatMinutes(ruleSet.advancedRule.matchTimeMinutes)}',
                   ),
-                if (ruleSet.advancedRule.hasHantei)
-                  _buildDetailBadge(context: context, label: '⚖️ 判定有'),
+                  if (ruleSet.advancedRule.isIpponShobu)
+                    _buildDetailBadge(context: context, label: '⚡ 1本勝負'),
+                  if (ruleSet.advancedRule.isRunningTime)
+                    _buildDetailBadge(context: context, label: '🔄 通し'),
+                  if (ruleSet.advancedRule.hasRepresentativeMatch &&
+                      !isIndividual)
+                    _buildDetailBadge(context: context, label: '🥋 代表戦有'),
+                  if (isIndividual &&
+                      (ruleSet.advancedRule.isEnchoUnlimited ||
+                          ruleSet.advancedRule.enchoCount > 0))
+                    _buildDetailBadge(
+                      context: context,
+                      label: ruleSet.advancedRule.isEnchoUnlimited
+                          ? '⏳ 延長無制限'
+                          : '⏳ 延長${ruleSet.advancedRule.enchoCount}回',
+                    ),
+                  if (ruleSet.advancedRule.hasHantei)
+                    _buildDetailBadge(context: context, label: '⚖️ 判定有'),
+                ],
               ],
             ),
           ),

@@ -56,6 +56,7 @@ class CategoryRuleFormSectionBuilder {
           : view.advancedRenseikaiType,
       overallTime: isNormal ? view.normalOverallTime : view.advancedOverallTime,
       skipEmptyRoster: isNormal ? view.normalSkipEmpty : view.advancedSkipEmpty,
+      isKataMatch: isNormal ? view.normalIsKataMatch : view.advancedIsKataMatch,
       daihyoMatchTime: isNormal
           ? view.normalDaihyoMatchTime
           : view.advancedDaihyoMatchTime,
@@ -94,6 +95,9 @@ class CategoryRuleFormSectionBuilder {
       onKachinukiUnlimitedTypeChanged: isNormal
           ? view.onNormalKachinukiUnlimitedTypeChanged
           : view.onAdvancedKachinukiUnlimitedTypeChanged,
+      onIsKataMatchChanged: isNormal
+          ? view.onNormalIsKataMatchChanged
+          : view.onAdvancedIsKataMatchChanged,
       onHasExtensionChanged: isNormal
           ? view.onNormalHasExtensionChanged
           : view.onAdvancedHasExtensionChanged,

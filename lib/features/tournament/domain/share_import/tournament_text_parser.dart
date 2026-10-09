@@ -60,10 +60,32 @@ class TournamentTextParser {
               rawText: rawText,
               memberCount: currentTeamMembers.length,
             );
+
+        // ★ 形・基本技セクションの判定（通常の個人戦とは完全排他）
+        final isKata =
+            TournamentTextParserHelper.isKataHeader(teamName) ||
+            (currentSectionMatchType != null &&
+                TournamentTextParserHelper.isKataHeader(
+                  currentSectionMatchType,
+                )) ||
+            currentTeamMembers.any(
+              (m) =>
+                  m.position == '打太刀' ||
+                  m.position == '仕太刀' ||
+                  m.position == '元立ち' ||
+                  m.position == '掛かり手',
+            );
+
+        final membersToProcess = isKata
+            ? TournamentTextParserHelper.pairKataMembers(currentTeamMembers)
+            : currentTeamMembers;
+
         if (initialMatchType == '個人戦' || initialMatchType == 'リーグ個人戦') {
-          for (final m in currentTeamMembers) {
+          for (final m in membersToProcess) {
             final isCategoryOnly =
                 teamName.contains('個人') ||
+                teamName.contains('形') ||
+                teamName.contains('基本技') ||
                 teamName == '中学生' ||
                 teamName == '小学生' ||
                 teamName == '低学年' ||
@@ -85,7 +107,7 @@ class TournamentTextParser {
             ParsedTeamOrder(
               teamName: teamName,
               matchType: initialMatchType,
-              members: List.from(currentTeamMembers),
+              members: List.from(membersToProcess),
             ),
           );
         }
@@ -148,12 +170,13 @@ class TournamentTextParser {
         continue;
       }
 
-      // 5-b. 個人戦ヘッダー配下の選手名（ポジション接頭辞なし）の検出
+      // 5-b. 個人戦・形ヘッダー配下の選手名（ポジション接頭辞なし）の検出
       if (currentTeamName != null &&
           (currentSectionMatchType == '個人戦' ||
               currentSectionMatchType == 'リーグ個人戦' ||
               currentTeamName.contains('個人') ||
-              currentTeamName.contains('選手'))) {
+              currentTeamName.contains('選手') ||
+              TournamentTextParserHelper.isKataHeader(currentTeamName))) {
         final individualMember =
             TournamentTextParserHelper.extractIndividualMember(line);
         if (individualMember != null) {

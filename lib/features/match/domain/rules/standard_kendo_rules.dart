@@ -27,6 +27,12 @@ abstract class BaseScoringRule implements ScoringRule {
 
     for (var e in context.events) {
       if (e.isCanceled) continue;
+      // ★ 形・基本判定試合の旗判定イベント
+      if (e.isKataJudge) {
+        red = e.redFlags;
+        white = e.whiteFlags;
+        continue;
+      }
       if (e.type != PointType.hansoku && e.type != PointType.fusen) {
         if (e.side == Side.red) red++;
         if (e.side == Side.white) white++;

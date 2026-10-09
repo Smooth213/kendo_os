@@ -37,7 +37,11 @@ mixin _$ScoreEvent {
 // ==========================================
 // ★ Phase 1-Step 3: ゼロトラスト（改ざん防止）のための署名
 // ==========================================
- String get signature;
+ String get signature;// 発行者と内容を証明する暗号署名
+// ==========================================
+// ★ 形・基本判定試合用の旗数
+// ==========================================
+ int get redFlags; int get whiteFlags;
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -50,16 +54,16 @@ $ScoreEventCopyWith<ScoreEvent> get copyWith => _$ScoreEventCopyWithImpl<ScoreEv
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.schemaVersion, schemaVersion) || other.schemaVersion == schemaVersion)&&(identical(other.side, side) || other.side == side)&&(identical(other.strikeType, strikeType) || other.strikeType == strikeType)&&(identical(other.isIppon, isIppon) || other.isIppon == isIppon)&&(identical(other.isHansoku, isHansoku) || other.isHansoku == isHansoku)&&(identical(other.isFusen, isFusen) || other.isFusen == isFusen)&&(identical(other.isRetirement, isRetirement) || other.isRetirement == isRetirement)&&(identical(other.isHantei, isHantei) || other.isHantei == isHantei)&&(identical(other.isUndo, isUndo) || other.isUndo == isUndo)&&(identical(other.isRestore, isRestore) || other.isRestore == isRestore)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence)&&(identical(other.isCanceled, isCanceled) || other.isCanceled == isCanceled)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.ruleVersion, ruleVersion) || other.ruleVersion == ruleVersion)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.logicalClock, logicalClock) || other.logicalClock == logicalClock)&&(identical(other.signature, signature) || other.signature == signature));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.schemaVersion, schemaVersion) || other.schemaVersion == schemaVersion)&&(identical(other.side, side) || other.side == side)&&(identical(other.strikeType, strikeType) || other.strikeType == strikeType)&&(identical(other.isIppon, isIppon) || other.isIppon == isIppon)&&(identical(other.isHansoku, isHansoku) || other.isHansoku == isHansoku)&&(identical(other.isFusen, isFusen) || other.isFusen == isFusen)&&(identical(other.isRetirement, isRetirement) || other.isRetirement == isRetirement)&&(identical(other.isHantei, isHantei) || other.isHantei == isHantei)&&(identical(other.isUndo, isUndo) || other.isUndo == isUndo)&&(identical(other.isRestore, isRestore) || other.isRestore == isRestore)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence)&&(identical(other.isCanceled, isCanceled) || other.isCanceled == isCanceled)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.ruleVersion, ruleVersion) || other.ruleVersion == ruleVersion)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.logicalClock, logicalClock) || other.logicalClock == logicalClock)&&(identical(other.signature, signature) || other.signature == signature)&&(identical(other.redFlags, redFlags) || other.redFlags == redFlags)&&(identical(other.whiteFlags, whiteFlags) || other.whiteFlags == whiteFlags));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,schemaVersion,side,strikeType,isIppon,isHansoku,isFusen,isRetirement,isHantei,isUndo,isRestore,timestamp,userId,sequence,isCanceled,targetId,ruleVersion,deviceId,logicalClock,signature]);
+int get hashCode => Object.hashAll([runtimeType,id,schemaVersion,side,strikeType,isIppon,isHansoku,isFusen,isRetirement,isHantei,isUndo,isRestore,timestamp,userId,sequence,isCanceled,targetId,ruleVersion,deviceId,logicalClock,signature,redFlags,whiteFlags]);
 
 @override
 String toString() {
-  return 'ScoreEvent(id: $id, schemaVersion: $schemaVersion, side: $side, strikeType: $strikeType, isIppon: $isIppon, isHansoku: $isHansoku, isFusen: $isFusen, isRetirement: $isRetirement, isHantei: $isHantei, isUndo: $isUndo, isRestore: $isRestore, timestamp: $timestamp, userId: $userId, sequence: $sequence, isCanceled: $isCanceled, targetId: $targetId, ruleVersion: $ruleVersion, deviceId: $deviceId, logicalClock: $logicalClock, signature: $signature)';
+  return 'ScoreEvent(id: $id, schemaVersion: $schemaVersion, side: $side, strikeType: $strikeType, isIppon: $isIppon, isHansoku: $isHansoku, isFusen: $isFusen, isRetirement: $isRetirement, isHantei: $isHantei, isUndo: $isUndo, isRestore: $isRestore, timestamp: $timestamp, userId: $userId, sequence: $sequence, isCanceled: $isCanceled, targetId: $targetId, ruleVersion: $ruleVersion, deviceId: $deviceId, logicalClock: $logicalClock, signature: $signature, redFlags: $redFlags, whiteFlags: $whiteFlags)';
 }
 
 
@@ -70,7 +74,7 @@ abstract mixin class $ScoreEventCopyWith<$Res>  {
   factory $ScoreEventCopyWith(ScoreEvent value, $Res Function(ScoreEvent) _then) = _$ScoreEventCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isRetirement, bool isHantei, bool isUndo, bool isRestore,@EpochDateTimeConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature
+ String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isRetirement, bool isHantei, bool isUndo, bool isRestore,@EpochDateTimeConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature, int redFlags, int whiteFlags
 });
 
 
@@ -87,7 +91,7 @@ class _$ScoreEventCopyWithImpl<$Res>
 
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? schemaVersion = null,Object? side = null,Object? strikeType = null,Object? isIppon = null,Object? isHansoku = null,Object? isFusen = null,Object? isRetirement = null,Object? isHantei = null,Object? isUndo = null,Object? isRestore = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,Object? isCanceled = null,Object? targetId = null,Object? ruleVersion = null,Object? deviceId = null,Object? logicalClock = null,Object? signature = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? schemaVersion = null,Object? side = null,Object? strikeType = null,Object? isIppon = null,Object? isHansoku = null,Object? isFusen = null,Object? isRetirement = null,Object? isHantei = null,Object? isUndo = null,Object? isRestore = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,Object? isCanceled = null,Object? targetId = null,Object? ruleVersion = null,Object? deviceId = null,Object? logicalClock = null,Object? signature = null,Object? redFlags = null,Object? whiteFlags = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,schemaVersion: null == schemaVersion ? _self.schemaVersion : schemaVersion // ignore: cast_nullable_to_non_nullable
@@ -109,7 +113,9 @@ as String,ruleVersion: null == ruleVersion ? _self.ruleVersion : ruleVersion // 
 as int,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
 as String,logicalClock: null == logicalClock ? _self.logicalClock : logicalClock // ignore: cast_nullable_to_non_nullable
 as int,signature: null == signature ? _self.signature : signature // ignore: cast_nullable_to_non_nullable
-as String,
+as String,redFlags: null == redFlags ? _self.redFlags : redFlags // ignore: cast_nullable_to_non_nullable
+as int,whiteFlags: null == whiteFlags ? _self.whiteFlags : whiteFlags // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -194,10 +200,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isRetirement,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isRetirement,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature,  int redFlags,  int whiteFlags)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScoreEvent() when $default != null:
-return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isRetirement,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature);case _:
+return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isRetirement,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature,_that.redFlags,_that.whiteFlags);case _:
   return orElse();
 
 }
@@ -215,10 +221,10 @@ return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.i
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isRetirement,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isRetirement,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature,  int redFlags,  int whiteFlags)  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEvent():
-return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isRetirement,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature);case _:
+return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isRetirement,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature,_that.redFlags,_that.whiteFlags);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -235,10 +241,10 @@ return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.i
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isRetirement,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(defaultValue: 1)  int schemaVersion,  Side side,  StrikeType strikeType,  bool isIppon,  bool isHansoku,  bool isFusen,  bool isRetirement,  bool isHantei,  bool isUndo,  bool isRestore, @EpochDateTimeConverter()  DateTime timestamp,  String? userId,  int sequence,  bool isCanceled,  String targetId,  int ruleVersion,  String deviceId,  int logicalClock,  String signature,  int redFlags,  int whiteFlags)?  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEvent() when $default != null:
-return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isRetirement,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature);case _:
+return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.isIppon,_that.isHansoku,_that.isFusen,_that.isRetirement,_that.isHantei,_that.isUndo,_that.isRestore,_that.timestamp,_that.userId,_that.sequence,_that.isCanceled,_that.targetId,_that.ruleVersion,_that.deviceId,_that.logicalClock,_that.signature,_that.redFlags,_that.whiteFlags);case _:
   return null;
 
 }
@@ -250,7 +256,7 @@ return $default(_that.id,_that.schemaVersion,_that.side,_that.strikeType,_that.i
 @JsonSerializable()
 
 class _ScoreEvent extends ScoreEvent {
-  const _ScoreEvent({this.id = '', @JsonKey(defaultValue: 1) this.schemaVersion = currentEventVersion, required this.side, this.strikeType = StrikeType.none, this.isIppon = false, this.isHansoku = false, this.isFusen = false, this.isRetirement = false, this.isHantei = false, this.isUndo = false, this.isRestore = false, @EpochDateTimeConverter() required this.timestamp, this.userId, this.sequence = 0, this.isCanceled = false, this.targetId = '', this.ruleVersion = 1, this.deviceId = 'local_device', this.logicalClock = 0, this.signature = ''}): super._();
+  const _ScoreEvent({this.id = '', @JsonKey(defaultValue: 1) this.schemaVersion = currentEventVersion, required this.side, this.strikeType = StrikeType.none, this.isIppon = false, this.isHansoku = false, this.isFusen = false, this.isRetirement = false, this.isHantei = false, this.isUndo = false, this.isRestore = false, @EpochDateTimeConverter() required this.timestamp, this.userId, this.sequence = 0, this.isCanceled = false, this.targetId = '', this.ruleVersion = 1, this.deviceId = 'local_device', this.logicalClock = 0, this.signature = '', this.redFlags = 0, this.whiteFlags = 0}): super._();
   factory _ScoreEvent.fromJson(Map<String, dynamic> json) => _$ScoreEventFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -295,6 +301,12 @@ class _ScoreEvent extends ScoreEvent {
 // ★ Phase 1-Step 3: ゼロトラスト（改ざん防止）のための署名
 // ==========================================
 @override@JsonKey() final  String signature;
+// 発行者と内容を証明する暗号署名
+// ==========================================
+// ★ 形・基本判定試合用の旗数
+// ==========================================
+@override@JsonKey() final  int redFlags;
+@override@JsonKey() final  int whiteFlags;
 
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -309,16 +321,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.schemaVersion, schemaVersion) || other.schemaVersion == schemaVersion)&&(identical(other.side, side) || other.side == side)&&(identical(other.strikeType, strikeType) || other.strikeType == strikeType)&&(identical(other.isIppon, isIppon) || other.isIppon == isIppon)&&(identical(other.isHansoku, isHansoku) || other.isHansoku == isHansoku)&&(identical(other.isFusen, isFusen) || other.isFusen == isFusen)&&(identical(other.isRetirement, isRetirement) || other.isRetirement == isRetirement)&&(identical(other.isHantei, isHantei) || other.isHantei == isHantei)&&(identical(other.isUndo, isUndo) || other.isUndo == isUndo)&&(identical(other.isRestore, isRestore) || other.isRestore == isRestore)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence)&&(identical(other.isCanceled, isCanceled) || other.isCanceled == isCanceled)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.ruleVersion, ruleVersion) || other.ruleVersion == ruleVersion)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.logicalClock, logicalClock) || other.logicalClock == logicalClock)&&(identical(other.signature, signature) || other.signature == signature));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScoreEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.schemaVersion, schemaVersion) || other.schemaVersion == schemaVersion)&&(identical(other.side, side) || other.side == side)&&(identical(other.strikeType, strikeType) || other.strikeType == strikeType)&&(identical(other.isIppon, isIppon) || other.isIppon == isIppon)&&(identical(other.isHansoku, isHansoku) || other.isHansoku == isHansoku)&&(identical(other.isFusen, isFusen) || other.isFusen == isFusen)&&(identical(other.isRetirement, isRetirement) || other.isRetirement == isRetirement)&&(identical(other.isHantei, isHantei) || other.isHantei == isHantei)&&(identical(other.isUndo, isUndo) || other.isUndo == isUndo)&&(identical(other.isRestore, isRestore) || other.isRestore == isRestore)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sequence, sequence) || other.sequence == sequence)&&(identical(other.isCanceled, isCanceled) || other.isCanceled == isCanceled)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.ruleVersion, ruleVersion) || other.ruleVersion == ruleVersion)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.logicalClock, logicalClock) || other.logicalClock == logicalClock)&&(identical(other.signature, signature) || other.signature == signature)&&(identical(other.redFlags, redFlags) || other.redFlags == redFlags)&&(identical(other.whiteFlags, whiteFlags) || other.whiteFlags == whiteFlags));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,schemaVersion,side,strikeType,isIppon,isHansoku,isFusen,isRetirement,isHantei,isUndo,isRestore,timestamp,userId,sequence,isCanceled,targetId,ruleVersion,deviceId,logicalClock,signature]);
+int get hashCode => Object.hashAll([runtimeType,id,schemaVersion,side,strikeType,isIppon,isHansoku,isFusen,isRetirement,isHantei,isUndo,isRestore,timestamp,userId,sequence,isCanceled,targetId,ruleVersion,deviceId,logicalClock,signature,redFlags,whiteFlags]);
 
 @override
 String toString() {
-  return 'ScoreEvent(id: $id, schemaVersion: $schemaVersion, side: $side, strikeType: $strikeType, isIppon: $isIppon, isHansoku: $isHansoku, isFusen: $isFusen, isRetirement: $isRetirement, isHantei: $isHantei, isUndo: $isUndo, isRestore: $isRestore, timestamp: $timestamp, userId: $userId, sequence: $sequence, isCanceled: $isCanceled, targetId: $targetId, ruleVersion: $ruleVersion, deviceId: $deviceId, logicalClock: $logicalClock, signature: $signature)';
+  return 'ScoreEvent(id: $id, schemaVersion: $schemaVersion, side: $side, strikeType: $strikeType, isIppon: $isIppon, isHansoku: $isHansoku, isFusen: $isFusen, isRetirement: $isRetirement, isHantei: $isHantei, isUndo: $isUndo, isRestore: $isRestore, timestamp: $timestamp, userId: $userId, sequence: $sequence, isCanceled: $isCanceled, targetId: $targetId, ruleVersion: $ruleVersion, deviceId: $deviceId, logicalClock: $logicalClock, signature: $signature, redFlags: $redFlags, whiteFlags: $whiteFlags)';
 }
 
 
@@ -329,7 +341,7 @@ abstract mixin class _$ScoreEventCopyWith<$Res> implements $ScoreEventCopyWith<$
   factory _$ScoreEventCopyWith(_ScoreEvent value, $Res Function(_ScoreEvent) _then) = __$ScoreEventCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isRetirement, bool isHantei, bool isUndo, bool isRestore,@EpochDateTimeConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature
+ String id,@JsonKey(defaultValue: 1) int schemaVersion, Side side, StrikeType strikeType, bool isIppon, bool isHansoku, bool isFusen, bool isRetirement, bool isHantei, bool isUndo, bool isRestore,@EpochDateTimeConverter() DateTime timestamp, String? userId, int sequence, bool isCanceled, String targetId, int ruleVersion, String deviceId, int logicalClock, String signature, int redFlags, int whiteFlags
 });
 
 
@@ -346,7 +358,7 @@ class __$ScoreEventCopyWithImpl<$Res>
 
 /// Create a copy of ScoreEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? schemaVersion = null,Object? side = null,Object? strikeType = null,Object? isIppon = null,Object? isHansoku = null,Object? isFusen = null,Object? isRetirement = null,Object? isHantei = null,Object? isUndo = null,Object? isRestore = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,Object? isCanceled = null,Object? targetId = null,Object? ruleVersion = null,Object? deviceId = null,Object? logicalClock = null,Object? signature = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? schemaVersion = null,Object? side = null,Object? strikeType = null,Object? isIppon = null,Object? isHansoku = null,Object? isFusen = null,Object? isRetirement = null,Object? isHantei = null,Object? isUndo = null,Object? isRestore = null,Object? timestamp = null,Object? userId = freezed,Object? sequence = null,Object? isCanceled = null,Object? targetId = null,Object? ruleVersion = null,Object? deviceId = null,Object? logicalClock = null,Object? signature = null,Object? redFlags = null,Object? whiteFlags = null,}) {
   return _then(_ScoreEvent(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,schemaVersion: null == schemaVersion ? _self.schemaVersion : schemaVersion // ignore: cast_nullable_to_non_nullable
@@ -368,7 +380,9 @@ as String,ruleVersion: null == ruleVersion ? _self.ruleVersion : ruleVersion // 
 as int,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
 as String,logicalClock: null == logicalClock ? _self.logicalClock : logicalClock // ignore: cast_nullable_to_non_nullable
 as int,signature: null == signature ? _self.signature : signature // ignore: cast_nullable_to_non_nullable
-as String,
+as String,redFlags: null == redFlags ? _self.redFlags : redFlags // ignore: cast_nullable_to_non_nullable
+as int,whiteFlags: null == whiteFlags ? _self.whiteFlags : whiteFlags // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

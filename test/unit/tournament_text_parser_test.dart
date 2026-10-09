@@ -347,5 +347,72 @@ git push origin stage2-beta
         );
       }
     });
+
+    test('形競技（縦書きペア）: 日本剣道形見出し下の連続2行が1ペアとして自動統合されること', () {
+      const kataVerticalSample = '''
+第10回 広島市剣道形演武競技大会
+日時: 2026年10月20日
+会場: 広島市南区スポーツセンター
+【日本剣道形 小学生の部】
+田中 次郎
+山田 正
+佐藤 一郎
+高橋 武
+''';
+
+      expect(TournamentTextParser.isCandidate(kataVerticalSample), isTrue);
+
+      final parsed = TournamentTextParser.parse(kataVerticalSample);
+      // 4行の選手が2組のペアとして統合されること
+      expect(parsed.teams.length, equals(2));
+      expect(parsed.teams[0].teamName, contains('田中 次郎・山田 正'));
+      expect(parsed.teams[0].members.length, equals(1));
+      expect(parsed.teams[0].members[0].name, equals('田中 次郎・山田 正'));
+
+      expect(parsed.teams[1].teamName, contains('佐藤 一郎・高橋 武'));
+      expect(parsed.teams[1].members.length, equals(1));
+      expect(parsed.teams[1].members[0].name, equals('佐藤 一郎・高橋 武'));
+    });
+
+    test('形競技（打太刀・仕太刀）: 打太刀と仕太刀が1ペアとして自動統合されること', () {
+      const kataRoleSample = '''
+第3回 木刀による基本技稽古法大会
+日時: 2026年11月03日
+会場: 県立武道館
+【木刀による基本技稽古法】
+打太刀: 皿田 脩人
+仕太刀: 塚本 大道
+''';
+
+      final parsed = TournamentTextParser.parse(kataRoleSample);
+      expect(parsed.teams.length, equals(1));
+      expect(parsed.teams[0].teamName, contains('皿田 脩人・塚本 大道'));
+      expect(parsed.teams[0].members[0].name, equals('皿田 脩人・塚本 大道'));
+    });
+
+    test('個人戦混同防止検証: 通常の個人戦見出し下では連続行がペアに結合されず各1選手として独立すること', () {
+      const individualNormalSample = '''
+第15回 市民剣道個人選手権大会
+日時: 2026年12月05日
+会場: 市民体育館
+【個人戦 中学生の部】
+田中 次郎
+山田 正
+佐藤 一郎
+高橋 武
+''';
+
+      final parsed = TournamentTextParser.parse(individualNormalSample);
+      // 通常の個人戦なので絶対にペアに結合されず、4名の独立した選手としてパースされること
+      expect(parsed.teams.length, equals(4));
+      expect(parsed.teams[0].teamName, contains('田中 次郎'));
+      expect(parsed.teams[0].members[0].name, equals('田中 次郎'));
+      expect(parsed.teams[1].teamName, contains('山田 正'));
+      expect(parsed.teams[1].members[0].name, equals('山田 正'));
+      expect(parsed.teams[2].teamName, contains('佐藤 一郎'));
+      expect(parsed.teams[2].members[0].name, equals('佐藤 一郎'));
+      expect(parsed.teams[3].teamName, contains('高橋 武'));
+      expect(parsed.teams[3].members[0].name, equals('高橋 武'));
+    });
   });
 }

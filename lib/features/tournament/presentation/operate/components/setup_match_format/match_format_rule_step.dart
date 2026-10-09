@@ -161,6 +161,15 @@ class MatchFormatRuleStep extends ConsumerWidget {
         (selectedRuleScene == 'advanced' || isCurrentMatchAdvanced) &&
         curRule.useAdvancedRule;
 
+    final effectiveRule = isAdvanced
+        ? curRule.advancedRule
+        : (selectedRuleScene == 'renseikai'
+              ? curRule.renseikaiRule
+              : (selectedRuleScene == 'moushiawase'
+                    ? curRule.moushiawaseRule
+                    : curRule.normalRule));
+    final isKataMatch = effectiveRule.isKataMatch;
+
     String displayRuleName;
     if (ruleEntries.isEmpty) {
       displayRuleName = selectedRuleScene == 'renseikai'
@@ -320,6 +329,7 @@ class MatchFormatRuleStep extends ConsumerWidget {
           daihyoEnchoCount: daihyoEnchoCount,
           daihyoEnchoTime: daihyoEnchoTime,
           daihyoHasHantei: daihyoHasHantei,
+          isKataMatch: isKataMatch,
           skipEmptyRoster: skipEmptyRoster,
           winPoint: winPoint,
           lossPoint: lossPoint,

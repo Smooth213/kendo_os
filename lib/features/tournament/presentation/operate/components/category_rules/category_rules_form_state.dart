@@ -60,6 +60,7 @@ class CategoryRulesFormState {
   String normalRenseikaiType = '一試合制';
   int normalOverallTime = 30;
   bool normalSkipEmpty = false;
+  bool normalIsKataMatch = false;
 
   // 上位戦の設定
   double advancedTime = 3.0;
@@ -81,6 +82,7 @@ class CategoryRulesFormState {
   String advancedRenseikaiType = '一試合制';
   int advancedOverallTime = 30;
   bool advancedSkipEmpty = false;
+  bool advancedIsKataMatch = false;
 
   // 代表戦の詳細設定 (通常戦用)
   double normalDaihyoMatchTime = 0.0;
@@ -151,6 +153,7 @@ class CategoryRulesFormState {
     normalRenseikaiType = rules.normalRule.renseikaiType;
     normalOverallTime = rules.normalRule.overallTimeMinutes;
     normalSkipEmpty = rules.normalRule.skipEmptyRoster;
+    normalIsKataMatch = rules.normalRule.isKataMatch;
 
     // 上位戦設定
     advancedTime = rules.advancedRule.matchTimeMinutes;
@@ -180,6 +183,7 @@ class CategoryRulesFormState {
     advancedRenseikaiType = rules.advancedRule.renseikaiType;
     advancedOverallTime = rules.advancedRule.overallTimeMinutes;
     advancedSkipEmpty = rules.advancedRule.skipEmptyRoster;
+    advancedIsKataMatch = rules.advancedRule.isKataMatch;
     editingAdvancedKeywords = List.from(rules.advancedKeywords);
 
     normalDaihyoMatchTime = rules.normalRule.daihyoMatchTimeMinutes;
@@ -267,6 +271,7 @@ class CategoryRulesFormState {
           ? normalDaihyoHasHantei
           : advancedDaihyoHasHantei,
       skipEmptyRoster: isNormal ? normalSkipEmpty : advancedSkipEmpty,
+      isKataMatch: isNormal ? normalIsKataMatch : advancedIsKataMatch,
     );
   }
 

@@ -29,7 +29,8 @@ class KendoPointMark {
       mark == '×' ||
       mark == '✕' ||
       mark == '△' ||
-      mark == '▲';
+      mark == '▲' ||
+      int.tryParse(mark) != null;
 
   /// 表示用クリーンマーク（「判定」➔「判」、「✕」➔「×」）
   String get displayMark {

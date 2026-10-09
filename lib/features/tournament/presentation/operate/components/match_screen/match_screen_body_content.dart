@@ -12,6 +12,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_floating_dock_entry.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_mini_log_undo_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_operate_action_buttons_grid.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/kata_score_action_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_timer_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_view_only_notice_banner.dart';
@@ -117,12 +118,15 @@ class MatchScreenBodyContent extends StatelessWidget {
                                   .undoLastEvent(match.id),
                             ),
                           );
+                          final isKata = rule.isKataMatch;
                           final timerPart = RepaintBoundary(
-                            child: MatchTimerSection(
-                              match: match,
-                              rule: rule,
-                              isInputLocked: isInputLocked,
-                            ),
+                            child: isKata
+                                ? const SizedBox.shrink()
+                                : MatchTimerSection(
+                                    match: match,
+                                    rule: rule,
+                                    isInputLocked: isInputLocked,
+                                  ),
                           );
                           final groupButtonPart = RepaintBoundary(
                             child: MatchOperateActionButtonsGrid(
@@ -237,11 +241,18 @@ class MatchScreenBodyContent extends StatelessWidget {
                             ),
                           );
                           final actionPanelPart = RepaintBoundary(
-                            child: MatchScoreActionSection(
-                              matchId: match.id,
-                              isInputLocked: isInputLocked,
-                              isDark: isDark,
-                            ),
+                            child: isKata
+                                ? KataScoreActionSection(
+                                    matchId: match.id,
+                                    isInputLocked: isInputLocked,
+                                    isDark: isDark,
+                                    hasEvents: validEvents.isNotEmpty,
+                                  )
+                                : MatchScoreActionSection(
+                                    matchId: match.id,
+                                    isInputLocked: isInputLocked,
+                                    isDark: isDark,
+                                  ),
                           );
                           return MatchContentLayoutBuilder(
                             constraints: constraints,

@@ -51,6 +51,7 @@ _MatchRule _$MatchRuleFromJson(Map<String, dynamic> json) => _MatchRule(
   overallTimeMinutes: (json['overallTimeMinutes'] as num?)?.toInt() ?? 30,
   matchScene: json['matchScene'] as String? ?? 'honsen',
   skipEmptyRoster: json['skipEmptyRoster'] as bool? ?? false,
+  isKataMatch: json['isKataMatch'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
@@ -89,4 +90,5 @@ Map<String, dynamic> _$MatchRuleToJson(_MatchRule instance) =>
       'overallTimeMinutes': instance.overallTimeMinutes,
       'matchScene': instance.matchScene,
       'skipEmptyRoster': instance.skipEmptyRoster,
+      'isKataMatch': instance.isKataMatch,
     };

@@ -93,6 +93,8 @@ class MatchApplicationService {
     Side side,
     PointType type, {
     bool isRetirement = false,
+    int redFlags = 0,
+    int whiteFlags = 0,
   }) async {
     final traceId = const Uuid().v4();
     await _safeExecute(
@@ -105,18 +107,21 @@ class MatchApplicationService {
         final settings = _ref.read(settingsProvider);
         final currentUser = _getCurrentUser();
 
+        final isKata = redFlags > 0 || whiteFlags > 0;
         final typeLabel = isRetirement
             ? '途中棄権'
-            : ({
-                    PointType.men: 'メン',
-                    PointType.kote: 'コテ',
-                    PointType.doIdo: 'ドウ',
-                    PointType.tsuki: 'ツキ',
-                    PointType.hansoku: '反則',
-                    PointType.fusen: '不戦勝',
-                    PointType.hantei: '判定',
-                  }[type] ??
-                  type.name);
+            : (isKata
+                  ? '旗判定 ($redFlags-$whiteFlags)'
+                  : ({
+                          PointType.men: 'メン',
+                          PointType.kote: 'コテ',
+                          PointType.doIdo: 'ドウ',
+                          PointType.tsuki: 'ツキ',
+                          PointType.hansoku: '反則',
+                          PointType.fusen: '不戦勝',
+                          PointType.hantei: '判定',
+                        }[type] ??
+                        type.name));
         var match = _snapshotHelper.addSnapshotToMatch(
           initialMatch,
           '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前',
@@ -137,6 +142,8 @@ class MatchApplicationService {
           sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
           logicalClock: maxClock + 1,
           isRetirement: isRetirement,
+          redFlags: redFlags,
+          whiteFlags: whiteFlags,
         );
 
         final permissionService = _ref.read(permissionServiceProvider);
@@ -162,7 +169,9 @@ class MatchApplicationService {
             .logAction(
               matchId: match.id,
               action: AuditAction.addScore,
-              details: '${side.name} ${type.name}',
+              details: isKata
+                  ? '${side.name} kataJudge $redFlags-$whiteFlags'
+                  : '${side.name} ${type.name}',
               traceId: traceId,
             );
 
@@ -171,6 +180,22 @@ class MatchApplicationService {
       '端末にスコアが保存されませんでした。もう一度お試しください',
       metricName: 'event_append',
       traceId: traceId,
+    );
+  }
+
+  /// 形・基本判定試合の旗判定記録
+  Future<void> addKataJudge(
+    String matchId,
+    int redFlags,
+    int whiteFlags,
+  ) async {
+    final winnerSide = redFlags > whiteFlags ? Side.red : Side.white;
+    await addIppon(
+      matchId,
+      winnerSide,
+      PointType.hantei,
+      redFlags: redFlags,
+      whiteFlags: whiteFlags,
     );
   }
 

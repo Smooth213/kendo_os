@@ -29,6 +29,8 @@ _ScoreEvent _$ScoreEventFromJson(Map<String, dynamic> json) => _ScoreEvent(
   deviceId: json['deviceId'] as String? ?? 'local_device',
   logicalClock: (json['logicalClock'] as num?)?.toInt() ?? 0,
   signature: json['signature'] as String? ?? '',
+  redFlags: (json['redFlags'] as num?)?.toInt() ?? 0,
+  whiteFlags: (json['whiteFlags'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$ScoreEventToJson(_ScoreEvent instance) =>
@@ -53,6 +55,8 @@ Map<String, dynamic> _$ScoreEventToJson(_ScoreEvent instance) =>
       'deviceId': instance.deviceId,
       'logicalClock': instance.logicalClock,
       'signature': instance.signature,
+      'redFlags': instance.redFlags,
+      'whiteFlags': instance.whiteFlags,
     };
 
 const _$SideEnumMap = {Side.red: 'red', Side.white: 'white', Side.none: 'none'};

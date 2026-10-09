@@ -101,6 +101,11 @@ abstract class ScoreEvent with _$ScoreEvent {
     // ★ Phase 1-Step 3: ゼロトラスト（改ざん防止）のための署名
     // ==========================================
     @Default('') String signature, // 発行者と内容を証明する暗号署名
+    // ==========================================
+    // ★ 形・基本判定試合用の旗数
+    // ==========================================
+    @Default(0) int redFlags,
+    @Default(0) int whiteFlags,
   }) = _ScoreEvent;
 
   // ★ 修正: freezedが正しく自動生成できるように標準の1行アロー関数に戻す
@@ -128,6 +133,7 @@ abstract class ScoreEvent with _$ScoreEvent {
     }
   }
 
+  bool get isKataJudge => isHantei && (redFlags > 0 || whiteFlags > 0);
   bool get isMen => strikeType == StrikeType.men;
   bool get isKote => strikeType == StrikeType.kote;
   bool get isDou => strikeType == StrikeType.dou;

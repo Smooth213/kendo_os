@@ -39,6 +39,8 @@ class ScoreEventLegacyAdapter {
     String deviceId = 'local_device',
     int logicalClock = 0,
     bool isRetirement = false,
+    int redFlags = 0,
+    int whiteFlags = 0,
   }) {
     final eventId = id ?? const Uuid().v4();
     final time = timestamp ?? DateTime.now();
@@ -141,6 +143,8 @@ class ScoreEventLegacyAdapter {
           id: eventId,
           side: side,
           isHantei: true,
+          redFlags: redFlags,
+          whiteFlags: whiteFlags,
           timestamp: time,
           userId: userId,
           sequence: sequence,

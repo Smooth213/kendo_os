@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_league_points_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_advanced_settings_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_individual_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_renseikai_section.dart';
@@ -37,6 +38,7 @@ class CategoryRuleFormSection extends StatelessWidget {
   final String renseikaiType;
   final int overallTime;
   final bool skipEmptyRoster;
+  final bool isKataMatch;
 
   final double daihyoMatchTime;
   final bool daihyoHasExtension;
@@ -54,6 +56,7 @@ class CategoryRuleFormSection extends StatelessWidget {
   final ValueChanged<int> onOverallTimeChanged;
   final ValueChanged<bool>? onSkipEmptyRosterChanged;
   final ValueChanged<String> onKachinukiUnlimitedTypeChanged;
+  final ValueChanged<bool>? onIsKataMatchChanged;
 
   final ValueChanged<bool> onHasExtensionChanged;
   final ValueChanged<bool> onIsEnchoUnlimitedChanged;
@@ -104,6 +107,7 @@ class CategoryRuleFormSection extends StatelessWidget {
     required this.renseikaiType,
     required this.overallTime,
     this.skipEmptyRoster = false,
+    this.isKataMatch = false,
     required this.daihyoMatchTime,
     required this.daihyoHasExtension,
     required this.daihyoEnchoTime,
@@ -118,6 +122,7 @@ class CategoryRuleFormSection extends StatelessWidget {
     required this.onOverallTimeChanged,
     this.onSkipEmptyRosterChanged,
     required this.onKachinukiUnlimitedTypeChanged,
+    this.onIsKataMatchChanged,
     required this.onHasExtensionChanged,
     required this.onIsEnchoUnlimitedChanged,
     required this.onEnchoCountChanged,
@@ -171,86 +176,134 @@ class CategoryRuleFormSection extends StatelessWidget {
         _buildSectionHeader(title),
         const SizedBox(height: AppSpacing.lg),
 
-        // 1. 共通: 試合時間設定
-        CategoryTimeStepperTile(
-          title: '試合時間',
-          subtitle: '30秒単位で自由に増減できます',
-          value: matchTime,
-          minValue: 0.5,
-          maxValue: 15.0,
-          step: 0.5,
-          primaryColor: themeColors.primaryAccent,
-          onChanged: onMatchTimeChanged,
-        ),
-        const SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.xs),
-          child: Text(
-            'クイック選択',
-            style: TextStyle(
-              fontSize: AppFontSize.caption,
-              fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
-            ),
+        if (isIndividual) ...[
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('形・基本判定試合'),
+            subtitle: const Text('時間計測なし・3名審判による旗判定'),
+            value: isKataMatch,
+            activeThumbColor: AppKendoColors.indigo,
+            onChanged: onIsKataMatchChanged,
           ),
-        ),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
-            final isSelected = matchTime == t;
-            return AppChoiceChip(
-              label: Text(formatMinutes(t)),
-              selected: isSelected,
-              onSelected: (s) {
-                if (s) onMatchTimeChanged(t);
-              },
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
+        ],
 
-        // 勝負形式 (3本勝負 / 1本勝負)
-        Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.xs),
-          child: Text(
-            '勝負形式',
-            style: TextStyle(
-              fontSize: AppFontSize.caption,
-              fontWeight: AppFontWeight.bold,
-              color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
+        if (!isKataMatch) ...[
+          // 1. 共通: 試合時間設定
+          CategoryTimeStepperTile(
+            title: '試合時間',
+            subtitle: '30秒単位で自由に増減できます',
+            value: matchTime,
+            minValue: 0.5,
+            maxValue: 15.0,
+            step: 0.5,
+            primaryColor: themeColors.primaryAccent,
+            onChanged: onMatchTimeChanged,
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.xs),
+            child: Text(
+              'クイック選択',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                fontWeight: AppFontWeight.bold,
+                color: isDark
+                    ? const Color(0xFFFFFFFF)
+                    : const Color(0x8A000000),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            AppChoiceChip(
-              label: const Text('３本勝負 (２本先取)'),
-              selected: !isIpponShobu,
-              onSelected: (selected) {
-                if (selected) {
-                  onIsIpponShobuChanged(false);
-                  onIpponLimitChanged(2);
-                }
-              },
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0].map((t) {
+              final isSelected = matchTime == t;
+              return AppChoiceChip(
+                label: Text(formatMinutes(t)),
+                selected: isSelected,
+                onSelected: (s) {
+                  if (s) onMatchTimeChanged(t);
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // 勝負形式 (3本勝負 / 1本勝負)
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.xs),
+            child: Text(
+              '勝負形式',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                fontWeight: AppFontWeight.bold,
+                color: isDark
+                    ? const Color(0xFFFFFFFF)
+                    : const Color(0x8A000000),
+              ),
             ),
-            AppChoiceChip(
-              label: const Text('１本勝負'),
-              selected: isIpponShobu,
-              onSelected: (selected) {
-                if (selected) {
-                  onIsIpponShobuChanged(true);
-                  onIpponLimitChanged(1);
-                }
-              },
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              AppChoiceChip(
+                label: const Text('３本勝負 (２本先取)'),
+                selected: !isIpponShobu,
+                onSelected: (selected) {
+                  if (selected) {
+                    onIsIpponShobuChanged(false);
+                    onIpponLimitChanged(2);
+                  }
+                },
+              ),
+              AppChoiceChip(
+                label: const Text('１本勝負'),
+                selected: isIpponShobu,
+                onSelected: (selected) {
+                  if (selected) {
+                    onIsIpponShobuChanged(true);
+                    onIpponLimitChanged(1);
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ] else ...[
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+              borderRadius: AppRadius.medium,
+              border: Border.all(
+                color: AppKendoColors.indigo.withValues(alpha: 0.3),
+              ),
             ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.lg),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: AppKendoColors.indigo),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    '形・基本判定試合では、試合時間計測や延長戦は行われず、3名の審判による旗判定または不戦勝によって勝敗を決定します。',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      color: isDark
+                          ? const Color(0xFFE2E8F0)
+                          : const Color(0xFF334155),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
 
         // === 形式別表示 ===
         if (isRenseikai || matchType.contains('勝ち抜き'))
@@ -270,7 +323,7 @@ class CategoryRuleFormSection extends StatelessWidget {
             onSkipEmptyRosterChanged: onSkipEmptyRosterChanged,
             onKachinukiUnlimitedTypeChanged: onKachinukiUnlimitedTypeChanged,
           )
-        else if (isIndividual)
+        else if (isIndividual && !isKataMatch)
           CategoryRuleIndividualSection(
             isLeague: matchType == 'リーグ個人戦',
             isNormal: isNormal,
@@ -292,6 +345,16 @@ class CategoryRuleFormSection extends StatelessWidget {
             onWinPointChanged: onWinPointChanged,
             onLossPointChanged: onLossPointChanged,
             onDrawPointChanged: onDrawPointChanged,
+          )
+        else if (isIndividual && isKataMatch && matchType == 'リーグ個人戦')
+          CategoryLeaguePointsSection(
+            keyPrefix: '${isNormal}_$categoryKey',
+            winPoint: winPoint,
+            lossPoint: lossPoint,
+            drawPoint: drawPoint,
+            onWinChanged: onWinPointChanged,
+            onLossChanged: onLossPointChanged,
+            onDrawChanged: onDrawPointChanged,
           )
         else if (isTeam)
           CategoryRuleTeamSection(

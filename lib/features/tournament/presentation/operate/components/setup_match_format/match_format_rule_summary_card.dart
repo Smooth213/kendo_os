@@ -27,6 +27,7 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
   final double daihyoEnchoTime;
   final int daihyoEnchoCount;
   final bool daihyoHasHantei;
+  final bool isKataMatch;
   final double winPoint;
   final double lossPoint;
   final double drawPoint;
@@ -58,6 +59,7 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
     required this.daihyoEnchoTime,
     required this.daihyoEnchoCount,
     required this.daihyoHasHantei,
+    this.isKataMatch = false,
     this.skipEmptyRoster = false,
     required this.winPoint,
     required this.lossPoint,
@@ -109,37 +111,60 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
           // ─── 試合ルール（錬成会以外） ───
           if (!isRenseikai) ...[
             buildSectionHeader('試合ルール', headerColor),
-            SetupReadOnlyRuleRow(
-              label: '試合方式',
-              value: matchType,
-              accentColor: headerColor,
-            ),
-            SetupReadOnlyRuleRow(
-              label: '試合時間',
-              value:
-                  '${formatMinutesText(matchTime)} (${isRunningTime ? "ランニング計測" : "通常計測"})',
-              accentColor: headerColor,
-            ),
-            SetupReadOnlyRuleRow(
-              label: '勝負方式',
-              value: isIpponShobu ? '一本勝負' : '三本勝負 ($ipponLimit本先取)',
-              accentColor: headerColor,
-            ),
-            SetupReadOnlyRuleRow(
-              label: '反則',
-              value: '$hansokuLimit反則で負け',
-              accentColor: headerColor,
-            ),
-            SetupReadOnlyRuleRow(
-              label: '延長戦',
-              value: extensionText,
-              accentColor: headerColor,
-            ),
-            SetupReadOnlyRuleRow(
-              label: '判定',
-              value: hasHantei ? '引き分け時に判定あり' : 'なし',
-              accentColor: headerColor,
-            ),
+            if (isKataMatch) ...[
+              SetupReadOnlyRuleRow(
+                label: '試合形式',
+                value: '🥋 形・基本技（審判3名 旗判定）',
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '試合時間',
+                value: '⏱️ 時間計測なし',
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '判定方式',
+                value: '🚩 旗数判定（赤3-0白, 2-1, 1-2, 0-3）',
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '延長戦',
+                value: 'なし',
+                accentColor: headerColor,
+              ),
+            ] else ...[
+              SetupReadOnlyRuleRow(
+                label: '試合方式',
+                value: matchType,
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '試合時間',
+                value:
+                    '${formatMinutesText(matchTime)} (${isRunningTime ? "ランニング計測" : "通常計測"})',
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '勝負方式',
+                value: isIpponShobu ? '一本勝負' : '三本勝負 ($ipponLimit本先取)',
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '反則',
+                value: '$hansokuLimit反則で負け',
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '延長戦',
+                value: extensionText,
+                accentColor: headerColor,
+              ),
+              SetupReadOnlyRuleRow(
+                label: '判定',
+                value: hasHantei ? '引き分け時に判定あり' : 'なし',
+                accentColor: headerColor,
+              ),
+            ],
           ],
 
           // ─── 勝ち抜き戦設定 ───

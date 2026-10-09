@@ -151,6 +151,8 @@ class MatchScoreboard extends ConsumerWidget {
     final scoreboardRow = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
+        final isKata = targetMatch.rule?.isKataMatch ?? false;
+        if (isKata) return; // 形試合はタイマーなしのため無効化
         final isDone =
             targetMatch.status == 'finished' ||
             targetMatch.status == 'approved';
@@ -319,43 +321,54 @@ class MatchScoreboard extends ConsumerWidget {
                 SizedBox(
                   width: 130,
                   height: 130,
-                  child: Stack(
-                    children: [
-                      if (pts.isNotEmpty)
-                        Positioned(
-                          top: 6,
-                          left: 6,
-                          child: ScoreboardComponents.buildPoint(
-                            context,
-                            pts[0],
-                            isDark,
-                            nameColor,
+                  child: (match.rule?.isKataMatch ?? false) && pts.isNotEmpty
+                      ? Center(
+                          child: Text(
+                            pts.first.mark,
+                            style: TextStyle(
+                              fontSize: AppFontSize.scoreboardJumbo,
+                              fontWeight: AppFontWeight.bold,
+                              color: nameColor,
+                            ),
                           ),
+                        )
+                      : Stack(
+                          children: [
+                            if (pts.isNotEmpty)
+                              Positioned(
+                                top: 6,
+                                left: 6,
+                                child: ScoreboardComponents.buildPoint(
+                                  context,
+                                  pts[0],
+                                  isDark,
+                                  nameColor,
+                                ),
+                              ),
+                            if (pts.length > 1)
+                              Positioned(
+                                bottom: 6,
+                                right: 6,
+                                child: ScoreboardComponents.buildPoint(
+                                  context,
+                                  pts[1],
+                                  isDark,
+                                  nameColor,
+                                ),
+                              ),
+                            if (pts.length > 2)
+                              Positioned(
+                                top: 35,
+                                left: 35,
+                                child: ScoreboardComponents.buildPoint(
+                                  context,
+                                  pts[2],
+                                  isDark,
+                                  nameColor,
+                                ),
+                              ),
+                          ],
                         ),
-                      if (pts.length > 1)
-                        Positioned(
-                          bottom: 6,
-                          right: 6,
-                          child: ScoreboardComponents.buildPoint(
-                            context,
-                            pts[1],
-                            isDark,
-                            nameColor,
-                          ),
-                        ),
-                      if (pts.length > 2)
-                        Positioned(
-                          top: 35,
-                          left: 35,
-                          child: ScoreboardComponents.buildPoint(
-                            context,
-                            pts[2],
-                            isDark,
-                            nameColor,
-                          ),
-                        ),
-                    ],
-                  ),
                 ),
               ],
             ),

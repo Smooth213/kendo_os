@@ -107,6 +107,7 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       normalRenseikaiType: formState.normalRenseikaiType,
       normalOverallTime: formState.normalOverallTime,
       normalSkipEmpty: formState.normalSkipEmpty,
+      normalIsKataMatch: formState.normalIsKataMatch,
       renseikaiSkipEmpty: formState.renseikaiSkipEmpty,
       normalDaihyoMatchTime: formState.normalDaihyoMatchTime,
       normalDaihyoHasExtension: formState.normalDaihyoHasExtension,
@@ -114,6 +115,7 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       normalDaihyoEnchoCount: formState.normalDaihyoEnchoCount,
       normalDaihyoHasHantei: formState.normalDaihyoHasHantei,
       advancedTime: formState.advancedTime,
+      advancedIsKataMatch: formState.advancedIsKataMatch,
       advancedIsRunningTime: formState.advancedIsRunningTime,
       advancedIsIpponShobu: formState.advancedIsIpponShobu,
       advancedIpponLimit: formState.advancedIpponLimit,
@@ -146,6 +148,8 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       onCommentChanged: (val) => setState(() => formState.editingComment = val),
       onNormalMatchTimeChanged: (val) =>
           setState(() => formState.normalTime = val),
+      onNormalIsKataMatchChanged: (val) =>
+          setState(() => formState.normalIsKataMatch = val),
       onNormalIsRunningTimeChanged: (val) =>
           setState(() => formState.normalIsRunningTime = val),
       onNormalRenseikaiTypeChanged: (val) =>
@@ -200,6 +204,8 @@ class CategoryRuleEditorContainer extends StatelessWidget {
           setState(() => formState.normalHansokuLimit = val),
       onAdvancedMatchTimeChanged: (val) =>
           setState(() => formState.advancedTime = val),
+      onAdvancedIsKataMatchChanged: (val) =>
+          setState(() => formState.advancedIsKataMatch = val),
       onAdvancedIsRunningTimeChanged: (val) =>
           setState(() => formState.advancedIsRunningTime = val),
       onAdvancedRenseikaiTypeChanged: (val) =>

@@ -263,8 +263,14 @@ class PdfTeamTableCellRenderer {
       return pw.SizedBox(width: 26, height: 26);
     }
     final color = isRed ? PdfColors.red700 : PdfColors.black;
-    if (actualPts.length == 1 &&
-        (actualPts[0].mark == '✕' || actualPts[0].mark == '×')) {
+    final isSingleSpecial =
+        actualPts.length == 1 &&
+        (actualPts[0].mark == '✕' ||
+            actualPts[0].mark == '×' ||
+            actualPts[0].mark == '○' ||
+            actualPts[0].mark == '◯' ||
+            int.tryParse(actualPts[0].mark) != null);
+    if (isSingleSpecial) {
       return pw.Container(
         width: 26,
         height: 26,
@@ -282,7 +288,7 @@ class PdfTeamTableCellRenderer {
                 ),
               ),
             pw.Text(
-              '×',
+              actualPts[0].mark == '✕' ? '×' : actualPts[0].mark,
               style: pw.TextStyle(
                 font: fontBold,
                 fontSize: AppFontSize.badge,
@@ -363,11 +369,13 @@ class PdfTeamTableCellRenderer {
   ) {
     final bool isSpecialFusenOrDraw =
         p.mark == '◯' ||
+        p.mark == '○' ||
         p.mark == '✕' ||
         p.mark == '×' ||
         p.mark == '反' ||
         p.mark == '△' ||
-        p.mark == '▲';
+        p.mark == '▲' ||
+        int.tryParse(p.mark) != null;
     return p.isFirstOverall && !isSpecialFusenOrDraw
         ? pw.Container(
             width: 10,
@@ -378,13 +386,13 @@ class PdfTeamTableCellRenderer {
               border: pw.Border.all(color: color, width: 0.6),
             ),
             child: pw.Text(
-              p.mark,
+              p.mark == '✕' ? '×' : p.mark,
               style: pw.TextStyle(font: fontBold, fontSize: 5.5, color: color),
               textAlign: pw.TextAlign.center,
             ),
           )
         : pw.Text(
-            p.mark,
+            p.mark == '✕' ? '×' : p.mark,
             style: pw.TextStyle(
               font: fontBold,
               fontSize: AppFontSize.micro,

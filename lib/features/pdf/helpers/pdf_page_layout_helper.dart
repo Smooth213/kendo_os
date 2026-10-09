@@ -359,7 +359,8 @@ class PdfPageLayoutHelper {
       (m) =>
           m.matchType == 'individual' ||
           m.matchType == '選手' ||
-          m.matchType.contains('個人戦'),
+          m.matchType.contains('個人戦') ||
+          (m is MatchModel && m.rule?.isKataMatch == true),
     );
 
     // 7人制以上の多人数戦（代表戦を除くポジション数が5超、または総試合数が6超）判定
@@ -400,7 +401,8 @@ class PdfPageLayoutHelper {
           (m) =>
               m.matchType == 'individual' ||
               m.matchType == '選手' ||
-              m.matchType.contains('個人戦'),
+              m.matchType.contains('個人戦') ||
+              (m is MatchModel && m.rule?.isKataMatch == true),
         );
         final nextRegularCount = nextMatches
             .where((m) => m.matchType != '代表戦')

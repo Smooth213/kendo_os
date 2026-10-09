@@ -102,22 +102,25 @@ class CategoryRuleMatchHelper {
     required int daihyoEnchoCount,
     required bool daihyoHasHantei,
     bool skipEmptyRoster = false,
+    bool isKataMatch = false,
   }) {
     final isIndiv =
         matchType == '個人戦' || matchType == 'リーグ個人戦' || matchType.contains('個人');
     final isLeague = matchType == 'リーグ団体戦' || matchType == 'リーグ個人戦';
     final isKachinuki = matchType.contains('勝ち抜き');
-    final effectiveHasExt = (isIndiv || isKachinuki) ? hasExtension : false;
+    final effectiveHasExt = (isIndiv || isKachinuki) && !isKataMatch
+        ? hasExtension
+        : false;
     final effectiveIsIpponShobu = isIpponShobu || ipponLimit == 1;
 
     return MatchRule(
       category: category,
-      matchTimeMinutes: matchTime,
-      isRunningTime: isRunningTime,
+      matchTimeMinutes: isKataMatch ? 0 : matchTime,
+      isRunningTime: isKataMatch ? false : isRunningTime,
       isIpponShobu: effectiveIsIpponShobu,
       ipponLimit: effectiveIsIpponShobu ? 1 : ipponLimit,
       hansokuLimit: hansokuLimit,
-      hasHantei: hasHantei,
+      hasHantei: isKataMatch ? true : hasHantei,
       isEnchoUnlimited: effectiveHasExt && isEnchoUnlimited,
       enchoTimeMinutes: enchoTime,
       enchoCount: effectiveHasExt ? (isEnchoUnlimited ? 0 : enchoCount) : 0,
@@ -139,6 +142,7 @@ class CategoryRuleMatchHelper {
       daihyoEnchoTimeMinutes: daihyoEnchoTime,
       daihyoEnchoCount: daihyoEnchoCount,
       daihyoHasHantei: daihyoHasHantei,
+      isKataMatch: isKataMatch,
     );
   }
 

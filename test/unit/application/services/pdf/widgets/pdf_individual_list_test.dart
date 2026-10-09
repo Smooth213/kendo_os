@@ -155,5 +155,69 @@ void main() {
       final headerText2 = (header2.child as pw.Text).text.toPlainText();
       expect(headerText2, '【リーグ個人戦】 リーグA');
     });
+
+    test('形試合でヘッダーが形・基本判定となり中央に判定が表示されること', () {
+      final matches = [
+        createMockMatch(
+          id: 'kata-m1',
+          redName: '山田・佐藤',
+          whiteName: '鈴木・田中',
+          redScore: 2,
+          whiteScore: 1,
+          rule: const MatchRule(isKataMatch: true),
+          events: [
+            ScoreEvent(
+              id: 'ev1',
+              side: Side.red,
+              timestamp: DateTime.now(),
+              isHantei: true,
+              redFlags: 2,
+              whiteFlags: 1,
+            ),
+          ],
+        ),
+      ];
+
+      final result =
+          PdfIndividualList.build('1回戦', matches, ttf, ttfBold) as pw.Container;
+      final column = result.child as pw.Column;
+      final header = column.children.first as pw.Container;
+      final headerText = (header.child as pw.Text).text.toPlainText();
+      expect(headerText, '【形・基本判定】 1回戦');
+
+      final rowContainer = column.children[1] as pw.Container;
+      final row = rowContainer.child as pw.Row;
+      final separatorText = (row.children[4] as pw.Padding).child as pw.Text;
+      expect(separatorText.text.toPlainText(), '判定');
+    });
+
+    test('形試合の不戦勝で中央に不戦が表示されること', () {
+      final matches = [
+        createMockMatch(
+          id: 'kata-fusen',
+          redName: '山田・佐藤',
+          whiteName: '鈴木・田中',
+          redScore: 1,
+          whiteScore: 0,
+          rule: const MatchRule(isKataMatch: true),
+          events: [
+            ScoreEvent(
+              id: 'ev-fusen',
+              side: Side.red,
+              timestamp: DateTime.now(),
+              isFusen: true,
+            ),
+          ],
+        ),
+      ];
+
+      final result =
+          PdfIndividualList.build('2回戦', matches, ttf, ttfBold) as pw.Container;
+      final column = result.child as pw.Column;
+      final rowContainer = column.children[1] as pw.Container;
+      final row = rowContainer.child as pw.Row;
+      final separatorText = (row.children[4] as pw.Padding).child as pw.Text;
+      expect(separatorText.text.toPlainText(), '不戦');
+    });
   });
 }

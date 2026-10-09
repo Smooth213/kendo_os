@@ -181,7 +181,10 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
       displayGroupName = '';
     }
 
-    String headerTitle = '【個人戦】';
+    final bool isAllKata =
+        displayMatches.isNotEmpty &&
+        displayMatches.every((m) => m.rule?.isKataMatch ?? false);
+    String headerTitle = isAllKata ? '【形・基本判定】' : '【個人戦】';
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     }
@@ -225,6 +228,20 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
           m.whiteName.contains('自チーム');
       final bool hasOwnTeam = rOwn || wOwn;
 
+      final bool isKata = m.rule?.isKataMatch ?? false;
+      String? centerLabel;
+      if (isKata && isDone) {
+        final hasFusen = m.events.any((e) => e.isFusen && !e.isCanceled);
+        final hasHantei = m.events.any(
+          (e) => (e.isHantei || e.isKataJudge) && !e.isCanceled,
+        );
+        if (hasFusen) {
+          centerLabel = '不戦';
+        } else if (hasHantei) {
+          centerLabel = '判定';
+        }
+      }
+
       return IndividualMatchItem(
         id: m.id,
         note: m.note,
@@ -242,6 +259,7 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
         hasOwnTeam: hasOwnTeam,
         redPoints: ptsMap['red'] ?? [],
         whitePoints: ptsMap['white'] ?? [],
+        centerLabel: centerLabel,
       );
     }).toList();
 

@@ -23,6 +23,7 @@ class IndividualMatchItem {
   final List<PointMark> redPoints;
   final List<PointMark> whitePoints;
   final VoidCallback? onTap;
+  final String? centerLabel;
 
   const IndividualMatchItem({
     required this.id,
@@ -42,6 +43,7 @@ class IndividualMatchItem {
     required this.redPoints,
     required this.whitePoints,
     this.onTap,
+    this.centerLabel,
   });
 }
 
@@ -246,11 +248,17 @@ class IndividualListCard extends StatelessWidget {
                           horizontal: AppSpacing.sm,
                         ),
                         child: Text(
-                          m.isDraw ? '✕' : '-',
+                          m.centerLabel != null && m.centerLabel!.isNotEmpty
+                              ? m.centerLabel!
+                              : (m.isDraw ? '✕' : '-'),
                           style: TextStyle(
                             color: context.appColors.subTextColor,
-                            fontWeight: AppFontWeight.light,
-                            fontSize: AppFontSize.subhead,
+                            fontWeight: m.centerLabel != null
+                                ? AppFontWeight.bold
+                                : AppFontWeight.light,
+                            fontSize: m.centerLabel != null
+                                ? AppFontSize.caption
+                                : AppFontSize.subhead,
                           ),
                         ),
                       ),
