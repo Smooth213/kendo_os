@@ -1,9 +1,38 @@
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_models.dart';
 
 /// 遠征成績のスコアイベント（有効打突・失本数・技内訳）集計プロセッサ
 class ExpeditionEventProcessor {
+  /// 試合の有効スコア（赤・白の取得本数）をイベント履歴（Undo/相殺対応）またはMatchModelから算出
+  static ({int red, int white}) getEffectiveScores(MatchModel match) {
+    if (match.events.isNotEmpty) {
+      final bool hasAnyScoreOrUndo = match.events.any(
+        (e) =>
+            e.isIppon ||
+            e.isHansoku ||
+            e.isFusen ||
+            e.isKataJudge ||
+            e.isHantei ||
+            e.isUndo ||
+            e.type == PointType.undo,
+      );
+      if (hasAnyScoreOrUndo) {
+        final analysis = KendoRuleEngine().analyzeHistory(
+          match.events,
+          match,
+          match.rule,
+        );
+        return (
+          red: analysis.context.redIppon,
+          white: analysis.context.whiteIppon,
+        );
+      }
+    }
+    return (red: match.redScore, white: match.whiteScore);
+  }
+
   static ({
     int teamMen,
     int teamKote,
@@ -70,74 +99,145 @@ class ExpeditionEventProcessor {
           m.matchType == '大将' ||
           m.matchType == '代表戦';
 
-      for (final ev in m.events) {
-        if (ev.isCanceled) continue;
+      final effectiveScores = getEffectiveScores(m);
+      final int redScoreActual = effectiveScores.red;
+      final int whiteScoreActual = effectiveScores.white;
+
+      // ★ KendoRuleEngineのfilterActiveEventsを通してUndo取り消しイベントを安全に除外
+      final activeEvents = KendoRuleEngine().filterActiveEvents(m.events);
+
+      int rMen = 0, rKote = 0, rDou = 0, rTsuki = 0, rHansoku = 0, rOther = 0;
+      int wMen = 0, wKote = 0, wDou = 0, wTsuki = 0, wHansoku = 0, wOther = 0;
+
+      for (final ev in activeEvents) {
         if (!ev.isIppon) continue;
 
-        final bool evIsMine =
-            (ev.side == Side.red && isTargetRed) ||
-            (ev.side == Side.white && isTargetWhite);
-        final bool evIsOpp =
-            (ev.side == Side.red && isTargetWhite) ||
-            (ev.side == Side.white && isTargetRed);
-
-        if (evIsMine) {
-          teamTotalScored++;
-          final String myPlayer = ev.side == Side.red ? rPlayer : wPlayer;
-          final pStats = playerStatsMap.putIfAbsent(
-            myPlayer,
-            () => DetailedPlayerStats(),
-          );
-          pStats.totalPoints++;
-
-          if (isTeamMatch) {
-            pStats.teamPoints++;
-          } else {
-            pStats.individualPoints++;
-          }
-
+        if (ev.side == Side.red) {
           if (ev.isHansoku) {
-            teamHansoku++;
-            pStats.hansoku++;
+            rHansoku++;
           } else {
             switch (ev.strikeType) {
               case StrikeType.men:
-                teamMen++;
-                pStats.men++;
+                rMen++;
                 break;
               case StrikeType.kote:
-                teamKote++;
-                pStats.kote++;
+                rKote++;
                 break;
               case StrikeType.dou:
-                teamDou++;
-                pStats.dou++;
+                rDou++;
                 break;
               case StrikeType.tsuki:
-                teamTsuki++;
-                pStats.tsuki++;
+                rTsuki++;
                 break;
               case StrikeType.none:
-                teamOther++;
-                pStats.other++;
+                rOther++;
+                break;
+            }
+          }
+        } else if (ev.side == Side.white) {
+          if (ev.isHansoku) {
+            wHansoku++;
+          } else {
+            switch (ev.strikeType) {
+              case StrikeType.men:
+                wMen++;
+                break;
+              case StrikeType.kote:
+                wKote++;
+                break;
+              case StrikeType.dou:
+                wDou++;
+                break;
+              case StrikeType.tsuki:
+                wTsuki++;
+                break;
+              case StrikeType.none:
+                wOther++;
                 break;
             }
           }
         }
+      }
 
-        if (evIsOpp) {
-          teamTotalConceded++;
-          final String myPlayer = ev.side == Side.red ? wPlayer : rPlayer;
+      final int rActiveTotal = rMen + rKote + rDou + rTsuki + rHansoku + rOther;
+      if (redScoreActual > rActiveTotal) {
+        rOther += (redScoreActual - rActiveTotal);
+      }
+      final int wActiveTotal = wMen + wKote + wDou + wTsuki + wHansoku + wOther;
+      if (whiteScoreActual > wActiveTotal) {
+        wOther += (whiteScoreActual - wActiveTotal);
+      }
+
+      final int rTotal = redScoreActual > rActiveTotal
+          ? redScoreActual
+          : rActiveTotal;
+      final int wTotal = whiteScoreActual > wActiveTotal
+          ? whiteScoreActual
+          : wActiveTotal;
+
+      if (isTargetRed) {
+        teamTotalScored += rTotal;
+        teamTotalConceded += wTotal;
+        teamMen += rMen;
+        teamKote += rKote;
+        teamDou += rDou;
+        teamTsuki += rTsuki;
+        teamHansoku += rHansoku;
+        teamOther += rOther;
+
+        if (rPlayer.isNotEmpty && isMyPlayer(rPlayer, rTeam)) {
           final pStats = playerStatsMap.putIfAbsent(
-            myPlayer,
+            rPlayer,
             () => DetailedPlayerStats(),
           );
-          pStats.concededPoints++;
+          pStats.totalPoints += rTotal;
+          pStats.concededPoints += wTotal;
           if (isTeamMatch) {
-            pStats.teamConceded++;
+            pStats.teamPoints += rTotal;
+            pStats.teamConceded += wTotal;
           } else {
-            pStats.individualConceded++;
+            pStats.individualPoints += rTotal;
+            pStats.individualConceded += wTotal;
           }
+          pStats.men += rMen;
+          pStats.kote += rKote;
+          pStats.dou += rDou;
+          pStats.tsuki += rTsuki;
+          pStats.hansoku += rHansoku;
+          pStats.other += rOther;
+        }
+      }
+
+      if (isTargetWhite) {
+        teamTotalScored += wTotal;
+        teamTotalConceded += rTotal;
+        teamMen += wMen;
+        teamKote += wKote;
+        teamDou += wDou;
+        teamTsuki += wTsuki;
+        teamHansoku += wHansoku;
+        teamOther += wOther;
+
+        if (wPlayer.isNotEmpty && isMyPlayer(wPlayer, wTeam)) {
+          final pStats = playerStatsMap.putIfAbsent(
+            wPlayer,
+            () => DetailedPlayerStats(),
+          );
+          pStats.totalPoints += wTotal;
+          pStats.concededPoints += rTotal;
+          if (isTeamMatch) {
+            pStats.teamPoints += wTotal;
+            pStats.teamConceded += rTotal;
+          } else {
+            pStats.individualPoints += wTotal;
+            pStats.individualConceded += rTotal;
+          }
+          pStats.men += wMen;
+          pStats.kote += wKote;
+          pStats.dou += wDou;
+          pStats.tsuki += wTsuki;
+          pStats.hansoku += wHansoku;
+          pStats.other += wOther;
         }
       }
     }

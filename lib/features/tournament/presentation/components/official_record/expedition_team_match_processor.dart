@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_event_processor.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_stats_models.dart';
 
 /// 遠征成績の団体戦・勝ち抜き戦・個人戦集計プロセッサ
@@ -91,16 +92,19 @@ class ExpeditionTeamMatchProcessor {
             }
           } else {
             for (final b in playedBouts) {
+              final scores = ExpeditionEventProcessor.getEffectiveScores(b);
+              final bRedScore = scores.red;
+              final bWhiteScore = scores.white;
               if (isTargetRed) {
-                if (b.redScore > b.whiteScore) {
+                if (bRedScore > bWhiteScore) {
                   myWins++;
-                } else if (b.whiteScore > b.redScore) {
+                } else if (bWhiteScore > bRedScore) {
                   oppWins++;
                 }
               } else {
-                if (b.whiteScore > b.redScore) {
+                if (bWhiteScore > bRedScore) {
                   myWins++;
-                } else if (b.redScore > b.whiteScore) {
+                } else if (bRedScore > bWhiteScore) {
                   oppWins++;
                 }
               }
@@ -108,19 +112,23 @@ class ExpeditionTeamMatchProcessor {
           }
         } else {
           for (final b in playedBouts) {
+            final scores = ExpeditionEventProcessor.getEffectiveScores(b);
+            final bRedScore = scores.red;
+            final bWhiteScore = scores.white;
+
             final isDaihyo = b.matchType == '代表戦';
             if (isDaihyo) {
               hasDaihyo = true;
               if (isTargetRed) {
-                if (b.redScore > b.whiteScore) {
+                if (bRedScore > bWhiteScore) {
                   daihyoIsMyWin = true;
-                } else if (b.whiteScore > b.redScore) {
+                } else if (bWhiteScore > bRedScore) {
                   daihyoIsMyWin = false;
                 }
               } else {
-                if (b.whiteScore > b.redScore) {
+                if (bWhiteScore > bRedScore) {
                   daihyoIsMyWin = true;
-                } else if (b.redScore > b.whiteScore) {
+                } else if (bRedScore > bWhiteScore) {
                   daihyoIsMyWin = false;
                 }
               }
@@ -128,19 +136,19 @@ class ExpeditionTeamMatchProcessor {
             }
 
             if (isTargetRed) {
-              myPoints += b.redScore;
-              oppPoints += b.whiteScore;
-              if (b.redScore > b.whiteScore) {
+              myPoints += bRedScore;
+              oppPoints += bWhiteScore;
+              if (bRedScore > bWhiteScore) {
                 myWins++;
-              } else if (b.whiteScore > b.redScore) {
+              } else if (bWhiteScore > bRedScore) {
                 oppWins++;
               }
             } else {
-              myPoints += b.whiteScore;
-              oppPoints += b.redScore;
-              if (b.whiteScore > b.redScore) {
+              myPoints += bWhiteScore;
+              oppPoints += bRedScore;
+              if (bWhiteScore > bRedScore) {
                 myWins++;
-              } else if (b.redScore > b.whiteScore) {
+              } else if (bRedScore > bWhiteScore) {
                 oppWins++;
               }
             }
@@ -160,10 +168,10 @@ class ExpeditionTeamMatchProcessor {
                 rPlayer,
                 () => DetailedPlayerStats(),
               );
-              if (b.redScore > b.whiteScore) {
+              if (bRedScore > bWhiteScore) {
                 stats.win++;
                 stats.teamWin++;
-              } else if (b.redScore < b.whiteScore) {
+              } else if (bRedScore < bWhiteScore) {
                 stats.loss++;
                 stats.teamLoss++;
               } else {
@@ -178,10 +186,10 @@ class ExpeditionTeamMatchProcessor {
                 wPlayer,
                 () => DetailedPlayerStats(),
               );
-              if (b.whiteScore > b.redScore) {
+              if (bWhiteScore > bRedScore) {
                 stats.win++;
                 stats.teamWin++;
-              } else if (b.whiteScore < b.redScore) {
+              } else if (bWhiteScore < bRedScore) {
                 stats.loss++;
                 stats.teamLoss++;
               } else {
@@ -312,9 +320,13 @@ class ExpeditionTeamMatchProcessor {
               (selectedSummaryTeam == wTeam);
           if (!isTargetRed && !isTargetWhite) continue;
 
-          final isDraw = m.redScore == m.whiteScore;
-          final isRedWin = m.redScore > m.whiteScore;
-          final isWhiteWin = m.whiteScore > m.redScore;
+          final scores = ExpeditionEventProcessor.getEffectiveScores(m);
+          final mRedScore = scores.red;
+          final mWhiteScore = scores.white;
+
+          final isDraw = mRedScore == mWhiteScore;
+          final isRedWin = mRedScore > mWhiteScore;
+          final isWhiteWin = mWhiteScore > mRedScore;
 
           if (isTargetRed && rPlayer.isNotEmpty && isMyPlayer(rPlayer, rTeam)) {
             final stats = playerStatsMap.putIfAbsent(
@@ -361,8 +373,8 @@ class ExpeditionTeamMatchProcessor {
           final oppName = isTargetRed
               ? (wPlayer.isNotEmpty ? wPlayer : wTeam)
               : (rPlayer.isNotEmpty ? rPlayer : rTeam);
-          final myScore = isTargetRed ? m.redScore : m.whiteScore;
-          final oppScore = isTargetRed ? m.whiteScore : m.redScore;
+          final myScore = isTargetRed ? mRedScore : mWhiteScore;
+          final oppScore = isTargetRed ? mWhiteScore : mRedScore;
           final bool isIndWin = isTargetRed ? isRedWin : isWhiteWin;
 
           cardResults.add(

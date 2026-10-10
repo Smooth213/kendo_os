@@ -9,7 +9,7 @@
 ④ 団体戦スコア順序（先鋒〜大将・代表戦）剣道標準配列
 ⑤ 全試合形式（勝ち抜き・リーグ含む）編集選択＆完全整合性保証
 ⑥ 勝ち抜き戦（5人制 / 3人制）選択・適応・実行 総合保証規約
-⑦ 大会ルール設定バリデーション ＆ ルール永続化マイグレーション規約
+⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約
 """
 
 import subprocess
@@ -25,6 +25,7 @@ SUB_AUDITS = [
     ("⑦ 大会ルール設定バリデーション ＆ ルール永続化マイグレーション規約", ["python3", "scripts/check_tournament_rule_config_governance.py"]),
     ("⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/expedition_strike_decision_governance_test.dart"]),
     ("⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/match_category_other_support_governance_test.dart"]),
+    ("⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/unfiltered_event_aggregation_governance_test.dart"]),
 ]
 
 def main():
