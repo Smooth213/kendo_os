@@ -119,7 +119,7 @@ void main() {
       expect(find.text('その他'), findsWidgets);
       expect(find.text('自由'), findsWidgets);
       expect(find.text('道場選抜混成'), findsOneWidget);
-      expect(find.text('生成されるカテゴリ名'), findsOneWidget);
+      expect(find.text('選択中の設定内容'), findsOneWidget);
       expect(find.text('道場選抜混成の部'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

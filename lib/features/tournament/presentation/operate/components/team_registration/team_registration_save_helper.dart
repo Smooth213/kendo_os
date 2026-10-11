@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/category_format_history_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_name_history_provider.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
@@ -16,6 +18,8 @@ class TeamRegistrationSaveHelper {
     required String matchType,
     required int playerCount,
     required Map<int, String> tempSelectedPlayers,
+    String? majorCategory,
+    String? minorCategory,
   }) async {
     final cleanTeamName = TextSanitizer.clean(rawTeamName);
     final team = TeamModel(
@@ -31,5 +35,19 @@ class TeamRegistrationSaveHelper {
     );
     await ref.read(teamRepositoryProvider).saveTeam(team);
     ref.read(teamNameHistoryProvider.notifier).addHistory(rawTeamName.trim());
+
+    // カテゴリと試合形式の組み合わせ履歴を記録
+    final parsed = (majorCategory != null && minorCategory != null)
+        ? (majorCategory: majorCategory, minorCategory: minorCategory)
+        : TeamRegistrationCategoryParser.parseCategoryToState(category);
+
+    await ref
+        .read(categoryFormatHistoryProvider.notifier)
+        .recordUsage(
+          majorCategory: parsed.majorCategory,
+          minorCategory: parsed.minorCategory,
+          category: category,
+          matchType: matchType,
+        );
   }
 }

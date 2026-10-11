@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_dynamic_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_app_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/category_format_history_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_page_two_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_page_three_view.dart';
@@ -132,6 +133,17 @@ class _TeamRegistrationScreenState
     }
   }
 
+  void _handlePresetSelected(CategoryFormatPresetItem preset) {
+    setState(() {
+      _selectedMajorCategory = preset.majorCategory;
+      _selectedMinorCategory = preset.minorCategory;
+      _matchType = preset.matchType;
+      _tempSelectedPlayers.clear();
+      _substituteCount = 0;
+      _customSlotCount = 8;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -230,6 +242,7 @@ class _TeamRegistrationScreenState
                           showExtraMajorCategories: _showExtraMajorCategories,
                           showExtraMatchTypes: _showExtraMatchTypes,
                           themeColors: _themeColors,
+                          onPresetSelected: _handlePresetSelected,
                           onMajorCategoryChanged: (cat) => setState(() {
                             _selectedMajorCategory = cat;
                             _selectedMinorCategory = cat == 'その他' ? '混成' : '全体';
@@ -380,6 +393,8 @@ class _TeamRegistrationScreenState
             editingTeamId: _editingTeamId,
             tournamentId: widget.tournamentId,
             category: _selectedCategory,
+            majorCategory: _selectedMajorCategory,
+            minorCategory: _selectedMinorCategory,
             rawTeamName: _teamNameController.text,
             matchType: _matchType,
             playerCount: playerCount,
@@ -416,6 +431,8 @@ class _TeamRegistrationScreenState
               editingTeamId: _editingTeamId,
               tournamentId: widget.tournamentId,
               category: _selectedCategory,
+              majorCategory: _selectedMajorCategory,
+              minorCategory: _selectedMinorCategory,
               rawTeamName: _teamNameController.text,
               matchType: _matchType,
               playerCount: playerCount,

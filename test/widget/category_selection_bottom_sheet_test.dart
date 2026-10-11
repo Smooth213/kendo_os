@@ -29,8 +29,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('「テストチーム」の部門選択'), findsOneWidget);
-      expect(find.text('1. 出場カテゴリ（大分類）'), findsOneWidget);
-      expect(find.text('2. 出場カテゴリ（小分類）'), findsOneWidget);
+      expect(find.text('中学生'), findsOneWidget);
       expect(find.text('中学生男子の部'), findsWidgets);
     });
 
@@ -68,7 +67,7 @@ void main() {
       await tester.tap(find.text('その他'));
       await tester.pumpAndSettle();
 
-      expect(find.text('カスタム部門名（任意）'), findsOneWidget);
+      expect(find.text('カスタム部門名を入力（任意）'), findsOneWidget);
     });
 
     testWidgets('決定ボタンをタップすると生成された部門名が返されること', (tester) async {

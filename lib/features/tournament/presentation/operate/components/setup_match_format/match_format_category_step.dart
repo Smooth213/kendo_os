@@ -4,9 +4,9 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_selection_card.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/category_cascade_selector_view.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 /// 大会カテゴリおよび自チーム選択ステップ（第1ページ）
 class MatchFormatCategoryStep extends ConsumerWidget {
@@ -73,70 +73,26 @@ class MatchFormatCategoryStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xxl),
 
-        // カテゴリ大分類
-        buildSectionTitle('1. 対象カテゴリを選択（大分類）'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: majorCategories
-              .map(
-                (cat) => AppChoiceChip(
-                  label: Text(cat),
-                  selected: selectedMajorCategory == cat,
-                  onSelected: (s) {
-                    if (s) {
-                      onCategoryChanged(cat, cat == 'その他' ? '混成' : '全体');
-                    }
-                  },
-                ),
-              )
-              .toList(),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-
-        // カテゴリ小分類
-        buildSectionTitle('2. 対象カテゴリを選択（小分類）'),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: getMinorCategories(selectedMajorCategory).map((cat) {
-            String label = cat;
-            if (selectedMajorCategory == '小学生') {
-              if (cat == '低学年') label = '低学年 (1-4年)';
-              if (cat == '高学年') label = '高学年 (5-6年)';
-            }
-            return AppChoiceChip(
-              label: Text(label),
-              selected: selectedMinorCategory == cat,
-              onSelected: (s) {
-                if (s) {
-                  onCategoryChanged(selectedMajorCategory, cat);
+        // カテゴリ選択（大分類 ＋ 連動サブコンテナ）
+        buildSectionTitle('1. 対象カテゴリを選択'),
+        CategoryCascadeSelectorView(
+          selectedMajorCategory: selectedMajorCategory,
+          selectedMinorCategory: selectedMinorCategory,
+          customCategoryName: customCategoryName,
+          themeColors: themeColors,
+          onCategoryChanged:
+              ({
+                required majorCategory,
+                required minorCategory,
+                customCategoryName,
+              }) {
+                onCategoryChanged(majorCategory, minorCategory);
+                if (customCategoryName != null &&
+                    onCustomCategoryChanged != null) {
+                  onCustomCategoryChanged!(customCategoryName);
                 }
               },
-            );
-          }).toList(),
         ),
-        if (selectedMajorCategory == 'その他') ...[
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            initialValue: customCategoryName,
-            scrollPadding: EdgeInsets.zero,
-            decoration: InputDecoration(
-              labelText: 'カスタム部門名を入力（任意）',
-              hintText: '例: 小中学生混成、東西対抗、オープン など',
-              prefixIcon: Icon(
-                Icons.edit_note,
-                color: themeColors.primaryAccent,
-              ),
-              border: const OutlineInputBorder(borderRadius: AppRadius.medium),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-            ),
-            onChanged: onCustomCategoryChanged,
-          ),
-        ],
         const SizedBox(height: AppSpacing.lg),
 
         // プレビュー表示
