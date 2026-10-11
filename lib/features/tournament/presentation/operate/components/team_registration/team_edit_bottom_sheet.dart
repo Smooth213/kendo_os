@@ -61,6 +61,8 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
   bool _isSaving = false;
 
   final List<String> _candidateCategories = [
+    '初心者',
+    '幼年',
     '小学生低学年',
     '小学生高学年',
     '小学生',
@@ -311,8 +313,16 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                   matchTypes: _matchTypes,
                   themeColors: themeColors,
                   borderColor: borderColor,
-                  onCategoryChanged: (cat) =>
-                      setState(() => _selectedCategory = cat),
+                  onCategoryChanged: (cat) {
+                    setState(() {
+                      _selectedCategory = cat;
+                      final cleanCat = cat.replaceAll('の部', '');
+                      if (!_candidateCategories.contains(cat) &&
+                          !_candidateCategories.contains(cleanCat)) {
+                        _candidateCategories.insert(0, cat);
+                      }
+                    });
+                  },
                   onMatchTypeChanged: (type) {
                     setState(() {
                       _matchType = type;

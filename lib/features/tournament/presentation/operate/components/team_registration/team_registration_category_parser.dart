@@ -8,10 +8,10 @@ class TeamRegistrationCategoryParser {
     required String minorCategory,
   }) {
     if (majorCategory == '初心者') {
-      return '初心者の部';
+      return minorCategory == '全体' ? '初心者の部' : '初心者$minorCategoryの部';
     }
     if (majorCategory == '幼年') {
-      return '幼年の部';
+      return minorCategory == '全体' ? '幼年の部' : '幼年$minorCategoryの部';
     }
     if (minorCategory == '全体') {
       return '$majorCategoryの部';

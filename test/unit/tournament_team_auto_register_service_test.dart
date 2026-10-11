@@ -277,5 +277,39 @@ void main() {
         '勝ち抜き戦（3人制）',
       );
     });
+
+    test('resolveCategory: 明示的に指定・選択された部門（中学生男子の部等）が上書きされず正確に維持されること', () {
+      // ユーザーが手動選択したカテゴリ（中学生男子の部、中学生女子の部、小学生1年の部など）
+      final testCases = [
+        '中学生男子の部',
+        '中学生女子の部',
+        '小学生1年の部',
+        '小学生低学年の部',
+        '初心者の部',
+        '高校生女子の部',
+        '一般の部',
+        'カスタム大会の部',
+      ];
+
+      for (final expectedCat in testCases) {
+        final team = ParsedTeamOrder(
+          teamName: '平山 空',
+          category: expectedCat,
+          matchType: '個人戦',
+          members: const [ParsedTeamMember(position: '選手', name: '平山 空')],
+        );
+
+        final resolved = TournamentTeamAutoRegisterService.resolveCategory(
+          team,
+          roster: roster,
+        );
+
+        expect(
+          resolved,
+          equals(expectedCat),
+          reason: '$expectedCat を選んだ場合に他の部門へ書き換えられず正確に維持されること',
+        );
+      }
+    });
   });
 }

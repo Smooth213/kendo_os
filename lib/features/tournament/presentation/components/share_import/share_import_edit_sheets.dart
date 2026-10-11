@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
@@ -84,10 +85,12 @@ abstract final class ShareImportEditSheets {
       '中学生女子の部',
       '高校生の部',
       '一般の部',
+      '初心者の部',
+      '幼年の部',
       'その他',
     ];
 
-    return showAppBottomSheet<String>(
+    final selected = await showAppBottomSheet<String>(
       context: context,
       useRootNavigator: true,
       builder: (ctx) {
@@ -112,15 +115,24 @@ abstract final class ShareImportEditSheets {
                 Wrap(
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
-                  children: candidateCategories.map((cat) {
-                    final isSel = currentCategory == cat;
-                    return AppChoiceChip(
-                      label: Text(cat),
-                      selected: isSel,
-                      selectedColor: accentColor.withValues(alpha: 0.2),
-                      onSelected: (_) => Navigator.of(ctx).pop(cat),
-                    );
-                  }).toList(),
+                  children: [
+                    ...candidateCategories.map((cat) {
+                      final isSel = currentCategory == cat;
+                      return AppChoiceChip(
+                        label: Text(cat),
+                        selected: isSel,
+                        selectedColor: accentColor.withValues(alpha: 0.2),
+                        onSelected: (_) => Navigator.of(ctx).pop(cat),
+                      );
+                    }),
+                    AppChoiceChip(
+                      icon: Icons.tune,
+                      label: const Text('全カテゴリから選択...'),
+                      selected: false,
+                      onSelected: (_) =>
+                          Navigator.of(ctx).pop('__CUSTOM_ALL__'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
               ],
@@ -129,6 +141,16 @@ abstract final class ShareImportEditSheets {
         );
       },
     );
+
+    if (selected == '__CUSTOM_ALL__' && context.mounted) {
+      return CategorySelectionBottomSheet.show(
+        context: context,
+        title: '「$teamName」の部門選択',
+        initialCategory: currentCategory,
+        accentColor: accentColor,
+      );
+    }
+    return selected == '__CUSTOM_ALL__' ? null : selected;
   }
 
   /// チーム名変更ボトムシートを表示

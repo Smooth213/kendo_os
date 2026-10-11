@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/registered_team_card.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 /// チーム登録画面 ページ3: 登録プレビュー＆登録済み一覧（カテゴリ分類＆タップ編集対応）
@@ -69,63 +69,20 @@ class _TeamRegistrationConfirmStepState
   }
 
   /// カテゴリをワンタップで変更できるダイアログ
-  void _showChangeCategoryDialog(BuildContext context, TeamModel team) {
-    final candidateCategories = [
-      '小学生低学年の部',
-      '小学生高学年の部',
-      '小学生の部',
-      '中学生の部',
-      '中学生男子の部',
-      '中学生女子の部',
-      '高校生の部',
-      '一般の部',
-      'その他',
-    ];
-
-    showAppBottomSheet(
+  Future<void> _showChangeCategoryDialog(
+    BuildContext context,
+    TeamModel team,
+  ) async {
+    final newCat = await CategorySelectionBottomSheet.show(
       context: context,
-      builder: (ctx) {
-        return AppBottomSheetContent(
-          title: '「${team.teamName}」のカテゴリ変更',
-          titleIcon: Icons.category,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '所属する部門（カテゴリ）を選択してください：',
-                style: TextStyle(
-                  fontSize: AppFontSize.small,
-                  color: context.appColors.subTextColor,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: candidateCategories.map((cat) {
-                  final isCurrent = team.category == cat;
-                  return AppChoiceChip(
-                    label: Text(cat),
-                    selected: isCurrent,
-                    selectedColor: widget.themeColors.primaryAccent.withValues(
-                      alpha: 0.2,
-                    ),
-                    onSelected: (selected) {
-                      Navigator.pop(ctx);
-                      if (widget.onUpdateCategory != null) {
-                        widget.onUpdateCategory!(team, cat);
-                      }
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
-          ),
-        );
-      },
+      title: '「${team.teamName}」のカテゴリ変更',
+      initialCategory: team.category,
+      accentColor: widget.themeColors.primaryAccent,
     );
+
+    if (newCat != null && widget.onUpdateCategory != null) {
+      widget.onUpdateCategory!(team, newCat);
+    }
   }
 
   @override

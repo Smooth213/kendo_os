@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/player_roster_matcher.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/edit_parsed_member_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_team_tile.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -156,64 +157,15 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
       roster: roster,
     );
 
-    final candidateCategories = [
-      '小学生低学年の部',
-      '小学生高学年の部',
-      '小学生の部',
-      '中学生の部',
-      '中学生男子の部',
-      '中学生女子の部',
-      '高校生の部',
-      '一般の部',
-      'その他',
-    ];
-
     final accentColor =
         Theme.of(context).extension<AppThemeColors>()?.primaryAccent ??
         AppKendoColors.blue;
-    final subTextColor = context.appColors.subTextColor;
 
-    final newCat = await showAppBottomSheet<String>(
+    final newCat = await CategorySelectionBottomSheet.show(
       context: context,
-      useRootNavigator: true,
-      builder: (ctx) {
-        return AppBottomSheetContent(
-          title: '「${team.teamName}」の部門選択',
-          titleIcon: Icons.category,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '所属する部門を選択してください：',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    color: subTextColor,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: candidateCategories.map((cat) {
-                    final isSel = currentCat == cat;
-                    return AppChoiceChip(
-                      label: Text(cat),
-                      selected: isSel,
-                      selectedColor: accentColor.withValues(alpha: 0.2),
-                      onSelected: (_) => Navigator.of(ctx).pop(cat),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        );
-      },
+      title: '「${team.teamName}」の部門選択',
+      initialCategory: currentCat,
+      accentColor: accentColor,
     );
 
     if (newCat != null && onTeamsUpdated != null) {

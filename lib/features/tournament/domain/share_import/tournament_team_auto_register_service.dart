@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/player_roster_matcher.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_name_history_provider.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
@@ -190,9 +191,17 @@ class TournamentTeamAutoRegisterService {
     '小学生低学年の部',
     '小学生高学年の部',
     '小学生の部',
+    '小学生男子の部',
+    '小学生女子の部',
     '中学生の部',
+    '中学生男子の部',
+    '中学生女子の部',
     '高校生の部',
+    '高校生男子の部',
+    '高校生女子の部',
     '一般の部',
+    '初心者の部',
+    '幼年の部',
     'その他',
   ];
 
@@ -203,13 +212,21 @@ class TournamentTeamAutoRegisterService {
   }) {
     final cat = team.category.trim();
     if (cat.isNotEmpty) {
-      if (candidateCategories.contains(cat)) return cat;
+      if (candidateCategories.contains(cat) || cat.endsWith('の部')) return cat;
+      final state = TeamRegistrationCategoryParser.parseCategoryToState(cat);
+      if (state.majorCategory != 'その他' || state.minorCategory != '全体') {
+        final formatted = TeamRegistrationCategoryParser.formatCategoryName(
+          majorCategory: state.majorCategory,
+          minorCategory: state.minorCategory,
+        );
+        if (formatted.endsWith('の部')) return formatted;
+      }
       final resolved = determineCategory(
         cat,
         members: team.members,
         roster: roster,
       );
-      if (candidateCategories.contains(resolved)) return resolved;
+      return resolved;
     }
     return determineCategory(
       team.teamName,

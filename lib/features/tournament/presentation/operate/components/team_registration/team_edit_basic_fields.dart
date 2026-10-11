@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
@@ -28,6 +29,20 @@ class TeamEditBasicFields extends StatelessWidget {
     required this.onCategoryChanged,
     required this.onMatchTypeChanged,
   });
+
+  Future<void> _openCategorySelector(BuildContext context) async {
+    final teamName = teamNameController.text.trim();
+    final title = teamName.isNotEmpty ? '「$teamName」の部門選択' : '部門（カテゴリ）の選択';
+    final newCat = await CategorySelectionBottomSheet.show(
+      context: context,
+      title: title,
+      initialCategory: selectedCategory,
+      accentColor: themeColors.primaryAccent,
+    );
+    if (newCat != null && newCat.isNotEmpty) {
+      onCategoryChanged(newCat);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,28 +98,99 @@ class TeamEditBasicFields extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
 
         // 2. 所属部門（カテゴリ）
-        Text(
-          '所属部門（カテゴリ）',
-          style: TextStyle(
-            fontSize: AppFontSize.subhead,
-            fontWeight: AppFontWeight.bold,
-            color: textColor,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '所属部門（カテゴリ）',
+              style: TextStyle(
+                fontSize: AppFontSize.subhead,
+                fontWeight: AppFontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            InkWell(
+              borderRadius: BorderRadius.circular(AppRadius.smallValue),
+              onTap: () => _openCategorySelector(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.subValue,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.tune, size: 14, color: accentColor),
+                    const SizedBox(width: AppSpacing.subValue),
+                    Text(
+                      '全カテゴリから選択',
+                      style: TextStyle(
+                        fontSize: AppFontSize.caption,
+                        fontWeight: AppFontWeight.bold,
+                        color: accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.xs),
         Wrap(
           spacing: AppSpacing.subValue,
           runSpacing: AppSpacing.subValue,
-          children: candidateCategories.map((cat) {
-            final labelText = cat.replaceAll('の部', '');
-            final isSel = selectedCategory.replaceAll('の部', '') == labelText;
-            return AppChoiceChip(
-              label: Text(labelText),
-              selected: isSel,
-              selectedColor: accentColor.withValues(alpha: 0.2),
-              onSelected: (_) => onCategoryChanged(cat),
-            );
-          }).toList(),
+          children: [
+            ...candidateCategories.map((cat) {
+              final labelText = cat.replaceAll('の部', '');
+              final isSel = selectedCategory.replaceAll('の部', '') == labelText;
+              return AppChoiceChip(
+                label: Text(labelText),
+                selected: isSel,
+                selectedColor: accentColor.withValues(alpha: 0.2),
+                onSelected: (_) {
+                  if (cat == 'その他') {
+                    _openCategorySelector(context);
+                  } else {
+                    final normalized = cat.endsWith('の部') ? cat : '$catの部';
+                    onCategoryChanged(normalized);
+                  }
+                },
+              );
+            }),
+            AppActionChip(
+              icon: Icons.tune,
+              label: const Text('全カテゴリから選択...'),
+              onPressed: () => _openCategorySelector(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(AppRadius.smallValue),
+            border: Border.all(color: accentColor.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle, size: 14, color: accentColor),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                '設定中: ${selectedCategory.endsWith('の部') ? selectedCategory : '$selectedCategoryの部'}',
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  fontWeight: AppFontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
         ),
 
         const SizedBox(height: AppSpacing.lg),
