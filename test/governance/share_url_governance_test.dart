@@ -11,6 +11,13 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/shar
 import 'package:kendo_os/features/viewer/presentation/components/viewer_share_dialog.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/routing/app_router.dart';
+import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart'
+    show customTeamNamesProvider;
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
 
@@ -312,6 +319,152 @@ void main() {
       expect(p2pUri.path, '/viewer-team/${Uri.encodeComponent('第1試合場 準決勝')}');
       expect(p2pUri.queryParameters['role'], 'viewer');
       expect(p2pUri.queryParameters['dojoId'], 'dojo_p2p_gov');
+    });
+
+    test('個人戦・リーグ個人戦 試合カードBAND速報URL完全分離規約こと', () {
+      final matchesToTest = [
+        MatchModel(
+          id: 'indiv_standard',
+          matchType: '個人戦',
+          tournamentId: 'tourney_gov',
+          redName: '選手A',
+          whiteName: '選手B',
+          note: '第1試合場 1回戦',
+        ),
+        MatchModel(
+          id: 'indiv_en',
+          matchType: 'individual',
+          tournamentId: 'tourney_gov',
+          redName: '選手C',
+          whiteName: '選手D',
+          note: '第2試合場 2回戦',
+        ),
+        MatchModel(
+          id: 'indiv_player_type',
+          matchType: '選手',
+          tournamentId: 'tourney_gov',
+          redName: '選手E',
+          whiteName: '選手F',
+          note: '第3試合場 3回戦',
+        ),
+        MatchModel(
+          id: 'indiv_league',
+          matchType: 'individual',
+          groupName: 'league_group_alpha',
+          tournamentId: 'tourney_gov',
+          redName: '選手G',
+          whiteName: '選手H',
+          note: '第4試合場 [リーグ戦] 第1試合',
+        ),
+      ];
+
+      for (final m in matchesToTest) {
+        final text = BandMatchTextFormatter.formatFromMatchGroup(
+          matches: [m],
+          tournamentName: '公式大会',
+          dojoId: 'dojo_gov',
+        );
+        final uri = Uri.parse(
+          RegExp(r'https://[^\s]+').firstMatch(text)!.group(0)!,
+        );
+
+        // 🛡️ 個人戦はグループ名の有無に関わらず、必ず単一試合URL (/viewer/{id}) になる契約
+        expect(
+          uri.path,
+          '/viewer/${m.id}',
+          reason: '${m.matchType} の試合カードURLは /viewer/${m.id} である必要があります。',
+        );
+        expect(uri.queryParameters['role'], 'viewer');
+        expect(uri.queryParameters['tournamentId'], 'tourney_gov');
+        expect(uri.queryParameters['dojoId'], 'dojo_gov');
+      }
+    });
+
+    testWidgets('UIカード（MatchListTileCard）におけるBANDボタン配置責務分離規約こと', (
+      tester,
+    ) async {
+      // 1. 個人戦試合カード ➔ BANDボタンが存在すること
+      final indivMatch = MatchModel(
+        id: 'ui_gov_indiv',
+        matchType: '個人戦',
+        tournamentId: 'tourney_gov',
+        redName: '道上: 橋本',
+        whiteName: '相手: 三宅',
+        status: 'finished',
+        order: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
+            ),
+            matchListProvider.overrideWith((ref) => [indivMatch]),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: Scaffold(body: MatchListTileCard(initialMatch: indivMatch)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BandShareButton), findsOneWidget);
+      expect(find.text('BAND'), findsOneWidget);
+
+      // 2. 団体戦試合カード（先鋒） ➔ BANDボタンが表示されないこと（親カードの責務）
+      final teamMatch = MatchModel(
+        id: 'ui_gov_team',
+        matchType: '先鋒',
+        groupName: 'group_team_01',
+        tournamentId: 'tourney_gov',
+        redName: '道上: 田中',
+        whiteName: '相手: 佐藤',
+        status: 'in_progress',
+        order: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
+            ),
+            matchListProvider.overrideWith((ref) => [teamMatch]),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: Scaffold(body: MatchListTileCard(initialMatch: teamMatch)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BandShareButton), findsNothing);
+      expect(find.text('BAND'), findsNothing);
+    });
+
+    test('個人戦親ヘッダーへのBAND共有混入排除コードスキャン規約こと', () {
+      final headerFile = File(
+        'lib/features/tournament/presentation/operate/components/timeline/timeline_individual_player_header.dart',
+      );
+      final content = headerFile.readAsStringSync();
+      expect(
+        content.contains('BandShareButton'),
+        isFalse,
+        reason: '個人戦親ヘッダーにBANDボタンを配置してはいけません。試合カードの責務として配置してください。',
+      );
     });
   });
 }

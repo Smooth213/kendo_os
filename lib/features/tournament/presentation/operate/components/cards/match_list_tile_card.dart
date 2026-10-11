@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_card_action_buttons.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_card_header_row.dart';
@@ -68,7 +69,18 @@ class MatchListTileCard extends ConsumerWidget {
     final isPlaying = match.status == 'in_progress';
     final bool isIndividual =
         !match.isKachinuki &&
-        (match.matchType == '個人戦' || match.matchType == '選手');
+        !match.matchType.contains('団体') &&
+        !match.matchType.contains('将') &&
+        match.matchType != '先鋒' &&
+        match.matchType != '次鋒' &&
+        match.matchType != '中堅' &&
+        match.matchType != '副将' &&
+        match.matchType != '大将' &&
+        match.matchType != '代表戦' &&
+        (match.matchType == '個人戦' ||
+            match.matchType == 'individual' ||
+            match.matchType == '選手' ||
+            match.matchType.contains('個人'));
 
     String displayNote = match.note;
     if (displayNote.contains('[SUMMARY]')) {
@@ -186,10 +198,29 @@ class MatchListTileCard extends ConsumerWidget {
                   isDark: isDark,
                 ),
               ),
-              MatchCardNoteRow(
-                displayNote: displayNote,
-                matchType: match.matchType,
-                noteColor: noteC,
+              Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      right: isIndividual
+                          ? (AppSpacing.giant + AppSpacing.xxl)
+                          : 0,
+                    ),
+                    child: MatchCardNoteRow(
+                      displayNote: displayNote,
+                      matchType: match.matchType,
+                      noteColor: noteC,
+                    ),
+                  ),
+                  if (isIndividual)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(child: BandShareButton(matches: [match])),
+                    ),
+                ],
               ),
               const SizedBox(height: 10),
               // 🔽 【要塞型・全3行レイアウト大刷新】: チーム名を選手名の上に配置し、スコア圧迫による文字切れを100%防止

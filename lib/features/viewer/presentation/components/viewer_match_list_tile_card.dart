@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_card_note_row.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_players_score_row.dart';
@@ -47,7 +48,18 @@ class ViewerMatchListTileCard extends ConsumerWidget {
     final isPlaying = match.status == 'in_progress';
     final bool isIndividual =
         !match.isKachinuki &&
-        (match.matchType == '個人戦' || match.matchType == '選手');
+        !match.matchType.contains('団体') &&
+        !match.matchType.contains('将') &&
+        match.matchType != '先鋒' &&
+        match.matchType != '次鋒' &&
+        match.matchType != '中堅' &&
+        match.matchType != '副将' &&
+        match.matchType != '大将' &&
+        match.matchType != '代表戦' &&
+        (match.matchType == '個人戦' ||
+            match.matchType == 'individual' ||
+            match.matchType == '選手' ||
+            match.matchType.contains('個人'));
 
     String displayNote = match.note;
     if (!isIndividual &&
@@ -157,10 +169,29 @@ class ViewerMatchListTileCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              MatchCardNoteRow(
-                displayNote: displayNote,
-                matchType: match.matchType,
-                noteColor: noteC,
+              Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      right: isIndividual
+                          ? (AppSpacing.giant + AppSpacing.xxl)
+                          : 0,
+                    ),
+                    child: MatchCardNoteRow(
+                      displayNote: displayNote,
+                      matchType: match.matchType,
+                      noteColor: noteC,
+                    ),
+                  ),
+                  if (isIndividual)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Center(child: BandShareButton(matches: [match])),
+                    ),
+                ],
               ),
               const SizedBox(height: 10),
               // 🔽 【2行目〜3行目】: 掲示板式リアルタイムスコア＆対戦ライン

@@ -10,7 +10,6 @@ import 'package:kendo_os/features/match/application/usecases/match_usecases.dart
 import 'package:kendo_os/features/match/application/usecases/scorer_lock_usecase.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
-import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
 import 'package:kendo_os/admin/providers/audit_provider.dart';
 import 'package:kendo_os/shared/application/services/sound_service.dart';
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart';
@@ -22,24 +21,27 @@ import 'package:kendo_os/features/match/application/services/match_sound_helper.
 import 'package:kendo_os/features/match/application/services/match_retirement_helper.dart';
 import 'package:kendo_os/features/match/application/services/match_snapshot_helper.dart';
 import 'package:kendo_os/features/match/application/services/match_undo_helper.dart';
+import 'package:kendo_os/features/match/application/services/match_ippon_helper.dart';
+import 'package:kendo_os/features/match/application/services/match_time_up_helper.dart';
 import 'package:kendo_os/features/match/application/usecases/match_progress_calculator.dart';
 
 /// アプリケーション層オーケストレーションサービス
 class MatchApplicationService {
   final Ref _ref;
   final AddScoreUseCase _addScore;
-  final TimeUpUseCase _timeUp;
   final ScorerLockUseCase _scorerLock;
   final MatchPersistenceHelper _persistenceHelper;
   final MatchAutoProgressionService _progressionService;
   final MatchHanteiFinishHelper _hanteiFinishHelper;
   final MatchSnapshotHelper _snapshotHelper;
   final MatchUndoHelper _undoHelper;
+  final MatchIpponHelper _ipponHelper;
+  final MatchTimeUpHelper _timeUpHelper;
 
   MatchApplicationService(
     this._ref,
     this._addScore,
-    this._timeUp,
+    TimeUpUseCase timeUp,
     MatchDomainService domainService, {
     ScorerLockUseCase scorerLock = const ScorerLockUseCase(),
     MatchPersistenceHelper? persistenceHelper,
@@ -47,6 +49,8 @@ class MatchApplicationService {
     MatchHanteiFinishHelper? hanteiFinishHelper,
     MatchSnapshotHelper? snapshotHelper,
     MatchUndoHelper? undoHelper,
+    MatchIpponHelper? ipponHelper,
+    MatchTimeUpHelper? timeUpHelper,
   }) : _scorerLock = scorerLock,
        _persistenceHelper = persistenceHelper ?? MatchPersistenceHelper(_ref),
        _progressionService =
@@ -67,6 +71,21 @@ class MatchApplicationService {
              _addScore,
              persistenceHelper ?? MatchPersistenceHelper(_ref),
              snapshotHelper ?? const MatchSnapshotHelper(),
+           ),
+       _ipponHelper =
+           ipponHelper ??
+           MatchIpponHelper(
+             _ref,
+             _addScore,
+             persistenceHelper ?? MatchPersistenceHelper(_ref),
+             snapshotHelper ?? const MatchSnapshotHelper(),
+           ),
+       _timeUpHelper =
+           timeUpHelper ??
+           MatchTimeUpHelper(
+             _ref,
+             timeUp,
+             persistenceHelper ?? MatchPersistenceHelper(_ref),
            );
 
   User _getCurrentUser() => MatchProgressCalculator.getCurrentUser();
@@ -98,85 +117,16 @@ class MatchApplicationService {
   }) async {
     final traceId = const Uuid().v4();
     await _safeExecute(
-      () async {
-        final initialMatch = await _getMatchSafely(matchId);
-        if (initialMatch == null) return;
-
-        final MatchRule rule =
-            initialMatch.rule ?? _ref.read(matchRuleProvider);
-        final settings = _ref.read(settingsProvider);
-        final currentUser = _getCurrentUser();
-
-        final isKata = redFlags > 0 || whiteFlags > 0;
-        final typeLabel = isRetirement
-            ? '途中棄権'
-            : (isKata
-                  ? '旗判定 ($redFlags-$whiteFlags)'
-                  : ({
-                          PointType.men: 'メン',
-                          PointType.kote: 'コテ',
-                          PointType.doIdo: 'ドウ',
-                          PointType.tsuki: 'ツキ',
-                          PointType.hansoku: '反則',
-                          PointType.fusen: '不戦勝',
-                          PointType.hantei: '判定',
-                        }[type] ??
-                        type.name));
-        var match = _snapshotHelper.addSnapshotToMatch(
-          initialMatch,
-          '【${side == Side.red ? "赤" : "白"}】$typeLabel 入力前',
-        );
-
-        int maxClock = match.events.isEmpty
-            ? 0
-            : match.events
-                  .map((e) => e.logicalClock)
-                  .reduce((a, b) => a > b ? a : b);
-
-        final event = ScoreEventLegacyAdapter.fromLegacy(
-          id: const Uuid().v4(),
-          side: side,
-          type: type,
-          timestamp: DateTime.now(),
-          userId: currentUser.id,
-          sequence: match.events.isEmpty ? 1 : match.events.last.sequence + 1,
-          logicalClock: maxClock + 1,
-          isRetirement: isRetirement,
-          redFlags: redFlags,
-          whiteFlags: whiteFlags,
-        );
-
-        final permissionService = _ref.read(permissionServiceProvider);
-        if (!permissionService.canAppend(currentUser, event)) {
-          throw Exception('スコアを追加する権限がありません。');
-        }
-
-        final updatedMatch = _addScore.execute(currentUser, match, event, rule);
-
-        MatchSoundHelper.playAddIpponSound(
-          soundService: _ref.read(soundServiceProvider),
-          audioFeedbackMode: settings.audioFeedbackMode,
-          side: side,
-          type: type,
-          typeLabel: typeLabel,
-          isMatchFinishedNow:
-              updatedMatch.status == 'finished' && match.status != 'finished',
-        );
-
-        await _persistenceHelper.saveAndSync(updatedMatch);
-        await _ref
-            .read(auditProvider)
-            .logAction(
-              matchId: match.id,
-              action: AuditAction.addScore,
-              details: isKata
-                  ? '${side.name} kataJudge $redFlags-$whiteFlags'
-                  : '${side.name} ${type.name}',
-              traceId: traceId,
-            );
-
-        await _finalizeIfNeeded(updatedMatch, match);
-      },
+      () => _ipponHelper.executeAddIppon(
+        matchId: matchId,
+        side: side,
+        type: type,
+        isRetirement: isRetirement,
+        redFlags: redFlags,
+        whiteFlags: whiteFlags,
+        traceId: traceId,
+        finalizeIfNeeded: _finalizeIfNeeded,
+      ),
       '端末にスコアが保存されませんでした。もう一度お試しください',
       metricName: 'event_append',
       traceId: traceId,
@@ -320,44 +270,11 @@ class MatchApplicationService {
   Future<void> handleTimeUp(String matchId) async {
     final traceId = const Uuid().v4();
     await _safeExecute(
-      () async {
-        final match = await _getMatchSafely(matchId);
-        if (match == null) return;
-
-        final MatchRule rule = match.rule ?? _ref.read(matchRuleProvider);
-        final currentUser = _getCurrentUser();
-
-        final permissionService = _ref.read(permissionServiceProvider);
-        if (!permissionService.canTimeUp(currentUser)) {
-          throw Exception('時間切れ処理を実行する権限がありません。');
-        }
-
-        final canExtend = rule.isEnchoUnlimited || rule.enchoCount > 0;
-        final updatedMatch = _timeUp.execute(
-          currentUser,
-          match,
-          canExtend,
-          rule,
-        );
-
-        MatchSoundHelper.playTimeUpSound(
-          soundService: _ref.read(soundServiceProvider),
-          audioFeedbackMode: _ref.read(settingsProvider).audioFeedbackMode,
-          isMatchFinished: updatedMatch.status == 'finished',
-        );
-
-        await _persistenceHelper.saveAndSync(updatedMatch);
-        await _ref
-            .read(auditProvider)
-            .logAction(
-              matchId: match.id,
-              action: AuditAction.timeUp,
-              details: '時間切れ',
-              traceId: traceId,
-            );
-
-        await _finalizeIfNeeded(updatedMatch, match);
-      },
+      () => _timeUpHelper.executeTimeUp(
+        matchId: matchId,
+        traceId: traceId,
+        finalizeIfNeeded: _finalizeIfNeeded,
+      ),
       '時間切れ処理に失敗しました',
       traceId: traceId,
     );

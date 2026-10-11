@@ -69,6 +69,47 @@ void main() {
     });
 
     test(
+      'formatFromMatchGroup produces correct text and viewer URL for multiple individual matches of playerこと',
+      () {
+        final finishedMatch = MatchModel(
+          id: 'indiv_fin_01',
+          matchType: '個人戦',
+          redName: '皿田 脩人 (道上)',
+          whiteName: '相手A (道場A)',
+          status: 'finished',
+          note: '第1試合場 1回戦',
+          tournamentId: 'tourney_indiv',
+        );
+        final liveMatch = MatchModel(
+          id: 'indiv_live_02',
+          matchType: '個人戦',
+          redName: '皿田 脩人 (道上)',
+          whiteName: '相手B (道場B)',
+          status: 'in_progress',
+          note: '第1試合場 2回戦',
+          tournamentId: 'tourney_indiv',
+        );
+
+        final text = BandMatchTextFormatter.formatFromMatchGroup(
+          matches: [finishedMatch, liveMatch],
+          tournamentName: '個人選手権大会',
+          dojoId: 'dojo_test',
+        );
+
+        expect(text, contains('【個人選手権大会】'));
+        expect(text, contains('第1試合場 2回戦'));
+        expect(text, contains('赤: 皿田 脩人 (道上) vs 白: 相手B (道場B)'));
+        expect(text, contains('▼ リアルタイム速報・スコア詳細'));
+        expect(
+          text,
+          contains(
+            'https://kendo-os-beta.web.app/viewer/indiv_live_02?tournamentId=tourney_indiv&role=viewer&dojoId=dojo_test',
+          ),
+        );
+      },
+    );
+
+    test(
       'formatFromMatchGroup produces correct テキスト for チーム 試合 with live positionこと',
       () {
         final m1 = MatchModel(

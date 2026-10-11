@@ -42,24 +42,40 @@ class BandMatchTextFormatter {
         break;
     }
 
+    final bool isPureIndividual =
+        !firstMatch.isKachinuki &&
+        (firstMatch.matchType == 'individual' ||
+            firstMatch.matchType == '選手' ||
+            firstMatch.matchType.contains('個人'));
+
+    final isDantai =
+        !isPureIndividual &&
+        (matches.length > 1 ||
+            firstMatch.matchType.contains('団体') ||
+            (firstMatch.groupName != null && firstMatch.groupName!.isNotEmpty));
+
+    final targetMatch = isDantai
+        ? firstMatch
+        : matches.firstWhere(
+            (m) => m.status == 'in_progress' || m.status == 'playing',
+            orElse: () => matches.firstWhere(
+              (m) => m.status == 'pending',
+              orElse: () => firstMatch,
+            ),
+          );
+
     // 3. コート・試合順・回戦情報（noteから取得、なければcategory）
-    final noteInfo = firstMatch.note.trim();
+    final noteInfo = targetMatch.note.trim();
     if (noteInfo.isNotEmpty) {
       buffer.writeln('$scenePrefix$noteInfo');
-    } else if (firstMatch.category != null && firstMatch.category!.isNotEmpty) {
-      buffer.writeln('$scenePrefix${firstMatch.category}');
+    } else if (targetMatch.category != null &&
+        targetMatch.category!.isNotEmpty) {
+      buffer.writeln('$scenePrefix${targetMatch.category}');
     }
 
     // 4. 対戦カード
     final rTeam = _cleanTeamName(firstMatch.redName);
     final wTeam = _cleanTeamName(firstMatch.whiteName);
-
-    final isDantai =
-        matches.length > 1 ||
-        firstMatch.matchType.contains('団体') ||
-        (firstMatch.groupName != null &&
-            firstMatch.groupName!.isNotEmpty &&
-            !firstMatch.matchType.contains('個人'));
 
     if (isDantai) {
       buffer.writeln('$rTeam vs $wTeam');
@@ -78,7 +94,9 @@ class BandMatchTextFormatter {
       }
     } else {
       // 個人戦
-      buffer.writeln('赤: ${firstMatch.redName} vs 白: ${firstMatch.whiteName}');
+      buffer.writeln(
+        '赤: ${targetMatch.redName} vs 白: ${targetMatch.whiteName}',
+      );
     }
 
     // 5. リアルタイム速報URL
@@ -92,7 +110,7 @@ class BandMatchTextFormatter {
           : firstMatch.id;
     } else {
       path = 'viewer';
-      targetId = firstMatch.id;
+      targetId = targetMatch.id;
     }
 
     final safeDojo = (dojoId != null && dojoId.isNotEmpty)

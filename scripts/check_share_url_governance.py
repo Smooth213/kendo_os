@@ -23,6 +23,7 @@ def run_share_url_governance():
         ("5. 部内戦専用ビュアーホーム (bunaiksen-viewer-home) 完全自動分岐規約", passed_all),
         ("6. 野良URL・パラメータ欠落URL排除 lib/ コードスキャン規約", passed_all),
         ("7. 全共有ダイアログ・サービス (BAND/Share/P2P) 総合結合URL生成保証規約", passed_all),
+        ("8. 個人戦アコーディオン試合カードBAND共有＆URL分離完全保証規約", passed_all),
     ]
 
     print("=" * 60)

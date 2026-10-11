@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_heading_and_note_section.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_manual_rule_toggle_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_rule_summary_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -340,102 +341,12 @@ class MatchFormatRuleStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
 
-        // 適用ルールの手動切替トグル (useAdvancedRule が有効な場合のみ)
-        Builder(
-          builder: (context) {
-            final curRuleSet = currentRuleEntry.value;
-            if (!curRuleSet.useAdvancedRule) {
-              return const SizedBox.shrink();
-            }
-
-            final isAdvancedToggle =
-                isCurrentMatchAdvanced && curRuleSet.useAdvancedRule;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '適用ルール（自動判別・手動切替）',
-                  style: TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.bodySmall,
-                    color: AppKendoColors.grey,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => onSetManualRoundType('normal'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: !isAdvancedToggle
-                              ? themeColors.primaryAccent
-                              : (isDark
-                                    ? const Color(0xFF2C2C2E)
-                                    : const Color(0xFFF2F2F7)),
-                          foregroundColor: !isAdvancedToggle
-                              ? const Color(0xFFFFFFFF)
-                              : (isDark
-                                    ? AppKendoColors.white60
-                                    : const Color(0xFF000000)),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                            side: BorderSide(
-                              color: !isAdvancedToggle
-                                  ? AppKendoColors.transparent
-                                  : (isDark
-                                        ? const Color(0xFF38383A)
-                                        : const Color(0x33000000)),
-                            ),
-                          ),
-                        ),
-                        child: const Text(
-                          '通常戦のルール',
-                          style: TextStyle(fontWeight: AppFontWeight.semiBold),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => onSetManualRoundType('advanced'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isAdvancedToggle
-                              ? AppKendoColors.teal
-                              : (isDark
-                                    ? const Color(0xFF2C2C2E)
-                                    : const Color(0xFFF2F2F7)),
-                          foregroundColor: isAdvancedToggle
-                              ? const Color(0xFFFFFFFF)
-                              : (isDark
-                                    ? AppKendoColors.white60
-                                    : const Color(0xFF000000)),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                            side: BorderSide(
-                              color: isAdvancedToggle
-                                  ? AppKendoColors.transparent
-                                  : (isDark
-                                        ? const Color(0xFF38383A)
-                                        : const Color(0x33000000)),
-                            ),
-                          ),
-                        ),
-                        child: const Text(
-                          '上位戦のルール',
-                          style: TextStyle(fontWeight: AppFontWeight.semiBold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            );
-          },
+        MatchFormatManualRuleToggleSection(
+          useAdvancedRule: currentRuleEntry.value.useAdvancedRule,
+          isCurrentMatchAdvanced: isCurrentMatchAdvanced,
+          themeColors: themeColors,
+          isDark: isDark,
+          onSetManualRoundType: onSetManualRoundType,
         ),
 
         MatchFormatHeadingAndNoteSection(

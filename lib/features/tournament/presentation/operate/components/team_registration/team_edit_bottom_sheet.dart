@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_slot_helper.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_basic_fields.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_order_list.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_order_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_slot_helper.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
@@ -57,23 +59,12 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
   late String _matchType;
   late final Map<int, String> _tempSelectedPlayers;
   late int _substituteCount;
-  late List<String> _slotIds;
+  List<String> _slotIds = [];
   bool _isSaving = false;
 
-  final List<String> _candidateCategories = [
-    '初心者',
-    '幼年',
-    '小学生低学年',
-    '小学生高学年',
-    '小学生',
-    '中学生',
-    '中学生男子',
-    '中学生女子',
-    '高校生',
-    '一般',
-    '混成',
-    'その他',
-  ];
+  final List<String> _candidateCategories = List.from(
+    TeamEditSlotHelper.defaultCandidateCategories,
+  );
 
   final List<String> _matchTypes =
       TournamentTeamAutoRegisterService.candidateMatchTypes;
@@ -125,39 +116,19 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
     super.dispose();
   }
 
-  int _getBasePlayerCount(String matchType) {
-    if (matchType.contains('それ以上')) {
-      final slotLen = _slotIds.length;
-      if (slotLen > 0) return slotLen;
-      final playerLen = widget.team.playerNames.length;
-      return playerLen > 8 ? playerLen : 8;
-    }
-    if (matchType.contains('3人制')) return 3;
-    if (matchType.contains('個人戦')) return 1;
-    if (matchType.contains('7人制')) return 7;
-    return 5;
-  }
+  int _getBasePlayerCount(String matchType) =>
+      TeamEditSlotHelper.getBasePlayerCount(
+        matchType: matchType,
+        slotLength: _slotIds.length,
+        registeredPlayerLength: widget.team.playerNames.length,
+      );
 
-  List<String> _getPosNames(String matchType, int substituteCount) {
-    if (matchType.contains('それ以上')) {
-      final count = _getBasePlayerCount(matchType);
-      return MatchFormatSetupHelper.generatePositions(count);
-    }
-    List<String> base;
-    if (matchType.contains('3人制')) {
-      base = ['先鋒', '中堅', '大将'];
-    } else if (matchType.contains('個人戦')) {
-      base = ['選手'];
-    } else if (matchType.contains('7人制')) {
-      base = ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'];
-    } else {
-      base = ['先鋒', '次鋒', '中堅', '副将', '大将'];
-    }
-    for (int i = 0; i < substituteCount; i++) {
-      base.add('補欠');
-    }
-    return base;
-  }
+  List<String> _getPosNames(String matchType, int substituteCount) =>
+      TeamEditSlotHelper.getPosNames(
+        matchType: matchType,
+        substituteCount: substituteCount,
+        baseCount: _getBasePlayerCount(matchType),
+      );
 
   void _handleReorder(int oldIndex, int newIndex) {
     setState(() {
@@ -169,13 +140,11 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
       final baseLen = _getBasePlayerCount(_matchType);
       final totalCount = baseLen + _substituteCount;
 
-      // slotIds の並び替え
       if (oldIndex < _slotIds.length && newIndex < _slotIds.length) {
         final movedSlotId = _slotIds.removeAt(oldIndex);
         _slotIds.insert(newIndex, movedSlotId);
       }
 
-      // 選手割り当ての並び替え
       final currentPlayers = List<String?>.generate(
         totalCount,
         (i) => _tempSelectedPlayers[i],
@@ -343,56 +312,21 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
 
                 const SizedBox(height: AppSpacing.xl),
 
-                // 4. オーダー編成
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'オーダー編成',
-                        style: TextStyle(
-                          fontSize: AppFontSize.subhead,
-                          fontWeight: AppFontWeight.bold,
-                          color: accentColor,
-                        ),
-                      ),
-                    ),
-                    if (_matchType.contains('それ以上'))
-                      TextButton.icon(
-                        onPressed: () => setState(() {
-                          _slotIds.add(
-                            'slot_${DateTime.now().microsecondsSinceEpoch}_${_slotIds.length}',
-                          );
-                        }),
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text('選手枠を追加'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: accentColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                        ),
-                      )
-                    else if (_substituteCount < 4)
-                      TextButton.icon(
-                        onPressed: () => setState(() {
-                          _substituteCount++;
-                          _slotIds.add(
-                            'slot_${DateTime.now().microsecondsSinceEpoch}_${_slotIds.length}',
-                          );
-                        }),
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text('補欠を追加'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: accentColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                        ),
-                      ),
-                  ],
+                TeamEditOrderHeader(
+                  matchType: _matchType,
+                  substituteCount: _substituteCount,
+                  accentColor: accentColor,
+                  onAddPlayerSlot: () => setState(() {
+                    _slotIds.add(
+                      'slot_${DateTime.now().microsecondsSinceEpoch}_${_slotIds.length}',
+                    );
+                  }),
+                  onAddSubstitute: () => setState(() {
+                    _substituteCount++;
+                    _slotIds.add(
+                      'slot_${DateTime.now().microsecondsSinceEpoch}_${_slotIds.length}',
+                    );
+                  }),
                 ),
                 const SizedBox(height: AppSpacing.xs),
 
@@ -411,15 +345,11 @@ class _TeamEditBottomSheetState extends ConsumerState<TeamEditBottomSheet> {
                       setState(() => _tempSelectedPlayers.remove(index)),
                   onRemoveSubstitute: (index) {
                     setState(() {
-                      for (int i = index; i < totalCount - 1; i++) {
-                        if (_tempSelectedPlayers.containsKey(i + 1)) {
-                          _tempSelectedPlayers[i] =
-                              _tempSelectedPlayers[i + 1]!;
-                        } else {
-                          _tempSelectedPlayers.remove(i);
-                        }
-                      }
-                      _tempSelectedPlayers.remove(totalCount - 1);
+                      TeamRegistrationSlotHelper.removeSubstitute(
+                        index: index,
+                        playerCount: totalCount,
+                        tempSelectedPlayers: _tempSelectedPlayers,
+                      );
                       if (index < _slotIds.length) {
                         _slotIds.removeAt(index);
                       }
