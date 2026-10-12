@@ -168,8 +168,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('「低学年A」のカテゴリ（部門）'), findsOneWidget);
-      // 「小学生高学年の部」を選択
-      await tester.tap(find.text('小学生高学年の部'));
+      // 小分類「高学年」を選択
+      await tester.tap(find.textContaining('高学年'));
+      await tester.pumpAndSettle();
+
+      // 確定ボタンをタップ
+      await tester.tap(find.text('この部門に設定'));
       await tester.pumpAndSettle();
 
       expect(updatedCategory, equals('小学生高学年の部'));

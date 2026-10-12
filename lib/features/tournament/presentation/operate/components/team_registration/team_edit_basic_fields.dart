@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/category_cascade_selector_view.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_format_selector_view.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// チーム編集ボトムシート: 基本情報（チーム名・部門・試合形式）入力ウィジェット
-class TeamEditBasicFields extends StatelessWidget {
+class TeamEditBasicFields extends StatefulWidget {
   final TextEditingController teamNameController;
   final String selectedCategory;
   final String matchType;
@@ -30,17 +32,77 @@ class TeamEditBasicFields extends StatelessWidget {
     required this.onMatchTypeChanged,
   });
 
-  Future<void> _openCategorySelector(BuildContext context) async {
-    final teamName = teamNameController.text.trim();
-    final title = teamName.isNotEmpty ? '「$teamName」の部門選択' : '部門（カテゴリ）の選択';
-    final newCat = await CategorySelectionBottomSheet.show(
-      context: context,
-      title: title,
-      initialCategory: selectedCategory,
-      accentColor: themeColors.primaryAccent,
+  @override
+  State<TeamEditBasicFields> createState() => _TeamEditBasicFieldsState();
+}
+
+class _TeamEditBasicFieldsState extends State<TeamEditBasicFields> {
+  late String _selectedMajorCategory;
+  late String _selectedMinorCategory;
+  late String _customCategoryName;
+
+  @override
+  void initState() {
+    super.initState();
+    _parseInitialCategory(widget.selectedCategory);
+  }
+
+  @override
+  void didUpdateWidget(covariant TeamEditBasicFields oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedCategory != widget.selectedCategory) {
+      _parseInitialCategory(widget.selectedCategory);
+    }
+  }
+
+  void _parseInitialCategory(String category) {
+    final parsed = TeamRegistrationCategoryParser.parseCategoryToState(
+      category,
     );
-    if (newCat != null && newCat.isNotEmpty) {
-      onCategoryChanged(newCat);
+    _selectedMajorCategory = parsed.majorCategory;
+    _selectedMinorCategory = parsed.minorCategory;
+
+    String customInit = '';
+    if (_selectedMajorCategory == 'その他') {
+      final clean = category.replaceAll('の部', '').trim();
+      if (!['その他', '混成', '混合', '自由'].contains(clean) && clean.isNotEmpty) {
+        customInit = clean;
+      }
+    }
+    _customCategoryName = customInit;
+  }
+
+  void _handleCategoryChanged({
+    required String majorCategory,
+    required String minorCategory,
+    String? customCategoryName,
+  }) {
+    setState(() {
+      _selectedMajorCategory = majorCategory;
+      _selectedMinorCategory = minorCategory;
+      if (customCategoryName != null) {
+        _customCategoryName = customCategoryName;
+      }
+    });
+
+    final newCat = CategoryCascadeSelectorView.buildCategoryName(
+      major: majorCategory,
+      minor: minorCategory,
+      customName: customCategoryName ?? _customCategoryName,
+    );
+    widget.onCategoryChanged(newCat);
+  }
+
+  Future<void> _openCategoryModal(BuildContext context) async {
+    final selected = await CategorySelectionBottomSheet.show(
+      context: context,
+      title: '所属部門（カテゴリ）の選択',
+      initialCategory: widget.selectedCategory,
+      accentColor: widget.themeColors.primaryAccent,
+    );
+    if (selected != null && mounted) {
+      widget.onCategoryChanged(selected);
+      _parseInitialCategory(selected);
     }
   }
 
@@ -48,7 +110,7 @@ class TeamEditBasicFields extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = context.appColors.textColor;
-    final accentColor = themeColors.primaryAccent;
+    final accentColor = widget.themeColors.primaryAccent;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +126,7 @@ class TeamEditBasicFields extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         AppTextField(
-          controller: teamNameController,
+          controller: widget.teamNameController,
           style: TextStyle(
             fontSize: AppFontSize.body,
             fontWeight: AppFontWeight.bold,
@@ -78,11 +140,11 @@ class TeamEditBasicFields extends StatelessWidget {
                 : const Color(0xFFF2F2F7),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.mediumValue),
-              borderSide: BorderSide(color: borderColor),
+              borderSide: BorderSide(color: widget.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.mediumValue),
-              borderSide: BorderSide(color: borderColor),
+              borderSide: BorderSide(color: widget.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.mediumValue),
@@ -95,9 +157,9 @@ class TeamEditBasicFields extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.xl),
 
-        // 2. 所属部門（カテゴリ）
+        // 2. 所属部門（カテゴリ）: 共通カスケードセレクタ
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -111,7 +173,7 @@ class TeamEditBasicFields extends StatelessWidget {
             ),
             InkWell(
               borderRadius: BorderRadius.circular(AppRadius.smallValue),
-              onTap: () => _openCategorySelector(context),
+              onTap: () => _openCategoryModal(context),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.xs,
@@ -136,36 +198,15 @@ class TeamEditBasicFields extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Wrap(
-          spacing: AppSpacing.subValue,
-          runSpacing: AppSpacing.subValue,
-          children: [
-            ...candidateCategories.map((cat) {
-              final labelText = cat.replaceAll('の部', '');
-              final isSel = selectedCategory.replaceAll('の部', '') == labelText;
-              return AppChoiceChip(
-                label: Text(labelText),
-                selected: isSel,
-                selectedColor: accentColor.withValues(alpha: 0.2),
-                onSelected: (_) {
-                  if (cat == 'その他') {
-                    _openCategorySelector(context);
-                  } else {
-                    final normalized = cat.endsWith('の部') ? cat : '$catの部';
-                    onCategoryChanged(normalized);
-                  }
-                },
-              );
-            }),
-            AppActionChip(
-              icon: Icons.tune,
-              label: const Text('全カテゴリから選択...'),
-              onPressed: () => _openCategorySelector(context),
-            ),
-          ],
+        const SizedBox(height: AppSpacing.sm),
+        CategoryCascadeSelectorView(
+          selectedMajorCategory: _selectedMajorCategory,
+          selectedMinorCategory: _selectedMinorCategory,
+          customCategoryName: _customCategoryName,
+          themeColors: widget.themeColors,
+          onCategoryChanged: _handleCategoryChanged,
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: AppSpacing.sm),
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
@@ -182,7 +223,7 @@ class TeamEditBasicFields extends StatelessWidget {
               Icon(Icons.check_circle, size: 14, color: accentColor),
               const SizedBox(width: AppSpacing.xs),
               Text(
-                '設定中: ${selectedCategory.endsWith('の部') ? selectedCategory : '$selectedCategoryの部'}',
+                '設定中: ${widget.selectedCategory.endsWith('の部') ? widget.selectedCategory : '${widget.selectedCategory}の部'}',
                 style: TextStyle(
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
@@ -193,9 +234,9 @@ class TeamEditBasicFields extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.xl),
 
-        // 3. 試合形式
+        // 3. 試合形式: 5大分類 ＋ サブ詳細共通セレクタ
         Text(
           '試合形式',
           style: TextStyle(
@@ -204,19 +245,11 @@ class TeamEditBasicFields extends StatelessWidget {
             color: textColor,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Wrap(
-          spacing: AppSpacing.subValue,
-          runSpacing: AppSpacing.subValue,
-          children: matchTypes.map((type) {
-            final isSel = matchType == type;
-            return AppChoiceChip(
-              label: Text(type),
-              selected: isSel,
-              selectedColor: accentColor.withValues(alpha: 0.2),
-              onSelected: (_) => onMatchTypeChanged(type),
-            );
-          }).toList(),
+        const SizedBox(height: AppSpacing.sm),
+        MatchFormatSelectorView(
+          currentMatchType: widget.matchType,
+          themeColors: widget.themeColors,
+          onMatchTypeChanged: widget.onMatchTypeChanged,
         ),
       ],
     );

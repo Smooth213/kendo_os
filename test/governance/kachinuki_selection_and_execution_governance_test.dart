@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/services/match_domain_service.dart';
@@ -22,7 +23,9 @@ void main() {
       TournamentTeamAutoRegisterService.candidateMatchTypes;
 
   Widget wrapWithScaffold(Widget child) {
-    return MaterialApp(home: Scaffold(body: child));
+    return ProviderScope(
+      child: MaterialApp(home: Scaffold(body: child)),
+    );
   }
 
   group('[Governance] 勝ち抜き戦（5人制 / 3人制）において 選択・適応・実行 総合保証テスト', () {
@@ -94,32 +97,48 @@ void main() {
 
           await tester.pumpWidget(
             wrapWithScaffold(
-              TeamEditBasicFields(
-                teamNameController: controller,
-                selectedCategory: '小学生',
-                matchType: selectedType,
-                candidateCategories: const ['小学生'],
-                matchTypes: allCandidateTypes,
-                themeColors: themeColors,
-                borderColor: Colors.grey,
-                onCategoryChanged: (_) {},
-                onMatchTypeChanged: (type) => selectedType = type,
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return TeamEditBasicFields(
+                    teamNameController: controller,
+                    selectedCategory: '小学生',
+                    matchType: selectedType,
+                    candidateCategories: const ['小学生'],
+                    matchTypes: allCandidateTypes,
+                    themeColors: themeColors,
+                    borderColor: Colors.grey,
+                    onCategoryChanged: (_) {},
+                    onMatchTypeChanged: (type) {
+                      setState(() {
+                        selectedType = type;
+                      });
+                    },
+                  );
+                },
               ),
             ),
           );
 
-          // チップが存在すること
-          expect(find.text('勝ち抜き戦（5人制）'), findsOneWidget);
-          expect(find.text('勝ち抜き戦（3人制）'), findsOneWidget);
+          // 5大分類チップとして「勝ち抜き戦」が表示されていること
+          expect(find.text('勝ち抜き戦'), findsOneWidget);
+
+          // 「勝ち抜き戦」をタップしてサブオプションを展開
+          await tester.tap(find.text('勝ち抜き戦'));
+          await tester.pumpAndSettle();
+          expect(selectedType, equals('勝ち抜き戦（5人制）'));
+
+          // サブオプションとして「3人制」「5人制」が表示されていること
+          expect(find.text('3人制'), findsOneWidget);
+          expect(find.text('5人制'), findsOneWidget);
 
           // 3人制を選択
-          await tester.tap(find.text('勝ち抜き戦（3人制）'));
-          await tester.pump();
+          await tester.tap(find.text('3人制'));
+          await tester.pumpAndSettle();
           expect(selectedType, equals('勝ち抜き戦（3人制）'));
 
           // 5人制を選択
-          await tester.tap(find.text('勝ち抜き戦（5人制）'));
-          await tester.pump();
+          await tester.tap(find.text('5人制'));
+          await tester.pumpAndSettle();
           expect(selectedType, equals('勝ち抜き戦（5人制）'));
         },
       );
@@ -155,12 +174,19 @@ void main() {
         await tester.tap(find.text('団体戦（3人制）'));
         await tester.pumpAndSettle();
 
-        // ボトムシート内に両新形式が存在すること
-        expect(find.text('勝ち抜き戦（5人制）'), findsWidgets);
-        expect(find.text('勝ち抜き戦（3人制）'), findsWidgets);
+        // ボトムシートから「勝ち抜き戦」を展開
+        expect(find.text('勝ち抜き戦'), findsWidgets);
+        await tester.tap(find.text('勝ち抜き戦').last);
+        await tester.pumpAndSettle();
 
-        // 「勝ち抜き戦（3人制）」を選択
-        await tester.tap(find.text('勝ち抜き戦（3人制）').last);
+        // 「3人制」サブオプションを選択
+        expect(find.text('3人制'), findsWidgets);
+        await tester.tap(find.text('3人制').last);
+        await tester.pumpAndSettle();
+
+        // 「この形式に設定」をタップして確定
+        expect(find.text('この形式に設定'), findsOneWidget);
+        await tester.tap(find.text('この形式に設定'));
         await tester.pumpAndSettle();
 
         expect(updatedType, equals('勝ち抜き戦（3人制）'));
@@ -200,8 +226,14 @@ void main() {
           await tester.tap(find.text('勝ち抜き戦（3人制）'));
           await tester.pumpAndSettle();
 
-          // 「勝ち抜き戦（5人制）」を選択
-          await tester.tap(find.text('勝ち抜き戦（5人制）').last);
+          // 「5人制」サブオプションを選択
+          expect(find.text('5人制'), findsWidgets);
+          await tester.tap(find.text('5人制').last);
+          await tester.pumpAndSettle();
+
+          // 「この形式に設定」をタップして確定
+          expect(find.text('この形式に設定'), findsOneWidget);
+          await tester.tap(find.text('この形式に設定'));
           await tester.pumpAndSettle();
 
           expect(resultTeams, isNotNull);

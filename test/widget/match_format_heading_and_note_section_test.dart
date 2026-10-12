@@ -10,7 +10,6 @@ void main() {
       (tester) async {
         final courtCtrl = TextEditingController(text: '第1試合場');
         final noteCtrl = TextEditingController(text: '特記事項なし');
-        String? toggledPreset;
 
         await tester.pumpWidget(
           MaterialApp(
@@ -22,9 +21,7 @@ void main() {
                 ),
                 courtController: courtCtrl,
                 noteController: noteCtrl,
-                onToggleHeadingPreset: (preset) {
-                  toggledPreset = preset;
-                },
+                onToggleHeadingPreset: (_) {},
                 isDark: false,
                 buildTextFieldDecoration:
                     ({
@@ -44,19 +41,13 @@ void main() {
         );
 
         expect(find.text('試合場・進行見出しの一括設定'), findsOneWidget);
-        expect(find.text('第1試合場'), findsWidgets);
+        expect(find.text('1'), findsWidgets); // スロットピッカーの会場番号
         expect(find.text('1回戦'), findsOneWidget);
 
+        // 1回戦タップで自動結合
         await tester.tap(find.text('1回戦'));
         await tester.pump();
-
-        expect(toggledPreset, '1回戦');
-
-        // カンマチップの存在と動作確認
-        expect(find.text('， (カンマ)'), findsOneWidget);
-        await tester.tap(find.text('， (カンマ)'));
-        await tester.pump();
-        expect(courtCtrl.text, '第1試合場, ');
+        expect(courtCtrl.text, '第1試合場, 1回戦');
 
         // カンマボタンの存在と動作確認
         expect(find.text('カンマ（,）'), findsOneWidget);

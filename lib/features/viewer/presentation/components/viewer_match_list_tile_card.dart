@@ -12,6 +12,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -61,12 +62,14 @@ class ViewerMatchListTileCard extends ConsumerWidget {
             match.matchType == '選手' ||
             match.matchType.contains('個人'));
 
-    String displayNote = match.note;
+    String displayNote = MatchHeadingFormatHelper.extractPublicHeading(
+      match.note,
+    );
     if (!isIndividual &&
         match.groupName != null &&
         match.groupName!.isNotEmpty) {
       final regExp = RegExp(r'\[.*?\]');
-      final tagMatches = regExp.allMatches(match.note);
+      final tagMatches = regExp.allMatches(displayNote);
       if (tagMatches.isNotEmpty) {
         displayNote = tagMatches.map((m) => m.group(0)).join(' ');
       } else {

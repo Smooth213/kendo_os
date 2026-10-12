@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/features/viewer/components/viewer_league_grid_table.dart';
 import 'package:kendo_os/features/viewer/components/viewer_official_record_table_sections.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
@@ -17,7 +18,7 @@ class ViewerOfficialRecordCardItemBuilder {
     required bool isDark,
   }) {
     final firstMatch = matches.first;
-    final note = firstMatch.note;
+    final note = MatchHeadingFormatHelper.extractPublicHeading(firstMatch.note);
     final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
     final rTeam = firstMatch.redName.contains(':')
         ? firstMatch.redName.split(':').first.trim()

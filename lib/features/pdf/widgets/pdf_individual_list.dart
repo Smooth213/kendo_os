@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 
 class PdfIndividualList {
   static pw.Widget build(
@@ -15,7 +16,9 @@ class PdfIndividualList {
   ) {
     if (matches.isEmpty) return pw.SizedBox();
 
-    final note = matches.first.note;
+    final note = MatchHeadingFormatHelper.extractPublicHeading(
+      matches.first.note,
+    );
     final isLeague = note.contains('リーグ戦');
 
     final uuidRegex = RegExp(
@@ -113,7 +116,9 @@ class PdfIndividualList {
               pw.Container(
                 width: 45,
                 child: pw.Text(
-                  m.note.isNotEmpty ? m.note : '第${i + 1}試合',
+                  m.note.isNotEmpty
+                      ? MatchHeadingFormatHelper.extractPublicHeading(m.note)
+                      : '第${i + 1}試合',
                   style: pw.TextStyle(
                     font: ttfBold,
                     fontSize: AppFontSize.micro,

@@ -3,6 +3,7 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/features/viewer/components/viewer_point_box_cell.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -148,7 +149,13 @@ class ViewerIndividualMatchesListCard extends StatelessWidget {
                     SizedBox(
                       width: 55,
                       child: Text(
-                        m.note.isNotEmpty ? m.note : '第${index + 1}試合',
+                        MatchHeadingFormatHelper.extractPublicHeading(
+                              m.note,
+                            ).isNotEmpty
+                            ? MatchHeadingFormatHelper.extractPublicHeading(
+                                m.note,
+                              )
+                            : '第${index + 1}試合',
                         style: TextStyle(
                           fontSize: AppFontSize.badge,
                           color: const Color(0x8A000000),

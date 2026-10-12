@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
@@ -35,15 +36,17 @@ void main() {
         expect(
           content.contains("['団体戦（3人制）', '団体戦（5人制）', '団体戦（7人制）', '個人戦']"),
           isFalse,
-          reason:
-              '$path に4形式限定の旧ハードコードリストが残っています。candidateMatchTypes を参照してください。',
+          reason: '$path に4形式限定の旧ハードコードリストが残っています。',
         );
-        // candidateMatchTypes を使用していること
+        // candidateMatchTypes または共通セレクタ MatchFormatSelectionBottomSheet を使用していること
+        final usesUnifiedOrConstant =
+            content.contains('candidateMatchTypes') ||
+            content.contains('MatchFormatSelectionBottomSheet');
         expect(
-          content.contains('candidateMatchTypes'),
+          usesUnifiedOrConstant,
           isTrue,
           reason:
-              '$path は TournamentTeamAutoRegisterService.candidateMatchTypes を参照する必要があります。',
+              '$path は candidateMatchTypes または MatchFormatSelectionBottomSheet を参照する必要があります。',
         );
       }
 
@@ -64,7 +67,7 @@ void main() {
     // [UI監査] 共有インポートシート (ShareImportTeamSection) の試合形式編集検証
     // =========================================================================
     testWidgets(
-      'UI監査に関して、 ShareImportTeamSection で全9形式がボトムシートに表示され、タップで選択更新されること',
+      'UI監査に関して、 ShareImportTeamSection でカスケードボトムシートから勝ち抜き戦を選択できること',
       (tester) async {
         final team = const ParsedTeamOrder(
           teamName: '道上剣友会',
@@ -79,14 +82,16 @@ void main() {
         String? updatedMatchType;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: ShareImportTeamSection(
-                team: team,
-                accentColor: Colors.blue,
-                textColor: Colors.black,
-                subTextColor: Colors.grey,
-                onMatchTypeUpdated: (type) => updatedMatchType = type,
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: ShareImportTeamSection(
+                  team: team,
+                  accentColor: Colors.blue,
+                  textColor: Colors.black,
+                  subTextColor: Colors.grey,
+                  onMatchTypeUpdated: (type) => updatedMatchType = type,
+                ),
               ),
             ),
           ),
@@ -99,17 +104,24 @@ void main() {
         await tester.tap(find.text('団体戦（3人制）'));
         await tester.pumpAndSettle();
 
-        // ボトムシートに全候補形式が表示されていることを検証（元のチップとシート内の両方に存在し得るため 1つ以上）
-        for (final type in allCandidateTypes) {
-          expect(
-            find.text(type),
-            findsAtLeastNWidgets(1),
-            reason: '選択肢に $type が存在すること',
-          );
-        }
+        // ボトムシート内に5大分類が表示されていること
+        expect(find.text('団体戦'), findsWidgets);
+        expect(find.text('個人戦'), findsWidgets);
+        expect(find.text('勝ち抜き戦'), findsWidgets);
+        expect(find.text('リーグ戦'), findsWidgets);
 
-        // 「勝ち抜き戦（5人制）」をタップして選択
-        await tester.tap(find.text('勝ち抜き戦（5人制）').last);
+        // 「勝ち抜き戦」をタップしてサブオプションを展開
+        await tester.tap(find.text('勝ち抜き戦').last);
+        await tester.pumpAndSettle();
+
+        // 「5人制」サブチップをタップ
+        expect(find.text('5人制'), findsWidgets);
+        await tester.tap(find.text('5人制').last);
+        await tester.pumpAndSettle();
+
+        // 「この形式に設定」ボタンをタップして確定
+        expect(find.text('この形式に設定'), findsOneWidget);
+        await tester.tap(find.text('この形式に設定'));
         await tester.pumpAndSettle();
 
         // コールバック経由で形式が更新されたこと
@@ -121,7 +133,7 @@ void main() {
     // [UI監査] 大会作成プレビュー (CreateTournamentImportTeamsCard) の試合形式編集検証
     // =========================================================================
     testWidgets(
-      'UI監査に関して、 CreateTournamentImportTeamsCard で全9形式が表示され、タップで更新されること',
+      'UI監査に関して、 CreateTournamentImportTeamsCard でカスケードボトムシートからリーグ戦を選択できること',
       (tester) async {
         final teams = [
           const ParsedTeamOrder(
@@ -140,15 +152,17 @@ void main() {
         List<ParsedTeamOrder>? resultTeams;
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: CreateTournamentImportTeamsCard(
-                  teams: teams,
-                  isEnabled: true,
-                  onToggle: (_) {},
-                  roster: const [],
-                  onTeamsUpdated: (updated) => resultTeams = updated,
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: CreateTournamentImportTeamsCard(
+                    teams: teams,
+                    isEnabled: true,
+                    onToggle: (_) {},
+                    roster: const [],
+                    onTeamsUpdated: (updated) => resultTeams = updated,
+                  ),
                 ),
               ),
             ),
@@ -162,17 +176,14 @@ void main() {
         await tester.tap(find.text('団体戦（5人制）'));
         await tester.pumpAndSettle();
 
-        // ボトムシートに全候補形式が表示されていることを検証（元のチップとシート内の両方に存在し得るため 1つ以上）
-        for (final type in allCandidateTypes) {
-          expect(
-            find.text(type),
-            findsAtLeastNWidgets(1),
-            reason: '選択肢に $type が存在すること',
-          );
-        }
+        // 「リーグ戦」をタップしてサブオプションを選択
+        expect(find.text('リーグ戦'), findsWidgets);
+        await tester.tap(find.text('リーグ戦').last);
+        await tester.pumpAndSettle();
 
-        // 「リーグ団体戦」を選択
-        await tester.tap(find.text('リーグ団体戦').last);
+        // 「この形式に設定」ボタンをタップして確定
+        expect(find.text('この形式に設定'), findsOneWidget);
+        await tester.tap(find.text('この形式に設定'));
         await tester.pumpAndSettle();
 
         // 更新されたチームの matchType が「リーグ団体戦」になっていること
@@ -184,45 +195,61 @@ void main() {
     // =========================================================================
     // [UI監査] チーム編集基本フィールド (TeamEditBasicFields) の全形式表示と切り替え
     // =========================================================================
-    testWidgets('UI監査に関して、 TeamEditBasicFields において全9形式が描画され、タップ切り替えが動作すること', (
-      tester,
-    ) async {
-      final controller = TextEditingController(text: '道上剣友会B');
-      String selectedType = '個人戦';
+    testWidgets(
+      'UI監査に関して、 TeamEditBasicFields において5大分類から全形式が展開され、タップ切り替えが動作すること',
+      (tester) async {
+        final controller = TextEditingController(text: '道上剣友会B');
+        String selectedType = '個人戦';
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TeamEditBasicFields(
-              teamNameController: controller,
-              selectedCategory: '小学生',
-              matchType: selectedType,
-              candidateCategories: const ['小学生'],
-              matchTypes: allCandidateTypes,
-              themeColors: themeColors,
-              borderColor: Colors.grey,
-              onCategoryChanged: (_) {},
-              onMatchTypeChanged: (type) => selectedType = type,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) {
+                  return TeamEditBasicFields(
+                    teamNameController: controller,
+                    selectedCategory: '小学生',
+                    matchType: selectedType,
+                    candidateCategories: const ['小学生'],
+                    matchTypes: allCandidateTypes,
+                    themeColors: themeColors,
+                    borderColor: Colors.grey,
+                    onCategoryChanged: (_) {},
+                    onMatchTypeChanged: (type) {
+                      setState(() {
+                        selectedType = type;
+                      });
+                    },
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // 全9形式が描画されていること
-      for (final type in allCandidateTypes) {
-        expect(find.text(type), findsOneWidget, reason: 'フィールドに $type が存在すること');
-      }
+        // 5大分類チップが表示されていること
+        expect(find.text('団体戦'), findsOneWidget);
+        expect(find.text('個人戦'), findsOneWidget);
+        expect(find.text('リーグ戦'), findsOneWidget);
+        expect(find.text('勝ち抜き戦'), findsOneWidget);
+        expect(find.text('剣道形'), findsOneWidget);
 
-      // 「勝ち抜き戦（5人制）」をタップ
-      await tester.tap(find.text('勝ち抜き戦（5人制）'));
-      await tester.pump();
-      expect(selectedType, equals('勝ち抜き戦（5人制）'));
+        // 「勝ち抜き戦」をタップ
+        await tester.tap(find.text('勝ち抜き戦'));
+        await tester.pumpAndSettle();
+        expect(selectedType, equals('勝ち抜き戦（5人制）'));
 
-      // 「リーグ個人戦」をタップ
-      await tester.tap(find.text('リーグ個人戦'));
-      await tester.pump();
-      expect(selectedType, equals('リーグ個人戦'));
-    });
+        // 「リーグ戦」をタップ
+        await tester.tap(find.text('リーグ戦'));
+        await tester.pumpAndSettle();
+        expect(selectedType, equals('リーグ団体戦'));
+
+        // 「個人戦」をタップ
+        await tester.tap(find.text('個人戦').last);
+        await tester.pumpAndSettle();
+        expect(selectedType, equals('リーグ個人戦'));
+      },
+    );
 
     // =========================================================================
     // [UI監査] チーム新規登録ウィザード (TeamRegistrationCategoryStep) の全形式網羅検証

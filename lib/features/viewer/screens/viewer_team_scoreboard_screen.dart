@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/viewer/components/viewer_team_scoreboard_table_builder.dart';
 import 'package:kendo_os/features/viewer/providers/viewer_tournament_id_search_provider.dart';
@@ -259,39 +260,49 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  if (teamProj.note.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        AppSpacing.sm,
-                        AppSpacing.lg,
-                        0,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.md,
-                        horizontal: 20,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF3F51B5).withValues(alpha: 0.25)
-                            : const Color(0xFF3F51B5),
-                        borderRadius: AppRadius.medium,
-                        border: Border.all(
+                  Builder(
+                    builder: (context) {
+                      final publicHeading =
+                          MatchHeadingFormatHelper.extractPublicHeading(
+                            teamProj.note,
+                          );
+                      if (publicHeading.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.sm,
+                          AppSpacing.lg,
+                          0,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.md,
+                          horizontal: 20,
+                        ),
+                        decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF5C6BC0)
-                              : const Color(0xFF3949AB),
+                              ? const Color(0xFF3F51B5).withValues(alpha: 0.25)
+                              : const Color(0xFF3F51B5),
+                          borderRadius: AppRadius.medium,
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF5C6BC0)
+                                : const Color(0xFF3949AB),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        teamProj.note,
-                        style: const TextStyle(
-                          fontSize: AppFontSize.bodyMedium,
-                          fontWeight: AppFontWeight.bold,
-                          color: AppKendoColors.pureWhite,
+                        child: Text(
+                          publicHeading,
+                          style: const TextStyle(
+                            fontSize: AppFontSize.bodyMedium,
+                            fontWeight: AppFontWeight.bold,
+                            color: AppKendoColors.pureWhite,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
+                  ),
 
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),

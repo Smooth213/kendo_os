@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 /// 観客席画面用 進行中・次試合コールバナー
@@ -43,13 +44,16 @@ class ViewerCallBanner extends StatelessWidget {
   }
 
   Widget _buildCallRow(String label, dynamic match, Color textColor) {
+    final publicHeading = MatchHeadingFormatHelper.extractPublicHeading(
+      match.note,
+    );
     return Column(
       children: [
-        if (match.note.isNotEmpty)
+        if (publicHeading.isNotEmpty)
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              match.note,
+              publicHeading,
               style: TextStyle(
                 color: textColor.withValues(alpha: 0.7),
                 fontSize: AppFontSize.small,

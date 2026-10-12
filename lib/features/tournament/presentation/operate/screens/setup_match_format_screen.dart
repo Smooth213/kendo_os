@@ -27,6 +27,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_preset_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_action_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_heading_history_provider.dart';
 
 final noteHistoryProvider = StateProvider<List<String>>((ref) {
   return MatchFormatPresetHelper.defaultNoteHistory;
@@ -349,6 +351,24 @@ class _SetupMatchFormatScreenState
                         _state.selectedTeamId = team.id;
                         _state.matchType = team.matchType;
                         _loadCategoryRules();
+
+                        // チームごとの前回の試合場・試合順（+1）を反映
+                        final history = ref
+                            .read(teamHeadingHistoryProvider.notifier)
+                            .getHistory(team.id);
+                        if (history != null) {
+                          final nextOrder =
+                              (history.lastMatchOrder != null &&
+                                  history.lastMatchOrder! > 0)
+                              ? history.lastMatchOrder! + 1
+                              : null;
+                          _courtController.text =
+                              MatchHeadingFormatHelper.updateHeading(
+                                currentText: _courtController.text,
+                                courtNumber: history.courtNumber,
+                                matchOrder: nextOrder,
+                              );
+                        }
                       });
                     },
                     onEditTeam: _handleEditTeam,
@@ -403,6 +423,21 @@ class _SetupMatchFormatScreenState
   void _commitMatchFormatSetup() {
     final registeredTeams =
         ref.read(registeredTeamsProvider(widget.tournamentId)).value ?? [];
+
+    // チーム別履歴の記録
+    final courtNum = MatchHeadingFormatHelper.extractCourtNumber(
+      _courtController.text,
+    );
+    final orderNum = MatchHeadingFormatHelper.extractMatchOrder(
+      _courtController.text,
+    );
+    ref
+        .read(teamHeadingHistoryProvider.notifier)
+        .recordHeading(
+          teamId: _state.selectedTeamId,
+          courtNumber: courtNum,
+          matchOrder: orderNum,
+        );
 
     MatchFormatPresetHelper.saveFormatSetup(
       ref: ref,

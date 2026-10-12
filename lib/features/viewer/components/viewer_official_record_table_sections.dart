@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart'
@@ -34,7 +35,9 @@ class ViewerOfficialScoreTableCard extends StatelessWidget {
 
     final sortedMatches = KendoPositionSorter.sortProjections(matches);
 
-    final note = sortedMatches.first.note;
+    final note = MatchHeadingFormatHelper.extractPublicHeading(
+      sortedMatches.first.note,
+    );
     final cleanNote = note.replaceAll('[', '').replaceAll(']', '').trim();
 
     final redTeam = sortedMatches.first.redName.contains(':')
@@ -366,7 +369,7 @@ class ViewerOfficialIndividualListCard extends ConsumerWidget {
 
       return IndividualMatchItem(
         id: m.id,
-        note: m.note,
+        note: MatchHeadingFormatHelper.extractPublicHeading(m.note),
         redTeam: rTeam,
         whiteTeam: wTeam,
         redName: rName,

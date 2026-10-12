@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_point_data.dart';
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
 import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_widgets.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 
 class PdfKachinukiPainter {
   static pw.Widget build(
@@ -16,7 +17,7 @@ class PdfKachinukiPainter {
     if (matches.isEmpty) return pw.SizedBox();
 
     final firstMatch = matches.first;
-    final note = firstMatch.note;
+    final note = MatchHeadingFormatHelper.extractPublicHeading(firstMatch.note);
     final String rTeam = firstMatch.redName.contains(':')
         ? firstMatch.redName.split(':').first.trim()
         : firstMatch.redName;

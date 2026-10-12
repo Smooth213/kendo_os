@@ -4,13 +4,13 @@ import 'package:kendo_os/features/tournament/domain/share_import/tournament_shar
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/edit_parsed_member_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/components/share_import/match_format_selection_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_team_tile.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_switch.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/widgets/glass_button.dart';
@@ -180,55 +180,16 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
     final currentType = TournamentTeamAutoRegisterService.determineMatchType(
       team,
     );
-    final candidateMatchTypes =
-        TournamentTeamAutoRegisterService.candidateMatchTypes;
 
     final accentColor =
         Theme.of(context).extension<AppThemeColors>()?.primaryAccent ??
         AppKendoColors.blue;
-    final subTextColor = context.appColors.subTextColor;
 
-    final newType = await showAppBottomSheet<String>(
+    final newType = await MatchFormatSelectionBottomSheet.show(
       context: context,
-      useRootNavigator: true,
-      builder: (ctx) {
-        return AppBottomSheetContent(
-          title: '「${team.teamName}」の試合形式',
-          titleIcon: Icons.sports_kabaddi,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '試合形式を選択してください：',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    color: subTextColor,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: candidateMatchTypes.map((type) {
-                    final isSel = currentType == type;
-                    return AppChoiceChip(
-                      label: Text(type),
-                      selected: isSel,
-                      selectedColor: accentColor.withValues(alpha: 0.2),
-                      onSelected: (_) => Navigator.of(ctx).pop(type),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        );
-      },
+      title: '「${team.teamName}」の試合形式',
+      initialMatchType: currentType,
+      accentColor: accentColor,
     );
 
     if (newType != null && onTeamsUpdated != null) {

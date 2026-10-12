@@ -13,6 +13,7 @@ import 'package:kendo_os/features/tournament/presentation/components/program_man
 import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/team_scoreboard_screen.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'team_status_card_sections.dart';
 
 /// 🥋 iOS風の洗練されたチーム試合状況インタラクティブカード
@@ -160,6 +161,25 @@ class TeamStatusCard extends StatelessWidget {
 
                   // 🔽 【4段目】: 第1試合場, 3試合目 (このあと休憩)
                   _buildCourtSection(context),
+                  // 📝 運営メモ（内部特記事項: 相手先鋒上段、主審交代注意など）
+                  Builder(
+                    builder: (context) {
+                      final targetMatch =
+                          liveMatch ??
+                          status.nextWaitingMatch ??
+                          status.lastFinishedMatch ??
+                          (status.matches.isNotEmpty
+                              ? status.matches.first
+                              : null);
+                      if (targetMatch == null) return const SizedBox.shrink();
+                      final privateNote =
+                          MatchHeadingFormatHelper.extractPrivateNote(
+                            targetMatch.note,
+                          );
+                      if (privateNote.isEmpty) return const SizedBox.shrink();
+                      return _buildPrivateNoteSection(context, privateNote);
+                    },
+                  ),
                   const SizedBox(height: AppSpacing.sm),
 
                   // 🔽 【5段目以降】: メインコンテンツ（試合中 / 次の出番 / 直前終了）
@@ -372,6 +392,42 @@ class TeamStatusCard extends StatelessWidget {
       style: TextStyle(
         fontSize: AppFontSize.caption,
         color: context.appColors.subTextColor,
+      ),
+    );
+  }
+
+  Widget _buildPrivateNoteSection(BuildContext context, String privateNote) {
+    final themeColors = context.appColors;
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.xxs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+        borderRadius: AppRadius.small,
+        border: Border.all(
+          color: isDark ? const Color(0xFF38383A) : const Color(0x22000000),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.notes_rounded, size: 13, color: themeColors.primaryAccent),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Text(
+              privateNote,
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                fontWeight: AppFontWeight.semiBold,
+                color: themeColors.textColor,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

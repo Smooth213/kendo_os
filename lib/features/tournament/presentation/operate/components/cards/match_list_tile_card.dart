@@ -21,6 +21,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/safe
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -82,7 +83,14 @@ class MatchListTileCard extends ConsumerWidget {
             match.matchType == '選手' ||
             match.matchType.contains('個人'));
 
-    String displayNote = match.note;
+    final String publicHeading = MatchHeadingFormatHelper.extractPublicHeading(
+      match.note,
+    );
+    final String privateNote = MatchHeadingFormatHelper.extractPrivateNote(
+      match.note,
+    );
+
+    String displayNote = publicHeading;
     if (displayNote.contains('[SUMMARY]')) {
       displayNote = displayNote.replaceAll('[SUMMARY]', '').trim();
     }
@@ -209,6 +217,7 @@ class MatchListTileCard extends ConsumerWidget {
                     ),
                     child: MatchCardNoteRow(
                       displayNote: displayNote,
+                      privateNote: privateNote,
                       matchType: match.matchType,
                       noteColor: noteC,
                     ),

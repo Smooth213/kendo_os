@@ -1,8 +1,9 @@
-import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 
 class PdfTeamTable {
   static pw.Widget build(
@@ -13,7 +14,9 @@ class PdfTeamTable {
   ) {
     if (matches.isEmpty) return pw.SizedBox();
 
-    final note = matches.first.note;
+    final note = MatchHeadingFormatHelper.extractPublicHeading(
+      matches.first.note,
+    );
     final isLeague = note.contains('リーグ戦');
 
     // ★ 修正: 団体戦でもデフォルトのリーグ戦文言を綺麗に消去する

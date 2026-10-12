@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_group_match_score_summary.dart';
@@ -230,27 +231,42 @@ class ViewerGroupMatchCard extends ConsumerWidget {
                       ),
 
                       // 🔽 【3段目】: コート情報・進行・メモ（存在時のみ）
-                      if (firstMatch.note.isNotEmpty) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xxs,
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              firstMatch.note,
-                              style: TextStyle(
-                                fontSize: AppFontSize.caption,
-                                color: subTitleColor,
-                                fontWeight: AppFontWeight.medium,
+                      Builder(
+                        builder: (context) {
+                          final publicHeading =
+                              MatchHeadingFormatHelper.extractPublicHeading(
+                                firstMatch.note,
+                              );
+                          if (publicHeading.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xxs,
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    publicHeading,
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.caption,
+                                      color: subTitleColor,
+                                      fontWeight: AppFontWeight.medium,
+                                    ),
+                                    maxLines: 1,
+                                  ),
+                                ),
                               ),
-                              maxLines: 1,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                      ],
+                              const SizedBox(height: AppSpacing.xxs),
+                            ],
+                          );
+                        },
+                      ),
 
                       // 🔽 【4段目】: アクションボタン行（観客席ビュアーは[スコア]ボタンのみ配置）
                       if (!matchLabel.contains('リーグ戦') &&

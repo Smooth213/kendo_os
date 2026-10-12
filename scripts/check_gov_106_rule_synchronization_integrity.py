@@ -28,6 +28,15 @@ def main():
     res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     is_ok = (res.returncode == 0)
 
+    cmd2 = [
+        "python3",
+        "scripts/gov_test_helper.py",
+        "test/governance/match_court_picker_and_private_note_governance_test.dart",
+        "--reporter=expanded",
+    ]
+    res2 = subprocess.run(cmd2, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    is_ok2 = (res2.returncode == 0)
+
     rules = [
         ("① [静的コード完全網羅] 全ルール編集画面および全表示画面に同期項目が欠落なく配線されていること", is_ok),
         ("② [全画面循環同期保証] 全ルール編集画面間を循環同期しても全プロパティが欠落・先祖返りしないこと", is_ok),
@@ -35,14 +44,17 @@ def main():
         ("④ [フォーマット表示同期] MatchFormatRuleSummaryCard に編集された全ルールが同期されて表示されること", is_ok),
         ("⑤ [試合一覧表示同期] MatchRuleSummaryCard に編集された全ルールが同期されて表示されること", is_ok),
         ("⑥ [部門別詳細表示同期] CategoryRuleSummaryCard に編集された全ルールが同期されて表示されること", is_ok),
+        ("⑦ [Picker・運営メモ旧仕様排除] 試合作成・編集系で新コンポーネントが統一され、旧仕様UI残存ゼロこと", is_ok2),
+        ("⑧ [情報境界隔離保証] ビュアー・PDFで内部特記事項生note露出ゼロ＆表示許可先制限保証こと", is_ok2),
     ]
 
+    all_passed = is_ok and is_ok2
     for label, ok in rules:
         status = "🟢 適合 (Passed)" if ok else "🔴 違反 (Failed)"
         print(f" {label}: {status}")
 
     print("-" * 68)
-    if is_ok:
+    if all_passed:
         print(" 🟢 監査結果: 合格 (全ルール設定画面間相互完全同期 ＆ 先祖返り・上書き防止規約に完全適合！)")
         print("=" * 68)
         sys.exit(0)

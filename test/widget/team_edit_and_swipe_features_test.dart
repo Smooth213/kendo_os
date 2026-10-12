@@ -84,11 +84,11 @@ void main() {
     );
 
     // 2. 【添付ファイル２対応】「の部」が除外されてコンパクトに表示されること
-    testWidgets('TeamEditBasicFields: 所属部門チップから「の部」が無くコンパクトに表示されること', (
+    testWidgets('TeamEditBasicFields: カスケードセレクタで大分類から小分類を選択して部門設定できること', (
       tester,
     ) async {
       final controller = TextEditingController(text: 'テストチーム');
-      String selectedCat = '小学生低学年';
+      String selectedCat = '小学生低学年の部';
 
       await tester.pumpWidget(
         MaterialApp(
@@ -97,13 +97,7 @@ void main() {
               teamNameController: controller,
               selectedCategory: selectedCat,
               matchType: '団体戦（5人制）',
-              candidateCategories: const [
-                '小学生低学年の部',
-                '小学生高学年の部',
-                '中学生の部',
-                '高校生の部',
-                '一般の部',
-              ],
+              candidateCategories: const [],
               matchTypes: const ['団体戦（5人制）', '個人戦'],
               themeColors: themeColors,
               borderColor: Colors.grey,
@@ -114,17 +108,20 @@ void main() {
         ),
       );
 
-      // 「の部」が付いたテキストは表示されず、「の部」なしでコンパクトに表示されていること
-      expect(find.text('小学生低学年'), findsOneWidget);
-      expect(find.text('小学生高学年'), findsOneWidget);
+      // 大分類チップが表示されていること
+      expect(find.text('小学生'), findsOneWidget);
       expect(find.text('中学生'), findsOneWidget);
-      expect(find.text('小学生低学年の部'), findsNothing);
-      expect(find.text('中学生の部'), findsNothing);
 
-      // チップタップで onCategoryChanged が呼ばれること
+      // 中学生をタップして切り替え
       await tester.tap(find.text('中学生'));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(selectedCat, equals('中学生の部'));
+
+      // 連動サブコンテナの「男子」をタップ
+      expect(find.text('男子'), findsOneWidget);
+      await tester.tap(find.text('男子'));
+      await tester.pumpAndSettle();
+      expect(selectedCat, equals('中学生男子の部'));
     });
 
     // 3. 【添付ファイル３対応】オーダーリストから「✕」と「＞」が削除され、ドラッグハンドルが表示されること
@@ -242,8 +239,8 @@ void main() {
       },
     );
 
-    // 5. TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能であること
-    testWidgets('TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が表示され選択可能こと', (
+    // 5. TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が5大分類カスケードから選択可能であること
+    testWidgets('TeamEditBasicFields: 勝ち抜き戦やリーグ戦を含む全試合形式が5大分類カスケードから選択可能こと', (
       tester,
     ) async {
       final controller = TextEditingController(text: '道上剣友会A');
@@ -252,46 +249,56 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: TeamEditBasicFields(
-              teamNameController: controller,
-              selectedCategory: '小学生',
-              matchType: selectedType,
-              candidateCategories: const ['小学生'],
-              matchTypes: TournamentTeamAutoRegisterService.candidateMatchTypes,
-              themeColors: themeColors,
-              borderColor: Colors.grey,
-              onCategoryChanged: (_) {},
-              onMatchTypeChanged: (type) => selectedType = type,
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return TeamEditBasicFields(
+                  teamNameController: controller,
+                  selectedCategory: '小学生',
+                  matchType: selectedType,
+                  candidateCategories: const ['小学生'],
+                  matchTypes:
+                      TournamentTeamAutoRegisterService.candidateMatchTypes,
+                  themeColors: themeColors,
+                  borderColor: Colors.grey,
+                  onCategoryChanged: (_) {},
+                  onMatchTypeChanged: (type) {
+                    setState(() {
+                      selectedType = type;
+                    });
+                  },
+                );
+              },
             ),
           ),
         ),
       );
 
-      // 試合形式チップの確認
-      expect(find.text('勝ち抜き戦（5人制）'), findsOneWidget);
-      expect(find.text('勝ち抜き戦（3人制）'), findsOneWidget);
-      expect(find.text('リーグ団体戦'), findsOneWidget);
-      expect(find.text('リーグ個人戦'), findsOneWidget);
-      expect(find.text('団体戦（5人制）'), findsOneWidget);
-      expect(find.text('団体戦（3人制）'), findsOneWidget);
-      expect(find.text('団体戦（7人制）'), findsOneWidget);
+      // 5大分類チップが表示されていること
+      expect(find.text('団体戦'), findsOneWidget);
       expect(find.text('個人戦'), findsOneWidget);
-      expect(find.text('団体戦（それ以上）'), findsOneWidget);
+      expect(find.text('リーグ戦'), findsOneWidget);
+      expect(find.text('勝ち抜き戦'), findsOneWidget);
+      expect(find.text('剣道形'), findsOneWidget);
 
-      // 「勝ち抜き戦（5人制）」をタップ
-      await tester.tap(find.text('勝ち抜き戦（5人制）'));
-      await tester.pump();
+      // 「勝ち抜き戦」をタップしてサブオプションを展開
+      await tester.tap(find.text('勝ち抜き戦'));
+      await tester.pumpAndSettle();
       expect(selectedType, equals('勝ち抜き戦（5人制）'));
 
-      // 「勝ち抜き戦（3人制）」をタップ
-      await tester.tap(find.text('勝ち抜き戦（3人制）'));
-      await tester.pump();
+      // 「3人制」をタップ
+      await tester.tap(find.text('3人制'));
+      await tester.pumpAndSettle();
       expect(selectedType, equals('勝ち抜き戦（3人制）'));
 
-      // 「リーグ団体戦」をタップ
-      await tester.tap(find.text('リーグ団体戦'));
-      await tester.pump();
+      // 「リーグ戦」をタップしてサブオプションを展開
+      await tester.tap(find.text('リーグ戦'));
+      await tester.pumpAndSettle();
       expect(selectedType, equals('リーグ団体戦'));
+
+      // 「個人戦」をタップ
+      await tester.tap(find.text('個人戦').last);
+      await tester.pumpAndSettle();
+      expect(selectedType, equals('リーグ個人戦'));
     });
   });
 }

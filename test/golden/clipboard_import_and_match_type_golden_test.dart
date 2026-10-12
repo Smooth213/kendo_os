@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_cards.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_format_selector_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_teams_card.dart';
 
 void main() {
@@ -141,15 +143,17 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          theme: ThemeData.dark(),
-          home: Scaffold(
-            body: ShareImportTeamSection(
-              team: team,
-              accentColor: Colors.amber,
-              textColor: Colors.white,
-              subTextColor: Colors.grey,
-              onMatchTypeUpdated: (_) {},
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData.dark(),
+            home: Scaffold(
+              body: ShareImportTeamSection(
+                team: team,
+                accentColor: Colors.amber,
+                textColor: Colors.white,
+                subTextColor: Colors.grey,
+                onMatchTypeUpdated: (_) {},
+              ),
             ),
           ),
         ),
@@ -162,11 +166,11 @@ void main() {
 
       expect(tester.takeException(), isNull);
 
-      // 全8形式がボトムシート内に存在し、文字欠落や例外がないこと
-      for (final type
-          in TournamentTeamAutoRegisterService.candidateMatchTypes) {
+      // 主要試合形式分類が表示され、設定ボタンが存在すること
+      for (final type in MatchFormatSelectorView.primaryFormats) {
         expect(find.text(type), findsWidgets);
       }
+      expect(find.text('この形式に設定'), findsOneWidget);
     });
   });
 }

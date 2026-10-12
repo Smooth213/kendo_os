@@ -148,10 +148,11 @@ void main() {
       expect(tabFile.existsSync(), isTrue);
       final tabContent = tabFile.readAsStringSync();
 
-      expect(tabContent.contains('courtPresets'), isTrue);
-      expect(tabContent.contains('第1試合場'), isTrue);
-      expect(tabContent.contains('第2試合場'), isTrue);
-      expect(tabContent.contains('第3試合場'), isTrue);
+      expect(
+        tabContent.contains('MatchCourtSlotPicker'),
+        isTrue,
+        reason: '数値スロットPickerによる試合会場変更UIが統合されていること',
+      );
       expect(tabContent.contains('onClearCourt'), isTrue);
     });
   });

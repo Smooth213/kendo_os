@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -175,7 +176,13 @@ class ViewerBunaiksenMatchCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          match.note.isNotEmpty ? match.note : '部内稽古',
+                          MatchHeadingFormatHelper.extractPublicHeading(
+                                match.note,
+                              ).isNotEmpty
+                              ? MatchHeadingFormatHelper.extractPublicHeading(
+                                  match.note,
+                                )
+                              : '部内稽古',
                           style: TextStyle(
                             fontSize: AppFontSize.caption,
                             color: noteC,

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_court_slot_picker.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_private_note_accordion.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/utils/text_input_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/utils/text_input_helper.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
@@ -20,6 +23,18 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
   })
   buildTextFieldDecoration;
 
+  static const List<String> roundPresets = [
+    '1回戦',
+    '2回戦',
+    '3回戦',
+    '準々決勝',
+    '準決勝',
+    '決勝戦',
+    '3位決定戦',
+    'Aリーグ',
+    'Bリーグ',
+  ];
+
   const MatchFormatHeadingAndNoteSection({
     super.key,
     required this.themeColors,
@@ -35,6 +50,13 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
     final textColor = isDark
         ? AppKendoColors.pureWhite
         : const Color(0xFF000000);
+
+    final currentCourtNumber = MatchHeadingFormatHelper.extractCourtNumber(
+      courtController.text,
+    );
+    final currentMatchOrder = MatchHeadingFormatHelper.extractMatchOrder(
+      courtController.text,
+    );
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -57,6 +79,7 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔼 ヘッダー（タイトル ＆ クリアボタン）
           Row(
             children: [
               Icon(Icons.stadium, size: 18, color: themeColors.primaryAccent),
@@ -100,46 +123,32 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          AppTextField(
-            controller: courtController,
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              color: textColor,
-              fontSize: AppFontSize.bodySmall,
-              fontWeight: AppFontWeight.semiBold,
-            ),
-            decoration: buildTextFieldDecoration(
-              labelText: '試合場・進行の見出し',
-              hintText: '例: 準決勝, 第1試合場',
-              prefixIcon: Icon(
-                Icons.edit_location_alt,
-                color: themeColors.primaryAccent,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                size: 13,
-                color: themeColors.subTextColor,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  '※ここに入力した試合場・進行見出しは、メモ（詳細情報）に保存・表示されます',
-                  style: TextStyle(
-                    fontSize: AppFontSize.caption,
-                    color: themeColors.subTextColor,
-                  ),
-                ),
-              ),
-            ],
+
+          // 🔢 試合場・試合順の数値スロット（案B: ＋/－ & テンキー入力）
+          MatchCourtSlotPicker(
+            courtNumber: currentCourtNumber,
+            matchOrder: currentMatchOrder,
+            isDark: isDark,
+            onCourtNumberChanged: (newCourt) {
+              courtController.text = MatchHeadingFormatHelper.updateHeading(
+                currentText: courtController.text,
+                courtNumber: newCourt,
+                matchOrder: currentMatchOrder,
+              );
+            },
+            onMatchOrderChanged: (newOrder) {
+              courtController.text = MatchHeadingFormatHelper.updateHeading(
+                currentText: courtController.text,
+                courtNumber: currentCourtNumber,
+                matchOrder: newOrder,
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.lg),
+
+          // 🏆 回戦・ラウンドを選択
           Text(
-            '🏟️ 試合場（コート）を選択',
+            '🏆 回戦・ラウンドを選択',
             style: TextStyle(
               fontSize: AppFontSize.small,
               fontWeight: AppFontWeight.bold,
@@ -150,7 +159,7 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: ['第1試合場', '第2試合場', '第3試合場', '部内戦コート'].map((preset) {
+            children: roundPresets.map((preset) {
               final isSelected = courtController.text
                   .split(',')
                   .map((e) => e.trim())
@@ -172,123 +181,57 @@ class MatchFormatHeadingAndNoteSection extends StatelessWidget {
                   ),
                 ),
                 onSelected: (_) {
-                  onToggleHeadingPreset(preset);
+                  courtController.text = MatchHeadingFormatHelper.toggleRound(
+                    currentText: courtController.text,
+                    roundPreset: preset,
+                    courtNumber: currentCourtNumber,
+                    matchOrder: currentMatchOrder,
+                  );
                 },
               );
             }).toList(),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            '🏆 回戦・ラウンド・試合順を選択',
-            style: TextStyle(
-              fontSize: AppFontSize.small,
-              fontWeight: AppFontWeight.bold,
-              color: themeColors.subTextColor,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ...[
-                '1回戦',
-                '2回戦',
-                '準決勝',
-                '決勝戦',
-                'Aリーグ',
-                'Bリーグ',
-                '3試合目',
-                '5試合目',
-              ].map((preset) {
-                final isSelected = courtController.text
-                    .split(',')
-                    .map((e) => e.trim())
-                    .contains(preset);
-                return AppFilterChip(
-                  selected: isSelected,
-                  label: Text(
-                    preset,
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      fontWeight: AppFontWeight.bold,
-                      color: isSelected
-                          ? (isDark
-                                ? AppKendoColors.pureWhite
-                                : themeColors.primaryAccent)
-                          : (isDark
-                                ? themeColors.textColor
-                                : themeColors.primaryAccent),
-                    ),
-                  ),
-                  onSelected: (_) {
-                    onToggleHeadingPreset(preset);
-                  },
-                );
-              }),
-              AppActionChip(
-                label: Text(
-                  '， (カンマ)',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    fontWeight: AppFontWeight.bold,
-                    color: isDark
-                        ? AppKendoColors.cyanAccent
-                        : themeColors.primaryAccent,
-                  ),
-                ),
-                icon: Icons.add,
-                iconColor: isDark
-                    ? AppKendoColors.cyanAccent
-                    : themeColors.primaryAccent,
-                onPressed: () => TextInputHelper.insertComma(courtController),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Divider(color: themeColors.separatorColor),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '📝 試合のメモ・詳細コメント',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    fontWeight: AppFontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-              ),
-              TextButton.icon(
-                icon: const Icon(Icons.add, size: 14),
-                label: const Text(
-                  'カンマ（,）',
-                  style: TextStyle(fontSize: AppFontSize.caption),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                ),
-                onPressed: () => TextInputHelper.insertComma(noteController),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
+
+          // 📝 見出しプレビュー（手入力・微調整も可能）
           AppTextField(
-            controller: noteController,
-            maxLines: 2,
-            style: TextStyle(color: textColor),
+            controller: courtController,
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              color: textColor,
+              fontSize: AppFontSize.bodySmall,
+              fontWeight: AppFontWeight.semiBold,
+            ),
             decoration: buildTextFieldDecoration(
-              labelText: '試合のメモ・詳細コメント',
-              hintText: 'メモや追記事項があれば入力してください',
+              labelText: '試合場・進行の見出しプレビュー',
+              hintText: '例: 第1試合場, 準決勝',
               prefixIcon: Icon(
-                Icons.edit_note,
+                Icons.edit_location_alt,
                 color: themeColors.primaryAccent,
               ),
             ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // 📝 運営メモ・特記事項（折りたたみアコーディオン）
+          MatchPrivateNoteAccordion(
+            noteController: noteController,
+            isDark: isDark,
+            labelText: '試合のメモ・詳細コメント',
+            initiallyExpanded: true,
+            trailingAction: TextButton.icon(
+              icon: const Icon(Icons.add, size: 14),
+              label: const Text(
+                'カンマ（,）',
+                style: TextStyle(fontSize: AppFontSize.caption),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                visualDensity: VisualDensity.compact,
+              ),
+              onPressed: () => TextInputHelper.insertComma(noteController),
+            ),
+            buildTextFieldDecoration: buildTextFieldDecoration,
           ),
         ],
       ),

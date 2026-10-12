@@ -40,14 +40,15 @@ void main() {
       );
 
       expect(find.text('試合場・進行見出しの設定'), findsOneWidget);
-      expect(find.text('第1試合場'), findsOneWidget);
+      expect(find.text('試合場'), findsOneWidget);
+      expect(find.text('試合順'), findsOneWidget);
       expect(find.text('準決勝'), findsOneWidget);
 
-      // 「第1試合場」をタップ
-      await tester.tap(find.text('第1試合場'));
+      // 「準決勝」をタップ
+      await tester.tap(find.text('準決勝'));
       await tester.pumpAndSettle();
 
-      expect(courtController.text, '第1試合場');
+      expect(courtController.text, contains('準決勝'));
       expect(find.text('クリア'), findsOneWidget);
 
       // 「クリア」をタップ
@@ -56,20 +57,13 @@ void main() {
 
       expect(courtController.text, '');
 
-      // 「第1試合場」を設定し、カンマチップをタップ
-      courtController.text = '第1試合場';
-      noteController.text = '備考1';
+      // 運営メモのアコーディオン展開と動作確認
+      expect(find.textContaining('運営メモ・特記事項'), findsOneWidget);
+      await tester.tap(find.textContaining('運営メモ・特記事項'));
       await tester.pumpAndSettle();
 
-      expect(find.text('， (カンマ)'), findsOneWidget);
-      await tester.tap(find.text('， (カンマ)'));
-      await tester.pumpAndSettle();
-      expect(courtController.text, '第1試合場, ');
-
-      expect(find.text('カンマ（,）'), findsOneWidget);
-      await tester.tap(find.text('カンマ（,）'));
-      await tester.pumpAndSettle();
-      expect(noteController.text, '備考1, ');
+      // TextField が表示されること
+      expect(find.byType(TextField), findsWidgets);
     });
   });
 }
