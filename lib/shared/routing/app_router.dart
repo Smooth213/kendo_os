@@ -302,9 +302,14 @@ final appRouter = GoRouter(
         final initialPage = initialPageStr != null
             ? int.tryParse(initialPageStr)
             : null;
+        final managementStr = state.uri.queryParameters['management'];
+        final isManagementMode = managementStr != null
+            ? managementStr == 'true'
+            : (initialPage == 2);
         return TeamRegistrationScreen(
           tournamentId: state.pathParameters['id']!,
           initialPage: initialPage,
+          isManagementMode: isManagementMode,
         );
       },
     ),

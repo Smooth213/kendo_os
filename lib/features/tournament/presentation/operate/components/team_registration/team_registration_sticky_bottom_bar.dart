@@ -10,6 +10,7 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
   final int currentPage;
   final String? editingTeamId;
   final bool isInputting;
+  final bool isManagementMode;
   final AppThemeColors themeColors;
   final VoidCallback onPrevious;
   final VoidCallback onPrimaryAction;
@@ -20,6 +21,7 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
     required this.currentPage,
     required this.editingTeamId,
     this.isInputting = false,
+    this.isManagementMode = false,
     required this.themeColors,
     required this.onPrevious,
     required this.onPrimaryAction,
@@ -53,7 +55,7 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
         children: [
           Row(
             children: [
-              if (currentPage > 0)
+              if (currentPage > 0 && !(isManagementMode && currentPage == 2))
                 Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.lg),
                   child: OutlinedButton(
@@ -97,8 +99,10 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
               child: GlassButton(
                 onPressed: onFinishToRules,
                 color: themeColors.primaryAccent,
-                icon: Icons.navigate_next,
-                label: '登録を完了してルール設定へ',
+                icon: isManagementMode
+                    ? Icons.arrow_back_ios_new
+                    : Icons.navigate_next,
+                label: isManagementMode ? '大会ホームへ戻る' : '登録を完了してルール設定へ',
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 expandContent: false,
               ),

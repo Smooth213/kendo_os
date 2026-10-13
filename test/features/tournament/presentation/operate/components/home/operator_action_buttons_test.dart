@@ -61,7 +61,7 @@ void main() {
 
         // 2x2グリッドの4機能
         expect(find.text('試合ルール設定'), findsOneWidget);
-        expect(find.text('観客の画面を確認'), findsOneWidget);
+        expect(find.text('参加チーム管理'), findsOneWidget);
         expect(find.text('試合結果一覧'), findsOneWidget);
         expect(find.text('大会プログラム管理'), findsOneWidget);
       });
@@ -104,9 +104,9 @@ void main() {
         // 本部用ボタンは非表示
         expect(find.text('試合（対戦）を作成'), findsNothing);
         expect(find.text('試合ルール設定'), findsNothing);
+        expect(find.text('参加チーム管理'), findsNothing);
 
         // 共有機能は表示
-        expect(find.text('観客の画面を確認'), findsOneWidget);
         expect(find.text('試合結果一覧'), findsOneWidget);
         expect(find.text('大会プログラム管理'), findsOneWidget);
       });
@@ -184,7 +184,7 @@ void main() {
 
           expect(find.text('試合（対戦）を作成'), findsOneWidget);
           expect(find.text('試合ルール設定'), findsOneWidget);
-          expect(find.text('観客の画面を確認'), findsOneWidget);
+          expect(find.text('参加チーム管理'), findsOneWidget);
           expect(find.text('試合結果一覧'), findsOneWidget);
           expect(find.text('大会プログラム管理'), findsOneWidget);
 

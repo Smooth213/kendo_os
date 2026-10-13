@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
-import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -19,11 +18,6 @@ class OperatorActionButtons extends ConsumerWidget {
     final bool isReadOnly = permissions.isReadOnly;
     final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final bool isBunaiksen = tournamentId.startsWith('bunaiksen_');
-    final Color viewerThemeColor = isBunaiksen
-        ? AppKendoColors.purple
-        : AppKendoColors.blueGrey;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -54,27 +48,19 @@ class OperatorActionButtons extends ConsumerWidget {
                 ),
               ),
             if (!isReadOnly) const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: _buildCompactTile(
-                context: context,
-                enableLiquidGlass: enableLiquidGlass,
-                icon: Icons.cast_connected,
-                title: '観客の画面を確認',
-                color: viewerThemeColor,
-                onTap: () {
-                  final dojoId = ref.read(currentDojoIdProvider);
-                  if (isBunaiksen) {
-                    context.push(
-                      '/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
-                    );
-                  } else {
-                    context.push(
-                      '/viewer-home/$tournamentId?role=viewer&dojoId=$dojoId',
-                    );
-                  }
-                },
+            if (!isReadOnly)
+              Expanded(
+                child: _buildCompactTile(
+                  context: context,
+                  enableLiquidGlass: enableLiquidGlass,
+                  icon: Icons.badge_outlined,
+                  title: '参加チーム管理',
+                  color: AppKendoColors.blueGrey,
+                  onTap: () => context.push(
+                    '/team-registration/$tournamentId?initialPage=2&management=true',
+                  ),
+                ),
               ),
-            ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),

@@ -91,8 +91,10 @@ void main() {
 
         // 未ログイン状態（Viewer降格状態）では管理者ボタンが存在しないことを厳密に検証
         expect(find.textContaining('試合（対戦）を作成'), findsNothing);
+        expect(find.textContaining('試合ルール設定'), findsNothing);
+        expect(find.textContaining('参加チーム管理'), findsNothing);
         expect(
-          find.textContaining('観客の画面を確認'),
+          find.textContaining('試合結果一覧'),
           findsOneWidget,
         ); // 共通で公開されているボタンは見える
       },

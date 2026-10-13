@@ -197,7 +197,11 @@ class _CategoryRulesScreenState extends ConsumerState<CategoryRulesScreen> {
                   _formState.editingCategory = null;
                 });
               } else {
-                context.pop();
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/home/${widget.tournamentId}');
+                }
               }
             },
           ),

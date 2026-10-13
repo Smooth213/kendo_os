@@ -27,10 +27,13 @@ export 'package:kendo_os/features/tournament/presentation/operate/components/tea
 class TeamRegistrationScreen extends ConsumerStatefulWidget {
   final String tournamentId;
   final int? initialPage;
+  final bool? isManagementMode;
+
   const TeamRegistrationScreen({
     super.key,
     required this.tournamentId,
     this.initialPage,
+    this.isManagementMode,
   });
 
   @override
@@ -41,6 +44,8 @@ class TeamRegistrationScreen extends ConsumerStatefulWidget {
 class _TeamRegistrationScreenState
     extends ConsumerState<TeamRegistrationScreen> {
   late AppThemeColors _themeColors;
+  bool get _isManagementMode =>
+      widget.isManagementMode ?? (widget.initialPage == 2);
   // ★ 修正：2段階選択用の状態（初期値を「小学生」に）
   String _selectedMajorCategory = '小学生';
   String _selectedMinorCategory = '低学年';
@@ -205,7 +210,13 @@ class _TeamRegistrationScreenState
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               TeamRegistrationAppBar(
-                                onBack: () => Navigator.pop(context),
+                                onBack: () {
+                                  if (context.canPop()) {
+                                    context.pop();
+                                  } else {
+                                    context.go('/home/${widget.tournamentId}');
+                                  }
+                                },
                                 registeredTeamCount:
                                     registeredTeamsAsync.value?.length ?? 0,
                                 editingTeamName: _editingTeamId != null
@@ -363,6 +374,7 @@ class _TeamRegistrationScreenState
       currentPage: _currentPage,
       editingTeamId: _editingTeamId,
       isInputting: isInputting,
+      isManagementMode: _isManagementMode,
       themeColors: _themeColors,
       onPrevious: () => _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -424,6 +436,15 @@ class _TeamRegistrationScreenState
         }
       },
       onFinishToRules: () async {
+        if (_isManagementMode) {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/home/${widget.tournamentId}');
+          }
+          return;
+        }
+
         if (_teamNameController.text.trim().isNotEmpty) {
           try {
             await TeamRegistrationSaveHelper.saveTeamWithHistory(

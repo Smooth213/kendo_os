@@ -582,8 +582,8 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // 本部画面に「観客の画面を確認」ボタンが存在することを確認
-        final viewerButton = find.text('観客の画面を確認');
+        // 本部画面AppBarに「観客の画面を確認」ボタンが存在することを確認
+        final viewerButton = find.byTooltip('観客の画面を確認');
         expect(viewerButton, findsOneWidget);
 
         // ボタンをタップして観客席画面へ遷移

@@ -196,9 +196,7 @@ void main() {
       },
     );
 
-    testWidgets('観客プレビューの色が観客テーマのBlueGreyおよびPurpleと一致すること', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('参加チーム管理ボタンが通常大会および部内戦で描画されること', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
@@ -227,7 +225,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final standardBtnFinder = find.text('観客の画面を確認');
+      final standardBtnFinder = find.text('参加チーム管理');
       expect(standardBtnFinder, findsOneWidget);
 
       // Test under Bunaiksen tournament
@@ -255,7 +253,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final bunaiksenBtnFinder = find.text('観客の画面を確認');
+      final bunaiksenBtnFinder = find.text('参加チーム管理');
       expect(bunaiksenBtnFinder, findsOneWidget);
     });
 

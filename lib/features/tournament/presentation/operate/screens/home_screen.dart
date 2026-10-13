@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_popup_manager.dart';
 
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
@@ -216,6 +217,20 @@ class HomeScreen extends ConsumerWidget {
                         actions: [
                           IconButton(
                             icon: Icon(
+                              Icons.visibility,
+                              color: isDark
+                                  ? const Color(0xFFFFFFFF)
+                                  : themeColors.primaryAccent,
+                            ),
+                            tooltip: '観客の画面を確認',
+                            onPressed: () => _navigateToViewerPreview(
+                              context,
+                              ref,
+                              tournamentId,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
                               Icons.qr_code_2,
                               color: isDark
                                   ? const Color(0xFFFFFFFF)
@@ -285,6 +300,23 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _navigateToViewerPreview(
+    BuildContext context,
+    WidgetRef ref,
+    String tournamentId,
+  ) {
+    final dojoId = ref.read(currentDojoIdProvider);
+    final safeDojo = dojoId.isNotEmpty ? dojoId : 'default_org';
+    final isBunaiksen = tournamentId.startsWith('bunaiksen_');
+    if (isBunaiksen) {
+      context.push(
+        '/bunaiksen-viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo',
+      );
+    } else {
+      context.push('/viewer-home/$tournamentId?role=viewer&dojoId=$safeDojo');
+    }
   }
 
   void _showShareDialog(

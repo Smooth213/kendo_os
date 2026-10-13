@@ -210,8 +210,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 本部画面にボタンがあることを確認
-        final previewButton = find.text('観客の画面を確認');
+        // 本部画面AppBarにボタンがあることを確認
+        final previewButton = find.byTooltip('観客の画面を確認');
         expect(previewButton, findsOneWidget);
 
         // ボタンをタップして観客席画面へ遷移
