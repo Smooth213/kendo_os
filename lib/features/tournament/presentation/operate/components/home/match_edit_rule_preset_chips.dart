@@ -14,9 +14,18 @@ class MatchEditRulePresetChips {
     required String? selectedPresetKey,
     required double matchTime,
     required bool isDantai,
+    bool isKataMatch = false,
     required void Function(MatchRule rule, String key) onPresetSelected,
   }) {
     final rawMatchCategory = match.category?.trim();
+    final bool effectiveKataMatch =
+        isKataMatch ||
+        (match.rule?.isKataMatch ?? false) ||
+        match.matchType.contains('形') ||
+        match.matchType.contains('稽古法') ||
+        (rawMatchCategory != null &&
+            (rawMatchCategory.contains('形') ||
+                rawMatchCategory.contains('稽古法')));
 
     // 該当試合の部門（match.category）に適合するルールセットを抽出
     final Map<String, CategoryRuleSet> matchedCategoryRules = {};
@@ -59,23 +68,41 @@ class MatchEditRulePresetChips {
       );
       final prefix = showCategoryPrefix ? '$displayName: ' : '';
 
-      // 🏆 1. 本戦ルール（通常戦）
+      final bool isRuleKata =
+          effectiveKataMatch || ruleSet.normalRule.isKataMatch;
+
+      // 1. 本戦ルール（通常戦 / 形競技）
       final bool hasValidHonsen =
-          ruleSet.useHonsenRule && ruleSet.normalRule.matchTimeMinutes > 0;
+          ruleSet.useHonsenRule &&
+          (ruleSet.normalRule.matchTimeMinutes > 0 || isRuleKata);
       if (hasValidHonsen) {
         final key = '${catName}_honsen';
         final isSelected =
             selectedPresetKey == key ||
             (selectedPresetKey == 'honsen' && targetRules.length == 1);
+        final labelText = isRuleKata
+            ? '$prefix本戦ルール (形・旗判定)'
+            : '$prefix本戦ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.normalRule.matchTimeMinutes)})';
         presetChips.add(
           AppChoiceChip(
             selected: isSelected,
             icon: Icons.account_balance,
-            label: Text(
-              '$prefix本戦ルール (${MatchRuleSettingForm.formatMinutes(ruleSet.normalRule.matchTimeMinutes)})',
-            ),
+            label: Text(labelText),
             onSelected: (_) {
-              onPresetSelected(ruleSet.normalRule, key);
+              onPresetSelected(
+                isRuleKata
+                    ? ruleSet.normalRule.copyWith(
+                        isKataMatch: true,
+                        matchTimeMinutes: 0.0,
+                        hasHantei: true,
+                        enchoCount: 0,
+                        enchoTimeMinutes: 0.0,
+                        isEnchoUnlimited: false,
+                        hasRepresentativeMatch: false,
+                      )
+                    : ruleSet.normalRule,
+                key,
+              );
             },
           ),
         );
@@ -151,6 +178,30 @@ class MatchEditRulePresetChips {
 
     // 試合ルール設定に登録がない場合のフォールバックチップ
     if (presetChips.isEmpty) {
+      if (effectiveKataMatch) {
+        presetChips.add(
+          AppChoiceChip(
+            selected:
+                selectedPresetKey == 'honsen' || selectedPresetKey == null,
+            icon: Icons.account_balance,
+            label: const Text('本戦ルール (形・旗判定)'),
+            onSelected: (_) => onPresetSelected(
+              const MatchRule(
+                matchScene: 'honsen',
+                isKataMatch: true,
+                matchTimeMinutes: 0.0,
+                hasHantei: true,
+                enchoCount: 0,
+                enchoTimeMinutes: 0.0,
+                isEnchoUnlimited: false,
+                hasRepresentativeMatch: false,
+              ),
+              'honsen',
+            ),
+          ),
+        );
+        return presetChips;
+      }
       final formattedTime = MatchRuleSettingForm.formatMinutes(matchTime);
       MatchRule buildFallbackRule(String scene) {
         final t = matchTime > 0 ? matchTime : 3.0;

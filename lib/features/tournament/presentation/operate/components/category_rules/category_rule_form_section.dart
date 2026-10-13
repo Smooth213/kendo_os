@@ -167,8 +167,11 @@ class CategoryRuleFormSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isIndividual = matchType == '個人戦' || matchType == 'リーグ個人戦';
-    final isTeam = matchType == '団体戦' || matchType == 'リーグ団体戦';
+    final isKata =
+        matchType.contains('形') || matchType.contains('稽古法') || isKataMatch;
+    final isIndividual = !isKata && matchType.contains('個人');
+    final isTeam =
+        !isKata && (matchType.contains('団体') && !matchType.contains('個人'));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +191,7 @@ class CategoryRuleFormSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
         ],
 
-        if (!isKataMatch) ...[
+        if (!isKata) ...[
           // 1. 共通: 試合時間設定
           CategoryTimeStepperTile(
             title: '試合時間',
@@ -306,7 +309,9 @@ class CategoryRuleFormSection extends StatelessWidget {
         ],
 
         // === 形式別表示 ===
-        if (isRenseikai || matchType.contains('勝ち抜き'))
+        if (isKata) ...[
+          // 剣道形・基本判定試合では延長・代表戦・勝点等の竹刀固有ルールは適用しない
+        ] else if (isRenseikai || matchType.contains('勝ち抜き'))
           CategoryRuleRenseikaiSection(
             isRenseikai: isRenseikai,
             isKachinuki: matchType.contains('勝ち抜き'),
@@ -386,16 +391,17 @@ class CategoryRuleFormSection extends StatelessWidget {
           ),
 
         // 2. 詳細設定（得点制限、反則数など）＆ 上位戦キーワード設定
-        CategoryRuleAdvancedSettingsSection(
-          isNormal: isNormal,
-          categoryKey: categoryKey,
-          ipponLimit: ipponLimit,
-          hansokuLimit: hansokuLimit,
-          keywordsController: keywordsController,
-          onIpponLimitChanged: onIpponLimitChanged,
-          onHansokuLimitChanged: onHansokuLimitChanged,
-          onKeywordsChanged: onKeywordsChanged,
-        ),
+        if (!isKata)
+          CategoryRuleAdvancedSettingsSection(
+            isNormal: isNormal,
+            categoryKey: categoryKey,
+            ipponLimit: ipponLimit,
+            hansokuLimit: hansokuLimit,
+            keywordsController: keywordsController,
+            onIpponLimitChanged: onIpponLimitChanged,
+            onHansokuLimitChanged: onHansokuLimitChanged,
+            onKeywordsChanged: onKeywordsChanged,
+          ),
       ],
     );
   }

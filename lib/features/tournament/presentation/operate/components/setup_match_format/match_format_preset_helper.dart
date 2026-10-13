@@ -125,6 +125,7 @@ class MatchFormatPresetHelper {
       drawPointText: drawPointText,
       overallTimeText: overallTimeText,
       selectedRuleScene: state.selectedRuleScene,
+      isKataMatch: state.isKataMatch,
     );
   }
 }

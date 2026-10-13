@@ -16,6 +16,7 @@ class BulkRuleFormSection extends StatelessWidget {
   final Color textColor;
   final bool hasDifferingRules;
   final bool isDantai;
+  final bool isKataMatch;
   final double matchTime;
   final bool isRunningTime;
   final bool isIpponShobu;
@@ -83,6 +84,7 @@ class BulkRuleFormSection extends StatelessWidget {
     required this.textColor,
     required this.hasDifferingRules,
     required this.isDantai,
+    this.isKataMatch = false,
     required this.matchTime,
     required this.isRunningTime,
     required this.isIpponShobu,
@@ -177,9 +179,10 @@ class BulkRuleFormSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
         ],
 
-        // 🥋 統一ルール設定フォーム
+        // 統一ルール設定フォーム
         MatchRuleSettingForm(
           isDantai: isDantai,
+          isKataMatch: isKataMatch,
           selectedSceneKey: selectedSceneType == 'renseikai'
               ? 'renseikai'
               : (selectedSceneType == 'moushiawase' ? 'moushiawase' : 'honsen'),

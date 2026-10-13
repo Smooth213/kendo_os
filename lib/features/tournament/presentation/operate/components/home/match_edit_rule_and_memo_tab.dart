@@ -17,6 +17,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
     required this.tournamentId,
     required this.match,
     this.isDantai = false,
+    this.isKataMatch = false,
     required this.selectedPresetKey,
     required this.selectedPresetRule,
     required this.matchTime,
@@ -82,6 +83,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
   final String? tournamentId;
   final MatchModel match;
   final bool isDantai;
+  final bool isKataMatch;
   final String? selectedPresetKey;
   final MatchRule? selectedPresetRule;
   final double matchTime;
@@ -158,6 +160,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
       selectedPresetKey: selectedPresetKey,
       matchTime: matchTime,
       isDantai: isDantai,
+      isKataMatch: isKataMatch,
       onPresetSelected: onPresetSelected,
     );
 
@@ -171,7 +174,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        // 🏷️ 上部ワンタップ選択エリア
+        // 上部ワンタップ選択エリア
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -188,7 +191,7 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
                   Icon(Icons.auto_awesome, size: 16, color: primaryAccent),
                   const SizedBox(width: 6),
                   Text(
-                    '🏷️ 試合ルール設定からワンタップ選択',
+                    isKataMatch ? '試合ルール設定からワンタップ選択' : '🏷️ 試合ルール設定からワンタップ選択',
                     style: TextStyle(
                       fontSize: AppFontSize.bodySmall,
                       fontWeight: AppFontWeight.bold,
@@ -208,9 +211,10 @@ class MatchEditRuleAndMemoTab extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.lg),
 
-        // 🥋 統一ルール設定フォーム（全項目対応）
+        // 統一ルール設定フォーム（全項目対応）
         MatchRuleSettingForm(
           isDantai: isDantai,
+          isKataMatch: isKataMatch,
           selectedSceneKey: selectedPresetKey ?? 'honsen',
           matchTime: matchTime,
           isRunningTime: isRunningTime,

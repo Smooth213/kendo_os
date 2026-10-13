@@ -15,6 +15,7 @@ class MatchEditSaveHelper {
     required WidgetRef ref,
     required List<MatchModel> matches,
     required bool isDantai,
+    bool isKataMatch = false,
     required bool isSwapped,
     required bool initialOwnIsRed,
     MatchEditOwnTeamChoice? ownTeamChoice,
@@ -147,25 +148,35 @@ class MatchEditSaveHelper {
     for (int i = 0; i < matches.length; i++) {
       final m = matches[i];
       final baseRule = selectedPresetRule ?? m.rule ?? const MatchRule();
+      final bool effectiveKata = isKataMatch || baseRule.isKataMatch;
 
       final updatedRule = baseRule.copyWith(
+        isKataMatch: effectiveKata,
         matchScene: sceneKey,
-        isRenseikai: isRenseikaiBool,
-        matchTimeMinutes: matchTime,
-        isRunningTime: isRunningTime,
-        isIpponShobu: isIpponShobu,
+        isRenseikai: effectiveKata ? false : isRenseikaiBool,
+        matchTimeMinutes: effectiveKata ? 0.0 : matchTime,
+        isRunningTime: effectiveKata ? false : isRunningTime,
+        isIpponShobu: effectiveKata ? false : isIpponShobu,
         ipponLimit: isIpponShobu ? 1 : ipponLimit,
         hansokuLimit: hansokuLimit,
-        hasHantei: hasHantei,
-        enchoTimeMinutes: hasExtension ? enchoTime : 0.0,
-        isEnchoUnlimited: hasExtension && isEnchoUnlimited,
-        enchoCount: hasExtension ? (isEnchoUnlimited ? -2 : enchoCount) : 0,
-        hasRepresentativeMatch: isDantai ? hasRepresentativeMatch : false,
+        hasHantei: effectiveKata ? true : hasHantei,
+        enchoTimeMinutes: effectiveKata
+            ? 0.0
+            : (hasExtension ? enchoTime : 0.0),
+        isEnchoUnlimited: !effectiveKata && hasExtension && isEnchoUnlimited,
+        enchoCount: effectiveKata
+            ? 0
+            : (hasExtension ? (isEnchoUnlimited ? -2 : enchoCount) : 0),
+        hasRepresentativeMatch: !effectiveKata && isDantai
+            ? hasRepresentativeMatch
+            : false,
         isDaihyoIpponShobu: isDaihyoIpponShobu,
         daihyoMatchTimeMinutes: daihyoMatchTime,
-        daihyoHasExtension: daihyoHasExtension,
-        daihyoEnchoTimeMinutes: daihyoHasExtension ? daihyoEnchoTime : 0.0,
-        daihyoEnchoCount: daihyoHasExtension
+        daihyoHasExtension: !effectiveKata && daihyoHasExtension,
+        daihyoEnchoTimeMinutes: !effectiveKata && daihyoHasExtension
+            ? daihyoEnchoTime
+            : 0.0,
+        daihyoEnchoCount: !effectiveKata && daihyoHasExtension
             ? (isDaihyoEnchoUnlimited ? -2 : daihyoEnchoCount)
             : 0,
         daihyoHasHantei: daihyoHasHantei,
@@ -283,13 +294,15 @@ class MatchEditSaveHelper {
         rule: updatedRule,
         matchScene: sceneKey,
         status: m.status,
-        matchTimeMinutes: matchTime,
-        hasExtension: hasExtension,
-        extensionTimeMinutes: hasExtension ? enchoTime : null,
-        extensionCount: hasExtension
-            ? (isEnchoUnlimited ? -2 : enchoCount)
-            : null,
-        hasHantei: hasHantei,
+        matchTimeMinutes: effectiveKata ? 0.0 : matchTime,
+        hasExtension: effectiveKata ? false : hasExtension,
+        extensionTimeMinutes: effectiveKata
+            ? null
+            : (hasExtension ? enchoTime : null),
+        extensionCount: effectiveKata
+            ? null
+            : (hasExtension ? (isEnchoUnlimited ? -2 : enchoCount) : null),
+        hasHantei: effectiveKata ? true : hasHantei,
       );
 
       updatedMatches.add(updatedMatch);
@@ -300,10 +313,10 @@ class MatchEditSaveHelper {
         .saveMatchesBulk(updatedMatches);
 
     if (context.mounted) {
-      AppSnackBar.showSuccess(
-        context,
-        isDantai ? '団体戦の全試合情報を一括保存しました' : '試合情報を保存・更新しました',
-      );
+      final successMsg = isKataMatch
+          ? '形競技の対戦情報を保存しました'
+          : (isDantai ? '団体戦の全試合情報を一括保存しました' : '試合情報を保存・更新しました');
+      AppSnackBar.showSuccess(context, successMsg);
       Navigator.pop(context);
     }
   }

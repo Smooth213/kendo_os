@@ -396,9 +396,48 @@ void main() {
         ),
       );
 
-      expect(find.text('🥋 形・基本技（審判3名 旗判定）'), findsOneWidget);
-      expect(find.text('⏱️ 時間計測なし'), findsOneWidget);
-      expect(find.text('🚩 旗数判定（赤3-0白, 2-1, 1-2, 0-3）'), findsOneWidget);
+      expect(find.text('形・基本技（審判3名 旗判定）'), findsOneWidget);
+      expect(find.text('時間計測なし'), findsOneWidget);
+      expect(find.text('旗数判定（赤3-0白, 2-1, 1-2, 0-3）'), findsOneWidget);
+    });
+
+    test('形競技ルール（isKataMatch: true）が全ルール設定画面間で完全同期され先祖返りしないこと', () {
+      const kataRule = MatchRule(
+        isKataMatch: true,
+        matchTimeMinutes: 0.0,
+        hasHantei: true,
+        enchoCount: 0,
+      );
+
+      // 1. BulkRuleStateHolder で同期
+      final bulkHolder = BulkRuleStateHolder();
+      bulkHolder.applyCategoryRuleSet(kataRule, isTeam: false);
+      final ruleFromBulk = bulkHolder.buildNewRule();
+      expect(ruleFromBulk.isKataMatch, isTrue);
+      expect(ruleFromBulk.matchTimeMinutes, 0.0);
+
+      // 2. MatchEditStateHolder で同期
+      final match = MatchModel(
+        id: 'test_kata_sync',
+        matchType: '日本剣道形',
+        rule: ruleFromBulk,
+        redName: 'Aチーム',
+        whiteName: 'Bチーム',
+      );
+      final editHolder = MatchEditStateHolder([match]);
+      expect(editHolder.isKataMatch, isTrue);
+
+      // 3. MatchFormatFormState で同期
+      final formatState = MatchFormatFormState();
+      formatState.applyMatchRule(
+        ruleFromBulk,
+        overallTimeController: TextEditingController(),
+        winPointController: TextEditingController(),
+        lossPointController: TextEditingController(),
+        drawPointController: TextEditingController(),
+      );
+      expect(formatState.isKataMatch, isTrue);
+      expect(formatState.matchTime, 0.0);
     });
   });
 }

@@ -26,6 +26,7 @@ SUB_AUDITS = [
     ("⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/expedition_strike_decision_governance_test.dart"]),
     ("⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/match_category_other_support_governance_test.dart"]),
     ("⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/unfiltered_event_aggregation_governance_test.dart"]),
+    ("⑪ 剣道形競技（判定本数・時間無制限・延長排除）公式ルール完全適合規約", ["python3", "scripts/gov_test_helper.py", "test/governance/kata_rule_integrity_governance_test.dart"]),
 ]
 
 def main():

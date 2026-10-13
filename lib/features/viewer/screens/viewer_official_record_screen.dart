@@ -154,7 +154,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                       (m) =>
                           m.matchType == 'individual' ||
                           m.matchType == '選手' ||
-                          m.matchType.contains('個人戦'),
+                          m.matchType.contains('個人戦') ||
+                          m.matchType.contains('形') ||
+                          m.matchType.contains('稽古法'),
                     );
                     final isLeague = teamProj.isLeague;
                     final isKachinuki = teamProj.isKachinuki;
@@ -260,7 +262,9 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                                   (m) =>
                                       m.matchType == 'individual' ||
                                       m.matchType == '選手' ||
-                                      m.matchType.contains('個人戦'),
+                                      m.matchType.contains('個人戦') ||
+                                      m.matchType.contains('形') ||
+                                      m.matchType.contains('稽古法'),
                                 )) {
                               // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
                               matches.sort(

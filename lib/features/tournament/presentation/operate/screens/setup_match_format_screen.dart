@@ -249,6 +249,11 @@ class _SetupMatchFormatScreenState
         lossPointController: _lossPointController,
         drawPointController: _drawPointController,
       );
+      if (rule.isKataMatch ||
+          _state.matchType.contains('形') ||
+          _state.matchType.contains('稽古法')) {
+        _state.isKataMatch = true;
+      }
     });
   }
 
@@ -350,6 +355,10 @@ class _SetupMatchFormatScreenState
                       setState(() {
                         _state.selectedTeamId = team.id;
                         _state.matchType = team.matchType;
+                        if (team.matchType.contains('形') ||
+                            team.matchType.contains('稽古法')) {
+                          _state.isKataMatch = true;
+                        }
                         _loadCategoryRules();
 
                         // チームごとの前回の試合場・試合順（+1）を反映

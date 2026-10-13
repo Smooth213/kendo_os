@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/widgets/app_text_field.dart';
 /// 試合編集シートの「チーム・選手情報」タブ
 class MatchEditTeamAndPlayersTab extends StatelessWidget {
   final bool isDantai;
+  final bool isKataMatch;
   final TextEditingController redTeamController;
   final TextEditingController whiteTeamController;
   final List<TextEditingController> redPlayerControllers;
@@ -27,6 +28,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
   const MatchEditTeamAndPlayersTab({
     super.key,
     required this.isDantai,
+    this.isKataMatch = false,
     required this.redTeamController,
     required this.whiteTeamController,
     required this.redPlayerControllers,
@@ -58,7 +60,9 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isDantai ? '🏫 団体戦 対戦チーム' : '👤 対戦者情報',
+                isKataMatch
+                    ? '形競技 対戦ペア'
+                    : (isDantai ? '🏫 団体戦 対戦チーム' : '👤 対戦者情報'),
                 style: TextStyle(
                   fontWeight: AppFontWeight.bold,
                   fontSize: AppFontSize.body,
@@ -71,8 +75,10 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                   Expanded(
                     child: _buildTextField(
                       controller: redTeamController,
-                      label: isDantai ? '赤（RED）チーム名' : '赤（RED）所属・道場名',
-                      hint: isDantai ? '赤チーム名' : '所属名',
+                      label: isKataMatch
+                          ? '赤（RED）所属・道場名'
+                          : (isDantai ? '赤（RED）チーム名' : '赤（RED）所属・道場名'),
+                      hint: isKataMatch ? '所属名' : (isDantai ? '赤チーム名' : '所属名'),
                       isDark: isDark,
                       textColor: AppKendoColors.red,
                     ),
@@ -81,8 +87,10 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                   Expanded(
                     child: _buildTextField(
                       controller: whiteTeamController,
-                      label: isDantai ? '白（WHITE）チーム名' : '白（WHITE）所属・道場名',
-                      hint: isDantai ? '白チーム名' : '所属名',
+                      label: isKataMatch
+                          ? '白（WHITE）所属・道場名'
+                          : (isDantai ? '白（WHITE）チーム名' : '白（WHITE）所属・道場名'),
+                      hint: isKataMatch ? '所属名' : (isDantai ? '白チーム名' : '所属名'),
                       isDark: isDark,
                       textColor: context.appColors.textColor,
                     ),
@@ -97,7 +105,9 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                     color: AppKendoColors.pureWhite,
                   ),
                   label: Text(
-                    isDantai ? 'チーム丸ごと赤と白を入れ替える ⇄' : '赤と白を入れ替える ⇄',
+                    isKataMatch
+                        ? 'ペア丸ごと赤と白を入れ替える ⇄'
+                        : (isDantai ? 'チーム丸ごと赤と白を入れ替える ⇄' : '赤と白を入れ替える ⇄'),
                     style: const TextStyle(fontWeight: AppFontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(

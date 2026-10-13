@@ -171,23 +171,26 @@ class MatchFormatRuleStep extends ConsumerWidget {
                     : curRule.normalRule));
     final isKataMatch = effectiveRule.isKataMatch;
 
+    final isKata = curRule.normalRule.isKataMatch;
     String displayRuleName;
     if (ruleEntries.isEmpty) {
       displayRuleName = selectedRuleScene == 'renseikai'
-          ? '⚔️ 錬成ルール'
+          ? (isKata ? '錬成ルール' : '⚔️ 錬成ルール')
           : (selectedRuleScene == 'moushiawase'
-                ? '🤝 申合せルール'
+                ? (isKata ? '申合せルール' : '🤝 申合せルール')
                 : ((selectedRuleScene == 'advanced' && isAdvanced)
-                      ? '⭐ 上位戦ルール'
-                      : '🏆 通常戦ルール'));
+                      ? (isKata ? '上位戦ルール' : '⭐ 上位戦ルール')
+                      : (isKata ? '通常戦ルール' : '🏆 通常戦ルール')));
     } else {
       final sceneLabel = selectedRuleScene == 'renseikai'
-          ? '⚔️ 錬成ルール'
+          ? (isKata ? '錬成ルール' : '⚔️ 錬成ルール')
           : (selectedRuleScene == 'moushiawase'
-                ? '🤝 申合せルール'
+                ? (isKata ? '申合せルール' : '🤝 申合せルール')
                 : ((selectedRuleScene == 'advanced' && curRule.useAdvancedRule)
-                      ? '⭐ 上位戦ルール'
-                      : (curRule.isMultiScene ? '🏆 本戦ルール' : '🏆 通常戦ルール')));
+                      ? (isKata ? '上位戦ルール' : '⭐ 上位戦ルール')
+                      : (curRule.isMultiScene
+                            ? (isKata ? '本戦ルール' : '🏆 本戦ルール')
+                            : (isKata ? '通常戦ルール' : '🏆 通常戦ルール'))));
       final sub = curRule.subtitle.trim();
       if (sub.isNotEmpty) {
         displayRuleName = '$sceneLabel（$sub）';

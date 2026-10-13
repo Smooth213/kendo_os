@@ -94,5 +94,106 @@ void main() {
       expect(selectedPlayers[1], '大将');
       expect(selectedPlayers.containsKey(2), isFalse);
     });
+
+    test(
+      'resolveBasePlayerCountAndPositions: 剣道形および基本技稽古法でデフォルト役職なし（選手）および選択・入れ替えが正しく返ること',
+      () {
+        // 日本剣道形（デフォルト: 役職なし）
+        final (
+          kataCount,
+          kataPosDefault,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '日本剣道形（太刀の形3本）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+        );
+        expect(kataCount, 2);
+        expect(kataPosDefault, ['選手', '選手']);
+
+        // 日本剣道形（選択時: 打太刀・仕太刀）
+        final (
+          _,
+          kataPosSelected,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '日本剣道形（太刀の形3本）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+          kataRoleOption: 'uchidachi_shidachi',
+        );
+        expect(kataPosSelected, ['打太刀', '仕太刀']);
+
+        // 日本剣道形（入れ替え時: 仕太刀・打太刀）
+        final (
+          _,
+          kataPosReversed,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '日本剣道形（太刀の形3本）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+          kataRoleOption: 'shidachi_uchidachi',
+        );
+        expect(kataPosReversed, ['仕太刀', '打太刀']);
+
+        // 木刀による剣道基本技稽古法（デフォルト: 役職なし）
+        final (
+          kihonCount,
+          kihonPosDefault,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '木刀による剣道基本技稽古法（5本）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+        );
+        expect(kihonCount, 2);
+        expect(kihonPosDefault, ['選手', '選手']);
+
+        // 木刀による剣道基本技稽古法（選択時: 元立ち・掛かり手）
+        final (
+          _,
+          kihonPosSelected,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '木刀による剣道基本技稽古法（5本）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+          kataRoleOption: 'motodachi_kakarite',
+        );
+        expect(kihonPosSelected, ['元立ち', '掛かり手']);
+
+        // 木刀による剣道基本技稽古法（入れ替え時: 掛かり手・元立ち）
+        final (
+          _,
+          kihonPosReversed,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '木刀による剣道基本技稽古法（5本）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+          kataRoleOption: 'kakarite_motodachi',
+        );
+        expect(kihonPosReversed, ['掛かり手', '元立ち']);
+
+        // 個人戦
+        final (
+          indivCount,
+          indivPos,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '個人戦',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+        );
+        expect(indivCount, 1);
+        expect(indivPos, ['選手']);
+
+        // 団体戦（5人制）
+        final (
+          dantaiCount,
+          dantaiPos,
+        ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+          matchType: '団体戦（5人制）',
+          tempSelectedPlayers: {},
+          customSlotCount: 8,
+        );
+        expect(dantaiCount, 5);
+        expect(dantaiPos, ['先鋒', '次鋒', '中堅', '副将', '大将']);
+      },
+    );
   });
 }

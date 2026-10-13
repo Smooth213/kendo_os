@@ -156,7 +156,10 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
                     (m) =>
                         m.matchType == 'individual' ||
                         m.matchType == '選手' ||
-                        m.matchType.contains('個人戦'),
+                        m.matchType.contains('個人戦') ||
+                        m.rule?.isKataMatch == true ||
+                        m.matchType.contains('形') ||
+                        m.matchType.contains('稽古法'),
                   )) {
                 return OfficialRecordIndividualMatchesList(
                   groupName: groupName,

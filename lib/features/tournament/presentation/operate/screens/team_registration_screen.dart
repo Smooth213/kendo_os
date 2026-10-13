@@ -18,7 +18,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_save_helper.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_providers.dart';
@@ -71,6 +70,7 @@ class _TeamRegistrationScreenState
   bool _showExtraMajorCategories = false;
   bool _showExtraMatchTypes = false;
   String _matchType = '団体戦（5人制）';
+  String _kataRoleOption = 'none';
   String? _editingTeamId;
 
   int _substituteCount = 0;
@@ -134,6 +134,16 @@ class _TeamRegistrationScreenState
           }
         }
         _tempSelectedPlayers[index] = selected;
+
+        // ★ 形競技でチーム名が空の場合、ペア名を自動補完
+        if (_teamNameController.text.trim().isEmpty &&
+            (_matchType.contains('形') || _matchType.contains('稽古法'))) {
+          final p0 = _tempSelectedPlayers[0];
+          final p1 = _tempSelectedPlayers[1];
+          if (p0 != null && p0.isNotEmpty && p1 != null && p1.isNotEmpty) {
+            _teamNameController.text = '$p0・$p1';
+          }
+        }
       });
     }
   }
@@ -143,6 +153,7 @@ class _TeamRegistrationScreenState
       _selectedMajorCategory = preset.majorCategory;
       _selectedMinorCategory = preset.minorCategory;
       _matchType = preset.matchType;
+      _kataRoleOption = 'none';
       _tempSelectedPlayers.clear();
       _substituteCount = 0;
       _customSlotCount = 8;
@@ -161,25 +172,15 @@ class _TeamRegistrationScreenState
     );
 
     final bool isMoreThan7 = _matchType.contains('それ以上');
-    final (basePlayerCount, basePosNames) = switch (_matchType) {
-      final t when t.contains('3人制') => (3, ['先鋒', '中堅', '大将']),
-      final t when t.contains('個人戦') => (1, ['選手']),
-      final t when t.contains('7人制') => (
-        7,
-        ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'],
-      ),
-      final t when t.contains('それ以上') => () {
-        int maxIndex = -1;
-        for (final k in _tempSelectedPlayers.keys) {
-          if (k > maxIndex) maxIndex = k;
-        }
-        final count = (maxIndex + 1 > _customSlotCount)
-            ? (maxIndex + 1)
-            : _customSlotCount;
-        return (count, MatchFormatSetupHelper.generatePositions(count));
-      }(),
-      _ => (5, ['先鋒', '次鋒', '中堅', '副将', '大将']),
-    };
+    final (
+      basePlayerCount,
+      basePosNames,
+    ) = TeamRegistrationSlotHelper.resolveBasePlayerCountAndPositions(
+      matchType: _matchType,
+      tempSelectedPlayers: _tempSelectedPlayers,
+      customSlotCount: _customSlotCount,
+      kataRoleOption: _kataRoleOption,
+    );
     final posNames = isMoreThan7
         ? basePosNames
         : [...basePosNames, ...List.filled(_substituteCount, '補欠')];
@@ -263,6 +264,7 @@ class _TeamRegistrationScreenState
                           }),
                           onMatchTypeChanged: (type) => setState(() {
                             _matchType = type;
+                            _kataRoleOption = 'none';
                             _tempSelectedPlayers.clear();
                             _substituteCount = 0;
                             _customSlotCount = 8;
@@ -285,6 +287,9 @@ class _TeamRegistrationScreenState
                             tempSelectedPlayers: _tempSelectedPlayers,
                             substituteCount: _substituteCount,
                             matchType: _matchType,
+                            kataRoleOption: _kataRoleOption,
+                            onKataRoleOptionChanged: (opt) =>
+                                setState(() => _kataRoleOption = opt),
                             themeColors: _themeColors,
                             onSelectPlayer: (index) async {
                               FocusManager.instance.primaryFocus?.unfocus();
@@ -360,6 +365,7 @@ class _TeamRegistrationScreenState
       _tempSelectedPlayers.clear();
       _substituteCount = 0;
       _customSlotCount = 8;
+      _kataRoleOption = 'none';
       _currentPage = 0;
     });
     _pageController.jumpToPage(0);
@@ -390,6 +396,7 @@ class _TeamRegistrationScreenState
               _tempSelectedPlayers.clear();
               _substituteCount = 0;
               _customSlotCount = 8;
+              _kataRoleOption = 'none';
               _currentPage = 0;
             });
             _pageController.jumpToPage(0);
@@ -420,6 +427,7 @@ class _TeamRegistrationScreenState
             _tempSelectedPlayers.clear();
             _substituteCount = 0;
             _customSlotCount = 8;
+            _kataRoleOption = 'none';
             _currentPage = 0;
           });
           _pageController.jumpToPage(0);

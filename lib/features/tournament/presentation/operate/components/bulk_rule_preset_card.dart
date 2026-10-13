@@ -29,6 +29,9 @@ class BulkRulePresetCard extends StatelessWidget {
   });
 
   String _formatRuleSummary(MatchRule r) {
+    if (r.isKataMatch) {
+      return '形・旗判定';
+    }
     final timeStr = r.matchTimeMinutes.truncateToDouble() == r.matchTimeMinutes
         ? r.matchTimeMinutes.toInt().toString()
         : r.matchTimeMinutes.toString();
@@ -145,13 +148,15 @@ class BulkRulePresetCard extends StatelessWidget {
                   if (selectedRuleSet.useHonsenRule)
                     _buildSceneSubChip(
                       sceneKey: 'normal',
-                      label:
-                          '🏆 本戦 (${_formatRuleSummary(selectedRuleSet.normalRule)})',
+                      label: selectedRuleSet.normalRule.isKataMatch
+                          ? '本戦 (${_formatRuleSummary(selectedRuleSet.normalRule)})'
+                          : '🏆 本戦 (${_formatRuleSummary(selectedRuleSet.normalRule)})',
                       targetRule: selectedRuleSet.normalRule,
                     ),
 
                   // 2) 錬成 (練習試合)
-                  if (selectedRuleSet.isMultiScene &&
+                  if (!selectedRuleSet.normalRule.isKataMatch &&
+                      selectedRuleSet.isMultiScene &&
                       selectedRuleSet.useRenseikaiRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
@@ -163,7 +168,8 @@ class BulkRulePresetCard extends StatelessWidget {
                   ],
 
                   // 3) 申合せ
-                  if (selectedRuleSet.isMultiScene &&
+                  if (!selectedRuleSet.normalRule.isKataMatch &&
+                      selectedRuleSet.isMultiScene &&
                       selectedRuleSet.useMoushiawaseRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
@@ -175,7 +181,8 @@ class BulkRulePresetCard extends StatelessWidget {
                   ],
 
                   // 4) 決勝・準決勝
-                  if (selectedRuleSet.useAdvancedRule) ...[
+                  if (!selectedRuleSet.normalRule.isKataMatch &&
+                      selectedRuleSet.useAdvancedRule) ...[
                     const SizedBox(width: 6),
                     _buildSceneSubChip(
                       sceneKey: 'advanced',

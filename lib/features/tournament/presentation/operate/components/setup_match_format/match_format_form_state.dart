@@ -11,6 +11,7 @@ class MatchFormatFormState {
   bool isRunningTime;
   bool isRenseikai;
   String? selectedTeamId;
+  bool isKataMatch;
 
   String kachinukiUnlimitedType;
   bool hasLeagueDaihyo;
@@ -47,6 +48,7 @@ class MatchFormatFormState {
     this.isRunningTime = false,
     this.isRenseikai = false,
     this.selectedTeamId,
+    this.isKataMatch = false,
     this.kachinukiUnlimitedType = '3人勝ち抜き',
     this.hasLeagueDaihyo = false,
     this.renseikaiType = '時間制',
@@ -119,5 +121,6 @@ class MatchFormatFormState {
     isIpponShobu = rule.isIpponShobu;
     ipponLimit = rule.ipponLimit;
     hansokuLimit = rule.hansokuLimit;
+    isKataMatch = rule.isKataMatch;
   }
 }

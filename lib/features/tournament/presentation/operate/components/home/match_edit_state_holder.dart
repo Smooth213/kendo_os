@@ -11,6 +11,7 @@ enum MatchEditOwnTeamChoice { red, white, none }
 class MatchEditStateHolder {
   final List<MatchModel> matches;
   late bool isDantai;
+  late bool isKataMatch;
   bool isSwapped = false;
   late bool initialOwnIsRed;
   late MatchEditOwnTeamChoice ownTeamChoice;
@@ -71,6 +72,12 @@ class MatchEditStateHolder {
     final first = sortedMatches.first;
 
     final r = first.rule ?? const MatchRule();
+    isKataMatch =
+        r.isKataMatch ||
+        first.matchType.contains('形') ||
+        first.matchType.contains('稽古法') ||
+        (first.category?.contains('形') ?? false) ||
+        (first.category?.contains('稽古法') ?? false);
     isKachinuki = r.isKachinuki || first.isKachinuki;
     isDantai = matches.length > 1 || first.matchType == '団体戦' || isKachinuki;
 
@@ -284,6 +291,19 @@ class MatchEditStateHolder {
     lossPoint = r.lossPoint;
     drawPoint = r.drawPoint > 0 ? r.drawPoint : 1.0;
 
+    if (isKataMatch) {
+      matchTime = 0.0;
+      isRunningTime = false;
+      isIpponShobu = false;
+      hasExtension = false;
+      enchoTime = 0.0;
+      enchoCount = 0;
+      isEnchoUnlimited = false;
+      hasHantei = true;
+      hasRepresentativeMatch = false;
+      daihyoHasExtension = false;
+    }
+
     noteController = TextEditingController(
       text: MatchEditDataHelper.cleanNoteText(first.note),
     );
@@ -334,15 +354,17 @@ class MatchEditStateHolder {
       matchScene: key,
       isRenseikai: key.contains('renseikai'),
     );
-    matchTime = rule.matchTimeMinutes;
-    isRunningTime = rule.isRunningTime;
-    isIpponShobu = rule.isIpponShobu;
+    final effectiveKata = isKataMatch || rule.isKataMatch;
+    matchTime = effectiveKata ? 0.0 : rule.matchTimeMinutes;
+    isRunningTime = effectiveKata ? false : rule.isRunningTime;
+    isIpponShobu = effectiveKata ? false : rule.isIpponShobu;
     ipponLimit = rule.ipponLimit;
     hansokuLimit = rule.hansokuLimit;
 
     // 団体戦の通常試合（先鋒〜大将）は原則延長なし（代表戦で決着）
     final ruleHasExtension =
-        rule.isEnchoUnlimited || rule.enchoCount > 0 || rule.enchoCount == -2;
+        !effectiveKata &&
+        (rule.isEnchoUnlimited || rule.enchoCount > 0 || rule.enchoCount == -2);
     hasExtension = isDantai
         ? (rule.isKachinuki && ruleHasExtension)
         : ruleHasExtension;
@@ -351,13 +373,13 @@ class MatchEditStateHolder {
     enchoCount = hasExtension ? (rule.enchoCount > 0 ? rule.enchoCount : 1) : 0;
     isEnchoUnlimited =
         hasExtension && (rule.isEnchoUnlimited || rule.enchoCount == -2);
-    hasHantei = rule.hasHantei;
-    hasRepresentativeMatch = isDantai
+    hasHantei = effectiveKata ? true : rule.hasHantei;
+    hasRepresentativeMatch = !effectiveKata && isDantai
         ? (rule.hasRepresentativeMatch || rule.hasLeagueDaihyo)
         : false;
     isDaihyoIpponShobu = rule.isDaihyoIpponShobu;
     daihyoMatchTime = rule.daihyoMatchTimeMinutes;
-    daihyoHasExtension = rule.daihyoHasExtension;
+    daihyoHasExtension = !effectiveKata && rule.daihyoHasExtension;
     daihyoEnchoTime = rule.daihyoEnchoTimeMinutes > 0
         ? rule.daihyoEnchoTimeMinutes
         : 3.0;

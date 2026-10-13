@@ -355,13 +355,7 @@ class PdfPageLayoutHelper {
     int i = currentIndex;
     if (matches.any((m) => m.note.contains('[SUMMARY]'))) return i;
 
-    final isIndiv = matches.any(
-      (m) =>
-          m.matchType == 'individual' ||
-          m.matchType == '選手' ||
-          m.matchType.contains('個人戦') ||
-          (m is MatchModel && m.rule?.isKataMatch == true),
-    );
+    final isIndiv = matches.any(_isIndivMatch);
 
     // 7人制以上の多人数戦（代表戦を除くポジション数が5超、または総試合数が6超）判定
     final regularMatchesCount = matches
@@ -397,13 +391,7 @@ class PdfPageLayoutHelper {
           } catch (_) {}
         }
 
-        final isNextIndiv = nextMatches.any(
-          (m) =>
-              m.matchType == 'individual' ||
-              m.matchType == '選手' ||
-              m.matchType.contains('個人戦') ||
-              (m is MatchModel && m.rule?.isKataMatch == true),
-        );
+        final isNextIndiv = nextMatches.any(_isIndivMatch);
         final nextRegularCount = nextMatches
             .where((m) => m.matchType != '代表戦')
             .length;
@@ -444,5 +432,19 @@ class PdfPageLayoutHelper {
     contentWidgets.add(pw.SizedBox(height: 16));
 
     return i;
+  }
+
+  static bool _isIndivMatch(dynamic m) {
+    if (m == null) return false;
+    final matchType = (m.matchType is String ? m.matchType as String : '')
+        .trim();
+    final isKata =
+        (m is MatchModel && m.rule?.isKataMatch == true) ||
+        matchType.contains('形') ||
+        matchType.contains('稽古法');
+    return matchType == 'individual' ||
+        matchType == '選手' ||
+        matchType.contains('個人戦') ||
+        isKata;
   }
 }

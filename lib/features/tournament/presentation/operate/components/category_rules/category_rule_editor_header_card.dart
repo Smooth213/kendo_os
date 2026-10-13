@@ -7,6 +7,18 @@ import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// ルール編集画面 対象部門情報 ＆ 試合方式 ＆ シーン/上位戦切り替えヘッダー
 class CategoryRuleEditorHeaderCard extends StatelessWidget {
+  /// 対応する主要試合形式一覧（ガバナンス第1条⑥準拠）
+  static const List<String> supportedMatchTypes = [
+    '個人戦',
+    '団体戦',
+    'リーグ個人戦',
+    'リーグ団体戦',
+    '勝ち抜き戦（5人制）',
+    '勝ち抜き戦（3人制）',
+    '勝ち抜き戦（7人制）',
+    '勝ち抜き戦（それ以上）',
+  ];
+
   final String category;
   final Color textColor;
   final String matchType;
@@ -193,6 +205,8 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
               '勝ち抜き戦（3人制）',
               '勝ち抜き戦（7人制）',
               '勝ち抜き戦（それ以上）',
+              '日本剣道形',
+              '木刀による剣道基本技稽古法',
             ];
             final effectiveMatchType = matchType == '勝ち抜き戦'
                 ? '勝ち抜き戦（5人制）'
@@ -209,7 +223,11 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
                                         ? '勝ち抜き戦（3人制）'
                                         : (matchType.contains('勝ち抜き')
                                               ? '勝ち抜き戦（5人制）'
-                                              : '団体戦')))));
+                                              : (matchType.contains('形')
+                                                    ? '日本剣道形'
+                                                    : (matchType.contains('稽古法')
+                                                          ? '木刀による剣道基本技稽古法'
+                                                          : '団体戦')))))));
 
             return DropdownButtonFormField<String>(
               initialValue: effectiveMatchType,
@@ -244,6 +262,11 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
                 DropdownMenuItem(
                   value: '勝ち抜き戦（それ以上）',
                   child: Text('勝ち抜き戦（それ以上）'),
+                ),
+                DropdownMenuItem(value: '日本剣道形', child: Text('日本剣道形（判定戦）')),
+                DropdownMenuItem(
+                  value: '木刀による剣道基本技稽古法',
+                  child: Text('木刀による剣道基本技稽古法（判定戦）'),
                 ),
               ],
               onChanged: (val) {

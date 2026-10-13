@@ -33,6 +33,8 @@ class RegisteredTeamCard extends StatelessWidget {
       base = ['選手'];
     } else if (matchType.contains('7人制')) {
       base = ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'];
+    } else if (matchType.contains('形') || matchType.contains('稽古法')) {
+      base = ['選手', '選手'];
     } else {
       base = ['先鋒', '次鋒', '中堅', '副将', '大将'];
     }

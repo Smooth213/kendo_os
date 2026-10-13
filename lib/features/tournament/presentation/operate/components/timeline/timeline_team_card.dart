@@ -50,6 +50,11 @@ class TimelineTeamCard extends ConsumerWidget {
   });
 
   String _getMatchLabel(MatchModel m) {
+    if (m.rule?.isKataMatch == true ||
+        m.matchType.contains('形') ||
+        m.matchType.contains('稽古法')) {
+      return '形・基本判定';
+    }
     final bool isLeague = m.note.contains('[リーグ戦]');
     final bool isKachinuki = m.isKachinuki;
     final bool isIndividual =
@@ -245,7 +250,6 @@ class TimelineTeamCard extends ConsumerWidget {
                 ),
             children: (() {
               String lastGroupLabel = '';
-              bool playerHeaderShown = false;
               return timelineItems
                   .asMap()
                   .entries
@@ -278,9 +282,11 @@ class TimelineTeamCard extends ConsumerWidget {
                           ),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.groups,
-                                color: Color(0xFF3F51B5),
+                              Icon(
+                                label == '形・基本判定'
+                                    ? Icons.sports_martial_arts
+                                    : Icons.groups,
+                                color: const Color(0xFF3F51B5),
                                 size: 16,
                               ),
                               const SizedBox(width: AppSpacing.xs),
@@ -315,7 +321,19 @@ class TimelineTeamCard extends ConsumerWidget {
                       );
                     } else if (item is IndividualPlayerTimelineItem) {
                       Widget? headerWidget;
-                      if (!playerHeaderShown) {
+                      final firstMatch = item.matches.isNotEmpty
+                          ? item.matches.first
+                          : null;
+                      final bool isKataItem =
+                          firstMatch != null &&
+                          (firstMatch.rule?.isKataMatch == true ||
+                              firstMatch.matchType.contains('形') ||
+                              firstMatch.matchType.contains('稽古法'));
+                      final indivLabel = sanitizedQuery.isNotEmpty
+                          ? '抽出された個別試合'
+                          : (isKataItem ? '形・基本判定' : '個人戦');
+
+                      if (indivLabel != lastGroupLabel) {
                         headerWidget = Padding(
                           padding: const EdgeInsets.only(
                             left: AppSpacing.lg,
@@ -327,23 +345,29 @@ class TimelineTeamCard extends ConsumerWidget {
                               Icon(
                                 sanitizedQuery.isNotEmpty
                                     ? Icons.manage_search
-                                    : Icons.person,
-                                color: const Color(0xFFFF9800),
+                                    : (isKataItem
+                                          ? Icons.sports_martial_arts
+                                          : Icons.person),
+                                color: isKataItem
+                                    ? const Color(0xFF3F51B5)
+                                    : const Color(0xFFFF9800),
                                 size: 16,
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               Text(
-                                sanitizedQuery.isNotEmpty ? '抽出された個別試合' : '個人戦',
-                                style: const TextStyle(
+                                indivLabel,
+                                style: TextStyle(
                                   fontSize: AppFontSize.bodySmall,
                                   fontWeight: AppFontWeight.bold,
-                                  color: Color(0xFFFF9800),
+                                  color: isKataItem
+                                      ? const Color(0xFF3F51B5)
+                                      : const Color(0xFFFF9800),
                                 ),
                               ),
                             ],
                           ),
                         );
-                        playerHeaderShown = true;
+                        lastGroupLabel = indivLabel;
                       }
 
                       return TimelineIndividualPlayerCard(

@@ -117,6 +117,82 @@ class OrderSetupMatchGenerator {
           whiteRemaining: whiteFull.length > 1 ? whiteFull.sublist(1) : [],
         );
         matchesToSave.add(newMatch);
+      } else if (rule.isKataMatch ||
+          matchType.contains('形') ||
+          matchType.contains('稽古法')) {
+        final List<String> myPairParts = [];
+        for (int i = 0; i < positions.length; i++) {
+          final pName = selectedPlayers[i]?.trim() ?? '';
+          final pos = positions[i];
+          final displayP = pName.isNotEmpty ? pName : '選手';
+          if (pos != '選手' && pos.isNotEmpty) {
+            myPairParts.add('$displayP($pos)');
+          } else {
+            myPairParts.add(displayP);
+          }
+        }
+        final myPairStr = myPairParts.isNotEmpty
+            ? myPairParts.join('・')
+            : '選手・選手';
+
+        final List<String> opPairParts = [];
+        for (int i = 0; i < positions.length; i++) {
+          final pName = opponentPlayers[i]?.trim() ?? '';
+          final pos = positions[i];
+          final displayP = pName.isNotEmpty ? pName : '選手';
+          if (pos != '選手' && pos.isNotEmpty) {
+            opPairParts.add('$displayP($pos)');
+          } else {
+            opPairParts.add(displayP);
+          }
+        }
+        final opPairStr = opPairParts.isNotEmpty
+            ? opPairParts.join('・')
+            : '選手・選手';
+
+        final String myFull = '$myTeamName : $myPairStr';
+        final String opFull = '$opTeamName : $opPairStr';
+        String rName, wName;
+        if (rule.isLeague) {
+          final String rTeam = pair[0];
+          final String wTeam = pair[1];
+          rName = (rTeam == '自チーム') ? myFull : '$rTeam : 選手・選手';
+          wName = (wTeam == '自チーム') ? myFull : '$wTeam : 選手・選手';
+        } else {
+          rName = isOwnTeamRed ? myFull : opFull;
+          wName = isOwnTeamRed ? opFull : myFull;
+        }
+
+        final matchId = const Uuid().v4();
+        final newMatch = MatchModel(
+          id: matchId,
+          tournamentId: tournamentId,
+          category: rule.category.isNotEmpty ? rule.category : null,
+          groupName: teamGroupId,
+          matchType: matchType.isNotEmpty ? matchType : '形・基本判定',
+          redName: rName,
+          whiteName: wName,
+          status: (isStartNow && pIndex == 0) ? 'in_progress' : 'waiting',
+          refereeNames: [],
+          matchTimeMinutes: 0.0,
+          isRunningTime: false,
+          hasExtension: false,
+          extensionTimeMinutes: 0.0,
+          extensionCount: 0,
+          hasHantei: true,
+          order: baseOrder + (pIndex * 10),
+          note: saveNote,
+          matchScene: rule.matchScene != 'honsen'
+              ? rule.matchScene
+              : (rule.isRenseikai ? 'renseikai' : 'honsen'),
+          rule: rule.copyWith(
+            isKataMatch: true,
+            matchTimeMinutes: 0.0,
+            isRunningTime: false,
+            hasHantei: true,
+          ),
+        );
+        matchesToSave.add(newMatch);
       } else {
         for (int i = 0; i < positions.length; i++) {
           final String matchId = const Uuid().v4();

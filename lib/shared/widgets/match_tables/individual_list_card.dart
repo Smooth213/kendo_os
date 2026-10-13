@@ -3,6 +3,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 
 class IndividualMatchItem {
@@ -221,17 +222,11 @@ class IndividualListCard extends StatelessWidget {
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            Text(
-                              m.redName,
-                              style: TextStyle(
-                                fontWeight: m.rWin
-                                    ? AppFontWeight.bold
-                                    : AppFontWeight.bold,
-                                color: m.rWin
-                                    ? AppKendoColors.hansokuRed
-                                    : textColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            _buildDisplayPlayerName(
+                              context: context,
+                              name: m.redName,
+                              isWinner: m.rWin,
+                              defaultTextColor: textColor,
                             ),
                           ],
                         ),
@@ -282,17 +277,11 @@ class IndividualListCard extends StatelessWidget {
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            Text(
-                              m.whiteName,
-                              style: TextStyle(
-                                fontWeight: m.wWin
-                                    ? AppFontWeight.bold
-                                    : AppFontWeight.bold,
-                                color: m.wWin
-                                    ? AppKendoColors.hansokuRed
-                                    : textColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            _buildDisplayPlayerName(
+                              context: context,
+                              name: m.whiteName,
+                              isWinner: m.wWin,
+                              defaultTextColor: textColor,
                             ),
                           ],
                         ),
@@ -389,6 +378,62 @@ class IndividualListCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDisplayPlayerName({
+    required BuildContext context,
+    required String name,
+    required bool isWinner,
+    required Color defaultTextColor,
+  }) {
+    final color = isWinner ? AppKendoColors.hansokuRed : defaultTextColor;
+    final baseStyle = TextStyle(fontWeight: AppFontWeight.bold, color: color);
+
+    if (!name.contains('・')) {
+      return Text(name, style: baseStyle, overflow: TextOverflow.ellipsis);
+    }
+
+    final pairs = NameFormatter.parseKataPair(name);
+    if (pairs.isEmpty) {
+      return Text(name, style: baseStyle, overflow: TextOverflow.ellipsis);
+    }
+
+    if (pairs.every((p) => p.initial.isEmpty)) {
+      final simpleText = pairs.map((p) => p.lastName).join('・');
+      return Text(
+        simpleText,
+        style: baseStyle,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    return RichText(
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          for (int idx = 0; idx < pairs.length; idx++) ...[
+            if (idx > 0) const TextSpan(text: '・'),
+            TextSpan(text: pairs[idx].lastName),
+            if (pairs[idx].initial.isNotEmpty)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.bottom,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 1, bottom: 0),
+                  child: Text(
+                    pairs[idx].initial,
+                    style: TextStyle(
+                      fontSize: AppFontSize.micro,
+                      fontWeight: AppFontWeight.bold,
+                      color: context.appColors.subTextColor,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ],
       ),
     );
   }

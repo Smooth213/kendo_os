@@ -10,7 +10,7 @@ import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 
 /// 🥋 取り込みデータからチーム＆オーダーモデルへの変換・自動登録サービス
 class TournamentTeamAutoRegisterService {
-  /// 選択可能な試合形式の候補定数リスト
+  /// 選択可能な試合形式の候補定数リスト（全11形式: ガバナンス第1条⑤準拠）
   static const List<String> candidateMatchTypes = [
     '団体戦（5人制）',
     '団体戦（3人制）',
@@ -25,11 +25,33 @@ class TournamentTeamAutoRegisterService {
     '団体戦（それ以上）',
   ];
 
+  /// 形競技の候補定数リスト
+  static const List<String> kataCandidateMatchTypes = [
+    '日本剣道形（太刀の形3本）',
+    '日本剣道形（太刀の形5本）',
+    '日本剣道形（太刀の形7本）',
+    '日本剣道形（太刀＋小太刀10本）',
+    '木刀による剣道基本技稽古法（5本）',
+    '木刀による剣道基本技稽古法（9本）',
+  ];
+
+  /// 全試合形式（竹刀剣道11形式 + 形競技6形式）
+  static const List<String> allCandidateMatchTypes = [
+    ...candidateMatchTypes,
+    ...kataCandidateMatchTypes,
+  ];
+
   /// 試合形式の正規化（旧「勝ち抜き戦」を「勝ち抜き戦（5人制）」にマイグレーション）
   static String normalizeMatchType(String matchType) {
     final clean = matchType.trim();
     if (clean == '勝ち抜き戦') {
       return '勝ち抜き戦（5人制）';
+    }
+    if (clean == '剣道形' || clean == '剣道形（日本剣道形）') {
+      return '日本剣道形（太刀の形3本）';
+    }
+    if (clean == '剣道形（基本形）') {
+      return '木刀による剣道基本技稽古法（5本）';
     }
     return clean;
   }

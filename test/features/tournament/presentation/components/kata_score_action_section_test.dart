@@ -48,7 +48,7 @@ void main() {
       expect(find.text('直前の判定を取り消す (Undo)'), findsNothing);
     });
 
-    testWidgets('イベントが存在する場合においてUndoボタンが描画されること', (WidgetTester tester) async {
+    testWidgets('イベントが存在する場合でもUndoボタンが描画されないこと', (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestWidget(
           matchId: 'match_1',
@@ -58,7 +58,7 @@ void main() {
         ),
       );
 
-      expect(find.text('直前の判定を取り消す (Undo)'), findsOneWidget);
+      expect(find.text('直前の判定を取り消す (Undo)'), findsNothing);
     });
 
     testWidgets('isInputLockedがtrueのとき各ボタンが無効化されていること', (
@@ -73,10 +73,8 @@ void main() {
         ),
       );
 
-      final undoButton = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, '直前の判定を取り消す (Undo)'),
-      );
-      expect(undoButton.onPressed, isNull);
+      final redFusenFinder = find.text('赤 不戦勝');
+      expect(redFusenFinder, findsOneWidget);
     });
   });
 }

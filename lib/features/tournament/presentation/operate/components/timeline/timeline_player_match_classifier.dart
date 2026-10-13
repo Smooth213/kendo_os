@@ -23,7 +23,14 @@ class TimelinePlayerMatchClassifier {
           sanitizedQuery.isNotEmpty &&
           matchedMatchIds.contains(m.id) &&
           (m.groupName == null || !matchedGroupNames.contains(m.groupName!));
-      if (!forceIndividual && m.groupName != null && m.groupName!.isNotEmpty) {
+      final bool isKata =
+          m.rule?.isKataMatch == true ||
+          m.matchType.contains('形') ||
+          m.matchType.contains('稽古法');
+      if (!forceIndividual &&
+          !isKata &&
+          m.groupName != null &&
+          m.groupName!.isNotEmpty) {
         catGroupedMatches.putIfAbsent(m.groupName!, () => []).add(m);
       } else {
         catIndividualMatches.add(m);
@@ -38,7 +45,10 @@ class TimelinePlayerMatchClassifier {
           !firstMatch.isKachinuki &&
           (firstMatch.matchType == 'individual' ||
               firstMatch.matchType == '選手' ||
-              firstMatch.matchType.contains('個人戦'));
+              firstMatch.matchType.contains('個人戦') ||
+              firstMatch.rule?.isKataMatch == true ||
+              firstMatch.matchType.contains('形') ||
+              firstMatch.matchType.contains('稽古法'));
 
       final bool isTeamPosition =
           firstMatch.matchType.contains('将') ||

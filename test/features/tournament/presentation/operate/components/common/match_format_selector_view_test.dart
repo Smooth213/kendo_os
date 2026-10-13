@@ -55,6 +55,40 @@ void main() {
       await tester.tap(find.text('勝ち抜き戦'));
       await tester.pumpAndSettle();
       expect(matchType, '勝ち抜き戦（5人制）');
+
+      // 「剣道形」をタップ
+      await tester.tap(find.text('剣道形'));
+      await tester.pumpAndSettle();
+      expect(matchType, '日本剣道形（太刀の形3本）');
+
+      // 種別（日本剣道形・木刀による剣道基本技稽古法）が表示されていること
+      expect(find.text('日本剣道形'), findsOneWidget);
+      expect(find.text('木刀による剣道基本技稽古法'), findsOneWidget);
+
+      // 日本剣道形の本数選択肢が表示されていること
+      expect(find.text('太刀の形（3本）'), findsOneWidget);
+      expect(find.text('太刀の形（5本）'), findsOneWidget);
+      expect(find.text('太刀の形（7本）'), findsOneWidget);
+      expect(find.text('太刀＋小太刀（10本）'), findsOneWidget);
+
+      // 「太刀の形（7本）」をタップ
+      await tester.tap(find.text('太刀の形（7本）'));
+      await tester.pumpAndSettle();
+      expect(matchType, '日本剣道形（太刀の形7本）');
+
+      // 「木刀による剣道基本技稽古法」に切り替え
+      await tester.tap(find.text('木刀による剣道基本技稽古法'));
+      await tester.pumpAndSettle();
+      expect(matchType, '木刀による剣道基本技稽古法（5本）');
+
+      // 基本技稽古法の本数選択肢が表示されていること
+      expect(find.text('基本技（5本）'), findsOneWidget);
+      expect(find.text('基本技（9本）'), findsOneWidget);
+
+      // 「基本技（9本）」をタップ
+      await tester.tap(find.text('基本技（9本）'));
+      await tester.pumpAndSettle();
+      expect(matchType, '木刀による剣道基本技稽古法（9本）');
     });
   });
 }

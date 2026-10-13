@@ -58,7 +58,10 @@ class TeamProgressHelper {
     if (type == '個人戦' ||
         type == 'リーグ個人戦' ||
         type == '選手' ||
-        type.contains('個人')) {
+        type.contains('個人') ||
+        match.rule?.isKataMatch == true ||
+        type.contains('形') ||
+        type.contains('稽古法')) {
       return true;
     }
     return false;

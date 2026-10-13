@@ -15,6 +15,39 @@ void main() {
       final res3 = NameFormatter.parse('(欠員)');
       expect(res3['last'], '');
       expect(res3['first'], '');
+
+      // 形競技のペア選手
+      final resPair1 = NameFormatter.parse('道上剣友会:皿田 脩人・塚本 大道');
+      expect(resPair1['last'], '皿田・塚本');
+
+      final resPair2 = NameFormatter.parse('対戦相手:選手・選手');
+      expect(resPair2['last'], '選手・選手');
+
+      final resPair3 = NameFormatter.parse('打太刀 皿田・仕太刀 塚本');
+      expect(resPair3['last'], '皿田・塚本');
+    });
+
+    test('parseKataPair で同姓選手がいる場合に名前の頭文字（イニシャル）が抽出されること', () {
+      // チーム内に同姓（別の「皿田 健太」）がいる場合
+      final teamPlayers = ['道上剣友会:皿田 健太', '道上剣友会:佐藤 一郎'];
+      final pair = NameFormatter.parseKataPair(
+        '道上剣友会:皿田 脩人・塚本 大道',
+        teamPlayerNames: teamPlayers,
+      );
+
+      expect(pair.length, 2);
+      expect(pair[0].lastName, '皿田');
+      expect(pair[0].initial, '脩'); // 同姓がいるため頭文字
+      expect(pair[1].lastName, '塚本');
+      expect(pair[1].initial, ''); // 同姓がいないため空文字
+
+      // ペア内に同姓（佐藤 太郎・佐藤 次郎）がいる場合
+      final sameLastPair = NameFormatter.parseKataPair('佐藤 太郎・佐藤 次郎');
+      expect(sameLastPair.length, 2);
+      expect(sameLastPair[0].lastName, '佐藤');
+      expect(sameLastPair[0].initial, '太');
+      expect(sameLastPair[1].lastName, '佐藤');
+      expect(sameLastPair[1].initial, '次');
     });
 
     test('formatScoreboardTitleがUUIDおよび生グループIDを正しく除去すること', () {

@@ -42,6 +42,7 @@ class MatchFormatSaveHelper {
     required String drawPointText,
     required String overallTimeText,
     required String selectedRuleScene,
+    bool isKataMatch = false,
   }) {
     final noteCombined = courtText.isNotEmpty
         ? (userNote.isNotEmpty ? '$courtText\n$userNote' : courtText)
@@ -56,6 +57,9 @@ class MatchFormatSaveHelper {
       }.toList().take(10).toList();
       ref.read(noteHistoryProvider.notifier).state = updatedHistory;
     }
+
+    final effectiveIsKata =
+        isKataMatch || matchType.contains('形') || matchType.contains('稽古法');
 
     List<String> selectedBaseOrder = [];
     String teamNamePrefix = '';
@@ -77,9 +81,10 @@ class MatchFormatSaveHelper {
 
     final isLeague = matchType.contains('リーグ');
     final isKachinuki = matchType.contains('勝ち抜き');
-    final generatedPositions = MatchFormatSetupHelper.generatePositions(
-      teamSize,
-    );
+
+    final List<String> generatedPositions = effectiveIsKata
+        ? ['選手', '選手']
+        : MatchFormatSetupHelper.generatePositions(teamSize);
 
     final double winPt = double.tryParse(winPointText) ?? 0;
     final double lossPt = double.tryParse(lossPointText) ?? 0;
@@ -112,6 +117,7 @@ class MatchFormatSaveHelper {
       'lossPoint': lossPt,
       'drawPoint': drawPt,
       'skipEmptyRoster': skipEmptyRoster,
+      'isKataMatch': effectiveIsKata,
     };
 
     final rule = MatchFormatSetupHelper.createMatchRule(
@@ -147,6 +153,7 @@ class MatchFormatSaveHelper {
       lossPoint: lossPt,
       drawPoint: drawPt,
       selectedRuleScene: selectedRuleScene,
+      isKataMatch: effectiveIsKata,
     );
 
     ref.read(matchRuleProvider.notifier).updateRule(rule);

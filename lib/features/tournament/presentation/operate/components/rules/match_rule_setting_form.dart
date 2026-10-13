@@ -50,6 +50,8 @@ class MatchRuleSettingForm extends StatelessWidget {
   final double lossPoint;
   final double drawPoint;
 
+  final bool isKataMatch;
+
   final Color primaryAccent;
   final bool isDark;
 
@@ -69,7 +71,7 @@ class MatchRuleSettingForm extends StatelessWidget {
   // コールバック: 判定
   final ValueChanged<bool> onHanteiChanged;
 
-  // コールバック: 代表戦
+  // コールバック: 団体・代表戦
   final ValueChanged<bool> onRepresentativeMatchChanged;
   final ValueChanged<bool> onDaihyoIpponShobuChanged;
   final ValueChanged<double> onDaihyoMatchTimeChanged;
@@ -95,6 +97,7 @@ class MatchRuleSettingForm extends StatelessWidget {
   const MatchRuleSettingForm({
     super.key,
     this.isDantai = false,
+    this.isKataMatch = false,
     required this.selectedSceneKey,
     required this.matchTime,
     required this.isRunningTime,
@@ -165,10 +168,58 @@ class MatchRuleSettingForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isKataMatch) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: primaryAccent.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppRadius.largeValue),
+          border: Border.all(color: primaryAccent.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.military_tech, color: primaryAccent, size: 20),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  '形競技・基本技判定ルール',
+                  style: TextStyle(
+                    fontWeight: AppFontWeight.bold,
+                    fontSize: AppFontSize.body,
+                    color: isDark
+                        ? const Color(0xFFF1F5F9)
+                        : const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              '形競技（日本剣道形・木刀による剣道基本技稽古法）は審判員3名による赤白旗判定によって勝敗を決定します。\n\n'
+              '・試合時間制限・時間計測：なし\n'
+              '・勝負形式：審判員3名による赤白旗判定\n'
+              '・判定基準：赤3-0白, 赤2-1白, 赤1-2白, 赤0-3白（過半数判定）\n'
+              '・延長戦・代表戦：なし',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                height: 1.6,
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ⏱️ 1. 基本ルール（試合時間・進行形式・計測方式・勝負形式・得点上限・反則）
+        // 1. 基本ルール（試合時間・進行形式・計測方式・勝負形式・得点上限・反則）
         MatchRuleTimeSection(
           matchTime: matchTime,
           isRunningTime: isRunningTime,

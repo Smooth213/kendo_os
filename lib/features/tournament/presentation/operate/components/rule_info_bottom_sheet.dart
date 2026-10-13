@@ -19,7 +19,14 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
 
   final bool isLegacyLeague = match.note.contains('[リーグ戦]');
   final bool isLeague = (rule?.isLeague ?? false) || isLegacyLeague;
+  final bool isKata =
+      (rule?.isKataMatch ?? false) ||
+      match.matchType.contains('形') ||
+      match.matchType.contains('稽古法') ||
+      (match.category?.contains('形') ?? false) ||
+      (match.category?.contains('稽古法') ?? false);
   final bool isIndividual =
+      !isKata &&
       !match.isKachinuki &&
       (match.matchType == 'individual' ||
           match.matchType == '選手' ||
@@ -34,7 +41,17 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
   final Color sceneColor = KendoSceneHelper.getColor(scene, isDark: isDark);
 
   String formatText = isIndividual ? '個人戦' : '団体戦';
-  if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
+  if (isKata) {
+    if (match.category != null &&
+        (match.category!.contains('形') || match.category!.contains('稽古法'))) {
+      formatText = match.category!;
+    } else if (match.matchType.contains('形') ||
+        match.matchType.contains('稽古法')) {
+      formatText = match.matchType;
+    } else {
+      formatText = '形・基本技';
+    }
+  } else if (match.isKachinuki || (rule?.isKachinuki ?? false)) {
     formatText = (match.matchType.contains('勝ち抜き') && match.matchType != '勝ち抜き')
         ? match.matchType
         : '勝ち抜き戦';
@@ -49,20 +66,26 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
   String timeStr = matchTime == matchTime.toInt()
       ? '${matchTime.toInt()}分'
       : '${matchTime.toInt()}分${((matchTime % 1) * 60).round()}秒';
-  final String timeDesc = '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
+  final String timeDesc = isKata
+      ? '時間計測なし'
+      : '$timeStr (${isRunningTime ? "通し/空回し" : "都度ストップ"})';
 
   // --- 3. 勝負形式（本数） ---
   final bool isIpponShobu = rule?.isIpponShobu ?? false;
-  final String shobuDesc = isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)';
+  final String shobuDesc = isKata
+      ? '審判員3名による赤白旗判定'
+      : (isIpponShobu ? '１本勝負' : '３本勝負 (２本先取)');
 
   // --- 4. 延長戦 ---
   final bool isEnchoUnlimited = rule?.isEnchoUnlimited ?? false;
   final double enchoMins =
       rule?.enchoTimeMinutes ?? match.extensionTimeMinutes?.toDouble() ?? 0.0;
   final int enchoCount = rule?.enchoCount ?? match.extensionCount ?? 0;
-  final bool hasExtension = rule != null
-      ? (isEnchoUnlimited || enchoCount > 0 || enchoMins > 0)
-      : match.hasExtension;
+  final bool hasExtension =
+      !isKata &&
+      (rule != null
+          ? (isEnchoUnlimited || enchoCount > 0 || enchoMins > 0)
+          : match.hasExtension);
 
   String enchoDesc = 'なし';
   if (hasExtension) {
@@ -78,11 +101,13 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
   }
 
   // --- 5. 判定 ---
-  final bool hanteiEnabled = rule?.hasHantei ?? match.hasHantei;
-  final String hanteiDesc = hanteiEnabled ? 'あり (時間・延長終了時)' : 'なし';
+  final bool hanteiEnabled = isKata || (rule?.hasHantei ?? match.hasHantei);
+  final String hanteiDesc = isKata
+      ? '旗判定 (3本・過半数で勝敗判定)'
+      : (hanteiEnabled ? 'あり (時間・延長終了時)' : 'なし');
 
   // --- 6. 団体戦・代表戦 ---
-  final bool hasDaihyo = rule?.hasRepresentativeMatch ?? true;
+  final bool hasDaihyo = !isKata && (rule?.hasRepresentativeMatch ?? true);
   String daihyoDesc = 'なし';
   if (!isIndividual && hasDaihyo) {
     final daihyoTime = (rule?.daihyoMatchTimeMinutes ?? 0.0) == 0.0
@@ -191,22 +216,22 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
             const Divider(height: 28),
 
             // 1. 試合形式
-            _buildRuleRow('🎯 試合形式', formatText, context),
+            _buildRuleRow(isKata ? '試合形式' : '🎯 試合形式', formatText, context),
 
             // 2. 試合時間 ＆ 計測方式
-            _buildRuleRow('⏱️ 試合時間', timeDesc, context),
+            _buildRuleRow(isKata ? '試合時間' : '⏱️ 試合時間', timeDesc, context),
 
             // 3. 勝負形式
-            _buildRuleRow('⚔️ 勝負形式', shobuDesc, context),
+            _buildRuleRow(isKata ? '勝負形式' : '⚔️ 勝負形式', shobuDesc, context),
 
             // 4. 延長戦
-            _buildRuleRow('🔄 延長戦', enchoDesc, context),
+            _buildRuleRow(isKata ? '延長戦' : '🔄 延長戦', enchoDesc, context),
 
             // 5. 判定
-            _buildRuleRow('⚖️ 判定', hanteiDesc, context),
+            _buildRuleRow(isKata ? '判定' : '⚖️ 判定', hanteiDesc, context),
 
-            // 6. 代表戦（団体戦時のみ、勝ち抜き戦・錬成会除く）
-            if (!isIndividual)
+            // 6. 代表戦（団体戦時のみ、勝ち抜き戦・錬成会・形競技除く）
+            if (!isIndividual && !isKata)
               ...() {
                 final bool isSpecialFormat =
                     match.isKachinuki ||
@@ -219,7 +244,7 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
               }(),
 
             // 錬成会・勝ち抜き戦等の特殊ルール
-            if (rule?.isRenseikai ?? false) ...[
+            if (!isKata && (rule?.isRenseikai ?? false)) ...[
               const Divider(height: 20),
               _buildRuleRow('進行方式', rule!.renseikaiType, context),
               if (rule.renseikaiType == '時間制') ...[
@@ -231,7 +256,8 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
                 ),
               ],
             ],
-            if (match.isKachinuki || (rule?.isKachinuki ?? false)) ...[
+            if (!isKata &&
+                (match.isKachinuki || (rule?.isKachinuki ?? false))) ...[
               const Divider(height: 20),
               _buildRuleRow(
                 '勝ち抜き条件',
@@ -243,7 +269,7 @@ void showRuleInfoBottomSheet(BuildContext context, MatchModel match) {
             // 備考・進行メモ
             if (cleanNote.isNotEmpty) ...[
               const Divider(height: 20),
-              _buildRuleRow('📝 備考・メモ', cleanNote, context),
+              _buildRuleRow(isKata ? '備考・メモ' : '📝 備考・メモ', cleanNote, context),
             ],
             const SizedBox(height: AppSpacing.md),
           ],

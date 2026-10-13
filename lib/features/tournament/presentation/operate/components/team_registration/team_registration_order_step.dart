@@ -5,9 +5,10 @@ import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 /// チーム登録画面 ページ2: チーム名入力＆オーダー編成
-class TeamRegistrationOrderStep extends ConsumerWidget {
+class TeamRegistrationOrderStep extends ConsumerStatefulWidget {
   final int playerCount;
   final List<String> posNames;
   final List<PlayerModel> players;
@@ -17,6 +18,8 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
   final Map<int, String> tempSelectedPlayers;
   final int substituteCount;
   final String matchType;
+  final String kataRoleOption;
+  final ValueChanged<String>? onKataRoleOptionChanged;
   final AppThemeColors themeColors;
   final void Function(int index) onSelectPlayer;
   final void Function(int index) onRemoveSubstitute;
@@ -35,6 +38,8 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
     required this.tempSelectedPlayers,
     required this.substituteCount,
     required this.matchType,
+    this.kataRoleOption = 'none',
+    this.onKataRoleOptionChanged,
     required this.themeColors,
     required this.onSelectPlayer,
     required this.onRemoveSubstitute,
@@ -42,6 +47,23 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
     this.onAddPlayerSlot,
     this.onRemovePlayerSlot,
   });
+
+  @override
+  ConsumerState<TeamRegistrationOrderStep> createState() =>
+      _TeamRegistrationOrderStepState();
+}
+
+class _TeamRegistrationOrderStepState
+    extends ConsumerState<TeamRegistrationOrderStep> {
+  bool _isRoleSectionExpanded = false;
+
+  static const Map<String, String> _kataRoleLabels = {
+    'none': '表示なし（選手）',
+    'uchidachi_shidachi': '打太刀・仕太刀',
+    'shidachi_uchidachi': '仕太刀・打太刀 (入替)',
+    'motodachi_kakarite': '元立ち・掛かり手',
+    'kakarite_motodachi': '掛かり手・元立ち (入替)',
+  };
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -51,20 +73,33 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
         style: TextStyle(
           fontSize: AppFontSize.subhead,
           fontWeight: AppFontWeight.bold,
-          color: themeColors.primaryAccent,
+          color: widget.themeColors.primaryAccent,
         ),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final themeColors = widget.themeColors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = context.appColors.textColor;
     final inputBgColor = themeColors.cardBackground;
     final borderColor = isDark
         ? const Color(0xFF38383A)
         : context.appColors.separatorColor;
+    final bool isKata =
+        widget.matchType.contains('形') || widget.matchType.contains('稽古法');
+    final playerCount = widget.playerCount;
+    final substituteCount = widget.substituteCount;
+    final matchType = widget.matchType;
+    final posNames = widget.posNames;
+    final tempSelectedPlayers = widget.tempSelectedPlayers;
+    final onSelectPlayer = widget.onSelectPlayer;
+    final onRemoveSubstitute = widget.onRemoveSubstitute;
+    final onRemovePlayerSlot = widget.onRemovePlayerSlot;
+    final onAddPlayerSlot = widget.onAddPlayerSlot;
+    final onAddSubstitute = widget.onAddSubstitute;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -75,7 +110,7 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
       ),
       children: [
         Text(
-          'チーム名とオーダーを\n入力してください',
+          isKata ? 'ペア・チーム名と選手を\n入力してください' : 'チーム名とオーダーを\n入力してください',
           style: TextStyle(
             fontSize: AppFontSize.display,
             fontWeight: AppFontWeight.bold,
@@ -85,10 +120,12 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         TeamRegistrationAutocompleteField(
-          controller: teamNameController,
-          focusNode: teamNameFocusNode,
-          suggestions: teamNameSuggestions,
-          labelText: 'チーム名 (例: 〇〇剣友会A)',
+          controller: widget.teamNameController,
+          focusNode: widget.teamNameFocusNode,
+          suggestions: widget.teamNameSuggestions,
+          labelText: isKata
+              ? 'チーム・ペア名 (例: 〇〇道場 または 佐藤・鈴木)'
+              : 'チーム名 (例: 〇〇剣友会A)',
           hintText: '登録済みリストから選択',
           fillColor: inputBgColor,
           borderColor: borderColor,
@@ -97,7 +134,107 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
           isDark: isDark,
         ),
         const SizedBox(height: AppSpacing.xxl),
-        _buildSectionTitle('オーダー編成（タップして選択）'),
+        _buildSectionTitle(isKata ? 'ペア選手編成（タップして選択）' : 'オーダー編成（タップして選択）'),
+        if (isKata) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: inputBgColor,
+                borderRadius: AppRadius.medium,
+                border: Border.all(color: borderColor, width: 1.0),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _isRoleSectionExpanded = !_isRoleSectionExpanded;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.md,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.swap_horiz,
+                            size: 18,
+                            color: themeColors.primaryAccent,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            '役職表記: ',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              _kataRoleLabels[widget.kataRoleOption] ??
+                                  '表示なし（選手）',
+                              style: TextStyle(
+                                fontSize: AppFontSize.caption,
+                                fontWeight: AppFontWeight.bold,
+                                color: themeColors.primaryAccent,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            _isRoleSectionExpanded ? '閉じる' : '変更・入替',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              color: themeColors.primaryAccent,
+                              fontWeight: AppFontWeight.bold,
+                            ),
+                          ),
+                          Icon(
+                            _isRoleSectionExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            size: 18,
+                            color: themeColors.primaryAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_isRoleSectionExpanded) ...[
+                    Divider(height: 1, thickness: 1, color: borderColor),
+                    Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: _kataRoleLabels.entries.map((entry) {
+                          return AppChoiceChip(
+                            label: Text(entry.value),
+                            selected: widget.kataRoleOption == entry.key,
+                            selectedColor: themeColors.primaryAccent.withValues(
+                              alpha: 0.25,
+                            ),
+                            onSelected: (s) {
+                              if (s) {
+                                widget.onKataRoleOptionChanged?.call(entry.key);
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
         Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
@@ -121,6 +258,19 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                 final bool isSubstitute =
                     index >= (playerCount - substituteCount);
                 final bool isMoreThan7 = matchType.contains('それ以上');
+                final bool isRoleNone = posNames[index] == '選手';
+                final String avatarText = isSubstitute
+                    ? '補'
+                    : (isRoleNone
+                          ? (isKata ? '${index + 1}' : '選')
+                          : (posNames[index].isNotEmpty
+                                ? posNames[index].substring(0, 1)
+                                : '選'));
+                final String subtitleText = isSubstitute
+                    ? '補欠'
+                    : (isRoleNone
+                          ? (isKata ? 'ペア選手 ${index + 1}' : '選手')
+                          : posNames[index]);
 
                 return Column(
                   children: [
@@ -140,11 +290,7 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                                   : const Color(0xFFFFF3E0))
                             : themeColors.softAccent,
                         child: Text(
-                          isSubstitute
-                              ? '補'
-                              : (posNames[index].isNotEmpty
-                                    ? posNames[index].substring(0, 1)
-                                    : '選'),
+                          avatarText,
                           style: TextStyle(
                             color: isSubstitute
                                 ? (isDark
@@ -167,7 +313,7 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
                         ),
                       ),
                       subtitle: Text(
-                        posNames[index],
+                        subtitleText,
                         style: TextStyle(
                           color: isSubstitute
                               ? (isDark
@@ -254,7 +400,9 @@ class TeamRegistrationOrderStep extends ConsumerWidget {
               ),
             ),
           ),
-        ] else if (substituteCount < 4 && !matchType.contains('個人戦')) ...[
+        ] else if (substituteCount < 4 &&
+            !matchType.contains('個人戦') &&
+            !isKata) ...[
           const SizedBox(height: AppSpacing.lg),
           Align(
             alignment: Alignment.centerRight,

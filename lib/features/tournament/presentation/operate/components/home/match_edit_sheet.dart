@@ -69,7 +69,9 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
     final backgroundColor = themeColors.cardBackground;
     final textColor = context.appColors.textColor;
 
-    final sheetTitle = _state.isDantai ? '団体戦対戦の編集' : '試合情報の編集';
+    final sheetTitle = _state.isKataMatch
+        ? '形競技対戦の編集'
+        : (_state.isDantai ? '団体戦対戦の編集' : '試合情報の編集');
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
@@ -157,6 +159,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                 // TAB 1: チーム・選手情報
                 MatchEditTeamAndPlayersTab(
                   isDantai: _state.isDantai,
+                  isKataMatch: _state.isKataMatch,
                   redTeamController: _state.redTeamController,
                   whiteTeamController: _state.whiteTeamController,
                   redPlayerControllers: _state.redPlayerControllers,
@@ -193,6 +196,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
                   tournamentId: widget.tournamentId,
                   match: widget.matches.first,
                   isDantai: _state.isDantai,
+                  isKataMatch: _state.isKataMatch,
                   selectedPresetKey: _state.selectedPresetKey,
                   selectedPresetRule: _state.selectedPresetRule,
                   matchTime: _state.matchTime,
@@ -284,6 +288,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
           // 下部保存ボタン
           MatchEditSaveButton(
             isDantai: _state.isDantai,
+            isKataMatch: _state.isKataMatch,
             backgroundColor: backgroundColor,
             primaryAccent: themeColors.primaryAccent,
             isDark: isDark,
@@ -292,6 +297,7 @@ class _MatchEditSheetState extends ConsumerState<MatchEditSheet>
               ref: ref,
               matches: widget.matches,
               isDantai: _state.isDantai,
+              isKataMatch: _state.isKataMatch,
               isSwapped: _state.isSwapped,
               initialOwnIsRed: _state.initialOwnIsRed,
               ownTeamChoice: _state.ownTeamChoice,

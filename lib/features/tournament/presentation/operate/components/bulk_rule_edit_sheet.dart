@@ -270,6 +270,7 @@ class _BulkRuleEditSheetState extends ConsumerState<BulkRuleEditSheet> {
                         textColor: textColor,
                         hasDifferingRules: hasDiffering,
                         isDantai: _isCurrentFilterTeamMatch,
+                        isKataMatch: _state.isKataMatch,
                         matchTime: _state.matchTime,
                         isRunningTime: _state.isRunningTime,
                         isIpponShobu: _state.isIpponShobu,

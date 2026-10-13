@@ -67,10 +67,56 @@ void main() {
           ),
         );
 
-        // allCategoryRules 内に重複がなければ (2) が省略されて「表示名プレビュー: 小学生の部 決勝トーナメント」と表示される
         expect(find.text('表示名プレビュー: 小学生の部 決勝トーナメント'), findsOneWidget);
         expect(find.text('連番省略中'), findsOneWidget);
       },
     );
+
+    testWidgets('CategoryRuleEditorHeaderCardにおいて 剣道形が選択でき、コールバックが通知されること', (
+      tester,
+    ) async {
+      final subtitleController = TextEditingController();
+      final commentController = TextEditingController();
+      String selectedType = '個人戦';
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return SingleChildScrollView(
+                  child: CategoryRuleEditorHeaderCard(
+                    category: '形の部',
+                    textColor: Colors.black,
+                    matchType: selectedType,
+                    isMultiScene: false,
+                    useAdvancedRule: false,
+                    subtitleController: subtitleController,
+                    commentController: commentController,
+                    onMatchTypeChanged: (val) {
+                      setState(() {
+                        selectedType = val;
+                      });
+                    },
+                    onMultiSceneChanged: (_) {},
+                    onUseAdvancedRuleChanged: (_) {},
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      // ドロップダウンを開く
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+
+      // 「日本剣道形（判定戦）」を選択
+      await tester.tap(find.text('日本剣道形（判定戦）').last);
+      await tester.pumpAndSettle();
+
+      expect(selectedType, '日本剣道形');
+    });
   });
 }

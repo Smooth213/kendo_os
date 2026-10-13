@@ -174,5 +174,84 @@ void main() {
       );
       expect(subTextStyle.color, equals(const Color(0xFFFFB74D)));
     });
+
+    testWidgets('形競技: 役職表記アコーディオンが初期状態で折り畳まれ、タップで展開・選択できること', (tester) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final controller = TextEditingController(text: '水戸ペア');
+      final focusNode = FocusNode();
+      String selectedRoleOption = 'none';
+
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(extensions: [themeColors]),
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return TeamRegistrationOrderStep(
+                  playerCount: 2,
+                  posNames: const ['選手', '選手'],
+                  players: const [],
+                  teamNameController: controller,
+                  teamNameFocusNode: focusNode,
+                  teamNameSuggestions: const [],
+                  tempSelectedPlayers: const {},
+                  substituteCount: 0,
+                  matchType: '日本剣道形（3本）',
+                  kataRoleOption: selectedRoleOption,
+                  onKataRoleOptionChanged: (val) {
+                    setState(() {
+                      selectedRoleOption = val;
+                    });
+                  },
+                  themeColors: themeColors,
+                  onSelectPlayer: (_) {},
+                  onRemoveSubstitute: (_) {},
+                  onAddSubstitute: () {},
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 初期状態: アコーディオンは閉じており、「変更・入替」と現在の「表示なし（選手）」が見える
+      expect(find.text('変更・入替'), findsOneWidget);
+      expect(find.text('役職表記: '), findsOneWidget);
+      expect(find.text('打太刀・仕太刀'), findsNothing);
+
+      // アコーディオンバーをタップして展開
+      await tester.tap(find.text('変更・入替'));
+      await tester.pumpAndSettle();
+
+      // 展開状態: 「閉じる」になり、5つのチップが見える
+      expect(find.text('閉じる'), findsOneWidget);
+      expect(find.text('打太刀・仕太刀'), findsOneWidget);
+      expect(find.text('仕太刀・打太刀 (入替)'), findsOneWidget);
+      expect(find.text('元立ち・掛かり手'), findsOneWidget);
+
+      // 「打太刀・仕太刀」を選択
+      await tester.tap(find.text('打太刀・仕太刀'));
+      await tester.pumpAndSettle();
+
+      expect(selectedRoleOption, equals('uchidachi_shidachi'));
+
+      // アコーディオンバーをタップして折り畳む
+      await tester.tap(find.text('閉じる'));
+      await tester.pumpAndSettle();
+
+      // 折り畳まれた状態になり、チップは消え、ヘッダーに「打太刀・仕太刀」が表示されていること
+      expect(find.text('変更・入替'), findsOneWidget);
+      expect(find.text('打太刀・仕太刀'), findsOneWidget); // ヘッダー内の現在の選択値として1つ表示
+      expect(find.text('仕太刀・打太刀 (入替)'), findsNothing);
+    });
   });
 }

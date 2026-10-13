@@ -114,17 +114,17 @@ class MatchFormatRuleSummaryCard extends StatelessWidget {
             if (isKataMatch) ...[
               SetupReadOnlyRuleRow(
                 label: '試合形式',
-                value: '🥋 形・基本技（審判3名 旗判定）',
+                value: '形・基本技（審判3名 旗判定）',
                 accentColor: headerColor,
               ),
               SetupReadOnlyRuleRow(
                 label: '試合時間',
-                value: '⏱️ 時間計測なし',
+                value: '時間計測なし',
                 accentColor: headerColor,
               ),
               SetupReadOnlyRuleRow(
                 label: '判定方式',
-                value: '🚩 旗数判定（赤3-0白, 2-1, 1-2, 0-3）',
+                value: '旗数判定（赤3-0白, 2-1, 1-2, 0-3）',
                 accentColor: headerColor,
               ),
               SetupReadOnlyRuleRow(

@@ -38,28 +38,30 @@ class BulkRuleApplyHelper {
         targetRule.matchScene == 'renseikai' ||
         targetRule.matchScene == 'moushiawase';
 
-    final matchTime = targetRule.matchTimeMinutes;
-    final isIpponShobu = targetRule.isIpponShobu;
+    final isKata = targetRule.isKataMatch;
+    final matchTime = isKata ? 0.0 : targetRule.matchTimeMinutes;
+    final isIpponShobu = isKata ? false : targetRule.isIpponShobu;
 
     // 延長戦: isEnchoUnlimited または enchoCount > 0 または enchoCount == -2
     final bool hasExtension =
-        targetRule.isEnchoUnlimited ||
-        targetRule.enchoCount > 0 ||
-        targetRule.enchoCount == -2;
+        !isKata &&
+        (targetRule.isEnchoUnlimited ||
+            targetRule.enchoCount > 0 ||
+            targetRule.enchoCount == -2);
     final bool isEnchoUnlimited =
-        targetRule.isEnchoUnlimited || targetRule.enchoCount == -2;
-    final double enchoTime = targetRule.enchoTimeMinutes > 0
-        ? targetRule.enchoTimeMinutes
-        : 2.0;
-    final int enchoCount = targetRule.enchoCount > 0
-        ? targetRule.enchoCount
-        : 1;
+        !isKata && (targetRule.isEnchoUnlimited || targetRule.enchoCount == -2);
+    final double enchoTime = isKata
+        ? 0.0
+        : (targetRule.enchoTimeMinutes > 0 ? targetRule.enchoTimeMinutes : 2.0);
+    final int enchoCount = isKata
+        ? 0
+        : (targetRule.enchoCount > 0 ? targetRule.enchoCount : 1);
 
-    // 判定: targetRule.hasHantei をそのまま反映
-    final bool hasHantei = targetRule.hasHantei;
+    // 判定: targetRule.hasHantei をそのまま反映（形競技はtrue固定）
+    final bool hasHantei = isKata || targetRule.hasHantei;
 
     // 団体戦・代表戦: targetRule の設定を忠実に反映
-    final bool hasRepresentativeMatch = isIndiv && !isTeam
+    final bool hasRepresentativeMatch = isKata || (isIndiv && !isTeam)
         ? false
         : (targetRule.hasRepresentativeMatch || targetRule.hasLeagueDaihyo);
     final bool isDaihyoIpponShobu = targetRule.isDaihyoIpponShobu;

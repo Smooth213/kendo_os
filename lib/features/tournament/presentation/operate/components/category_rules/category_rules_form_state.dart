@@ -152,8 +152,12 @@ class CategoryRulesFormState {
     normalDrawPoint = rules.normalRule.drawPoint;
     normalRenseikaiType = rules.normalRule.renseikaiType;
     normalOverallTime = rules.normalRule.overallTimeMinutes;
+    final isKata =
+        rules.matchType.contains('形') ||
+        rules.matchType.contains('稽古法') ||
+        rules.normalRule.isKataMatch;
     normalSkipEmpty = rules.normalRule.skipEmptyRoster;
-    normalIsKataMatch = rules.normalRule.isKataMatch;
+    normalIsKataMatch = isKata;
 
     // 上位戦設定
     advancedTime = rules.advancedRule.matchTimeMinutes;
@@ -183,7 +187,10 @@ class CategoryRulesFormState {
     advancedRenseikaiType = rules.advancedRule.renseikaiType;
     advancedOverallTime = rules.advancedRule.overallTimeMinutes;
     advancedSkipEmpty = rules.advancedRule.skipEmptyRoster;
-    advancedIsKataMatch = rules.advancedRule.isKataMatch;
+    advancedIsKataMatch =
+        rules.matchType.contains('形') ||
+        rules.matchType.contains('稽古法') ||
+        rules.advancedRule.isKataMatch;
     editingAdvancedKeywords = List.from(rules.advancedKeywords);
 
     normalDaihyoMatchTime = rules.normalRule.daihyoMatchTimeMinutes;

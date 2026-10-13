@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/shared/utils/name_formatter.dart';
 
 class PdfIndividualList {
   static pw.Widget build(
@@ -45,6 +46,22 @@ class PdfIndividualList {
     }
 
     // ★note抽出ロジックは削除完了
+
+    final teamPlayersMap = <String, List<String>>{};
+    for (var m in matches) {
+      final rT = m.redName.contains(':')
+          ? m.redName.split(':').first.trim()
+          : '';
+      final wT = m.whiteName.contains(':')
+          ? m.whiteName.split(':').first.trim()
+          : '';
+      if (rT.isNotEmpty) {
+        teamPlayersMap.putIfAbsent(rT, () => []).add(m.redName);
+      }
+      if (wT.isNotEmpty) {
+        teamPlayersMap.putIfAbsent(wT, () => []).add(m.whiteName);
+      }
+    }
 
     final rows = <pw.Widget>[];
     for (int i = 0; i < matches.length; i++) {
@@ -142,15 +159,13 @@ class PdfIndividualList {
                         maxLines: 1,
                         overflow: pw.TextOverflow.clip,
                       ),
-                    pw.Text(
-                      rName,
-                      style: pw.TextStyle(
-                        font: ttfBold,
-                        fontSize: AppFontSize.badge,
-                        color: rWin ? PdfColors.red700 : PdfColors.black,
-                      ),
-                      maxLines: 1,
-                      overflow: pw.TextOverflow.clip,
+                    _buildPdfPlayerNameWidget(
+                      rawName: rName,
+                      isKata: isKata,
+                      isWinner: rWin,
+                      ttf: ttf,
+                      ttfBold: ttfBold,
+                      teamPlayers: teamPlayersMap[rTeam] ?? const [],
                     ),
                   ],
                 ),
@@ -198,15 +213,13 @@ class PdfIndividualList {
                         maxLines: 1,
                         overflow: pw.TextOverflow.clip,
                       ),
-                    pw.Text(
-                      wName,
-                      style: pw.TextStyle(
-                        font: ttfBold,
-                        fontSize: AppFontSize.badge,
-                        color: wWin ? PdfColors.red700 : PdfColors.black,
-                      ),
-                      maxLines: 1,
-                      overflow: pw.TextOverflow.clip,
+                    _buildPdfPlayerNameWidget(
+                      rawName: wName,
+                      isKata: isKata,
+                      isWinner: wWin,
+                      ttf: ttf,
+                      ttfBold: ttfBold,
+                      teamPlayers: teamPlayersMap[wTeam] ?? const [],
                     ),
                   ],
                 ),
@@ -238,6 +251,81 @@ class PdfIndividualList {
           ...rows,
         ],
       ),
+    );
+  }
+
+  static pw.Widget _buildPdfPlayerNameWidget({
+    required String rawName,
+    required bool isKata,
+    required bool isWinner,
+    required pw.Font ttf,
+    required pw.Font ttfBold,
+    required List<String> teamPlayers,
+  }) {
+    final textColor = isWinner ? PdfColors.red700 : PdfColors.black;
+    if (!isKata) {
+      return pw.Text(
+        rawName,
+        style: pw.TextStyle(
+          font: ttfBold,
+          fontSize: AppFontSize.badge,
+          color: textColor,
+        ),
+        maxLines: 1,
+        overflow: pw.TextOverflow.clip,
+      );
+    }
+
+    final pairs = NameFormatter.parseKataPair(
+      rawName,
+      teamPlayerNames: teamPlayers,
+    );
+
+    if (pairs.isEmpty) {
+      return pw.Text(
+        rawName,
+        style: pw.TextStyle(
+          font: ttfBold,
+          fontSize: AppFontSize.badge,
+          color: textColor,
+        ),
+        maxLines: 1,
+        overflow: pw.TextOverflow.clip,
+      );
+    }
+
+    return pw.Row(
+      mainAxisSize: pw.MainAxisSize.min,
+      crossAxisAlignment: pw.CrossAxisAlignment.end,
+      children: [
+        for (int idx = 0; idx < pairs.length; idx++) ...[
+          if (idx > 0)
+            pw.Text(
+              '・',
+              style: pw.TextStyle(
+                font: ttfBold,
+                fontSize: 8.5,
+                color: textColor,
+              ),
+            ),
+          pw.Text(
+            pairs[idx].lastName,
+            style: pw.TextStyle(font: ttfBold, fontSize: 8.5, color: textColor),
+          ),
+          if (pairs[idx].initial.isNotEmpty)
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(left: 0.5, bottom: 0),
+              child: pw.Text(
+                pairs[idx].initial,
+                style: pw.TextStyle(
+                  font: ttf,
+                  fontSize: 6,
+                  color: PdfColors.grey700,
+                ),
+              ),
+            ),
+        ],
+      ],
     );
   }
 }

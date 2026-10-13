@@ -56,6 +56,11 @@ class TimelineGroupScoreSummary extends StatelessWidget {
         (ruleTeamName != null && wTeam == ruleTeamName) ||
         ownTeams.contains(wTeam);
 
+    final isKata =
+        groupList.firstOrNull?.rule?.isKataMatch == true ||
+        (groupList.firstOrNull?.matchType.contains('形') ?? false) ||
+        (groupList.firstOrNull?.matchType.contains('稽古法') ?? false);
+
     return Row(
       children: [
         Expanded(
@@ -80,58 +85,95 @@ class TimelineGroupScoreSummary extends StatelessWidget {
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$redWins',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: redWins > whiteWins
-                      ? AppKendoColors.hansokuRed
-                      : titleColor,
-                ),
-              ),
-              Text(
-                '($redPts)',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: redWins > whiteWins
-                      ? AppKendoColors.hansokuRed
-                      : titleColor,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: Text(
-                  '-',
-                  style: TextStyle(
-                    fontSize: AppFontSize.badge,
-                    color: context.appColors.subTextColor,
-                  ),
-                ),
-              ),
-              Text(
-                '$whiteWins',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: whiteWins > redWins
-                      ? context.appColors.primaryAccent
-                      : titleColor,
-                ),
-              ),
-              Text(
-                '($whitePts)',
-                style: TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                  color: whiteWins > redWins
-                      ? context.appColors.primaryAccent
-                      : titleColor,
-                ),
-              ),
-            ],
+            children: isKata
+                ? [
+                    Text(
+                      '$redPts',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: redPts > whitePts
+                            ? AppKendoColors.hansokuRed
+                            : titleColor,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xs,
+                      ),
+                      child: Text(
+                        '-',
+                        style: TextStyle(
+                          fontSize: AppFontSize.badge,
+                          color: context.appColors.subTextColor,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$whitePts',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: whitePts > redPts
+                            ? context.appColors.primaryAccent
+                            : titleColor,
+                      ),
+                    ),
+                  ]
+                : [
+                    Text(
+                      '$redWins',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: redWins > whiteWins
+                            ? AppKendoColors.hansokuRed
+                            : titleColor,
+                      ),
+                    ),
+                    Text(
+                      '($redPts)',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: redWins > whiteWins
+                            ? AppKendoColors.hansokuRed
+                            : titleColor,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xs,
+                      ),
+                      child: Text(
+                        '-',
+                        style: TextStyle(
+                          fontSize: AppFontSize.badge,
+                          color: context.appColors.subTextColor,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$whiteWins',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: whiteWins > redWins
+                            ? context.appColors.primaryAccent
+                            : titleColor,
+                      ),
+                    ),
+                    Text(
+                      '($whitePts)',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        color: whiteWins > redWins
+                            ? context.appColors.primaryAccent
+                            : titleColor,
+                      ),
+                    ),
+                  ],
           ),
         ),
         Expanded(

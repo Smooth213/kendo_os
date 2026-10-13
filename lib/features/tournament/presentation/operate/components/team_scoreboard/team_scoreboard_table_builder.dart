@@ -75,6 +75,50 @@ class TeamScoreboardTableBuilder {
       );
     }
 
+    if (rawName.contains('・')) {
+      final pairs = NameFormatter.parseKataPair(
+        rawName,
+        teamPlayerNames: teamLastNames,
+      );
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        child: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: TextStyle(
+              fontSize: AppFontSize.title,
+              fontWeight: AppFontWeight.bold,
+              color: textColor,
+            ),
+            children: [
+              for (int idx = 0; idx < pairs.length; idx++) ...[
+                if (idx > 0) const TextSpan(text: '・'),
+                TextSpan(text: pairs[idx].lastName),
+                if (pairs[idx].initial.isNotEmpty)
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.bottom,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: AppSpacing.xxs,
+                        bottom: AppSpacing.xxs,
+                      ),
+                      child: Text(
+                        pairs[idx].initial,
+                        style: TextStyle(
+                          fontSize: AppFontSize.small,
+                          fontWeight: AppFontWeight.bold,
+                          color: subTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
     final parsed = NameFormatter.parse(rawName);
     final count = teamLastNames.where((n) => n == parsed['last']).length;
     final showInitial = count > 1 && parsed['first']!.isNotEmpty;

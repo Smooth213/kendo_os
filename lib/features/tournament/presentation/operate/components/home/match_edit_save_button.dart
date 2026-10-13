@@ -5,6 +5,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 /// 試合編集シートの下部保存ボタン
 class MatchEditSaveButton extends StatelessWidget {
   final bool isDantai;
+  final bool isKataMatch;
   final Color backgroundColor;
   final Color primaryAccent;
   final bool isDark;
@@ -13,6 +14,7 @@ class MatchEditSaveButton extends StatelessWidget {
   const MatchEditSaveButton({
     super.key,
     required this.isDantai,
+    this.isKataMatch = false,
     required this.backgroundColor,
     required this.primaryAccent,
     required this.isDark,
@@ -40,7 +42,9 @@ class MatchEditSaveButton extends StatelessWidget {
           child: ElevatedButton.icon(
             icon: const Icon(Icons.check, color: AppKendoColors.pureWhite),
             label: Text(
-              isDantai ? '団体戦全体を一括保存' : '変更内容を保存',
+              isKataMatch
+                  ? '形競技対戦を一括保存'
+                  : (isDantai ? '団体戦全体を一括保存' : '変更内容を保存'),
               style: const TextStyle(
                 fontSize: AppFontSize.subhead,
                 fontWeight: AppFontWeight.bold,

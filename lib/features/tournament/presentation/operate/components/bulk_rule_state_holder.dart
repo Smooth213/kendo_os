@@ -22,6 +22,7 @@ class BulkRuleStateHolder {
   int enchoCount = 1;
   bool isEnchoUnlimited = false;
   bool hasHantei = false;
+  bool isKataMatch = false;
 
   bool hasRepresentativeMatch = true;
   bool isDaihyoIpponShobu = true;
@@ -60,6 +61,7 @@ class BulkRuleStateHolder {
       sceneKey: sceneKey,
     );
 
+    isKataMatch = targetRule.isKataMatch;
     matchTime = res.matchTime;
     isRunningTime = targetRule.isRunningTime;
     isIpponShobu = res.isIpponShobu;
@@ -96,6 +98,12 @@ class BulkRuleStateHolder {
     loadedMatchId = m.id;
     final res = BulkRuleApplyHelper.loadTemplate(m);
     final r = m.rule ?? const MatchRule();
+    isKataMatch =
+        r.isKataMatch ||
+        m.matchType.contains('形') ||
+        m.matchType.contains('稽古法') ||
+        (m.category?.contains('形') ?? false) ||
+        (m.category?.contains('稽古法') ?? false);
     matchTime = res.matchTime;
     isRunningTime = res.isRunningTime;
     isIpponShobu = res.isIpponShobu;
@@ -135,25 +143,30 @@ class BulkRuleStateHolder {
         ? 'renseikai'
         : (selectedSceneType == 'moushiawase' ? 'moushiawase' : 'honsen');
     return MatchRule(
+      isKataMatch: isKataMatch,
       matchScene: sceneKey,
-      matchTimeMinutes: matchTime,
-      isRunningTime: isRunningTime,
-      isIpponShobu: isIpponShobu,
+      matchTimeMinutes: isKataMatch ? 0.0 : matchTime,
+      isRunningTime: isKataMatch ? false : isRunningTime,
+      isIpponShobu: isKataMatch ? false : isIpponShobu,
       ipponLimit: isIpponShobu ? 1 : ipponLimit,
       hansokuLimit: hansokuLimit,
-      hasHantei: hasHantei,
-      isEnchoUnlimited: hasExtension && isEnchoUnlimited,
-      enchoTimeMinutes: hasExtension ? enchoTime : 0.0,
-      enchoCount: hasExtension ? (isEnchoUnlimited ? -2 : enchoCount) : 0,
-      hasRepresentativeMatch: hasRepresentativeMatch,
+      hasHantei: isKataMatch ? true : hasHantei,
+      isEnchoUnlimited: !isKataMatch && hasExtension && isEnchoUnlimited,
+      enchoTimeMinutes: !isKataMatch && hasExtension ? enchoTime : 0.0,
+      enchoCount: !isKataMatch && hasExtension
+          ? (isEnchoUnlimited ? -2 : enchoCount)
+          : 0,
+      hasRepresentativeMatch: !isKataMatch && hasRepresentativeMatch,
       isDaihyoIpponShobu: isDaihyoIpponShobu,
       daihyoMatchTimeMinutes: daihyoMatchTime,
-      daihyoHasExtension: daihyoHasExtension,
-      daihyoEnchoTimeMinutes: daihyoHasExtension ? daihyoEnchoTime : 0.0,
-      daihyoEnchoCount: daihyoHasExtension
+      daihyoHasExtension: !isKataMatch && daihyoHasExtension,
+      daihyoEnchoTimeMinutes: !isKataMatch && daihyoHasExtension
+          ? daihyoEnchoTime
+          : 0.0,
+      daihyoEnchoCount: !isKataMatch && daihyoHasExtension
           ? (isDaihyoEnchoUnlimited ? -2 : daihyoEnchoCount)
           : 0,
-      daihyoHasHantei: daihyoHasHantei,
+      daihyoHasHantei: !isKataMatch && daihyoHasHantei,
       isRenseikai: isRenseikai,
       renseikaiType: renseikaiType,
       overallTimeMinutes: int.tryParse(overallTimeController.text) ?? 30,

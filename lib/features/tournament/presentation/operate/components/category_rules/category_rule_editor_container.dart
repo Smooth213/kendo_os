@@ -43,8 +43,12 @@ class CategoryRuleEditorContainer extends StatelessWidget {
       isMultiScene: formState.isMultiScene,
       useAdvancedRule: formState.useAdvancedRule,
       editingIsRenseikai: formState.editingIsRenseikai,
-      onMatchTypeChanged: (val) =>
-          setState(() => formState.editingMatchType = val),
+      onMatchTypeChanged: (val) => setState(() {
+        formState.editingMatchType = val;
+        final isKata = val.contains('形') || val.contains('稽古法');
+        formState.normalIsKataMatch = isKata;
+        formState.advancedIsKataMatch = isKata;
+      }),
       onMultiSceneChanged: (val) =>
           setState(() => formState.isMultiScene = val),
       onUseAdvancedRuleChanged: (val) =>

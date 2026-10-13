@@ -104,5 +104,10 @@ class MatchFormatRuleSyncHelper {
       lossPointController: lossPointController,
       drawPointController: drawPointController,
     );
+    if (targetRule.isKataMatch ||
+        ruleSet.matchType.contains('形') ||
+        ruleSet.matchType.contains('稽古法')) {
+      state.isKataMatch = true;
+    }
   }
 }

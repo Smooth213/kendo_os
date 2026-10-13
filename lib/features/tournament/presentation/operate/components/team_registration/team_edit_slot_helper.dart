@@ -31,6 +31,7 @@ class TeamEditSlotHelper {
     if (matchType.contains('3人制')) return 3;
     if (matchType.contains('個人戦')) return 1;
     if (matchType.contains('7人制')) return 7;
+    if (matchType.contains('形') || matchType.contains('稽古法')) return 2;
     return 5;
   }
 
@@ -50,6 +51,8 @@ class TeamEditSlotHelper {
       base = ['選手'];
     } else if (matchType.contains('7人制')) {
       base = ['先鋒', '次鋒', '五将', '中堅', '三将', '副将', '大将'];
+    } else if (matchType.contains('形') || matchType.contains('稽古法')) {
+      base = ['選手', '選手'];
     } else {
       base = ['先鋒', '次鋒', '中堅', '副将', '大将'];
     }

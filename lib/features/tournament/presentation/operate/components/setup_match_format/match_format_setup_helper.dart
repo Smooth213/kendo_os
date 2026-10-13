@@ -138,6 +138,9 @@ class MatchFormatSetupHelper {
         matchType.contains('1人制')) {
       return 1;
     }
+    if (matchType.contains('形') || matchType.contains('稽古法')) {
+      return 2;
+    }
     if (matchType.contains('3人制')) {
       return 3;
     }
@@ -161,6 +164,10 @@ class MatchFormatSetupHelper {
           }
         }
         if (selectedTeam.matchType.isNotEmpty) {
+          if (selectedTeam.matchType.contains('形') ||
+              selectedTeam.matchType.contains('稽古法')) {
+            return 2;
+          }
           if (selectedTeam.matchType.contains('3人制')) {
             return 3;
           }
@@ -266,12 +273,13 @@ class MatchFormatSetupHelper {
     required double drawPoint,
     required String selectedRuleScene,
     bool skipEmptyRoster = false,
+    bool isKataMatch = false,
   }) {
     final effectiveIsIpponShobu = isIpponShobu || ipponLimit == 1;
     return MatchRule(
       positions: positions,
-      matchTimeMinutes: matchTime,
-      isRunningTime: isRunningTime,
+      matchTimeMinutes: isKataMatch ? 0.0 : matchTime,
+      isRunningTime: isKataMatch ? false : isRunningTime,
       isIpponShobu: effectiveIsIpponShobu,
       ipponLimit: effectiveIsIpponShobu ? 1 : ipponLimit,
       hansokuLimit: hansokuLimit,
@@ -293,14 +301,20 @@ class MatchFormatSetupHelper {
       daihyoEnchoTimeMinutes: daihyoEnchoTime,
       daihyoEnchoCount: daihyoEnchoCount,
       daihyoHasHantei: daihyoHasHantei,
-      isEnchoUnlimited: hasExtension && (extTime == -2.0 || extCount == -2),
-      enchoTimeMinutes: hasExtension ? (extTime == -2.0 ? 0.0 : extTime) : 0.0,
-      enchoCount: hasExtension ? (extCount == -2 ? 99 : extCount) : 0,
-      hasHantei: hasHantei,
+      isEnchoUnlimited:
+          !isKataMatch && hasExtension && (extTime == -2.0 || extCount == -2),
+      enchoTimeMinutes: !isKataMatch && hasExtension
+          ? (extTime == -2.0 ? 0.0 : extTime)
+          : 0.0,
+      enchoCount: !isKataMatch && hasExtension
+          ? (extCount == -2 ? 99 : extCount)
+          : 0,
+      hasHantei: isKataMatch ? true : hasHantei,
       winPoint: winPoint,
       lossPoint: lossPoint,
       drawPoint: drawPoint,
       matchScene: selectedRuleScene,
+      isKataMatch: isKataMatch,
     );
   }
 }

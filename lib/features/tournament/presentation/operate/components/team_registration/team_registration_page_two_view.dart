@@ -15,6 +15,8 @@ class TeamRegistrationPageTwoView extends ConsumerWidget {
   final Map<int, String> tempSelectedPlayers;
   final int substituteCount;
   final String matchType;
+  final String kataRoleOption;
+  final ValueChanged<String>? onKataRoleOptionChanged;
   final AppThemeColors themeColors;
   final Future<void> Function(int index) onSelectPlayer;
   final VoidCallback onAddSubstitute;
@@ -32,6 +34,8 @@ class TeamRegistrationPageTwoView extends ConsumerWidget {
     required this.tempSelectedPlayers,
     required this.substituteCount,
     required this.matchType,
+    this.kataRoleOption = 'none',
+    this.onKataRoleOptionChanged,
     required this.themeColors,
     required this.onSelectPlayer,
     required this.onAddSubstitute,
@@ -52,6 +56,8 @@ class TeamRegistrationPageTwoView extends ConsumerWidget {
       tempSelectedPlayers: tempSelectedPlayers,
       substituteCount: substituteCount,
       matchType: matchType,
+      kataRoleOption: kataRoleOption,
+      onKataRoleOptionChanged: onKataRoleOptionChanged,
       themeColors: themeColors,
       onSelectPlayer: onSelectPlayer,
       onRemoveSubstitute: onRemoveSubstitute,

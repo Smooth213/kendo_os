@@ -5,7 +5,6 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 /// 🥋 形・基本判定試合専用の判定入力アクションセクション
 class KataScoreActionSection extends ConsumerWidget {
@@ -26,7 +25,6 @@ class KataScoreActionSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isProcessing = ref.watch(isMatchCommandProcessingProvider);
     final bool effectiveLocked = isInputLocked || isProcessing;
-    final themeColors = context.appColors;
 
     return RepaintBoundary(
       child: Container(
@@ -142,36 +140,6 @@ class KataScoreActionSection extends ConsumerWidget {
                 ),
               ],
             ),
-
-            // 取消 (Undo) ボタン (イベントが存在するときのみ有効)
-            if (hasEvents) ...[
-              const SizedBox(height: AppSpacing.xs),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: effectiveLocked
-                      ? null
-                      : () async {
-                          await KendoHaptics.undoEvent();
-                          ref.read(matchCommandProvider).undoLastEvent(matchId);
-                        },
-                  icon: const Icon(Icons.undo, size: 16),
-                  label: const Text(
-                    '直前の判定を取り消す (Undo)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      fontWeight: AppFontWeight.semiBold,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: themeColors.subTextColor,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.xs,
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
