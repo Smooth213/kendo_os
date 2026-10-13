@@ -91,6 +91,51 @@ void main() {
       },
     );
 
+    testWidgets(
+      'モバイル小画面 (375x667) において2桁数値（第14試合場, 第15試合目）がカプセル＆下部プレビューで文字切れゼロで描画されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(375, 667); // iPhone SE
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: MatchCourtSlotPicker(
+                  courtNumber: 14,
+                  matchOrder: 15,
+                  onCourtNumberChanged: (_) {},
+                  onMatchOrderChanged: (_) {},
+                  isDark: false,
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MatchCourtSlotPicker), findsOneWidget);
+        // カプセル中央に 14 と 15 が表示
+        expect(find.text('14'), findsOneWidget);
+        expect(find.text('15'), findsOneWidget);
+        // 下部プレビューに 第14試合場 と 第15試合目 が全文表示（... で省略されないこと）
+        expect(find.text('第14試合場'), findsOneWidget);
+        expect(find.text('第15試合目'), findsOneWidget);
+        expect(find.textContaining('…'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('MatchPrivateNoteAccordionの折りたたみ状態において省スペースに描画されること', (
       WidgetTester tester,
     ) async {

@@ -144,44 +144,59 @@ class MatchCourtSlotPicker extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // ［－］ボタン
-              _buildStepButton(
-                icon: Icons.remove,
-                onPressed: onDecrement,
-                themeColors: themeColors,
+          // ── 一体型カプセルステッパー（CategoryTimeStepperTileと同一デザイン） ──
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF1E1E20)
+                  : themeColors.inputBackground,
+              borderRadius: AppRadius.xlarge,
+              border: Border.all(
+                color: isDark
+                    ? themeColors.textColor.withValues(alpha: 0.24)
+                    : const Color(0x33000000),
+                width: value != null ? 1.5 : 1.0,
               ),
-              const SizedBox(width: AppSpacing.xs),
-              // 中央の数字枠（タップでテンキー入力）
-              Expanded(
-                child: InkWell(
-                  onTap: onTapValue,
-                  borderRadius: AppRadius.small,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xs,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E1E20)
-                          : AppKendoColors.pureWhite,
-                      borderRadius: AppRadius.small,
-                      border: Border.all(
-                        color: value != null
-                            ? themeColors.primaryAccent
-                            : (isDark
-                                  ? const Color(0xFF38383A)
-                                  : const Color(0x33000000)),
-                        width: value != null ? 1.5 : 1.0,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
+              boxShadow: [
+                BoxShadow(
+                  color: AppKendoColors.pureBlack.withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // ［－］ボタン
+                IconButton(
+                  icon: const Icon(Icons.remove, size: 18),
+                  padding: const EdgeInsets.all(AppSpacing.subValue),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  color: value != null
+                      ? themeColors.primaryAccent
+                      : (isDark
+                            ? themeColors.textColor.withValues(alpha: 0.3)
+                            : const Color(0x66000000)),
+                  onPressed: onDecrement,
+                  tooltip: '減らす',
+                ),
+                // 中央の数字エリア（タップでテンキー入力）
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onTapValue,
+                      borderRadius: AppRadius.large,
+                      child: Container(
+                        constraints: const BoxConstraints(minWidth: 44),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.compact,
+                        ),
+                        child: Text(
                           value != null ? '$value' : '-',
                           style: TextStyle(
                             fontSize: AppFontSize.title,
@@ -192,60 +207,45 @@ class MatchCourtSlotPicker extends StatelessWidget {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        Text(
-                          value != null
-                              ? '$prefixText$value$suffixText'
-                              : '未設定',
-                          style: TextStyle(
-                            fontSize: AppFontSize.micro,
-                            fontWeight: AppFontWeight.semiBold,
-                            color: themeColors.subTextColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              // ［＋］ボタン
-              _buildStepButton(
-                icon: Icons.add,
-                onPressed: onIncrement,
-                themeColors: themeColors,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required AppThemeColors themeColors,
-  }) {
-    return Material(
-      color: isDark ? const Color(0xFF1E1E20) : AppKendoColors.pureWhite,
-      borderRadius: AppRadius.small,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: AppRadius.small,
-        child: Container(
-          width: 32,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.small,
-            border: Border.all(
-              color: isDark ? const Color(0xFF38383A) : const Color(0x22000000),
+                // ［＋］ボタン
+                IconButton(
+                  icon: const Icon(Icons.add, size: 18),
+                  padding: const EdgeInsets.all(AppSpacing.subValue),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  color: themeColors.primaryAccent,
+                  onPressed: onIncrement,
+                  tooltip: '増やす',
+                ),
+              ],
             ),
           ),
-          child: Icon(icon, size: 18, color: themeColors.primaryAccent),
-        ),
+          const SizedBox(height: AppSpacing.xs),
+          // ── 下部プレビューラベル（カード全幅で文字切れゼロ表示） ──
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              value != null ? '$prefixText$value$suffixText' : '未設定',
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                fontWeight: AppFontWeight.semiBold,
+                color: value != null
+                    ? (isDark
+                          ? themeColors.textColor
+                          : themeColors.primaryAccent)
+                    : themeColors.subTextColor,
+              ),
+              maxLines: 1,
+            ),
+          ),
+        ],
       ),
     );
   }
