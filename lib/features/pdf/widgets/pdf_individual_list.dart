@@ -110,9 +110,11 @@ class PdfIndividualList {
                 p.mark == '✕',
           );
       final String centerLabel = isKataMatch
-          ? (isFusen ? '不戦' : '判定')
+          ? (isFusen ? '不戦' : '-')
           : (isDraw ? '×' : (isEncho ? '延長' : '-'));
-      final double centerFontSize = (isKataMatch || isEncho) ? 10 : 16;
+      final double centerFontSize = (isKataMatch && isFusen || isEncho)
+          ? 10
+          : 16;
 
       // ★ Phase 6-1: 選手名テキストの Overflow 防壁化
       // 非常に長い道場名やフルネームが入り込んだ場合でも、テキストの自動折り返しによって行の高さが想定を超えて膨らみ、
@@ -176,6 +178,7 @@ class PdfIndividualList {
                 rWin,
                 true,
                 ttfBold,
+                isKata: isKataMatch,
               ),
               pw.Padding(
                 padding: const pw.EdgeInsets.symmetric(
@@ -195,6 +198,7 @@ class PdfIndividualList {
                 wWin,
                 false,
                 ttfBold,
+                isKata: isKataMatch,
               ),
               pw.SizedBox(width: 8),
 

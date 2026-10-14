@@ -50,7 +50,9 @@ class TeamMatchCalculator {
       }
     }
 
-    bool isTie = allFinished && !hasDaihyo && (rW == wW) && (rP == wP);
+    final isKata = teamMatches.any((m) => m.rule?.isKataMatch == true);
+    bool isTie =
+        allFinished && !hasDaihyo && (rW == wW) && (isKata || rP == wP);
 
     String teamWinner = 'in_progress';
     if (allFinished) {
@@ -58,9 +60,9 @@ class TeamMatchCalculator {
         teamWinner = 'red';
       } else if (wW > rW) {
         teamWinner = 'white';
-      } else if (rP > wP) {
+      } else if (!isKata && rP > wP) {
         teamWinner = 'red';
-      } else if (wP > rP) {
+      } else if (!isKata && wP > rP) {
         teamWinner = 'white';
       } else if (daihyoMatch != null) {
         final rs = (daihyoMatch.redScore as num).toInt();

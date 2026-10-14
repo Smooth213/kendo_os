@@ -90,6 +90,6 @@ class CalculatePointDisplaysUseCase {
   CalculatePointDisplaysUseCase(this._engine);
 
   Map<Side, List<PointDisplay>> execute(MatchModel match) {
-    return _engine.analyzeHistory(match.events, match, null).displays;
+    return _engine.analyzeHistory(match.events, match, match.rule).displays;
   }
 }

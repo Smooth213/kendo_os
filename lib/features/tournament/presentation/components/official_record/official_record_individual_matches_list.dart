@@ -232,13 +232,10 @@ class OfficialRecordIndividualMatchesList extends ConsumerWidget {
       String? centerLabel;
       if (isKata && isDone) {
         final hasFusen = m.events.any((e) => e.isFusen && !e.isCanceled);
-        final hasHantei = m.events.any(
-          (e) => (e.isHantei || e.isKataJudge) && !e.isCanceled,
-        );
         if (hasFusen) {
           centerLabel = '不戦';
-        } else if (hasHantei) {
-          centerLabel = '判定';
+        } else {
+          centerLabel = '-';
         }
       }
 

@@ -230,5 +230,113 @@ void main() {
       expect(container.constraints?.maxWidth, 26.0);
       expect(container.constraints?.maxHeight, 26.0);
     });
+
+    testWidgets(
+      '形試合規約において Tableバリアントで勝者判定であっても勝者円（BoxShape.circle）が描画されず数字が中央配置されること',
+      (tester) async {
+        const points = [KendoPointMark(mark: '3', isFirst: false)];
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: KendoScoreBox(
+                  points: points,
+                  isWinner: true,
+                  isRed: true,
+                  variant: ScoreDisplayVariant.table,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // 勝者円（BoxShape.circle）が描画されないこと
+        final circleContainers = tester
+            .widgetList<Container>(
+              find.descendant(
+                of: find.byType(KendoScoreBox),
+                matching: find.byType(Container),
+              ),
+            )
+            .where((c) {
+              final dec = c.decoration;
+              return dec is BoxDecoration && dec.shape == BoxShape.circle;
+            })
+            .toList();
+        expect(circleContainers.isEmpty, isTrue);
+
+        // 数字「3」が描画されていること
+        expect(find.text('3'), findsOneWidget);
+      },
+    );
+
+    testWidgets('形試合規約において 不戦勝の場合に「○」および「×」が勝者円なしで描画されること', (tester) async {
+      const winPoints = [KendoPointMark(mark: '○', isFirst: false)];
+      const losePoints = [KendoPointMark(mark: '×', isFirst: false)];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                KendoScoreBox(
+                  points: winPoints,
+                  isWinner: true,
+                  isRed: true,
+                  variant: ScoreDisplayVariant.table,
+                ),
+                KendoScoreBox(
+                  points: losePoints,
+                  isWinner: false,
+                  isRed: false,
+                  variant: ScoreDisplayVariant.table,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // 勝者円（BoxShape.circle）が一切描画されないこと
+      final circleContainers = tester
+          .widgetList<Container>(
+            find.descendant(
+              of: find.byType(KendoScoreBox),
+              matching: find.byType(Container),
+            ),
+          )
+          .where((c) {
+            final dec = c.decoration;
+            return dec is BoxDecoration && dec.shape == BoxShape.circle;
+          })
+          .toList();
+      expect(circleContainers.isEmpty, isTrue);
+
+      expect(find.text('○'), findsOneWidget);
+      expect(find.text('×'), findsOneWidget);
+    });
+
+    test('形試合PDF規約において PDF出力側でもisKata時に勝者円が除外されること', () {
+      final fontBold = pw.Font.helveticaBold();
+      final pts = [PdfPointData('3', false)];
+
+      // isKata: true の場合
+      final widget = PdfTeamTableCellRenderer.buildPointBox(
+        pts,
+        true,
+        true,
+        fontBold,
+        isKata: true,
+      );
+
+      expect(widget, isA<pw.Container>());
+      final container = widget as pw.Container;
+      // child は Stack
+      final stack = container.child as pw.Stack;
+      // 勝者丸枠 Container が Stack の中に含まれていないこと（children 長が 1 であること）
+      expect(stack.children.length, 1);
+      expect(stack.children.first, isA<pw.Text>());
+    });
   });
 }

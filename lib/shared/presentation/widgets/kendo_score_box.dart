@@ -150,6 +150,11 @@ class KendoScoreBox extends StatelessWidget {
         .where((p) => p.mark != '△' && p.mark != '▲')
         .toList();
     final hasHansoku = points.any((p) => p.mark == '△' || p.mark == '▲');
+    final isKataScore =
+        actualPoints.isNotEmpty &&
+        (int.tryParse(actualPoints[0].mark) != null ||
+            actualPoints[0].mark == '○' ||
+            actualPoints[0].mark == '×');
 
     return SizedBox(
       width: 36,
@@ -158,7 +163,7 @@ class KendoScoreBox extends StatelessWidget {
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          if (isWinner)
+          if (isWinner && !isKataScore)
             Container(
               width: 32,
               height: 32,
@@ -171,16 +176,25 @@ class KendoScoreBox extends StatelessWidget {
               ),
             ),
           if (actualPoints.isNotEmpty)
-            Positioned(
-              top: AppSpacing.xs,
-              left: 6,
-              child: KendoTechMarkBadge(
-                point: actualPoints[0],
-                color: color,
-                isDark: isDark,
-              ),
-            ),
-          if (actualPoints.length > 1)
+            isKataScore
+                ? Center(
+                    child: KendoTechMarkBadge(
+                      point: actualPoints[0],
+                      color: color,
+                      isDark: isDark,
+                      fontSize: AppFontSize.caption,
+                    ),
+                  )
+                : Positioned(
+                    top: AppSpacing.xs,
+                    left: 6,
+                    child: KendoTechMarkBadge(
+                      point: actualPoints[0],
+                      color: color,
+                      isDark: isDark,
+                    ),
+                  ),
+          if (actualPoints.length > 1 && !isKataScore)
             Positioned(
               bottom: AppSpacing.xs,
               right: 6,

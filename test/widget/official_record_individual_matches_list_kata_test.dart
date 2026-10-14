@@ -61,8 +61,10 @@ void main() {
       // ペア名が表示されていること
       expect(find.text('山田・佐藤'), findsOneWidget);
       expect(find.text('鈴木・田中'), findsOneWidget);
-      // 中央の判定ラベル「判定」が表示されていること
-      expect(find.text('判定'), findsOneWidget);
+      // 中央の旗判定表示（「2 - 1」形式）
+      expect(find.text('-'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
     });
 
     testWidgets('形試合の不戦勝の場合に中央ラベルが「不戦」となり○と×が表示されること', (

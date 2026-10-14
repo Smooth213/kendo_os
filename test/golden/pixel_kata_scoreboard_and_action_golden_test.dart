@@ -9,6 +9,8 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_table_builder.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
 
@@ -156,5 +158,167 @@ void main() {
         }
       },
     );
+
+    testWidgets('形試合スコアボード（不戦勝表示「○ - ×」）がライト＆ダークモードで勝者丸枠なく崩れず描画されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final match = MatchModel(
+        id: 'golden_kata_fusen_01',
+        tournamentId: 'tour_kata',
+        category: '一般の部',
+        matchType: '1回戦',
+        status: 'finished',
+        redName: '皿田・塚本',
+        whiteName: '欠員',
+        rule: kataRule,
+        redScore: 1,
+        whiteScore: 0,
+        events: [
+          ScoreEvent(
+            id: 'e_fusen_1',
+            side: Side.red,
+            isFusen: true,
+            timestamp: DateTime(2026, 10, 14, 10, 0),
+          ),
+        ],
+      );
+
+      for (final isDark in [false, true]) {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: isDark,
+          mode: 'normal',
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              settingsProvider.overrideWith(() => _MockSettingsNotifier()),
+              matchViewStateUserIdProvider.overrideWith((ref) => 'user_1'),
+              matchListProvider.overrideWithValue([match]),
+              scoreboardMatchIdProvider.overrideWithValue(
+                'golden_kata_fusen_01',
+              ),
+              scoreboardMatchProvider.overrideWithValue(match),
+              scoreboardNameTapProvider.overrideWithValue((side) {}),
+            ],
+            child: MaterialApp(
+              theme: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+                extensions: [themeColors],
+              ),
+              home: const Scaffold(
+                body: Center(
+                  child: SizedBox(
+                    width: 900,
+                    height: 350,
+                    child: MatchScoreboard(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MatchScoreboard), findsOneWidget);
+        // 不戦勝記号の描画確認
+        expect(find.text('○'), findsOneWidget);
+        expect(find.text('×'), findsOneWidget);
+
+        // 形試合のため、勝者丸枠 (BoxShape.circle, width: 6) が描画されないこと
+        final giantWinnerCircles = tester
+            .widgetList<Container>(
+              find.descendant(
+                of: find.byType(MatchScoreboard),
+                matching: find.byType(Container),
+              ),
+            )
+            .where((c) {
+              final dec = c.decoration;
+              if (dec is BoxDecoration && dec.shape == BoxShape.circle) {
+                final border = dec.border;
+                if (border is Border && border.top.width >= 5) {
+                  return true;
+                }
+              }
+              return false;
+            })
+            .toList();
+        expect(giantWinnerCircles.isEmpty, isTrue);
+        expect(tester.takeException(), isNull);
+      }
+    });
+
+    testWidgets('形競技団体戦スコアボードテーブルが各マスの旗数・不戦勝および合計行の勝数のみ表示で崩れなく描画されること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final result = TeamMatchResult(
+        redWins: 2,
+        whiteWins: 1,
+        redPoints: 4,
+        whitePoints: 2,
+        allFinished: true,
+        hasDaihyo: false,
+        isTie: false,
+        teamWinner: 'red',
+      );
+
+      for (final isDark in [false, true]) {
+        final themeColors = AppThemeColors.ofMode(
+          isDark: isDark,
+          mode: 'normal',
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+              extensions: [themeColors],
+            ),
+            home: Scaffold(
+              body: Table(
+                border: TableBorder.all(color: Colors.grey),
+                children: [
+                  TeamScoreboardTableBuilder.buildHeaderRow(
+                    '道上剣友会',
+                    '友道館',
+                    isDark,
+                  ),
+                  TeamScoreboardTableBuilder.buildTotalRow(
+                    result,
+                    isDark,
+                    isKata: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // 合計行に勝数のみが表示されていること
+        expect(find.text('2勝'), findsOneWidget);
+        expect(find.text('1勝'), findsOneWidget);
+        // 「本」の文字が合計行に含まれないこと
+        expect(find.textContaining('本'), findsNothing);
+        // 勝敗判定マーク
+        expect(find.text('勝'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      }
+    });
   });
 }

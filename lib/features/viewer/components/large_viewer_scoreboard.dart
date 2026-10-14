@@ -303,6 +303,7 @@ class LargeViewerScoreboard extends StatelessWidget {
     bool isWinner,
     Side side,
   ) {
+    final isKata = activeMatch?.rule?.isKataMatch == true;
     final color = side == Side.red
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? AppKendoColors.pureWhite : const Color(0xFF334155));
@@ -313,7 +314,7 @@ class LargeViewerScoreboard extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          if (isWinner)
+          if (isWinner && !isKata)
             Container(
               width: 110,
               height: 110,
@@ -325,18 +326,32 @@ class LargeViewerScoreboard extends StatelessWidget {
                 ),
               ),
             ),
-          if (displays.isNotEmpty)
-            Positioned(
-              top: 14,
-              left: AppSpacing.lg,
-              child: _buildPointBadge(displays[0], color),
-            ),
-          if (displays.length > 1)
-            Positioned(
-              bottom: 14,
-              right: AppSpacing.lg,
-              child: _buildPointBadge(displays[1], color),
-            ),
+          if (isKata && displays.isNotEmpty)
+            Center(
+              child: Text(
+                displays[0].mark,
+                style: TextStyle(
+                  fontSize: AppFontSize.scoreboardJumbo,
+                  fontWeight: AppFontWeight.bold,
+                  color: color,
+                  height: 1.0,
+                ),
+              ),
+            )
+          else ...[
+            if (displays.isNotEmpty)
+              Positioned(
+                top: 14,
+                left: AppSpacing.lg,
+                child: _buildPointBadge(displays[0], color),
+              ),
+            if (displays.length > 1)
+              Positioned(
+                bottom: 14,
+                right: AppSpacing.lg,
+                child: _buildPointBadge(displays[1], color),
+              ),
+          ],
         ],
       ),
     );
@@ -353,7 +368,8 @@ class LargeViewerScoreboard extends StatelessWidget {
         pd.mark == '×' ||
         pd.mark == '✕' ||
         pd.mark == '△' ||
-        pd.mark == '▲';
+        pd.mark == '▲' ||
+        int.tryParse(pd.mark) != null;
 
     if (pd.isFirstMatchPoint && !isSpecialNonCircle) {
       return Container(

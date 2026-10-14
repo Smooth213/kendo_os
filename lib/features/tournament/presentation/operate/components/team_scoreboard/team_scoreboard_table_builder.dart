@@ -75,53 +75,46 @@ class TeamScoreboardTableBuilder {
       );
     }
 
+    InlineSpan buildInitial(String initial) => WidgetSpan(
+      alignment: PlaceholderAlignment.bottom,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: AppSpacing.xxs,
+          bottom: AppSpacing.xxs,
+        ),
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: AppFontSize.small,
+            fontWeight: AppFontWeight.bold,
+            color: subTextColor,
+          ),
+        ),
+      ),
+    );
+
+    List<InlineSpan> spans;
     if (rawName.contains('・')) {
       final pairs = NameFormatter.parseKataPair(
         rawName,
         teamPlayerNames: teamLastNames,
       );
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-        child: RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            style: TextStyle(
-              fontSize: AppFontSize.title,
-              fontWeight: AppFontWeight.bold,
-              color: textColor,
-            ),
-            children: [
-              for (int idx = 0; idx < pairs.length; idx++) ...[
-                if (idx > 0) const TextSpan(text: '・'),
-                TextSpan(text: pairs[idx].lastName),
-                if (pairs[idx].initial.isNotEmpty)
-                  WidgetSpan(
-                    alignment: PlaceholderAlignment.bottom,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppSpacing.xxs,
-                        bottom: AppSpacing.xxs,
-                      ),
-                      child: Text(
-                        pairs[idx].initial,
-                        style: TextStyle(
-                          fontSize: AppFontSize.small,
-                          fontWeight: AppFontWeight.bold,
-                          color: subTextColor,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ],
-          ),
-        ),
-      );
+      spans = [
+        for (int idx = 0; idx < pairs.length; idx++) ...[
+          if (idx > 0) const TextSpan(text: '・'),
+          TextSpan(text: pairs[idx].lastName),
+          if (pairs[idx].initial.isNotEmpty) buildInitial(pairs[idx].initial),
+        ],
+      ];
+    } else {
+      final parsed = NameFormatter.parse(rawName);
+      final count = teamLastNames.where((n) => n == parsed['last']).length;
+      spans = [
+        TextSpan(text: parsed['last']),
+        if (count > 1 && parsed['first']!.isNotEmpty)
+          buildInitial(parsed['first']!.substring(0, 1)),
+      ];
     }
-
-    final parsed = NameFormatter.parse(rawName);
-    final count = teamLastNames.where((n) => n == parsed['last']).length;
-    final showInitial = count > 1 && parsed['first']!.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -133,27 +126,7 @@ class TeamScoreboardTableBuilder {
             fontWeight: AppFontWeight.bold,
             color: textColor,
           ),
-          children: [
-            TextSpan(text: parsed['last']),
-            if (showInitial)
-              WidgetSpan(
-                alignment: PlaceholderAlignment.bottom,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.xxs,
-                    bottom: AppSpacing.xxs,
-                  ),
-                  child: Text(
-                    parsed['first']!.substring(0, 1),
-                    style: TextStyle(
-                      fontSize: AppFontSize.small,
-                      fontWeight: AppFontWeight.bold,
-                      color: subTextColor,
-                    ),
-                  ),
-                ),
-              ),
-          ],
+          children: spans,
         ),
       ),
     );
@@ -200,12 +173,26 @@ class TeamScoreboardTableBuilder {
         clickableCell(
           ctx,
           m,
-          buildMatchScoreBox(rPts, isDone && rS > wS, isDraw, true, isDark),
+          buildMatchScoreBox(
+            rPts,
+            isDone && rS > wS,
+            isDraw,
+            true,
+            isDark,
+            isKata: m.rule?.isKataMatch == true,
+          ),
         ),
         clickableCell(
           ctx,
           m,
-          buildMatchScoreBox(wPts, isDone && wS > rS, false, false, isDark),
+          buildMatchScoreBox(
+            wPts,
+            isDone && wS > rS,
+            false,
+            false,
+            isDark,
+            isKata: m.rule?.isKataMatch == true,
+          ),
         ),
         clickableCell(
           ctx,
@@ -221,12 +208,12 @@ class TeamScoreboardTableBuilder {
     bool isWinner,
     bool isDraw,
     bool isRed,
-    bool isDark,
-  ) {
+    bool isDark, {
+    bool isKata = false,
+  }) {
     final color = isRed
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B));
-
     final actualPts = pts.where((p) => p.mark != '△' && p.mark != '▲').toList();
     final hasHansoku = pts.any((p) => p.mark == '△' || p.mark == '▲');
 
@@ -237,7 +224,7 @@ class TeamScoreboardTableBuilder {
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          if (isWinner)
+          if (isWinner && !isKata)
             Container(
               width: 62,
               height: 62,
@@ -252,22 +239,24 @@ class TeamScoreboardTableBuilder {
           SizedBox(
             width: 48,
             height: 48,
-            child: Stack(
-              children: [
-                if (actualPts.isNotEmpty)
-                  Positioned(
-                    top: 2,
-                    left: 2,
-                    child: ptMark(actualPts[0], color, isDark),
+            child: isKata && actualPts.isNotEmpty
+                ? Center(child: ptMark(actualPts[0], color, isDark))
+                : Stack(
+                    children: [
+                      if (actualPts.isNotEmpty)
+                        Positioned(
+                          top: 2,
+                          left: 2,
+                          child: ptMark(actualPts[0], color, isDark),
+                        ),
+                      if (actualPts.length > 1)
+                        Positioned(
+                          bottom: 2,
+                          right: 2,
+                          child: ptMark(actualPts[1], color, isDark),
+                        ),
+                    ],
                   ),
-                if (actualPts.length > 1)
-                  Positioned(
-                    bottom: 2,
-                    right: 2,
-                    child: ptMark(actualPts[1], color, isDark),
-                  ),
-              ],
-            ),
           ),
           if (hasHansoku)
             Positioned(
@@ -334,7 +323,8 @@ class TeamScoreboardTableBuilder {
         p.mark == '×' ||
         p.mark == '✕' ||
         p.mark == '△' ||
-        p.mark == '▲';
+        p.mark == '▲' ||
+        int.tryParse(p.mark) != null;
     if (p.isFirstMatchPoint && !isSpecial) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
@@ -392,7 +382,11 @@ class TeamScoreboardTableBuilder {
     );
   }
 
-  static TableRow buildTotalRow(TeamMatchResult result, bool isDark) {
+  static TableRow buildTotalRow(
+    TeamMatchResult result,
+    bool isDark, {
+    bool isKata = false,
+  }) {
     final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8FAFC);
     final textColor = isDark
         ? const Color(0xFFFFFFFF)
@@ -404,7 +398,9 @@ class TeamScoreboardTableBuilder {
       children: [
         const SizedBox.shrink(),
         cell(
-          '${result.redPoints} / ${result.redWins}',
+          isKata
+              ? '${result.redWins}勝'
+              : '${result.redPoints} / ${result.redWins}',
           isH: true,
           color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
           fs: 18,
@@ -451,7 +447,7 @@ class TeamScoreboardTableBuilder {
           child: SizedBox(
             height: 64,
             child: Center(
-              child: (result.allFinished && !isTeamTie)
+              child: result.allFinished && !isTeamTie
                   ? cell(
                       result.teamWinner == 'white' ? '勝' : '負',
                       isH: true,
@@ -465,7 +461,9 @@ class TeamScoreboardTableBuilder {
           ),
         ),
         cell(
-          '${result.whitePoints} / ${result.whiteWins}',
+          isKata
+              ? '${result.whiteWins}勝'
+              : '${result.whitePoints} / ${result.whiteWins}',
           isH: true,
           color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF607D8B),
           fs: 18,

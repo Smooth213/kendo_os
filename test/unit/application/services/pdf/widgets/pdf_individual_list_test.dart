@@ -156,7 +156,7 @@ void main() {
       expect(headerText2, '【リーグ個人戦】 リーグA');
     });
 
-    test('形試合でヘッダーが形・基本判定となり中央に判定が表示されること', () {
+    test('形試合でヘッダーが形・基本判定となり中央にハイフン（旗数表示）が表示されること', () {
       final matches = [
         createMockMatch(
           id: 'kata-m1',
@@ -188,7 +188,7 @@ void main() {
       final rowContainer = column.children[1] as pw.Container;
       final row = rowContainer.child as pw.Row;
       final separatorText = (row.children[4] as pw.Padding).child as pw.Text;
-      expect(separatorText.text.toPlainText(), '判定');
+      expect(separatorText.text.toPlainText(), '-');
     });
 
     test('形試合の不戦勝で中央に不戦が表示されること', () {

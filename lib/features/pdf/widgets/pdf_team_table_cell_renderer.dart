@@ -1,5 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/pdf/models/pdf_point_data.dart';
 import 'package:kendo_os/features/pdf/models/pdf_view_model.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -173,6 +174,10 @@ class PdfTeamTableCellRenderer {
     final matchType = (m.matchType ?? '').toString();
     final isEncho = isDone && (note.contains('延長') || matchType.contains('延長'));
 
+    final isKataMatch =
+        (m is MatchModel && m.rule?.isKataMatch == true) ||
+        (m.matchType?.toString().contains('形') ?? false) ||
+        (m.note?.toString().contains('形') ?? false);
     return pw.Container(
       height: 60,
       alignment: pw.Alignment.center,
@@ -232,6 +237,7 @@ class PdfTeamTableCellRenderer {
                   isDone && rScore > wScore,
                   true,
                   fontBold,
+                  isKata: isKataMatch,
                 ),
               ),
               pw.Expanded(
@@ -240,6 +246,7 @@ class PdfTeamTableCellRenderer {
                   isDone && wScore > rScore,
                   false,
                   fontBold,
+                  isKata: isKataMatch,
                 ),
               ),
             ],
@@ -249,13 +256,13 @@ class PdfTeamTableCellRenderer {
     );
   }
 
-  /// 打突部位ポイントボックス
   static pw.Widget buildPointBox(
     List<PdfPointData> pts,
     bool isWinner,
     bool isRed,
-    pw.Font fontBold,
-  ) {
+    pw.Font fontBold, {
+    bool isKata = false,
+  }) {
     final actualPts = pts.where((p) => p.mark != '△' && p.mark != '▲').toList();
     final hasHansoku = pts.any((p) => p.mark == '△' || p.mark == '▲');
 
@@ -278,7 +285,7 @@ class PdfTeamTableCellRenderer {
         child: pw.Stack(
           alignment: pw.Alignment.center,
           children: [
-            if (isWinner)
+            if (isWinner && !isKata)
               pw.Container(
                 width: 25,
                 height: 25,
@@ -406,8 +413,9 @@ class PdfTeamTableCellRenderer {
   static pw.Widget buildSummaryCell(
     List<dynamic> ms,
     bool isRed,
-    pw.Font fontBold,
-  ) {
+    pw.Font fontBold, {
+    bool isKata = false,
+  }) {
     int wins = 0, pts = 0;
     for (var m in ms) {
       if (m.matchType == '代表戦') continue;
@@ -419,7 +427,7 @@ class PdfTeamTableCellRenderer {
     }
     return pw.Center(
       child: pw.Text(
-        '$pts\nー\n$wins',
+        isKata ? '$wins勝' : '$pts\nー\n$wins',
         style: pw.TextStyle(
           fontWeight: pw.FontWeight.bold,
           font: fontBold,

@@ -306,7 +306,9 @@ class MatchScoreboard extends ConsumerWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                if (isFinished && isWinner)
+                if (isFinished &&
+                    isWinner &&
+                    !(match.rule?.isKataMatch ?? false))
                   Container(
                     width: 180,
                     height: 180,

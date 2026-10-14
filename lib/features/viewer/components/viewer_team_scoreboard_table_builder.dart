@@ -63,6 +63,7 @@ class ViewerTeamScoreboardTableBuilder {
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
         : (isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B));
 
+    final isKata = m.matchType.contains('形') || m.note.contains('形');
     return TableRow(
       decoration: isDaihyo ? BoxDecoration(color: daihyoBgColor) : null,
       children: [
@@ -91,6 +92,7 @@ class ViewerTeamScoreboardTableBuilder {
             true,
             isDark,
             firstSide,
+            isKata,
           ),
         ),
         _clickableCell(
@@ -103,6 +105,7 @@ class ViewerTeamScoreboardTableBuilder {
             false,
             isDark,
             firstSide,
+            isKata,
           ),
         ),
         _clickableCell(
@@ -114,7 +117,11 @@ class ViewerTeamScoreboardTableBuilder {
     );
   }
 
-  static TableRow buildTotalRow(TeamMatchResult result, bool isDark) {
+  static TableRow buildTotalRow(
+    TeamMatchResult result,
+    bool isDark, {
+    bool isKata = false,
+  }) {
     final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF8FAFC);
     final isTeamTie = (result.teamWinner == 'draw');
 
@@ -123,7 +130,9 @@ class ViewerTeamScoreboardTableBuilder {
       children: [
         const SizedBox.shrink(),
         _cell(
-          '${result.redWins} / ${result.redPoints}',
+          isKata
+              ? '${result.redWins}勝'
+              : '${result.redWins} / ${result.redPoints}',
           isH: true,
           color: isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed,
           fs: 18,
@@ -192,7 +201,9 @@ class ViewerTeamScoreboardTableBuilder {
           ),
         ),
         _cell(
-          '${result.whiteWins} / ${result.whitePoints}',
+          isKata
+              ? '${result.whiteWins}勝'
+              : '${result.whiteWins} / ${result.whitePoints}',
           isH: true,
           color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B),
           fs: 18,
@@ -270,6 +281,7 @@ class ViewerTeamScoreboardTableBuilder {
     bool isRed,
     bool isDark, [
     String? firstSide,
+    bool isKata = false,
   ]) {
     return ViewerTeamScoreboardScoreBox.build(
       pts: pts,
@@ -278,6 +290,7 @@ class ViewerTeamScoreboardTableBuilder {
       isRed: isRed,
       isDark: isDark,
       firstSide: firstSide,
+      isKata: isKata,
     );
   }
 

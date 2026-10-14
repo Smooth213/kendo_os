@@ -1,5 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_team_table_cell_renderer.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
@@ -156,6 +157,13 @@ class PdfTeamTable {
     // ★ Phase 6-1: 改ページ崩れの完全封鎖（pw.Container）
     // 1つの対戦表がページの最下部で不自然に真っ二つに分断されるのを100%防止するため、
     // 表のひとかたまりを pw.Container で包み、ページ内に収まらない場合は自動で次のページへ安全に送出します。
+    final isKata = matches.any(
+      (m) =>
+          (m is MatchModel && m.rule?.isKataMatch == true) ||
+          (m.matchType?.toString().contains('形') ?? false) ||
+          (m.note?.toString().contains('形') ?? false),
+    );
+
     final tableWidget = pw.Table(
       border: pw.TableBorder.all(color: PdfColors.black, width: 1),
       columnWidths: columnWidths,
@@ -183,7 +191,7 @@ class PdfTeamTable {
               child: pw.Padding(
                 padding: const pw.EdgeInsets.all(AppSpacing.xs),
                 child: pw.Text(
-                  '本/勝',
+                  isKata ? '勝数' : '本/勝',
                   style: pw.TextStyle(fontSize: dynamicFontSize, font: ttfBold),
                 ),
               ),
@@ -204,7 +212,12 @@ class PdfTeamTable {
                 ttf,
               ),
             ),
-            PdfTeamTableCellRenderer.buildSummaryCell(matches, true, ttfBold),
+            PdfTeamTableCellRenderer.buildSummaryCell(
+              matches,
+              true,
+              ttfBold,
+              isKata: isKata,
+            ),
           ],
         ),
         pw.TableRow(
@@ -230,7 +243,12 @@ class PdfTeamTable {
                 ttf,
               ),
             ),
-            PdfTeamTableCellRenderer.buildSummaryCell(matches, false, ttfBold),
+            PdfTeamTableCellRenderer.buildSummaryCell(
+              matches,
+              false,
+              ttfBold,
+              isKata: isKata,
+            ),
           ],
         ),
       ],

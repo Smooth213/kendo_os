@@ -96,15 +96,19 @@ class TournamentProjectionMapper {
           }
         }
 
+        final isKata =
+            (tournament.categoryRules[cat]?.normalRule.isKataMatch == true) ||
+            p.matchType.contains('形') ||
+            p.note.contains('形');
         String winner = 'draw';
         if (allFinished) {
           if (rWins > wWins) {
             winner = 'red';
           } else if (wWins > rWins) {
             winner = 'white';
-          } else if (rPts > wPts) {
+          } else if (!isKata && rPts > wPts) {
             winner = 'red';
-          } else if (wPts > rPts) {
+          } else if (!isKata && wPts > rPts) {
             winner = 'white';
           }
         }

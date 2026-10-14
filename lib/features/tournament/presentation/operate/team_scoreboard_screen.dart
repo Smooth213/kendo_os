@@ -244,6 +244,9 @@ class TeamScoreboardScreen extends ConsumerWidget {
                             TeamScoreboardTableBuilder.buildTotalRow(
                               result,
                               isDark,
+                              isKata: teamMatches.any(
+                                (m) => m.rule?.isKataMatch == true,
+                              ),
                             ),
                           ],
                         ),

@@ -364,6 +364,13 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                             ViewerTeamScoreboardTableBuilder.buildTotalRow(
                               teamProj.result,
                               isDark,
+                              isKata:
+                                  teamProj.matchType.contains('形') ||
+                                  teamProj.matches.any(
+                                    (m) =>
+                                        m.matchType.contains('形') ||
+                                        m.note.contains('形'),
+                                  ),
                             ),
                           ],
                         ),

@@ -11,6 +11,7 @@ class ViewerTeamScoreboardScoreBox {
     required bool isRed,
     required bool isDark,
     String? firstSide,
+    bool isKata = false,
   }) {
     final color = isRed
         ? (isDark ? const Color(0xFFFF6B6B) : AppKendoColors.hansokuRed)
@@ -19,7 +20,7 @@ class ViewerTeamScoreboardScoreBox {
     final actualPts = pts.where((m) => m != '△' && m != '▲').toList();
     final hasHansoku = pts.any((m) => m == '△' || m == '▲');
 
-    final isFusen = actualPts.contains('◯');
+    final isFusen = actualPts.contains('◯') && !isKata;
     final isThisSideFirst = firstSide == (isRed ? 'red' : 'white');
 
     return SizedBox(
@@ -29,7 +30,7 @@ class ViewerTeamScoreboardScoreBox {
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          if (isWinner)
+          if (isWinner && !isKata)
             Container(
               width: 62,
               height: 62,
@@ -44,7 +45,9 @@ class ViewerTeamScoreboardScoreBox {
           SizedBox(
             width: 48,
             height: 48,
-            child: isFusen
+            child: isKata && actualPts.isNotEmpty
+                ? Center(child: ptMark(actualPts[0], false, color, isDark))
+                : isFusen
                 ? Stack(
                     children: [
                       Positioned(
@@ -127,7 +130,8 @@ class ViewerTeamScoreboardScoreBox {
         mark == '×' ||
         mark == '✕' ||
         mark == '△' ||
-        mark == '▲';
+        mark == '▲' ||
+        int.tryParse(mark) != null;
     if (isFirstOverall && !isSpecial) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
