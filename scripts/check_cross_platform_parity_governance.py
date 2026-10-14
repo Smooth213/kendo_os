@@ -21,6 +21,7 @@ def run_cross_platform_parity_governance():
         ("3. [オフラインストレージ・PWA整合性] Web/Native 同期コンテキスト・ストレージキー統一規約", passed_all),
         ("4. [レスポンシブ・UIレイアウト安全規約] デスクトップ(Web)とモバイル(Native)サイズ破綻ゼロ規約", passed_all),
         ("5. [ファイル境界・Webビルド安全規約] lib/配下 Web非互換 Platform 直呼び出し排除規約", passed_all),
+        ("6. [Web/PWA リロード戻るボタン孤立ゼロ規約] 主要画面 AppHeader fallbackRoute/leading 配置規約", passed_all),
     ]
 
     print("=" * 60)

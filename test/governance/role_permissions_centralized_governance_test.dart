@@ -101,5 +101,30 @@ void main() {
         );
       }
     });
+
+    test('UIコンポーネント層においてSlidableが無条件ラップされず権限フラグで条件分岐されていること', () {
+      final targetFiles = [
+        'lib/features/tournament/presentation/operate/components/timeline/timeline_individual_player_card.dart',
+        'lib/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart',
+      ];
+
+      for (final path in targetFiles) {
+        final file = File(path);
+        expect(file.existsSync(), isTrue, reason: '$path が存在すること');
+        final content = file.readAsStringSync();
+
+        if (content.contains('Slidable(')) {
+          final hasConditionalSlidable =
+              content.contains('? Slidable(') ||
+              content.contains('if (!canEdit && !canDelete) return');
+          expect(
+            hasConditionalSlidable,
+            isTrue,
+            reason:
+                '$path にて Slidable が無条件にラップされています。観客席・閲覧専用モードで不要なジェスチャーが漏洩するのを防ぐため、権限判定による条件付きラップが必須です。',
+          );
+        }
+      }
+    });
   });
 }

@@ -124,5 +124,35 @@ void main() {
             'Web で Unsupported operation が発生する危険な Platform 呼び出し:\n${illegalDirectPlatformCalls.join('\n')}',
       );
     });
+
+    test(
+      'Web/PWA リロード戻るボタン孤立ゼロ規約に関して、主要画面の AppHeader に fallbackRoute または leading が明示されていること',
+      () {
+        final protectedScreens = [
+          'lib/features/tournament/presentation/operate/screens/home_screen.dart',
+          'lib/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart',
+          'lib/features/tournament/presentation/operate/screens/tournament_list_screen.dart',
+        ];
+
+        for (final path in protectedScreens) {
+          final file = File(path);
+          expect(file.existsSync(), isTrue, reason: '$path が存在すること');
+          final content = file.readAsStringSync();
+
+          if (content.contains('AppHeader(')) {
+            final hasFallback =
+                content.contains('fallbackRoute:') ||
+                content.contains('leading:') ||
+                content.contains('onBackPressed:');
+            expect(
+              hasFallback,
+              isTrue,
+              reason:
+                  '$path の AppHeader に fallbackRoute または leading または onBackPressed が指定されていません。Webリロード時に戻るボタンが消滅するのを防ぐため必須です。',
+            );
+          }
+        }
+      },
+    );
   });
 }

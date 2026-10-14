@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/application/projections/tournament_projection_mapper.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/time/server_clock_offset_service.dart';
+import 'package:kendo_os/shared/widgets/app_header.dart';
 
 void main() {
   group('[E2E] 観客PWA ディープスリープ復帰・30試合一括差分キャッチアップE2Eテスト', () {
@@ -79,6 +83,90 @@ void main() {
       await subscription.cancel();
       await streamController.close();
       clockService.resetOffset();
+    });
+
+    testWidgets('ディープスリープ復帰によるブラウザ自動再ロード後に大会ホームから大会一覧へ戻るボタンで正常復帰できること', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/home/t_deep_sleep',
+        routes: [
+          GoRoute(
+            path: '/home/:tournamentId',
+            builder: (context, state) => const Scaffold(
+              appBar: AppHeader(
+                title: '大会ホーム',
+                fallbackRoute: '/tournament-list',
+              ),
+              body: Center(child: Text('大会ホームコンテンツ')),
+            ),
+          ),
+          GoRoute(
+            path: '/tournament-list',
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('最近の大会 (一覧画面)'))),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: ThemeData(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('大会ホーム'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+      await tester.pumpAndSettle();
+
+      expect(find.text('最近の大会 (一覧画面)'), findsOneWidget);
+    });
+
+    testWidgets('ディープスリープ復帰によるブラウザ自動再ロード後に部内戦ホームからトップ画面へ戻るボタンで正常復帰できること', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/bunaiksen-home',
+        routes: [
+          GoRoute(
+            path: '/bunaiksen-home',
+            builder: (context, state) => const Scaffold(
+              appBar: AppHeader(title: '部内戦ホーム', fallbackRoute: '/'),
+              body: Center(child: Text('部内戦ホームコンテンツ')),
+            ),
+          ),
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const Scaffold(
+              body: Center(child: Text('トップ画面 (StartScreen)')),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: ThemeData(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('部内戦ホーム'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+      await tester.pumpAndSettle();
+
+      expect(find.text('トップ画面 (StartScreen)'), findsOneWidget);
     });
   });
 }
