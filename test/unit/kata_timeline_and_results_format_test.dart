@@ -8,7 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 void main() {
   group('[Unit] 剣道形 タイムライン・公式記録分類テスト', () {
     test(
-      'TimelinePlayerMatchClassifier で対戦枠（groupName保有）の形競技がグループ対戦（sortedGroups）として分類されスワイプ削除可能になること',
+      'TimelinePlayerMatchClassifier で対戦枠（groupName保有）の形競技が個人戦形式（sortedPlayers）として分類されスワイプ削除可能になること',
       () {
         final kataMatch = MatchModel(
           id: 'kata_1',
@@ -31,11 +31,11 @@ void main() {
           ownTeams: ['道上剣友会'],
         );
 
-        // 対戦枠として sortedGroups に分類され、一括スワイプ削除が可能となる
-        expect(result.sortedGroups.length, 1);
-        expect(result.sortedGroups.first.key, '道上剣友会 vs 対戦相手');
-        expect(result.sortedGroups.first.value.first.id, 'kata_1');
-        expect(result.sortedPlayers.isEmpty, isTrue);
+        // 竹刀個人戦と同様に選手・ペア別の sortedPlayers に分類され、一括スワイプ削除が可能となる
+        expect(result.sortedGroups.isEmpty, isTrue);
+        expect(result.sortedPlayers.length, 1);
+        expect(result.sortedPlayers.first.key, '皿田 脩人・塚本 大道');
+        expect(result.sortedPlayers.first.value.first.id, 'kata_1');
       },
     );
 

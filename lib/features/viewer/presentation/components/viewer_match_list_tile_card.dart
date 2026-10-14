@@ -60,7 +60,10 @@ class ViewerMatchListTileCard extends ConsumerWidget {
         (match.matchType == '個人戦' ||
             match.matchType == 'individual' ||
             match.matchType == '選手' ||
-            match.matchType.contains('個人'));
+            match.matchType.contains('個人') ||
+            match.rule?.isKataMatch == true ||
+            match.matchType.contains('形') ||
+            match.matchType.contains('稽古法'));
 
     String displayNote = MatchHeadingFormatHelper.extractPublicHeading(
       match.note,

@@ -40,10 +40,10 @@ class TimelinePlayerMatchClassifier {
           firstMatch.matchType.contains('稽古法');
       final bool isPureIndividual =
           !firstMatch.isKachinuki &&
-          !isKata &&
           (firstMatch.matchType == 'individual' ||
               firstMatch.matchType == '選手' ||
-              firstMatch.matchType.contains('個人戦'));
+              firstMatch.matchType.contains('個人戦') ||
+              isKata);
 
       final bool isTeamPosition =
           firstMatch.matchType.contains('将') ||
@@ -57,8 +57,7 @@ class TimelinePlayerMatchClassifier {
       if (!isPureIndividual &&
           (entry.value.length > 1 ||
               firstMatch.isKachinuki ||
-              isTeamPosition ||
-              isKata)) {
+              isTeamPosition)) {
         actualGroupedMatches[entry.key] = entry.value;
       } else if (isLeagueMatch) {
         actualGroupedMatches[entry.key] = entry.value;

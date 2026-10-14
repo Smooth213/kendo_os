@@ -66,10 +66,10 @@ void main() {
     });
 
     test(
-      'TimelinePlayerMatchClassifier において対戦枠（groupName保有）の形競技がグループ対戦枠として維持されスワイプ削除導線が恒久保証されること',
+      'TimelinePlayerMatchClassifier において形競技（groupName保有有無にかかわらず）が竹刀個人戦と同様に選手・ペア別枠（sortedPlayers）に分類され個人戦アコーディオン形式が恒久保証されること',
       () {
-        // 1試合のみの対戦枠であっても個人戦枠へ誤分類されずグループ枠に留まること
-        final singleKataMatch = [
+        // 対戦枠ID（groupName）を保持している場合でも、形競技は竹刀個人戦と統一された個人選手アコーディオン枠に分類されること
+        final kataGroupMatch = [
           const MatchModel(
             id: 'kata_gov_group_match',
             tournamentId: 't_gov',
@@ -82,7 +82,7 @@ void main() {
         ];
 
         final classified = TimelinePlayerMatchClassifier.classifyTeamMatches(
-          teamMatchesList: singleKataMatch,
+          teamMatchesList: kataGroupMatch,
           teamName: '自チーム',
           sanitizedQuery: '',
           matchedMatchIds: {},
@@ -90,35 +90,47 @@ void main() {
           ownTeams: const ['自チーム'],
         );
 
-        // ① グループ対戦枠（sortedGroups）として1件分類されること（一括削除ボタンの露出保証）
-        expect(classified.sortedGroups.length, 1);
-        expect(classified.sortedGroups.first.key, 'group_kata_vs_opp');
+        // ① 団体戦グループ枠（sortedGroups）へ誤分類されないこと
+        expect(classified.sortedGroups.isEmpty, isTrue);
+
+        // ② 竹刀個人戦と同様に選手・ペア別枠（sortedPlayers）として分類されること
+        expect(classified.sortedPlayers.length, 1);
+        expect(classified.sortedPlayers.first.key, '打太刀・仕太刀');
         expect(
-          classified.sortedGroups.first.value.first.id,
+          classified.sortedPlayers.first.value.first.id,
           'kata_gov_group_match',
         );
-
-        // ② 個人選手枠（sortedPlayers）へ誤分類されないこと
-        expect(classified.sortedPlayers.isEmpty, isTrue);
       },
     );
 
     test(
-      'TimelinePlayerMatchClassifier においてgroupNameを持たない純粋個人戦の形競技は個人選手枠に分類されること',
+      'TimelinePlayerMatchClassifier において複数試合やおかわり試合を持つ形競技も同一ペアの個人選手枠に集約されること',
       () {
-        final indivKataMatch = [
+        final multiKataMatches = [
           const MatchModel(
-            id: 'kata_gov_indiv_match',
+            id: 'kata_gov_match_1',
             tournamentId: 't_gov',
+            groupName: 'group_kata_1',
             matchType: '木刀による剣道基本技稽古法',
             redName: '自チーム:皿田 脩人・塚本 大道',
             whiteName: '友道館:選手・選手',
+            order: 1.0,
+            rule: MatchRule(isKataMatch: true, hasHantei: true),
+          ),
+          const MatchModel(
+            id: 'kata_gov_match_2',
+            tournamentId: 't_gov',
+            groupName: 'group_kata_2',
+            matchType: '木刀による剣道基本技稽古法',
+            redName: '自チーム:皿田 脩人・塚本 大道',
+            whiteName: '昇龍館:相手・相手',
+            order: 2.0,
             rule: MatchRule(isKataMatch: true, hasHantei: true),
           ),
         ];
 
         final classified = TimelinePlayerMatchClassifier.classifyTeamMatches(
-          teamMatchesList: indivKataMatch,
+          teamMatchesList: multiKataMatches,
           teamName: '自チーム',
           sanitizedQuery: '',
           matchedMatchIds: {},
@@ -126,14 +138,11 @@ void main() {
           ownTeams: const ['自チーム'],
         );
 
-        // ① グループではなく選手別（sortedPlayers）に分類されること
+        // 複数試合があっても同一ペア名「皿田 脩人・塚本 大道」のアコーディオンに2試合が集約されること
         expect(classified.sortedGroups.isEmpty, isTrue);
         expect(classified.sortedPlayers.length, 1);
         expect(classified.sortedPlayers.first.key, '皿田 脩人・塚本 大道');
-        expect(
-          classified.sortedPlayers.first.value.first.id,
-          'kata_gov_indiv_match',
-        );
+        expect(classified.sortedPlayers.first.value.length, 2);
       },
     );
   });

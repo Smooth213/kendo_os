@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_match_group_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_individual_player_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_player_match_classifier.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
@@ -69,7 +69,7 @@ void main() {
         ),
       ];
 
-      // 1. 分類ロジックで sortedGroups に入ることを確認
+      // 1. 分類ロジックで sortedPlayers に入ることを確認
       final classified = TimelinePlayerMatchClassifier.classifyTeamMatches(
         teamMatchesList: sampleKataMatch,
         teamName: '道上剣友会',
@@ -78,8 +78,10 @@ void main() {
         matchedGroupNames: {},
         ownTeams: const ['道上剣友会'],
       );
-      expect(classified.sortedGroups.length, 1);
-      expect(classified.sortedGroups.first.key, groupId);
+      expect(classified.sortedGroups.isEmpty, isTrue);
+      expect(classified.sortedPlayers.length, 1);
+      const pairName = '皿田 脩人(打太刀)・塚本 大道(仕太刀)';
+      expect(classified.sortedPlayers.first.key, pairName);
 
       await tester.binding.setSurfaceSize(const Size(800, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -108,18 +110,20 @@ void main() {
             home: Scaffold(
               body: ListView(
                 children: [
-                  TimelineMatchGroupCard(
-                    groupId: groupId,
-                    groupList: sampleKataMatch,
-                    groupComments: const [],
+                  TimelineIndividualPlayerCard(
+                    playerName: pairName,
+                    playerMatches: sampleKataMatch,
+                    playerComments: [],
                     categoryName: '形の部',
                     teamName: '道上剣友会',
-                    label: '形・基本判定',
                     isReadOnlyUI: false,
-                    canManageTournamentUI: true,
                     isDark: false,
-                    tournamentId: tournamentId,
-                    ownTeams: const ['道上剣友会'],
+                    permissions: PermissionState(
+                      role: UserRole.admin,
+                      isReadOnly: false,
+                      canManageTournament: true,
+                      canDeleteData: true,
+                    ),
                   ),
                 ],
               ),
@@ -130,11 +134,14 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // 形対戦カードが表示されていること
-      expect(find.text('道上剣友会 vs 友道館'), findsOneWidget);
+      // 形ペア名が表示されていること
+      expect(find.textContaining(pairName, findRichText: true), findsWidgets);
 
       // 左にドラッグして Slidable 削除を表示
-      await tester.drag(find.text('道上剣友会 vs 友道館'), const Offset(-300, 0));
+      await tester.drag(
+        find.byKey(const ValueKey('player_slidable_$pairName')),
+        const Offset(-300, 0),
+      );
       await tester.pumpAndSettle();
 
       // 「削除」アクションをタップ
@@ -144,7 +151,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 確認ダイアログが表示されること
-      expect(find.text('グループ全削除の確認'), findsOneWidget);
+      expect(find.text('試合削除の確認'), findsOneWidget);
       expect(find.textContaining('1件'), findsOneWidget);
 
       // 「全削除する」ボタンをタップ

@@ -155,8 +155,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 1. 初期バッジの存在検証（定番プリセットが表示されていること）
+      // 1. 初期状態（アコーディオンは閉じた状態）
       expect(find.text('よく使う組み合わせ（ワンタップ入力）'), findsOneWidget);
+      expect(find.text('小学生高学年 / 団体 5人制'), findsNothing);
+
+      // アコーディオンをタップして展開
+      await tester.tap(find.text('よく使う組み合わせ（ワンタップ入力）'));
+      await tester.pumpAndSettle();
+
+      // 定番プリセットが表示されていること
       expect(find.text('小学生高学年 / 団体 5人制'), findsOneWidget);
 
       // 2. クイックバッジの1タップ一括反映検証

@@ -26,6 +26,11 @@ class ViewerTeamCard extends StatelessWidget {
   });
 
   String _getMatchLabel(MatchModel m) {
+    if (m.rule?.isKataMatch == true ||
+        m.matchType.contains('形') ||
+        m.matchType.contains('稽古法')) {
+      return '形・基本判定';
+    }
     final bool isLeague = m.note.contains('[リーグ戦]');
     final bool isKachinuki = m.isKachinuki;
     final bool isIndividual =
@@ -62,11 +67,16 @@ class ViewerTeamCard extends StatelessWidget {
     for (var entry in catGroupedMatches.entries) {
       final firstMatch = entry.value.first;
       final bool isLeagueMatch = firstMatch.note.contains('[リーグ戦]');
+      final bool isKata =
+          firstMatch.rule?.isKataMatch == true ||
+          firstMatch.matchType.contains('形') ||
+          firstMatch.matchType.contains('稽古法');
       final bool isPureIndividual =
           !firstMatch.isKachinuki &&
           (firstMatch.matchType == 'individual' ||
               firstMatch.matchType == '選手' ||
-              firstMatch.matchType.contains('個人戦'));
+              firstMatch.matchType.contains('個人戦') ||
+              isKata);
 
       if (!isPureIndividual &&
           (entry.value.length > 1 || firstMatch.isKachinuki)) {
@@ -297,32 +307,51 @@ class ViewerTeamCard extends StatelessWidget {
             });
           })(),
           if (sortedPlayers.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.lg,
-                top: AppSpacing.xs,
-                bottom: AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    sanitizedQuery.isNotEmpty
-                        ? Icons.manage_search
-                        : Icons.person,
-                    color: AppKendoColors.orangeAccent,
-                    size: 16,
+            Builder(
+              builder: (context) {
+                final firstP = sortedPlayers.first.value.firstOrNull;
+                final bool isKataItem =
+                    firstP != null &&
+                    (firstP.rule?.isKataMatch == true ||
+                        firstP.matchType.contains('形') ||
+                        firstP.matchType.contains('稽古法'));
+                final indivLabel = sanitizedQuery.isNotEmpty
+                    ? '抽出された個別試合'
+                    : (isKataItem ? '形・基本判定' : '個人戦');
+                final iconColor = isKataItem
+                    ? const Color(0xFF3F51B5)
+                    : AppKendoColors.orangeAccent;
+
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.lg,
+                    top: AppSpacing.xs,
+                    bottom: AppSpacing.sm,
                   ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    sanitizedQuery.isNotEmpty ? '抽出された個別試合' : '個人戦',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.bodySmall,
-                      fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.orangeAccent,
-                    ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        sanitizedQuery.isNotEmpty
+                            ? Icons.manage_search
+                            : (isKataItem
+                                  ? Icons.sports_martial_arts
+                                  : Icons.person),
+                        color: iconColor,
+                        size: 16,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        indivLabel,
+                        style: TextStyle(
+                          fontSize: AppFontSize.bodySmall,
+                          fontWeight: AppFontWeight.bold,
+                          color: iconColor,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             ...sortedPlayers.map((playerEntry) {
               final playerName = playerEntry.key;

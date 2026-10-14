@@ -92,14 +92,14 @@ void main() {
             ownTeams: ['道上剣友会'],
           );
 
-      // 対戦枠（groupName保有）の形競技は sortedGroups に分類され、一括スワイプ削除が可能となる
-      expect(timelineClassified.sortedGroups.length, 1);
-      expect(timelineClassified.sortedGroups.first.key, '道上剣友会 vs 友道館');
+      // 4. タイムライン表示ロジックでの分類検証（竹刀剣道の個人戦と同様に選手・ペア別の sortedPlayers に分類）
+      expect(timelineClassified.sortedGroups.isEmpty, isTrue);
+      expect(timelineClassified.sortedPlayers.length, 1);
+      expect(timelineClassified.sortedPlayers.first.key, '皿田 脩人・塚本 大道');
       expect(
-        timelineClassified.sortedGroups.first.value.first.id,
+        timelineClassified.sortedPlayers.first.value.first.id,
         'kata_flow_match_1',
       );
-      expect(timelineClassified.sortedPlayers.isEmpty, isTrue);
 
       // 5. 大会公式記録集約ロジックでの検証
       final groupMap = {

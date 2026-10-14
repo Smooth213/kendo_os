@@ -178,7 +178,7 @@ void main() {
 
       final currentTournamentMatches = [kataGroupMatch1, kataGroupMatch2];
 
-      // 1. タイムライン分類エンジンでの検証
+      // 1. タイムライン分類エンジンでの検証（竹刀個人戦と同様に選手・ペア別の sortedPlayers に分類）
       final timelineClassified =
           TimelinePlayerMatchClassifier.classifyTeamMatches(
             teamMatchesList: currentTournamentMatches,
@@ -189,19 +189,18 @@ void main() {
             ownTeams: const ['田中 次郎・山田 正'],
           );
 
-      // 対戦枠として sortedGroups に2件分類され、一括スワイプ削除可能な状態であること
-      expect(timelineClassified.sortedGroups.length, equals(2));
+      expect(timelineClassified.sortedGroups.isEmpty, isTrue);
+      expect(timelineClassified.sortedPlayers.length, equals(2));
       expect(
-        timelineClassified.sortedGroups.any((g) => g.key == '田中・山田 vs 佐藤・高橋'),
+        timelineClassified.sortedPlayers.any((p) => p.key == '田中 次郎・山田 正'),
         isTrue,
       );
-      expect(timelineClassified.sortedPlayers.isEmpty, isTrue);
 
-      // 2. タイムライン上のスワイプ操作による対戦枠全試合の一括削除（match1の対戦枠を削除）
-      final targetGroup = timelineClassified.sortedGroups.firstWhere(
-        (g) => g.key == '田中・山田 vs 佐藤・高橋',
+      // 2. タイムライン上のスワイプ操作によるペア全試合の一括削除（match1のペアを削除）
+      final targetPlayer = timelineClassified.sortedPlayers.firstWhere(
+        (p) => p.key == '田中 次郎・山田 正',
       );
-      final targetDeleteIds = targetGroup.value.map((m) => m.id).toSet();
+      final targetDeleteIds = targetPlayer.value.map((m) => m.id).toSet();
 
       final remainingMatches = currentTournamentMatches
           .where((m) => !targetDeleteIds.contains(m.id))

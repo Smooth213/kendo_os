@@ -276,6 +276,14 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
     }
 
     if (allFinished) {
+      final bool isKata = playerMatches.every(
+        (m) =>
+            m.rule?.isKataMatch == true ||
+            m.matchType.contains('形') ||
+            m.matchType.contains('稽古法'),
+      );
+      final pointsSuffix = isKata ? '' : ' (${stats.totalPoints}本)';
+
       return Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
@@ -289,7 +297,7 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                '🏁 全試合終了: 通算 ${stats.wins}勝 ${stats.losses}敗 ${stats.draws}分 (${stats.totalPoints}本)',
+                '🏁 全試合終了: 通算 ${stats.wins}勝 ${stats.losses}敗 ${stats.draws}分$pointsSuffix',
                 style: TextStyle(
                   fontSize: AppFontSize.caption,
                   fontWeight: AppFontWeight.bold,
