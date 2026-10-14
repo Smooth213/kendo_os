@@ -6,16 +6,32 @@ class CategoryRuleLookupHelper {
   static String cleanCategoryBaseName(String ruleKey) {
     final base = ruleKey
         .trim()
-        .replaceAll(RegExp(r'[\(（](個人戦|団体戦|勝ち抜き戦|勝抜|錬成会|申合せ|\d+)[\)）]$'), '')
+        .replaceAll(
+          RegExp(
+            r'[\(（](個人戦|団体戦|勝ち抜き戦|勝抜|リーグ個人戦|リーグ団体戦|リーグ戦|剣道形|日本剣道形|錬成会|申合せ|\d+)[\)）]$',
+          ),
+          '',
+        )
         .trim();
     return base.isEmpty ? ruleKey.trim() : base;
   }
 
-  /// 試合形式文字列（またはカテゴリ名・メモ等）から正規化された種別（勝ち抜き戦 / 個人戦 / 団体戦 / 錬成会）を判定
+  /// 試合形式文字列（またはカテゴリ名・メモ等）から正規化された種別（個人戦 / 団体戦 / リーグ個人戦 / リーグ団体戦 / 勝ち抜き戦 / 剣道形 / 錬成会）を判定
   static String normalizeMatchType(String type, {String text = ''}) {
     final combined = '$type $text';
+    if (combined.contains('形') ||
+        combined.contains('稽古法') ||
+        combined.contains('木刀')) {
+      return '剣道形';
+    }
     if (combined.contains('勝ち抜き') || combined.contains('勝抜')) {
       return '勝ち抜き戦';
+    }
+    if (combined.contains('リーグ')) {
+      if (combined.contains('個人') || type == '選手') {
+        return 'リーグ個人戦';
+      }
+      return 'リーグ団体戦';
     }
     if (combined.contains('個人') || type == '選手') {
       return '個人戦';
@@ -26,23 +42,54 @@ class CategoryRuleLookupHelper {
     return '団体戦';
   }
 
-  /// ルールセットエントリから種別（勝ち抜き戦 / 個人戦 / 団体戦 / 錬成会）を判定
+  /// ルールセットエントリから種別（個人戦 / 団体戦 / リーグ個人戦 / リーグ団体戦 / 勝ち抜き戦 / 剣道形 / 錬成会）を判定
   static String getRuleEntryMatchType(MapEntry<String, CategoryRuleSet> entry) {
-    if (entry.value.normalRule.isKachinuki ||
-        entry.value.matchType.contains('勝ち抜き') ||
-        entry.value.matchType.contains('勝抜') ||
-        entry.key.contains('勝ち抜き') ||
-        entry.key.contains('勝抜')) {
+    final set = entry.value;
+
+    // 1. normalRuleのフラグによる優先判定
+    if (set.normalRule.isKataMatch) return '剣道形';
+    if (set.normalRule.isKachinuki) return '勝ち抜き戦';
+    if (set.normalRule.isLeague) {
+      if (set.matchType.contains('個人') || entry.key.contains('個人')) {
+        return 'リーグ個人戦';
+      }
+      return 'リーグ団体戦';
+    }
+    if (set.normalRule.isRenseikai) return '錬成会';
+
+    // 2. set.matchType（明示された試合形式設定）による判定
+    if (set.matchType.isNotEmpty) {
+      final mt = set.matchType;
+      if (mt.contains('形') || mt.contains('稽古法') || mt.contains('木刀')) {
+        return '剣道形';
+      }
+      if (mt.contains('勝ち抜き') || mt.contains('勝抜')) {
+        return '勝ち抜き戦';
+      }
+      if (mt.contains('リーグ')) {
+        if (mt.contains('個人')) return 'リーグ個人戦';
+        return 'リーグ団体戦';
+      }
+      if (mt.contains('個人')) return '個人戦';
+      if (mt.contains('錬成') || mt.contains('申合')) return '錬成会';
+      if (mt.contains('団体')) return '団体戦';
+    }
+
+    // 3. キー名（部門名）に含まれる明示的キーワード判定（subtitleは参照しない）
+    final key = entry.key;
+    if (key.contains('形') || key.contains('稽古法') || key.contains('木刀')) {
+      return '剣道形';
+    }
+    if (key.contains('勝ち抜き') || key.contains('勝抜')) {
       return '勝ち抜き戦';
     }
-    if (entry.value.matchType.contains('個人') || entry.key.contains('個人')) {
+    if (key.contains('個人')) {
       return '個人戦';
     }
-    if (entry.value.normalRule.isRenseikai ||
-        entry.value.matchType.contains('錬成') ||
-        entry.key.contains('錬成')) {
+    if (key.contains('錬成') || key.contains('申合')) {
       return '錬成会';
     }
+
     return '団体戦';
   }
 
@@ -106,10 +153,24 @@ class CategoryRuleLookupHelper {
       return null;
     }
 
-    // note が指定されている場合、subtitle やキーワードと照合して優先選択
+    // 1. 試合形式（matchType）に基づく絞り込みを最優先プールとして作成
+    final targetType = normalizeMatchType(
+      matchType,
+      text: '$category ${note.trim()}',
+    );
+    final typeMatchedCandidates = candidates.where((entry) {
+      return getRuleEntryMatchType(entry) == targetType;
+    }).toList();
+
+    // 種別一致候補があればそれを優先探索プールとする（種別を跨いだ誤爆を防止）
+    final searchPool = typeMatchedCandidates.isNotEmpty
+        ? typeMatchedCandidates
+        : candidates;
+
+    // 2. note が指定されている場合、確定した探索プール内でのみ subtitle やキーワード照合を行う
     final cleanNote = note.trim();
     if (cleanNote.isNotEmpty) {
-      for (final entry in candidates) {
+      for (final entry in searchPool) {
         final sub = entry.value.subtitle.trim();
         if (sub.isNotEmpty &&
             (cleanNote.contains(sub) || sub.contains(cleanNote))) {
@@ -117,7 +178,7 @@ class CategoryRuleLookupHelper {
         }
       }
 
-      // 2. 「予選」「決勝」「準決勝」「トーナメント」「リーグ」などのキーワード照合
+      // 「予選」「決勝」「準決勝」「トーナメント」「リーグ」などのキーワード照合
       final cleanNormalizedNote = cleanNote.replaceAll(RegExp(r'申し合わせ'), '申合せ');
       final keywords = const [
         '予選',
@@ -133,7 +194,7 @@ class CategoryRuleLookupHelper {
       ];
       for (final kw in keywords) {
         if (cleanNormalizedNote.contains(kw)) {
-          for (final entry in candidates) {
+          for (final entry in searchPool) {
             if (entry.value.subtitle.contains(kw) || entry.key.contains(kw)) {
               return entry;
             }
@@ -142,21 +203,7 @@ class CategoryRuleLookupHelper {
       }
     }
 
-    final targetType = normalizeMatchType(
-      matchType,
-      text: '$category $cleanNote',
-    );
-
-    // 種別が完全に一致するものを最優先
-    final typeMatchedCandidates = candidates.where((entry) {
-      return getRuleEntryMatchType(entry) == targetType;
-    }).toList();
-
-    final searchPool = typeMatchedCandidates.isNotEmpty
-        ? typeMatchedCandidates
-        : candidates;
-
-    // キー完全一致があれば選択
+    // 3. キー完全一致があれば選択、なければ探索プールの先頭を採用
     return searchPool.firstWhere(
       (entry) => entry.key == category.trim(),
       orElse: () => searchPool.first,

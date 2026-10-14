@@ -51,6 +51,16 @@ void main() {
       await tester.pumpAndSettle();
       expect(matchType, '個人戦');
 
+      // 「リーグ戦」をタップすると団体戦が初期選択されること
+      await tester.tap(find.text('リーグ戦'));
+      await tester.pumpAndSettle();
+      expect(matchType, 'リーグ団体戦');
+
+      // リーグ戦のサブオプションから「個人戦」を選択
+      await tester.tap(find.text('個人戦').last);
+      await tester.pumpAndSettle();
+      expect(matchType, 'リーグ個人戦');
+
       // 「勝ち抜き戦」をタップ
       await tester.tap(find.text('勝ち抜き戦'));
       await tester.pumpAndSettle();

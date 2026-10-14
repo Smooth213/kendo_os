@@ -63,18 +63,8 @@ REQUIRED_PATTERNS = [
     ),
     (
         "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
-        "勝ち抜き戦（3人制）",
-        "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦（3人制） が配置されていること",
-    ),
-    (
-        "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
-        "勝ち抜き戦（7人制）",
-        "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦（7人制） が配置されていること",
-    ),
-    (
-        "lib/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart",
-        "勝ち抜き戦（それ以上）",
-        "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦（それ以上） が配置されていること",
+        "DropdownMenuItem(value: '勝ち抜き戦', child: Text('勝ち抜き戦'))",
+        "CategoryRuleEditorHeaderCard のドロップダウンに 勝ち抜き戦 が配置されていること",
     ),
     (
         "lib/features/tournament/presentation/components/kachinuki/kachinuki_bracket_painter.dart",

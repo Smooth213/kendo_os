@@ -50,11 +50,11 @@ void main() {
             case '団体戦':
               resolvedType = '団体戦（5人制）';
               break;
-            case '勝ち抜き戦':
-              resolvedType = '勝ち抜き戦（5人制）';
-              break;
             case 'リーグ戦':
               resolvedType = 'リーグ団体戦';
+              break;
+            case '勝ち抜き戦':
+              resolvedType = '勝ち抜き戦（5人制）';
               break;
             case '剣道形':
               resolvedType = '剣道形';

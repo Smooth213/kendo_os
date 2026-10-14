@@ -28,10 +28,18 @@ class MatchFormatSelectorView extends StatelessWidget {
 
   /// 試合形式文字列から現在の第1階層を判別
   static String resolvePrimaryFormat(String matchType) {
-    if (matchType.contains('勝ち抜き')) return '勝ち抜き戦';
-    if (matchType.contains('リーグ')) return 'リーグ戦';
-    if (matchType == '個人戦') return '個人戦';
-    if (matchType.contains('形') || matchType.contains('稽古法')) return '剣道形';
+    if (matchType.contains('形') ||
+        matchType.contains('稽古法') ||
+        matchType.contains('木刀')) {
+      return '剣道形';
+    }
+    if (matchType.contains('勝ち抜き') || matchType.contains('勝抜')) {
+      return '勝ち抜き戦';
+    }
+    if (matchType.contains('リーグ')) {
+      return 'リーグ戦';
+    }
+    if (matchType.contains('個人')) return '個人戦';
     return '団体戦';
   }
 
@@ -53,11 +61,11 @@ class MatchFormatSelectorView extends StatelessWidget {
       case '団体戦':
         onMatchTypeChanged('団体戦（5人制）');
         break;
-      case '勝ち抜き戦':
-        onMatchTypeChanged('勝ち抜き戦（5人制）');
-        break;
       case 'リーグ戦':
         onMatchTypeChanged('リーグ団体戦');
+        break;
+      case '勝ち抜き戦':
+        onMatchTypeChanged('勝ち抜き戦（5人制）');
         break;
       case '剣道形':
         onMatchTypeChanged('日本剣道形（太刀の形3本）');
@@ -76,19 +84,19 @@ class MatchFormatSelectorView extends StatelessWidget {
           (label: '7人制', value: '団体戦（7人制）'),
           (label: 'それ以上', value: '団体戦（それ以上）'),
         ];
-      case '勝ち抜き戦':
-        return [
-          (label: '3人制', value: '勝ち抜き戦（3人制）'),
-          (label: '5人制', value: '勝ち抜き戦（5人制）'),
-          (label: '7人制', value: '勝ち抜き戦（7人制）'),
-          (label: 'それ以上', value: '勝ち抜き戦（それ以上）'),
-        ];
       case 'リーグ戦':
         return [
           (label: '団体戦 (5人制)', value: 'リーグ団体戦'),
           (label: '個人戦', value: 'リーグ個人戦'),
           (label: '団体 (3人制)', value: 'リーグ団体戦（3人制）'),
           (label: '団体 (7人制)', value: 'リーグ団体戦（7人制）'),
+        ];
+      case '勝ち抜き戦':
+        return [
+          (label: '3人制', value: '勝ち抜き戦（3人制）'),
+          (label: '5人制', value: '勝ち抜き戦（5人制）'),
+          (label: '7人制', value: '勝ち抜き戦（7人制）'),
+          (label: 'それ以上', value: '勝ち抜き戦（それ以上）'),
         ];
       default:
         return [];
@@ -291,7 +299,12 @@ class MatchFormatSelectorView extends StatelessWidget {
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: subOptions.map((opt) {
-                    final isSel = currentMatchType == opt.value;
+                    final isSel =
+                        currentMatchType == opt.value ||
+                        (opt.value == 'リーグ団体戦' &&
+                            (currentMatchType == 'リーグ団体戦' ||
+                                currentMatchType == 'リーグ戦' ||
+                                currentMatchType == 'リーグ団体戦（5人制）'));
                     return AppChoiceChip(
                       label: Text(opt.label),
                       selected: isSel,

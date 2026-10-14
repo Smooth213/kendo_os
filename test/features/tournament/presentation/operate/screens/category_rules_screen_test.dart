@@ -280,10 +280,10 @@ void main() {
       expect(find.text('ルールの編集'), findsOneWidget);
       expect(find.text('試合時間'), findsOneWidget); // 通常試合なので試合時間設定が表示されている
 
-      // 試合方式のドロップダウンから「日本剣道形」を選択
+      // 試合方式のドロップダウンから「剣道形」を選択
       await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('日本剣道形（判定戦）').last);
+      await tester.tap(find.text('剣道形').last);
       await tester.pumpAndSettle();
 
       // 剣道形用のルールが適用され、試合時間設定が消え、形用案内が表示されること

@@ -112,11 +112,11 @@ void main() {
       await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
 
-      // 「日本剣道形（判定戦）」を選択
-      await tester.tap(find.text('日本剣道形（判定戦）').last);
+      // 「剣道形」を選択
+      await tester.tap(find.text('剣道形').last);
       await tester.pumpAndSettle();
 
-      expect(selectedType, '日本剣道形');
+      expect(selectedType, '剣道形');
     });
   });
 }

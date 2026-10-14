@@ -131,7 +131,7 @@ void main() {
       // Change Match Format to Team Match
       await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('団体戦 (トーナメント)').last);
+      await tester.tap(find.text('団体戦').last);
       await tester.pumpAndSettle();
 
       // Representative Match setting should now be visible!

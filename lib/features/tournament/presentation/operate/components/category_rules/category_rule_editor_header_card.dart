@@ -13,10 +13,8 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
     '団体戦',
     'リーグ個人戦',
     'リーグ団体戦',
-    '勝ち抜き戦（5人制）',
-    '勝ち抜き戦（3人制）',
-    '勝ち抜き戦（7人制）',
-    '勝ち抜き戦（それ以上）',
+    '勝ち抜き戦',
+    '剣道形',
   ];
 
   final String category;
@@ -196,38 +194,16 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         Builder(
           builder: (context) {
-            const availableTypes = [
-              '個人戦',
-              '団体戦',
-              'リーグ個人戦',
-              'リーグ団体戦',
-              '勝ち抜き戦（5人制）',
-              '勝ち抜き戦（3人制）',
-              '勝ち抜き戦（7人制）',
-              '勝ち抜き戦（それ以上）',
-              '日本剣道形',
-              '木刀による剣道基本技稽古法',
-            ];
-            final effectiveMatchType = matchType == '勝ち抜き戦'
-                ? '勝ち抜き戦（5人制）'
-                : (availableTypes.contains(matchType)
-                      ? matchType
-                      : (matchType.contains('それ以上') &&
-                                matchType.contains('勝ち抜き')
-                            ? '勝ち抜き戦（それ以上）'
-                            : (matchType.contains('7人制') &&
-                                      matchType.contains('勝ち抜き')
-                                  ? '勝ち抜き戦（7人制）'
-                                  : (matchType.contains('3人制') &&
-                                            matchType.contains('勝ち抜き')
-                                        ? '勝ち抜き戦（3人制）'
-                                        : (matchType.contains('勝ち抜き')
-                                              ? '勝ち抜き戦（5人制）'
-                                              : (matchType.contains('形')
-                                                    ? '日本剣道形'
-                                                    : (matchType.contains('稽古法')
-                                                          ? '木刀による剣道基本技稽古法'
-                                                          : '団体戦')))))));
+            final effectiveMatchType =
+                matchType.contains('形') ||
+                    matchType.contains('稽古法') ||
+                    matchType.contains('木刀')
+                ? '剣道形'
+                : (matchType.contains('勝ち抜き') || matchType.contains('勝抜')
+                      ? '勝ち抜き戦'
+                      : (matchType.contains('リーグ')
+                            ? (matchType.contains('個人') ? 'リーグ個人戦' : 'リーグ団体戦')
+                            : (matchType.contains('個人') ? '個人戦' : '団体戦')));
 
             return DropdownButtonFormField<String>(
               initialValue: effectiveMatchType,
@@ -244,30 +220,11 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
               ),
               items: const [
                 DropdownMenuItem(value: '個人戦', child: Text('個人戦')),
-                DropdownMenuItem(value: '団体戦', child: Text('団体戦 (トーナメント)')),
+                DropdownMenuItem(value: '団体戦', child: Text('団体戦')),
                 DropdownMenuItem(value: 'リーグ個人戦', child: Text('リーグ個人戦')),
                 DropdownMenuItem(value: 'リーグ団体戦', child: Text('リーグ団体戦')),
-                DropdownMenuItem(
-                  value: '勝ち抜き戦（5人制）',
-                  child: Text('勝ち抜き戦（5人制）'),
-                ),
-                DropdownMenuItem(
-                  value: '勝ち抜き戦（3人制）',
-                  child: Text('勝ち抜き戦（3人制）'),
-                ),
-                DropdownMenuItem(
-                  value: '勝ち抜き戦（7人制）',
-                  child: Text('勝ち抜き戦（7人制）'),
-                ),
-                DropdownMenuItem(
-                  value: '勝ち抜き戦（それ以上）',
-                  child: Text('勝ち抜き戦（それ以上）'),
-                ),
-                DropdownMenuItem(value: '日本剣道形', child: Text('日本剣道形（判定戦）')),
-                DropdownMenuItem(
-                  value: '木刀による剣道基本技稽古法',
-                  child: Text('木刀による剣道基本技稽古法（判定戦）'),
-                ),
+                DropdownMenuItem(value: '勝ち抜き戦', child: Text('勝ち抜き戦')),
+                DropdownMenuItem(value: '剣道形', child: Text('剣道形')),
               ],
               onChanged: (val) {
                 if (val != null) onMatchTypeChanged(val);

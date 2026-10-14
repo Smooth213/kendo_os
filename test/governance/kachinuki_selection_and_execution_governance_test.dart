@@ -272,15 +272,14 @@ void main() {
           await tester.tap(find.byType(DropdownButtonFormField<String>));
           await tester.pumpAndSettle();
 
-          // 勝ち抜き戦（5人制）と勝ち抜き戦（3人制）が存在すること
-          expect(find.text('勝ち抜き戦（5人制）').last, findsOneWidget);
-          expect(find.text('勝ち抜き戦（3人制）').last, findsOneWidget);
+          // 統一された6分類の「勝ち抜き戦」が存在すること
+          expect(find.text('勝ち抜き戦').last, findsOneWidget);
 
-          // 勝ち抜き戦（3人制）を選択
-          await tester.tap(find.text('勝ち抜き戦（3人制）').last);
+          // 勝ち抜き戦を選択
+          await tester.tap(find.text('勝ち抜き戦').last);
           await tester.pumpAndSettle();
 
-          expect(currentMatchType, equals('勝ち抜き戦（3人制）'));
+          expect(currentMatchType, equals('勝ち抜き戦'));
         },
       );
     });
