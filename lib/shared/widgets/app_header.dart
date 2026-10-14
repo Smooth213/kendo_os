@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
@@ -14,6 +15,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double elevation;
+  final VoidCallback? onBackPressed;
+  final String? fallbackRoute;
 
   const AppHeader({
     super.key,
@@ -26,6 +29,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.elevation = 0.0,
+    this.onBackPressed,
+    this.fallbackRoute,
   }) : assert(
          title == null || titleWidget == null,
          'Cannot provide both title and titleWidget',
@@ -42,17 +47,37 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     final effectiveFgColor = foregroundColor ?? themeColors.textColor;
 
     final ModalRoute<dynamic>? parentRoute = ModalRoute.of(context);
-    final bool canPop = parentRoute?.canPop ?? false;
+    final bool canPop =
+        (parentRoute?.canPop ?? false) ||
+        (GoRouter.maybeOf(context)?.canPop() ?? false);
+    final bool shouldShowBack =
+        canPop || onBackPressed != null || fallbackRoute != null;
 
     final Widget? effectiveLeading =
         leading ??
-        (canPop
+        (shouldShowBack
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new, size: 20),
                 color: effectiveFgColor,
+                tooltip: '戻る',
                 onPressed: () {
                   AppHaptics.light();
-                  Navigator.maybePop(context);
+                  if (onBackPressed != null) {
+                    onBackPressed!();
+                  } else {
+                    final goRouter = GoRouter.maybeOf(context);
+                    if (goRouter != null && goRouter.canPop()) {
+                      goRouter.pop();
+                    } else if (parentRoute?.canPop ?? false) {
+                      Navigator.maybePop(context);
+                    } else if (fallbackRoute != null) {
+                      if (goRouter != null) {
+                        goRouter.go(fallbackRoute!);
+                      } else {
+                        Navigator.maybePop(context);
+                      }
+                    }
+                  }
                 },
               )
             : null);

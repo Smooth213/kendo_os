@@ -7,11 +7,14 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_reorder_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 /// タイムライン内の個人戦・個別試合アコーディオンカード
 class TimelineIndividualPlayerCard extends ConsumerWidget {
@@ -66,113 +69,182 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
         ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
         : (isDark ? context.appColors.cardBackground : const Color(0xFFFAFAFC));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ?headerWidget,
-        Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
+    final canDelete =
+        (permissions.canDeleteData || permissions.canManageTournament) &&
+        !isReadOnlyUI;
+
+    final cardBody = Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: AppRadius.medium,
+        border: Border.all(
+          color: pInProgress
+              ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
+              : (isDark
+                    ? const Color(0xFF2C2C2E)
+                    : context.appColors.separatorColor),
+          width: pInProgress ? 1.5 : 1.0,
+        ),
+        boxShadow: pInProgress
+            ? [
+                BoxShadow(
+                  color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : [],
+      ),
+      child: ClipRRect(
+        borderRadius: AppRadius.smooth,
+        child: ExpansionTileTheme(
+          data: ExpansionTileThemeData(
+            backgroundColor: cardBg,
+            collapsedBackgroundColor: collapsedCardBg,
+            iconColor: context.appColors.primaryAccent,
+            collapsedIconColor: context.appColors.subTextColor,
+            textColor: context.appColors.textColor,
+            collapsedTextColor: isDark
+                ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
+                : AppKendoColors.pureBlack.withValues(alpha: 0.54),
           ),
-          decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: AppRadius.medium,
-            border: Border.all(
-              color: pInProgress
-                  ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
-                  : (isDark
-                        ? const Color(0xFF2C2C2E)
-                        : context.appColors.separatorColor),
-              width: pInProgress ? 1.5 : 1.0,
+          child: ExpansionTile(
+            key: ValueKey('player_$playerName'),
+            shape: const Border(),
+            collapsedShape: const Border(),
+            childrenPadding: EdgeInsets.zero,
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xs,
             ),
-            boxShadow: pInProgress
-                ? [
-                    BoxShadow(
-                      color: AppKendoColors.hansokuRed.withValues(alpha: 0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+            title: TimelineIndividualPlayerHeader(
+              playerName: playerName,
+              playerMatches: playerMatches,
+              isDark: isDark,
+              isReadOnlyUI: isReadOnlyUI,
+              titleColor: pTitleColor,
+            ),
+            children: [
+              ReorderableListView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                buildDefaultDragHandles: !isReadOnlyUI,
+                onReorderItem: (oldIndex, newIndex) =>
+                    TimelineReorderHelper.onReorderInnerTimeline(
+                      playerMixedItems,
+                      oldIndex,
+                      newIndex,
+                      ref,
                     ),
-                  ]
-                : [],
-          ),
-          child: ClipRRect(
-            borderRadius: AppRadius.smooth,
-            child: ExpansionTileTheme(
-              data: ExpansionTileThemeData(
-                backgroundColor: cardBg,
-                collapsedBackgroundColor: collapsedCardBg,
-                iconColor: context.appColors.primaryAccent,
-                collapsedIconColor: context.appColors.subTextColor,
-                textColor: context.appColors.textColor,
-                collapsedTextColor: isDark
-                    ? AppKendoColors.pureWhite.withValues(alpha: 0.7)
-                    : AppKendoColors.pureBlack.withValues(alpha: 0.54),
+                children: playerMixedItems
+                    .asMap()
+                    .entries
+                    .map<Widget?>((entry) {
+                      final i = entry.value;
+                      if (i is MatchModel) {
+                        return Container(
+                          key: ValueKey(i.id),
+                          child: MatchListTileCard(
+                            initialMatch: i,
+                            isDeletable: true,
+                          ),
+                        );
+                      } else if (i is MatchCommentModel) {
+                        return Container(
+                          key: ValueKey('inner_comment_${i.id}'),
+                          child: TimelineInnerCommentWidget(
+                            comment: i,
+                            permissions: permissions,
+                            isDark: isDark,
+                            ref: ref,
+                            index: entry.key,
+                          ),
+                        );
+                      }
+                      return null;
+                    })
+                    .whereType<Widget>()
+                    .toList(),
               ),
-              child: ExpansionTile(
-                key: ValueKey('player_$playerName'),
-                shape: const Border(),
-                collapsedShape: const Border(),
-                childrenPadding: EdgeInsets.zero,
-                tilePadding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.xs,
-                ),
-                title: TimelineIndividualPlayerHeader(
-                  playerName: playerName,
-                  playerMatches: playerMatches,
-                  isDark: isDark,
-                  isReadOnlyUI: isReadOnlyUI,
-                  titleColor: pTitleColor,
-                ),
-                children: [
-                  ReorderableListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    buildDefaultDragHandles: !isReadOnlyUI,
-                    onReorderItem: (oldIndex, newIndex) =>
-                        TimelineReorderHelper.onReorderInnerTimeline(
-                          playerMixedItems,
-                          oldIndex,
-                          newIndex,
-                          ref,
-                        ),
-                    children: playerMixedItems
-                        .asMap()
-                        .entries
-                        .map<Widget?>((entry) {
-                          final i = entry.value;
-                          if (i is MatchModel) {
-                            return Container(
-                              key: ValueKey(i.id),
-                              child: MatchListTileCard(
-                                initialMatch: i,
-                                isDeletable: true,
-                              ),
-                            );
-                          } else if (i is MatchCommentModel) {
-                            return Container(
-                              key: ValueKey('inner_comment_${i.id}'),
-                              child: TimelineInnerCommentWidget(
-                                comment: i,
-                                permissions: permissions,
-                                isDark: isDark,
-                                ref: ref,
-                                index: entry.key,
-                              ),
-                            );
-                          }
-                          return null;
-                        })
-                        .whereType<Widget>()
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
-      ],
+      ),
+    );
+
+    final slidableCard = canDelete
+        ? Slidable(
+            key: ValueKey('player_slidable_$playerName'),
+            enabled: canDelete,
+            endActionPane: ActionPane(
+              motion: const ScrollMotion(),
+              extentRatio: 0.25,
+              children: [
+                SlidableAction(
+                  onPressed: (context) async {
+                    final confirm = await showAppDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AppDialog(
+                        backgroundColor: isDark
+                            ? const Color(0xFF1C1C1E)
+                            : context.appColors.inputBackground,
+                        titleWidget: Text(
+                          '試合削除の確認',
+                          style: TextStyle(
+                            fontWeight: AppFontWeight.bold,
+                            color: context.appColors.textColor,
+                          ),
+                        ),
+                        content: Text(
+                          '「$playerName」の全試合データ（${playerMatches.length}件）を完全に削除します。\nよろしいですか？',
+                          style: TextStyle(color: context.appColors.textColor),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('キャンセル'),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.appColors.errorColor,
+                              foregroundColor: AppKendoColors.pureWhite,
+                            ),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('全削除する'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      final targetIds = playerMatches
+                          .map((m) => m.id)
+                          .where((id) => id.isNotEmpty)
+                          .toList();
+                      if (targetIds.isNotEmpty) {
+                        await ref
+                            .read(matchCommandProvider)
+                            .deleteMatchesBulk(targetIds);
+                      }
+                    }
+                  },
+                  backgroundColor: context.appColors.errorColor,
+                  foregroundColor: AppKendoColors.pureWhite,
+                  icon: Icons.delete,
+                  label: '削除',
+                ),
+              ],
+            ),
+            child: cardBody,
+          )
+        : cardBody;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [?headerWidget, slidableCard],
     );
   }
 }

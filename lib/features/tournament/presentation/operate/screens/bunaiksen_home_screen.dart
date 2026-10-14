@@ -82,6 +82,7 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
         child: Scaffold(
           backgroundColor: AppKendoColors.transparent,
           appBar: AppHeader(
+            fallbackRoute: '/',
             backgroundColor: enableLiquidGlass
                 ? AppKendoColors.transparent
                 : themeColors.cardBackground,

@@ -6,6 +6,7 @@ import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_player_match_classifier.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
 
 void main() {
@@ -167,6 +168,55 @@ void main() {
       // 不戦勝表示マーク検証: 赤「×」、白「○」
       expect(analysis2.displays[Side.red]!.first.mark, equals('×'));
       expect(analysis2.displays[Side.white]!.first.mark, equals('○'));
+
+      // ─────────────────────────────────────────────
+      // Phase 5: タイムライン分類・スワイプ一括削除およびデータ永続層クリーンアップ
+      // ─────────────────────────────────────────────
+      // 対戦枠（groupName）を付与した形試合モデル
+      final kataGroupMatch1 = match1.copyWith(groupName: '田中・山田 vs 佐藤・高橋');
+      final kataGroupMatch2 = match2.copyWith(groupName: '棄権ペアA vs 皿田・塚本');
+
+      final currentTournamentMatches = [kataGroupMatch1, kataGroupMatch2];
+
+      // 1. タイムライン分類エンジンでの検証
+      final timelineClassified =
+          TimelinePlayerMatchClassifier.classifyTeamMatches(
+            teamMatchesList: currentTournamentMatches,
+            teamName: '田中 次郎・山田 正',
+            sanitizedQuery: '',
+            matchedMatchIds: {},
+            matchedGroupNames: {},
+            ownTeams: const ['田中 次郎・山田 正'],
+          );
+
+      // 対戦枠として sortedGroups に2件分類され、一括スワイプ削除可能な状態であること
+      expect(timelineClassified.sortedGroups.length, equals(2));
+      expect(
+        timelineClassified.sortedGroups.any((g) => g.key == '田中・山田 vs 佐藤・高橋'),
+        isTrue,
+      );
+      expect(timelineClassified.sortedPlayers.isEmpty, isTrue);
+
+      // 2. タイムライン上のスワイプ操作による対戦枠全試合の一括削除（match1の対戦枠を削除）
+      final targetGroup = timelineClassified.sortedGroups.firstWhere(
+        (g) => g.key == '田中・山田 vs 佐藤・高橋',
+      );
+      final targetDeleteIds = targetGroup.value.map((m) => m.id).toSet();
+
+      final remainingMatches = currentTournamentMatches
+          .where((m) => !targetDeleteIds.contains(m.id))
+          .toList();
+
+      // 削除対象の試合が完全に除外され、他試合に影響を与えないこと
+      expect(remainingMatches.length, equals(1));
+      expect(remainingMatches.first.id, equals('kata_semi_02'));
+      expect(remainingMatches.any((m) => m.id == 'kata_final_01'), isFalse);
+
+      // 3. 残存試合の単独削除（個人戦カードスワイプ削除相当）の検証
+      final finalCleanedMatches = remainingMatches
+          .where((m) => m.id != 'kata_semi_02')
+          .toList();
+      expect(finalCleanedMatches.isEmpty, isTrue);
     });
   });
 }

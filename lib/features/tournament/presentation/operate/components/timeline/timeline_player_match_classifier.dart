@@ -23,14 +23,7 @@ class TimelinePlayerMatchClassifier {
           sanitizedQuery.isNotEmpty &&
           matchedMatchIds.contains(m.id) &&
           (m.groupName == null || !matchedGroupNames.contains(m.groupName!));
-      final bool isKata =
-          m.rule?.isKataMatch == true ||
-          m.matchType.contains('形') ||
-          m.matchType.contains('稽古法');
-      if (!forceIndividual &&
-          !isKata &&
-          m.groupName != null &&
-          m.groupName!.isNotEmpty) {
+      if (!forceIndividual && m.groupName != null && m.groupName!.isNotEmpty) {
         catGroupedMatches.putIfAbsent(m.groupName!, () => []).add(m);
       } else {
         catIndividualMatches.add(m);
@@ -41,14 +34,16 @@ class TimelinePlayerMatchClassifier {
     for (var entry in catGroupedMatches.entries) {
       final firstMatch = entry.value.first;
       final bool isLeagueMatch = firstMatch.note.contains('[リーグ戦]');
+      final bool isKata =
+          firstMatch.rule?.isKataMatch == true ||
+          firstMatch.matchType.contains('形') ||
+          firstMatch.matchType.contains('稽古法');
       final bool isPureIndividual =
           !firstMatch.isKachinuki &&
+          !isKata &&
           (firstMatch.matchType == 'individual' ||
               firstMatch.matchType == '選手' ||
-              firstMatch.matchType.contains('個人戦') ||
-              firstMatch.rule?.isKataMatch == true ||
-              firstMatch.matchType.contains('形') ||
-              firstMatch.matchType.contains('稽古法'));
+              firstMatch.matchType.contains('個人戦'));
 
       final bool isTeamPosition =
           firstMatch.matchType.contains('将') ||
@@ -62,7 +57,8 @@ class TimelinePlayerMatchClassifier {
       if (!isPureIndividual &&
           (entry.value.length > 1 ||
               firstMatch.isKachinuki ||
-              isTeamPosition)) {
+              isTeamPosition ||
+              isKata)) {
         actualGroupedMatches[entry.key] = entry.value;
       } else if (isLeagueMatch) {
         actualGroupedMatches[entry.key] = entry.value;

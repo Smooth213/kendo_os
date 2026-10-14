@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
@@ -247,6 +248,90 @@ void main() {
 
       expect(find.text('サブ画面'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    });
+
+    testWidgets('canPopがfalseでもfallbackRouteが指定されていれば戻るボタンが描画されること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: const Scaffold(
+            appBar: AppHeader(
+              title: 'ホーム画面',
+              fallbackRoute: '/tournament-list',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('ホーム画面'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    });
+
+    testWidgets('canPopがfalseのときにonBackPressedがタップで発火すること', (tester) async {
+      var backPressed = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: Scaffold(
+            appBar: AppHeader(
+              title: 'ホーム画面',
+              onBackPressed: () => backPressed = true,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+      await tester.pumpAndSettle();
+
+      expect(backPressed, isTrue);
+    });
+
+    testWidgets('canPopがfalseのときにfallbackRouteが指定されていればGoRouterのgoが呼ばれること', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/home',
+        routes: [
+          GoRoute(
+            path: '/home',
+            builder: (context, state) => const Scaffold(
+              appBar: AppHeader(
+                title: 'ホーム画面',
+                fallbackRoute: '/tournament-list',
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/tournament-list',
+            builder: (context, state) => const Scaffold(body: Text('大会一覧画面')),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: ThemeData(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('ホーム画面'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+      await tester.pumpAndSettle();
+
+      expect(find.text('大会一覧画面'), findsOneWidget);
     });
   });
 }

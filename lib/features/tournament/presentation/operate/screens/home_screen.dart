@@ -211,6 +211,7 @@ class HomeScreen extends ConsumerWidget {
                       )
                     : AppHeader(
                         title: '大会ホーム',
+                        fallbackRoute: '/tournament-list',
                         backgroundColor: enableLiquidGlass
                             ? AppKendoColors.transparent
                             : themeColors.cardBackground,
