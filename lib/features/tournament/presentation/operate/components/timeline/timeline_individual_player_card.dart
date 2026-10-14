@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 /// タイムライン内の個人戦・個別試合アコーディオンカード
@@ -176,66 +177,86 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
       ),
     );
 
-    final slidableCard = canDelete
+    final canAddNext = !isReadOnlyUI && playerMatches.isNotEmpty;
+    final enableSlidable = canAddNext || canDelete;
+
+    final slidableCard = enableSlidable
         ? Slidable(
             key: ValueKey('player_slidable_$playerName'),
-            enabled: canDelete,
+            enabled: enableSlidable,
             endActionPane: ActionPane(
               motion: const ScrollMotion(),
-              extentRatio: 0.25,
+              extentRatio: (canAddNext && canDelete) ? 0.45 : 0.25,
               children: [
-                SlidableAction(
-                  onPressed: (context) async {
-                    final confirm = await showAppDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AppDialog(
-                        backgroundColor: isDark
-                            ? const Color(0xFF1C1C1E)
-                            : context.appColors.inputBackground,
-                        titleWidget: Text(
-                          '試合削除の確認',
-                          style: TextStyle(
-                            fontWeight: AppFontWeight.bold,
-                            color: context.appColors.textColor,
-                          ),
-                        ),
-                        content: Text(
-                          '「$playerName」の全試合データ（${playerMatches.length}件）を完全に削除します。\nよろしいですか？',
-                          style: TextStyle(color: context.appColors.textColor),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('キャンセル'),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: context.appColors.errorColor,
-                              foregroundColor: AppKendoColors.pureWhite,
+                if (canAddNext)
+                  SlidableAction(
+                    onPressed: (context) {
+                      QuickNextMatchWizardSheet.show(
+                        context,
+                        baseMatch: playerMatches.first,
+                        teamMatches: playerMatches,
+                      );
+                    },
+                    backgroundColor: AppKendoColors.teal,
+                    foregroundColor: AppKendoColors.pureWhite,
+                    icon: Icons.playlist_add,
+                    label: '次戦追加',
+                  ),
+                if (canDelete)
+                  SlidableAction(
+                    onPressed: (context) async {
+                      final confirm = await showAppDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AppDialog(
+                          backgroundColor: isDark
+                              ? const Color(0xFF1C1C1E)
+                              : context.appColors.inputBackground,
+                          titleWidget: Text(
+                            '試合削除の確認',
+                            style: TextStyle(
+                              fontWeight: AppFontWeight.bold,
+                              color: context.appColors.textColor,
                             ),
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('全削除する'),
                           ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true) {
-                      final targetIds = playerMatches
-                          .map((m) => m.id)
-                          .where((id) => id.isNotEmpty)
-                          .toList();
-                      if (targetIds.isNotEmpty) {
-                        await ref
-                            .read(matchCommandProvider)
-                            .deleteMatchesBulk(targetIds);
+                          content: Text(
+                            '「$playerName」の全試合データ（${playerMatches.length}件）を完全に削除します。\nよろしいですか？',
+                            style: TextStyle(
+                              color: context.appColors.textColor,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('キャンセル'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.appColors.errorColor,
+                                foregroundColor: AppKendoColors.pureWhite,
+                              ),
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('全削除する'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        final targetIds = playerMatches
+                            .map((m) => m.id)
+                            .where((id) => id.isNotEmpty)
+                            .toList();
+                        if (targetIds.isNotEmpty) {
+                          await ref
+                              .read(matchCommandProvider)
+                              .deleteMatchesBulk(targetIds);
+                        }
                       }
-                    }
-                  },
-                  backgroundColor: context.appColors.errorColor,
-                  foregroundColor: AppKendoColors.pureWhite,
-                  icon: Icons.delete,
-                  label: '削除',
-                ),
+                    },
+                    backgroundColor: context.appColors.errorColor,
+                    foregroundColor: AppKendoColors.pureWhite,
+                    icon: Icons.delete,
+                    label: '削除',
+                  ),
               ],
             ),
             child: cardBody,

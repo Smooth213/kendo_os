@@ -172,7 +172,17 @@ class _RenseikaiAddNextMatchBottomSheetState
                 color: textColor,
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.xs),
+            const Text(
+              '※現在の対戦枠（大将の後ろ）にそのまま追加試合として登録されます',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppFontSize.small,
+                fontWeight: AppFontWeight.bold,
+                color: AppKendoColors.teal,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               '次の試合に出場する選手を入力または選択してください。',
               textAlign: TextAlign.center,

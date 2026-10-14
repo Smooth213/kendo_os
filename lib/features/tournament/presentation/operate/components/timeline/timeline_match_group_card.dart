@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
@@ -99,7 +100,20 @@ class TimelineMatchGroupCard extends ConsumerWidget {
               endActionPane: ActionPane(
                 motion: const ScrollMotion(),
                 children: [
-                  if (!isReadOnlyUI)
+                  if (!isReadOnlyUI) ...[
+                    SlidableAction(
+                      onPressed: (context) {
+                        QuickNextMatchWizardSheet.show(
+                          context,
+                          baseMatch: groupList.last,
+                          teamMatches: groupList,
+                        );
+                      },
+                      backgroundColor: AppKendoColors.teal,
+                      foregroundColor: AppKendoColors.pureWhite,
+                      icon: Icons.playlist_add,
+                      label: '次戦追加',
+                    ),
                     SlidableAction(
                       onPressed: (context) {
                         showAppBottomSheet(
@@ -124,6 +138,7 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                       icon: Icons.edit,
                       label: '編集',
                     ),
+                  ],
                   if (canManageTournamentUI && !isReadOnlyUI)
                     SlidableAction(
                       onPressed: (context) async {

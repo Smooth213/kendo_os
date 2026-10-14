@@ -11,6 +11,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/mat
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_snapshot_history_dialog.dart';
 import 'package:kendo_os/features/p2p/presentation/components/p2p_broadcast_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_next_match_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/quick_roster_swap_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_add_next_match_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
@@ -164,20 +165,26 @@ class MatchDialogHelper {
         hasGroupName: hasGroupName,
         isKachinuki: isKachinuki,
         isDark: isDark,
-        onQuickNextMatch: isRenseikai
+        onQuickNextMatch: (isRenseikai || nextMatch == null)
             ? () {
                 Navigator.pop(ctx);
-                QuickNextMatchSheet.show(
+                QuickNextMatchWizardSheet.show(
                   context,
-                  currentMatch: match,
+                  baseMatch: match,
                   teamMatches: teamMatches,
+                  isSameTeamContinue: false,
                 );
               }
             : null,
-        onAddNextRenseikaiMatch: () {
-          Navigator.pop(ctx);
-          RenseikaiAddNextMatchBottomSheet.show(context, currentMatch: match);
-        },
+        onAddNextRenseikaiMatch: isRenseikai
+            ? () {
+                Navigator.pop(ctx);
+                RenseikaiAddNextMatchBottomSheet.show(
+                  context,
+                  currentMatch: match,
+                );
+              }
+            : null,
         onGoToNextMatch: nextMatch != null
             ? () {
                 Navigator.pop(ctx);

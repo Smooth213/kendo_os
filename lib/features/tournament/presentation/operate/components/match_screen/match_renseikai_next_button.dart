@@ -49,13 +49,43 @@ class MatchRenseikaiNextButton extends ConsumerWidget {
     return Row(
       children: [
         Expanded(
-          child: GlassButton(
+          child: GlassButton.custom(
             onPressed: (isInputLocked || isTimeUp) ? null : onAddNext,
             color: AppKendoColors.teal,
-            icon: Icons.autorenew,
-            label: '追加して継続',
-            expandContent: false,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.autorenew,
+                      size: 18,
+                      color: AppKendoColors.pureWhite,
+                    ),
+                    SizedBox(width: AppSpacing.xs),
+                    Text(
+                      '追加して継続',
+                      style: TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        fontSize: AppFontSize.bodyMedium,
+                        color: AppKendoColors.pureWhite,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '※現在の枠内に追加',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: AppKendoColors.pureWhite,
+                    fontWeight: AppFontWeight.regular,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: AppSpacing.md),

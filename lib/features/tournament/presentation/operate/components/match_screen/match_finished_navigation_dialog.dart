@@ -70,11 +70,11 @@ class MatchFinishedNavigationDialog extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onQuickNextMatch,
               icon: const Icon(Icons.bolt),
-              label: const Text(
-                '別のチームと対戦（次の団体戦）',
+              label: Text(
+                isRenseikai ? '別のチームと対戦（次の団体戦）' : '次の試合（次戦）を作成',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontWeight: AppFontWeight.bold),
+                style: const TextStyle(fontWeight: AppFontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppKendoColors.ipponGold,
