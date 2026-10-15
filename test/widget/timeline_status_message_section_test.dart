@@ -55,5 +55,34 @@ void main() {
 
       expect(find.text('該当する試合が見つかりません'), findsOneWidget);
     });
+
+    testWidgets('読み込み中（isLoading: true）にスピナーとクラウド同期案内メッセージが表示されること', (
+      tester,
+    ) async {
+      const SafeTimelineResult result = (
+        entries: [],
+        isLoading: true,
+        hasError: false,
+        errorMessage: null,
+        matchedMatchIds: {},
+        matchedGroupNames: {},
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: TimelineStatusMessageSection(
+              timelineResult: result,
+              sanitizedQuery: '',
+              isDark: false,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('大会データをクラウドから同期しています...'), findsOneWidget);
+      expect(find.text('通信環境により数秒かかる場合があります'), findsOneWidget);
+    });
   });
 }

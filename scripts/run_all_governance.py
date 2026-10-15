@@ -103,6 +103,13 @@ AUDIT_DEFINITIONS = [
         "name": "🔄 全ルール設定画面間相互完全同期 ＆ 先祖返り・上書き防止規約",
         "cmd": ["python3", "scripts/check_gov_106_rule_synchronization_integrity.py"],
     },
+    {
+        "id": 107,
+        "old_id": None,
+        "chapter_num": 1,
+        "name": "🥋 試合形式6分類・勝ち抜き戦・共通セレクタ 総合保証規約",
+        "cmd": ["python3", "scripts/check_gov_107_match_types_and_kachinuki.py"],
+    },
 
     # ==========================================================================
     # 【第2章：セキュリティ ＆ データ整合性規約】（200番台）
@@ -149,6 +156,13 @@ AUDIT_DEFINITIONS = [
         "name": "💾 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約",
         "cmd": ["python3", "scripts/check_gov_206_io_batch_chunk_optimization.py"],
     },
+    {
+        "id": 207,
+        "old_id": None,
+        "chapter_num": 2,
+        "name": "🗄️ 永続化モデル・スキーママイグレーション＆フォールバック安全性規約",
+        "cmd": ["python3", "scripts/check_gov_207_schema_fallback.py"],
+    },
 
     # ==========================================================================
     # 【第3章：UI・UX ＆ レンダリング最適化規約】（300番台）
@@ -194,6 +208,13 @@ AUDIT_DEFINITIONS = [
         "chapter_num": 3,
         "name": "🖌️ 手書きズーム・InteractiveViewerジェスチャー排他 ＆ Transform座標不変性保証規約",
         "cmd": ["python3", "scripts/check_gov_306_handwriting_zoom_exclusive_gesture.py"],
+    },
+    {
+        "id": 307,
+        "old_id": None,
+        "chapter_num": 3,
+        "name": "🎨 タイムラインスワイプアクション3要素 ＆ 操作排他完全保証規約",
+        "cmd": ["python3", "scripts/check_gov_307_timeline_slidable_actions.py"],
     },
 
     # ==========================================================================

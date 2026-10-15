@@ -106,8 +106,76 @@ class _TournamentListScreenState extends ConsumerState<TournamentListScreen>
           ],
         ),
         body: tournamentAsync.when(
-          loading: () => const Center(child: AppLoadingIndicator()),
-          error: (error, stack) => Center(child: Text('エラーが発生しました: $error')),
+          loading: () => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AppLoadingIndicator(),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  widget.isArchive ? '過去の大会記録を読み込んでいます...' : '大会一覧を読み込んでいます...',
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    fontWeight: AppFontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'クラウドから最新のデータを取得中',
+                  style: TextStyle(
+                    fontSize: AppFontSize.small,
+                    color: subTextColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          error: (error, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: AppKendoColors.red,
+                    size: 48,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    '大会一覧の取得に失敗しました',
+                    style: TextStyle(
+                      fontWeight: AppFontWeight.bold,
+                      fontSize: AppFontSize.body,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'エラーが発生しました。通信状況をご確認のうえ、再読み込みをお試しください\n($error)',
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: AppFontSize.small,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      if (widget.isArchive) {
+                        ref.invalidate(archivedTournamentListProvider);
+                      } else {
+                        ref.invalidate(tournamentListProvider);
+                      }
+                    },
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('再読み込み'),
+                  ),
+                ],
+              ),
+            ),
+          ),
           data: (tournaments) {
             final filteredTournaments = [...tournaments];
             filteredTournaments.sort((a, b) => b.date.compareTo(a.date));

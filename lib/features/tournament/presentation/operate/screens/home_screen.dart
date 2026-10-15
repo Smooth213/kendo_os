@@ -148,50 +148,88 @@ class HomeScreen extends ConsumerWidget {
             // =========================================================================
             Builder(
               builder: (context) {
-                // どのような条件であっても、ログに上がった状態を元にジャンプ判定を執行
-                final isOfflineMode =
-                    isPhysicalOffline ||
-                    asyncMatches.hasError ||
-                    asyncMatches.isLoading;
-
-                if (!isOfflineMode) {
-                  return const SizedBox.shrink();
-                }
-
-                return SafeArea(
-                  bottom: false,
-                  child: Container(
-                    width: double.infinity,
-                    color: (isDark
-                        ? AppKendoColors.ipponGold
-                        : const Color(0xFFD97706)),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 6,
-                      horizontal: AppSpacing.lg,
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.wifi_off_rounded,
-                          color: AppKendoColors.pureWhite,
-                          size: 18,
-                        ),
-                        SizedBox(width: AppSpacing.sm),
-                        Flexible(
-                          child: Text(
-                            '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
-                            style: TextStyle(
-                              color: AppKendoColors.pureWhite,
-                              fontWeight: AppFontWeight.bold,
-                              fontSize: AppFontSize.bodySmall,
+                // 1. 物理的な電波断（オフラインモード）
+                if (isPhysicalOffline) {
+                  return SafeArea(
+                    bottom: false,
+                    child: Container(
+                      width: double.infinity,
+                      color: (isDark
+                          ? AppKendoColors.ipponGold
+                          : const Color(0xFFD97706)),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: AppSpacing.lg,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.wifi_off_rounded,
+                            color: AppKendoColors.pureWhite,
+                            size: 18,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Flexible(
+                            child: Text(
+                              '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
+                              style: TextStyle(
+                                color: AppKendoColors.pureWhite,
+                                fontWeight: AppFontWeight.bold,
+                                fontSize: AppFontSize.bodySmall,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
+
+                // 2. クラウドデータ取得・同期中（電波あり時）
+                final isSyncing =
+                    asyncMatches.isLoading || asyncTournament.isLoading;
+                if (isSyncing) {
+                  return SafeArea(
+                    bottom: false,
+                    child: Container(
+                      width: double.infinity,
+                      color: (isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFF2563EB)),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: AppSpacing.lg,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppKendoColors.pureWhite,
+                            ),
+                          ),
+                          SizedBox(width: AppSpacing.sm),
+                          Flexible(
+                            child: Text(
+                              '☁️ クラウドから大会データを同期中...',
+                              style: TextStyle(
+                                color: AppKendoColors.pureWhite,
+                                fontWeight: AppFontWeight.bold,
+                                fontSize: AppFontSize.bodySmall,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
               },
             ),
             Expanded(

@@ -86,9 +86,35 @@ class TimelineStatusMessageSection extends StatelessWidget {
     }
 
     if (timelineResult.entries.isEmpty && timelineResult.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
-        child: Center(child: CircularProgressIndicator()),
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                '大会データをクラウドから同期しています...',
+                style: TextStyle(
+                  color: isDark
+                      ? AppKendoColors.pureWhite
+                      : AppKendoColors.pureBlack,
+                  fontSize: AppFontSize.body,
+                  fontWeight: AppFontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '通信環境により数秒かかる場合があります',
+                style: TextStyle(
+                  color: isDark ? const Color(0x99FFFFFF) : AppKendoColors.grey,
+                  fontSize: AppFontSize.small,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
