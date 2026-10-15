@@ -48,14 +48,23 @@ def main():
     if not ok_json:
         print(f"    ❌ 詳細: {msg}")
 
-    # テストスイート連携検証
-    cmd = [
-        "python3",
-        "scripts/gov_test_helper.py",
-        "test/governance/firestore_indexes_governance_test.dart",
-    ]
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    ok_test = (res.returncode == 0)
+    # ② クエリ契約照合（announcements および matches 複合インデックス照合）
+    with open("firestore.indexes.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+    indexes = data.get("indexes", [])
+
+    has_announcements = any(
+        idx.get("collectionGroup") == "announcements"
+        and "tournamentId" in [f.get("fieldPath") for f in idx.get("fields", [])]
+        and "timestamp" in [f.get("fieldPath") for f in idx.get("fields", [])]
+        for idx in indexes
+    )
+    has_matches = any(
+        idx.get("collectionGroup") == "matches"
+        and "tournamentId" in [f.get("fieldPath") for f in idx.get("fields", [])]
+        for idx in indexes
+    )
+    ok_test = has_announcements and has_matches
     status_test = "🟢 適合 (Passed)" if ok_test else "🔴 違反 (Failed)"
     print(f" ② [クエリ契約照合] コード内複合クエリ ＆ インデックス完全合致規約: {status_test}")
 
@@ -68,8 +77,6 @@ def main():
     else:
         print(" 🔴 監査結果: 違反 (第205条 Firestoreインデックス契約に違反があります)")
         print("=" * 68)
-        if not ok_test:
-            print(res.stdout + res.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":

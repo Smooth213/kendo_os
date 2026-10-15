@@ -19,12 +19,34 @@ def run_security_governance():
     output = result.stdout + result.stderr
     passed_all = (result.returncode == 0)
 
+    # 静的解析: UI層での UserRole 直接等価比較の完全排除 (Python自前検証)
+    import os
+    import re
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+    from gov_static_scanner import GovStaticScanner
+    scanner = GovStaticScanner()
+    role_pattern = re.compile(r'role\s*==\s*UserRole\.(admin|viewer|recorder|operator)')
+    files = scanner.get_lib_files()
+    role_violations = []
+    for p, content in files.items():
+        if '/presentation/' not in p:
+            continue
+        if 'lib/features/auth/presentation/screens/' in p or '/providers/' in p:
+            continue
+        if role_pattern.search(content):
+            role_violations.append(p)
+
+    static_role_ok = (len(role_violations) == 0)
+
     rules = [
         ("1. Viewer/Operator 権限制御・管理ボタン物理排除", "Viewerモード時、新規作成ボタンが画面上から物理排除"),
         ("2. Feature Flag & DeepLink URL直打ち直接アクセス遮断", "直接URLアクセス（DeepLink）が物理拒否"),
         ("3. AI機能（AiHelpService）完全封鎖・アクセス制限", "AI Runtime 完全封鎖検証テスト"),
         ("4. 内部デバッグメトリクス・安心日本語同期表現規約", "内部メトリクス隠蔽"),
         ("5. 閲覧専用ビュアー（全7画面）ドック完全排除＆ヘッダー復元規約", "閲覧専用ビュアー フローティングドック完全排除保証テスト"),
+        ("6. UI層 UserRole 直接等価比較排除＆権限一元統治規約 (静的実検証)", static_role_ok),
     ]
 
     print("=" * 60)
@@ -32,7 +54,11 @@ def run_security_governance():
     print("=" * 60)
 
     for label, pattern in rules:
-        if passed_all:
+        if isinstance(pattern, bool):
+            status = "🟢 適合 (Passed)" if pattern else "🔴 違反 (Failed)"
+            if not pattern:
+                passed_all = False
+        elif passed_all:
             status = "🟢 適合 (Passed)"
         else:
             if pattern in output and "[E]" in output:

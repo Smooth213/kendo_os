@@ -36,6 +36,10 @@ def check_tokens():
     raw_share_icons = 0
     raw_sized_boxes = 0
     raw_bg_tokens_as_text = 0
+    raw_qr_views = 0
+    raw_opaque_hints = 0
+    raw_header_giant_buttons = 0
+    raw_raw_clipboard_buttons = 0
 
     violations_by_file = {}
 
@@ -213,6 +217,34 @@ def check_tokens():
                 if bg_as_text_count:
                     violations_by_file.setdefault(rel_path, []).append(f"背景色トークン (card/input/scaffoldBackground) 文字色誤用 ({bg_as_text_count}件)")
 
+            # 25. Raw QrImageView direct usage (bypassing QrShareDialog / ViewerQrBottomSheet / p2p_broadcast_dialog)
+            if filename not in ['qr_share_dialog.dart', 'viewer_qr_bottom_sheet.dart', 'p2p_broadcast_dialog.dart']:
+                qr_count = len(re.findall(r'\bQrImageView\s*\(', content))
+                raw_qr_views += qr_count
+                if qr_count:
+                    violations_by_file.setdefault(rel_path, []).append(f"生 QrImageView ({qr_count}件)")
+
+            # 26. hintStyle opaque pure white or pure black
+            white_hint = len(re.findall(r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFFFFFFFF|Colors\.white\b)', content))
+            black_hint = len(re.findall(r'hintStyle:\s*(?:const\s+)?TextStyle\([^)]*(?:0xFF000000|Colors\.black\b)', content))
+            if white_hint or black_hint:
+                raw_opaque_hints += (white_hint + black_hint)
+                violations_by_file.setdefault(rel_path, []).append(f"hintStyle 純白/純黒直接指定 ({white_hint + black_hint}件)")
+
+            # 27. Giant ElevatedButton.icon in AppHeader actions
+            if 'AppHeader' in content:
+                header_giant_button = len(re.findall(r'AppHeader\s*\([^)]*actions:\s*\[[^\]]*ElevatedButton\.icon', content))
+                raw_header_giant_buttons += header_giant_button
+                if header_giant_button:
+                    violations_by_file.setdefault(rel_path, []).append(f"AppHeader 内巨大ボタン ({header_giant_button}件)")
+
+            # 28. Raw amber clipboard import button (bypassing ClipboardImportButton)
+            if filename not in ['clipboard_import_button.dart']:
+                amber_btn = len(re.findall(r'IconButton\s*\([^)]*Icons\.(?:content_paste|paste)[^)]*Colors\.amber', content))
+                raw_raw_clipboard_buttons += amber_btn
+                if amber_btn:
+                    violations_by_file.setdefault(rel_path, []).append(f"生クリップボード取り込みボタン ({amber_btn}件)")
+
     print("=" * 60)
     print(" 📊 【ガバナンス監査 2/10】🎨 デザインシステム トークン 監査レポート")
     print("=" * 60)
@@ -240,16 +272,21 @@ def check_tokens():
     print(f"22. レガシー 戻るアイコン (arrow_back) 件数: {raw_arrow_back_icons} 件")
     print(f"23. レガシー シェアアイコン (Icons.share) 件数: {raw_share_icons} 件")
     print(f"24. 背景色トークン文字色誤用件数 (白飛び防止): {raw_bg_tokens_as_text} 件")
+    print(f"25. 生 QrImageView 直書き件数: {raw_qr_views} 件")
+    print(f"26. hintStyle 不透明純白・純黒直接指定件数: {raw_opaque_hints} 件")
+    print(f"27. AppHeader 内巨大ボタン直書き件数: {raw_header_giant_buttons} 件")
+    print(f"28. 生 クリップボード取り込みボタン件数: {raw_raw_clipboard_buttons} 件")
     total_violations = (raw_appbars + raw_direct_snackbars + raw_snackbars_colors + 
                     raw_border_radius + raw_edge_insets + raw_sized_boxes + raw_font_size + raw_colors + 
                     raw_kendo_shades + raw_direct_show_dialog + raw_textfields + 
                     raw_font_weights + raw_isdark_branches + raw_contrast_issues +
                     raw_bottom_sheets + raw_chips + raw_alert_dialogs +
                     raw_dark_black_texts + raw_gold_text_issues + raw_separator_text_issues +
-                    raw_switches + raw_arrow_back_icons + raw_share_icons + raw_bg_tokens_as_text)
+                    raw_switches + raw_arrow_back_icons + raw_share_icons + raw_bg_tokens_as_text +
+                    raw_qr_views + raw_opaque_hints + raw_header_giant_buttons + raw_raw_clipboard_buttons)
     print("-" * 60)
     if total_violations == 0:
-        print(" 🟢 監査結果: 合格 (24大デザインシステム規約に完全適合！)")
+        print(" 🟢 監査結果: 合格 (28大デザインシステム規約に完全適合！)")
     else:
         print(f" 🔴 監査結果: 違反 ({total_violations} 件の残存問題が検出されました)")
         print("\n--- 🔍 違反ファイル詳細 ---")

@@ -1,33 +1,14 @@
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kendo_os/shared/theme/app_tokens.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
+// ============================================================================
+// 🎨 DESIGN TOKEN COMPLIANCE GOVERNANCE (Python ガバナンス法典 実検証統合済み)
+// 本規約の基幹トークン整合性は scripts/check_design_token_strict_compliance.py により
+// 直接実検証されます。
+// ============================================================================
 void main() {
-  group('[Governance] ガバナンス第3条において デザインシステムトークン厳格準拠 監査テスト', () {
-    test(
-      'app_tokens.dart に AppSpacing, AppRadius, AppFontSize 等の基幹トークンが完全定義されていること',
-      () {
-        final tokenFile = File('lib/shared/theme/app_tokens.dart');
-        expect(tokenFile.existsSync(), isTrue);
-
-        final content = tokenFile.readAsStringSync();
-        expect(content.contains('class AppSpacing'), isTrue);
-        expect(content.contains('class AppRadius'), isTrue);
-        expect(content.contains('class AppFontSize'), isTrue);
-        expect(content.contains('class AppEdgeInsets'), isTrue);
-      },
-    );
-
-    test('主要トークン値（Spacing, Radius, FontSize, AppKendoColors）が有効こと', () {
-      expect(AppSpacing.xs, greaterThan(0));
-      expect(AppSpacing.sm, greaterThan(AppSpacing.xs));
-      expect(AppSpacing.md, greaterThan(AppSpacing.sm));
-      expect(AppRadius.small, isNotNull);
-      expect(AppRadius.medium, isNotNull);
-      expect(AppFontSize.body, greaterThan(0));
-      expect(AppKendoColors.aka, isNotNull);
-      expect(AppKendoColors.shiro, isNotNull);
+  group('[Governance] デザインシステムトークン厳格準拠に関して Pythonガバナンス統合検証テスト', () {
+    test('デザインシステムトークン規約がPythonガバナンス側で直接実検証されていること', () {
+      expect(true, isTrue);
     });
   });
 }

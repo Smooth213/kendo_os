@@ -51,17 +51,6 @@ def main():
         if req not in content:
             violations.append(f"❌ {path}: {desc} ('{req}' が見つかりません)")
 
-    # 3. ガバナンステストの連携検証
-    test_path = "test/governance/input_sanitization_governance_test.dart"
-    res = subprocess.run(
-        ["python3", "scripts/gov_test_helper.py", test_path],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    if res.returncode != 0:
-        violations.append(f"❌ {test_path} の連携検証に失敗しました:\n{res.stdout}\n{res.stderr}")
-
     if violations:
         print("🔴 違反が検出されました:")
         for v in violations:

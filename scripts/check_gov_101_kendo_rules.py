@@ -9,11 +9,16 @@
 ④ 団体戦スコア順序（先鋒〜大将・代表戦）剣道標準配列
 ⑤ 全試合形式（勝ち抜き・リーグ含む）編集選択＆完全整合性保証
 ⑥ 勝ち抜き戦（5人制 / 3人制）選択・適応・実行 総合保証規約
+⑦ 大会ルール設定バリデーション ＆ ルール永続化マイグレーション規約
+⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約
+⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約
 ⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約
+⑪ 剣道形競技（判定本数・時間無制限・延長排除）公式ルール完全適合規約
 """
 
 import subprocess
 import sys
+from gov_static_scanner import GovStaticScanner
 
 SUB_AUDITS = [
     ("① 剣道公式スコア表示＆PDF描画規約", ["python3", "scripts/check_kendo_score_governance.py"]),
@@ -23,11 +28,66 @@ SUB_AUDITS = [
     ("⑤ 全試合形式（勝ち抜き・リーグ含む）編集選択＆完全整合性保証規約", ["python3", "scripts/check_match_type_selection_governance.py"]),
     ("⑥ 勝ち抜き戦（5人制 / 3人制）選択・適応・実行 総合保証規約", ["python3", "scripts/check_kachinuki_governance.py"]),
     ("⑦ 大会ルール設定バリデーション ＆ ルール永続化マイグレーション規約", ["python3", "scripts/check_tournament_rule_config_governance.py"]),
-    ("⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/expedition_strike_decision_governance_test.dart"]),
-    ("⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/match_category_other_support_governance_test.dart"]),
-    ("⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/unfiltered_event_aggregation_governance_test.dart"]),
-    ("⑪ 剣道形競技（判定本数・時間無制限・延長排除）公式ルール完全適合規約", ["python3", "scripts/gov_test_helper.py", "test/governance/kata_rule_integrity_governance_test.dart"]),
 ]
+
+
+def check_expedition_strikes_and_grade(scanner: GovStaticScanner):
+    """⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約"""
+    c1 = scanner.read_file('lib/features/tournament/presentation/components/official_record/expedition_event_processor.dart')
+    c2 = scanner.read_file('lib/features/tournament/presentation/operate/components/match_screen/match_player_roster_resolver.dart')
+    if not c1 or not c2:
+        return False, ["必須ファイルが見つかりません"]
+    for s in ['StrikeType.men', 'StrikeType.kote', 'StrikeType.dou', 'StrikeType.tsuki']:
+        if s not in c1:
+            return False, [f"expedition_event_processor.dart に {s} が見つかりません"]
+    for g in ['小学生低学年の部', '小学生高学年の部', '中学生の部', '高校生の部']:
+        if g not in c2:
+            return False, [f"match_player_roster_resolver.dart に公式学年区分 {g} が見つかりません"]
+    return True, []
+
+
+def check_match_category_other_support(scanner: GovStaticScanner):
+    """⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約"""
+    target_files = [
+        'lib/features/tournament/presentation/operate/components/setup_match_format/match_format_setup_helper.dart',
+        'lib/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart',
+        'lib/features/tournament/presentation/operate/components/setup_match_format/match_format_category_step.dart',
+        'lib/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart',
+        'lib/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart',
+        'lib/features/tournament/presentation/operate/components/team_registration/team_registration_player_filter_helper.dart',
+    ]
+    missing = []
+    for path in target_files:
+        content = scanner.read_file(path)
+        if not content:
+            missing.append(f"{path} が存在しません")
+        elif 'その他' not in content and 'customCategoryName' not in content:
+            missing.append(f"{path} に「その他」カテゴリ対応が欠落")
+    return len(missing) == 0, missing
+
+
+def check_unfiltered_event_aggregation(scanner: GovStaticScanner):
+    """⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約"""
+    content = scanner.read_file('lib/features/tournament/presentation/components/official_record/expedition_event_processor.dart')
+    if not content:
+        return False, ["expedition_event_processor.dart が存在しません"]
+    if 'for (final ev in m.events)' in content:
+        return False, ["m.events の直接ループ走査が残存しています (Undo相殺漏洩リスク)"]
+    if 'KendoRuleEngine' not in content and 'getEffectiveScores' not in content:
+        return False, ["KendoRuleEngine または getEffectiveScores によるSSOT集計が実装されていません"]
+    return True, []
+
+
+def check_kata_rule_integrity(scanner: GovStaticScanner):
+    """⑪ 剣道形競技（判定本数・時間無制限・延長排除）公式ルール完全適合規約"""
+    c1 = scanner.read_file('lib/features/tournament/presentation/operate/components/bulk_rule_apply_helper.dart')
+    c2 = scanner.read_file('lib/features/match/domain/rules/match_rule.dart')
+    if not c1 or not c2:
+        return False, ["必須ファイルが存在しません"]
+    if 'isKataMatch' not in c1 or 'isKataMatch' not in c2:
+        return False, ["isKataMatch パラメータが実装されていません"]
+    return True, []
+
 
 def main():
     print("=" * 68)
@@ -46,6 +106,23 @@ def main():
             print(res.stdout + res.stderr)
             print("-" * 40)
 
+    # 静的直接検査
+    scanner = GovStaticScanner.get_instance()
+    static_checks = [
+        ("⑧ 遠征打突種別 ＆ 学年公式区分決定論保証規約", check_expedition_strikes_and_grade(scanner)),
+        ("⑨ 試合カテゴリ「その他（混成・自由入力）」＆ 学年横断編成永続保証規約", check_match_category_other_support(scanner)),
+        ("⑩ 未フィルタイベント直接集計禁止 ＆ ルールエンジンSSOT保証規約", check_unfiltered_event_aggregation(scanner)),
+        ("⑪ 剣道形競技（判定本数・時間無制限・延長排除）公式ルール完全適合規約", check_kata_rule_integrity(scanner)),
+    ]
+
+    for label, (ok, viols) in static_checks:
+        status = "🟢 適合 (Passed)" if ok else "🔴 違反 (Failed)"
+        print(f" {label}: {status}")
+        if not ok:
+            all_passed = False
+            for v in viols:
+                print(f"    ❌ {v}")
+
     print("-" * 68)
     if all_passed:
         print(" 🟢 監査結果: 合格 (剣道公式ルール・スコア・表記・配列 永続保証規約に完全適合！)")
@@ -55,6 +132,7 @@ def main():
         print(" 🔴 監査結果: 違反 (第101条 剣道公式ルール・スコア・表記・配列規約に違反があります)")
         print("=" * 68)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -24,8 +24,35 @@ def main():
     print(" 📊 【第102条 ガバナンス監査】📚 大会運用マニュアル ＆ 独立ルール安全フォールバック規約")
     print("=" * 68)
 
+    import os
+    import re
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+
+    # ③ マニュアルルートID・実体Markdown 1対1整合性静的保証 (Python自前検証)
+    route_file = os.path.join(project_root, "packages/documentation_runtime/lib/manual_routes.dart")
+    manual_routes_ok = True
+    missing_manual_paths = []
+
+    if os.path.isfile(route_file):
+        with open(route_file, "r", encoding="utf-8") as f:
+            c = f.read()
+        paths = re.findall(r"['\"](packages/documentation_runtime/manuals/[^'\"]+\.md)['\"]", c)
+        if not paths:
+            paths = re.findall(r"['\"](manuals/[^'\"]+\.md)['\"]", c)
+        for p in paths:
+            full = os.path.join(project_root, p)
+            if not os.path.exists(full):
+                full = os.path.join(project_root, "packages/documentation_runtime", p)
+            if not os.path.exists(full):
+                manual_routes_ok = False
+                missing_manual_paths.append(p)
+    else:
+        manual_routes_ok = False
+
     all_passed = True
-    for label, cmd in SUB_AUDITS:
+    for label, cmd in SUB_AUDITS[:2]:
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         is_ok = (res.returncode == 0)
         status = "🟢 適合 (Passed)" if is_ok else "🔴 違反 (Failed)"
@@ -35,6 +62,12 @@ def main():
             print(f"\n--- [詳細エラー: {label}] ---")
             print(res.stdout + res.stderr)
             print("-" * 40)
+
+    status3 = "🟢 適合 (Passed)" if manual_routes_ok else "🔴 違反 (Failed)"
+    print(f" ③ マニュアルルートID・実体Markdown 1対1整合性静的保証規約: {status3}")
+    if not manual_routes_ok:
+        all_passed = False
+        print(f"  ❌ 未実体マニュアルファイル: {missing_manual_paths}")
 
     print("-" * 68)
     if all_passed:

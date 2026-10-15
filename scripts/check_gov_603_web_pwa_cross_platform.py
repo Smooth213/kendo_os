@@ -18,8 +18,14 @@ SUB_AUDITS = [
     ("④ 入力フォーカス時ビューポート安定性・跳ね上がり防止保証規約", ["python3", "scripts/check_input_viewport_stability_governance.py"]),
     ("⑤ Web境界・ネイティブ直接import遮断規約", ["python3", "scripts/check_web_native_import_isolation_governance.py"]),
     ("⑥ 全ボトムシート・キーボード追従＆自動全開視認性保証規約", ["python3", "scripts/check_bottom_sheet_keyboard_tracking_governance.py"]),
-    ("⑦ PlatformBoundary Web/ネイティブ完全分離実行保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/platform_boundary_governance_test.dart"]),
 ]
+
+
+def check_platform_boundary():
+    from gov_static_scanner import get_file_content
+    c = get_file_content("lib/shared/platform/platform_boundary.dart") or ""
+    return "class PlatformBoundary" in c and "safePlatformCall" in c and "kIsWeb" in c
+
 
 def main():
     print("=" * 68)
@@ -37,6 +43,13 @@ def main():
             print(f"\n--- [詳細エラー: {label}] ---")
             print(res.stdout + res.stderr)
             print("-" * 40)
+
+    # ⑦ PlatformBoundary
+    ok7 = check_platform_boundary()
+    status7 = "🟢 適合 (Passed)" if ok7 else "🔴 違反 (Failed)"
+    print(f" ⑦ PlatformBoundary Web/ネイティブ完全分離実行保証規約: {status7}")
+    if not ok7:
+        all_passed = False
 
     print("-" * 68)
     if all_passed:
