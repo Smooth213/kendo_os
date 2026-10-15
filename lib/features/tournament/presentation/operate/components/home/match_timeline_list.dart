@@ -51,6 +51,8 @@ class MatchTimelineList extends ConsumerWidget {
     final allMatches = timelineResult.entries.expand((e) => e.value).toList();
     final isAllExpanded = ref.watch(timelineAllExpandedProvider);
     final selectedCategory = ref.watch(selectedCategoryFilterProvider);
+    final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
+    final ownInfo = ref.watch(tournamentOwnInfoProvider(tournamentId));
 
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
@@ -130,8 +132,6 @@ class MatchTimelineList extends ConsumerWidget {
           return displayEntries.map<Widget>((catEntry) {
             final categoryName = catEntry.key;
             final catMatches = catEntry.value;
-            final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-            final ownInfo = ref.watch(tournamentOwnInfoProvider(tournamentId));
             final sortedTeams =
                 TimelineCategoryTeamResolver.resolveMatchesByTeam(
                   catMatches: catMatches,
@@ -139,49 +139,52 @@ class MatchTimelineList extends ConsumerWidget {
                   ownInfo: ownInfo,
                 );
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.xl,
-                    AppSpacing.xl,
-                    AppSpacing.lg,
-                    AppSpacing.md,
-                  ),
-                  child: Text(
-                    categoryName,
-                    style: TextStyle(
-                      fontSize: AppFontSize.subhead,
-                      fontWeight: AppFontWeight.bold,
-                      color: isDark
-                          ? context.appColors.primaryAccent
-                          : const Color(0xFF3F51B5),
-                      letterSpacing: 1.2,
+            return RepaintBoundary(
+              key: ValueKey('category_section_$categoryName'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                    ),
+                    child: Text(
+                      categoryName,
+                      style: TextStyle(
+                        fontSize: AppFontSize.subhead,
+                        fontWeight: AppFontWeight.bold,
+                        color: isDark
+                            ? context.appColors.primaryAccent
+                            : const Color(0xFF3F51B5),
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
-                ),
 
-                ...sortedTeams.map((teamEntry) {
-                  return RepaintBoundary(
-                    child: TimelineTeamCard(
-                      teamName: teamEntry.key,
-                      teamMatchesList: teamEntry.value,
-                      categoryName: categoryName,
-                      tournamentId: tournamentId,
-                      sanitizedQuery: sanitizedQuery,
-                      matchedMatchIds: matchedMatchIds,
-                      matchedGroupNames: matchedGroupNames,
-                      ownTeams: ownTeams,
-                      comments: comments,
-                      isReadOnlyUI: isReadOnlyUI,
-                      canManageTournamentUI: canManageTournamentUI,
-                      isDark: isDark,
-                      permissions: permissions,
-                    ),
-                  );
-                }),
-              ],
+                  ...sortedTeams.map((teamEntry) {
+                    return RepaintBoundary(
+                      child: TimelineTeamCard(
+                        teamName: teamEntry.key,
+                        teamMatchesList: teamEntry.value,
+                        categoryName: categoryName,
+                        tournamentId: tournamentId,
+                        sanitizedQuery: sanitizedQuery,
+                        matchedMatchIds: matchedMatchIds,
+                        matchedGroupNames: matchedGroupNames,
+                        ownTeams: ownTeams,
+                        comments: comments,
+                        isReadOnlyUI: isReadOnlyUI,
+                        canManageTournamentUI: canManageTournamentUI,
+                        isDark: isDark,
+                        permissions: permissions,
+                      ),
+                    );
+                  }),
+                ],
+              ),
             );
           }).toList();
         })(),

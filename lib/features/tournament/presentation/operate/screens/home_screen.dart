@@ -102,18 +102,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 🌟 ステップ3：本部一斉ポップアップ監視トリガーをアタッチ（運営スタッフ用フラグ: true）
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.mounted) {
-        listenGlobalAnnouncements(
-          context,
-          ref,
-          tournamentId,
-          isStaffRoom: true,
-        );
-        ref.read(currentTournamentIdProvider.notifier).state = tournamentId;
-      }
-    });
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final enableLiquidGlass = ref.watch(
       settingsProvider.select((s) => s.enableLiquidGlass),
@@ -138,204 +126,209 @@ class HomeScreen extends ConsumerWidget {
     final isSearchVisible = ref.watch(isSearchVisibleProvider);
     final searchQuery = ref.watch(searchQueryProvider);
 
-    return PopScope(
-      canPop: !isReadOnly,
-      child: LiquidBackground(
-        child: Column(
-          children: [
-            // =========================================================================
-            // 🛡️ Phase 3 - STEP 3-3 要件：オフライン画面防衛インジケータバナー
-            // =========================================================================
-            Builder(
-              builder: (context) {
-                // 1. 物理的な電波断（オフラインモード）
-                if (isPhysicalOffline) {
-                  return SafeArea(
-                    bottom: false,
-                    child: Container(
-                      width: double.infinity,
-                      color: (isDark
-                          ? AppKendoColors.ipponGold
-                          : const Color(0xFFD97706)),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 6,
-                        horizontal: AppSpacing.lg,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.wifi_off_rounded,
-                            color: AppKendoColors.pureWhite,
-                            size: 18,
-                          ),
-                          SizedBox(width: AppSpacing.sm),
-                          Flexible(
-                            child: Text(
-                              '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
-                              style: TextStyle(
-                                color: AppKendoColors.pureWhite,
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.bodySmall,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                // 2. クラウドデータ取得・同期中（電波あり時）
-                final isSyncing =
-                    asyncMatches.isLoading || asyncTournament.isLoading;
-                if (isSyncing) {
-                  return SafeArea(
-                    bottom: false,
-                    child: Container(
-                      width: double.infinity,
-                      color: (isDark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFF2563EB)),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 6,
-                        horizontal: AppSpacing.lg,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppKendoColors.pureWhite,
-                            ),
-                          ),
-                          SizedBox(width: AppSpacing.sm),
-                          Flexible(
-                            child: Text(
-                              '☁️ クラウドから大会データを同期中...',
-                              style: TextStyle(
-                                color: AppKendoColors.pureWhite,
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.bodySmall,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return const SizedBox.shrink();
-              },
-            ),
-            Expanded(
-              child: Scaffold(
-                backgroundColor: AppKendoColors.transparent,
-                appBar: isSearchVisible
-                    ? AppSearchHeader(
-                        searchQuery: searchQuery,
-                        enableLiquidGlass: enableLiquidGlass,
-                        onSearchQueryChanged: (val) =>
-                            ref.read(searchQueryProvider.notifier).state = val,
-                        onClose: () {
-                          ref.read(searchQueryProvider.notifier).state = '';
-                          ref.read(isSearchVisibleProvider.notifier).state =
-                              false;
-                        },
-                      )
-                    : AppHeader(
-                        title: '大会ホーム',
-                        fallbackRoute: '/tournament-list',
-                        backgroundColor: enableLiquidGlass
-                            ? AppKendoColors.transparent
-                            : themeColors.cardBackground,
-                        actions: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.visibility,
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : themeColors.primaryAccent,
-                            ),
-                            tooltip: '観客の画面を確認',
-                            onPressed: () => _navigateToViewerPreview(
-                              context,
-                              ref,
-                              tournamentId,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.qr_code_2,
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : themeColors.primaryAccent,
-                            ),
-                            tooltip: '大会を共有する',
-                            onPressed: () =>
-                                _showShareDialog(context, ref, tournamentId),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                        ],
-                      ),
-                body: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    MatchTimelineList(
-                      tournamentId: tournamentId,
-                      headerWidgets: [
-                        if (!isReadOnly && allMatchesList.isEmpty)
-                          asyncTournament.maybeWhen(
-                            data: (tournament) {
-                              if (tournament == null) {
-                                return const SizedBox.shrink();
-                              }
-                              return asyncTeams.maybeWhen(
-                                data: (teams) => HomeScreenSetupChecklistCard(
-                                  tournament: tournament,
-                                  teams: teams,
-                                  themeColors: themeColors,
-                                  isDark: isDark,
-                                  enableLiquidGlass: enableLiquidGlass,
-                                  tournamentId: tournamentId,
-                                ),
-                                orElse: () => const SizedBox.shrink(),
-                              );
-                            },
-                            orElse: () => const SizedBox.shrink(),
-                          ),
-                        HomeScreenCallBanner(
-                          uniqueInProgress: uniqueInProgress,
-                          uniqueWaiting: uniqueWaiting,
-                          themeColors: themeColors,
-                          isDark: isDark,
-                          enableLiquidGlass: enableLiquidGlass,
+    return AnnouncePopupListener(
+      tournamentId: tournamentId,
+      isStaffRoom: true,
+      child: PopScope(
+        canPop: !isReadOnly,
+        child: LiquidBackground(
+          child: Column(
+            children: [
+              // =========================================================================
+              // 🛡️ Phase 3 - STEP 3-3 要件：オフライン画面防衛インジケータバナー
+              // =========================================================================
+              Builder(
+                builder: (context) {
+                  // 1. 物理的な電波断（オフラインモード）
+                  if (isPhysicalOffline) {
+                    return SafeArea(
+                      bottom: false,
+                      child: Container(
+                        width: double.infinity,
+                        color: (isDark
+                            ? AppKendoColors.ipponGold
+                            : const Color(0xFFD97706)),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: AppSpacing.lg,
                         ),
-                        if (!isReadOnly)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                              vertical: 2.0,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.wifi_off_rounded,
+                              color: AppKendoColors.pureWhite,
+                              size: 18,
                             ),
-                            child: OperatorActionButtons(
-                              tournamentId: tournamentId,
+                            SizedBox(width: AppSpacing.sm),
+                            Flexible(
+                              child: Text(
+                                '⚠️ 体育館オフライン運営モード：ローカルDB（Isar）へ即時保存中',
+                                style: TextStyle(
+                                  color: AppKendoColors.pureWhite,
+                                  fontWeight: AppFontWeight.bold,
+                                  fontSize: AppFontSize.bodySmall,
+                                ),
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  // 2. クラウドデータ取得・同期中（電波あり時）
+                  final isSyncing =
+                      asyncMatches.isLoading || asyncTournament.isLoading;
+                  if (isSyncing) {
+                    return SafeArea(
+                      bottom: false,
+                      child: Container(
+                        width: double.infinity,
+                        color: (isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFF2563EB)),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: AppSpacing.lg,
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppKendoColors.pureWhite,
+                              ),
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            Flexible(
+                              child: Text(
+                                '☁️ クラウドから大会データを同期中...',
+                                style: TextStyle(
+                                  color: AppKendoColors.pureWhite,
+                                  fontWeight: AppFontWeight.bold,
+                                  fontSize: AppFontSize.bodySmall,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+              Expanded(
+                child: Scaffold(
+                  backgroundColor: AppKendoColors.transparent,
+                  appBar: isSearchVisible
+                      ? AppSearchHeader(
+                          searchQuery: searchQuery,
+                          enableLiquidGlass: enableLiquidGlass,
+                          onSearchQueryChanged: (val) =>
+                              ref.read(searchQueryProvider.notifier).state =
+                                  val,
+                          onClose: () {
+                            ref.read(searchQueryProvider.notifier).state = '';
+                            ref.read(isSearchVisibleProvider.notifier).state =
+                                false;
+                          },
+                        )
+                      : AppHeader(
+                          title: '大会ホーム',
+                          fallbackRoute: '/tournament-list',
+                          backgroundColor: enableLiquidGlass
+                              ? AppKendoColors.transparent
+                              : themeColors.cardBackground,
+                          actions: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.visibility,
+                                color: isDark
+                                    ? const Color(0xFFFFFFFF)
+                                    : themeColors.primaryAccent,
+                              ),
+                              tooltip: '観客の画面を確認',
+                              onPressed: () => _navigateToViewerPreview(
+                                context,
+                                ref,
+                                tournamentId,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.qr_code_2,
+                                color: isDark
+                                    ? const Color(0xFFFFFFFF)
+                                    : themeColors.primaryAccent,
+                              ),
+                              tooltip: '大会を共有する',
+                              onPressed: () =>
+                                  _showShareDialog(context, ref, tournamentId),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                          ],
+                        ),
+                  body: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      MatchTimelineList(
+                        tournamentId: tournamentId,
+                        headerWidgets: [
+                          if (!isReadOnly && allMatchesList.isEmpty)
+                            asyncTournament.maybeWhen(
+                              data: (tournament) {
+                                if (tournament == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                return asyncTeams.maybeWhen(
+                                  data: (teams) => HomeScreenSetupChecklistCard(
+                                    tournament: tournament,
+                                    teams: teams,
+                                    themeColors: themeColors,
+                                    isDark: isDark,
+                                    enableLiquidGlass: enableLiquidGlass,
+                                    tournamentId: tournamentId,
+                                  ),
+                                  orElse: () => const SizedBox.shrink(),
+                                );
+                              },
+                              orElse: () => const SizedBox.shrink(),
+                            ),
+                          HomeScreenCallBanner(
+                            uniqueInProgress: uniqueInProgress,
+                            uniqueWaiting: uniqueWaiting,
+                            themeColors: themeColors,
+                            isDark: isDark,
+                            enableLiquidGlass: enableLiquidGlass,
                           ),
-                      ],
-                    ),
-                    FloatingProgramDockButton(
-                      tournamentId: tournamentId,
-                      isViewerMode: isReadOnly,
-                    ),
-                  ],
+                          if (!isReadOnly)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                                vertical: 2.0,
+                              ),
+                              child: OperatorActionButtons(
+                                tournamentId: tournamentId,
+                              ),
+                            ),
+                        ],
+                      ),
+                      FloatingProgramDockButton(
+                        tournamentId: tournamentId,
+                        isViewerMode: isReadOnly,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

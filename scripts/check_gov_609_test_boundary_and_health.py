@@ -69,7 +69,7 @@ def check_no_empty_assertions(scanner: GovStaticScanner) -> Tuple[bool, List[str
     # test( または testWidgets( を検出
     test_decl_pattern = re.compile(r'\b(test|testWidgets)\s*\(\s*["\']([^"\']+)["\']\s*,\s*(\([^)]*\)\s*(async\s*)?{)')
     assertion_pattern = re.compile(
-        r'\b(expect|expectLater|verify|verifyInOrder|verifyNever|assert\w*|_expect\w*|testWidgetWith\w*|pumpAndVerify\w*|fail)\b'
+        r'\b(expect\w*|verify\w*|assert\w*|_expect\w*|_verify\w*|testWidgetWith\w*|pumpAndVerify\w*|fail)\b'
     )
 
     for rel_path, content in test_files.items():

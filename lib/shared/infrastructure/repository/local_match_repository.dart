@@ -175,6 +175,7 @@ class LocalMatchRepository {
           await _isar.matchCommandEntitys.put(cmdEntity);
         }
       });
+      unawaited(TwinMatchPersistenceHelper.saveSnapshot(match));
     } catch (e, stack) {
       await _handleStorageError(
         e,
@@ -207,6 +208,7 @@ class LocalMatchRepository {
             .commandIdEqualTo(commandId)
             .deleteAll();
       });
+      unawaited(TwinMatchPersistenceHelper.saveSnapshot(match));
     } catch (e, stack) {
       await _handleStorageError(
         e,

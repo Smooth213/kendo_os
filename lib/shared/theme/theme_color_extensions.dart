@@ -41,7 +41,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   Color get amber => warningColor;
   Color get iconColor => textColor;
   Color get subtleIconColor => subTextColor;
-  Color get onPrimaryAccent => Colors.white;
+  Color get onPrimaryAccent =>
+      primaryAccent.computeLuminance() > 0.18 ? Colors.black : Colors.white;
   Color get cardShadowColor => Colors.black.withValues(alpha: 0.1);
 
   @override

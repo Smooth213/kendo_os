@@ -43,6 +43,10 @@ class MatchRuleSummaryCard extends StatelessWidget {
         currentRule.matchScene == 'renseikai' ||
         currentRule.matchScene == 'moushiawase';
 
+    final Color titleColor = isDark
+        ? const Color(0xFF9FA8DA) // 暗背景に対してコントラスト比 6.79:1
+        : primaryAccent;
+
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -59,14 +63,14 @@ class MatchRuleSummaryCard extends StatelessWidget {
           // タイトル
           Row(
             children: [
-              Icon(Icons.verified, size: 16, color: primaryAccent),
+              Icon(Icons.verified, size: 16, color: titleColor),
               const SizedBox(width: 6),
               Text(
                 '適用中のルール',
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
                   fontWeight: AppFontWeight.bold,
-                  color: primaryAccent,
+                  color: titleColor,
                 ),
               ),
             ],
@@ -283,7 +287,7 @@ class MatchRuleSummaryCard extends StatelessWidget {
         style: TextStyle(
           fontSize: AppFontSize.badge,
           fontWeight: AppFontWeight.bold,
-          color: primaryAccent,
+          color: isDark ? const Color(0xFF9FA8DA) : primaryAccent,
         ),
       ),
     );

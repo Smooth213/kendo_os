@@ -149,29 +149,33 @@ final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>(
     }
   }
 
-  // ✅ matches collectionGroupから自テナントのパスに限定してtournamentIdを抽出。
-  // doc.reference.pathを使いorganizations/{safeDojoId}/tournaments/{id}/matches 形式で確認し、
-  // tournamentId部分をパスの第4セグメントから直接取得することで確実なテナント隔離を保証する。
-  return firestore.collectionGroup('matches').snapshots().map((snap) {
-    final prefix = 'organizations/$safeDojoId/tournaments/';
-    return snap.docs
-        .where((doc) => doc.reference.path.startsWith(prefix))
-        .map((doc) {
-          // path: organizations/{dojoId}/tournaments/{tournamentId}/matches/{matchId}
-          final segments = doc.reference.path.split('/');
-          if (segments.length != 6 ||
-              segments[0] != 'organizations' ||
-              segments[2] != 'tournaments' ||
-              segments[4] != 'matches') {
-            return null;
-          }
-          return segments[3];
-        })
-        .whereType<String>()
-        .where((id) => id.startsWith('bunaiksen_'))
-        .map((id) => id.replaceFirst('bunaiksen_', ''))
-        .toSet();
-  });
+  // ✅ 【Plan 2 最適化】matches collectionGroupに対して部内戦('bunaiksen_')プレフィックスでFirestore絞り込み。
+  // 通常大会（何千試合）の無差別受信・課金・CPU過大消費を完全遮断し、自テナントのパスから安全に抽出する。
+  return firestore
+      .collectionGroup('matches')
+      .where('tournamentId', isGreaterThanOrEqualTo: 'bunaiksen_')
+      .where('tournamentId', isLessThan: 'bunaiksen_\uf8ff')
+      .snapshots()
+      .map((snap) {
+        final prefix = 'organizations/$safeDojoId/tournaments/';
+        return snap.docs
+            .where((doc) => doc.reference.path.startsWith(prefix))
+            .map((doc) {
+              // path: organizations/{dojoId}/tournaments/{tournamentId}/matches/{matchId}
+              final segments = doc.reference.path.split('/');
+              if (segments.length != 6 ||
+                  segments[0] != 'organizations' ||
+                  segments[2] != 'tournaments' ||
+                  segments[4] != 'matches') {
+                return null;
+              }
+              return segments[3];
+            })
+            .whereType<String>()
+            .where((id) => id.startsWith('bunaiksen_'))
+            .map((id) => id.replaceFirst('bunaiksen_', ''))
+            .toSet();
+      });
 });
 
 final bunaiksenMatchesProvider = Provider.family
@@ -190,16 +194,9 @@ final bunaiksenMatchesProvider = Provider.family
         matches = asyncVal.value ?? const [];
       } else {
         final allMatches = ref.watch(matchListProvider);
-
-        debugPrint('[KendoOS Log] Isarデータパイプラインリアルタイム監視');
-        debugPrint(' 1. 画面側から要求された日付ID = "$targetTournamentId"');
-        debugPrint(' 2. 現在Isarローカルディスクに保存されている総試合数 = ${allMatches.length} 件');
-
         matches = allMatches
             .where((m) => m.tournamentId == targetTournamentId)
             .toList();
-        debugPrint(' 3. 条件に合致して画面へ美しく表示する試合数 = ${matches.length} 件');
-        debugPrint('[KendoOS Log] 監視終了');
       }
 
       final sorted = List<MatchModel>.from(matches);

@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 // 🛡️ アクティブなストリームサブスクリプションを追跡（画面再構築時の重複購読を完全に防止）
@@ -312,5 +313,74 @@ void listenGlobalAnnouncements(
     debugPrint(
       '[WARN] [listenGlobalAnnouncements] Firestore connection skipped: $e',
     );
+  }
+}
+
+/// 🛡️ アナウンス購読のライフサイクルを Flutter ウィジェットツリーのマウント状態と連動させる管理コンポーネント
+class AnnouncePopupListener extends ConsumerStatefulWidget {
+  final String tournamentId;
+  final bool isStaffRoom;
+  final Widget child;
+
+  const AnnouncePopupListener({
+    super.key,
+    required this.tournamentId,
+    required this.isStaffRoom,
+    required this.child,
+  });
+
+  @override
+  ConsumerState<AnnouncePopupListener> createState() =>
+      _AnnouncePopupListenerState();
+}
+
+class _AnnouncePopupListenerState extends ConsumerState<AnnouncePopupListener> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(currentTournamentIdProvider.notifier).state =
+            widget.tournamentId;
+        listenGlobalAnnouncements(
+          context,
+          ref,
+          widget.tournamentId,
+          isStaffRoom: widget.isStaffRoom,
+        );
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant AnnouncePopupListener oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.tournamentId != oldWidget.tournamentId ||
+        widget.isStaffRoom != oldWidget.isStaffRoom) {
+      cancelGlobalAnnouncements(tournamentId: oldWidget.tournamentId);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(currentTournamentIdProvider.notifier).state =
+              widget.tournamentId;
+          listenGlobalAnnouncements(
+            context,
+            ref,
+            widget.tournamentId,
+            isStaffRoom: widget.isStaffRoom,
+          );
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    cancelGlobalAnnouncements(tournamentId: widget.tournamentId);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }
