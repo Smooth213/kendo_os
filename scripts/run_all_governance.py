@@ -347,6 +347,13 @@ AUDIT_DEFINITIONS = [
         "name": "⚖️ CI環境パリティ ＆ Fast-Fail実行整合性完全保証規約",
         "cmd": ["python3", "scripts/check_gov_608_ci_parity_fast_fail.py"],
     },
+    {
+        "id": 609,
+        "old_id": None,
+        "chapter_num": 6,
+        "name": "🧪 静的・動的テスト責務分離境界 ＆ テストスイート健全性完全保証規約",
+        "cmd": ["python3", "scripts/check_gov_609_test_boundary_and_health.py"],
+    },
 ]
 
 

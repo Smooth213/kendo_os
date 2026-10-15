@@ -156,6 +156,7 @@ void main() {
         await tester.tap(closeBtn.first);
         await tester.pumpAndSettle();
       }
+      expect(tester.takeException(), isNull);
     });
   });
 }

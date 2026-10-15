@@ -362,6 +362,7 @@ void main() {
 
       await repo.saveMatchBatched(criticalMatch);
       await repo.flushMicroBatch();
+      expect(criticalMatch.redScore, equals(1));
     });
 
     test('P2P差分デルタ伝送E2Eに関して、broadcastMatchDelta で差分ペイロードが安全に構築・送信されること', () {
