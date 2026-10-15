@@ -7,7 +7,7 @@ void main() {
   group('[Unit] LocalP2pBroadcaster テスト', () {
     test('ホストとポートを含む正しいWebView用HTMLが生成されること', () {
       final html = WebViewHtml.build(hostIp: '192.168.1.100', port: 8080);
-      expect(html, contains('kendo OS - リアルタイム観戦ビュアー'));
+      expect(html, contains('Kendo Sync - リアルタイム観戦ビュアー'));
       expect(html, contains('ws://'));
       expect(html, contains('現地記録端末と同期中'));
     });

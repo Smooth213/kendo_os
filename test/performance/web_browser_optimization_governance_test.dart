@@ -71,7 +71,7 @@ void main() {
         expect(manifestFile.existsSync(), isTrue);
 
         final manifestContent = manifestFile.readAsStringSync();
-        expect(manifestContent.contains('"name": "Kendo OS"'), isTrue);
+        expect(manifestContent.contains('"name": "Kendo Sync"'), isTrue);
         expect(manifestContent.contains('"display": "standalone"'), isTrue);
       });
     },

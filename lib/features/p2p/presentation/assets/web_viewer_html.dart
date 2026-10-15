@@ -7,7 +7,7 @@ class WebViewHtml {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>kendo OS - リアルタイム観戦ビュアー</title>
+  <title>Kendo Sync - リアルタイム観戦ビュアー</title>
   <style>
     :root {
       --bg: #121214;
@@ -157,7 +157,7 @@ class WebViewHtml {
 </head>
 <body>
   <div class="header">
-    <div class="title">⚔️ kendo OS リアルタイム観戦</div>
+    <div class="title">⚔️ Kendo Sync リアルタイム観戦</div>
     <div class="status"><div class="status-dot"></div><span id="conn-status">現地記録端末と接続中 (0遅延)</span></div>
   </div>
 

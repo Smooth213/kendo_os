@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_court_slot_picker.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_private_note_accordion.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/text_input_helper.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 
 /// 🥋 クイック次戦作成 Step 2: 試合詳細・見出し設定（添付ファイル1準拠）
 class QuickNextCourtHeadingStep extends StatelessWidget {
   final TextEditingController courtController;
+  final TextEditingController? noteController;
   final VoidCallback onBack;
   final VoidCallback onNext;
 
   const QuickNextCourtHeadingStep({
     super.key,
     required this.courtController,
+    this.noteController,
     required this.onBack,
     required this.onNext,
   });
@@ -199,6 +203,30 @@ class QuickNextCourtHeadingStep extends StatelessWidget {
                             ],
                           ),
                         ),
+                        if (noteController != null) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          MatchPrivateNoteAccordion(
+                            noteController: noteController!,
+                            isDark: isDark,
+                            labelText: '試合のメモ・詳細コメント',
+                            initiallyExpanded: false,
+                            trailingAction: TextButton.icon(
+                              icon: const Icon(Icons.add, size: 14),
+                              label: const Text(
+                                'カンマ（,）',
+                                style: TextStyle(fontSize: AppFontSize.caption),
+                              ),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              onPressed: () =>
+                                  TextInputHelper.insertComma(noteController!),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   );

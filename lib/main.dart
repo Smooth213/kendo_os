@@ -284,6 +284,7 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
     );
 
     return MaterialApp.router(
+      title: 'Kendo Sync',
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       themeMode: currentThemeMode,

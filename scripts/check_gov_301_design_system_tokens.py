@@ -21,6 +21,7 @@ SUB_AUDITS = [
     ("⑤ 文字拡大（標準・大・特大）文字切れ・省略（...）完全防止規約", ["python3", "scripts/check_text_overflow_governance.py"]),
     ("⑥ デザインシステムトークン厳格準拠規約", ["python3", "scripts/check_design_token_strict_compliance.py"]),
     ("⑦ 全画面ヒントテキスト視認性・適正グレー保証規約", ["python3", "scripts/gov_test_helper.py", "test/governance/hint_text_theme_contrast_governance_test.dart"]),
+    ("⑧ タイムラインスワイプアクション3要素（次戦追加・編集・削除）完全保証規約", ["python3", "scripts/check_timeline_slidable_actions_governance.py"]),
 ]
 
 

@@ -5,6 +5,7 @@ import 'package:kendo_os/features/match/application/usecases/match_application_s
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/kata_pair_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/steps/quick_next_court_heading_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/steps/quick_next_opponent_and_color_step.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/steps/quick_next_order_step.dart';
@@ -35,18 +36,16 @@ class QuickNextMatchWizardSheet extends ConsumerStatefulWidget {
     required MatchModel baseMatch,
     List<MatchModel> teamMatches = const [],
     bool isSameTeamContinue = false,
-  }) {
-    return showAppBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppKendoColors.transparent,
-      builder: (ctx) => QuickNextMatchWizardSheet(
-        baseMatch: baseMatch,
-        teamMatches: teamMatches,
-        isSameTeamContinue: isSameTeamContinue,
-      ),
-    );
-  }
+  }) => showAppBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppKendoColors.transparent,
+    builder: (ctx) => QuickNextMatchWizardSheet(
+      baseMatch: baseMatch,
+      teamMatches: teamMatches,
+      isSameTeamContinue: isSameTeamContinue,
+    ),
+  );
 
   @override
   ConsumerState<QuickNextMatchWizardSheet> createState() =>
@@ -57,46 +56,52 @@ class _QuickNextMatchWizardSheetState
     extends ConsumerState<QuickNextMatchWizardSheet> {
   late final PageController _pageController;
   late final TextEditingController _courtController;
+  late final TextEditingController _privateNoteController;
   late final TextEditingController _opponentTeamController;
-  late final List<TextEditingController> _opponentPlayerControllers;
+  late List<TextEditingController> _opponentPlayerControllers;
 
   int _currentPage = 0;
   bool _isOwnTeamRed = true;
   bool _isSubmitting = false;
 
   late String _ownTeamName;
-  late List<String> _positions;
-  late List<String> _playerNames;
-  late bool _isIndividual;
-  late bool _isRenseikai;
+  late List<String> _positions, _playerNames;
+  late bool _isIndividual, _isRenseikai;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _courtController = TextEditingController();
+    _privateNoteController = TextEditingController();
     _opponentTeamController = TextEditingController();
-
     _initMatchData();
   }
 
   void _initMatchData() {
     final base = widget.baseMatch;
     final rule = base.rule ?? ref.read(matchRuleProvider);
+    final isKata = KataPairHelper.isKataMatch(base, rule);
     _isRenseikai =
         (rule?.isRenseikai == true) || base.matchType.contains('錬成会');
 
+    final isGroupOrTeam =
+        isKata ||
+        (base.groupName?.isNotEmpty == true) ||
+        (rule != null && rule.positions.length > 1) ||
+        (widget.teamMatches.length > 1);
+
     _isIndividual =
-        !base.isKachinuki &&
-        (base.matchType == 'individual' ||
-            base.matchType == '選手' ||
-            (!base.redName.contains(':') && widget.teamMatches.isEmpty));
+        !isKata &&
+        !isGroupOrTeam &&
+        (!base.isKachinuki &&
+            (base.matchType == 'individual' ||
+                base.matchType == '選手' ||
+                (!base.redName.contains(':') && widget.teamMatches.isEmpty)));
 
     // 自チーム判定
-    final ownTeamsAsync = ref.read(customTeamNamesProvider);
-    final ownTeams = ownTeamsAsync.hasValue
-        ? (ownTeamsAsync.value ?? <String>[])
-        : <String>[];
+    final ownTeams =
+        ref.read(customTeamNamesProvider).value ?? const <String>[];
     final ruleTeam = rule?.teamName.trim() ?? '';
 
     final rTeam = base.redName.contains(':')
@@ -111,14 +116,20 @@ class _QuickNextMatchWizardSheetState
         base.whiteName.contains('自チーム') ||
         (ruleTeam.isNotEmpty && wTeam == ruleTeam);
 
+    final shouldPreserveOpponent = widget.isSameTeamContinue;
+
     if (isWhiteOwn) {
       _ownTeamName = wTeam.isNotEmpty ? wTeam : '自チーム';
       _isOwnTeamRed = false;
-      _opponentTeamController.text = rTeam == '自チーム' ? '' : rTeam;
+      _opponentTeamController.text = shouldPreserveOpponent && rTeam != '自チーム'
+          ? rTeam
+          : '';
     } else {
       _ownTeamName = rTeam.isNotEmpty ? rTeam : '自チーム';
       _isOwnTeamRed = true;
-      _opponentTeamController.text = wTeam == '自チーム' ? '' : wTeam;
+      _opponentTeamController.text = shouldPreserveOpponent && wTeam != '自チーム'
+          ? wTeam
+          : '';
     }
 
     // ポジションと選手名の抽出
@@ -127,42 +138,82 @@ class _QuickNextMatchWizardSheetState
             ..sort((a, b) => a.order.compareTo(b.order)))
         : <MatchModel>[base];
 
-    _positions = [];
-    _playerNames = [];
-    _opponentPlayerControllers = [];
+    _positions = <String>[];
+    _playerNames = <String>[];
+    _opponentPlayerControllers = <TextEditingController>[];
 
-    if (_isIndividual) {
+    if (isKata) {
+      _positions = (rule != null && rule.positions.length >= 2)
+          ? List<String>.from(rule.positions.take(2))
+          : <String>['選手', '選手'];
+      final rawOwn = _isOwnTeamRed ? base.redName : base.whiteName;
+      final rawOpp = _isOwnTeamRed ? base.whiteName : base.redName;
+      _playerNames = KataPairHelper.extractPairNames(rawOwn);
+      final oppNames = KataPairHelper.extractOpponentPairNames(
+        rawOpp,
+        shouldPreserve: shouldPreserveOpponent,
+      );
+      _opponentPlayerControllers.addAll(
+        oppNames.map((name) => TextEditingController(text: name)),
+      );
+    } else if (_isIndividual) {
       _positions = ['選手'];
       final rawOwn = _isOwnTeamRed ? base.redName : base.whiteName;
       final rawOpp = _isOwnTeamRed ? base.whiteName : base.redName;
       final pName = rawOwn.contains(':')
           ? rawOwn.split(':').last.trim()
           : rawOwn.trim();
-      final oppName = rawOpp.contains(':')
-          ? rawOpp.split(':').last.trim()
-          : (rawOpp == '選手' ? '' : rawOpp.trim());
+      final oppName = shouldPreserveOpponent
+          ? (rawOpp.contains(':')
+                ? rawOpp.split(':').last.trim()
+                : (rawOpp == '選手' ? '' : rawOpp.trim()))
+          : '';
       _playerNames.add(pName.isEmpty ? '選手' : pName);
       _opponentPlayerControllers.add(TextEditingController(text: oppName));
     } else {
-      for (final m in sortedMatches) {
-        final pos = m.matchType.isNotEmpty ? m.matchType : '選手';
-        _positions.add(pos);
+      if (widget.teamMatches.isNotEmpty) {
+        for (final m in sortedMatches) {
+          final pos = m.matchType.isNotEmpty ? m.matchType : '選手';
+          _positions.add(pos);
 
-        final rawOwn = _isOwnTeamRed ? m.redName : m.whiteName;
-        final rawOpp = _isOwnTeamRed ? m.whiteName : m.redName;
-        final pName = rawOwn.contains(':')
-            ? rawOwn.split(':').last.trim()
-            : rawOwn.trim();
-        final oppName = rawOpp.contains(':')
-            ? rawOpp.split(':').last.trim()
-            : '';
-        _playerNames.add(pName.isEmpty ? '選手' : pName);
-        _opponentPlayerControllers.add(TextEditingController(text: oppName));
+          final rawOwn = _isOwnTeamRed ? m.redName : m.whiteName;
+          final rawOpp = _isOwnTeamRed ? m.whiteName : m.redName;
+          final pName = rawOwn.contains(':')
+              ? rawOwn.split(':').last.trim()
+              : rawOwn.trim();
+          final oppName = shouldPreserveOpponent
+              ? (rawOpp.contains(':') ? rawOpp.split(':').last.trim() : '')
+              : '';
+          _playerNames.add(pName.isEmpty ? '選手' : pName);
+          _opponentPlayerControllers.add(TextEditingController(text: oppName));
+        }
+      } else {
+        final defaultPositions =
+            (rule != null &&
+                rule.positions.isNotEmpty &&
+                rule.positions.first != '選手')
+            ? rule.positions
+            : const ['先鋒', '次鋒', '中堅', '副将', '大将'];
+        for (int i = 0; i < defaultPositions.length; i++) {
+          final pos = defaultPositions[i];
+          _positions.add(pos);
+          final pName =
+              (rule != null &&
+                  rule.baseOrder.length > i &&
+                  rule.baseOrder[i].isNotEmpty)
+              ? rule.baseOrder[i]
+              : '選手';
+          _playerNames.add(pName);
+          _opponentPlayerControllers.add(TextEditingController());
+        }
       }
     }
 
-    // 既存見出しの引き継ぎ
+    // 既存見出しと運営メモの引き継ぎ
     _courtController.text = MatchHeadingFormatHelper.extractPublicHeading(
+      base.note,
+    );
+    _privateNoteController.text = MatchHeadingFormatHelper.extractPrivateNote(
       base.note,
     );
   }
@@ -171,6 +222,7 @@ class _QuickNextMatchWizardSheetState
   void dispose() {
     _pageController.dispose();
     _courtController.dispose();
+    _privateNoteController.dispose();
     _opponentTeamController.dispose();
     for (final c in _opponentPlayerControllers) {
       c.dispose();
@@ -196,6 +248,26 @@ class _QuickNextMatchWizardSheetState
     }
   }
 
+  void _reorderPositions(int oldIndex, int newIndex) {
+    setState(() {
+      final pos = _positions.removeAt(oldIndex);
+      _positions.insert(newIndex, pos);
+      final pName = _playerNames.removeAt(oldIndex);
+      _playerNames.insert(newIndex, pName);
+      final ctrl = _opponentPlayerControllers.removeAt(oldIndex);
+      _opponentPlayerControllers.insert(newIndex, ctrl);
+    });
+  }
+
+  void _addExtraPosition() {
+    setState(() {
+      final newIndex = _positions.length + 1;
+      _positions.add('追加枠$newIndex');
+      _playerNames.add('選手');
+      _opponentPlayerControllers.add(TextEditingController());
+    });
+  }
+
   Future<void> _handleCommitNextMatch() async {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
@@ -207,6 +279,11 @@ class _QuickNextMatchWizardSheetState
           ? '相手チーム'
           : _opponentTeamController.text.trim();
       final courtHeading = _courtController.text.trim();
+      final privateNote = _privateNoteController.text.trim();
+      final fullNote = [
+        if (courtHeading.isNotEmpty) courtHeading,
+        if (privateNote.isNotEmpty) privateNote,
+      ].join('\n');
 
       final newGroupId = const Uuid().v4();
       final String groupName = _isIndividual
@@ -217,49 +294,22 @@ class _QuickNextMatchWizardSheetState
                       ? '$courtHeading - $newGroupId'
                       : '対戦 - $newGroupId'));
 
-      final matchesToCreate = <MatchModel>[];
-      final double baseOrder = base.order + 1.0;
-
-      for (int i = 0; i < _positions.length; i++) {
-        final pos = _positions[i];
-        final myPlayer = i < _playerNames.length ? _playerNames[i] : '選手';
-        final oppCtrl = i < _opponentPlayerControllers.length
-            ? _opponentPlayerControllers[i]
-            : null;
-        final oppPlayer = (oppCtrl != null && oppCtrl.text.trim().isNotEmpty)
-            ? oppCtrl.text.trim()
-            : '選手';
-
-        final String redStr;
-        final String whiteStr;
-
-        if (_isOwnTeamRed) {
-          redStr = '$_ownTeamName : $myPlayer';
-          whiteStr = '$oppTeam : $oppPlayer';
-        } else {
-          redStr = '$oppTeam : $oppPlayer';
-          whiteStr = '$_ownTeamName : $myPlayer';
-        }
-
-        final matchId = const Uuid().v4();
-        matchesToCreate.add(
-          MatchModel(
-            id: matchId,
-            tournamentId: base.tournamentId,
-            category: base.category,
-            groupName: groupName,
-            matchType: _isIndividual ? 'individual' : pos,
-            rule: rule,
-            redName: redStr,
-            whiteName: whiteStr,
-            status: 'pending',
-            matchTimeMinutes: base.matchTimeMinutes,
-            isRunningTime: base.isRunningTime,
-            order: baseOrder + (i * 0.1),
-            note: courtHeading.isNotEmpty ? courtHeading : base.note,
-          ),
-        );
-      }
+      final isKata = KataPairHelper.isKataMatch(base, rule);
+      final matchesToCreate = KataPairHelper.generateNextMatches(
+        base: base,
+        rule: rule,
+        isKata: isKata,
+        isIndividual: _isIndividual,
+        isRenseikai: _isRenseikai,
+        isOwnTeamRed: _isOwnTeamRed,
+        ownTeamName: _ownTeamName,
+        oppTeam: oppTeam,
+        groupName: groupName,
+        fullNote: fullNote,
+        positions: _positions,
+        playerNames: _playerNames,
+        opponentPlayerControllers: _opponentPlayerControllers,
+      );
 
       final service = ref.read(matchApplicationServiceProvider);
       for (final m in matchesToCreate) {
@@ -337,6 +387,7 @@ class _QuickNextMatchWizardSheetState
                   ),
                   QuickNextCourtHeadingStep(
                     courtController: _courtController,
+                    noteController: _privateNoteController,
                     onBack: _previousPage,
                     onNext: _nextPage,
                   ),
@@ -347,8 +398,15 @@ class _QuickNextMatchWizardSheetState
                     onIsOwnTeamRedChanged: (val) =>
                         setState(() => _isOwnTeamRed = val),
                     opponentTeamController: _opponentTeamController,
+                    ownTeamName: _ownTeamName,
                     positions: _positions,
+                    playerNames: _playerNames,
+                    onPlayerNamesChanged: (val) =>
+                        setState(() => _playerNames = val),
                     opponentPlayerControllers: _opponentPlayerControllers,
+                    onReorder: _reorderPositions,
+                    onAddExtraPosition: _addExtraPosition,
+                    isRenseikai: _isRenseikai,
                     onBack: _previousPage,
                     onConfirm: _handleCommitNextMatch,
                     isSubmitting: _isSubmitting,
@@ -380,7 +438,6 @@ class _QuickNextMatchWizardSheetState
   Widget _buildStepCircle(int step, String label, AppThemeColors themeColors) {
     final isDone = _currentPage > step;
     final isCurrent = _currentPage == step;
-
     final Color circleBg = isDone || isCurrent
         ? themeColors.primaryAccent
         : themeColors.separatorColor;
@@ -422,12 +479,12 @@ class _QuickNextMatchWizardSheetState
     );
   }
 
-  Widget _buildStepDivider(int afterStep, AppThemeColors themeColors) {
-    final isPassed = _currentPage > afterStep;
-    return Container(
-      height: 2,
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      color: isPassed ? themeColors.primaryAccent : themeColors.separatorColor,
-    );
-  }
+  Widget _buildStepDivider(int afterStep, AppThemeColors themeColors) =>
+      Container(
+        height: 2,
+        margin: const EdgeInsets.only(bottom: AppSpacing.md),
+        color: _currentPage > afterStep
+            ? themeColors.primaryAccent
+            : themeColors.separatorColor,
+      );
 }

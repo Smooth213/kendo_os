@@ -137,6 +137,7 @@ void main() {
         'lib/features/tournament/presentation/operate/components/new_match/new_match_heading_notes_card.dart',
         'lib/features/tournament/presentation/operate/components/setup_match_format/match_format_heading_and_note_section.dart',
         'lib/features/tournament/presentation/operate/components/home/match_edit_court_and_group_tab.dart',
+        'lib/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart',
         // 画面全体の一括保存ヘルパー（必要時）
         'lib/features/tournament/presentation/operate/screens/setup_match_format_screen.dart',
       ];

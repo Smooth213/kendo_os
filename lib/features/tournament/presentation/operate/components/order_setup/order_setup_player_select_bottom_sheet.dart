@@ -85,9 +85,7 @@ class _OrderSetupPlayerSelectBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final textColor = widget.isDark
-        ? const Color(0xFFFFFFFF)
-        : context.appColors.cardBackground;
+    final textColor = context.appColors.textColor;
 
     List<PlayerModel> filteredMaster = widget.masterPlayers
         .where((p) => p.name.contains(_searchText))
@@ -250,7 +248,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                       borderRadius: AppRadius.medium,
                       side: BorderSide(
                         color: widget.isDark
-                            ? Colors.transparent
+                            ? AppKendoColors.transparent
                             : widget.themeColors.softAccent,
                       ),
                     ),

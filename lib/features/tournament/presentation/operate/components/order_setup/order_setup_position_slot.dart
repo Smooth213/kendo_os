@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/kata_pair_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -16,6 +17,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
   final String opponentPlayerName;
   final ValueChanged<String>? onOpponentChanged;
   final VoidCallback? onVacantPressed;
+  final void Function(int memberIndex)? onSelectPairMember;
 
   const OrderSetupPositionSlot({
     super.key,
@@ -30,6 +32,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
     required this.opponentPlayerName,
     this.onOpponentChanged,
     this.onVacantPressed,
+    this.onSelectPairMember,
   });
 
   @override
@@ -92,39 +95,106 @@ class OrderSetupPositionSlot extends StatelessWidget {
                             fontWeight: AppFontWeight.bold,
                           ),
                         ),
-                        Text(
-                          playerName,
-                          style: TextStyle(
-                            fontSize: AppFontSize.headline,
-                            fontWeight: AppFontWeight.bold,
-                            color: isSelected ? textColor : subTextColor,
+                        if (KataPairHelper.isPair(playerName)) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          ...KataPairHelper.parsePair(
+                            playerName,
+                            posName: posName,
+                          ).map((m) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.xxs,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.subValue,
+                                      vertical: AppSpacing.xxs,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: primaryAccent.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                      borderRadius: AppRadius.sub,
+                                    ),
+                                    child: Text(
+                                      m.role,
+                                      style: TextStyle(
+                                        fontSize: AppFontSize.caption,
+                                        fontWeight: AppFontWeight.bold,
+                                        color: primaryAccent,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: Text(
+                                      m.name,
+                                      style: TextStyle(
+                                        fontSize: AppFontSize.body,
+                                        fontWeight: AppFontWeight.bold,
+                                        color: isSelected
+                                            ? textColor
+                                            : subTextColor,
+                                      ),
+                                    ),
+                                  ),
+                                  if (onSelectPairMember != null)
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.sm,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () =>
+                                          onSelectPairMember!(m.index),
+                                      child: const Text('変更'),
+                                    ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ] else ...[
+                          Text(
+                            playerName,
+                            style: TextStyle(
+                              fontSize: AppFontSize.headline,
+                              fontWeight: AppFontWeight.bold,
+                              color: isSelected ? textColor : subTextColor,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.modernValue,
-                      vertical: AppSpacing.subValue,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? softAccent
-                          : (isDark
-                                ? const Color(0xFF2C2C2E)
-                                : const Color(0xFFF5F5F5)),
-                      borderRadius: AppRadius.round,
-                    ),
-                    child: Text(
-                      isSelected ? '変更' : '選択',
-                      style: TextStyle(
-                        color: isSelected ? primaryAccent : subTextColor,
-                        fontSize: AppFontSize.bodySmall,
-                        fontWeight: AppFontWeight.bold,
+                  if (!KataPairHelper.isPair(playerName)) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.modernValue,
+                        vertical: AppSpacing.subValue,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? softAccent
+                            : (isDark
+                                  ? const Color(0xFF2C2C2E)
+                                  : const Color(0xFFF5F5F5)),
+                        borderRadius: AppRadius.round,
+                      ),
+                      child: Text(
+                        isSelected ? '変更' : '選択',
+                        style: TextStyle(
+                          color: isSelected ? primaryAccent : subTextColor,
+                          fontSize: AppFontSize.bodySmall,
+                          fontWeight: AppFontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                   const SizedBox(width: AppSpacing.sm),
                   ReorderableDragStartListener(
                     index: index,

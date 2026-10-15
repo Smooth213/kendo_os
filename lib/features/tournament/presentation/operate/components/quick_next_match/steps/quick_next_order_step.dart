@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_player_select_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/kata_pair_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/steps/quick_next_order_slot_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_screen_providers.dart'
     show playerListProvider;
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -30,6 +32,42 @@ class QuickNextOrderStep extends ConsumerWidget {
     required this.onNext,
     this.onQuickStartRenseikai,
   });
+
+  Future<void> _changePlayer({
+    required BuildContext context,
+    required List<PlayerModel> masterPlayers,
+    required AppThemeColors themeColors,
+    required int slotIndex,
+    int? pairMemberIndex,
+  }) async {
+    final selected = await OrderSetupPlayerSelectBottomSheet.show(
+      context,
+      masterPlayers: masterPlayers,
+      themeColors: themeColors,
+    );
+    if (selected == null) return;
+
+    final updated = List<String>.from(playerNames);
+    while (updated.length <= slotIndex) {
+      updated.add('選手');
+    }
+
+    final currentVal = updated[slotIndex];
+    final cleanSelected = (selected == 'CLEAR_FLAG' || selected.trim().isEmpty)
+        ? '選手'
+        : selected.trim();
+
+    if (pairMemberIndex != null && KataPairHelper.isPair(currentVal)) {
+      updated[slotIndex] = KataPairHelper.updateMember(
+        currentVal,
+        pairMemberIndex,
+        cleanSelected,
+      );
+    } else {
+      updated[slotIndex] = cleanSelected;
+    }
+    onPlayerNamesChanged(updated);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,6 +140,97 @@ class QuickNextOrderStep extends ConsumerWidget {
   ) {
     final playerName = playerNames.isNotEmpty ? playerNames.first : '選手';
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isPair = KataPairHelper.isPair(playerName);
+
+    if (isPair) {
+      final members = KataPairHelper.parsePair(playerName);
+      return Center(
+        child: Container(
+          margin: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF2C2C2E)
+                : themeColors.cardBackground,
+            borderRadius: AppRadius.large,
+            border: Border.all(color: themeColors.separatorColor),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                teamName,
+                style: TextStyle(
+                  fontSize: AppFontSize.small,
+                  color: themeColors.subTextColor,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'ペア選手 (形競技)',
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  fontWeight: AppFontWeight.bold,
+                  color: themeColors.primaryAccent,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ...members.map((member) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xxs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: themeColors.primaryAccent.withValues(
+                            alpha: 0.12,
+                          ),
+                          borderRadius: AppRadius.sub,
+                        ),
+                        child: Text(
+                          member.role,
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: themeColors.primaryAccent,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(
+                          member.name,
+                          style: TextStyle(
+                            fontSize: AppFontSize.body,
+                            fontWeight: AppFontWeight.bold,
+                            color: themeColors.textColor,
+                          ),
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () => _changePlayer(
+                          context: context,
+                          masterPlayers: allMasterPlayers,
+                          themeColors: themeColors,
+                          slotIndex: 0,
+                          pairMemberIndex: member.index,
+                        ),
+                        child: const Text('変更'),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Center(
       child: Container(
@@ -150,16 +279,12 @@ class QuickNextOrderStep extends ConsumerWidget {
               ),
             ),
             OutlinedButton(
-              onPressed: () async {
-                final selected = await OrderSetupPlayerSelectBottomSheet.show(
-                  context,
-                  masterPlayers: allMasterPlayers,
-                  themeColors: themeColors,
-                );
-                if (selected != null && selected.isNotEmpty) {
-                  onPlayerNamesChanged([selected]);
-                }
-              },
+              onPressed: () => _changePlayer(
+                context: context,
+                masterPlayers: allMasterPlayers,
+                themeColors: themeColors,
+                slotIndex: 0,
+              ),
               child: const Text('変更'),
             ),
           ],
@@ -190,93 +315,19 @@ class QuickNextOrderStep extends ConsumerWidget {
         final pos = positions[index];
         final name = index < playerNames.length ? playerNames[index] : '選手';
 
-        return Container(
+        return QuickNextOrderSlotTile(
           key: ValueKey('slot_${pos}_$index'),
-          margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF2C2C2E)
-                : themeColors.cardBackground,
-            borderRadius: AppRadius.medium,
-            border: Border.all(color: themeColors.separatorColor),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 14,
-                backgroundColor: themeColors.primaryAccent.withValues(
-                  alpha: 0.15,
-                ),
-                child: Text(
-                  pos.isNotEmpty ? pos[0] : '?',
-                  style: TextStyle(
-                    fontSize: AppFontSize.small,
-                    fontWeight: AppFontWeight.bold,
-                    color: themeColors.primaryAccent,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              SizedBox(
-                width: 50,
-                child: Text(
-                  pos,
-                  style: TextStyle(
-                    fontWeight: AppFontWeight.bold,
-                    fontSize: AppFontSize.bodySmall,
-                    color: themeColors.subTextColor,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: AppFontSize.body,
-                    fontWeight: AppFontWeight.bold,
-                    color: themeColors.textColor,
-                  ),
-                ),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () async {
-                  final selected = await OrderSetupPlayerSelectBottomSheet.show(
-                    context,
-                    masterPlayers: allMasterPlayers,
-                    themeColors: themeColors,
-                  );
-                  if (selected != null) {
-                    final updated = List<String>.from(playerNames);
-                    while (updated.length <= index) {
-                      updated.add('選手');
-                    }
-                    updated[index] = selected.isEmpty ? '選手' : selected;
-                    onPlayerNamesChanged(updated);
-                  }
-                },
-                child: const Text('変更'),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              ReorderableDragStartListener(
-                index: index,
-                child: Icon(
-                  Icons.drag_handle,
-                  color: themeColors.subTextColor.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
+          index: index,
+          pos: pos,
+          name: name,
+          themeColors: themeColors,
+          isDark: isDark,
+          onSelectPlayer: (slotIdx, memberIdx) => _changePlayer(
+            context: context,
+            masterPlayers: allMasterPlayers,
+            themeColors: themeColors,
+            slotIndex: slotIdx,
+            pairMemberIndex: memberIdx,
           ),
         );
       },

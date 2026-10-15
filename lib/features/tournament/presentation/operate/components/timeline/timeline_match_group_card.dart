@@ -99,9 +99,12 @@ class TimelineMatchGroupCard extends ConsumerWidget {
               enabled: !isReadOnlyUI,
               endActionPane: ActionPane(
                 motion: const ScrollMotion(),
+                extentRatio: (canManageTournamentUI && !isReadOnlyUI)
+                    ? 0.68
+                    : (!isReadOnlyUI ? 0.46 : 0.25),
                 children: [
                   if (!isReadOnlyUI) ...[
-                    SlidableAction(
+                    CustomSlidableAction(
                       onPressed: (context) {
                         QuickNextMatchWizardSheet.show(
                           context,
@@ -111,10 +114,28 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                       },
                       backgroundColor: AppKendoColors.teal,
                       foregroundColor: AppKendoColors.pureWhite,
-                      icon: Icons.playlist_add,
-                      label: '次戦追加',
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.playlist_add,
+                            size: 22,
+                            color: AppKendoColors.pureWhite,
+                          ),
+                          SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            '次戦追加',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: AppKendoColors.pureWhite,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ],
+                      ),
                     ),
-                    SlidableAction(
+                    CustomSlidableAction(
                       onPressed: (context) {
                         showAppBottomSheet(
                           context: context,
@@ -135,12 +156,30 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                       },
                       backgroundColor: AppKendoColors.blueAccent,
                       foregroundColor: AppKendoColors.pureWhite,
-                      icon: Icons.edit,
-                      label: '編集',
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.edit,
+                            size: 20,
+                            color: AppKendoColors.pureWhite,
+                          ),
+                          SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            '編集',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: AppKendoColors.pureWhite,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                   if (canManageTournamentUI && !isReadOnlyUI)
-                    SlidableAction(
+                    CustomSlidableAction(
                       onPressed: (context) async {
                         final confirm = await showAppDialog<bool>(
                           context: context,
@@ -192,8 +231,26 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                       },
                       backgroundColor: context.appColors.errorColor,
                       foregroundColor: AppKendoColors.pureWhite,
-                      icon: Icons.delete,
-                      label: '削除',
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.delete,
+                            size: 20,
+                            color: AppKendoColors.pureWhite,
+                          ),
+                          SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            '削除',
+                            style: TextStyle(
+                              fontSize: AppFontSize.caption,
+                              fontWeight: AppFontWeight.bold,
+                              color: AppKendoColors.pureWhite,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ],
+                      ),
                     ),
                 ],
               ),

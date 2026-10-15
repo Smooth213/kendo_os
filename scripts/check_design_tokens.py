@@ -35,6 +35,7 @@ def check_tokens():
     raw_arrow_back_icons = 0
     raw_share_icons = 0
     raw_sized_boxes = 0
+    raw_bg_tokens_as_text = 0
 
     violations_by_file = {}
 
@@ -204,6 +205,14 @@ def check_tokens():
             if share_count:
                 violations_by_file.setdefault(rel_path, []).append(f"レガシー シェアアイコン ({share_count}件)")
 
+            # 24. Background color tokens used as text color (causing whiteout on white card/scaffold)
+            if filename not in ['theme_color_extensions.dart', 'app_theme_colors.dart'] and '/pdf/' not in rel_path:
+                bg_as_text_count = len(re.findall(r'(?<!\w)(textColor|subTextColor|titleColor|labelColor)\s*=\s*[^;\n]*(cardBackground|inputBackground|scaffoldBackground)\b', content))
+                bg_as_text_count += len(re.findall(r'TextStyle\s*\([^)]*color\s*:\s*[^,\n)]*(cardBackground|inputBackground|scaffoldBackground)\b', content))
+                raw_bg_tokens_as_text += bg_as_text_count
+                if bg_as_text_count:
+                    violations_by_file.setdefault(rel_path, []).append(f"背景色トークン (card/input/scaffoldBackground) 文字色誤用 ({bg_as_text_count}件)")
+
     print("=" * 60)
     print(" 📊 【ガバナンス監査 2/10】🎨 デザインシステム トークン 監査レポート")
     print("=" * 60)
@@ -230,16 +239,17 @@ def check_tokens():
     print(f"21. 生 Switch 呼び出し件数: {raw_switches} 件")
     print(f"22. レガシー 戻るアイコン (arrow_back) 件数: {raw_arrow_back_icons} 件")
     print(f"23. レガシー シェアアイコン (Icons.share) 件数: {raw_share_icons} 件")
+    print(f"24. 背景色トークン文字色誤用件数 (白飛び防止): {raw_bg_tokens_as_text} 件")
     total_violations = (raw_appbars + raw_direct_snackbars + raw_snackbars_colors + 
                     raw_border_radius + raw_edge_insets + raw_sized_boxes + raw_font_size + raw_colors + 
                     raw_kendo_shades + raw_direct_show_dialog + raw_textfields + 
                     raw_font_weights + raw_isdark_branches + raw_contrast_issues +
                     raw_bottom_sheets + raw_chips + raw_alert_dialogs +
                     raw_dark_black_texts + raw_gold_text_issues + raw_separator_text_issues +
-                    raw_switches + raw_arrow_back_icons + raw_share_icons)
+                    raw_switches + raw_arrow_back_icons + raw_share_icons + raw_bg_tokens_as_text)
     print("-" * 60)
     if total_violations == 0:
-        print(" 🟢 監査結果: 合格 (23大デザインシステム規約に完全適合！)")
+        print(" 🟢 監査結果: 合格 (24大デザインシステム規約に完全適合！)")
     else:
         print(f" 🔴 監査結果: 違反 ({total_violations} 件の残存問題が検出されました)")
         print("\n--- 🔍 違反ファイル詳細 ---")

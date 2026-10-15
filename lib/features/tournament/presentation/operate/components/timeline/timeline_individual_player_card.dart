@@ -14,7 +14,9 @@ import 'package:kendo_os/shared/domain/entities/timeline_item.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart';
+import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 /// タイムライン内の個人戦・個別試合アコーディオンカード
@@ -178,7 +180,13 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
     );
 
     final canAddNext = !isReadOnlyUI && playerMatches.isNotEmpty;
-    final enableSlidable = canAddNext || canDelete;
+    final canEdit = !isReadOnlyUI && playerMatches.isNotEmpty;
+    final enableSlidable = canAddNext || canEdit || canDelete;
+    final int actionCount =
+        (canAddNext ? 1 : 0) + (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
+    final double extentRatio = actionCount == 3
+        ? 0.68
+        : (actionCount == 2 ? 0.46 : 0.25);
 
     final slidableCard = enableSlidable
         ? Slidable(
@@ -186,10 +194,10 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
             enabled: enableSlidable,
             endActionPane: ActionPane(
               motion: const ScrollMotion(),
-              extentRatio: (canAddNext && canDelete) ? 0.45 : 0.25,
+              extentRatio: extentRatio,
               children: [
                 if (canAddNext)
-                  SlidableAction(
+                  CustomSlidableAction(
                     onPressed: (context) {
                       QuickNextMatchWizardSheet.show(
                         context,
@@ -199,11 +207,72 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
                     },
                     backgroundColor: AppKendoColors.teal,
                     foregroundColor: AppKendoColors.pureWhite,
-                    icon: Icons.playlist_add,
-                    label: '次戦追加',
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.playlist_add,
+                          size: 22,
+                          color: AppKendoColors.pureWhite,
+                        ),
+                        SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          '次戦追加',
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: AppKendoColors.pureWhite,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                if (canEdit)
+                  CustomSlidableAction(
+                    onPressed: (context) {
+                      showAppBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (ctx) {
+                          return MatchEditSheet(
+                            matches: playerMatches,
+                            tournamentId: tournamentId,
+                            themeColors: AppThemeColors.ofMode(
+                              isDark:
+                                  Theme.of(context).brightness ==
+                                  Brightness.dark,
+                              mode: 'operate',
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    backgroundColor: AppKendoColors.blueAccent,
+                    foregroundColor: AppKendoColors.pureWhite,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.edit,
+                          size: 20,
+                          color: AppKendoColors.pureWhite,
+                        ),
+                        SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          '編集',
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: AppKendoColors.pureWhite,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
                   ),
                 if (canDelete)
-                  SlidableAction(
+                  CustomSlidableAction(
                     onPressed: (context) async {
                       final confirm = await showAppDialog<bool>(
                         context: context,
@@ -254,8 +323,26 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
                     },
                     backgroundColor: context.appColors.errorColor,
                     foregroundColor: AppKendoColors.pureWhite,
-                    icon: Icons.delete,
-                    label: '削除',
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.delete,
+                          size: 20,
+                          color: AppKendoColors.pureWhite,
+                        ),
+                        SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          '削除',
+                          style: TextStyle(
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                            color: AppKendoColors.pureWhite,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ),

@@ -1,11 +1,11 @@
 {
-    "name": "Kendo OS",
-    "short_name": "Kendo OS",
+    "name": "Kendo Sync",
+    "short_name": "Kendo Sync",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F2F2F7",
     "theme_color": "#1E3A8A",
-    "description": "Kendo Match & Tournament OS - Persistent Engine",
+    "description": "Kendo Match & Tournament Sync - Persistent Engine",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "share_target": {

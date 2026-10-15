@@ -154,5 +154,88 @@ void main() {
         }
       },
     );
+
+    test(
+      'アプリ表示名整合性に関して、全プラットフォーム（iOS/Android/Web/PWA/main.dart）のアプリ表示名が Kendo Sync で完全統一されていること',
+      () {
+        // 1. Android: android/app/src/main/AndroidManifest.xml
+        final androidManifestFile = File(
+          'android/app/src/main/AndroidManifest.xml',
+        );
+        expect(androidManifestFile.existsSync(), isTrue);
+        final androidContent = androidManifestFile.readAsStringSync();
+        expect(
+          androidContent.contains('android:label="Kendo Sync"'),
+          isTrue,
+          reason:
+              'AndroidManifest.xml の android:label は "Kendo Sync" でなければなりません',
+        );
+
+        // 2. iOS: ios/Runner/Info.plist
+        final infoPlistFile = File('ios/Runner/Info.plist');
+        expect(infoPlistFile.existsSync(), isTrue);
+        final iosContent = infoPlistFile.readAsStringSync();
+        expect(
+          iosContent.contains(
+            '<key>CFBundleDisplayName</key>\n\t<string>Kendo Sync</string>',
+          ),
+          isTrue,
+          reason: 'Info.plist の CFBundleDisplayName は "Kendo Sync" でなければなりません',
+        );
+        expect(
+          iosContent.contains(
+            '<key>CFBundleName</key>\n\t<string>Kendo Sync</string>',
+          ),
+          isTrue,
+          reason: 'Info.plist の CFBundleName は "Kendo Sync" でなければなりません',
+        );
+
+        // 3. Web: web/index.html
+        final webIndexFile = File('web/index.html');
+        expect(webIndexFile.existsSync(), isTrue);
+        final webIndexContent = webIndexFile.readAsStringSync();
+        expect(
+          webIndexContent.contains('<title>Kendo Sync</title>'),
+          isTrue,
+          reason: 'web/index.html の <title> は "Kendo Sync" でなければなりません',
+        );
+        expect(
+          webIndexContent.contains(
+            '<meta name="apple-mobile-web-app-title" content="Kendo Sync">',
+          ),
+          isTrue,
+          reason:
+              'web/index.html の apple-mobile-web-app-title は "Kendo Sync" でなければなりません',
+        );
+
+        // 4. PWA: web/manifest.json
+        final manifestFile = File('web/manifest.json');
+        expect(manifestFile.existsSync(), isTrue);
+        final manifestContent = manifestFile.readAsStringSync();
+        final manifestJson =
+            jsonDecode(manifestContent) as Map<String, dynamic>;
+        expect(
+          manifestJson['name'],
+          'Kendo Sync',
+          reason: 'web/manifest.json の name は "Kendo Sync" でなければなりません',
+        );
+        expect(
+          manifestJson['short_name'],
+          'Kendo Sync',
+          reason: 'web/manifest.json の short_name は "Kendo Sync" でなければなりません',
+        );
+
+        // 5. Flutter App: lib/main.dart
+        final mainDartFile = File('lib/main.dart');
+        expect(mainDartFile.existsSync(), isTrue);
+        final mainDartContent = mainDartFile.readAsStringSync();
+        expect(
+          mainDartContent.contains("title: 'Kendo Sync'"),
+          isTrue,
+          reason:
+              "lib/main.dart の MaterialApp.router に title: 'Kendo Sync' が指定されていなければなりません",
+        );
+      },
+    );
   });
 }
