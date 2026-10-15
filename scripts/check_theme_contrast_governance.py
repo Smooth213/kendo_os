@@ -166,32 +166,110 @@ def audit_theme_palettes() -> Tuple[bool, List[str]]:
     return len(violations) == 0, violations
 
 
+def audit_source_code_white_on_white(lib_dir: str = "lib") -> Tuple[bool, List[str]]:
+    """
+    【第301条 サブ監査 5】
+    cardBackground（白系背景）を指定している同一ブロック・Widget内で、
+    アイコンや文字色に pureWhite（alpha > 0.8 の白）を指定している
+    危険な白飛び・視認性崩壊パターンを静的解析で検出します。
+    """
+    violations = []
+    
+    card_bg_pattern = re.compile(r'\b(?:themeColors|context\.appColors|appColors)\.cardBackground\b')
+    pure_white_pattern = re.compile(r'\b(?:AppKendoColors\.)?pureWhite\b|\bColors\.white\b')
+    alpha_pattern = re.compile(r'withValues\s*\(\s*alpha:\s*([0-9.]+)\s*\)')
+
+    for root, _, files in os.walk(lib_dir):
+        for file in files:
+            if not file.endswith('.dart'):
+                continue
+            path = os.path.join(root, file)
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            if not card_bg_pattern.search(content):
+                continue
+
+            lines = content.split('\n')
+
+            # 各行単位およびブロック単位で pureWhite の使われ方を精査
+            for idx, line in enumerate(lines):
+                line_no = idx + 1
+                stripped = line.strip()
+                if stripped.startswith('//') or stripped.startswith('*'):
+                    continue
+
+                if pure_white_pattern.search(line):
+                    is_foreground_color = any(kw in line for kw in [
+                        'color:', 'iconColor', 'textColor', 'TextStyle', 'Icon('
+                    ])
+                    is_bg_specification = any(kw in line for kw in [
+                        'backgroundColor:', 'scaffoldBackgroundColor:', 'cardColor:'
+                    ])
+                    if is_bg_specification:
+                        continue
+
+                    # alpha の検査 (alpha <= 0.8 なら許容)
+                    alpha_match = alpha_pattern.search(line)
+                    if alpha_match:
+                        try:
+                            alpha_val = float(alpha_match.group(1))
+                            if alpha_val <= 0.8:
+                                continue
+                        except ValueError:
+                            pass
+
+                    # ダークモードで排他保護されているか確認 (例: isDark ? pureWhite : ...)
+                    is_safe_dark_branch = False
+                    if 'isDark' in line:
+                        if re.search(r'isDark\s*\?[^:]*(?:pureWhite|Colors\.white)[^:]*:', line):
+                            before_is_dark = line.split('isDark')[0]
+                            if not pure_white_pattern.search(before_is_dark):
+                                is_safe_dark_branch = True
+
+                    # 危険パターン: cardBackground が使われているスコープ内で、
+                    # isDark 以外のフラグ単独で pureWhite を返し、ライトモード時にも pureWhite が適用されるケース
+                    if is_foreground_color and not is_safe_dark_branch:
+                        if re.search(r'(?:isBunaiksen|isNormal|isViewer|isLight)\s*\?[^:]*(?:pureWhite|Colors\.white)', line):
+                            violations.append(
+                                f"{path}:{line_no} 危険パターン: cardBackground（白系背景）が存在するスコープ内で、"
+                                f"ダークモードガード（isDark）なしに pureWhite が前景色に指定されています:\n    {stripped}"
+                            )
+
+    return len(violations) == 0, violations
+
+
 def run_contrast_governance():
     print("=" * 68)
     print(" 📊 【第301条 サブ監査】🌓 テーマ視認性・WCAG 2.1 コントラスト数理監査")
     print("=" * 68)
 
-    ok, violations = audit_theme_palettes()
+    ok_palettes, violations_palettes = audit_theme_palettes()
+    ok_source, violations_source = audit_source_code_white_on_white()
+
+    all_passed = ok_palettes and ok_source
+    all_violations = violations_palettes + violations_source
 
     rules = [
-        ("1. 通常大会モード (Indigo) ライト＆ダーク コントラスト比 (≥ 4.5:1)", True),
-        ("2. 部内戦モード (DeepPurple) ライト＆ダーク コントラスト比 (≥ 4.5:1)", True),
-        ("3. 観客用モード (BlueGrey/Purple) 視認性コントラスト比 (≥ 4.5:1)", True),
-        ("4. ☀️ サンシャイン超高コントラストモード (直射日光/屋外 AAA 基準 ≥ 7.0:1)", True),
+        ("1. 通常大会モード (Indigo) ライト＆ダーク コントラスト比 (≥ 4.5:1)", ok_palettes),
+        ("2. 部内戦モード (DeepPurple) ライト＆ダーク コントラスト比 (≥ 4.5:1)", ok_palettes),
+        ("3. 観客用モード (BlueGrey/Purple) 視認性コントラスト比 (≥ 4.5:1)", ok_palettes),
+        ("4. ☀️ サンシャイン超高コントラストモード (直射日光/屋外 AAA 基準 ≥ 7.0:1)", ok_palettes),
+        ("5. 🎨 静的コード走査: cardBackground（白系）同一ブロック内での高不透明度白（pureWhite）重複衝突ゼロ規約", ok_source),
     ]
 
-    for label, _ in rules:
-        status = "🟢 適合 (Passed)" if ok else "🔴 違反 (Failed)"
+    for label, passed in rules:
+        status = "🟢 適合 (Passed)" if passed else "🔴 違反 (Failed)"
         print(f" {label}: {status}")
 
     print("-" * 68)
-    if ok:
-        print(" 🟢 監査結果: 合格 (全モードにおいて WCAG 2.1 国際基準に完全適合！)")
+    if all_passed:
+        print(" 🟢 監査結果: 合格 (全モードにおいて WCAG 2.1 国際基準および静的視認性規約に完全適合！)")
         print("=" * 68)
         sys.exit(0)
     else:
-        print(" 🔴 監査結果: 違反 (コントラスト比が国際基準を満たしていません)")
-        for v in violations:
+        print(" 🔴 監査結果: 違反 (コントラスト比または静的視認性規約を満たしていません)")
+        for v in all_violations:
             print(f"   ❌ {v}")
         print("=" * 68)
         sys.exit(1)

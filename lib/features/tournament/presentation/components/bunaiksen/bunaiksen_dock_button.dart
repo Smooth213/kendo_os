@@ -44,8 +44,8 @@ class BunaiksenDockButton extends ConsumerStatefulWidget {
 
 class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
     with TickerProviderStateMixin {
-  static const double _buttonSize = 58.0;
-  static const double _closeButtonSize = 46.0;
+  static const double _buttonSize = 64.0;
+  static const double _closeButtonSize = 50.0;
   static const double _dockedVisibleWidth = 20.0;
   static const double _itemStep = 66.0;
 
@@ -320,6 +320,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
           timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
           buttonSize: _buttonSize,
           closeButtonSize: _closeButtonSize,
+          variant: DockVariant.bunaiksen,
           isDocked: _isDocked,
           isLeft: _isLeft,
           yOffset: _yOffset,
@@ -423,6 +424,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
               isEditMode: _isEditMode,
               buttonSize: _buttonSize,
               closeButtonSize: _closeButtonSize,
+              variant: DockVariant.bunaiksen,
               timerBadge: timerState.isRunning
                   ? timerState.formattedDisplay
                   : null,

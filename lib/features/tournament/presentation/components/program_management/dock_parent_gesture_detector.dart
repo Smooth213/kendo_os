@@ -25,15 +25,18 @@ class DockParentGestureDetector extends StatefulWidget {
     required this.themeColors,
     this.unreadCount = 0,
     this.timerBadge,
-    this.buttonSize = 58.0,
-    this.closeButtonSize = 46.0,
+    this.buttonSize = 64.0,
+    this.closeButtonSize = 50.0,
     required this.isDocked,
     required this.isLeft,
     required this.yOffset,
     required this.onTap,
     required this.onLongPress,
     required this.onPositionChanged,
+    this.variant = DockVariant.tournament,
   });
+
+  final DockVariant variant;
 
   @override
   State<DockParentGestureDetector> createState() =>
@@ -125,6 +128,7 @@ class _DockParentGestureDetectorState extends State<DockParentGestureDetector> {
         buttonSize: widget.buttonSize,
         closeButtonSize: widget.closeButtonSize,
         timerBadge: widget.timerBadge,
+        variant: widget.variant,
         onTap: widget.onTap,
       ),
     );

@@ -133,3 +133,73 @@ Future<void> expectValidThemeContrast(
     fail('🚨 【視認性不良検知】画面内にコントラスト不足のテキストが検出されました (WCAG 2.1 違反):\n$details');
   }
 }
+
+/// 🥋 背景色（またはグラデーション）とアイコン色のコントラスト比を検証するカスタムマッチャー
+class HasValidContrastMatcher extends Matcher {
+  final List<Color> backgroundColors;
+  final double minRatio;
+
+  const HasValidContrastMatcher({
+    required this.backgroundColors,
+    this.minRatio = 3.0,
+  });
+
+  @override
+  bool matches(dynamic item, Map matchState) {
+    if (item is! Color) return false;
+    for (final bg in backgroundColors) {
+      final ratio = ContrastTestHelper.calculateContrastRatio(item, bg);
+      if (ratio < minRatio) {
+        matchState['failedBg'] = bg;
+        matchState['ratio'] = ratio;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  Description describe(Description description) {
+    return description.add('コントラスト比が $minRatio:1 以上の視認性を満たすアイコン色');
+  }
+
+  @override
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
+    final failedBg = matchState['failedBg'] as Color?;
+    final ratio = matchState['ratio'] as double?;
+    return mismatchDescription.add(
+      '比率が ${ratio?.toStringAsFixed(2)}:1 で基準 ($minRatio:1) 未満 '
+      '(前景色: $item, 背景色: $failedBg)',
+    );
+  }
+}
+
+/// 背景（グラデーションまたは単色）と前景色が [minRatio] 以上の視認性比率を持つことをアサートするマッチャー
+Matcher hasValidContrastWith(dynamic background, {double minRatio = 3.0}) {
+  final List<Color> bgColors = (background is List<Color>)
+      ? background
+      : [background as Color];
+  return HasValidContrastMatcher(
+    backgroundColors: bgColors,
+    minRatio: minRatio,
+  );
+}
+
+/// ドック等の主要フローティングコンポーネントに対するコントラスト比を厳格検証
+void expectFloatingDockContrast({
+  required Color iconColor,
+  required List<Color> backgroundColors,
+  double minRatio = 3.0,
+  String label = 'フローティングドック',
+}) {
+  expect(
+    iconColor,
+    hasValidContrastWith(backgroundColors, minRatio: minRatio),
+    reason: '🚨 【視認性不良検知】$label のアイコンと背景のコントラスト比が不足しています (WCAG 基準 $minRatio:1)',
+  );
+}

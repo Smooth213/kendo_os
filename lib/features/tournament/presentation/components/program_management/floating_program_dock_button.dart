@@ -36,8 +36,9 @@ class FloatingProgramDockButton extends ConsumerStatefulWidget {
 class _FloatingProgramDockButtonState
     extends ConsumerState<FloatingProgramDockButton>
     with TickerProviderStateMixin {
-  static const double _buttonSize = 58.0;
-  static const double _closeButtonSize = 46.0;
+  static const double _buttonSize = 64.0;
+  static const double _subItemSize = 58.0;
+  static const double _closeButtonSize = 50.0;
   static const double _dockedVisibleWidth = 20.0;
   static const double _itemStep = 66.0;
 
@@ -293,6 +294,7 @@ class _FloatingProgramDockButtonState
           timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
           buttonSize: _buttonSize,
           closeButtonSize: _closeButtonSize,
+          variant: DockVariant.tournament,
           isDocked: _isDocked,
           isLeft: _isLeft,
           yOffset: _yOffset,
@@ -358,7 +360,7 @@ class _FloatingProgramDockButtonState
                       themeColors: themeColors,
                       layoutMode: layoutMode,
                       buttonSize: _buttonSize,
-                      subSize: _buttonSize,
+                      subSize: _subItemSize,
                       step: _itemStep,
                       isEditMode: _isEditMode,
                       isDragging: _itemDraggingIndex == i,
@@ -408,6 +410,7 @@ class _FloatingProgramDockButtonState
                       isEditMode: _isEditMode,
                       buttonSize: _buttonSize,
                       closeButtonSize: _closeButtonSize,
+                      variant: DockVariant.tournament,
                       timerBadge: timerState.isRunning
                           ? timerState.formattedDisplay
                           : null,

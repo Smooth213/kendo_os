@@ -3,6 +3,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 // ★ 追加: ScoreEventの正しい生成アダプター
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
 
 void main() {
   group('[Unit] オフライン同期エンジン（CRDT・マージ・コンフリクト解決）ユニットテスト要塞', () {
@@ -125,5 +126,46 @@ void main() {
         expect(compare(earlyEvent, lateEvent), isNegative);
       },
     );
+
+    test('不可逆ガードにおいて 完了ステータス（finished / approved）が遅延パケットによって進行中・未開始へ巻き戻らないこと', () {
+      // 1. ローカルが finished の場合、リモートが古い in_progress かつリモート優先指定であっても finished が維持されること
+      final preservedFinished = SyncCrdtMerger.resolveMonotonicStatus(
+        localStatus: 'finished',
+        remoteStatus: 'in_progress',
+        preferLocal: false,
+      );
+      expect(preservedFinished, equals('finished'));
+
+      // 2. リモートが finished の場合、ローカルが古い in_progress かつローカル優先指定であっても finished が維持されること
+      final preservedFromRemote = SyncCrdtMerger.resolveMonotonicStatus(
+        localStatus: 'in_progress',
+        remoteStatus: 'finished',
+        preferLocal: true,
+      );
+      expect(preservedFromRemote, equals('finished'));
+
+      // 3. 完了系同士の比較：より高次の approved (rank 4) が finished (rank 3) に優先されること
+      final higherRankWins = SyncCrdtMerger.resolveMonotonicStatus(
+        localStatus: 'finished',
+        remoteStatus: 'approved',
+        preferLocal: true,
+      );
+      expect(higherRankWins, equals('approved'));
+
+      // 4. 同一ランク同士（例: in_progress vs paused）では preferLocal の指定が決定論的に尊重されること
+      final localTieBreak = SyncCrdtMerger.resolveMonotonicStatus(
+        localStatus: 'in_progress',
+        remoteStatus: 'paused',
+        preferLocal: true,
+      );
+      expect(localTieBreak, equals('in_progress'));
+
+      final remoteTieBreak = SyncCrdtMerger.resolveMonotonicStatus(
+        localStatus: 'in_progress',
+        remoteStatus: 'paused',
+        preferLocal: false,
+      );
+      expect(remoteTieBreak, equals('paused'));
+    });
   });
 }

@@ -8,7 +8,9 @@ import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_p
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../helpers/contrast_test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +26,13 @@ void main() {
     Widget createTestWidget({
       required bool isViewerMode,
       UserRole role = UserRole.admin,
+      bool isDark = false,
       List<Override> additionalOverrides = const [],
     }) {
+      final themeColors = AppThemeColors.ofMode(
+        isDark: isDark,
+        mode: 'bunaiksen',
+      );
       return ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
@@ -33,6 +40,9 @@ void main() {
           ...additionalOverrides,
         ],
         child: MaterialApp(
+          theme: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            extensions: [themeColors],
+          ),
           home: Scaffold(
             body: Stack(
               fit: StackFit.expand,
@@ -99,12 +109,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 初回はスピードダイヤルの子アイテムは未展開
+      // 初回はスピードダイヤルの子アイテムは未展開、親ボタンは盾（Icons.shield_rounded）
+      expect(find.byIcon(Icons.shield_rounded), findsOneWidget);
       expect(find.byIcon(Icons.format_list_bulleted_rounded), findsNothing);
       expect(find.byIcon(Icons.leaderboard_rounded), findsNothing);
 
       // 親ボタンをタップして展開
-      await tester.tap(find.byIcon(Icons.widgets_rounded));
+      await tester.tap(find.byIcon(Icons.shield_rounded));
       await tester.pumpAndSettle();
 
       // 純粋アイコン仕様: タイトルラベルは一切表示されないこと
@@ -144,12 +155,77 @@ void main() {
         expect(find.text('03:00'), findsOneWidget);
 
         // 親ボタンをタップして展開
-        await tester.tap(find.byIcon(Icons.widgets_rounded));
+        await tester.tap(find.byIcon(Icons.shield_rounded));
         await tester.pumpAndSettle();
 
         // 展開時のタイマーアイテムは Icons.timer_rounded（大会ホームと同一）になること
         expect(find.byIcon(Icons.timer_rounded), findsOneWidget);
         expect(find.byIcon(Icons.timer_outlined), findsNothing);
+      },
+    );
+
+    testWidgets('部内戦親ドックボタンに白銀プラチナ枠・角丸八角形（八角鍔）・盾アイコンが適用されていること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        createTestWidget(isViewerMode: false, role: UserRole.admin),
+      );
+      await tester.pumpAndSettle();
+
+      // 盾アイコンが表示されていること
+      expect(find.byIcon(Icons.shield_rounded), findsOneWidget);
+
+      // 親ボタンのAnimatedContainerのdecorationが八角鍔（ShapeDecoration / StarBorder.polygon sides: 8）であること
+      final animatedContainer = tester.widget<AnimatedContainer>(
+        find.byType(AnimatedContainer).first,
+      );
+      final decoration = animatedContainer.decoration as ShapeDecoration;
+      expect(decoration.shape, isA<StarBorder>());
+      final starBorder = decoration.shape as StarBorder;
+      expect(starBorder.points, 8.0);
+      expect(
+        starBorder.side.color.toARGB32(),
+        const Color(0xFF94A3B8).withValues(alpha: 0.95).toARGB32(),
+      );
+    });
+
+    testWidgets(
+      '部内戦親ドックボタンの背景（gradientColors）とアイコン色（iconColor）のコントラスト比がライト/ダーク両方で3.0:1以上であること',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        for (final isDark in [false, true]) {
+          await tester.pumpWidget(
+            createTestWidget(
+              isViewerMode: false,
+              role: UserRole.admin,
+              isDark: isDark,
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final animatedContainer = tester.widget<AnimatedContainer>(
+            find.byType(AnimatedContainer).first,
+          );
+          final decoration = animatedContainer.decoration as ShapeDecoration;
+          final gradient = decoration.gradient as LinearGradient;
+          final iconWidget = tester.widget<Icon>(
+            find.byIcon(Icons.shield_rounded),
+          );
+
+          expectFloatingDockContrast(
+            iconColor: iconWidget.color!,
+            backgroundColors: gradient.colors,
+            minRatio: 3.0,
+            label: '部内戦親ドック (${isDark ? "ダークモード" : "ライトモード"})',
+          );
+        }
       },
     );
 

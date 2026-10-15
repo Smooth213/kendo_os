@@ -232,8 +232,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 🥋 フローティングプログラムドックボタンが表示されていること
-      expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
+      // 🥋 フローティングプログラムドックボタン（トロフィーアイコン）が表示されていること
+      expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
     });
   });
 }

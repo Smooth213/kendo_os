@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/prog
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import '../helpers/contrast_test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -77,7 +78,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(FloatingProgramDockButton), findsOneWidget);
-      expect(find.byIcon(Icons.widgets_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
     });
 
     testWidgets('タップすると流動的スピードダイヤルが展開され、子アイコン群とボタンが表示されること', (tester) async {
@@ -408,5 +409,40 @@ void main() {
         AppKendoColors.ipponGold.withValues(alpha: 0.95).toARGB32(),
       );
     });
+
+    testWidgets(
+      '大会親ドックボタンの背景（gradientColors）とアイコン色（iconColor）のコントラスト比がライト/ダーク両方で3.0:1以上であること',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        for (final isDark in [false, true]) {
+          await tester.pumpWidget(
+            createTestWidget(
+              isDark: isDark,
+              child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final animatedContainer = tester.widget<AnimatedContainer>(
+            find.byType(AnimatedContainer).first,
+          );
+          final decoration = animatedContainer.decoration as BoxDecoration;
+          final gradient = decoration.gradient as LinearGradient;
+          final iconWidget = tester.widget<Icon>(
+            find.byIcon(Icons.emoji_events_rounded),
+          );
+
+          expectFloatingDockContrast(
+            iconColor: iconWidget.color!,
+            backgroundColors: gradient.colors,
+            minRatio: 3.0,
+            label: '大会親ドック (${isDark ? "ダークモード" : "ライトモード"})',
+          );
+        }
+      },
+    );
   });
 }
