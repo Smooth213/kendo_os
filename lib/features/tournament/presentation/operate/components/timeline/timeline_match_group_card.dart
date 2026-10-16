@@ -83,6 +83,8 @@ class TimelineMatchGroupCard extends ConsumerWidget {
     final globalRule = ref.watch(matchRuleProvider);
     final rule = firstMatch.rule ?? globalRule;
 
+    final isLeague = label.contains('リーグ戦');
+
     return Container(
       key: ValueKey(groupId),
       child: Column(
@@ -96,14 +98,16 @@ class TimelineMatchGroupCard extends ConsumerWidget {
             ),
             child: Slidable(
               key: ValueKey('group_$groupId'),
-              enabled: !isReadOnlyUI,
+              enabled: !isReadOnlyUI && (!isLeague || canManageTournamentUI),
               endActionPane: ActionPane(
                 motion: const ScrollMotion(),
-                extentRatio: (canManageTournamentUI && !isReadOnlyUI)
-                    ? 0.68
-                    : (!isReadOnlyUI ? 0.46 : 0.25),
+                extentRatio: isLeague
+                    ? 0.25
+                    : ((canManageTournamentUI && !isReadOnlyUI)
+                          ? 0.68
+                          : (!isReadOnlyUI ? 0.46 : 0.25)),
                 children: [
-                  if (!isReadOnlyUI) ...[
+                  if (!isReadOnlyUI && !isLeague) ...[
                     CustomSlidableAction(
                       onPressed: (context) {
                         QuickNextMatchWizardSheet.show(

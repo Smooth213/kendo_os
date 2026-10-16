@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_children_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_matchup_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_player_match_classifier.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
@@ -274,5 +276,213 @@ void main() {
         expect(matchupTiles[1].bouts[1].matchType, '大将');
       },
     );
+
+    testWidgets(
+      'リーグ戦の対戦カード（TimelineLeagueMatchupTile）が独自のSlidableを持ち、対戦単位でスワイプ操作が可能なこと',
+      (tester) async {
+        final bouts = [
+          const MatchModel(
+            id: 'm1',
+            groupName: 'group_league',
+            redName: '道剣 : 選手A',
+            whiteName: '相手 : 選手1',
+            matchType: '先鋒',
+            order: 0,
+            tournamentId: 'tour_123',
+          ),
+          const MatchModel(
+            id: 'm2',
+            groupName: 'group_league',
+            redName: '道剣 : 選手B',
+            whiteName: '相手 : 選手2',
+            matchType: '大将',
+            order: 1,
+            tournamentId: 'tour_123',
+          ),
+        ];
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: TimelineLeagueMatchupTile(
+                  matchupName: '道剣 vs 相手',
+                  bouts: bouts,
+                  ownTeams: const ['道剣'],
+                  isReadOnlyUI: false,
+                  isDark: false,
+                  permissions: const PermissionState(role: UserRole.admin),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // Slidable が存在し、対戦カードがラップされていること
+        expect(find.byType(Slidable), findsOneWidget);
+        expect(find.text('道剣 vs 相手'), findsOneWidget);
+      },
+    );
+
+    testWidgets('全試合形式（団体リーグ戦、リーグ個人戦、勝ち抜き戦、通常団体戦）の階層構造が正しく構築されること', (
+      tester,
+    ) async {
+      late BuildContext capturedCtx;
+      late WidgetRef capturedRef;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Consumer(
+              builder: (ctx, ref, _) {
+                capturedCtx = ctx;
+                capturedRef = ref;
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ),
+      );
+
+      // 1. 団体リーグ戦（3階層：TimelineLeagueMatchupTile が生成されること）
+      final leagueTeamMatches = [
+        const MatchModel(
+          id: 'm_lt1',
+          redName: 'Aチーム : 先鋒',
+          whiteName: 'Bチーム : 先鋒',
+          matchType: '先鋒',
+          order: 0,
+        ),
+      ];
+      final leagueTeamChildren = TimelineGroupChildrenBuilder.buildChildren(
+        context: capturedCtx,
+        ref: capturedRef,
+        groupList: leagueTeamMatches,
+        groupComments: [],
+        label: '団体戦/リーグ戦',
+        isReadOnlyUI: false,
+        isDark: false,
+        permissions: const PermissionState(role: UserRole.operator),
+        rule: const MatchRule(),
+        firstMatch: leagueTeamMatches.first,
+      );
+      final column = leagueTeamChildren.whereType<Column>().first;
+      expect(column.children.whereType<TimelineLeagueMatchupTile>().length, 1);
+
+      // 2. リーグ個人戦（2階層：ReorderableListView で個人戦試合が直接展開されること）
+      final leagueIndivMatches = [
+        const MatchModel(
+          id: 'm_li1',
+          redName: '選手A',
+          whiteName: '選手B',
+          matchType: 'individual',
+          order: 0,
+        ),
+      ];
+      final leagueIndivChildren = TimelineGroupChildrenBuilder.buildChildren(
+        context: capturedCtx,
+        ref: capturedRef,
+        groupList: leagueIndivMatches,
+        groupComments: [],
+        label: '個人戦/リーグ戦',
+        isReadOnlyUI: false,
+        isDark: false,
+        permissions: const PermissionState(role: UserRole.operator),
+        rule: const MatchRule(),
+        firstMatch: leagueIndivMatches.first,
+      );
+      expect(leagueIndivChildren.whereType<ReorderableListView>().length, 1);
+
+      // 3. 団体勝ち抜き戦（2階層：直下に MatchListTileCard が配置されること）
+      final kachinukiMatches = [
+        const MatchModel(
+          id: 'm_k1',
+          redName: '道剣 : 先鋒',
+          whiteName: '相手 : 先鋒',
+          matchType: '第1試合',
+          order: 0,
+        ),
+      ];
+      final kachinukiChildren = TimelineGroupChildrenBuilder.buildChildren(
+        context: capturedCtx,
+        ref: capturedRef,
+        groupList: kachinukiMatches,
+        groupComments: [],
+        label: '団体戦/勝ち抜き戦',
+        isReadOnlyUI: false,
+        isDark: false,
+        permissions: const PermissionState(role: UserRole.operator),
+        rule: const MatchRule(),
+        firstMatch: kachinukiMatches.first,
+      );
+      expect(kachinukiChildren.whereType<MatchListTileCard>().length, 1);
+
+      // 4. 通常団体戦（2階層：直下に MatchListTileCard が配置されること）
+      final teamMatches = [
+        const MatchModel(
+          id: 'm_t1',
+          redName: '道剣 : 先鋒',
+          whiteName: '相手 : 先鋒',
+          matchType: '先鋒',
+          order: 0,
+        ),
+      ];
+      final teamChildren = TimelineGroupChildrenBuilder.buildChildren(
+        context: capturedCtx,
+        ref: capturedRef,
+        groupList: teamMatches,
+        groupComments: [],
+        label: '団体戦',
+        isReadOnlyUI: false,
+        isDark: false,
+        permissions: const PermissionState(role: UserRole.operator),
+        rule: const MatchRule(),
+        firstMatch: teamMatches.first,
+      );
+      expect(teamChildren.whereType<MatchListTileCard>().length, 1);
+    });
+
+    testWidgets('リーグ戦で参加チームが多く2行に収まらない場合、「+◯チーム」と省略表示されること', (tester) async {
+      final matches = [
+        for (int i = 1; i <= 6; i++)
+          MatchModel(
+            id: 'm_$i',
+            redName: '道剣 : 先鋒',
+            whiteName: 'ライバル剣道連盟00$i : 先鋒',
+            matchType: '先鋒',
+            note: '[リーグ戦] 第1試合場, Bリーグ',
+            order: i.toDouble(),
+          ),
+      ];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 280,
+                child: TimelineGroupHeader(
+                  groupList: matches,
+                  label: '団体戦/リーグ戦',
+                  allFinished: false,
+                  hasInProgress: false,
+                  isReadOnlyUI: false,
+                  canManageTournamentUI: false,
+                  isDark: false,
+                  ownTeams: const ['道剣'],
+                  titleColor: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // 自チーム（道剣）が表示されていること（タイトルおよび次の対戦帯に表示）
+      expect(find.textContaining('道剣'), findsWidgets);
+      // 収まらないチーム数が「+◯チーム」と省略表示されていること
+      expect(find.textContaining('+'), findsWidgets);
+      expect(find.textContaining('チーム'), findsWidgets);
+    });
   });
 }
