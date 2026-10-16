@@ -71,8 +71,7 @@ void main() {
       // autoDispose & StreamProvider が即時破棄・空振りしないようにリスナーを登録
       container.listen(safeTimelineProvider('test_tournament'), (_, _) {});
 
-      // Providerの評価を待つ
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Providerの評価
       final result = container.read(safeTimelineProvider('test_tournament'));
 
       expect(result.isLoading, false);
@@ -108,7 +107,6 @@ void main() {
 
       container.listen(safeTimelineProvider('test_tournament'), (_, _) {});
 
-      await Future.delayed(const Duration(milliseconds: 200));
       final result = container.read(safeTimelineProvider('test_tournament'));
 
       // Aチームが含まれるのは一般の部のみ
@@ -135,7 +133,6 @@ void main() {
 
       container.listen(safeTimelineProvider('test_tournament'), (_, _) {});
 
-      await Future.delayed(const Duration(milliseconds: 200));
       final resultDesc = container.read(
         safeTimelineProvider('test_tournament'),
       );
@@ -148,7 +145,6 @@ void main() {
 
       // 昇順に変更
       container.read(categorySortProvider.notifier).state = true;
-      await Future.delayed(const Duration(milliseconds: 200));
       final resultAsc = container.read(safeTimelineProvider('test_tournament'));
       final keysAsc = resultAsc.entries.map((e) => e.key).toList();
 
@@ -170,7 +166,6 @@ void main() {
 
       container.listen(safeTimelineProvider('test_tournament'), (_, _) {});
 
-      await Future.delayed(const Duration(milliseconds: 200));
       final result = container.read(safeTimelineProvider('test_tournament'));
 
       // ネイティブ環境(テスト実行環境)ではmatchListProviderの空リストが返るためエラーにはならない

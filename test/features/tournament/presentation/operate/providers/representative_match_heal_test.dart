@@ -139,8 +139,10 @@ void main() {
           (previous, next) {},
         );
 
-        // Give sync list listener some time to process downstream Firestore snapshots
-        await Future.delayed(const Duration(milliseconds: 500));
+        // SyncEngineの50msデバウンスタイマーが完了してsaveMatchesBulkが呼ばれるまで待機（最短で抜け、最大1秒）
+        for (int i = 0; i < 50 && savedMatches.isEmpty; i++) {
+          await Future.delayed(const Duration(milliseconds: 20));
+        }
 
         expect(savedMatches.isNotEmpty, isTrue);
         final firstBulk = savedMatches.first;

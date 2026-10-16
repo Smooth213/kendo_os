@@ -98,8 +98,8 @@ void main() {
             .doc('match_1')
             .set(matchData);
 
-        // 非同期のストリーム同期処理を少し待つ
-        await Future.delayed(const Duration(milliseconds: 100));
+        // saveMatchesBulk が呼ばれるまで決定論的に待機
+        await untilCalled(() => mockLocalRepo.saveMatchesBulk(any()));
 
         // saveMatchesBulk が呼ばれている ＝ 再バインドされたストリームが生きており、
         // 最新のデータをIsarへ流し込んだことを証明する

@@ -58,7 +58,7 @@ void main() {
       );
 
       // Give Future time to process
-      await Future.delayed(Duration(milliseconds: 50));
+      await pumpEventQueue();
 
       if (kIsWeb) {
         expect(

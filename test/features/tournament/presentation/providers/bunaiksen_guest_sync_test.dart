@@ -36,7 +36,7 @@ void main() {
         expect(container.read(bunaiksenGuestProvider), contains('ゲストA'));
 
         // Wait for Firestore roundtrip stream update
-        await Future.delayed(const Duration(milliseconds: 100));
+        await pumpEventQueue();
         expect(container.read(bunaiksenGuestProvider), contains('ゲストA'));
 
         // Verify Firestore structure
@@ -59,12 +59,12 @@ void main() {
         container.read(bunaiksenViewDateProvider.notifier).state = newDate;
 
         // Wait for Stream to update
-        await Future.delayed(const Duration(milliseconds: 100));
+        await pumpEventQueue();
         expect(container.read(bunaiksenGuestProvider), isEmpty);
 
         // Add guest to 2026-07-04
         await container.read(bunaiksenGuestProvider.notifier).addGuest('ゲストB');
-        await Future.delayed(const Duration(milliseconds: 100));
+        await pumpEventQueue();
         expect(container.read(bunaiksenGuestProvider), contains('ゲストB'));
 
         // Check Firestore doc under 2026-07-04
@@ -94,7 +94,7 @@ void main() {
         container.read(currentDojoIdProvider.notifier).state = 'test203';
 
         // Wait for Stream to update
-        await Future.delayed(const Duration(milliseconds: 100));
+        await pumpEventQueue();
 
         // Guest list, queue, and streak should be completely empty/reset under the new Dojo ID context
         expect(container.read(bunaiksenGuestProvider), isEmpty);

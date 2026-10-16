@@ -21,59 +21,58 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('[E2E] E2E / 統合シナリオにおいて プラン2: 端末低負荷・省電力・I/Oバッファリング＆LRUメモリ保護検証', () {
-    test(
-      'タイマーI/Oバッファリングに関して、稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること',
-      () async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
+    testWidgets('タイマーI/Oバッファリングに関して、稼働中の毎秒ディスクI/Oが排除され、開始・停止・状態変化時のみ永続化されること', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-        final container = ProviderContainer(
-          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        );
-        addTearDown(container.dispose);
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
 
-        const courtId = 'court_e2e_1';
-        final timerNotifier = container.read(
-          renseikaiMasterTimerProvider(courtId).notifier,
-        );
+      const courtId = 'court_e2e_1';
+      final timerNotifier = container.read(
+        renseikaiMasterTimerProvider(courtId).notifier,
+      );
 
-        // 初期化（180秒）
-        timerNotifier.initialize(180);
-        expect(container.read(renseikaiMasterTimerProvider(courtId)), 180);
-        expect(prefs.getInt('master_timer_seconds_$courtId'), 180);
+      // 初期化（180秒）
+      timerNotifier.initialize(180);
+      expect(container.read(renseikaiMasterTimerProvider(courtId)), 180);
+      expect(prefs.getInt('master_timer_seconds_$courtId'), 180);
 
-        // タイマー開始
-        timerNotifier.start();
-        expect(prefs.getBool('master_timer_running_$courtId'), isTrue);
+      // タイマー開始
+      timerNotifier.start();
+      expect(prefs.getBool('master_timer_running_$courtId'), isTrue);
 
-        // 1秒待機（タイマーの1カウントダウン進行）
-        await Future.delayed(const Duration(milliseconds: 1100));
+      // 仮想時間を2秒進行（決定論的なカウントダウン進行）
+      await tester.pump(const Duration(seconds: 2));
 
-        // メモリ内Stateはカウントダウンされていること
-        final currentSecond = container.read(
-          renseikaiMasterTimerProvider(courtId),
-        );
-        expect(currentSecond, lessThan(180));
+      // メモリ内Stateはカウントダウンされていること
+      final currentSecond = container.read(
+        renseikaiMasterTimerProvider(courtId),
+      );
+      expect(currentSecond, equals(178));
 
-        // 一時停止
-        timerNotifier.pause();
-        expect(prefs.getBool('master_timer_running_$courtId'), isFalse);
-        expect(
-          prefs.getInt('master_timer_seconds_$courtId'),
-          currentSecond,
-          reason: '一時停止時に最新の残り秒数がディスクに確定保存されること',
-        );
+      // 一時停止
+      timerNotifier.pause();
+      expect(prefs.getBool('master_timer_running_$courtId'), isFalse);
+      expect(
+        prefs.getInt('master_timer_seconds_$courtId'),
+        currentSecond,
+        reason: '一時停止時に最新の残り秒数がディスクに確定保存されること',
+      );
 
-        // 秒数手動変更
-        timerNotifier.setSeconds(120);
-        expect(container.read(renseikaiMasterTimerProvider(courtId)), 120);
-        expect(
-          prefs.getInt('master_timer_seconds_$courtId'),
-          120,
-          reason: '手動秒数変更時に即時保存されること',
-        );
-      },
-    );
+      // 秒数手動変更
+      timerNotifier.setSeconds(120);
+      expect(container.read(renseikaiMasterTimerProvider(courtId)), 120);
+      expect(
+        prefs.getInt('master_timer_seconds_$courtId'),
+        120,
+        reason: '手動秒数変更時に即時保存されること',
+      );
+    });
 
     test(
       'PDF LRUメモリ保護に関して、10ページ以上連続アクセスしても上限8ページに制限され、clearUrl で即時解放されること',
