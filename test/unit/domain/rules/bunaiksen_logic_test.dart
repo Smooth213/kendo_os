@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ※ プロジェクトの実際のパスに合わせてインポートを調整してください
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
-// ★ 追加：本番環境のヘルパークラスをインポート
 import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_record_export_helper.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/match_context.dart';
@@ -172,6 +172,137 @@ void main() {
       );
       // 2-0 (勝=3) + 1-1 (分=1) + 0-1 (負=0) = 4ポイント
       expect(pointsA, 4);
+    });
+
+    test('リーグ戦判定において カテゴリやnoteやmatchTypeからリーグ戦を正しく識別できること', () {
+      final calculatorLeagueMatch = MatchModel(
+        id: 'calc_league_1',
+        tournamentId: 't1',
+        category: 'Aリーグ',
+        matchType: 'リーグ戦',
+        groupName: 'league_Aリーグ',
+        note: '[Aリーグ] 第1試合 (第1コート 第1試合)',
+        redName: '選手A',
+        whiteName: '選手B',
+      );
+      final tournamentMatch = MatchModel(
+        id: 'calc_tour_1',
+        tournamentId: 't1',
+        category: '決勝トーナメント',
+        matchType: 'トーナメント',
+        groupName: 'tournament',
+        note: '[決勝トーナメント] 1回戦第1試合',
+        redName: '選手A',
+        whiteName: '選手B',
+      );
+
+      expect(BunaiksenHelper.isLeagueMatch(calculatorLeagueMatch), isTrue);
+      expect(BunaiksenHelper.isLeagueMatch(tournamentMatch), isFalse);
+      expect(BunaiksenHelper.isLeagueMatches([calculatorLeagueMatch]), isTrue);
+      expect(BunaiksenHelper.isLeagueMatches([tournamentMatch]), isFalse);
+    });
+  });
+
+  group('カテゴリ4: 部内戦公式記録の複数形式データ集約ロジックのテスト', () {
+    test('複数形式の試合データにおいて 全カテゴリが欠落なく集約され個人戦グループが正しく統合されること', () {
+      // 1. リーグ戦形式の試合データ
+      final leagueMatches = [
+        const MatchModel(
+          id: 'm_league_2',
+          tournamentId: 't1',
+          category: 'Aリーグ',
+          matchType: 'リーグ戦',
+          order: 2.0,
+          redName: '選手A',
+          whiteName: '選手C',
+          groupName: 'league_A',
+          note: '[Aリーグ] 第2試合',
+        ),
+        const MatchModel(
+          id: 'm_league_1',
+          tournamentId: 't1',
+          category: 'Aリーグ',
+          matchType: 'リーグ戦',
+          order: 1.0,
+          redName: '選手A',
+          whiteName: '選手B',
+          groupName: 'league_A',
+          note: '[Aリーグ] 第1試合',
+        ),
+      ];
+
+      // 2. 個人戦形式の試合データ（UUIDグループ名で個別登録されたもの）
+      final indivMatches1 = [
+        const MatchModel(
+          id: 'm_indiv_1',
+          tournamentId: 't1',
+          category: '個人戦トーナメント',
+          matchType: '個人戦',
+          order: 1.0,
+          redName: '選手C',
+          whiteName: '選手D',
+          groupName: '12345678-1234-1234-1234-123456789abc',
+        ),
+      ];
+      final indivMatches2 = [
+        const MatchModel(
+          id: 'm_indiv_2',
+          tournamentId: 't1',
+          category: '個人戦トーナメント',
+          matchType: '個人戦',
+          order: 2.0,
+          redName: '選手E',
+          whiteName: '選手F',
+          groupName: '87654321-4321-4321-4321-cba987654321',
+        ),
+      ];
+
+      final categoryGroups = <String, Map<String, List<MatchModel>>>{
+        'Aリーグ': {'league_A': leagueMatches},
+        '個人戦トーナメント': {
+          '12345678-1234-1234-1234-123456789abc': indivMatches1,
+          '87654321-4321-4321-4321-cba987654321': indivMatches2,
+        },
+      };
+
+      // 実行
+      final allData = BunaiksenRecordExportHelper.buildAllCategoryData(
+        categoryGroups,
+      );
+
+      // 検証
+      expect(allData.length, 2, reason: '全2カテゴリが欠落なく生成されること');
+
+      // 1) Aリーグの検証（リーグ戦は統合されず元のグループ名でソートされる）
+      final leagueCategory = allData.firstWhere(
+        (c) => c.categoryName == 'Aリーグ',
+      );
+      expect(leagueCategory.groupDataList.length, 1);
+      expect(leagueCategory.groupDataList[0]['groupName'], 'league_A');
+      final sortedLeagueMatches =
+          leagueCategory.groupDataList[0]['matches'] as List<MatchModel>;
+      expect(sortedLeagueMatches.length, 2);
+      expect(
+        sortedLeagueMatches[0].id,
+        'm_league_1',
+        reason: 'order昇順でソートされること',
+      );
+      expect(sortedLeagueMatches[1].id, 'm_league_2');
+
+      // 2) 個人戦トーナメントの検証（個別UUIDグループが __merged_individual__ に統合される）
+      final indivCategory = allData.firstWhere(
+        (c) => c.categoryName == '個人戦トーナメント',
+      );
+      expect(indivCategory.groupDataList.length, 1);
+      expect(
+        indivCategory.groupDataList[0]['groupName'],
+        '__merged_individual__',
+      );
+      final mergedIndivMatches =
+          indivCategory.groupDataList[0]['matches'] as List<MatchModel>;
+      expect(mergedIndivMatches.length, 2);
+      expect(mergedIndivMatches[0].id, 'm_indiv_1');
+      expect(mergedIndivMatches[1].id, 'm_indiv_2');
     });
   });
 }

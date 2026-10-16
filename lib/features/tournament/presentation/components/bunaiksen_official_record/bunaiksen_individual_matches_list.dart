@@ -3,6 +3,7 @@ import 'package:kendo_os/features/match/application/mappers/match_projection_map
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
+import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/features/viewer/components/viewer_point_box_cell.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -35,19 +36,32 @@ class BunaiksenIndividualMatchesList extends StatelessWidget {
         ? const Color(0xFFFFFFFF)
         : const Color(0xFF000000);
 
-    // ヘッダー名からシステムID（英数字とハイフンの羅列）を隠す処理
+    final first = matches.first;
+    final isLeague = BunaiksenHelper.isLeagueMatches(matches);
+    final isKata = matches.any((m) => m.rule?.isKataMatch == true);
+
+    String categoryLabel = '個人戦';
+    if (isKata) {
+      categoryLabel = '形・基本判定';
+    } else if (first.category != null && first.category!.isNotEmpty) {
+      categoryLabel = first.category!;
+    } else if (isLeague) {
+      categoryLabel = 'リーグ戦';
+    }
+
+    // ヘッダー名からシステムID（英数字とハイフンの羅列）や統合用キーを隠す処理
     final uuidRegex = RegExp(
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
     );
     String displayGroupName = groupName;
     if (uuidRegex.hasMatch(groupName) ||
-        groupName.length > 20 ||
         groupName == '__default__' ||
-        groupName.contains(' vs ')) {
+        groupName == '__merged_individual__' ||
+        (groupName.length > 25 && !groupName.contains(' vs '))) {
       displayGroupName = '';
     }
 
-    String headerTitle = '【個人戦】';
+    String headerTitle = '【$categoryLabel】';
     if (displayGroupName.isNotEmpty) {
       headerTitle += ' $displayGroupName';
     }

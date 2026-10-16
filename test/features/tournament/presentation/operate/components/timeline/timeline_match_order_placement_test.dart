@@ -5,6 +5,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_children_builder.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_matchup_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_player_match_classifier.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -178,5 +179,100 @@ void main() {
       expect(matchCards[5].initialMatch.matchType, '代表戦');
       expect(matchCards[6].initialMatch.matchType, '第6試合');
     });
+
+    testWidgets(
+      '団体戦/リーグ戦において、対戦カードごとにまとまり（TimelineLeagueMatchupTile）、その中に個別の試合が含まれること',
+      (tester) async {
+        final leagueMatches = [
+          // 対戦1: 道剣 vs テスト001-1
+          const MatchModel(
+            id: 'm1_senpo',
+            groupName: 'Bリーグ',
+            redName: '道剣 : 皿田 脩人',
+            whiteName: 'テスト001-1 : 選手A',
+            matchType: '先鋒',
+            note: '[リーグ戦] 第1試合場, 1試合目, Bリーグ',
+            order: 0,
+          ),
+          const MatchModel(
+            id: 'm1_taisho',
+            groupName: 'Bリーグ',
+            redName: '道剣 : 久安 智也',
+            whiteName: 'テスト001-1 : 選手B',
+            matchType: '大将',
+            note: '[リーグ戦] 第1試合場, 1試合目, Bリーグ',
+            order: 1,
+          ),
+          // 対戦2: 道剣 vs テスト001-2
+          const MatchModel(
+            id: 'm2_senpo',
+            groupName: 'Bリーグ',
+            redName: '道剣 : 皿田 脩人',
+            whiteName: 'テスト001-2 : 選手C',
+            matchType: '先鋒',
+            note: '[リーグ戦] 第1試合場, 2試合目, Bリーグ',
+            order: 2,
+          ),
+          const MatchModel(
+            id: 'm2_taisho',
+            groupName: 'Bリーグ',
+            redName: '道剣 : 久安 智也',
+            whiteName: 'テスト001-2 : 選手D',
+            matchType: '大将',
+            note: '[リーグ戦] 第1試合場, 2試合目, Bリーグ',
+            order: 3,
+          ),
+        ];
+
+        late BuildContext capturedCtx;
+        late WidgetRef capturedRef;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Consumer(
+                builder: (ctx, ref, _) {
+                  capturedCtx = ctx;
+                  capturedRef = ref;
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ),
+        );
+
+        final children = TimelineGroupChildrenBuilder.buildChildren(
+          context: capturedCtx,
+          ref: capturedRef,
+          groupList: leagueMatches,
+          groupComments: [],
+          label: '団体戦/リーグ戦',
+          isReadOnlyUI: false,
+          isDark: false,
+          permissions: const PermissionState(role: UserRole.operator),
+          rule: const MatchRule(positions: ['先鋒', '大将']),
+          firstMatch: leagueMatches.first,
+          ownTeams: const ['道剣'],
+        );
+
+        // Column の中の TimelineLeagueMatchupTile を抽出
+        final column = children.whereType<Column>().first;
+        final matchupTiles = column.children
+            .whereType<TimelineLeagueMatchupTile>()
+            .toList();
+
+        // 対戦カードが2つにまとまっていること
+        expect(matchupTiles.length, 2);
+        expect(matchupTiles[0].matchupName, '道剣 vs テスト001-1');
+        expect(matchupTiles[0].bouts.length, 2);
+        expect(matchupTiles[0].bouts[0].matchType, '先鋒');
+        expect(matchupTiles[0].bouts[1].matchType, '大将');
+
+        expect(matchupTiles[1].matchupName, '道剣 vs テスト001-2');
+        expect(matchupTiles[1].bouts.length, 2);
+        expect(matchupTiles[1].bouts[0].matchType, '先鋒');
+        expect(matchupTiles[1].bouts[1].matchType, '大将');
+      },
+    );
   });
 }

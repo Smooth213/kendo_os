@@ -6,6 +6,7 @@ import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_score_table
 import 'package:kendo_os/features/viewer/components/viewer_individual_matches_list_card.dart';
 import 'package:kendo_os/features/viewer/components/viewer_kachinuki_record_card.dart';
 import 'package:kendo_os/features/viewer/components/viewer_league_grid_table_card.dart';
+import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/features/viewer/services/viewer_bunaiksen_export_service.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -51,7 +52,7 @@ class ViewerBunaiksenCategoryContent extends ConsumerWidget {
             m.matchType == '選手' ||
             m.matchType.contains('個人戦'),
       );
-      final isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
+      final isLeague = BunaiksenHelper.isLeagueMatches(matches);
 
       if (isIndiv &&
           !isLeague &&
@@ -147,8 +148,7 @@ class ViewerBunaiksenCategoryContent extends ConsumerWidget {
                 );
               }
 
-              if (bouts.isNotEmpty &&
-                  bouts.any((m) => m.note.contains('[リーグ戦]'))) {
+              if (bouts.isNotEmpty && BunaiksenHelper.isLeagueMatches(bouts)) {
                 return _buildLeagueSection(context, groupName, bouts);
               }
 

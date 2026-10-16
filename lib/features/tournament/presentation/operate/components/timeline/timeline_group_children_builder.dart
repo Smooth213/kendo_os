@@ -4,6 +4,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_inner_comment_widget.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_matchup_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_reorder_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_tie_break_detector.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_tie_break_dialog.dart';
@@ -27,6 +28,7 @@ class TimelineGroupChildrenBuilder {
     required PermissionState permissions,
     required MatchRule rule,
     required MatchModel firstMatch,
+    List<String> ownTeams = const [],
   }) {
     // 🌟 団体戦アコーディオン内の順序：
     // 基本ポジション（先鋒〜大将） ➔ 代表戦 ➔ 後から追加した試合（お代わり試合など）
@@ -102,55 +104,120 @@ class TimelineGroupChildrenBuilder {
           );
         }
       }
-    }
 
-    if (label.contains('リーグ戦') && label.contains('個人戦')) {
-      final sortedNormalItems = normalItems.cast<TimelineItem>().toList()
-        ..sort((a, b) => b.timelineOrder.compareTo(a.timelineOrder));
+      if (label.contains('個人戦') || label.contains('選手')) {
+        final sortedNormalItems = normalItems.cast<TimelineItem>().toList()
+          ..sort((a, b) => b.timelineOrder.compareTo(a.timelineOrder));
 
-      childrenWidgets.add(
-        ReorderableListView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          buildDefaultDragHandles: !isReadOnlyUI,
-          onReorderItem: (oldIndex, newIndex) =>
-              TimelineReorderHelper.onReorderInnerTimeline(
-                sortedNormalItems,
-                oldIndex,
-                newIndex,
-                ref,
-              ),
-          children: sortedNormalItems
-              .asMap()
-              .entries
-              .map<Widget?>((entry) {
-                final i = entry.value;
-                if (i is MatchModel) {
-                  return Container(
-                    key: ValueKey(i.id),
-                    child: MatchListTileCard(
+        childrenWidgets.add(
+          ReorderableListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: !isReadOnlyUI,
+            onReorderItem: (oldIndex, newIndex) =>
+                TimelineReorderHelper.onReorderInnerTimeline(
+                  sortedNormalItems,
+                  oldIndex,
+                  newIndex,
+                  ref,
+                ),
+            children: sortedNormalItems
+                .asMap()
+                .entries
+                .map<Widget?>((entry) {
+                  final i = entry.value;
+                  if (i is MatchModel) {
+                    return Container(
                       key: ValueKey(i.id),
-                      initialMatch: i,
-                    ),
-                  );
-                } else if (i is MatchCommentModel) {
-                  return Container(
-                    key: ValueKey('inner_comment_${i.id}'),
-                    child: TimelineInnerCommentWidget(
-                      comment: i,
-                      permissions: permissions,
-                      isDark: isDark,
-                      ref: ref,
-                      index: entry.key,
-                    ),
-                  );
-                }
-                return null;
-              })
-              .whereType<Widget>()
-              .toList(),
-        ),
-      );
+                      child: MatchListTileCard(
+                        key: ValueKey(i.id),
+                        initialMatch: i,
+                      ),
+                    );
+                  } else if (i is MatchCommentModel) {
+                    return Container(
+                      key: ValueKey('inner_comment_${i.id}'),
+                      child: TimelineInnerCommentWidget(
+                        comment: i,
+                        permissions: permissions,
+                        isDark: isDark,
+                        ref: ref,
+                        index: entry.key,
+                      ),
+                    );
+                  }
+                  return null;
+                })
+                .whereType<Widget>()
+                .toList(),
+          ),
+        );
+      } else {
+        // 🥋 団体リーグ戦：対戦カード（チーム対抗戦）ごとにまとめる
+        final boutsByMatchup = <String, List<MatchModel>>{};
+        final matchupOrder = <String>[];
+        for (var m in orderedMatches) {
+          final t1 = m.redName.split(':').first.trim();
+          final t2 = m.whiteName.split(':').first.trim();
+          final matchupName = '$t1 vs $t2';
+          if (!boutsByMatchup.containsKey(matchupName)) {
+            matchupOrder.add(matchupName);
+            boutsByMatchup[matchupName] = [];
+          }
+          boutsByMatchup[matchupName]!.add(m);
+        }
+
+        final combinedItems = <dynamic>[];
+        for (var name in matchupOrder) {
+          combinedItems.add({
+            'type': 'matchup',
+            'name': name,
+            'matches': boutsByMatchup[name]!,
+            'order': boutsByMatchup[name]!.first.order,
+          });
+        }
+        for (var c in groupComments) {
+          combinedItems.add({
+            'type': 'comment',
+            'comment': c,
+            'order': c.order,
+          });
+        }
+        combinedItems.sort(
+          (a, b) => (a['order'] as double).compareTo(b['order'] as double),
+        );
+
+        childrenWidgets.add(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: combinedItems.map<Widget>((cItem) {
+              if (cItem['type'] == 'comment') {
+                final c = cItem['comment'] as MatchCommentModel;
+                return Container(
+                  key: ValueKey('inner_comment_${c.id}'),
+                  child: TimelineInnerCommentWidget(
+                    comment: c,
+                    permissions: permissions,
+                    isDark: isDark,
+                    ref: ref,
+                  ),
+                );
+              }
+              final name = cItem['name'] as String;
+              final bouts = cItem['matches'] as List<MatchModel>;
+              return TimelineLeagueMatchupTile(
+                key: ValueKey('league_team_$name'),
+                matchupName: name,
+                bouts: bouts,
+                ownTeams: ownTeams,
+                isReadOnlyUI: isReadOnlyUI,
+                isDark: isDark,
+                permissions: permissions,
+              );
+            }).toList(),
+          ),
+        );
+      }
     } else {
       childrenWidgets.addAll(
         orderedMatches.map(

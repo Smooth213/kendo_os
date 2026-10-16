@@ -55,11 +55,11 @@ void main() {
 
       // 下部コピーボタンまでスクロールして確認
       await tester.scrollUntilVisible(
-        find.text('進行予定・コート配分表をコピー'),
+        find.text('進行予定・コート配分表をテキストコピー'),
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('進行予定・コート配分表をコピー'), findsOneWidget);
+      expect(find.text('進行予定・コート配分表をテキストコピー'), findsOneWidget);
     });
 
     testWidgets('参加人数の増減ボタンで値が変化し、再計算されること', (tester) async {

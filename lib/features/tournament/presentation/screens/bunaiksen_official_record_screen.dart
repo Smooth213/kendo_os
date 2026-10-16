@@ -18,6 +18,8 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 
+import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 
 final isExportingProvider = StateProvider.autoDispose<bool>((ref) => false);
@@ -32,6 +34,8 @@ class BunaiksenOfficialRecordScreen extends ConsumerStatefulWidget {
 
 class _BunaiksenOfficialRecordScreenState
     extends ConsumerState<BunaiksenOfficialRecordScreen> {
+  OfficialRecordExportScope _exportScope = OfficialRecordExportScope.current;
+
   @override
   void dispose() {
     FloatingDockSheetManager.close(immediate: true);
@@ -126,43 +130,10 @@ class _BunaiksenOfficialRecordScreenState
                   children: categories.map((cat) {
                     final groupsMap = categoryGroups[cat]!;
 
-                    // 個人戦グループを統合するためのマップ
-                    final mergedGroups = <String, List<MatchModel>>{};
-                    final List<MatchModel> individualMergedList = [];
-                    final uuidRegex = RegExp(
-                      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-                    );
-
-                    groupsMap.forEach((key, matches) {
-                      final isIndiv = matches.any(
-                        (m) =>
-                            m.matchType == 'individual' ||
-                            m.matchType == '選手' ||
-                            m.matchType.contains('個人戦'),
-                      );
-                      final isLeague = matches.any(
-                        (m) => m.note.contains('[リーグ戦]'),
-                      );
-
-                      // 通常の個人戦（リーグ戦以外）かつ、ID形式のグループ名を統合対象とする
-                      if (isIndiv &&
-                          !isLeague &&
-                          (uuidRegex.hasMatch(key) || key.length > 20)) {
-                        individualMergedList.addAll(matches);
-                      } else {
-                        mergedGroups[key] = matches;
-                      }
-                    });
-
-                    // 統合された個人戦がある場合、特殊なキーで登録
-                    if (individualMergedList.isNotEmpty) {
-                      individualMergedList.sort(
-                        (a, b) => a.order.compareTo(b.order),
-                      );
-                      mergedGroups['__merged_individual__'] =
-                          individualMergedList;
-                    }
-
+                    final mergedGroups =
+                        BunaiksenRecordExportHelper.mergeIndividualGroups(
+                          groupsMap,
+                        );
                     final sortedGroupKeys = mergedGroups.keys.toList()..sort();
 
                     return Column(
@@ -172,7 +143,30 @@ class _BunaiksenOfficialRecordScreenState
                           cardColor: cardColor,
                           isDark: isDark,
                           isExporting: isExporting,
-                          onPrintPdf: () =>
+                          hasMultipleCategories: categories.length > 1,
+                          exportScope: _exportScope,
+                          onScopeChanged: (scope) {
+                            setState(() {
+                              _exportScope = scope;
+                            });
+                          },
+                          onPrintPdf: () {
+                            if (_exportScope == OfficialRecordExportScope.all) {
+                              BunaiksenRecordExportHelper.handleExportAll(
+                                context: context,
+                                ref: ref,
+                                isExportingController: ref.read(
+                                  isExportingProvider.notifier,
+                                ),
+                                allCategoryData:
+                                    BunaiksenRecordExportHelper.buildAllCategoryData(
+                                      categoryGroups,
+                                    ),
+                                isPdf: true,
+                                tName: tName,
+                                tDate: tDate,
+                              );
+                            } else {
                               BunaiksenRecordExportHelper.handleExport(
                                 context: context,
                                 ref: ref,
@@ -185,8 +179,26 @@ class _BunaiksenOfficialRecordScreenState
                                 isPdf: true,
                                 tName: tName,
                                 tDate: tDate,
-                              ),
-                          onShareImage: () =>
+                              );
+                            }
+                          },
+                          onShareImage: () {
+                            if (_exportScope == OfficialRecordExportScope.all) {
+                              BunaiksenRecordExportHelper.handleExportAll(
+                                context: context,
+                                ref: ref,
+                                isExportingController: ref.read(
+                                  isExportingProvider.notifier,
+                                ),
+                                allCategoryData:
+                                    BunaiksenRecordExportHelper.buildAllCategoryData(
+                                      categoryGroups,
+                                    ),
+                                isPdf: false,
+                                tName: tName,
+                                tDate: tDate,
+                              );
+                            } else {
                               BunaiksenRecordExportHelper.handleExport(
                                 context: context,
                                 ref: ref,
@@ -199,7 +211,9 @@ class _BunaiksenOfficialRecordScreenState
                                 isPdf: false,
                                 tName: tName,
                                 tDate: tDate,
-                              ),
+                              );
+                            }
+                          },
                         ),
                         // 記録コンテンツ
                         Expanded(
@@ -222,7 +236,7 @@ class _BunaiksenOfficialRecordScreenState
 
                               // 2. リーグ戦の描画
                               if (bouts.isNotEmpty &&
-                                  bouts.any((m) => m.note.contains('[リーグ戦]'))) {
+                                  BunaiksenHelper.isLeagueMatches(bouts)) {
                                 return _buildLeagueSection(
                                   context,
                                   ref,

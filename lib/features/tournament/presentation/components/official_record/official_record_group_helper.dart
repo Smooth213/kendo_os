@@ -1,4 +1,5 @@
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 
 /// 公式記録画面のカテゴリ・グループ別試合分類・登録名解決ヘルパー
@@ -36,7 +37,7 @@ class OfficialRecordGroupHelper {
             m.matchType.contains('形') ||
             m.matchType.contains('稽古法'),
       );
-      final isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
+      final isLeague = BunaiksenHelper.isLeagueMatches(matches);
       final isKachinuki = matches.any((m) => m.isKachinuki);
 
       // リーグ戦・勝ち抜き戦以外の個人戦はグループ名の形式を問わず全て単一の個人戦リストに統合

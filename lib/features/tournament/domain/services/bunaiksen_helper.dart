@@ -252,4 +252,54 @@ class BunaiksenHelper {
     }
     return customTeamPoints;
   }
+
+  // 6. リーグ戦判定ロジック（単一試合・複数試合対応）
+  static bool isLeagueMatch(dynamic m) {
+    if (m == null) return false;
+    try {
+      if (m.rule != null) {
+        if (m.rule.isLeague == true || m.rule.matchFormat == 'league') {
+          return true;
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final String mt = m.matchType?.toString() ?? '';
+      if (mt == 'リーグ戦' ||
+          mt == 'league' ||
+          (mt.contains('リーグ') && !mt.contains('トーナメント'))) {
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      final String note = m.note?.toString() ?? '';
+      if (note.contains('リーグ') && !note.contains('トーナメント')) {
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      final String gn = m.groupName?.toString() ?? '';
+      if (gn.startsWith('league_') ||
+          (gn.contains('リーグ') && !gn.contains('トーナメント'))) {
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      final String cat = m.category?.toString() ?? '';
+      if (cat.contains('リーグ') && !cat.contains('トーナメント')) {
+        return true;
+      }
+    } catch (_) {}
+
+    return false;
+  }
+
+  static bool isLeagueMatches(List<dynamic> matches) {
+    if (matches.isEmpty) return false;
+    return matches.any(isLeagueMatch);
+  }
 }

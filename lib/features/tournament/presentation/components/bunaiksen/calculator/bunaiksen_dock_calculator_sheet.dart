@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/bunaiksen_calculator_create_match_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_allocation_view.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_input_section.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_summary_card.dart';
@@ -103,13 +104,36 @@ class BunaiksenDockCalculatorSheet extends ConsumerWidget {
 
               const SizedBox(height: AppSpacing.xl),
 
-              // コピーボタン（下部フッター）
+              // 1. メインアクション: 部内戦試合作成ボタン
               ElevatedButton.icon(
-                icon: const Icon(Icons.content_copy_rounded, size: 18),
-                label: const Text('進行予定・コート配分表をコピー'),
+                icon: const Icon(Icons.sports_kabaddi_rounded, size: 20),
+                label: Text(
+                  'この配分で部内戦の試合を作成 (全${calcState.result.totalMatches}試合)',
+                  style: const TextStyle(fontWeight: AppFontWeight.bold),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColors.primaryAccent,
                   foregroundColor: themeColors.onPrimaryAccent,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                  elevation: 2,
+                ),
+                onPressed: () {
+                  AppHaptics.medium();
+                  BunaiksenCalculatorCreateMatchSheet.show(context);
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
+              // 2. サブアクション: コピーボタン（枠線スタイル）
+              OutlinedButton.icon(
+                icon: const Icon(Icons.content_copy_rounded, size: 18),
+                label: const Text('進行予定・コート配分表をテキストコピー'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: themeColors.primaryAccent,
+                  side: BorderSide(
+                    color: themeColors.primaryAccent.withValues(alpha: 0.5),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
                 ),

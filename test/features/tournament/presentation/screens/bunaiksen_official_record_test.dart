@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_league_grid_table.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
 class FakeLocalMatchRepository implements LocalMatchRepository {
@@ -101,8 +102,9 @@ void main() {
       // Verify loaded data
       expect(find.text('この日の記録データはありません'), findsNothing);
       expect(find.text('一般の部'), findsOneWidget);
-      expect(find.textContaining('選手A'), findsOneWidget);
-      expect(find.textContaining('選手B'), findsOneWidget);
+      expect(find.byType(BunaiksenLeagueGridTable), findsOneWidget);
+      expect(find.textContaining('選手A'), findsWidgets);
+      expect(find.textContaining('選手B'), findsWidgets);
     });
 
     testWidgets('ネイティブ環境において ローカルDB（Isar）から試合記録が正しく読み込まれること', (
@@ -132,8 +134,9 @@ void main() {
       // Verify loaded data
       expect(find.text('この日の記録データはありません'), findsNothing);
       expect(find.text('一般の部'), findsOneWidget);
-      expect(find.textContaining('選手A'), findsOneWidget);
-      expect(find.textContaining('選手B'), findsOneWidget);
+      expect(find.byType(BunaiksenLeagueGridTable), findsOneWidget);
+      expect(find.textContaining('選手A'), findsWidgets);
+      expect(find.textContaining('選手B'), findsWidgets);
     });
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_record_action_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_team_score_table.dart';
+import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 
 void main() {
   group('[Widget] BunaiksenOfficialRecord Components テスト', () {
@@ -23,6 +24,45 @@ void main() {
 
       expect(find.text('PDF印刷'), findsOneWidget);
       expect(find.text('画像シェア'), findsOneWidget);
+      expect(find.text('全試合形式一括出力'), findsNothing);
+    });
+
+    testWidgets('複数形式存在時に全試合形式一括出力トグルが表示されタップで切り替わること', (tester) async {
+      OfficialRecordExportScope currentScope =
+          OfficialRecordExportScope.current;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return BunaiksenRecordActionBar(
+                  cardColor: Colors.white,
+                  isDark: false,
+                  isExporting: false,
+                  hasMultipleCategories: true,
+                  exportScope: currentScope,
+                  onScopeChanged: (scope) {
+                    setState(() {
+                      currentScope = scope;
+                    });
+                  },
+                  onPrintPdf: () {},
+                  onShareImage: () {},
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('全試合形式一括出力'), findsOneWidget);
+      expect(currentScope, OfficialRecordExportScope.current);
+
+      await tester.tap(find.text('全試合形式一括出力'));
+      await tester.pump();
+
+      expect(currentScope, OfficialRecordExportScope.all);
     });
 
     testWidgets('部内戦チームスコアテーブルの対戦表が正しく描画されること', (tester) async {

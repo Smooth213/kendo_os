@@ -9,6 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_single_player_select_sheet.dart';
 import 'package:kendo_os/shared/widgets/smart_player_input.dart';
 import 'package:kendo_os/shared/widgets/multi_player_select_input.dart';
+import 'package:kendo_os/shared/widgets/multi_player_candidate_chip.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 class MockPlayerRepository extends Mock implements PlayerRepository {}
@@ -253,39 +254,37 @@ void main() {
 
         // 1. Initial State: 学年昇順
         expect(find.text('学年 昇順'), findsOneWidget);
-        var checkTiles = tester.widgetList<CheckboxListTile>(
-          find.byType(CheckboxListTile),
+        var candidateTiles = tester.widgetList<MultiPlayerCandidateTile>(
+          find.byType(MultiPlayerCandidateTile),
         );
-        var names = checkTiles
-            .map((tile) => (tile.title as Text).data)
-            .toList();
+        var names = candidateTiles.map((tile) => tile.name).toList();
 
         expect(names, ['幼年 太郎', '低学年 一郎', '高学年 次郎', '中学生 三郎', '一般 四郎']);
 
         // 2. Select '低学年 一郎'
         await tester.tap(find.text('低学年 一郎'));
         await tester.pumpAndSettle();
-        expect(find.text('1名 選択中'), findsOneWidget);
+        expect(find.text('この1名で決定'), findsOneWidget);
 
         // 3. Tap sort toggle to 降順
         await tester.tap(find.text('学年 昇順'));
         await tester.pumpAndSettle();
 
         expect(find.text('学年 降順'), findsOneWidget);
-        checkTiles = tester.widgetList<CheckboxListTile>(
-          find.byType(CheckboxListTile),
+        candidateTiles = tester.widgetList<MultiPlayerCandidateTile>(
+          find.byType(MultiPlayerCandidateTile),
         );
-        names = checkTiles.map((tile) => (tile.title as Text).data).toList();
+        names = candidateTiles.map((tile) => tile.name).toList();
 
         expect(names, ['一般 四郎', '中学生 三郎', '高学年 次郎', '低学年 一郎', '幼年 太郎']);
 
         // 4. Select '一般 四郎'
         await tester.tap(find.text('一般 四郎'));
         await tester.pumpAndSettle();
-        expect(find.text('2名 選択中'), findsOneWidget);
+        expect(find.text('この2名で決定'), findsOneWidget);
 
         // 5. Confirm
-        await tester.tap(find.text('確定'));
+        await tester.tap(find.text('この2名で決定'));
         await tester.pumpAndSettle();
 
         expect(confirmedPlayers, containsAll(['低学年 一郎', '一般 四郎']));

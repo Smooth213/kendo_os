@@ -59,13 +59,16 @@ class ViewerLeagueGridTableCard extends StatelessWidget {
 
     final borderColor = isDark
         ? const Color(0xFF38383A)
-        : const Color(0x8A000000);
+        : const Color(0x33000000);
     final headerColor = isDark
         ? const Color(0xFF2C2C2E)
-        : const Color(0xFF3F51B5);
+        : const Color(0xFFF2F2F7);
+    final headerTextColor = isDark
+        ? const Color(0xFFFFFFFF)
+        : const Color(0xDE000000);
     final blankColor = isDark
         ? const Color(0xFF1C1C1E)
-        : const Color(0x33000000);
+        : const Color(0x1A000000);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -104,15 +107,20 @@ class ViewerLeagueGridTableCard extends StatelessWidget {
                       child: ViewerVerticalPlayerNameCell(
                         text: t,
                         isDark: isDark,
+                        style: TextStyle(
+                          fontSize: AppFontSize.caption,
+                          fontWeight: AppFontWeight.bold,
+                          color: headerTextColor,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                _buildHeaderCell('勝数', isDark),
-                _buildHeaderCell('勝者', isDark),
-                _buildHeaderCell('本数', isDark),
-                if (hasMatchPoints) _buildHeaderCell('勝点', isDark),
-                _buildHeaderCell('順位', isDark),
+                _buildHeaderCell('勝数', headerTextColor),
+                _buildHeaderCell('勝者', headerTextColor),
+                _buildHeaderCell('本数', headerTextColor),
+                if (hasMatchPoints) _buildHeaderCell('勝点', headerTextColor),
+                _buildHeaderCell('順位', headerTextColor),
               ],
             ),
             ...teamList.map((rowTeam) {
@@ -144,9 +152,7 @@ class ViewerLeagueGridTableCard extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: AppFontWeight.bold,
                           fontSize: AppFontSize.caption,
-                          color: isDark
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFF000000),
+                          color: headerTextColor,
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 2,
@@ -371,7 +377,7 @@ class ViewerLeagueGridTableCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCell(String text, bool isDark) {
+  Widget _buildHeaderCell(String text, Color textColor) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
@@ -379,7 +385,8 @@ class ViewerLeagueGridTableCard extends StatelessWidget {
           text,
           style: TextStyle(
             fontSize: AppFontSize.badge,
-            color: isDark ? const Color(0xFFFFFFFF) : const Color(0x8A000000),
+            fontWeight: AppFontWeight.bold,
+            color: textColor,
           ),
         ),
       ),

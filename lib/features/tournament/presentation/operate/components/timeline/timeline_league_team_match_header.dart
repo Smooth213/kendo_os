@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/rule_info_bottom_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
 import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
-
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
-/// タイムラインのリーグ戦チーム対抗戦ヘッダー（コントロールボタン + 勝数・本数掲示ライン）
+/// タイムラインのリーグ戦チーム対抗戦ヘッダー（通常の団体戦と同じ5段構造）
 class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
   final List<MatchModel> bouts;
   final bool isReadOnlyUI;
@@ -43,52 +46,28 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int redWins = 0;
-    int redPts = 0;
-    int whiteWins = 0;
-    int whitePts = 0;
-    for (var m in bouts) {
-      final r = (m.redScore as num).toInt();
-      final w = (m.whiteScore as num).toInt();
-      redPts += r;
-      whitePts += w;
-      if (m.status == 'finished' || m.status == 'approved') {
-        if (r > w) {
-          redWins++;
-        } else if (w > r) {
-          whiteWins++;
-        }
-      }
-    }
-
-    final ruleTeamName = bouts.firstOrNull?.rule?.teamName;
-    final isRedOwn =
-        ownTeams.contains(t1) ||
-        (ruleTeamName?.isNotEmpty == true && t1 == ruleTeamName);
-    final isWhiteOwn =
-        ownTeams.contains(t2) ||
-        (ruleTeamName?.isNotEmpty == true && t2 == ruleTeamName);
+    final firstBout = bouts.firstOrNull;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔽 【中枠1行目】: 属性プレフィックス・ポジション数・スコア/簡易入力ボタン・ステータスバッジ
+        // 🔽 【1段目】: 属性プレフィックス・ポジション数 ────── ステータスバッジ＆BANDボタン
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Builder(
-              builder: (context) {
-                final firstBout = bouts.firstOrNull;
-                if (firstBout == null) return const SizedBox.shrink();
-                final scene = KendoSceneHelper.detectScene(firstBout);
-                if (scene == KendoMatchScene.honsen) {
-                  return const SizedBox.shrink();
-                }
-                return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.xs),
-                  child: KendoSceneBadge(scene: scene),
-                );
-              },
-            ),
+            if (firstBout != null)
+              Builder(
+                builder: (context) {
+                  final scene = KendoSceneHelper.detectScene(firstBout);
+                  if (scene == KendoMatchScene.honsen) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.xs),
+                    child: KendoSceneBadge(scene: scene),
+                  );
+                },
+              ),
             Text(
               '${bouts.length}ポジション',
               style: const TextStyle(
@@ -98,16 +77,119 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
               ),
             ),
             const Spacer(),
-            // 簡易入力
-            if (!isReadOnlyUI &&
-                !boutsAllFinished &&
-                !(ownTeams.contains(t1) ||
-                    bouts.first.redName.contains('自チーム')) &&
-                !(ownTeams.contains(t2) ||
-                    bouts.first.whiteName.contains('自チーム')))
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.subValue),
-                child: SizedBox(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MatchStatusBadge(
+                  isPlaying: boutsInProgress,
+                  isFinished: boutsAllFinished,
+                  isDark: isDark,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                BandShareButton(matches: bouts),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xxs),
+
+        // 🔽 【2段目】: 対戦カード名（横幅全開・太字 subhead）
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+          child: Row(
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '$t1 vs $t2',
+                    style: TextStyle(
+                      fontSize: AppFontSize.subhead,
+                      fontWeight: AppFontWeight.bold,
+                      color: mTitleColor,
+                    ),
+                    maxLines: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 🔽 【3段目】: コート情報・進行・メモ（存在時のみ）
+        if (firstBout?.note.isNotEmpty == true) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                firstBout!.note,
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  color: context.appColors.subTextColor,
+                  fontWeight: AppFontWeight.medium,
+                ),
+                maxLines: 1,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+        ],
+
+        // 🔽 【4段目】: アクションボタン行（(i) ルール / ⇅ オーダー / [⚡ 簡易入力] / [スコア]）
+        Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.xxs),
+          child: Row(
+            children: [
+              if (!boutsAllFinished && firstBout != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.xs),
+                  child: InkWell(
+                    onTap: () => showRuleInfoBottomSheet(context, firstBout),
+                    borderRadius: AppRadius.medium,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      child: Icon(
+                        Icons.info_outline,
+                        color: context.appColors.subTextColor,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              if (!isReadOnlyUI && !boutsAllFinished && bouts.isNotEmpty) ...[
+                SizedBox(
+                  height: 26,
+                  width: 26,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(
+                      Icons.swap_vert,
+                      size: 18,
+                      color: context.appColors.infoColor,
+                    ),
+                    onPressed: () => TimelineDialogHelper.showOrderReorderSheet(
+                      context,
+                      ref,
+                      bouts,
+                    ),
+                    tooltip: 'オーダー編集',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              const Spacer(),
+              if (!isReadOnlyUI &&
+                  !boutsAllFinished &&
+                  firstBout != null &&
+                  !(ownTeams.contains(t1) ||
+                      firstBout.redName.contains('自チーム')) &&
+                  !(ownTeams.contains(t2) ||
+                      firstBout.whiteName.contains('自チーム'))) ...[
+                SizedBox(
                   height: 26,
                   child: OutlinedButton.icon(
                     onPressed: () =>
@@ -138,136 +220,58 @@ class TimelineLeagueTeamMatchHeader extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-            // スコアボタン
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.subValue),
-              child: SizedBox(
-                height: 26,
-                child: OutlinedButton(
-                  onPressed: () {
-                    final target =
-                        (bouts.first.groupName != null &&
-                            bouts.first.groupName!.isNotEmpty)
-                        ? bouts.first.groupName!
-                        : bouts.first.id;
-                    final encodedTarget = Uri.encodeComponent(target);
-                    final tId = bouts.first.tournamentId ?? '';
-                    context.push(
-                      '/team-scoreboard/$encodedTarget?tournamentId=$tId',
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                    ),
-                    side: BorderSide(color: mTitleColor.withValues(alpha: 0.2)),
-                    shape: RoundedRectangleBorder(borderRadius: AppRadius.sub),
-                  ),
-                  child: Text(
-                    'スコア',
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.primaryAccent,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // 状態バナー（統一 MatchStatusBadge）
-            MatchStatusBadge(
-              isPlaying: boutsInProgress,
-              isFinished: boutsAllFinished,
-              isDark: isDark,
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        // 🔽 【中枠2行目】: リーグ内チーム対抗勝数(本数)掲示ライン
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                t1,
-                style: TextStyle(
-                  fontSize: AppFontSize.body,
-                  fontWeight: isRedOwn
-                      ? AppFontWeight.black
-                      : AppFontWeight.bold,
-                  color: isRedOwn ? const Color(0xFFD97706) : mTitleColor,
-                ),
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$redWins',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.bodyMedium,
-                      fontWeight: AppFontWeight.bold,
-                      color: Color(0xFFE53935),
-                    ),
-                  ),
-                  Text(
-                    '($redPts)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      color: context.appColors.subTextColor,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.subValue,
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              if (firstBout != null)
+                SizedBox(
+                  height: 26,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      final target =
+                          (firstBout.groupName != null &&
+                              firstBout.groupName!.isNotEmpty)
+                          ? firstBout.groupName!
+                          : firstBout.id;
+                      final encodedTarget = Uri.encodeComponent(target);
+                      final tId = firstBout.tournamentId ?? '';
+                      context.push(
+                        '/team-scoreboard/$encodedTarget?tournamentId=$tId',
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
+                      side: BorderSide(
+                        color: mTitleColor.withValues(alpha: 0.2),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppRadius.sub,
+                      ),
                     ),
                     child: Text(
-                      'ー',
+                      'スコア',
                       style: TextStyle(
-                        fontSize: AppFontSize.bodySmall,
-                        color: context.appColors.subTextColor,
+                        fontSize: AppFontSize.badge,
                         fontWeight: AppFontWeight.bold,
+                        color: context.appColors.primaryAccent,
                       ),
                     ),
                   ),
-                  Text(
-                    '$whiteWins',
-                    style: TextStyle(
-                      fontSize: AppFontSize.bodyMedium,
-                      fontWeight: AppFontWeight.bold,
-                      color: context.appColors.textColor,
-                    ),
-                  ),
-                  Text(
-                    '($whitePts)',
-                    style: TextStyle(
-                      fontSize: AppFontSize.badge,
-                      color: context.appColors.subTextColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Text(
-                t2,
-                style: TextStyle(
-                  fontSize: AppFontSize.body,
-                  fontWeight: isWhiteOwn
-                      ? AppFontWeight.black
-                      : AppFontWeight.bold,
-                  color: isWhiteOwn ? const Color(0xFFD97706) : mTitleColor,
                 ),
-                textAlign: TextAlign.start,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        // 🔽 【5段目】: チーム対戦スコアサマリー（ピル型背景 0(0) - 0(0)）
+        TimelineGroupScoreSummary(
+          groupList: bouts,
+          rTeam: t1,
+          wTeam: t2,
+          ownTeams: ownTeams,
+          titleColor: mTitleColor,
+          isDark: isDark,
         ),
       ],
     );

@@ -7,6 +7,7 @@ import 'package:kendo_os/features/pdf/painters/pdf_kachinuki_painter.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_individual_list.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_league_table.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_team_table.dart';
+import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
 /// PDFのヘッダー・フッターおよびコンテンツレイアウト構築ヘルパー
@@ -141,7 +142,7 @@ class PdfPageLayoutHelper {
         }
       }
 
-      final bool isLeague = matches.any((m) => m.note.contains('[リーグ戦]'));
+      final bool isLeague = BunaiksenHelper.isLeagueMatches(matches);
 
       if (isKachinuki) {
         contentWidgets.add(
@@ -399,7 +400,7 @@ class PdfPageLayoutHelper {
             !isNextIndiv && (nextRegularCount > 5 || nextMatches.length > 6);
 
         if (!(nextIsKachinuki ||
-            nextFirst.note.contains('[リーグ戦]') ||
+            BunaiksenHelper.isLeagueMatch(nextFirst) ||
             isWide2)) {
           table2 = isNextIndiv
               ? PdfIndividualList.build(

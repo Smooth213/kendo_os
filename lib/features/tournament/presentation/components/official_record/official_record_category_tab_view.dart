@@ -8,6 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/components/official_re
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_kachinuki_card.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_league_section.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_score_table_builder.dart';
+import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 
@@ -133,7 +134,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
                   ref: ref,
                 );
               } else if (matches.isNotEmpty &&
-                  matches.any((m) => m.note.contains('[リーグ戦]'))) {
+                  BunaiksenHelper.isLeagueMatches(matches)) {
                 final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
                 return OfficialRecordLeagueSection(
                   groupName: groupName,

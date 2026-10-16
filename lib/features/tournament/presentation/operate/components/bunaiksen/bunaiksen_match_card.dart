@@ -44,15 +44,13 @@ class BunaiksenMatchCard extends StatelessWidget {
 
     final Color bg = isFinished
         ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))
-        : (isDark ? const Color(0xFF1C1C1E) : context.appColors.textColor);
+        : (isDark ? const Color(0xFF1C1C1E) : context.appColors.cardBackground);
     final Color textC = isFinished
-        ? (isDark
-              ? context.appColors.subTextColor
-              : context.appColors.subTextColor)
-        : (context.appColors.textColor);
+        ? context.appColors.subTextColor
+        : context.appColors.textColor;
     final Color noteC = isFinished
         ? (isDark ? const Color(0xFFFFFFFF) : context.appColors.subTextColor)
-        : AppKendoColors.grey;
+        : (isDark ? const Color(0xFF94A3B8) : context.appColors.subTextColor);
 
     final Color badgeBg = isPlaying
         ? const Color(0xFF2196F3)
@@ -86,29 +84,16 @@ class BunaiksenMatchCard extends StatelessWidget {
           child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Flexible(
-                    child: Text(
-                      '第${index + 1}試合${(match.category != null && match.category!.isNotEmpty) ? ' (${match.category})' : ''}',
-                      style: TextStyle(
-                        fontSize: AppFontSize.subhead,
-                        fontWeight: AppFontWeight.bold,
-                        color: textC,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    '第${index + 1}試合${(match.category != null && match.category!.isNotEmpty) ? ' (${match.category})' : ''}',
+                    style: TextStyle(
+                      fontSize: AppFontSize.subhead,
+                      fontWeight: AppFontWeight.bold,
+                      color: textC,
                     ),
                   ),
-                  if (match.note.isNotEmpty) ...[
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      match.note,
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        color: noteC,
-                      ),
-                    ),
-                  ],
-                  const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,
@@ -133,6 +118,20 @@ class BunaiksenMatchCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (match.note.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    match.note,
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      color: noteC,
+                      fontWeight: AppFontWeight.medium,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

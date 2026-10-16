@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -19,7 +20,11 @@ Future<T?> showAppBottomSheet<T>({
 }) async {
   AppHaptics.selection();
   final isInsideDock = DockSheetScope.of(context) != null;
-  final effectiveUseRootNav = useRootNavigator ?? !isInsideDock;
+  final isFloatingDockOpen = FloatingDockSheetManager.isOpen;
+
+  // ドックシート内部またはフローティングドックが開いている場合は、ルートNavigatorで最前面に展開
+  final effectiveUseRootNav =
+      useRootNavigator ?? (isInsideDock || isFloatingDockOpen);
 
   final targetContext = context.mounted
       ? context
@@ -31,19 +36,31 @@ Future<T?> showAppBottomSheet<T>({
       Theme.of(targetContext).extension<AppThemeColors>() ??
       AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-  return await showModalBottomSheet<T>(
-    context: targetContext,
-    useRootNavigator: effectiveUseRootNav,
-    isScrollControlled: isScrollControlled,
-    enableDrag: enableDrag,
-    isDismissible: isDismissible,
-    backgroundColor: backgroundColor ?? themeColors.cardBackground,
-    constraints: constraints ?? const BoxConstraints(maxWidth: double.infinity),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
-    ),
-    builder: builder,
-  );
+  // フローティングドックシートが開いている場合は一時的に退避（タッチ透過・非表示）
+  if (isFloatingDockOpen) {
+    FloatingDockSheetManager.hideTemporarily();
+  }
+
+  try {
+    return await showModalBottomSheet<T>(
+      context: targetContext,
+      useRootNavigator: effectiveUseRootNav,
+      isScrollControlled: isScrollControlled,
+      enableDrag: enableDrag,
+      isDismissible: isDismissible,
+      backgroundColor: backgroundColor ?? themeColors.cardBackground,
+      constraints:
+          constraints ?? const BoxConstraints(maxWidth: double.infinity),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
+      ),
+      builder: builder,
+    );
+  } finally {
+    if (isFloatingDockOpen) {
+      FloatingDockSheetManager.restoreVisibility();
+    }
+  }
 }
 
 /// アプリ共通のボトムシートコンテンツ枠（ドラッグハンドル・ヘッダー・レスポンシブパディング内包）

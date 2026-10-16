@@ -350,6 +350,7 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           permissions: permissions,
                           rule: rule,
                           firstMatch: firstMatch,
+                          ownTeams: ownTeams,
                         ),
                       ),
                     ),
