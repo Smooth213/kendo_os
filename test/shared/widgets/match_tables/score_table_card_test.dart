@@ -264,5 +264,54 @@ void main() {
         expect(daihyoText.style?.color, equals(const Color(0xFFFF6B6B)));
       },
     );
+
+    testWidgets(
+      '8人以上の多人数戦（団体戦（それ以上））において SingleChildScrollViewによる横スクロールが適用されること',
+      (tester) async {
+        final multiPlayerMatches = List.generate(
+          11,
+          (i) => ScoreTableMatchItem(
+            id: 'm_$i',
+            matchType: i == 0 ? '先鋒' : (i == 10 ? '大将' : '選手$i'),
+            redName: '選手R$i',
+            whiteName: '選手W$i',
+            redScore: 0,
+            whiteScore: 0,
+            isFinished: false,
+            redPoints: [],
+            whitePoints: [],
+          ),
+        );
+
+        await tester.pumpWidget(
+          buildTestableCard(
+            info: sampleInfo,
+            matches: multiPlayerMatches,
+            isDark: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // SingleChildScrollView(scrollDirection: Axis.horizontal) が存在すること
+        final scrollFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is SingleChildScrollView &&
+              widget.scrollDirection == Axis.horizontal,
+        );
+        expect(scrollFinder, findsOneWidget);
+
+        // 5人戦の場合は横スクロールがないこと
+        await tester.pumpWidget(
+          buildTestableCard(
+            info: sampleInfo,
+            matches: sampleMatches.take(3).toList(),
+            isDark: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(scrollFinder, findsNothing);
+      },
+    );
   });
 }

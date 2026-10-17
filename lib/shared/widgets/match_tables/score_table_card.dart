@@ -69,6 +69,156 @@ class ScoreTableCard extends StatelessWidget {
             ));
 
     final bool isMultiPlayer = matches.length > 5;
+    final bool isScrollable = matches.length > 7;
+
+    final Map<int, TableColumnWidth> columnWidths;
+    if (isScrollable) {
+      columnWidths = {
+        0: const FixedColumnWidth(85),
+        for (int i = 1; i <= matches.length; i++) i: const FixedColumnWidth(60),
+        matches.length + 1: const FixedColumnWidth(50),
+      };
+    } else {
+      columnWidths = {
+        0: FlexColumnWidth(isMultiPlayer ? 1.6 : 1.2),
+        for (int i = 1; i <= matches.length; i++) i: const FlexColumnWidth(1.0),
+        matches.length + 1: const FlexColumnWidth(0.8),
+      };
+    }
+
+    final tableWidget = Table(
+      border: TableBorder.all(color: borderColor, width: 1),
+      columnWidths: columnWidths,
+      children: [
+        TableRow(
+          decoration: BoxDecoration(color: headerBgColor),
+          children: [
+            const SizedBox.shrink(),
+            ...matches.map(
+              (m) => Container(
+                color: m.matchType == '代表戦'
+                    ? daihyoBgColor
+                    : AppKendoColors.transparent,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    child: Text(
+                      m.matchType,
+                      style: TextStyle(
+                        fontSize: AppFontSize.badge,
+                        fontWeight: AppFontWeight.bold,
+                        color: m.matchType == '代表戦'
+                            ? (isDark
+                                  ? const Color(0xFFFF6B6B)
+                                  : AppKendoColors.hansokuRed)
+                            : themeColors.textColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                child: Text(
+                  '本/勝',
+                  style: TextStyle(
+                    fontSize: AppFontSize.badge,
+                    color: headerTextColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        TableRow(
+          children: [
+            buildScoreTableTeamCell(
+              info.sideLabelRed,
+              isDark ? const Color(0xFFE53935) : const Color(0xFFE53935),
+              highlightQuery: highlightQuery,
+              isDark: isDark,
+              isMultiPlayer: isMultiPlayer,
+            ),
+            ...matches.map(
+              (m) => buildScoreTableNameCell(
+                m.redName,
+                isDark,
+                matches
+                    .map((x) => NameFormatter.parse(x.redName)['last']!)
+                    .where((s) => s.isNotEmpty)
+                    .toList(),
+                isDaihyo: m.matchType == '代表戦',
+                onTap: m.onTap,
+                highlightQuery: highlightQuery,
+              ),
+            ),
+            buildScoreTableSummaryCell(
+              context,
+              info.redWins,
+              info.redTotalPoints,
+              isDark,
+            ),
+          ],
+        ),
+        TableRow(
+          children: [
+            const SizedBox.shrink(),
+            ...matches.map(
+              (m) => ScoreTableCell(
+                isSummary: info.isSummary,
+                isFinished: m.isFinished,
+                isEncho: m.isEncho,
+                redScore: m.redScore,
+                whiteScore: m.whiteScore,
+                redPoints: m.redPoints,
+                whitePoints: m.whitePoints,
+                isDark: isDark,
+              ),
+            ),
+            buildScoreTableTeamResultCell(
+              context,
+              info.teamWinner,
+              isDark,
+              info.allFinished,
+            ),
+          ],
+        ),
+        TableRow(
+          children: [
+            buildScoreTableTeamCell(
+              info.sideLabelWhite,
+              isDark
+                  ? context.appColors.subTextColor
+                  : context.appColors.subTextColor,
+              highlightQuery: highlightQuery,
+              isDark: isDark,
+              isMultiPlayer: isMultiPlayer,
+            ),
+            ...matches.map(
+              (m) => buildScoreTableNameCell(
+                m.whiteName,
+                isDark,
+                matches
+                    .map((x) => NameFormatter.parse(x.whiteName)['last']!)
+                    .where((s) => s.isNotEmpty)
+                    .toList(),
+                isDaihyo: m.matchType == '代表戦',
+                onTap: m.onTap,
+                highlightQuery: highlightQuery,
+              ),
+            ),
+            buildScoreTableSummaryCell(
+              context,
+              info.whiteWins,
+              info.whiteTotalPoints,
+              isDark,
+            ),
+          ],
+        ),
+      ],
+    );
 
     // ⚡ 【Plan 1-3】RepaintBoundaryによる巨大スコアテーブルカードの描画キャッシュとラスタライズ分離
     return RepaintBoundary(
@@ -147,152 +297,14 @@ class ScoreTableCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Table(
-                  border: TableBorder.all(color: borderColor, width: 1),
-                  columnWidths: {
-                    0: FlexColumnWidth(isMultiPlayer ? 1.6 : 1.2),
-                    for (int i = 1; i <= matches.length; i++)
-                      i: const FlexColumnWidth(1.0),
-                    matches.length + 1: const FlexColumnWidth(0.8),
-                  },
-                  children: [
-                    TableRow(
-                      decoration: BoxDecoration(color: headerBgColor),
-                      children: [
-                        const SizedBox.shrink(),
-                        ...matches.map(
-                          (m) => Container(
-                            color: m.matchType == '代表戦'
-                                ? daihyoBgColor
-                                : AppKendoColors.transparent,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(AppSpacing.sm),
-                                child: Text(
-                                  m.matchType,
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.badge,
-                                    fontWeight: AppFontWeight.bold,
-                                    color: m.matchType == '代表戦'
-                                        ? (isDark
-                                              ? const Color(0xFFFF6B6B)
-                                              : AppKendoColors.hansokuRed)
-                                        : themeColors.textColor,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.sm),
-                            child: Text(
-                              '本/勝',
-                              style: TextStyle(
-                                fontSize: AppFontSize.badge,
-                                color: headerTextColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        buildScoreTableTeamCell(
-                          info.sideLabelRed,
-                          isDark
-                              ? const Color(0xFFE53935)
-                              : const Color(0xFFE53935),
-                          highlightQuery: highlightQuery,
-                          isDark: isDark,
-                          isMultiPlayer: isMultiPlayer,
-                        ),
-                        ...matches.map(
-                          (m) => buildScoreTableNameCell(
-                            m.redName,
-                            isDark,
-                            matches
-                                .map(
-                                  (x) =>
-                                      NameFormatter.parse(x.redName)['last']!,
-                                )
-                                .where((s) => s.isNotEmpty)
-                                .toList(),
-                            isDaihyo: m.matchType == '代表戦',
-                            onTap: m.onTap,
-                            highlightQuery: highlightQuery,
-                          ),
-                        ),
-                        buildScoreTableSummaryCell(
-                          context,
-                          info.redWins,
-                          info.redTotalPoints,
-                          isDark,
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        const SizedBox.shrink(),
-                        ...matches.map(
-                          (m) => ScoreTableCell(
-                            isSummary: info.isSummary,
-                            isFinished: m.isFinished,
-                            isEncho: m.isEncho,
-                            redScore: m.redScore,
-                            whiteScore: m.whiteScore,
-                            redPoints: m.redPoints,
-                            whitePoints: m.whitePoints,
-                            isDark: isDark,
-                          ),
-                        ),
-                        buildScoreTableTeamResultCell(
-                          context,
-                          info.teamWinner,
-                          isDark,
-                          info.allFinished,
-                        ),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        buildScoreTableTeamCell(
-                          info.sideLabelWhite,
-                          isDark
-                              ? context.appColors.subTextColor
-                              : context.appColors.subTextColor,
-                          highlightQuery: highlightQuery,
-                          isDark: isDark,
-                          isMultiPlayer: isMultiPlayer,
-                        ),
-                        ...matches.map(
-                          (m) => buildScoreTableNameCell(
-                            m.whiteName,
-                            isDark,
-                            matches
-                                .map(
-                                  (x) =>
-                                      NameFormatter.parse(x.whiteName)['last']!,
-                                )
-                                .where((s) => s.isNotEmpty)
-                                .toList(),
-                            isDaihyo: m.matchType == '代表戦',
-                            onTap: m.onTap,
-                            highlightQuery: highlightQuery,
-                          ),
-                        ),
-                        buildScoreTableSummaryCell(
-                          context,
-                          info.whiteWins,
-                          info.whiteTotalPoints,
-                          isDark,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                if (isScrollable)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: tableWidget,
+                  )
+                else
+                  tableWidget,
               ],
             ),
             if (info.isSummary)

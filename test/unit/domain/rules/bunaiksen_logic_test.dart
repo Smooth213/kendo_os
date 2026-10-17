@@ -8,6 +8,7 @@ import 'package:kendo_os/features/tournament/domain/services/bunaiksen_helper.da
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_record_export_helper.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/match_context.dart';
 
 // ============================================================================
@@ -196,10 +197,59 @@ void main() {
         whiteName: '選手B',
       );
 
+      final teamMatchWithLeagueNote = MatchModel(
+        id: 'team_match_1',
+        tournamentId: 't1',
+        category: '小学生低学年の部',
+        matchType: '団体戦（それ以上）',
+        groupName: 'group_1',
+        note: '大人数 vs 東西対抗 (Bリーグ, 第3試合場)',
+        redName: '大人数',
+        whiteName: '東西対抗',
+      );
+
+      final teamBoutMatchesWithLeagueRule = [
+        MatchModel(
+          id: 'bout_1',
+          tournamentId: 't1',
+          category: '小学生低学年の部',
+          matchType: '先鋒',
+          groupName: 'group_1',
+          note: 'Bリーグ, 第3試合場',
+          redName: '大人数 : 未定',
+          whiteName: '東西対抗 : 未定',
+          rule: MatchRule(isLeague: true),
+        ),
+        MatchModel(
+          id: 'bout_2',
+          tournamentId: 't1',
+          category: '小学生低学年の部',
+          matchType: '次鋒',
+          groupName: 'group_1',
+          note: 'Bリーグ, 第3試合場',
+          redName: '大人数 : 未定',
+          whiteName: '東西対抗 : 未定',
+          rule: MatchRule(isLeague: true),
+        ),
+      ];
+
       expect(BunaiksenHelper.isLeagueMatch(calculatorLeagueMatch), isTrue);
       expect(BunaiksenHelper.isLeagueMatch(tournamentMatch), isFalse);
+      expect(BunaiksenHelper.isLeagueMatch(teamMatchWithLeagueNote), isFalse);
+      expect(
+        BunaiksenHelper.isLeagueMatch(teamBoutMatchesWithLeagueRule[0]),
+        isFalse,
+      );
       expect(BunaiksenHelper.isLeagueMatches([calculatorLeagueMatch]), isTrue);
       expect(BunaiksenHelper.isLeagueMatches([tournamentMatch]), isFalse);
+      expect(
+        BunaiksenHelper.isLeagueMatches([teamMatchWithLeagueNote]),
+        isFalse,
+      );
+      expect(
+        BunaiksenHelper.isLeagueMatches(teamBoutMatchesWithLeagueRule),
+        isFalse,
+      );
     });
   });
 

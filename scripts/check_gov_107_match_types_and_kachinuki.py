@@ -52,6 +52,61 @@ def check_match_type_parameter_contracts():
 
     return True, "全試合形式パラメータ契約が整合"
 
+def check_league_detection_strictness():
+    """④ リーグ戦判定・曖昧一致根絶 ＆ メモ・グループ名厳格性保証規約
+    
+    メモ欄（note）やグループ名（groupName）に含まれる単なる「Bリーグ」等の文字列によって
+    通常の団体戦や対抗戦が誤ってリーグ戦（星取表）として扱われないよう、
+    コードベース全体で曖昧な部分一致判定（.contains('リーグ')）の再混入を物理的に禁止する。
+    """
+    import os
+    import re
+
+    scanner = GovStaticScanner.get_instance()
+
+    target_dirs = [
+        "lib/features/tournament",
+        "lib/features/match",
+    ]
+
+    # 禁止される曖昧一致パターン (単なる 'リーグ' の部分一致)
+    forbidden_regexes = [
+        (
+            re.compile(r"""note(?:\?|\.toString\(\))?\.contains\(\s*['"]リーグ['"]\s*\)"""),
+            "note.contains('リーグ') による曖昧判定は禁止です。'[リーグ戦]' 完全タグまたは matchType で判定してください",
+        ),
+        (
+            re.compile(r"""groupName(?:\?|\.toString\(\))?\.contains\(\s*['"]リーグ['"]\s*\)"""),
+            "groupName.contains('リーグ') による曖昧判定は禁止です",
+        ),
+    ]
+
+    violations = []
+    for t_dir in target_dirs:
+        for root, _, files in os.walk(t_dir):
+            for file in files:
+                if not file.endswith(".dart"):
+                    continue
+                path = os.path.join(root, file)
+                content = scanner.read_file(path)
+                for pattern, msg in forbidden_regexes:
+                    if pattern.search(content):
+                        violations.append(f"{path}: {msg}")
+
+    # BunaiksenHelper の必須防護アサーション
+    helper_path = "lib/features/tournament/domain/services/bunaiksen_helper.dart"
+    helper_content = scanner.read_file(helper_path)
+    if "[リーグ戦]" not in helper_content:
+        violations.append(f"{helper_path}: [リーグ戦] 完全タグ判定が定義されていません")
+    if "isTeamMatch" not in helper_content or "participants.length <= 2" not in helper_content:
+        violations.append(f"{helper_path}: 2チーム以下対抗戦の星取表除外セーフティガードが定義されていません")
+
+    if violations:
+        return False, "\n".join(f"  ❌ {v}" for v in violations)
+
+    return True, "リーグ判定曖昧一致ゼロ ＆ 厳格タグ判定整合"
+
+
 SUB_AUDITS = [
     (
         "① 全試合形式・共通セレクタ統一 ＆ 旧式チップ根絶規約",
@@ -90,6 +145,14 @@ def main():
     if not p_ok:
         all_passed = False
         print(f"    ❌ {p_msg}")
+
+    # ④ リーグ戦判定・曖昧一致根絶 ＆ メモ・グループ名厳格性保証規約
+    l_ok, l_msg = check_league_detection_strictness()
+    status_l = "🟢 適合 (Passed)" if l_ok else "🔴 違反 (Failed)"
+    print(f" ④ リーグ判定曖昧一致根絶 ＆ メモ厳格性規約: {status_l}")
+    if not l_ok:
+        all_passed = False
+        print(f"    {l_msg}")
 
     print("-" * 72)
     if all_passed:

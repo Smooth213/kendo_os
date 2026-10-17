@@ -256,42 +256,54 @@ class BunaiksenHelper {
   // 6. リーグ戦判定ロジック（単一試合・複数試合対応）
   static bool isLeagueMatch(dynamic m) {
     if (m == null) return false;
+
+    // 1. 試合形式（matchType）が明確にリーグ戦である場合
+    try {
+      final String mt = m.matchType?.toString().trim() ?? '';
+      if (mt == 'リーグ戦' ||
+          mt == 'league' ||
+          mt == 'リーグ団体戦' ||
+          mt == 'リーグ個人戦' ||
+          mt.startsWith('リーグ団体戦') ||
+          mt.startsWith('リーグ個人戦')) {
+        return true;
+      }
+    } catch (_) {}
+
+    // 2. システムが付与する明示的な [リーグ戦] タグ、または [league] タグのみ許可
+    // ※ メモやラウンド名中の単なる「Bリーグ」等の文字列は除外する
+    try {
+      final String note = m.note?.toString() ?? '';
+      if (note.contains('[リーグ戦]') ||
+          note.contains('【リーグ戦】') ||
+          note.contains('[league]')) {
+        return true;
+      }
+    } catch (_) {}
+
+    // 3. 試合ルールで明示的にリーグ戦が有効化されている場合
+    // ※ ただし、試合形式が通常の団体戦・個人戦・勝ち抜き戦・トーナメント・または団体戦の各ポジション（先鋒、次鋒等）である場合は
+    // 「試合形式でリーグ戦を選んでいない」ため除外する
     try {
       if (m.rule != null) {
         if (m.rule.isLeague == true || m.rule.matchFormat == 'league') {
-          return true;
+          final String mt = m.matchType?.toString().trim() ?? '';
+          final bool isStandardMatch =
+              mt.contains('団体戦') ||
+              mt.contains('勝ち抜き') ||
+              mt.contains('トーナメント') ||
+              mt.contains('個人戦') ||
+              mt == '先鋒' ||
+              mt == '次鋒' ||
+              mt == '中堅' ||
+              mt == '副将' ||
+              mt == '大将' ||
+              mt == '代表戦' ||
+              mt.endsWith('将');
+          if (!isStandardMatch) {
+            return true;
+          }
         }
-      }
-    } catch (_) {}
-
-    try {
-      final String mt = m.matchType?.toString() ?? '';
-      if (mt == 'リーグ戦' ||
-          mt == 'league' ||
-          (mt.contains('リーグ') && !mt.contains('トーナメント'))) {
-        return true;
-      }
-    } catch (_) {}
-
-    try {
-      final String note = m.note?.toString() ?? '';
-      if (note.contains('リーグ') && !note.contains('トーナメント')) {
-        return true;
-      }
-    } catch (_) {}
-
-    try {
-      final String gn = m.groupName?.toString() ?? '';
-      if (gn.startsWith('league_') ||
-          (gn.contains('リーグ') && !gn.contains('トーナメント'))) {
-        return true;
-      }
-    } catch (_) {}
-
-    try {
-      final String cat = m.category?.toString() ?? '';
-      if (cat.contains('リーグ') && !cat.contains('トーナメント')) {
-        return true;
       }
     } catch (_) {}
 
@@ -300,6 +312,50 @@ class BunaiksenHelper {
 
   static bool isLeagueMatches(List<dynamic> matches) {
     if (matches.isEmpty) return false;
-    return matches.any(isLeagueMatch);
+
+    // どの試合もリーグ戦判定を満たさない場合は false
+    if (!matches.any(isLeagueMatch)) return false;
+
+    // 団体戦であるかどうかの判定（ポジション名や「団体」を含む）
+    final bool isTeamMatch = matches.any((m) {
+      final mt = m.matchType?.toString().trim() ?? '';
+      return mt.contains('団体') ||
+          mt.contains('勝ち抜き') ||
+          mt == '先鋒' ||
+          mt == '次鋒' ||
+          mt == '中堅' ||
+          mt == '副将' ||
+          mt == '大将' ||
+          mt == '代表戦' ||
+          mt.endsWith('将');
+    });
+
+    // 団体戦の場合、参加チームが2チーム以下で単一の対抗戦しかないときは、
+    // 星取表ではなく通常の団体戦スコア詳細カード（オーダー表）として表示する
+    // （明示的な [リーグ戦] タグや matchType == 'リーグ団体戦' の場合を除く）
+    if (isTeamMatch) {
+      final participants = <String>{};
+      for (var m in matches) {
+        final r = m.redName?.toString().split(':').first.trim() ?? '';
+        final w = m.whiteName?.toString().split(':').first.trim() ?? '';
+        if (r.isNotEmpty) participants.add(r);
+        if (w.isNotEmpty) participants.add(w);
+      }
+      if (participants.length <= 2) {
+        final hasExplicitLeague = matches.any((m) {
+          final note = m.note?.toString() ?? '';
+          final mt = m.matchType?.toString() ?? '';
+          return note.contains('[リーグ戦]') ||
+              note.contains('【リーグ戦】') ||
+              note.contains('[league]') ||
+              mt == 'リーグ団体戦';
+        });
+        if (!hasExplicitLeague) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 }
