@@ -63,13 +63,16 @@ void main() {
       );
     }
 
-    /// 非同期ロードとファイルI/Oチェックを実時間で解決するヘルパー
+    /// 非同期ロードとファイルI/Oチェックを解決するヘルパー
     Future<void> pumpAndCompleteLoading(
       WidgetTester tester,
       Widget widget,
     ) async {
       await tester.pumpWidget(widget);
-      await Future.delayed(const Duration(milliseconds: 250));
+      for (int i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 10));
+        await Future<void>.delayed(Duration.zero);
+      }
       await tester.pump();
     }
 

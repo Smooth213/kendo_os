@@ -65,8 +65,8 @@ void main() {
       // 完全に回しきることで、テスト空間での時間差による「未作成バグ」を根絶します。
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
-        // fake_cloud_firestore の内部パケットループが完結するのを決定論的に待機
-        await Future.delayed(const Duration(milliseconds: 100));
+        // fake_cloud_firestore の内部パケットループをマイクロタスクで待機
+        await Future<void>.delayed(Duration.zero);
       });
 
       // 3. 通信結果に伴うUI更新の反映
@@ -115,7 +115,7 @@ void main() {
       // 🌟 修正核心：存在チェックの get() 通信パケットを安全に解決させます
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(Duration.zero);
       });
 
       // 3. 警告ダイアログのポップアップアニメーションを消化
@@ -128,7 +128,7 @@ void main() {
       // 4. 行動分岐：ユーザーが「このまま接続（既存に参加）」を承認した場合
       await tester.runAsync(() async {
         await tester.tap(find.text('このまま接続'));
-        await Future.delayed(const Duration(milliseconds: 50));
+        await Future<void>.delayed(Duration.zero);
       });
 
       // 5. 画面が閉じるのを待機
@@ -270,7 +270,7 @@ void main() {
 
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(Duration.zero);
       });
       await tester.pumpAndSettle();
 
@@ -468,7 +468,7 @@ void main() {
         // 4. キーボード出現下の小型画面でも「接続開始」ボタンをタップして正常接続できること
         await tester.runAsync(() async {
           await tester.tap(find.text('接続開始'));
-          await Future.delayed(const Duration(milliseconds: 100));
+          await Future<void>.delayed(Duration.zero);
         });
         await tester.pumpAndSettle();
 
@@ -604,7 +604,7 @@ void main() {
       // 接続開始を実行
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(Duration.zero);
       });
       await tester.pumpAndSettle();
 

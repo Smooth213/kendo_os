@@ -39,7 +39,8 @@ void main() {
         for (int i = 1; i <= 4; i++) {
           final match = baseMatch.copyWith(redScore: i, status: 'in_progress');
           await saveEmergencyBackupWithRotation(match);
-          await Future.delayed(const Duration(milliseconds: 20));
+          // タイムスタンプ（ミリ秒）の一意性を確保するため最小限（1ms）待機
+          await Future.delayed(const Duration(milliseconds: 1));
         }
 
         final files = tempDir

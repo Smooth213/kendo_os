@@ -137,8 +137,8 @@ void main() {
               return;
             } catch (e) {
               if (attempt == maxAttempts) rethrow;
-              // テスト実行を高速化するため、待機時間は最小化（1ms）する
-              await Future.delayed(const Duration(milliseconds: 1));
+              // テスト実行を高速化・決定論的化するため、Duration.zero で即座にリトライをスケジュール
+              await Future<void>.delayed(Duration.zero);
             }
           }
         }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_micro_batch.dart';
@@ -74,24 +75,26 @@ void main() {
 
     test('インフライト並行保護において 先行フラッシュ実行中の多重呼び出しが安全に待機制御されること', () async {
       final savedMatches = <MatchModel>[];
-      var delayedSave = false;
+      final holdFirstSave = Completer<void>();
+      var isFirst = true;
 
       final batch = LocalMatchMicroBatch(
         saveMatch: (m) async {
-          if (delayedSave) {
-            await Future.delayed(const Duration(milliseconds: 30));
+          if (isFirst) {
+            isFirst = false;
+            await holdFirstSave.future;
           }
           savedMatches.add(m);
         },
         saveMatchesBulk: (list) async {
-          if (delayedSave) {
-            await Future.delayed(const Duration(milliseconds: 30));
+          if (isFirst) {
+            isFirst = false;
+            await holdFirstSave.future;
           }
           savedMatches.addAll(list);
         },
       );
 
-      delayedSave = true;
       final match1 = const MatchModel(
         id: 'mb-match-concurrent-1',
         matchType: '個人戦',
@@ -111,6 +114,9 @@ void main() {
       // インフライト中に次の試合を追加してフラッシュ
       await batch.saveMatchBatched(match2, isCritical: false);
       final secondFlush = batch.flush();
+
+      // 先行フラッシュの保留を解除
+      holdFirstSave.complete();
 
       await Future.wait([firstFlush, secondFlush]);
 
@@ -139,8 +145,8 @@ void main() {
       await batch.saveMatchBatched(match, isCritical: false);
       batch.dispose();
 
-      // dispose内のunawaited(flush())の完了を少し待つ
-      await Future.delayed(const Duration(milliseconds: 10));
+      // dispose内のunawaited(flush())の完了をマイクロタスクで待つ
+      await Future<void>.delayed(Duration.zero);
       expect(savedMatches.length, 1);
       expect(savedMatches.first.id, 'mb-match-dispose');
     });
