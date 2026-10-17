@@ -49,5 +49,38 @@ void main() {
       final redText = tester.widget<Text>(find.text('相手チーム'));
       expect(redText.style?.color, const Color(0xFF000000));
     });
+
+    testWidgets('チーム名が正しく描画されること', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: MatchTeamHeaderRow(
+              redTeam: '道上剣友会',
+              whiteTeam: '相手道場',
+              textColor: Colors.grey,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('道上剣友会'), findsOneWidget);
+      expect(find.text('相手道場'), findsOneWidget);
+    });
+
+    testWidgets('チーム名が空の場合にフォールバック「（個人エントリー）」が描画されること', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: MatchTeamHeaderRow(
+              redTeam: '',
+              whiteTeam: '',
+              textColor: Colors.grey,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('（個人エントリー）'), findsNWidgets(2));
+    });
   });
 }

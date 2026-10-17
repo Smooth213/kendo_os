@@ -32,7 +32,7 @@ void main() {
             side: Side.red,
             strikeType: StrikeType.kote,
             isIppon: true,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 10, 0),
           ),
         ],
       );
@@ -57,21 +57,21 @@ void main() {
               side: Side.red,
               strikeType: StrikeType.kote,
               isIppon: true,
-              timestamp: DateTime.now(),
+              timestamp: DateTime(2026, 1, 1, 10, 0),
             ),
             ScoreEvent(
               id: 'ev2',
               side: Side.white,
               strikeType: StrikeType.men,
               isIppon: true,
-              timestamp: DateTime.now(),
+              timestamp: DateTime(2026, 1, 1, 10, 0),
             ),
             ScoreEvent(
               id: 'ev3',
               side: Side.red,
               strikeType: StrikeType.kote,
               isIppon: true,
-              timestamp: DateTime.now(),
+              timestamp: DateTime(2026, 1, 1, 10, 0),
             ),
           ],
         );
@@ -94,13 +94,13 @@ void main() {
             id: 'ev1',
             side: Side.red,
             isHansoku: true,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 10, 0),
           ),
           ScoreEvent(
             id: 'ev2',
             side: Side.red,
             isHansoku: true,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 10, 0),
           ),
         ],
       );
@@ -123,7 +123,7 @@ void main() {
             side: Side.red,
             strikeType: StrikeType.men,
             isIppon: true,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 10, 0),
           ),
           // Undo event for ev1
           ScoreEvent(
@@ -131,7 +131,7 @@ void main() {
             side: Side.red,
             isUndo: true,
             targetId: 'ev1',
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 10, 0),
           ),
           // Actual first point of match
           ScoreEvent(
@@ -139,7 +139,7 @@ void main() {
             side: Side.red,
             strikeType: StrikeType.kote,
             isIppon: true,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 10, 0),
           ),
         ],
       );

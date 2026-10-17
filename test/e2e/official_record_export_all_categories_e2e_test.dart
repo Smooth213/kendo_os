@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,6 +88,8 @@ void main() {
 
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
+      final exportCompleter = Completer<void>();
+
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -110,9 +113,7 @@ void main() {
                             isExporting = true;
                             exportingType = 'pdf';
                           });
-                          await Future.delayed(
-                            const Duration(milliseconds: 50),
-                          );
+                          await exportCompleter.future;
                           setState(() {
                             isExporting = false;
                             exportingType = null;
@@ -161,7 +162,8 @@ void main() {
       // インジケーター表示中
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      await tester.pump(const Duration(milliseconds: 100)); // 出力完了
+      // 出力完了を通知
+      exportCompleter.complete();
       await tester.pumpAndSettle();
 
       // 完了スナックバーの表示確認

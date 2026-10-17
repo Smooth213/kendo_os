@@ -96,7 +96,7 @@ void main() {
 
         // 再接続イベント発火
         streamController.add(updatedMatches);
-        await Future.delayed(const Duration(milliseconds: 20));
+        await pumpEventQueue();
 
         // 3. 最新状態に同期されていることを検証
         expect(currentViewerState.length, 3);

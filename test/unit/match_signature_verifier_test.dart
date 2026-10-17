@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/infrastructure/repository/match_signature_verifi
 void main() {
   group('[Unit] 試合署名検証器 単体テスト', () {
     test('正常署名検証において 正当な署名を持つイベントが正常に検証通過すること', () {
-      final now = DateTime.now();
+      final now = DateTime(2026, 1, 1, 12, 0);
       final event1 = ScoreEventLegacyAdapter.fromLegacy(
         type: PointType.men,
         side: Side.red,
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('改ざんスコア検出において 署名不一致イベント投入時にTamperedEventExceptionが送出されること', () {
-      final now = DateTime.now();
+      final now = DateTime(2026, 1, 1, 12, 0);
       final legitimateEvent = ScoreEventLegacyAdapter.fromLegacy(
         type: PointType.men,
         side: Side.red,
@@ -69,7 +69,7 @@ void main() {
     });
 
     test('クランティン隔離モードにおいて 隔離モード有効時は例外を送出せず改ざんフラグが返却されること', () {
-      final now = DateTime.now();
+      final now = DateTime(2026, 1, 1, 12, 0);
       final tamperedEvent = ScoreEvent(
         id: 'evt-sig-4',
         side: Side.red,
@@ -99,7 +99,7 @@ void main() {
 
       final verifier = MatchSignatureVerifier(cache);
 
-      final now = DateTime.now();
+      final now = DateTime(2026, 1, 1, 12, 0);
       final validEvent = ScoreEventLegacyAdapter.fromLegacy(
         type: PointType.men,
         side: Side.red,

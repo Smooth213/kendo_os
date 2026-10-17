@@ -54,7 +54,7 @@ void main() {
           if (attemptCount >= 2) {
             isNetworkRecovered = true;
           }
-          await Future.delayed(const Duration(milliseconds: 10));
+          await Future<void>.value();
         }
         return false;
       }

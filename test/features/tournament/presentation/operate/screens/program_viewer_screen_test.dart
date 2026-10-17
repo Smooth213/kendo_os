@@ -224,7 +224,7 @@ void main() {
         fileUrl: 'https://example.com/dummy.pdf', // ネットワークリクエストは通常モックされます
         fileType: 'pdf',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -251,7 +251,7 @@ void main() {
             'https://placehold.co/400x600/E8E8E8/808080.png?text=Uploading...',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -284,7 +284,7 @@ void main() {
         fileUrl: 'https://example.com/dummy.jpg',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
         isOcrProcessed: false,
       );
 
@@ -313,7 +313,7 @@ void main() {
         fileUrl: 'https://example.com/dummy.jpg',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -341,7 +341,7 @@ void main() {
         fileUrl: 'https://example.com/dummy.jpg',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -413,7 +413,7 @@ void main() {
         fileUrl: 'https://placehold.co/400x600.jpg',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -474,7 +474,7 @@ void main() {
         fileUrl: 'https://example.com/dummy_cache_isolated.pdf',
         fileType: 'pdf',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -517,7 +517,7 @@ void main() {
         fileUrl: 'https://example.com/pdf1.pdf',
         fileType: 'pdf',
         pageCount: 2,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       final program2 = ProgramModel(
@@ -527,7 +527,7 @@ void main() {
         fileUrl: 'https://example.com/pdf2.pdf',
         fileType: 'pdf',
         pageCount: 3,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -574,7 +574,7 @@ void main() {
         fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=1',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       final p2 = ProgramModel(
@@ -584,7 +584,7 @@ void main() {
         fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=2',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       await tester.pumpWidget(createViewerWidget([p1]));
@@ -620,7 +620,7 @@ void main() {
           fileUrl: 'https://example.com/test.pdf',
           fileType: 'pdf',
           pageCount: 2,
-          createdAt: DateTime.now(),
+          createdAt: DateTime(2026, 1, 1, 12, 0),
         );
 
         when(
@@ -668,7 +668,7 @@ void main() {
         fileUrl: 'https://example.com/dummy.jpg',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -723,7 +723,7 @@ void main() {
         fileUrl: 'https://placehold.co/400x600.jpg',
         fileType: 'image',
         pageCount: 1,
-        createdAt: DateTime.now(),
+        createdAt: DateTime(2026, 1, 1, 12, 0),
       );
 
       when(
@@ -756,7 +756,7 @@ void main() {
         ..pointsY = [200.0, 205.0]
         ..colorValue = Colors.blue.toARGB32()
         ..strokeWidth = 5.0
-        ..createdAt = DateTime.now();
+        ..createdAt = DateTime(2026, 1, 1, 12, 0);
 
       when(
         () => mockStrokeRepo.watchStrokes(any()),
@@ -822,7 +822,7 @@ void main() {
           fileUrl: 'https://example.com/multi.pdf',
           fileType: 'pdf',
           pageCount: 5,
-          createdAt: DateTime.now(),
+          createdAt: DateTime(2026, 1, 1, 12, 0),
         );
 
         when(

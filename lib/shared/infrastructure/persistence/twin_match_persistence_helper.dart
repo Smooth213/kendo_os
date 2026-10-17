@@ -15,6 +15,12 @@ class TwinMatchPersistenceHelper {
   @visibleForTesting
   static bool? isWebOverride;
 
+  @visibleForTesting
+  static DateTime Function()? nowProvider;
+
+  static DateTime get _now =>
+      nowProvider != null ? nowProvider!() : DateTime.now();
+
   static bool get _isWeb => isWebOverride ?? kIsWeb;
   static final Map<String, Future<void>> _pendingWrites = {};
 
@@ -70,7 +76,7 @@ class TwinMatchPersistenceHelper {
       await temporaryFile.rename(snapshotFile.path);
 
       // ローテーションバックアップ（最大3世代）
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final timestamp = _now.millisecondsSinceEpoch;
       final rotFile = File(
         '${dir.path}/twin_snapshot_${match.id}_$timestamp.json',
       );

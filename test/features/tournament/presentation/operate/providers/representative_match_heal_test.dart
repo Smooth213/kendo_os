@@ -94,11 +94,15 @@ void main() {
         const targetTournamentId = 't_native_rep_test';
 
         final savedMatches = <List<MatchModel>>[];
+        final saveCompleter = Completer<void>();
         when(() => mockLocalRepo.saveMatchesBulk(any())).thenAnswer((
           invocation,
         ) async {
           final matches = invocation.positionalArguments[0] as List<MatchModel>;
           savedMatches.add(matches);
+          if (!saveCompleter.isCompleted) {
+            saveCompleter.complete();
+          }
         });
 
         // Insert corrupted representative match in Firestore
@@ -139,10 +143,8 @@ void main() {
           (previous, next) {},
         );
 
-        // SyncEngineの50msデバウンスタイマーが完了してsaveMatchesBulkが呼ばれるまで待機（最短で抜け、最大1秒）
-        for (int i = 0; i < 50 && savedMatches.isEmpty; i++) {
-          await Future.delayed(const Duration(milliseconds: 20));
-        }
+        // SyncEngineのデバウンス完了をCompleterで決定論的に待機
+        await saveCompleter.future.timeout(const Duration(seconds: 2));
 
         expect(savedMatches.isNotEmpty, isTrue);
         final firstBulk = savedMatches.first;

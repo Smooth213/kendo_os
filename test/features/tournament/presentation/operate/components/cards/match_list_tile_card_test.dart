@@ -171,5 +171,127 @@ void main() {
       expect(find.text('編集'), findsNothing);
       expect(find.text('削除'), findsNothing);
     });
+
+    testWidgets('個人戦の試合カードにおいてBANDボタンが表示されること', (tester) async {
+      const sampleMatch = MatchModel(
+        id: 'test_match_1',
+        tournamentId: 'tour_1',
+        matchType: '個人戦',
+        redName: 'チームA: 山田',
+        whiteName: 'チームB: 佐藤',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'finished',
+        order: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
+            ),
+            matchListProvider.overrideWith((ref) => [sampleMatch]),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: const Scaffold(
+              body: MatchListTileCard(initialMatch: sampleMatch),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('チームA'), findsOneWidget);
+      expect(find.text('チームB'), findsOneWidget);
+      expect(find.text('山田'), findsOneWidget);
+      expect(find.text('佐藤'), findsOneWidget);
+      expect(find.text('終了'), findsOneWidget);
+      expect(find.text('BAND'), findsOneWidget);
+    });
+
+    testWidgets('団体戦の試合カード（先鋒等）ではBANDボタンが表示されないこと', (tester) async {
+      const teamMatch = MatchModel(
+        id: 'test_team_match_1',
+        tournamentId: 'tour_1',
+        matchType: '先鋒',
+        groupName: 'group_1',
+        redName: 'チームA: 山田',
+        whiteName: 'チームB: 佐藤',
+        redScore: 1,
+        whiteScore: 0,
+        status: 'in_progress',
+        order: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
+            ),
+            matchListProvider.overrideWith((ref) => [teamMatch]),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: const Scaffold(
+              body: MatchListTileCard(initialMatch: teamMatch),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('試合中 (LIVE)'), findsOneWidget);
+      expect(find.text('BAND'), findsNothing);
+    });
+
+    testWidgets('リーグ個人戦の試合カードでもBANDボタンが表示されること', (tester) async {
+      const leagueIndivMatch = MatchModel(
+        id: 'test_league_indiv_1',
+        tournamentId: 'tour_1',
+        matchType: 'individual',
+        groupName: 'league_group_1',
+        note: '第3試合場 [リーグ戦] 第2試合',
+        redName: '道上: 橋本',
+        whiteName: '相手: 三宅',
+        status: 'pending',
+        order: 1,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            permissionProvider.overrideWithValue(
+              const PermissionState(canManageTournament: true),
+            ),
+            matchListProvider.overrideWith((ref) => [leagueIndivMatch]),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: const Scaffold(
+              body: MatchListTileCard(initialMatch: leagueIndivMatch),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('⏳ 待機中'), findsOneWidget);
+      expect(find.text('BAND'), findsOneWidget);
+    });
   });
 }

@@ -115,8 +115,7 @@ void syncMatchTime(Duration elapsed);
                 ),
               ),
             );
-            await Future.delayed(const Duration(milliseconds: 300));
-            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 300));
 
             // RenderFlex オーバーフロー例外が一切発生していないこと
             expect(tester.takeException(), isNull);

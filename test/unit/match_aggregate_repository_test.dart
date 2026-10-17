@@ -36,7 +36,7 @@ void main() {
           id: 'event-$i',
           side: Side.red,
           strikeType: StrikeType.men,
-          timestamp: DateTime.now(),
+          timestamp: DateTime(2026, 1, 1, 12, 0),
         );
         agg = await repository.append(agg, event);
       }
@@ -48,7 +48,7 @@ void main() {
         id: 'event-50',
         side: Side.red,
         strikeType: StrikeType.kote,
-        timestamp: DateTime.now(),
+        timestamp: DateTime(2026, 1, 1, 12, 0),
       );
       agg = await repository.append(agg, event50);
 
@@ -74,7 +74,7 @@ void main() {
                   id: 'other-task-event',
                   side: Side.white,
                   strikeType: StrikeType.dou,
-                  timestamp: DateTime.now(),
+                  timestamp: DateTime(2026, 1, 1, 12, 0),
                 ),
               ],
               expectedVersion: 0,
@@ -84,7 +84,7 @@ void main() {
             id: 'my-event-$actionCallCount',
             side: Side.red,
             strikeType: StrikeType.men,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 12, 0),
           );
         },
       );
@@ -103,10 +103,10 @@ void main() {
             streamId: 'match-conflict-limit',
             events: [
               ScoreEvent(
-                id: 'conflict-${DateTime.now().microsecondsSinceEpoch}',
+                id: 'conflict-${currentAgg.events.length}',
                 side: Side.white,
                 strikeType: StrikeType.tsuki,
-                timestamp: DateTime.now(),
+                timestamp: DateTime(2026, 1, 1, 12, 0),
               ),
             ],
             expectedVersion: currentAgg.events.length,
@@ -115,7 +115,7 @@ void main() {
             id: 'my-fail-event',
             side: Side.red,
             strikeType: StrikeType.men,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 12, 0),
           );
         });
       }, throwsA(isA<ConcurrencyException>()));
@@ -138,7 +138,7 @@ void main() {
             id: 'evt-stream-1',
             side: Side.red,
             strikeType: StrikeType.men,
-            timestamp: DateTime.now(),
+            timestamp: DateTime(2026, 1, 1, 12, 0),
           ),
         ],
         expectedVersion: 0,

@@ -66,7 +66,7 @@ void main() {
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
     });
 
-    testWidgets('長押しによりドラムロールホイールピッカーモードへ変形すること', (tester) async {
+    testWidgets('長押しによりドラムロールホイールピッカーモードへ変形し完了タップで復帰すること', (tester) async {
       const state = DockTimerState(
         initialSeconds: 180,
         remainingSeconds: 180,
@@ -88,11 +88,73 @@ void main() {
         ),
       );
 
-      // 長押しを実行
+      // 長押しを実行してホイールピッカーモードへ
       await tester.longPress(find.byType(DockTimerDisplayCard));
       await tester.pumpAndSettle();
 
       expect(find.text('完了'), findsOneWidget);
+
+      // 完了タップで通常モードへ復帰
+      await tester.tap(find.text('完了'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('タップで手入力 ｜ 長押しでダイヤル'), findsOneWidget);
+    });
+
+    testWidgets('手入力モードにおいてキーボード入力と確定ボタンタップで時間が正しく更新されること', (tester) async {
+      int changedMinutes = -1;
+      int changedSeconds = -1;
+
+      DockTimerState currentState = const DockTimerState(
+        initialSeconds: 180,
+        remainingSeconds: 180,
+        isRunning: false,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return DockTimerDisplayCard(
+                  timerState: currentState,
+                  isRunning: currentState.isRunning,
+                  isStopwatch: false,
+                  isDark: false,
+                  themeColors: dummyColors,
+                  onTimeChanged: (min, sec) {
+                    changedMinutes = min;
+                    changedSeconds = sec;
+                    setState(() {
+                      currentState = currentState.copyWith(
+                        initialSeconds: min * 60 + sec,
+                        remainingSeconds: min * 60 + sec,
+                      );
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      // 分ブロックをタップして手入力モードへ
+      await tester.tap(find.text('03'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+
+      // キーボードで「5」を入力して確定
+      await tester.enterText(find.byType(TextField), '5');
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.check_circle));
+      await tester.pumpAndSettle();
+
+      expect(changedMinutes, 5);
+      expect(changedSeconds, 0);
+      expect(find.text('05'), findsOneWidget);
     });
 
     testWidgets('タイムアップ時に警告ヘッダーが表示されること', (tester) async {

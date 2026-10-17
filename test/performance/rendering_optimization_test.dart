@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -327,7 +326,7 @@ void main() {
   // Step 3: Debounce バッチ処理の検証
   // ─────────────────────────────────────────────────────────
   group('デバウンスバッチ処理 (Web/Native共通)', () {
-    test('50ms以内の連続イベントは1回にまとめて処理されること', () async {
+    testWidgets('50ms以内の連続イベントは1回にまとめて処理されること', (tester) async {
       int callCount = 0;
       Timer? debounceTimer;
 
@@ -341,16 +340,16 @@ void main() {
       // 10ms間隔で5回連続トリガー（各間隔は50ms未満）
       for (int i = 0; i < 5; i++) {
         triggerDebounce();
-        await Future.delayed(const Duration(milliseconds: 10));
+        await tester.pump(const Duration(milliseconds: 10));
       }
 
-      // 最後のtriggerから50ms後に発火するのを待つ
-      await Future.delayed(const Duration(milliseconds: 100));
+      // 最後のtriggerから50ms経過させる
+      await tester.pump(const Duration(milliseconds: 50));
 
       expect(callCount, equals(1), reason: '50ms以内の連続イベントは1回のみ実行される');
     });
 
-    test('50msを超える間隔のイベントは独立して処理されること', () async {
+    testWidgets('50msを超える間隔のイベントは独立して処理されること', (tester) async {
       int callCount = 0;
       Timer? debounceTimer;
 
@@ -362,9 +361,9 @@ void main() {
       }
 
       triggerDebounce();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 60));
       triggerDebounce();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 60));
 
       expect(callCount, equals(2), reason: '50msを超える間隔のイベントは独立して処理される');
     });

@@ -19,6 +19,7 @@ void main() {
     tearDown(() async {
       TwinMatchPersistenceHelper.customDirectory = null;
       TwinMatchPersistenceHelper.isWebOverride = null;
+      TwinMatchPersistenceHelper.nowProvider = null;
       if (tempDir.existsSync()) {
         tempDir.deleteSync(recursive: true);
       }
@@ -35,12 +36,15 @@ void main() {
           whiteName: '選手白',
         );
 
+        // 仮想時間を1秒ずつ進めてタイムスタンプの一意性と順序を完全に保証（実時間待機ゼロ）
+        int fakeEpoch = 1700000000000;
+        TwinMatchPersistenceHelper.nowProvider = () =>
+            DateTime.fromMillisecondsSinceEpoch(fakeEpoch += 1000);
+
         // 4世代分のバックアップを順次保存
         for (int i = 1; i <= 4; i++) {
           final match = baseMatch.copyWith(redScore: i, status: 'in_progress');
           await saveEmergencyBackupWithRotation(match);
-          // タイムスタンプ（ミリ秒）の一意性を確保するため最小限（1ms）待機
-          await Future.delayed(const Duration(milliseconds: 1));
         }
 
         final files = tempDir
