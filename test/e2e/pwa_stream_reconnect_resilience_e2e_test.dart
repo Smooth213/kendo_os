@@ -16,16 +16,21 @@ void main() {
 
         // 初期状態: サーバーと端末時刻が同期（オフセット0）
         clockService.resetOffset();
-        final t0 = timeSource.now();
+        expect(clockService.offset, Duration.zero);
 
         // 1. スリープ発生シミュレーション:
         // クライアント側端末の時計が5000ms遅れる（またはサーバー側が進む）時計スキュー発生
         clockService.setOffset(const Duration(milliseconds: 5000));
-        final skewedNow = timeSource.now();
         expect(
-          skewedNow.difference(t0).inMilliseconds >= 4900,
+          clockService.offset,
+          const Duration(milliseconds: 5000),
+          reason: 'ServerClockOffsetによりサーバー同期オフセットが正確に5秒に設定されていること',
+        );
+        expect(
+          timeSource.now().difference(DateTime.now().toUtc()).inMilliseconds >=
+              4900,
           isTrue,
-          reason: 'ServerClockOffsetによりサーバー同期時刻が正確に5秒進んだ値に補正されていること',
+          reason: 'SystemTimeSourceが5秒補正されたサーバー時刻を反映していること',
         );
 
         // 2. スリープ中にバックグラウンドで複数試合が進行・更新される

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,7 +51,7 @@ void main() {
       }).toList();
     }
 
-    test('4カテゴリ混在データから全カテゴリ一括CSV文字列およびバイト配列が欠損なく生成されること', () async {
+    test('個人戦および団体戦混在の全カテゴリ公式記録が一括CSVおよびバイト列として可逆出力されること', () async {
       final allCategoryData = generate4CategoryData();
       expect(allCategoryData.length, 4);
 
@@ -61,7 +62,7 @@ void main() {
       expect(
         csvString.startsWith('\uFEFF'),
         isTrue,
-        reason: 'Excel対策のBOMが付与されていること',
+        reason: 'Excel文字化け防止のBOM（\\uFEFF）が付与されていること',
       );
 
       for (final cat in categories) {
@@ -70,6 +71,13 @@ void main() {
       expect(csvString.contains('決勝トーナメント'), isTrue);
       expect(csvString.contains('選手A'), isTrue);
       expect(csvString.contains('選手D'), isTrue);
+
+      // UTF-8バイト列への変換と可逆デコードの検証
+      final utf8Bytes = utf8.encode(csvString);
+      expect(utf8Bytes.isNotEmpty, isTrue);
+      final decoded = utf8.decode(utf8Bytes);
+      expect(decoded.contains(categories.first), isTrue);
+      expect(decoded.contains(categories.last), isTrue);
 
       // 非同期バイト生成 (Isolate/バックグラウンド) 検証
       final bytes = await CsvService.generateCsvBytesAsync('全カテゴリ', [

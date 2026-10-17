@@ -29,7 +29,7 @@ void main() {
     );
   });
 
-  group('[E2E] クイック次戦ウィザード起動〜試合生成〜スコア入力・確定〜タイムライン更新ライフサイクルE2Eテスト', () {
+  group('[Widget] クイック次戦ウィザード起動〜試合生成〜スコア入力・確定〜タイムライン更新ライフサイクル統合テスト', () {
     late MockMatchApplicationService mockMatchService;
     final List<MatchModel> matchStore = [];
 
