@@ -145,11 +145,10 @@ flutter test -j 6 --no-pub \
               test/golden/pixel_quick_memo_zoom_and_canvas_golden_test.dart \
               test/golden/pixel_viewer_bunaiksen_official_record_golden_test.dart \
               test/golden/pixel_program_dock_pagination_and_return_golden_test.dart \
-              test/e2e/quick_memo_zoom_lifecycle_and_persistence_e2e_test.dart \
+              test/features/tournament/presentation/quick_memo_zoom_lifecycle_and_stress_test.dart \
               test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart \
               test/e2e/multi_tenant_dock_program_state_isolation_e2e_test.dart \
               test/e2e/composite_kachinuki_daihyosen_court_reassign_offline_test.dart \
-              test/e2e/composite_quick_memo_zoom_rotation_stress_test.dart \
               test/e2e/composite_multi_player_fusensho_daihyosen_export_test.dart \
               test/e2e/composite_room_join_chaos_resilience_test.dart \
               test/governance/event_signature_governance_test.dart \

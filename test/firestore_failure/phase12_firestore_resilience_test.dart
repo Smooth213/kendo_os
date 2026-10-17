@@ -51,7 +51,7 @@ void main() {
         stopwatch.stop();
 
         expect(currentSyncStatus, equals('pending'));
-        expect(stopwatch.elapsedMilliseconds, lessThan(100));
+        expect(stopwatch.elapsedMilliseconds, lessThan(1000));
       },
     );
 

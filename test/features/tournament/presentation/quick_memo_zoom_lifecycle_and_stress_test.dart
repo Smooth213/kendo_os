@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_canvas_painter.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_view.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 void main() {
@@ -13,7 +13,113 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  group('[E2E] クイックメモ ズームライフサイクルおよびストローク永続化統合テスト', () {
+  group('[Widget] クイックメモ ズーム操作・画面回転・ストローク永続化ライフサイクル統合テスト', () {
+    testWidgets('ズーム拡大中のキーボード出現消失連打および縦横画面回転において描画破綻なく追従すること', (
+      WidgetTester tester,
+    ) async {
+      final controller = TextEditingController(text: '初期メモ内容');
+      final focusNode = FocusNode();
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+      final strokes = <MemoStroke>[];
+
+      // 100本のストロークを生成してメモリ負荷を再現
+      for (int i = 0; i < 100; i++) {
+        strokes.add(
+          MemoStroke(
+            points: [
+              Offset(i.toDouble(), i.toDouble()),
+              Offset((i + 10).toDouble(), (i + 10).toDouble()),
+            ],
+            color: Colors.blue,
+            strokeWidth: 2.0,
+          ),
+        );
+      }
+
+      Widget buildStressWidget({
+        required Size size,
+        required double viewInsetsBottom,
+      }) {
+        return MaterialApp(
+          theme: ThemeData.light(),
+          home: MediaQuery(
+            data: MediaQueryData(
+              size: size,
+              viewInsets: EdgeInsets.only(bottom: viewInsetsBottom),
+            ),
+            child: Scaffold(
+              body: Column(
+                children: [
+                  Expanded(
+                    child: QuickMemoDrawingCanvas(
+                      strokes: strokes,
+                      currentPoints: const [],
+                      selectedColor: Colors.black,
+                      selectedWidth: 3.0,
+                      isEraser: false,
+                      isDark: false,
+                      themeColors: themeColors,
+                      onPanStart: (_) {},
+                      onPanUpdate: (_) {},
+                      onPanEnd: (_) {},
+                      onColorChanged: (_) {},
+                      onToggleWidth: () {},
+                      onToggleEraser: () {},
+                    ),
+                  ),
+                  SizedBox(
+                    height: 120,
+                    child: QuickMemoTextView(
+                      controller: controller,
+                      focusNode: focusNode,
+                      themeColors: themeColors,
+                      isDark: false,
+                      onChanged: () {},
+                      onInsertTimestamp: () {},
+                      onCopy: () {},
+                      onClear: () {},
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
+      // 1. 通常縦画面（ポートレート）
+      await tester.pumpWidget(
+        buildStressWidget(size: const Size(400, 800), viewInsetsBottom: 0),
+      );
+      await tester.pump();
+      expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
+      expect(find.byType(QuickMemoTextView), findsOneWidget);
+
+      // 2. キーボード出現（ソフトウェアキーボードの激しいインセット変化シミュレート）
+      await tester.pumpWidget(
+        buildStressWidget(size: const Size(400, 800), viewInsetsBottom: 320),
+      );
+      await tester.pump();
+      expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
+
+      // 3. 横画面回転（ランドスケープ）への急激なリサイズ
+      await tester.pumpWidget(
+        buildStressWidget(size: const Size(800, 400), viewInsetsBottom: 0),
+      );
+      await tester.pump();
+      expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
+
+      // 4. キーボード消失と再回転
+      await tester.pumpWidget(
+        buildStressWidget(size: const Size(400, 800), viewInsetsBottom: 0),
+      );
+      await tester.pump();
+      expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
+
+      // メモテキスト内容が保持されていること
+      expect(controller.text, equals('初期メモ内容'));
+    });
+
     testWidgets('ズーム拡大描画からドック最小化・画面遷移・再展開後もストロークデータが完全保持されること', (
       WidgetTester tester,
     ) async {
@@ -35,7 +141,6 @@ void main() {
               home: Scaffold(
                 body: Column(
                   children: [
-                    // 操作バー（ドック最小化・展開シミュレート）
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -92,7 +197,7 @@ void main() {
         );
       }
 
-      await tester.pumpWidget(ProviderScope(child: buildTestHarness()));
+      await tester.pumpWidget(buildTestHarness());
       await tester.pumpAndSettle();
 
       // 1. 初期表示でキャンバスが存在すること

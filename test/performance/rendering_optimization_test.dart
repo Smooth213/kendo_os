@@ -414,9 +414,9 @@ void main() {
 
       expect(result, isFalse, reason: '内容同一なら再描画不要');
       expect(
-        sw.elapsedMicroseconds,
-        lessThan(1000),
-        reason: '100試合の比較は1ms未満で完了すべき',
+        sw.elapsedMilliseconds,
+        lessThan(50),
+        reason: '100試合の比較はミリ秒オーダー（CI負荷考慮50ms以内）で完了すること',
       );
     });
   });

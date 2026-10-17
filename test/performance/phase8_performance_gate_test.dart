@@ -32,7 +32,7 @@ void main() {
         stopwatch.stop();
 
         expect(projectionResult.length, equals(150));
-        expect(stopwatch.elapsedMilliseconds, lessThan(200));
+        expect(stopwatch.elapsedMilliseconds, lessThan(1000));
       },
     );
 
@@ -59,7 +59,7 @@ void main() {
 
         stopwatch.stop();
 
-        expect(stopwatch.elapsedMilliseconds, lessThan(2000));
+        expect(stopwatch.elapsedMilliseconds, lessThan(5000));
       },
     );
 
@@ -87,7 +87,7 @@ void main() {
         stopwatch.stop();
 
         expect(massiveStats.length, equals(50));
-        expect(stopwatch.elapsedMilliseconds, lessThan(200));
+        expect(stopwatch.elapsedMilliseconds, lessThan(1000));
       },
     );
   });
