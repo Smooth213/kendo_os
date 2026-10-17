@@ -12,7 +12,7 @@ def run_test_pair_governance():
         "test/widget/category_rule_category_tile_test.dart",
         "test/widget/team_status_member_order_row_test.dart",
         "test/widget/match_action_button_row_test.dart",
-        "test/widget/bunaiksen_team_member_list_test.dart",
+        "test/features/tournament/presentation/bunaiksen_match_components_test.dart",
         "test/widget/multi_player_candidate_chip_test.dart",
         "test/unit/infrastructure/local_match_entity_mapper_test.dart",
         "test/unit/domain/services/kendo_overtime_evaluator_test.dart",

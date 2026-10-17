@@ -90,7 +90,7 @@ def run_manual_governance():
     test_files = [
         "test/unit/manuals/manual_integrity_test.dart",
         "test/unit/manuals/manual_search_and_query_test.dart",
-        "test/widget/manual_pane_search_integration_test.dart",
+        "test/features/tournament/presentation/manual_index_search_test.dart",
         "test/golden/manual_ui_integrity_golden_test.dart",
     ]
 

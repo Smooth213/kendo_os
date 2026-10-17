@@ -1,239 +1,346 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/score/score_event.dart';
+import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/team_match_status_screen.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import '../../../../../helpers/event_factory.dart';
 
 void main() {
-  group('[Widget] チーム試合状況 ロジック＆UI統合テスト要塞', () {
-    final testMatches = [
-      // 団体戦第1対戦（先鋒・次鋒・中堅の3試合で1対戦カード）：進行中
-      const MatchModel(
-        id: 'team_a_m1',
-        groupName: 'group_team_a_1',
-        matchType: '団体戦 (先鋒)',
-        redName: '相手10: 冨岡義勇',
-        whiteName: '道上剣友会: 竈門炭治郎',
-        status: 'finished',
-        redScore: 0,
-        whiteScore: 2,
-        note: '第2コート, 1回戦, 4試合目',
-        category: '小学生の部',
-        order: 1.0,
-      ),
+  group('[Widget] チーム試合状況画面 全試合形式（個人・リーグ・勝抜・団体）検証テスト', () {
+    final liveEvents = [kote(Side.red), men(Side.white)];
+
+    final comprehensiveMatches = [
+      // 1. トーナメント団体戦（道上剣友会A: 進行中LIVE）
       MatchModel(
-        id: 'team_a_m2',
-        groupName: 'group_team_a_1',
-        matchType: '団体戦 (次鋒)',
-        redName: '相手10: 鱗滝左近次',
-        whiteName: '道上剣友会: 我妻善逸',
+        id: 'm1_dantai_live',
+        groupName: 'group_dohjo_a_r1',
+        matchType: '先鋒戦',
+        redName: '道上剣友会A: 皿田 脩人',
+        whiteName: '相手チーム02: 相手 一郎',
         status: 'in_progress',
         redScore: 1,
-        whiteScore: 0,
-        note: '第2コート, 1回戦, 4試合目',
-        category: '小学生の部',
-        order: 2.0,
-        timerStartedAt: DateTime.now(),
+        whiteScore: 1,
+        events: liveEvents,
+        note: '第3試合場, 2回戦, 3試合目',
+        category: '小学生低学年の部',
+        order: 1.0,
+        timerStartedAt: DateTime(2026, 10, 1, 10, 0, 0),
       ),
       const MatchModel(
-        id: 'team_a_m3',
-        groupName: 'group_team_a_1',
-        matchType: '団体戦 (中堅)',
-        redName: '相手10: 錆兎',
-        whiteName: '道上剣友会: 嘴平伊之助',
+        id: 'm1_dantai_wait',
+        groupName: 'group_dohjo_a_r1',
+        matchType: '中堅戦',
+        redName: '道上剣友会A: 塚本 大道',
+        whiteName: '相手チーム02: 相手 二郎',
         status: 'waiting',
-        note: '第2コート, 1回戦, 4試合目',
-        category: '小学生の部',
+        note: '第3試合場, 2回戦, 3試合目',
+        category: '小学生低学年の部',
+        order: 2.0,
+      ),
+
+      // 2. 個人戦（トーナメント個人戦: 終了済）
+      const MatchModel(
+        id: 'm2_indiv',
+        matchType: '個人戦',
+        redName: '道上剣友会A: 久安 智也',
+        whiteName: 'ライバル道場: 相手 三郎',
+        status: 'finished',
+        redScore: 2,
+        whiteScore: 0,
+        note: '第1コート, 準決勝, 1試合目',
+        category: '中学生個人の部',
         order: 3.0,
       ),
 
-      // 中学生チーム: 1試合目(終了: 勝)
+      // 3. リーグ個人戦（選手名のみだが名簿から逆引き判定: 待機中）
       const MatchModel(
-        id: 'team_b_m1',
-        matchType: '個人戦',
-        redName: '雷鳴道場中学: 煉獄杏寿郎',
-        whiteName: '炎陽塾: 宇髄天元',
+        id: 'm3_league_indiv',
+        matchType: 'リーグ個人戦',
+        redName: '相手 四郎',
+        whiteName: '皿田 脩人',
+        status: 'waiting',
+        note: '第2コート, Aリーグ, 4試合目',
+        category: '小学生個人の部',
+        order: 4.0,
+      ),
+
+      // 4. リーグ団体戦（道上選抜: 終了済）
+      const MatchModel(
+        id: 'm4_league_team',
+        groupName: 'group_league_dohjo_1',
+        matchType: 'リーグ団体戦',
+        redName: '道上選抜',
+        whiteName: '強豪館B',
         status: 'finished',
-        redScore: 2,
+        redScore: 3,
         whiteScore: 1,
-        note: '第3コート, 準決勝',
-        category: '中学生の部',
-        order: 1.0,
+        note: '第4コート, 予選リーグ, 2試合目',
+        category: '中学生団体の部',
+        order: 5.0,
+      ),
+
+      // 5. 勝ち抜き戦（道上勝抜隊: 待機中）
+      const MatchModel(
+        id: 'm5_kachinuki',
+        matchType: '勝ち抜き戦',
+        isKachinuki: true,
+        redName: '道上勝抜隊',
+        whiteName: '炎陽塾',
+        status: 'waiting',
+        note: '第5コート, 1回戦',
+        category: '勝ち抜きオープンの部',
+        order: 6.0,
       ),
     ];
 
-    test(
-      'calculateTeamProgress: 相手側が赤でも自チーム名を100%正しく認識し、「第2コート (1回戦・第4試合)」を抽出すること',
-      () {
-        final progressList = calculateTeamProgress(
-          testMatches,
-          myDojoName: '道上',
-          registeredTeamNames: ['道上剣友会', '雷鳴道場中学'],
-          registeredPlayerNames: ['竈門炭治郎', '我妻善逸', '嘴平伊之助', '煉獄杏寿郎'],
-        );
-
-        expect(progressList.length, 2);
-
-        // 道上剣友会の検証（「第2コート (1回戦・第4試合)」として抽出されること！）
-        final teamA = progressList.firstWhere((t) => t.teamName == '道上剣友会');
-        expect(teamA.totalCount, 1); // 1対戦
-        expect(teamA.completedCount, 0); // 進行中
-        expect(teamA.hasLiveMatch, isTrue);
-        expect(teamA.inProgressMatch?.id, 'team_a_m2');
-        expect(teamA.currentCourtName, '第2コート (1回戦・第4試合)');
-
-        // 雷鳴道場中学チームの検証（「第3コート (準決勝)」として抽出されること！）
-        final teamB = progressList.firstWhere((t) => t.teamName == '雷鳴道場中学');
-        expect(teamB.totalCount, 1);
-        expect(teamB.completedCount, 1);
-        expect(teamB.hasLiveMatch, isFalse);
-        expect(teamB.isAllFinished, isTrue);
-        expect(teamB.totalWins, 1);
-        expect(teamB.currentCourtName, '第3コート (準決勝)');
-      },
-    );
-
-    testWidgets(
-      'TeamMatchStatusScreen: UIヘッダー、自チーム名表示、LIVE表示、試合終了バッジ、フィルターが正常に動作すること',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              matchListProvider.overrideWithValue(testMatches),
-              customTeamNamesProvider.overrideWith(
-                (ref) => Stream.value(['道上剣友会', '雷鳴道場中学']),
-              ),
-              timelinePlayerListProvider.overrideWith(
-                (ref) => Stream.value([
-                  PlayerModel(
-                    id: 'p1',
-                    lastName: '竈門',
-                    firstName: '炭治郎',
-                    lastNameKana: 'かまど',
-                    firstNameKana: 'たんじろう',
-                    grade: 4,
-                  ),
-                  PlayerModel(
-                    id: 'p2',
-                    lastName: '我妻',
-                    firstName: '善逸',
-                    lastNameKana: 'あがつま',
-                    firstNameKana: 'ぜんいつ',
-                    grade: 4,
-                  ),
-                  PlayerModel(
-                    id: 'p3',
-                    lastName: '煉獄',
-                    firstName: '杏寿郎',
-                    lastNameKana: 'れんごく',
-                    firstNameKana: 'きょうじゅろう',
-                    grade: 6,
-                  ),
-                ]),
-              ),
-              currentDojoNameProvider.overrideWith((ref) => Stream.value('道上')),
-            ],
-            child: const MaterialApp(home: TeamMatchStatusScreen()),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // ヘッダー確認
-        expect(find.text('チーム試合状況'), findsOneWidget);
-        expect(find.text('すべて表示 (2)'), findsOneWidget);
-
-        // チームカード確認（ヘッダーおよび選手上段の道場名として道上剣友会が表示されること）
-        expect(find.text('道上剣友会'), findsNWidgets(2));
-        expect(find.text('雷鳴道場中学'), findsNWidgets(2));
-
-        expect(find.text('試合中 (LIVE)'), findsOneWidget);
-        // 全試合終了バッジが表示されること
-        expect(find.text('🏁 全試合終了'), findsOneWidget);
-
-        // 進行度: 道上剣友会が0/1試合、雷鳴道場中学が1/1試合
-        expect(find.text('進行: 0/1 試合'), findsOneWidget);
-        expect(find.text('進行: 1/1 試合'), findsOneWidget);
-
-        // コート・回戦・試合順の表示確認
-        expect(find.text('第2コート (1回戦・第4試合)'), findsOneWidget);
-
-        // 道場名上・選手名下の表示確認
-        expect(find.text('我妻善逸'), findsOneWidget);
-        expect(find.text('鱗滝左近次'), findsOneWidget);
-
-        // カテゴリ別タブの確認
-        expect(find.text('全カテゴリ (2)'), findsOneWidget);
-
-        // 「🔴 試合中のみ (1)」をタップしてフィルター
-        await tester.tap(find.text('🔴 試合中のみ (1)'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('道上剣友会'), findsNWidgets(2));
-        expect(find.text('雷鳴道場中学'), findsNothing);
-
-        // 「⏳ 待機中のみ (0)」をタップしてフィルター（終了した試合は除外されること！）
-        await tester.tap(find.text('⏳ 待機中のみ (0)'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('道上剣友会'), findsNothing);
-        expect(find.text('雷鳴道場中学'), findsNothing);
-
-        // 「すべて表示 (2)」をタップして全解除
-        await tester.tap(find.text('すべて表示 (2)'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('道上剣友会'), findsNWidgets(2));
-        expect(find.text('雷鳴道場中学'), findsNWidgets(2));
-
-        // 🥋 スワイプでタブを移動できることの検証
-        // 左へスワイプして次のカテゴリ「小学生の部」へ移動
-        await tester.drag(find.byType(PageView), const Offset(-500, 0));
-        await tester.pumpAndSettle();
-
-        // 小学生の部のチーム（道上剣友会）のみ表示され、雷鳴道場中学は表示されない
-        expect(find.text('道上剣友会'), findsNWidgets(2));
-        expect(find.text('雷鳴道場中学'), findsNothing);
-
-        // 再度左へスワイプして「中学生」カテゴリへ移動
-        await tester.drag(find.byType(PageView), const Offset(-500, 0));
-        await tester.pumpAndSettle();
-
-        // 中学生の部のチーム（雷鳴道場中学）のみ表示され、道上剣友会は表示されない
-        expect(find.text('雷鳴道場中学'), findsNWidgets(2));
-        expect(find.text('道上剣友会'), findsNothing);
-
-        // 右へスワイプして前のタブへ戻れること
-        await tester.drag(find.byType(PageView), const Offset(500, 0));
-        await tester.pumpAndSettle();
-
-        expect(find.text('道上剣友会'), findsNWidgets(2));
-        expect(find.text('雷鳴道場中学'), findsNothing);
-      },
-    );
-
-    testWidgets('TeamMatchStatusScreen: tournamentId存在時にプログラムドックアイコンが表示されること', (
+    testWidgets('個人戦・リーグ個人戦・リーグ団体戦・勝ち抜き戦・団体戦のカード描画・見出し・遷移の全工程が正しく検証されること', (
       tester,
     ) async {
-      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.physicalSize = const Size(800, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
+      final currentMatches = [...comprehensiveMatches];
+
+      final router = GoRouter(
+        initialLocation: '/team-status',
+        routes: [
+          GoRoute(
+            path: '/team-status',
+            builder: (context, state) => const TeamMatchStatusScreen(),
+          ),
+          GoRoute(
+            path: '/team-scoreboard/:groupName',
+            builder: (context, state) {
+              final groupName = state.pathParameters['groupName'] ?? '';
+              return Scaffold(
+                body: Center(child: Text('団体戦スコアボード画面: $groupName')),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/match/:matchId',
+            builder: (context, state) {
+              final matchId = state.pathParameters['matchId'] ?? '';
+              return Scaffold(body: Center(child: Text('個別試合画面: $matchId')));
+            },
+          ),
+        ],
+      );
+
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [teamProgressListProvider.overrideWithValue([])],
-          child: const MaterialApp(
-            home: TeamMatchStatusScreen(tournamentId: 'tour_test_123'),
-          ),
+          overrides: [
+            matchListProvider.overrideWith((ref) => currentMatches),
+            customTeamNamesProvider.overrideWith(
+              (ref) => Stream.value(['道上剣友会A', '道上選抜', '道上勝抜隊']),
+            ),
+            timelinePlayerListProvider.overrideWith(
+              (ref) => Stream.value([
+                PlayerModel(
+                  id: 'p1',
+                  lastName: '皿田',
+                  firstName: '脩人',
+                  lastNameKana: 'さらだ',
+                  firstNameKana: 'しゅうと',
+                  grade: 3,
+                ),
+                PlayerModel(
+                  id: 'p2',
+                  lastName: '久安',
+                  firstName: '智也',
+                  lastNameKana: 'ひさやす',
+                  firstNameKana: 'ともや',
+                  grade: 5,
+                ),
+              ]),
+            ),
+            currentDojoNameProvider.overrideWith((ref) => Stream.value('道上')),
+          ],
+          child: MaterialApp.router(routerConfig: router),
         ),
       );
       await tester.pumpAndSettle();
 
-      // 🥋 フローティングプログラムドックボタン（トロフィーアイコン）が表示されていること
-      expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+      // ----------------------------------------------------
+      // Step 1: 初期表示 & 自チーム認識（ヘッダー）の検証
+      // ----------------------------------------------------
+      expect(find.text('チーム試合状況'), findsOneWidget);
+      expect(find.textContaining('すべて表示'), findsOneWidget);
+
+      expect(find.text('道上剣友会A'), findsWidgets);
+      expect(find.text('道上選抜'), findsWidgets);
+
+      // ----------------------------------------------------
+      // Step 2: 各試合形式の対戦枠見出し（全形式網羅）の検証
+      // ----------------------------------------------------
+      expect(find.text('団体戦：道上剣友会A vs 相手チーム02'), findsOneWidget);
+      expect(find.textContaining('個人戦：'), findsWidgets);
+      expect(find.textContaining('リーグ個人戦：'), findsWidgets);
+      expect(find.textContaining('リーグ団体戦：'), findsWidgets);
+      expect(find.textContaining('勝ち抜き戦：'), findsWidgets);
+
+      // ----------------------------------------------------
+      // Step 3: コートタップ直接編集シート起動＆復帰検証
+      // ----------------------------------------------------
+      await tester.tap(find.text('第3試合場 (2回戦・第3試合)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('団体戦対戦の編集'), findsOneWidget);
+      expect(find.text('コート・メモ'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      expect(find.text('チーム試合状況'), findsOneWidget);
+
+      // ----------------------------------------------------
+      // Step 4: フィルター動作の検証
+      // ----------------------------------------------------
+      await tester.tap(find.text('🔴 試合中のみ (1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('道上剣友会A'), findsWidgets);
+      expect(find.text('道上選抜'), findsNothing);
+
+      await tester.tap(find.textContaining('すべて表示'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('道上剣友会A'), findsWidgets);
+      expect(find.text('道上選抜'), findsWidgets);
+
+      // ----------------------------------------------------
+      // Step 5: 終了した団体戦カードタップでスコアボード遷移検証
+      // ----------------------------------------------------
+      await tester.tap(find.text('道上選抜').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('団体戦スコアボード画面: group_league_dohjo_1'), findsOneWidget);
+    });
+
+    testWidgets('並び替えチップのタップにより、会場順・試合順・進行状況順にリストが正しく並び替わること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      TeamProgressStatus makeStatus({
+        required String teamName,
+        required String courtName,
+        bool hasLive = false,
+        bool isFinished = false,
+      }) {
+        return TeamProgressStatus(
+          teamName: teamName,
+          currentCourtName: courtName,
+          matches: [
+            MatchModel(
+              id: 'm_$teamName',
+              matchType: '先鋒',
+              redName: '$teamName: 選手A',
+              whiteName: '相手チーム: 選手B',
+              status: isFinished
+                  ? 'finished'
+                  : (hasLive ? 'in_progress' : 'waiting'),
+              order: 1.0,
+            ),
+          ],
+          completedCount: isFinished ? 1 : 0,
+          totalCount: 1,
+          hasLiveMatch: hasLive,
+        );
+      }
+
+      final mockTeams = [
+        makeStatus(teamName: 'チームA', courtName: '第2コート (第1試合)', hasLive: true),
+        makeStatus(teamName: 'チームB', courtName: '第1コート (第3試合)', hasLive: false),
+        makeStatus(teamName: 'チームC', courtName: '第1コート (第1試合)', hasLive: false),
+      ];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            teamProgressListProvider.overrideWithValue(mockTeams),
+            customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                canCreateMatch: true,
+                canManageTournament: true,
+                isReadOnly: false,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+          ],
+          child: const MaterialApp(
+            home: TeamMatchStatusScreen(
+              tournamentId: 'test_tournament',
+              isBottomSheet: false,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('並び替え:'), findsOneWidget);
+      expect(find.text('⚡ 進行状況順'), findsOneWidget);
+      expect(find.text('🏟️ 試合会場順'), findsOneWidget);
+      expect(find.text('🔢 試合順'), findsOneWidget);
+
+      List<String> getRenderedTeamNames() {
+        final teamNames = <String>[];
+        final widgets = tester.widgetList<Text>(
+          find.byWidgetPredicate(
+            (w) =>
+                w is Text &&
+                w.data != null &&
+                (w.data == 'チームA' || w.data == 'チームB' || w.data == 'チームC'),
+          ),
+        );
+        for (final w in widgets) {
+          if (!teamNames.contains(w.data)) {
+            teamNames.add(w.data!);
+          }
+        }
+        return teamNames;
+      }
+
+      // 1. 初期順序 (進行状況順: チームA (LIVE) が最上位)
+      expect(getRenderedTeamNames().first, 'チームA');
+
+      // 2. 「試合会場順」をタップ
+      await tester.tap(find.text('🏟️ 試合会場順'));
+      await tester.pumpAndSettle();
+
+      final courtOrdered = getRenderedTeamNames();
+      expect(courtOrdered[0], 'チームC');
+      expect(courtOrdered[1], 'チームB');
+      expect(courtOrdered[2], 'チームA');
+
+      // 3. 「試合順」をタップ
+      await tester.tap(find.text('🔢 試合順'));
+      await tester.pumpAndSettle();
+
+      final matchOrdered = getRenderedTeamNames();
+      expect(matchOrdered[0], 'チームC');
+      expect(matchOrdered[1], 'チームA');
+      expect(matchOrdered[2], 'チームB');
+
+      // 4. 「進行状況順」に戻す
+      await tester.tap(find.text('⚡ 進行状況順'));
+      await tester.pumpAndSettle();
+
+      expect(getRenderedTeamNames().first, 'チームA');
     });
   });
 }
