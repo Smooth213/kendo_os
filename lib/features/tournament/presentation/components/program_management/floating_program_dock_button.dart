@@ -226,8 +226,6 @@ class _FloatingProgramDockButtonState
     final activeOrder = _isEditMode && _localItemsOrder != null
         ? _localItemsOrder!
         : globalOrder;
-    final timerState = ref.watch(dockTimerProvider);
-
     final double safeTop = MediaQuery.of(context).padding.top + 60.0;
     final double rawSafeBottom =
         screenSize.height - MediaQuery.of(context).padding.bottom - 100.0;
@@ -250,6 +248,63 @@ class _FloatingProgramDockButtonState
       )),
     );
     final unreadCount = unreadAsync.valueOrNull ?? 0;
+
+    // ⚡【Plan 最適化】折りたたみ状態（通常運用時の99%）ではタイマー更新による
+    // 親ウィジェットの毎秒フルリビルドおよびアイテム一覧構築を完全回避
+    if (!_isExpanded && _animController.isDismissed) {
+      return AnimatedPositioned(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        left: targetX,
+        top: currentY,
+        child: Consumer(
+          builder: (context, ref, _) {
+            final timerBadge = ref.watch(
+              dockTimerProvider.select(
+                (s) => s.isRunning ? s.formattedDisplay : null,
+              ),
+            );
+            return DockParentGestureDetector(
+              isDark: isDark,
+              themeColors: themeColors,
+              unreadCount: unreadCount,
+              timerBadge: timerBadge,
+              buttonSize: _buttonSize,
+              closeButtonSize: _closeButtonSize,
+              variant: DockVariant.tournament,
+              isDocked: _isDocked,
+              isLeft: _isLeft,
+              yOffset: _yOffset,
+              onTap: () {
+                if (_isDocked) {
+                  setState(() => _isDocked = false);
+                } else if (FloatingDockSheetManager.isOpen) {
+                  FloatingDockSheetManager.close();
+                } else {
+                  _toggleExpand();
+                }
+              },
+              onLongPress: () {
+                if (!_isDocked) {
+                  _toggleExpand();
+                  _startEditMode();
+                }
+              },
+              onPositionChanged: (newY, isLeft, isDocked) {
+                setState(() {
+                  _yOffset = newY;
+                  _isLeft = isLeft;
+                  _isDocked = isDocked;
+                });
+              },
+            );
+          },
+        ),
+      );
+    }
+
+    // 展開時のみアイテム構築とタイマー状態の取得を行う
+    final timerState = ref.watch(dockTimerProvider);
     final items = FloatingDockItemsBuilder.build(
       context: context,
       tournamentId: widget.tournamentId,
@@ -280,49 +335,6 @@ class _FloatingProgramDockButtonState
     final DockLayoutMode layoutMode = isNearEdge
         ? DockLayoutMode.lShape
         : DockLayoutMode.vertical;
-
-    if (!_isExpanded && _animController.isDismissed) {
-      return AnimatedPositioned(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        left: targetX,
-        top: currentY,
-        child: DockParentGestureDetector(
-          isDark: isDark,
-          themeColors: themeColors,
-          unreadCount: unreadCount,
-          timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
-          buttonSize: _buttonSize,
-          closeButtonSize: _closeButtonSize,
-          variant: DockVariant.tournament,
-          isDocked: _isDocked,
-          isLeft: _isLeft,
-          yOffset: _yOffset,
-          onTap: () {
-            if (_isDocked) {
-              setState(() => _isDocked = false);
-            } else if (FloatingDockSheetManager.isOpen) {
-              FloatingDockSheetManager.close();
-            } else {
-              _toggleExpand();
-            }
-          },
-          onLongPress: () {
-            if (!_isDocked) {
-              _toggleExpand();
-              _startEditMode();
-            }
-          },
-          onPositionChanged: (newY, isLeft, isDocked) {
-            setState(() {
-              _yOffset = newY;
-              _isLeft = isLeft;
-              _isDocked = isDocked;
-            });
-          },
-        ),
-      );
-    }
 
     return Positioned.fill(
       child: Stack(

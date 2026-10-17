@@ -11,6 +11,8 @@ import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_queue.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 
 class MockLocalMatchRepository extends Mock implements LocalMatchRepository {}
 
@@ -47,6 +49,9 @@ void main() {
     when(
       () => mockLocalRepo.getPendingCommands(),
     ).thenAnswer((_) => Future.value([]));
+    when(
+      () => mockLocalRepo.deleteCommand(any()),
+    ).thenAnswer((_) => Future.value());
     when(
       () => mockLocalRepo.watchAllLocalMatches(),
     ).thenAnswer((_) => Stream.value(const <MatchModel>[]));
@@ -141,6 +146,108 @@ void main() {
         // 3. authSessionProvider の watch 変更により、プロバイダが再構築されるため、
         // 既存のインスタンスが正常に破棄 (onDisposeが発火) されたことをアサートする。
         expect(isDisposed, isTrue);
+      },
+    );
+  });
+
+  group('SyncEngine 異常系・Poison Pillおよび競合調停テスト', () {
+    test(
+      'Poison Pill対策において ペイロード復元不可能な破損コマンドは自律パージ（deleteCommand）され後続の処理を阻害しないこと',
+      () async {
+        final corruptCmd = MatchCommandModel(
+          id: 'corrupt_cmd_1',
+          type: CommandType.updateMatch,
+          payload: {
+            'id': 'corrupt_match',
+            'events': 'corrupted_string_not_list', // 復元エラー
+          },
+          createdAt: DateTime.now(),
+        );
+
+        when(
+          () => mockLocalRepo.getPendingCommands(),
+        ).thenAnswer((_) => Future.value([corruptCmd]));
+
+        final container = ProviderContainer(
+          overrides: [
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+            matchRepositoryProvider.overrideWithValue(
+              MatchRepository(fakeFirestore, 'test_dojo', 'test_tournament'),
+            ),
+          ],
+        );
+        container.read(currentDojoIdProvider.notifier).state = 'test_dojo';
+        container.read(currentTournamentIdProvider.notifier).state =
+            'test_tournament';
+
+        final engine = container.read(syncEngineProvider);
+        await engine.processQueue();
+
+        // 破損コマンドは毒薬キュー化防止のため自律パージ（deleteCommand）されること
+        verify(() => mockLocalRepo.deleteCommand('corrupt_cmd_1')).called(1);
+      },
+    );
+
+    test(
+      '競合調停（Self-Pruning）において クラウド先行更新（ConflictException）検知時に古いStaleコマンドが安全にパージされること',
+      () async {
+        // クラウド側には既に version 2 の新しい試合が存在する
+        await fakeFirestore
+            .collection('organizations')
+            .doc('test_dojo')
+            .collection('tournaments')
+            .doc('test_tournament')
+            .collection('matches')
+            .doc('conflict_match_1')
+            .set({
+              'id': 'conflict_match_1',
+              'matchType': '先鋒',
+              'redName': 'クラウド赤',
+              'whiteName': 'クラウド白',
+              'version': 2,
+            });
+
+        // ローカルには古い version 1 のコマンドが残っている
+        const localMatch = MatchModel(
+          id: 'conflict_match_1',
+          matchType: '先鋒',
+          redName: 'ローカル赤',
+          whiteName: 'ローカル白',
+          organizationId: 'test_dojo',
+          tournamentId: 'test_tournament',
+          version: 1,
+        );
+
+        final staleCmd = MatchCommandModel(
+          id: 'stale_cmd_1',
+          type: CommandType.updateMatch,
+          payload: localMatch.toJson(),
+          createdAt: DateTime.now(),
+        );
+
+        when(
+          () => mockLocalRepo.getPendingCommands(),
+        ).thenAnswer((_) => Future.value([staleCmd]));
+
+        final container = ProviderContainer(
+          overrides: [
+            firestoreProvider.overrideWithValue(fakeFirestore),
+            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+            matchRepositoryProvider.overrideWithValue(
+              MatchRepository(fakeFirestore, 'test_dojo', 'test_tournament'),
+            ),
+          ],
+        );
+        container.read(currentDojoIdProvider.notifier).state = 'test_dojo';
+        container.read(currentTournamentIdProvider.notifier).state =
+            'test_tournament';
+
+        final engine = container.read(syncEngineProvider);
+        await engine.processQueue();
+
+        // クラウド側が既に新しいため (remote: 2 >= local: 1)、Staleコマンドとして自律パージされること
+        verify(() => mockLocalRepo.deleteCommand('stale_cmd_1')).called(1);
       },
     );
   });

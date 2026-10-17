@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
@@ -27,6 +28,11 @@ class _FakeLocalMatchRepo implements LocalMatchRepository {
   @override
   Future<void> deleteMatch(String id) async {
     deletedMatchIds.add(id);
+  }
+
+  @override
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    deletedMatchIds.addAll(matchIds);
   }
 
   @override
@@ -110,6 +116,41 @@ void main() {
       // cleanな試合のみ削除され、dirtyな試合は保護される
       expect(repo.deletedMatchIds.contains('m-clean-del'), isTrue);
       expect(repo.deletedMatchIds.contains('m-dirty-del'), isFalse);
+    });
+
+    test('クラウド側ドキュメント破損時に全体クラッシュせず正常試合のみ同期され誤削除が防止されること', () async {
+      final fakeFirestore = FakeFirebaseFirestore();
+      final collection = fakeFirestore.collection('test_matches');
+
+      // 1. 正常な試合ドキュメント
+      await collection.doc('valid_match_1').set({
+        'id': 'valid_match_1',
+        'matchType': '先鋒',
+        'redName': '正常赤',
+        'whiteName': '正常白',
+        'tournamentId': 't-1',
+        'status': 'in_progress',
+      });
+
+      // 2. 破損した試合ドキュメント（型不一致等でパース失敗を引き起こすデータ）
+      await collection.doc('corrupted_match_2').set({
+        'id': 'corrupted_match_2',
+        'events': 'not_a_list', // List型が期待されるフィールドに文字列を渡してパースエラーを誘発
+      });
+
+      final snapshot = await collection.get();
+      final repo = _FakeLocalMatchRepo([]);
+
+      // 実行：破損データが含まれるスナップショットを同期
+      await SyncDownstreamHelper.syncFirestoreToIsar(
+        snapshot: snapshot,
+        localRepo: repo,
+        tournamentId: 't-1',
+      );
+
+      // 検証：例外で処理が途中で落ちることなく、正常な試合のみがIsarに保存される
+      expect(repo.savedMatches.length, 1);
+      expect(repo.savedMatches.first.id, 'valid_match_1');
     });
   });
 }

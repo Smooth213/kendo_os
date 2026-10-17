@@ -104,7 +104,7 @@ void main() {
         side: Side.red,
         strikeType: StrikeType.men,
         isIppon: true,
-        timestamp: DateTime.now(),
+        timestamp: DateTime(2026, 10, 1, 10, 0, 0),
         sequence: 1,
         logicalClock: 1,
       );

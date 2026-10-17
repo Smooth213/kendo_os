@@ -54,7 +54,7 @@ void main() {
   group('[E2E] イベント電子署名改ざん隔離および自己修復 E2Eシナリオテスト', () {
     test('悪意あるスコア改ざん発生時にクランティン隔離され正規イベント再同期で自己修復されること', () async {
       const matchId = 'e2e-tamper-match-001';
-      final now = DateTime.now();
+      final now = DateTime(2026, 10, 1, 10, 0, 0);
 
       // 1. 正規端末による第1得点（メン）
       final validMen = ScoreEventLegacyAdapter.fromLegacy(

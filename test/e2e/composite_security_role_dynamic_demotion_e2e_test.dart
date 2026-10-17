@@ -50,7 +50,7 @@ void main() {
       });
 
       final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now();
+      final now = DateTime(2026, 10, 1, 10, 0, 0);
       final operatorSession = UserSession(
         role: UserRole.operator,
         loginAt: now,
@@ -167,7 +167,7 @@ void main() {
       });
 
       final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now();
+      final now = DateTime(2026, 10, 1, 10, 0, 0);
       final adminSession = UserSession(
         role: UserRole.admin,
         loginAt: now,

@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
 import 'package:kendo_os/features/match/application/usecases/match_usecases.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
@@ -129,13 +128,10 @@ class SyncEngine {
           );
           if (!kIsWeb) {
             try {
-              final isar = Isar.getInstance();
-              if (isar != null) await isar.writeTxn(() async {});
-            } catch (_) {}
-            try {
               final allMatches = ref.read(matchListProvider);
-              for (var m in allMatches) {
-                await localRepo.deleteMatch(m.id);
+              final ids = allMatches.map((m) => m.id).toList();
+              if (ids.isNotEmpty) {
+                await localRepo.deleteMatchesBulk(ids);
               }
             } catch (_) {}
           }
@@ -389,7 +385,13 @@ class SyncEngine {
   }
 }
 
-final syncEngineProvider = Provider<SyncEngine>((ref) => SyncEngine(ref));
+/// 試合データの直接アップロードおよびCRDT復旧エンジンプロバイダー
+final matchUploadSyncEngineProvider = Provider<SyncEngine>(
+  (ref) => SyncEngine(ref),
+);
+
+/// 後方互換性のためのエイリアス
+final syncEngineProvider = matchUploadSyncEngineProvider;
 
 final pendingMatchesCountProvider = StreamProvider<int>((ref) {
   return ref.watch(localMatchRepositoryProvider).watchPendingMatchesCount();

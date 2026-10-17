@@ -21,7 +21,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      final now = DateTime.now();
+      final now = DateTime(2026, 10, 1, 10, 0, 0);
 
       // 第1コートでの試合
       final court1Match = MatchModel(

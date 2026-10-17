@@ -70,8 +70,9 @@ class TimelineMatchGroupCard extends ConsumerWidget {
         : context.appColors.textColor;
 
     final expansionVersion = ref.watch(timelineExpansionVersionProvider);
-    final isGroupExpanded =
-        ref.watch(timelineGroupExpansionMapProvider)[groupId] ?? false;
+    final isGroupExpanded = ref.watch(
+      timelineGroupExpansionMapProvider.select((m) => m[groupId] ?? false),
+    );
 
     final Color cardBg = allFinished
         ? (isDark ? const Color(0xFF161618) : const Color(0xFFF2F2F7))

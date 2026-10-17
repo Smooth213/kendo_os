@@ -132,12 +132,18 @@ class SyncDownstreamHelper {
     }
 
     if (removedIds.isEmpty) return;
-    for (final local in localMatches) {
-      if (removedIds.contains(local.id) &&
-          (tournamentId.isEmpty || local.tournamentId == tournamentId) &&
-          !local.isDirty) {
-        await localRepo.deleteMatch(local.id);
-      }
+    final toDeleteIds = localMatches
+        .where(
+          (local) =>
+              removedIds.contains(local.id) &&
+              (tournamentId.isEmpty || local.tournamentId == tournamentId) &&
+              !local.isDirty,
+        )
+        .map((local) => local.id)
+        .toList();
+
+    if (toDeleteIds.isNotEmpty) {
+      await localRepo.deleteMatchesBulk(toDeleteIds);
     }
   }
 }

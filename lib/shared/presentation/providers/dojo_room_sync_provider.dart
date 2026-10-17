@@ -119,12 +119,13 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
               );
             }
 
-            // ★ セーフティネット: メモリ上の試合を1件ずつ消去
+            // ★ セーフティネット: メモリ上の試合を一括消去
             try {
               final localRepo = ref.read(localMatchRepositoryProvider);
               final allMatches = ref.read(matchListProvider);
-              for (var m in allMatches) {
-                await localRepo.deleteMatch(m.id);
+              final ids = allMatches.map((m) => m.id).toList();
+              if (ids.isNotEmpty) {
+                await localRepo.deleteMatchesBulk(ids);
               }
             } catch (e) {
               debugPrint('[ERROR] [DojoRoomSync] セーフティネット削除エラー: $e');

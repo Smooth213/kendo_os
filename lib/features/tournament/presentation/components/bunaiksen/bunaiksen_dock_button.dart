@@ -292,8 +292,6 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
     final activeOrder = _isEditMode && _localItemsOrder != null
         ? _localItemsOrder!
         : globalOrder;
-    final timerState = ref.watch(dockTimerProvider);
-
     final double buttonX = _isLeft
         ? (_isDocked ? -(_buttonSize - _dockedVisibleWidth) : AppSpacing.sm)
         : (_isDocked
@@ -308,45 +306,61 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
     final double dirX = _isLeft ? 1.0 : -1.0;
     final double dirY = _yOffset < 0.5 ? 1.0 : -1.0;
 
+    // ⚡【Plan 最適化】折りたたみ状態（通常運用時の99%）ではタイマー更新による
+    // 親ウィジェットの毎秒フルリビルドを完全回避
     if (!_isExpanded && _expandAnimationController.isDismissed) {
       return AnimatedPositioned(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         left: buttonX,
         top: buttonY,
-        child: DockParentGestureDetector(
-          isDark: isDark,
-          themeColors: themeColors,
-          timerBadge: timerState.isRunning ? timerState.formattedDisplay : null,
-          buttonSize: _buttonSize,
-          closeButtonSize: _closeButtonSize,
-          variant: DockVariant.bunaiksen,
-          isDocked: _isDocked,
-          isLeft: _isLeft,
-          yOffset: _yOffset,
-          onTap: () {
-            if (_isDocked) {
-              setState(() => _isDocked = false);
-            } else {
-              _toggleExpand();
-            }
-          },
-          onLongPress: () {
-            if (!_isDocked) {
-              _toggleExpand();
-              _startEditMode();
-            }
-          },
-          onPositionChanged: (newY, isLeft, isDocked) {
-            setState(() {
-              _yOffset = newY;
-              _isLeft = isLeft;
-              _isDocked = isDocked;
-            });
+        child: Consumer(
+          builder: (context, ref, _) {
+            final timerBadge = ref.watch(
+              dockTimerProvider.select(
+                (s) => s.isRunning ? s.formattedDisplay : null,
+              ),
+            );
+            return DockParentGestureDetector(
+              isDark: isDark,
+              themeColors: themeColors,
+              timerBadge: timerBadge,
+              buttonSize: _buttonSize,
+              closeButtonSize: _closeButtonSize,
+              variant: DockVariant.bunaiksen,
+              isDocked: _isDocked,
+              isLeft: _isLeft,
+              yOffset: _yOffset,
+              onTap: () {
+                if (_isDocked) {
+                  setState(() => _isDocked = false);
+                } else {
+                  _toggleExpand();
+                }
+              },
+              onLongPress: () {
+                if (!_isDocked) {
+                  _toggleExpand();
+                  _startEditMode();
+                }
+              },
+              onPositionChanged: (newY, isLeft, isDocked) {
+                setState(() {
+                  _yOffset = newY;
+                  _isLeft = isLeft;
+                  _isDocked = isDocked;
+                });
+              },
+            );
           },
         ),
       );
     }
+
+    // 展開時はタイマー実行フラグのみをピンポイント購読（秒数カウントでの毎秒再描画を回避）
+    final isTimerRunning = ref.watch(
+      dockTimerProvider.select((s) => s.isRunning),
+    );
 
     return Positioned.fill(
       child: Stack(
@@ -383,7 +397,7 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
               isEditMode: _isEditMode,
               isDragging: _itemDraggingIndex == i,
               dragDelta: _itemDraggingIndex == i ? _itemDragDelta : Offset.zero,
-              isTimerRunning: timerState.isRunning,
+              isTimerRunning: isTimerRunning,
               onTap: () => _onItemTap(activeOrder[i]),
               onLongPress: _startEditMode,
               onPanStart: () {
@@ -415,28 +429,35 @@ class _BunaiksenDockButtonState extends ConsumerState<BunaiksenDockButton>
           Positioned(
             left: buttonX + ((_buttonSize - _closeButtonSize) / 2),
             top: buttonY + ((_buttonSize - _closeButtonSize) / 2),
-            child: DockParentButton(
-              isDark: isDark,
-              themeColors: themeColors,
-              unreadCount: 0,
-              isExpanded: true,
-              isDocked: false,
-              isEditMode: _isEditMode,
-              buttonSize: _buttonSize,
-              closeButtonSize: _closeButtonSize,
-              variant: DockVariant.bunaiksen,
-              timerBadge: timerState.isRunning
-                  ? timerState.formattedDisplay
-                  : null,
-              onTap: () {
-                if (_isEditMode) {
-                  _endEditMode();
-                } else {
-                  _toggleExpand();
-                }
-              },
-              onLongPress: () {
-                if (!_isEditMode) _startEditMode();
+            child: Consumer(
+              builder: (context, ref, _) {
+                final timerBadge = ref.watch(
+                  dockTimerProvider.select(
+                    (s) => s.isRunning ? s.formattedDisplay : null,
+                  ),
+                );
+                return DockParentButton(
+                  isDark: isDark,
+                  themeColors: themeColors,
+                  unreadCount: 0,
+                  isExpanded: true,
+                  isDocked: false,
+                  isEditMode: _isEditMode,
+                  buttonSize: _buttonSize,
+                  closeButtonSize: _closeButtonSize,
+                  variant: DockVariant.bunaiksen,
+                  timerBadge: timerBadge,
+                  onTap: () {
+                    if (_isEditMode) {
+                      _endEditMode();
+                    } else {
+                      _toggleExpand();
+                    }
+                  },
+                  onLongPress: () {
+                    if (!_isEditMode) _startEditMode();
+                  },
+                );
               },
             ),
           ),

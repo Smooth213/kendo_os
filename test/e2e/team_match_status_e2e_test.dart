@@ -29,7 +29,7 @@ void main() {
         note: '第3試合場, 2回戦, 3試合目',
         category: '小学生低学年の部',
         order: 1.0,
-        timerStartedAt: DateTime.now(),
+        timerStartedAt: DateTime(2026, 10, 1, 10, 0, 0),
       ),
       const MatchModel(
         id: 'm1_dantai_wait',

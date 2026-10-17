@@ -14,7 +14,7 @@ import 'package:kendo_os/shared/infrastructure/services/web_platform_optimizer.d
 import 'package:kendo_os/shared/infrastructure/services/web_theme_syncer.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart'
-    as legacy_sync;
+    as match_sync;
 import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
 import 'package:kendo_os/shared/errors/global_error_handler.dart';
@@ -223,8 +223,10 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
 
   @override
   Widget build(BuildContext context) {
+    // 🌐 コマンド同期＆Firestoreダウンストリーム監視エンジン常駐
     ref.watch(syncEngineProvider);
-    ref.watch(legacy_sync.syncEngineProvider);
+    // 🌐 未同期マッチ直接アップロード＆CRDT復旧エンジン常駐
+    ref.watch(match_sync.matchUploadSyncEngineProvider);
     ref.watch(dojoRoomSyncProvider);
     ref.watch(routeObserverProvider);
 

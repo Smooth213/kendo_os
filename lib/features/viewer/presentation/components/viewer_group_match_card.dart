@@ -55,8 +55,9 @@ class ViewerGroupMatchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expansionVersion = ref.watch(timelineExpansionVersionProvider);
-    final isGroupExpanded =
-        ref.watch(timelineGroupExpansionMapProvider)[groupKey] ?? false;
+    final isGroupExpanded = ref.watch(
+      timelineGroupExpansionMapProvider.select((m) => m[groupKey] ?? false),
+    );
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final firstMatch = groupList.first;
