@@ -5,7 +5,7 @@
 | ID | 決定事項 | ステータス | 最終更新 |
 | :--- | :--- | :--- | :--- |
 | [001](./001_rule_engine_pluginization.md) | 剣道ルールエンジンのプラグイン化と階層型Configの導入 | Accepted | 2026-05 |
-| 010 | Documentation = Runtime Knowledge (運用知識のガバナンス化) | Accepted | 2026-05 |
+| [010](./ADR_010_documentation_runtime.md) | Documentation = Runtime Knowledge (運用知識のガバナンス化) | Accepted | 2026-05 |
 | [011](./ADR_011_file_size_and_single_responsibility_governance.md) | File Size & Single Responsibility Governance (肥大化防止・単一責任原則のガバナンス化) | Accepted | 2026-08 |
 
 
@@ -28,4 +28,4 @@ graph TD
 > - **ADR-001** はシステムの「心臓部」であり、すべてのルール追加はこの決定に基づきます。
 > * 今後追加される「リプレイの互換性」や「自動化」に関するADRは、すべてADR-001の「冪等な純粋関数」という制約を継承します。
 
-> ※ 新しいADRを追加する際は `docs/governance/adr_template.md` を使用してください。
+> ※ 新しいADRを追加する際は、既存のADR（Status, Context, Decision, Consequences）の構造に準拠して作成してください。
