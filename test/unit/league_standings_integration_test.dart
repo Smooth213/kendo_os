@@ -138,5 +138,43 @@ void main() {
       expect(yoshino.totalPointsScored, equals(1));
       expect(yoshino.rank, equals(3));
     });
+
+    test('勝点同数時に取得本数差でタイブレーク順位が正しく判定されること', () {
+      final matches = [
+        // チームA vs チームC (A勝ち 2-0)
+        const MatchModel(
+          id: 'm1',
+          matchType: '先鋒',
+          redName: 'チームA : 選手A',
+          whiteName: 'チームC : 選手C1',
+          redScore: 2,
+          whiteScore: 0,
+          status: 'approved',
+        ),
+        // チームB vs チームC (B勝ち 1-0)
+        const MatchModel(
+          id: 'm2',
+          matchType: '先鋒',
+          redName: 'チームB : 選手B',
+          whiteName: 'チームC : 選手C2',
+          redScore: 1,
+          whiteScore: 0,
+          status: 'approved',
+        ),
+      ];
+
+      final stats = KendoRuleEngine.calculateLeagueStandings(matches, testRule);
+
+      final teamA = stats.firstWhere((s) => s.name == 'チームA');
+      final teamB = stats.firstWhere((s) => s.name == 'チームB');
+      final teamC = stats.firstWhere((s) => s.name == 'チームC');
+
+      // 両チームとも1勝0敗で勝点同数だが、取得本数でチームAが上位となること
+      expect(teamA.customPoints, equals(teamB.customPoints));
+      expect(teamA.totalPointsScored, greaterThan(teamB.totalPointsScored));
+      expect(teamA.rank, equals(1));
+      expect(teamB.rank, equals(2));
+      expect(teamC.rank, equals(3));
+    });
   });
 }

@@ -58,7 +58,7 @@ flutter test -j 6 --no-pub \
              test/governance/kachinuki_bracket_layout_governance_test.dart \
              test/unit/kachinuki_three_players_test.dart \
              test/governance/category_rules_fallback_governance_test.dart \
-             test/security/firestore_rules_governance_test.dart \
+             test/unit/security/firestore_rules_governance_test.dart \
              test/governance/mounted_safety_governance_test.dart \
              test/governance/web_native_isolation_governance_test.dart \
              test/governance/design_token_compliance_governance_test.dart \
@@ -71,16 +71,16 @@ flutter test -j 6 --no-pub \
              test/widget/tournament_share_import_and_order_flow_test.dart \
              test/widget/clipboard_import_button_and_service_test.dart \
              test/widget/expandable_notes_view_test.dart \
-             test/widget/match_calculator_display_and_layout_test.dart \
+             test/widget/match_calculator_components_unified_test.dart \
              test/unit/match_allocation_engine_test.dart \
              test/unit/no_hardcoded_specific_names_test.dart \
-             test/widget/sync_crdt_merger_test.dart \
+             test/unit/crdt/sync_crdt_merger_test.dart \
              test/unit/services/match_command_queue_test.dart \
              test/unit/local_match_command_store_web_fallback_test.dart \
              test/unit/web_navigation_guard_test.dart \
              test/unit/services/match_data_sanitizer_test.dart \
              test/unit/services/match_rewind_service_test.dart \
-             test/widget/app_router_test.dart \
+             test/unit/routing/app_router_test.dart \
              test/performance/adaptive_power_saving_thermal_test.dart \
              test/e2e/plan1_ui_responsiveness_e2e_test.dart \
              test/e2e/rapid_fire_score_responsiveness_e2e_test.dart \
@@ -107,7 +107,7 @@ flutter test -j 6 --no-pub \
               test/unit/team_registration_slot_helper_test.dart \
               test/unit/kendo_overtime_hansoku_sudden_death_test.dart \
               test/unit/services/csv_service_robustness_test.dart \
-              test/widget/expedition_summary_toolbar_test.dart \
+              test/widget/expedition_stats_components_unified_test.dart \
               test/widget/team_registration_views_test.dart \
               test/governance/deferred_loading_governance_test.dart \
               test/unit/services/multi_player_team_match_fusensho_test.dart \
@@ -134,8 +134,8 @@ flutter test -j 6 --no-pub \
               test/e2e/composite_kachinuki_full_sweep_and_daihyosen_e2e_test.dart \
               test/e2e/composite_p2p_offline_cloud_blackout_streaming_e2e_test.dart \
               test/governance/program_view_state_governance_test.dart \
-              test/features/tournament/presentation/dock_program_persistence_test.dart \
-              test/features/tournament/presentation/dock_quick_memo_sheet_test.dart \
+              test/widget/dock_program_persistence_test.dart \
+              test/widget/dock_sheets_and_memo_unified_test.dart \
               test/widget/quick_memo_zoom_and_keyboard_test.dart \
               test/governance/test_naming_convention_governance_test.dart \
               test/unit/program_view_state_service_corruption_recovery_test.dart \
@@ -145,7 +145,7 @@ flutter test -j 6 --no-pub \
               test/golden/pixel_quick_memo_zoom_and_canvas_golden_test.dart \
               test/golden/pixel_viewer_bunaiksen_official_record_golden_test.dart \
               test/golden/pixel_program_dock_pagination_and_return_golden_test.dart \
-              test/features/tournament/presentation/quick_memo_zoom_lifecycle_and_stress_test.dart \
+              test/widget/quick_memo_zoom_lifecycle_and_stress_test.dart \
               test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart \
               test/unit/services/multi_tenant_dock_program_state_isolation_test.dart \
               test/e2e/composite_kachinuki_daihyosen_court_reassign_offline_test.dart \
@@ -221,9 +221,9 @@ flutter test -j 6 --no-pub \
               test/golden/pixel_expedition_detail_bottom_sheet_golden_test.dart \
               test/golden/pixel_match_calculator_summary_card_golden_test.dart \
               test/golden/pixel_vertical_name_text_golden_test.dart \
-              test/features/tournament/presentation/corrupted_match_emergency_isolation_test.dart \
+              test/widget/corrupted_match_emergency_isolation_test.dart \
               test/e2e/expedition_multi_court_scoring_aggregation_e2e_test.dart \
-              test/features/tournament/presentation/dock_slot_drag_swap_persistence_test.dart \
+              test/widget/dock_slot_reorder_and_drag_unified_test.dart \
               test/e2e/composite_deep_link_internal_guard_security_test.dart \
               test/governance/expedition_strike_decision_governance_test.dart \
               test/governance/security_guards_access_control_governance_test.dart \
@@ -255,24 +255,23 @@ flutter test -j 6 --no-pub \
               test/unit/team_registration_save_helper_test.dart \
               test/unit/in_memory_projection_store_test.dart \
               test/widget/dock_timer_display_card_test.dart \
-              test/widget/dock_items_reorder_and_jiggle_unified_test.dart \
-              test/widget/master_organization_management_sheets_test.dart \
-              test/features/tournament/presentation/embedded_manual_screen_test.dart \
+              test/widget/master_organization_components_unified_test.dart \
+              test/widget/embedded_manual_screen_test.dart \
               test/widget/tournament_share_import_raw_view_test.dart \
-              test/widget/program_reorderable_file_list_test.dart \
-              test/widget/viewer_bunaiksen_share_dialog_test.dart \
+              test/widget/program_dialogs_and_file_list_unified_test.dart \
+              test/widget/viewer_header_and_dialog_components_unified_test.dart \
               test/widget/match_renseikai_next_button_test.dart \
               test/widget/league_grid_card_test.dart \
-              test/widget/order_setup_team_autocomplete_field_test.dart \
-              test/widget/team_match_sort_bar_test.dart \
-              test/widget/bunaiksen_leaderboard_card_test.dart \
+              test/widget/order_setup_components_unified_test.dart \
+              test/widget/team_sort_and_badge_components_unified_test.dart \
+              test/widget/bunaiksen_cards_and_calendar_components_unified_test.dart \
               test/golden/pixel_dock_timer_display_card_golden_test.dart \
               test/golden/pixel_master_register_organization_golden_test.dart \
               test/golden/pixel_embedded_manual_tab_views_golden_test.dart \
               test/e2e/global_crash_emergency_trap_and_recovery_e2e_test.dart \
               test/e2e/master_organization_provisioning_isolation_e2e_test.dart \
               test/unit/services/occ_auto_repair_concurrency_convergence_test.dart \
-              test/features/tournament/presentation/bunaiksen_match_components_test.dart \
+              test/widget/bunaiksen_match_components_test.dart \
               test/governance/firestore_indexes_governance_test.dart \
               test/unit/overtime_hansoku_carryover_rule_test.dart \
               test/unit/multi_player_fusensho_tiebreak_resolution_test.dart \
@@ -297,12 +296,12 @@ flutter test -j 6 --no-pub \
               test/golden/pixel_vertical_name_complex_foreign_golden_test.dart \
               test/unit/services/bunaiksen_streak_leaderboard_test.dart \
               test/e2e/timer_pause_across_app_lifecycle_sleep_e2e_test.dart \
-              test/features/tournament/presentation/official_record_export_components_test.dart \
-              test/features/tournament/presentation/external_keyboard_timer_shortcuts_test.dart \
-              test/integration/overtime_hansoku_carryover_composite_test.dart \
-              test/integration/team_league_fusensho_double_disqualification_composite_test.dart \
-              test/integration/disk_full_emergency_buffer_flush_composite_test.dart \
-              test/integration/bunaiksen_official_record_mixed_status_export_test.dart
+              test/widget/official_record_export_components_test.dart \
+              test/widget/external_keyboard_timer_shortcuts_test.dart \
+              test/unit/domain/overtime_hansoku_carryover_composite_test.dart \
+              test/unit/domain/team_league_fusensho_double_disqualification_composite_test.dart \
+              test/unit/infrastructure/disk_full_emergency_buffer_flush_composite_test.dart \
+              test/unit/application/bunaiksen_official_record_mixed_status_export_test.dart
 echo "✅ [Step 3/3] 単体・結合・E2Eテスト: PASS"
 echo ""
 

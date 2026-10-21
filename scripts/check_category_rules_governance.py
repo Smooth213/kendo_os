@@ -9,7 +9,7 @@ import sys
 def run_category_rules_governance():
     test_files = [
         "test/governance/category_rules_fallback_governance_test.dart",
-        "test/widget/category_rule_category_tile_test.dart",
+        "test/widget/category_rule_tiles_and_lists_unified_test.dart",
     ]
 
     cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]

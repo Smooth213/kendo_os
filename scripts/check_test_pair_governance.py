@@ -8,11 +8,11 @@ import sys
 
 def run_test_pair_governance():
     test_files = [
-        "test/widget/room_join_qr_dialog_actions_test.dart",
-        "test/widget/category_rule_category_tile_test.dart",
-        "test/widget/team_status_member_order_row_test.dart",
-        "test/widget/match_action_button_row_test.dart",
-        "test/features/tournament/presentation/bunaiksen_match_components_test.dart",
+        "test/widget/qr_dialogs_and_actions_unified_test.dart",
+        "test/widget/category_rule_tiles_and_lists_unified_test.dart",
+        "test/widget/team_status_components_unified_test.dart",
+        "test/widget/match_action_sections_and_components_unified_test.dart",
+        "test/widget/bunaiksen_match_components_test.dart",
         "test/widget/multi_player_candidate_chip_test.dart",
         "test/unit/infrastructure/local_match_entity_mapper_test.dart",
         "test/unit/domain/services/kendo_overtime_evaluator_test.dart",
@@ -27,8 +27,8 @@ def run_test_pair_governance():
     passed_all = (result.returncode == 0)
 
     rules = [
-        ("1. lib/shared/widgets/ 新設Widget個別テスト対生成規約", "room_join_qr_dialog_actions_test.dart" in output or passed_all),
-        ("2. lib/features/tournament/ 新設コンポーネント個別テスト対生成規約", "category_rule_category_tile_test.dart" in output or passed_all),
+        ("1. lib/shared/widgets/ 新設Widget個別テスト対生成規約", "qr_dialogs_and_actions_unified_test.dart" in output or passed_all),
+        ("2. lib/features/tournament/ 新設コンポーネント個別テスト対生成規約", "category_rule_tiles_and_lists_unified_test.dart" in output or passed_all),
         ("3. lib/features/match/ 新設ドメイン・計算ロジック個別テスト対生成規約", "kendo_overtime_evaluator_test.dart" in output or passed_all),
         ("4. lib/shared/infrastructure/ 新設マッパー・リポジトリ個別テスト対生成規約", "local_match_entity_mapper_test.dart" in output or passed_all),
     ]

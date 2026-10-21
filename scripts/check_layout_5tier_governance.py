@@ -9,9 +9,9 @@ import sys
 def run_layout_governance():
     cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/five_tier_layout_preservation_test.dart",
-        "test/widget/team_status_card_5tier_layout_test.dart",
+        "test/widget/team_status_components_unified_test.dart",
         "test/widget/individual_player_card_5tier_layout_test.dart",
-        "test/widget/league_matchup_header_unification_test.dart",
+        "test/widget/league_matchup_and_grid_components_unified_test.dart",
         "--reporter=expanded"
     ]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

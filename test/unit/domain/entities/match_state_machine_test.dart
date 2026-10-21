@@ -67,6 +67,51 @@ void main() {
       );
     });
 
+    test(
+      '正常な遷移: inProgress -> pause -> resume -> inProgressの一時停止と再開サイクルが成立すること',
+      () {
+        final paused = MatchStateMachine.transition(
+          MatchLifecycleState.inProgress,
+          StateTransitionEvent.pause,
+        );
+        expect(paused, MatchLifecycleState.paused);
+
+        final resumed = MatchStateMachine.transition(
+          paused,
+          StateTransitionEvent.resume,
+        );
+        expect(resumed, MatchLifecycleState.inProgress);
+      },
+    );
+
+    test(
+      '正常な遷移: inProgress -> startEncho -> encho -> decideWinner -> completedの延長決着が成立すること',
+      () {
+        final encho = MatchStateMachine.transition(
+          MatchLifecycleState.inProgress,
+          StateTransitionEvent.startEncho,
+        );
+        expect(encho, MatchLifecycleState.encho);
+
+        final completed = MatchStateMachine.transition(
+          encho,
+          StateTransitionEvent.decideWinner,
+        );
+        expect(completed, MatchLifecycleState.completed);
+      },
+    );
+
+    test('異常な遷移(Impossible State): paused からの startMatch は弾かれること', () {
+      expect(
+        () => MatchStateMachine.transition(
+          MatchLifecycleState.paused,
+          StateTransitionEvent.startMatch,
+        ),
+        throwsA(isA<InvalidStateException>()),
+        reason: '一時停止中の試合に対してstartMatchを再発行することは不正であり、例外が発生すること',
+      );
+    });
+
     // =========================================================================
     // ★ Phase 4 ホットフィックス：計算異常値（Infinity / NaN）によるProjectionフリーズ再発防止テスト
     // =========================================================================

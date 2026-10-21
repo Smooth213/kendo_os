@@ -8,7 +8,7 @@ import sys
 
 def run_tenant_isolation_governance():
     test_files = [
-        "test/features/mixed_scene_rules_ranking_test.dart",
+        "test/unit/domain/mixed_scene_rules_ranking_test.dart",
         "test/unit/league_standings_integration_test.dart",
     ]
 

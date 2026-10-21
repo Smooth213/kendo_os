@@ -8,7 +8,7 @@ import sys
 
 def run_web_platform_safety_governance():
     test_files = [
-        "test/widget/web_reload_state_restoration_test.dart",
+        "test/unit/presentation/web_reload_state_restoration_test.dart",
         "test/unit/infrastructure/web_platform_safety_test.dart",
     ]
 

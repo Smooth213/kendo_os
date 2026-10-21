@@ -8,8 +8,8 @@ import sys
 
 def run_pdf_layout_safety_governance():
     test_files = [
-        "test/widget/pdf_long_name_overflow_test.dart",
-        "test/widget/pdf_page_layout_helper_test.dart",
+        "test/unit/pdf/pdf_long_name_overflow_test.dart",
+        "test/unit/pdf/pdf_page_layout_helper_test.dart",
     ]
 
     cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]

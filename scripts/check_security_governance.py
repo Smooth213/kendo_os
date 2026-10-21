@@ -10,7 +10,7 @@ def run_security_governance():
     cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/role_visibility_test.dart",
         "test/widget/hidden_feature_access_test.dart",
-        "test/widget/ai_feature_hidden_test.dart",
+        "test/unit/security/ai_feature_hidden_test.dart",
         "test/widget/internal_metrics_hidden_test.dart",
         "test/widget/viewer_no_dock_governance_test.dart",
         "--reporter=expanded"
