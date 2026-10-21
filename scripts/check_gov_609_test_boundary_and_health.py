@@ -106,7 +106,7 @@ def check_static_dynamic_separation_boundary(scanner: GovStaticScanner) -> Tuple
         "test/unit/no_hardcoded_specific_names_test.dart",
         "test/unit/security/firestore_rules_governance_test.dart",
         "test/unit/security/storage_rules_governance_test.dart",
-        "test/performance/web_browser_optimization_governance_test.dart",
+        "test/governance/web_browser_optimization_governance_test.dart",
         "test/governance/role_permissions_centralized_governance_test.dart",
         "test/governance/event_history_partition_governance_test.dart",
         "test/governance/bunaiksen_dock_isolation_governance_test.dart",

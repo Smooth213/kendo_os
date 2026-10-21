@@ -3,7 +3,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
-import 'test_isar_helper.dart';
+import '../../helpers/test_isar_helper.dart';
 
 void main() {
   group('[Unit] TestIsarHelper 単体テスト', () {

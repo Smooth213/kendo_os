@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_entity_mapper.dart';
 
@@ -86,5 +87,44 @@ void main() {
         expect(restoredModel.events.first.strikeType, StrikeType.men);
       },
     );
+
+    test('勝ち抜き戦プロパティおよびMatchRuleのJSONシリアライズ双方向変換が完全一致すること', () {
+      final rule = MatchRule(
+        matchTimeMinutes: 5.0,
+        hasHantei: true,
+        enchoTimeMinutes: 3.0,
+        enchoCount: 2,
+        isKachinuki: true,
+      );
+
+      final model = MatchModel(
+        id: 'kachinuki-1',
+        matchType: 'team',
+        redName: '東軍',
+        whiteName: '西軍',
+        isKachinuki: true,
+        redRemaining: ['選手A', '選手B'],
+        whiteRemaining: <String>[],
+        status: 'finished',
+        rule: rule,
+      );
+
+      final entity = LocalMatchEntityMapper.toEntity(model);
+      expect(entity.isKachinuki, isTrue);
+      expect(entity.redRemaining, ['選手A', '選手B']);
+      expect(entity.whiteRemaining, isEmpty);
+      expect(entity.ruleJson, isNotNull);
+
+      final restored = LocalMatchEntityMapper.toModel(entity);
+      expect(restored.id, 'kachinuki-1');
+      expect(restored.isKachinuki, isTrue);
+      expect(restored.redRemaining, ['選手A', '選手B']);
+      expect(restored.whiteRemaining, isEmpty);
+      expect(restored.rule, isNotNull);
+      expect(restored.rule!.matchTimeMinutes, 5.0);
+      expect(restored.rule!.hasHantei, isTrue);
+      expect(restored.rule!.enchoTimeMinutes, 3.0);
+      expect(restored.rule!.enchoCount, 2);
+    });
   });
 }

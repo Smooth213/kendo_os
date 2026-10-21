@@ -6,7 +6,7 @@ import 'package:isar_community/isar.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
-import '../helpers/test_isar_helper.dart';
+import '../../helpers/test_isar_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

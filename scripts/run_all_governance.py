@@ -354,6 +354,13 @@ AUDIT_DEFINITIONS = [
         "name": "🧪 静的・動的テスト責務分離境界 ＆ テストスイート健全性完全保証規約",
         "cmd": ["python3", "scripts/check_gov_609_test_boundary_and_health.py"],
     },
+    {
+        "id": 610,
+        "old_id": None,
+        "chapter_num": 6,
+        "name": "⚖️ テストピラミッド黄金比 ＆ 資産構造維持規約",
+        "cmd": ["python3", "scripts/check_gov_610_test_pyramid_golden_ratio.py"],
+    },
 ]
 
 

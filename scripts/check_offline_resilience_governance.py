@@ -8,9 +8,9 @@ import sys
 
 def run_resilience_governance():
     cmd = ["python3", "scripts/gov_test_helper.py",
-        "test/offline/phase4_offline_tolerance_test.dart",
-        "test/endurance/phase7_long_term_endurance_test.dart",
-        "test/chaos/phase7_operational_chaos_test.dart",
+        "test/e2e/phase4_offline_tolerance_test.dart",
+        "test/e2e/phase7_long_term_endurance_test.dart",
+        "test/e2e/phase7_operational_chaos_test.dart",
         "--reporter=expanded"
     ]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

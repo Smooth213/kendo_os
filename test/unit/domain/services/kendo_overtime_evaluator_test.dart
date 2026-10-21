@@ -179,6 +179,23 @@ void main() {
       expect(result.redIppon, 1);
       expect(result.whiteIppon, 1);
     });
+
+    test('延長戦においてスコア2-2の同点時はtargetIpponが3に補正されること', () {
+      final ctx = MatchContext(
+        redIppon: 2,
+        whiteIppon: 2,
+        redHansoku: 0,
+        whiteHansoku: 0,
+        isTimeUp: true,
+        targetIppon: 2,
+        hasHantei: false,
+      );
+      final result = KendoOvertimeEvaluator.applyOvertimeCorrectionIfNeeded(
+        ctx,
+        '延長戦',
+      );
+      expect(result.targetIppon, 3);
+    });
   });
 
   // ──────────────────────────────────────────────

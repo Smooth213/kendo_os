@@ -81,7 +81,7 @@ flutter test -j 6 --no-pub \
              test/unit/services/match_data_sanitizer_test.dart \
              test/unit/services/match_rewind_service_test.dart \
              test/unit/routing/app_router_test.dart \
-             test/performance/adaptive_power_saving_thermal_test.dart \
+             test/unit/performance/adaptive_power_saving_thermal_test.dart \
              test/e2e/plan1_ui_responsiveness_e2e_test.dart \
              test/e2e/rapid_fire_score_responsiveness_e2e_test.dart \
              test/e2e/plan2_low_load_e2e_test.dart \

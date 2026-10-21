@@ -7,7 +7,7 @@ import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_m
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_comment_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_projection_entity.dart';
-import '../helpers/test_isar_helper.dart';
+import '../../helpers/test_isar_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
