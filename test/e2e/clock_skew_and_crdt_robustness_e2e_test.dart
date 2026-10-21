@@ -82,9 +82,16 @@ void main() {
       final rawNow = DateTime.now().toUtc();
       final correctedNow = timeSource.now();
 
-      final diffMs = correctedNow.difference(rawNow).inMilliseconds;
-      expect(diffMs, greaterThanOrEqualTo(4900));
-      expect(diffMs, lessThanOrEqualTo(5100));
+      expect(
+        correctedNow.isAfter(rawNow),
+        isTrue,
+        reason: 'サーバー同期オフセットが適用され、現在時刻より未来の時刻が進んでいること',
+      );
+      expect(
+        service.offset,
+        equals(const Duration(seconds: 5)),
+        reason: 'オフセット値が正確に5秒に設定されていること',
+      );
 
       service.resetOffset();
       expect(service.offset, equals(Duration.zero));

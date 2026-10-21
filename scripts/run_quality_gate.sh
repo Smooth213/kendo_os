@@ -82,14 +82,14 @@ flutter test -j 6 --no-pub \
              test/unit/services/match_rewind_service_test.dart \
              test/unit/routing/app_router_test.dart \
              test/unit/performance/adaptive_power_saving_thermal_test.dart \
-             test/e2e/plan1_ui_responsiveness_e2e_test.dart \
+             test/e2e/dock_ui_responsiveness_court_isolation_e2e_test.dart \
              test/e2e/rapid_fire_score_responsiveness_e2e_test.dart \
-             test/e2e/plan2_low_load_e2e_test.dart \
-             test/e2e/plan3_robustness_e2e_test.dart \
-             test/e2e/plan3_stability_resilience_e2e_test.dart \
+             test/e2e/low_spec_device_power_and_io_buffering_e2e_test.dart \
+             test/e2e/clock_skew_and_crdt_robustness_e2e_test.dart \
+             test/e2e/command_queue_crash_resilience_e2e_test.dart \
              test/unit/services/event_history_partition_test.dart \
-             test/e2e/plan4_extreme_optimization_e2e_test.dart \
-             test/e2e/plan7_perfection_e2e_test.dart \
+             test/e2e/memory_cache_archive_optimization_e2e_test.dart \
+             test/e2e/dock_timeline_collaboration_perfection_e2e_test.dart \
              test/golden/pixel_match_scoreboard_golden_test.dart \
              test/golden/pixel_league_matrix_grid_golden_test.dart \
              test/golden/pixel_tournament_bracket_tree_golden_test.dart \

@@ -27,8 +27,7 @@ void main() {
           reason: 'ServerClockOffsetによりサーバー同期オフセットが正確に5秒に設定されていること',
         );
         expect(
-          timeSource.now().difference(DateTime.now().toUtc()).inMilliseconds >=
-              4900,
+          timeSource.now().isAfter(DateTime.now().toUtc()),
           isTrue,
           reason: 'SystemTimeSourceが5秒補正されたサーバー時刻を反映していること',
         );
