@@ -1,11 +1,21 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 // ★ 追加: ScoreEventの正しい生成アダプター
 import 'package:kendo_os/features/match/application/mappers/score_event_legacy_adapter.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_crdt_merger.dart';
+import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('[Unit] オフライン同期エンジン（CRDT・マージ・コンフリクト解決）ユニットテスト要塞', () {
     late DateTime now;
 
@@ -167,5 +177,287 @@ void main() {
       );
       expect(remoteTieBreak, equals('paused'));
     });
+
+    test(
+      'Poison Pill防護において SyncEngineの通信失敗が上限10回に達した異常コマンドが自律パージされ後続キューをブロックしないこと',
+      () async {
+        final poisonCommand = MatchCommandModel(
+          id: 'poison_cmd_1',
+          type: CommandType.updateMatch,
+          payload: {
+            'id': 'match_poison',
+            'matchType': '個人戦',
+            'redName': '選手A',
+            'whiteName': '選手B',
+            'organizationId': 'test_org',
+            'tournamentId': 'test_tour',
+            'version': 1,
+          },
+          createdAt: DateTime.now(),
+        );
+
+        final fakeLocal = _FakeLocalMatchRepoForSync([poisonCommand]);
+        final fakeRemote = _FakeMatchRepoForSync()
+          ..onSaveMatch = (_) async {
+            throw Exception('Network unreachable (Gymnasium offline)');
+          };
+
+        final container = ProviderContainer(
+          overrides: [
+            firestoreProvider.overrideWithValue(FakeFirebaseFirestore()),
+            localMatchRepositoryProvider.overrideWithValue(fakeLocal),
+            matchRepositoryProvider.overrideWithValue(fakeRemote),
+            currentDojoIdProvider.overrideWith((ref) => 'test_org'),
+            currentTournamentIdProvider.overrideWith((ref) => 'test_tour'),
+          ],
+        );
+        final syncEngine = container.read(syncEngineProvider);
+        addTearDown(() async {
+          container.dispose();
+          await pumpEventQueue();
+        });
+
+        // 1〜9回目: 失敗してバックオフが設定されるがパージはされない
+        for (int i = 0; i < 9; i++) {
+          syncEngine.clearBackoffForTesting();
+          await syncEngine.processQueue();
+          expect(fakeLocal.deletedCommandIds, isEmpty);
+          expect(fakeLocal.pendingCommands.length, equals(1));
+          expect(syncEngine.retryCount, equals(i + 1));
+        }
+
+        // 10回目のリトライ試行: 上限超過により自律パージが発火
+        syncEngine.clearBackoffForTesting();
+        await syncEngine.processQueue();
+
+        expect(fakeLocal.deletedCommandIds, contains('poison_cmd_1'));
+        expect(fakeLocal.pendingCommands, isEmpty);
+        expect(syncEngine.retryCount, equals(0)); // パージ後に0にリセットされる
+      },
+    );
+
+    test(
+      '即時同期復帰において SyncEngineの指数バックオフ待機中にsyncNowが呼ばれた際、待機がリセットされて即座にアップロードが再開されること',
+      () async {
+        final normalCommand = MatchCommandModel(
+          id: 'normal_cmd_1',
+          type: CommandType.updateMatch,
+          payload: {
+            'id': 'match_normal',
+            'matchType': '個人戦',
+            'redName': '選手A',
+            'whiteName': '選手B',
+            'organizationId': 'test_org',
+            'tournamentId': 'test_tour',
+            'version': 1,
+          },
+          createdAt: DateTime.now(),
+        );
+
+        final fakeLocal = _FakeLocalMatchRepoForSync([normalCommand]);
+        bool shouldFail = true;
+        final fakeRemote = _FakeMatchRepoForSync()
+          ..onSaveMatch = (_) async {
+            if (shouldFail) {
+              throw Exception('Connection dropped');
+            }
+            return 2;
+          };
+
+        final container = ProviderContainer(
+          overrides: [
+            firestoreProvider.overrideWithValue(FakeFirebaseFirestore()),
+            localMatchRepositoryProvider.overrideWithValue(fakeLocal),
+            matchRepositoryProvider.overrideWithValue(fakeRemote),
+            currentDojoIdProvider.overrideWith((ref) => 'test_org'),
+            currentTournamentIdProvider.overrideWith((ref) => 'test_tour'),
+          ],
+        );
+
+        final syncEngine = container.read(syncEngineProvider);
+        addTearDown(() async {
+          container.dispose();
+          await pumpEventQueue();
+        });
+
+        // 1. 初回試行：失敗させてバックオフ状態にする
+        await syncEngine.processQueue();
+        expect(fakeLocal.deletedCommandIds, isEmpty);
+
+        // 2. 電波復帰: 成功フラグを立てるが、バックオフ期間中のため通常processQueueはスキップされる
+        shouldFail = false;
+        await syncEngine.processQueue();
+        expect(fakeLocal.deletedCommandIds, isEmpty);
+
+        // 3. syncNow() を実行: バックオフがリセットされて即座に送信が完了する
+        await syncEngine.syncNow();
+        await pumpEventQueue();
+
+        expect(fakeLocal.deletedCommandIds, contains('normal_cmd_1'));
+        expect(fakeLocal.pendingCommands, isEmpty);
+      },
+    );
+
+    test(
+      'Staleコマンド自律パージにおいて クラウド側が既に最新バージョンの場合、ConflictException検知後に自律パージされキュー詰まりを起こさないこと',
+      () async {
+        final staleCommand = MatchCommandModel(
+          id: 'stale_cmd_1',
+          type: CommandType.updateMatch,
+          payload: {
+            'id': 'match_conflict_1',
+            'matchType': '個人戦',
+            'redName': '選手A',
+            'whiteName': '選手B',
+            'organizationId': 'test_org',
+            'tournamentId': 'test_tour',
+            'version': 1,
+          },
+          createdAt: DateTime.now(),
+        );
+
+        final fakeLocal = _FakeLocalMatchRepoForSync([staleCommand]);
+        final fakeRemote = _FakeMatchRepoForSync()
+          ..onSaveMatch = (_) async {
+            throw Exception('ConflictException: 古いバージョンです');
+          }
+          ..onGetMatch = (id, {organizationId, tournamentId}) async {
+            return const MatchModel(
+              id: 'match_conflict_1',
+              matchType: '個人戦',
+              redName: '選手A',
+              whiteName: '選手B',
+              organizationId: 'test_org',
+              tournamentId: 'test_tour',
+              version: 2,
+            );
+          };
+
+        final container = ProviderContainer(
+          overrides: [
+            firestoreProvider.overrideWithValue(FakeFirebaseFirestore()),
+            localMatchRepositoryProvider.overrideWithValue(fakeLocal),
+            matchRepositoryProvider.overrideWithValue(fakeRemote),
+            currentDojoIdProvider.overrideWith((ref) => 'test_org'),
+            currentTournamentIdProvider.overrideWith((ref) => 'test_tour'),
+          ],
+        );
+
+        final syncEngine = container.read(syncEngineProvider);
+        addTearDown(() async {
+          container.dispose();
+          await pumpEventQueue();
+        });
+
+        await syncEngine.processQueue();
+
+        expect(fakeLocal.deletedCommandIds, contains('stale_cmd_1'));
+        expect(fakeLocal.pendingCommands, isEmpty);
+      },
+    );
+
+    test(
+      'CRDT決定論的タイブレークにおいて 同一論理時計で端末時計が狂っている・逆転している場合でも、id順で決定論的に一意ソートされること',
+      () {
+        final base = DateTime(2026, 10, 1, 10, 0, 0);
+
+        final evLateTime = ScoreEventLegacyAdapter.fromLegacy(
+          id: 'ev_deviceA_late',
+          side: Side.red,
+          type: PointType.men,
+          timestamp: base.add(const Duration(seconds: 30)),
+          sequence: 1,
+          logicalClock: 2,
+        );
+
+        final evEarlyTime1 = ScoreEventLegacyAdapter.fromLegacy(
+          id: 'ev_deviceB_early_1',
+          side: Side.white,
+          type: PointType.kote,
+          timestamp: base,
+          sequence: 2,
+          logicalClock: 2,
+        );
+
+        final evEarlyTime2 = ScoreEventLegacyAdapter.fromLegacy(
+          id: 'ev_deviceC_early_2',
+          side: Side.white,
+          type: PointType.doIdo,
+          timestamp: base,
+          sequence: 3,
+          logicalClock: 2,
+        );
+
+        final list1 = [evLateTime, evEarlyTime1, evEarlyTime2]
+          ..sort((a, b) => a.compareTo(b));
+        final list2 = [evEarlyTime2, evLateTime, evEarlyTime1]
+          ..sort((a, b) => a.compareTo(b));
+        final list3 = [evEarlyTime1, evEarlyTime2, evLateTime]
+          ..sort((a, b) => a.compareTo(b));
+
+        expect(list1, equals(list2));
+        expect(list2, equals(list3));
+
+        expect(list1[0].id, equals('ev_deviceB_early_1'));
+        expect(list1[1].id, equals('ev_deviceC_early_2'));
+        expect(list1[2].id, equals('ev_deviceA_late'));
+      },
+    );
   });
+}
+
+class _FakeLocalMatchRepoForSync implements LocalMatchRepository {
+  final List<MatchCommandModel> pendingCommands;
+  final List<String> deletedCommandIds = [];
+
+  _FakeLocalMatchRepoForSync(this.pendingCommands);
+
+  @override
+  Future<List<MatchCommandModel>> getPendingCommands() async {
+    return List.from(pendingCommands);
+  }
+
+  @override
+  Future<void> deleteCommand(String id) async {
+    deletedCommandIds.add(id);
+    pendingCommands.removeWhere((cmd) => cmd.id == id);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeMatchRepoForSync implements MatchRepository {
+  Future<int> Function(MatchModel match)? onSaveMatch;
+  Future<MatchModel?> Function(
+    String matchId, {
+    String? organizationId,
+    String? tournamentId,
+  })?
+  onGetMatch;
+
+  @override
+  Future<int> saveMatch(MatchModel match) async {
+    if (onSaveMatch != null) return await onSaveMatch!(match);
+    return match.version + 1;
+  }
+
+  @override
+  Future<MatchModel?> getMatch(
+    String matchId, {
+    String? organizationId,
+    String? tournamentId,
+  }) async {
+    if (onGetMatch != null) {
+      return await onGetMatch!(
+        matchId,
+        organizationId: organizationId,
+        tournamentId: tournamentId,
+      );
+    }
+    return null;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

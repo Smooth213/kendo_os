@@ -248,6 +248,14 @@ class SyncEngine {
     resetBackoffAndProcess();
   }
 
+  @visibleForTesting
+  int get retryCount => _retryCount;
+
+  @visibleForTesting
+  void clearBackoffForTesting() {
+    _nextAttemptAt = null;
+  }
+
   Future<void> processQueue() async {
     if (_isProcessing) return;
 
