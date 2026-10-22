@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:isar_community/isar.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
@@ -106,32 +105,16 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
         );
 
         if (!kIsWeb) {
+          // ★ セーフティネット: メモリ上の試合を一括消去
           try {
-            final isar = Isar.getInstance();
-            if (isar != null) {
-              await isar.writeTxn(() async {
-                // ★ 修正: isar.clear() は監視ストリームを破壊しUIの更新を止めてしまうため無効化
-              });
-              debugPrint('[DojoRoomSync] Isarワイプをスキップしました（ストリーム保護）');
-            } else {
-              debugPrint(
-                '[WARN] [DojoRoomSync] Isar.getInstance() が null です。セーフティネットとして手動削除を実行します',
-              );
-            }
-
-            // ★ セーフティネット: メモリ上の試合を一括消去
-            try {
-              final localRepo = ref.read(localMatchRepositoryProvider);
-              final allMatches = ref.read(matchListProvider);
-              final ids = allMatches.map((m) => m.id).toList();
-              if (ids.isNotEmpty) {
-                await localRepo.deleteMatchesBulk(ids);
-              }
-            } catch (e) {
-              debugPrint('[ERROR] [DojoRoomSync] セーフティネット削除エラー: $e');
+            final localRepo = ref.read(localMatchRepositoryProvider);
+            final allMatches = ref.read(matchListProvider);
+            final ids = allMatches.map((m) => m.id).toList();
+            if (ids.isNotEmpty) {
+              await localRepo.deleteMatchesBulk(ids);
             }
           } catch (e) {
-            debugPrint('[ERROR] [DojoRoomSync] Isarのワイプに失敗しました: $e');
+            debugPrint('[ERROR] [DojoRoomSync] セーフティネット削除エラー: $e');
           }
         }
       }
@@ -157,10 +140,14 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
           .collection('matches')
           .snapshots()
           .listen(
-            (snapshot) {
+            (snapshot) async {
+              if (isDisposed) return;
               debugPrint(
                 '[DojoRoomSync] データを検知: ${snapshot.docChanges.length}件の変更を受信',
               );
+              final List<MatchModel> matchesToSave = [];
+              final List<String> idsToDelete = [];
+
               for (final change in snapshot.docChanges) {
                 if (change.type == DocumentChangeType.added ||
                     change.type == DocumentChangeType.modified) {
@@ -182,28 +169,37 @@ final dojoRoomSyncProvider = Provider<void>((ref) {
                     );
 
                     store.updateProjectionDirectly(cloudProj);
-
-                    if (!kIsWeb) {
-                      ref.read(localMatchRepositoryProvider).saveMatch(match);
-                      debugPrint(
-                        '[DojoRoomSync] Isarへ試合データを保存完了: ID=${match.id}',
-                      );
-                    }
+                    matchesToSave.add(match);
                   } catch (e) {
-                    debugPrint('[WARN] [DojoRoomSync] データ変換/保存エラー: $e');
+                    debugPrint('[WARN] [DojoRoomSync] データ変換エラー: $e');
                   }
                 } else if (change.type == DocumentChangeType.removed) {
-                  // ★ 追加: クラウド側で削除された試合があればローカルからも消去し、古いデータが残らないようにする
+                  // ★ クラウド側で削除された試合IDを収集
                   final data = change.doc.data();
-                  if (data != null && !kIsWeb) {
-                    final deletedId = change.doc.id;
-                    ref
-                        .read(localMatchRepositoryProvider)
-                        .deleteMatch(deletedId);
+                  if (data != null) {
+                    idsToDelete.add(change.doc.id);
+                  }
+                }
+              }
+
+              // 🗄️ ネイティブ環境: 変更試合を一括バルク保存・削除（並行競合防止＆未処理Future根絶）
+              if (!kIsWeb && !isDisposed) {
+                try {
+                  final localRepo = ref.read(localMatchRepositoryProvider);
+                  if (matchesToSave.isNotEmpty) {
+                    await localRepo.saveMatchesBulk(matchesToSave);
                     debugPrint(
-                      '[DojoRoomSync] クラウドでの削除を検知しローカルから消去: ID=$deletedId',
+                      '[DojoRoomSync] Isarへ試合データをバルク保存完了: ${matchesToSave.length}件',
                     );
                   }
+                  if (idsToDelete.isNotEmpty) {
+                    await localRepo.deleteMatchesBulk(idsToDelete);
+                    debugPrint(
+                      '[DojoRoomSync] クラウドでの削除を検知しローカルから一括消去: ${idsToDelete.length}件',
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('[ERROR] [DojoRoomSync] Isar永続化エラー: $e');
                 }
               }
             },

@@ -63,14 +63,18 @@ final matchViewStateProvider = Provider.family<MatchViewState, String>((
   ref,
   matchId,
 ) {
-  MatchModel? match = ref
-      .watch(matchListProvider)
-      .where((m) => m.id == matchId)
-      .firstOrNull;
+  MatchModel? match = ref.watch(
+    matchListProvider.select(
+      (list) => list.where((m) => m.id == matchId).firstOrNull,
+    ),
+  );
 
   if (match == null && kIsWeb) {
-    final allMatches = ref.watch(webCurrentTournamentMatchesProvider);
-    match = allMatches.where((m) => m.id == matchId).firstOrNull;
+    match = ref.watch(
+      webCurrentTournamentMatchesProvider.select(
+        (list) => list.where((m) => m.id == matchId).firstOrNull,
+      ),
+    );
   }
   final syncStatus = ref.watch(syncStatusProvider);
   final isProcessing = ref.watch(isMatchCommandProcessingProvider);

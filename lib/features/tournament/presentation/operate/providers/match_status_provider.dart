@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/services/match_strategy.dart';
 import 'match_list_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
@@ -11,14 +12,18 @@ final groupMatchStatusProvider = Provider.family<GroupMatchStatus, String>((
   ref,
   matchId,
 ) {
-  // 1. 必要なデータを取得（これらのデータが変更された時だけ再計算される）
-  final matches = ref.watch(matchListProvider);
-  final match = matches.where((m) => m.id == matchId).firstOrNull;
+  // 1. 必要なデータを取得（対象試合が変更された時だけ再計算される）
+  final match = ref.watch(
+    matchListProvider.select(
+      (list) => list.where((m) => m.id == matchId).firstOrNull,
+    ),
+  );
   if (match == null) return GroupMatchStatus(isAllDone: false);
 
-  final teamMatches = matches
-      .where((m) => m.groupName == match.groupName)
-      .toList();
+  final groupName = match.groupName;
+  final teamMatches = (groupName != null && groupName.isNotEmpty)
+      ? ref.watch(teamMatchesByGroupProvider(groupName))
+      : <MatchModel>[];
   final rule = ref.watch(matchRuleProvider);
   final lastSettings = ref.watch(lastUsedSettingsProvider);
 
