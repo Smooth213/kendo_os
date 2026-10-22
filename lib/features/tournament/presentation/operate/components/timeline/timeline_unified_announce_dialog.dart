@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_announce_court_picker.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_announce_input_section.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_announce_quick_chips.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_target_chip.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
-import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// タイムライン用 公式アナウンス・コメントの一斉発信シート
 class TimelineUnifiedAnnounceDialog {
@@ -68,6 +70,16 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
   final FocusNode _bodyFocusNode = FocusNode();
   String selectedTarget = 'all';
 
+  // 🏟️ 試合会場・試合順Picker状態
+  int? _fromCourt;
+  int? _fromOrder;
+  int? _toCourt;
+  int? _toOrder;
+  bool _hasDestination = false;
+
+  // ⌫ タイトル変更履歴（バックスペース不要のアンドゥ用）
+  final List<String> _titleHistory = [];
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +91,126 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
 
   void _onFocusChange() {
     if (mounted) setState(() {});
+  }
+
+  void _saveHistory() {
+    _titleHistory.add(titleController.text);
+    if (_titleHistory.length > 20) {
+      _titleHistory.removeAt(0);
+    }
+  }
+
+  void _onUndo() {
+    if (_titleHistory.isNotEmpty) {
+      final prev = _titleHistory.removeLast();
+      titleController.text = prev;
+      setState(() {});
+    }
+  }
+
+  String? _lastAppliedHeading;
+
+  void _onClearTitle() {
+    _saveHistory();
+    titleController.clear();
+    _lastAppliedHeading = null;
+    setState(() {});
+  }
+
+  void _updateHeadingRealtime() {
+    final newHeading = TimelineAnnounceCourtPicker.formatHeading(
+      fromCourt: _fromCourt,
+      fromOrder: _fromOrder,
+      toCourt: _toCourt,
+      toOrder: _toOrder,
+      hasDestination: _hasDestination,
+    );
+
+    final currentBody = bodyController.text;
+
+    // 前回の見出しが本文内に含まれているなら、その部分だけを最新値に即時置換！
+    if (_lastAppliedHeading != null && _lastAppliedHeading!.isNotEmpty) {
+      if (currentBody.contains(_lastAppliedHeading!)) {
+        if (newHeading.isNotEmpty) {
+          bodyController.text = currentBody.replaceFirst(
+            _lastAppliedHeading!,
+            newHeading,
+          );
+        } else {
+          bodyController.text = currentBody
+              .replaceFirst(_lastAppliedHeading!, '')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim();
+        }
+        _lastAppliedHeading = newHeading.isEmpty ? null : newHeading;
+        setState(() {});
+        return;
+      }
+    }
+
+    if (newHeading.isEmpty) {
+      setState(() {});
+      return;
+    }
+
+    // 初回または前回の見出しが見つからない場合は、本文の先頭または既存パターンを置換
+    final comprehensiveRegex = RegExp(
+      r'(?:第\s*\d+\s*(?:試合場|会場|コート))?\s*(?:(?:\d+)\s*試合目|第\s*\d+\s*試合(?!場|会場))?'
+      r'(?:\s*(?:➔|->|→)\s*(?:第\s*\d+\s*(?:試合場|会場|コート))?\s*(?:(?:\d+)\s*試合目|第\s*\d+\s*試合(?!場|会場))?)?',
+    );
+    final trimmedBody = currentBody.trim();
+    final match = comprehensiveRegex.stringMatch(trimmedBody);
+    if (trimmedBody.isNotEmpty && match != null && match.trim().isNotEmpty) {
+      bodyController.text = trimmedBody.replaceFirst(
+        comprehensiveRegex,
+        newHeading,
+      );
+    } else if (trimmedBody.isEmpty) {
+      bodyController.text = newHeading;
+    } else {
+      bodyController.text = '$newHeading $trimmedBody';
+    }
+
+    _lastAppliedHeading = newHeading;
+    setState(() {});
+  }
+
+  void _onChipSelected(String chipText) {
+    _saveHistory();
+    // コート移動や試合順変更のチップの場合は、会場Pickerの変更先スロットも開く
+    if (chipText == 'コート移動' || chipText == '会場変更' || chipText == '試合順変更') {
+      if (!_hasDestination) {
+        _hasDestination = true;
+      }
+    }
+
+    // タイトルを自動で【〇〇】形式に整形
+    final currentTitle = titleController.text.trim();
+    final isPriorityChip = chipText.startsWith('【') && chipText.endsWith('】');
+
+    if (isPriorityChip) {
+      // 【緊急】や【重要】など重要度プレフィックスの場合
+      final rawTitle = currentTitle.replaceAll(RegExp(r'【.*?】\s*'), '');
+      titleController.text = rawTitle.isEmpty
+          ? chipText
+          : '$chipText $rawTitle';
+    } else {
+      // 通常のチップ（昼休憩、コート移動など）の場合、自動で【】をつける
+      final priorityMatch = RegExp(r'^(【.*?】)').firstMatch(currentTitle);
+      if (priorityMatch != null) {
+        titleController.text = '${priorityMatch.group(1)} $chipText';
+      } else {
+        titleController.text = '【$chipText】';
+      }
+
+      // 昼休憩・休憩のときは本文が空ならデフォルト文言を親切に補完
+      if (chipText == '昼休憩' && bodyController.text.trim().isEmpty) {
+        bodyController.text = '昼休憩に入ります。';
+      } else if (chipText == '休憩' && bodyController.text.trim().isEmpty) {
+        bodyController.text = '休憩に入ります。';
+      }
+    }
+    setState(() {});
   }
 
   @override
@@ -124,10 +256,10 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
           ),
         ),
         padding: const EdgeInsets.only(
-          top: AppSpacing.md,
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          bottom: AppSpacing.lg,
+          top: AppSpacing.sm,
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          bottom: AppSpacing.sm,
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -138,7 +270,7 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
               Center(
                 child: Container(
                   width: 48,
-                  height: 5,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
@@ -147,7 +279,7 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.xs),
 
               // ヘッダー行
               Row(
@@ -166,79 +298,89 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.xs),
 
-              // タイトル入力欄
-              AppTextField(
-                controller: titleController,
-                focusNode: _titleFocusNode,
-                scrollPadding: EdgeInsets.zero,
-                style: TextStyle(color: context.appColors.textColor),
-                decoration: const InputDecoration(
-                  labelText: 'タイトル（例：【緊急】会場変更）',
-                  hintText: '空欄の場合は自動で見出しになります',
-                ),
+              // 🏟️ 1. 試合会場・試合順Picker（段階的展開）
+              TimelineAnnounceCourtPicker(
+                fromCourt: _fromCourt,
+                fromOrder: _fromOrder,
+                toCourt: _toCourt,
+                toOrder: _toOrder,
+                hasDestination: _hasDestination,
+                isDark: isDark,
+                onFromCourtChanged: (v) {
+                  _fromCourt = v;
+                  _updateHeadingRealtime();
+                },
+                onFromOrderChanged: (v) {
+                  _fromOrder = v;
+                  _updateHeadingRealtime();
+                },
+                onToCourtChanged: (v) {
+                  _toCourt = v;
+                  _updateHeadingRealtime();
+                },
+                onToOrderChanged: (v) {
+                  _toOrder = v;
+                  _updateHeadingRealtime();
+                },
+                onToggleDestination: () {
+                  setState(() {
+                    _hasDestination = !_hasDestination;
+                    if (!_hasDestination) {
+                      _toCourt = null;
+                      _toOrder = null;
+                    }
+                  });
+                  _updateHeadingRealtime();
+                },
+                onClearAll: () {
+                  _saveHistory();
+                  if (_lastAppliedHeading != null) {
+                    bodyController.text = bodyController.text
+                        .replaceFirst(_lastAppliedHeading!, '')
+                        .replaceAll(RegExp(r'\s+'), ' ')
+                        .trim();
+                    _lastAppliedHeading = null;
+                  }
+                  setState(() {
+                    _fromCourt = null;
+                    _fromOrder = null;
+                    _toCourt = null;
+                    _toOrder = null;
+                    _hasDestination = false;
+                  });
+                },
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.xs),
 
-              // 本文入力欄
-              AppTextField(
-                controller: bodyController,
-                focusNode: _bodyFocusNode,
-                scrollPadding: EdgeInsets.zero,
-                maxLines: 3,
-                style: TextStyle(color: context.appColors.textColor),
-                decoration: const InputDecoration(
-                  labelText: 'アナウンス本文内容',
-                  hintText: '例：3会場へ移動になりました。選手は速やかに移動してください。',
-                ),
+              // 🏷️ 2. クイック入力チップ（横並びカテゴリタブ ＆ アコーディオン開閉）
+              TimelineAnnounceQuickChips(
+                isDark: isDark,
+                onChipSelected: _onChipSelected,
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xs),
+
+              // 📝 3. タイトル・本文入力セクション（Undo ＆ Clearボタン付き）
+              TimelineAnnounceInputSection(
+                titleController: titleController,
+                bodyController: bodyController,
+                titleFocusNode: _titleFocusNode,
+                bodyFocusNode: _bodyFocusNode,
+                hasHistory: _titleHistory.isNotEmpty,
+                onUndo: _onUndo,
+                onClearTitle: _onClearTitle,
+                themeColors: themeColors,
+              ),
+              const SizedBox(height: AppSpacing.sm),
 
               // 通知範囲選択チップ
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF242426)
-                      : const Color(0xFFF2F2F7),
-                  borderRadius: AppRadius.medium,
-                ),
-                child: Row(
-                  children: [
-                    TimelineTargetChip(
-                      chipKey: const Key('timeline_target_all_chip'),
-                      label: '全員に通知',
-                      icon: Icons.campaign,
-                      activeColor: const Color(0xFFFF69B4),
-                      isSelected: selectedTarget == 'all',
-                      isDark: isDark,
-                      onTap: () => setState(() => selectedTarget = 'all'),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    TimelineTargetChip(
-                      chipKey: const Key('timeline_target_staff_chip'),
-                      label: 'スタッフ限定',
-                      icon: Icons.lock_outline,
-                      activeColor: AppKendoColors.deepOrange,
-                      isSelected: selectedTarget == 'staff',
-                      isDark: isDark,
-                      onTap: () => setState(() => selectedTarget = 'staff'),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    TimelineTargetChip(
-                      chipKey: const Key('timeline_target_none_chip'),
-                      label: '通知なし',
-                      icon: Icons.notifications_off_outlined,
-                      activeColor: AppKendoColors.blue,
-                      isSelected: selectedTarget == 'none',
-                      isDark: isDark,
-                      onTap: () => setState(() => selectedTarget = 'none'),
-                    ),
-                  ],
-                ),
+              TimelineAnnounceTargetSelector(
+                selectedTarget: selectedTarget,
+                isDark: isDark,
+                onTargetChanged: (val) => setState(() => selectedTarget = val),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.sm),
 
               // アクションボタン（キャンセル / 保存ボタン）
               Wrap(
@@ -263,7 +405,7 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
                         horizontal: AppSpacing.md,
                         vertical: AppSpacing.sm,
                       ),
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.small,
                       ),
                     ),
@@ -289,9 +431,16 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
   }
 
   void _onSubmit() {
-    final String title = titleController.text.trim();
+    String title = titleController.text.trim();
     final String body = bodyController.text.trim();
     if (body.isEmpty && title.isEmpty) return;
+
+    // タイトル空欄時の自動見出し補完（会場・試合順が含まれる場合は専用見出し）
+    if (title.isEmpty) {
+      if (body.contains('試合場') || body.contains('試合目')) {
+        title = '【会場・進行連絡】';
+      }
+    }
 
     final currentTarget = selectedTarget;
     final parentCtx = widget.parentContext;

@@ -15,6 +15,7 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart'
     show showUnifiedAnnounceDialog;
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/time/time_source.dart';
 
 /// タイムライン内のチームごとの大枠カードWidget
 class TimelineTeamCard extends ConsumerWidget {
@@ -194,19 +195,18 @@ class TimelineTeamCard extends ConsumerWidget {
                     ),
                     tooltip: '見出し（コメント）を追加',
                     onPressed: () {
-                      double topOrder = 0.0;
-                      double groupMin = sortedGroups.isEmpty
-                          ? double.infinity
-                          : sortedGroups.first.value.first.order;
-                      double playerMin = sortedPlayers.isEmpty
-                          ? double.infinity
-                          : sortedPlayers.first.value.first.order;
-                      double minOrder = groupMin < playerMin
-                          ? groupMin
-                          : playerMin;
-                      if (minOrder != double.infinity) {
-                        topOrder = minOrder - 100.0;
-                      }
+                      final double currentMax = timelineItems.isEmpty
+                          ? 0.0
+                          : timelineItems.first.order;
+                      final double nowMs = ref
+                          .read(timeSourceProvider)
+                          .now()
+                          .millisecondsSinceEpoch
+                          .toDouble();
+                      final double topOrder = currentMax >= nowMs
+                          ? currentMax + 100.0
+                          : nowMs;
+
                       showUnifiedAnnounceDialog(
                         context,
                         ref,

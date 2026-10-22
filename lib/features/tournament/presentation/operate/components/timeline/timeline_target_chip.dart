@@ -91,6 +91,64 @@ class TimelineTargetChip extends StatelessWidget {
   }
 }
 
+/// タイムラインアナウンス通知対象セレクターコンテナ
+class TimelineAnnounceTargetSelector extends StatelessWidget {
+  final String selectedTarget;
+  final bool isDark;
+  final ValueChanged<String> onTargetChanged;
+
+  const TimelineAnnounceTargetSelector({
+    super.key,
+    required this.selectedTarget,
+    required this.isDark,
+    required this.onTargetChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF242426) : const Color(0xFFF2F2F7),
+        borderRadius: AppRadius.medium,
+      ),
+      child: Row(
+        children: [
+          TimelineTargetChip(
+            chipKey: const Key('timeline_target_all_chip'),
+            label: '全員に通知',
+            icon: Icons.campaign,
+            activeColor: const Color(0xFFFF69B4),
+            isSelected: selectedTarget == 'all',
+            isDark: isDark,
+            onTap: () => onTargetChanged('all'),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          TimelineTargetChip(
+            chipKey: const Key('timeline_target_staff_chip'),
+            label: 'スタッフ限定',
+            icon: Icons.lock_outline,
+            activeColor: AppKendoColors.deepOrange,
+            isSelected: selectedTarget == 'staff',
+            isDark: isDark,
+            onTap: () => onTargetChanged('staff'),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          TimelineTargetChip(
+            chipKey: const Key('timeline_target_none_chip'),
+            label: '通知なし',
+            icon: Icons.notifications_off_outlined,
+            activeColor: AppKendoColors.blue,
+            isSelected: selectedTarget == 'none',
+            isDark: isDark,
+            onTap: () => onTargetChanged('none'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// アナウンスおよびコメント送信処理ヘルパー
 class TimelineAnnounceSender {
   static Future<void> send({

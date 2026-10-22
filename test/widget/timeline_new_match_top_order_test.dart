@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
+import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 
 void main() {
   group('[Widget] 大会ホーム一覧において 後から追加した新しい対戦・おかわりの対戦が最上位に来る保証テスト', () {
@@ -181,6 +182,85 @@ void main() {
       final posExtra = tester.getTopLeft(find.text('相手 次郎'));
       final posInitial = tester.getTopLeft(find.text('相手 太郎'));
       expect(posExtra.dy, lessThan(posInitial.dy));
+    });
+
+    testWidgets('後から追加したアナウンス（見出しコメント）が試合カードよりも一番上に表示されること', (tester) async {
+      const matches = [
+        MatchModel(
+          id: 'm1_senpo',
+          groupName: 'group_round_1',
+          matchType: '先鋒',
+          redName: '道上剣友会A: 選手1',
+          whiteName: '相手チーム01: 相手1',
+          status: 'finished',
+          order: 1000.0,
+        ),
+        MatchModel(
+          id: 'm1_jiho',
+          groupName: 'group_round_1',
+          matchType: '次鋒',
+          redName: '道上剣友会A: 選手2',
+          whiteName: '相手チーム01: 相手2',
+          status: 'finished',
+          order: 1001.0,
+        ),
+      ];
+
+      // 後から追加されたアナウンス（orderが試合より大きい）
+      final comment = MatchCommentModel(
+        id: 'comment_1',
+        tournamentId: 't1',
+        category: '小学生低学年の部',
+        groupName: '道上剣友会A',
+        text: '【連絡】第2試合場へ移動してください',
+        order: 2000.0,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchListProvider.overrideWithValue(matches),
+            customTeamNamesProvider.overrideWith(
+              (ref) => Stream.value(['道上剣友会A']),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ListView(
+                children: [
+                  TimelineTeamCard(
+                    teamName: '道上剣友会A',
+                    teamMatchesList: matches,
+                    categoryName: '小学生低学年の部',
+                    tournamentId: 't1',
+                    sanitizedQuery: '',
+                    matchedMatchIds: const {},
+                    matchedGroupNames: const {},
+                    ownTeams: const ['道上剣友会A'],
+                    comments: [comment],
+                    isReadOnlyUI: false,
+                    canManageTournamentUI: true,
+                    isDark: false,
+                    permissions: const PermissionState(
+                      canManageTournament: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // アナウンスと試合カードが表示されていること
+      expect(find.text('【連絡】第2試合場へ移動してください'), findsOneWidget);
+      expect(find.text('道上剣友会A vs 相手チーム01'), findsOneWidget);
+
+      // アナウンスが試合カードよりも上（y座標が小さい）にあること
+      final commentPos = tester.getTopLeft(find.text('【連絡】第2試合場へ移動してください'));
+      final matchPos = tester.getTopLeft(find.text('道上剣友会A vs 相手チーム01'));
+      expect(commentPos.dy, lessThan(matchPos.dy));
     });
   });
 }

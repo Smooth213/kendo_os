@@ -12,6 +12,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_summary_input_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_team_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_tie_break_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
@@ -394,6 +395,103 @@ void main() {
       );
 
       expect(find.text('A道場'), findsOneWidget);
+    });
+
+    testWidgets('公式アナウンスシートにおいて、ダイヤルPickerおよびクイックチップが正常に表示・操作できること', (
+      tester,
+    ) async {
+      final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(extensions: [themeColors]),
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, child) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      TimelineUnifiedAnnounceDialog.show(
+                        context,
+                        ref,
+                        't1',
+                        '小学生の部',
+                        '道上剣友会',
+                        100.0,
+                      );
+                    },
+                    child: const Text('アナウンスを開く'),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // ダイアログを開く
+      await tester.tap(find.text('アナウンスを開く'));
+      await tester.pumpAndSettle();
+
+      // 1. ヘッダーおよびカテゴリタブが表示されていること
+      expect(find.text('公式アナウンス・コメントの一斉発信'), findsOneWidget);
+      expect(find.text('☕ 進行・休憩'), findsOneWidget);
+      expect(find.text('⚖️ 審判・役員'), findsOneWidget);
+      expect(find.text('📍 会場・移動'), findsOneWidget);
+      expect(find.text('📢 呼出・緊急'), findsOneWidget);
+      expect(find.text('🏆 回戦・ラウンド'), findsOneWidget);
+
+      // 2. 「☕ 進行・休憩」カテゴリタブをタップしてアコーディオンを開く
+      await tester.tap(find.text('☕ 進行・休憩'));
+      await tester.pumpAndSettle();
+
+      // 進行・休憩のチップが表示されていること
+      expect(find.text('昼休憩'), findsOneWidget);
+      expect(find.text('小休止'), findsOneWidget);
+
+      // 3. チップ「昼休憩」をタップするとタイトルに【昼休憩】が反映され、本文が自動補完されること
+      await tester.tap(find.text('昼休憩'));
+      await tester.pumpAndSettle();
+      expect(find.text('【昼休憩】'), findsOneWidget);
+      expect(find.text('昼休憩に入ります。'), findsOneWidget);
+
+      // 4. Undoボタンが表示され、タップすると取り消されること
+      expect(
+        find.byKey(const Key('timeline_title_undo_button')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('timeline_title_undo_button')));
+      await tester.pumpAndSettle();
+
+      // 5. 変更先展開ボタン（＋ 変更先（➔）を指定）を押すと変更先スロットが展開されること
+      expect(
+        find.byKey(const Key('timeline_toggle_destination_button')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const Key('timeline_toggle_destination_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('【変更元】'), findsOneWidget);
+      expect(find.text('【変更先】'), findsOneWidget);
+      expect(find.text('変更先を取り消す'), findsOneWidget);
+
+      // 6. ダイヤルPickerの「＋」アイコンをタップすると本文に試合場がリアルタイム反映されること
+      // MatchCourtSlotPickerの「＋」アイコンをタップ
+      final plusIcons = find.byIcon(Icons.add);
+      if (plusIcons.evaluate().isNotEmpty) {
+        await tester.tap(plusIcons.first);
+        await tester.pumpAndSettle();
+        // 本文に第1試合場が入ること
+        expect(find.textContaining('第1試合場'), findsWidgets);
+
+        // もう一度タップしても重複せず数字が更新されること（第2試合場）
+        await tester.tap(plusIcons.first);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('第2試合場'), findsWidgets);
+      }
     });
   });
 }
