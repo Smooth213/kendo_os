@@ -110,5 +110,28 @@ void main() {
       expect(queue.pendingCount, equals(0));
       expect(queue.peek, isNull);
     });
+
+    test('PendingSyncQueueにおいて同一taskIdのタスクが重複エンキューされず排除されること', () {
+      final queue = PendingSyncQueue<String>();
+
+      final firstAdded = queue.enqueue('task_dup_1', 'payload_initial');
+      expect(firstAdded, isTrue);
+      expect(queue.pendingCount, equals(1));
+      expect(queue.contains('task_dup_1'), isTrue);
+
+      // 同一taskIdの再エンキュー
+      final secondAdded = queue.enqueue('task_dup_1', 'payload_updated');
+      expect(secondAdded, isFalse);
+      expect(queue.pendingCount, equals(1)); // 件数は増えない
+
+      // dequeue後の再エンキューは可能
+      queue.dequeue();
+      expect(queue.pendingCount, equals(0));
+      expect(queue.contains('task_dup_1'), isFalse);
+
+      final reAdded = queue.enqueue('task_dup_1', 'payload_after_dequeue');
+      expect(reAdded, isTrue);
+      expect(queue.pendingCount, equals(1));
+    });
   });
 }

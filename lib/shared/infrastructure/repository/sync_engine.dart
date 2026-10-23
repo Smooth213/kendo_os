@@ -268,8 +268,8 @@ class SyncEngine {
 
     try {
       final localRepo = _ref.read(localMatchRepositoryProvider);
-      // Pending 状態の未送信SyncAction（MatchCommandModel）をIsarから全取得
-      final pendingActions = await localRepo.getPendingCommands();
+      // Pending 状態の未送信SyncAction（MatchCommandModel）をIsarからバッチ取得（最大50件/回）
+      final pendingActions = await localRepo.getPendingCommands(50);
 
       if (pendingActions.isEmpty) {
         _retryCount = 0; // キューが空ならリトライカウントをリセット
@@ -318,8 +318,8 @@ class SyncEngine {
         }
       }
 
-      // 処理完了後にキューが空になった場合はタイマーを停止
-      final remaining = await localRepo.getPendingCommands();
+      // 処理完了後にキューが空になった場合はタイマーを停止（1件存在チェックで高速判定）
+      final remaining = await localRepo.getPendingCommands(1);
       if (remaining.isEmpty) {
         _stopSyncLoop();
       }

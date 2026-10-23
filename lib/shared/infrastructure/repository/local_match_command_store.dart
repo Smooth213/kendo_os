@@ -133,15 +133,21 @@ class LocalMatchCommandStore {
     );
   }
 
-  static Future<List<MatchCommandModel>> getPendingCommands(Isar? isar) async {
+  static Future<List<MatchCommandModel>> getPendingCommands(
+    Isar? isar, {
+    int? limit,
+  }) async {
     if (isar == null) {
-      return await _getPendingCommandsWeb();
+      final webCmds = await _getPendingCommandsWeb();
+      return limit != null ? webCmds.take(limit).toList() : webCmds;
     }
-    final entities = await isar.matchCommandEntitys
+    final query = isar.matchCommandEntitys
         .filter()
         .statusEqualTo(CommandStatus.pending.name)
-        .sortByCreatedAt()
-        .findAll();
+        .sortByCreatedAt();
+    final entities = limit != null
+        ? await query.limit(limit).findAll()
+        : await query.findAll();
     return entities
         .map(
           (e) => MatchCommandModel(

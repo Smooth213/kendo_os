@@ -397,8 +397,8 @@ class LocalMatchRepository {
   Future<void> deleteCommand(String id) =>
       LocalMatchCommandStore.deleteCommand(_isar, id);
 
-  Future<List<MatchCommandModel>> getPendingCommands() =>
-      LocalMatchCommandStore.getPendingCommands(_isar);
+  Future<List<MatchCommandModel>> getPendingCommands([int? limit]) =>
+      LocalMatchCommandStore.getPendingCommands(_isar, limit: limit);
 
   Stream<List<MatchModel>> watchLocalMatches(String tournamentId) =>
       _isar == null

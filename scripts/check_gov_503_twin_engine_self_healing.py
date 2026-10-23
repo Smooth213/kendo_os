@@ -37,6 +37,7 @@ def main():
     c_queue = get_file_content("lib/features/tournament/presentation/operate/providers/match_command_queue.dart") or ""
     c_screen = get_file_content("lib/features/tournament/presentation/operate/match_screen.dart") or ""
     c_startup = get_file_content("lib/bootstrap/app_startup.dart") or ""
+    c_pending_queue = get_file_content("lib/shared/sync/pending_sync_queue.dart") or ""
 
     # ① 現場障害耐性
     ok1 = "class LocalMatchRepository" in c_local_repo
@@ -84,6 +85,13 @@ def main():
         and c_handler.count("EmergencyCrashPreserver.preserveOnCrash") >= 3
     )
 
+    # ⑫ PendingSyncQueue 重複排除・べき等性
+    ok12 = (
+        "_taskIds" in c_pending_queue
+        and "contains" in c_pending_queue
+        and "return false;" in c_pending_queue
+    )
+
     rules = [
         ("① [現場障害耐性] オフライン・耐久・リトライ規約", ok1),
         ("② [ツイン永続化＆自己修復] TwinMatchPersistenceHelper 統合 ＆ 非同期I/O規約", ok2),
@@ -96,6 +104,7 @@ def main():
         ("⑨ [フォントオフライン耐性] app_startup.dart enforceOfflineFontFallback 規約", ok9),
         ("⑩ [Fatal Crash Trap] 非同期例外完全捕捉＆クラッシュ隔離（Async Error Boundary）規約", ok10),
         ("⑪ [Fatal Crash Trap] GlobalErrorHandler 全3系統緊急退避規約", ok11),
+        ("⑫ [重複排除キュー] PendingSyncQueue _taskIds 重複エンキュー排除規約", ok12),
     ]
 
     is_all_ok = all(ok for _, ok in rules)

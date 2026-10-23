@@ -403,6 +403,23 @@ void main() {
         expect(list1[2].id, equals('ev_deviceA_late'));
       },
     );
+
+    test('大量キュー存在時にgetPendingCommands(50)によりバッチ分割取得されること', () async {
+      final fakeList = List.generate(
+        70,
+        (i) => MatchCommandModel(
+          id: 'batch_cmd_$i',
+          type: CommandType.updateMatch,
+          payload: {'id': 'm_$i'},
+          createdAt: DateTime.now(),
+        ),
+      );
+      final repo = _FakeLocalMatchRepoForSync(fakeList);
+      final batch = await repo.getPendingCommands(50);
+      expect(batch.length, equals(50));
+      expect(batch.first.id, equals('batch_cmd_0'));
+      expect(batch.last.id, equals('batch_cmd_49'));
+    });
   });
 }
 
@@ -413,8 +430,9 @@ class _FakeLocalMatchRepoForSync implements LocalMatchRepository {
   _FakeLocalMatchRepoForSync(this.pendingCommands);
 
   @override
-  Future<List<MatchCommandModel>> getPendingCommands() async {
-    return List.from(pendingCommands);
+  Future<List<MatchCommandModel>> getPendingCommands([int? limit]) async {
+    final list = List<MatchCommandModel>.from(pendingCommands);
+    return limit != null ? list.take(limit).toList() : list;
   }
 
   @override

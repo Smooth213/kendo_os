@@ -47,6 +47,9 @@ void main() {
       () => mockLocalRepo.saveMatch(any()),
     ).thenAnswer((_) => Future.value());
     when(
+      () => mockLocalRepo.getPendingCommands(any()),
+    ).thenAnswer((_) => Future.value([]));
+    when(
       () => mockLocalRepo.getPendingCommands(),
     ).thenAnswer((_) => Future.value([]));
     when(
@@ -165,7 +168,7 @@ void main() {
         );
 
         when(
-          () => mockLocalRepo.getPendingCommands(),
+          () => mockLocalRepo.getPendingCommands(any()),
         ).thenAnswer((_) => Future.value([corruptCmd]));
 
         final container = ProviderContainer(
@@ -227,7 +230,7 @@ void main() {
         );
 
         when(
-          () => mockLocalRepo.getPendingCommands(),
+          () => mockLocalRepo.getPendingCommands(any()),
         ).thenAnswer((_) => Future.value([staleCmd]));
 
         final container = ProviderContainer(

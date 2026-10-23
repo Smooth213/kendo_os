@@ -106,6 +106,13 @@ def main():
         and not bool(re.search(r"for\s*\([^)]+\)\s*\{[^}]*deleteMatch\(", c_group_card))
     )
 
+    # ⑩ 未送信キューバッチ取得（大量オフライン復帰時のメモリ保護）
+    ok10 = (
+        "getPendingCommands(50)" in c_sync_engine
+        and "getPendingCommands(1)" in c_sync_engine
+        and "int? limit" in c_cmd_store
+    )
+
     rules = [
         ("① [マイクロバッチング] saveMatchBatched / flushMicroBatch 規約", ok1),
         ("② [単一writeTxnアトミック化] saveMatchWithPendingCommand ＆ savePendingCommandsBulk 規約", ok2),
@@ -116,6 +123,7 @@ def main():
         ("⑦ [イベントソーシング] InMemoryEventStore 論理時計採番 ＆ 楽観的ロック整合性規約", ok7),
         ("⑧ [イベントソーシング] MatchAggregateRepository 50件スナップショット ＆ 3回競合オートリペア規約", ok8),
         ("⑨ [複数試合一括削除] deleteMatchesBulk アトミック一括削除 ＆ 逐次削除ループ排除規約", ok9),
+        ("⑩ [同期キューバッチ化] SyncEngine getPendingCommands(50) チャンク分割 ＆ メモリ保護規約", ok10),
     ]
 
     is_ok = all(ok for _, ok in rules)
@@ -132,7 +140,6 @@ def main():
     else:
         print(" 🔴 監査結果: 違反 (第206条 データI/Oバッチ集約・Isar最適化 ＆ 履歴チャンク分割規約に違反があります)")
         print("=" * 68)
-        print(res1.stdout + res1.stderr + res2.stdout + res2.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":
