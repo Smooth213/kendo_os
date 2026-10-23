@@ -335,14 +335,25 @@ class AppStartup {
   static Future<void> _configureFirestore(SharedPreferences prefs) async {
     try {
       if (kIsWeb) {
-        FirebaseFirestore.instance.settings = const Settings(
-          persistenceEnabled: true,
-          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-          webExperimentalAutoDetectLongPolling: true,
-        );
-        debugPrint(
-          '[Firestore Web] ブラウザ永続キャッシュ（IndexedDB）と自動ロングポーリング検知を活性化しました。',
-        );
+        try {
+          FirebaseFirestore.instance.settings = const Settings(
+            persistenceEnabled: true,
+            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+            webExperimentalAutoDetectLongPolling: true,
+          );
+          debugPrint(
+            '[Firestore Web] ブラウザ永続キャッシュ（IndexedDB）と自動ロングポーリング検知を活性化しました。',
+          );
+        } catch (webErr) {
+          debugPrint(
+            '[WARN] [Firestore Web] IndexedDB初期化失敗。メモリキャッシュで継続します: $webErr',
+          );
+          try {
+            FirebaseFirestore.instance.settings = const Settings(
+              persistenceEnabled: false,
+            );
+          } catch (_) {}
+        }
       } else {
         final hasCleared =
             prefs.getBool('has_cleared_corrupted_firestore_cache_v3') ?? false;

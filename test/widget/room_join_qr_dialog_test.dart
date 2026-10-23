@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
@@ -614,5 +615,50 @@ void main() {
 
       container.dispose();
     });
+
+    testWidgets('Firestoreアクセス時にpermission-deniedが発生した場合、親切な再試行メッセージが表示されること', (
+      WidgetTester tester,
+    ) async {
+      final throwingFirestore = _ThrowingFirestore(
+        FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'permission-denied',
+          message: 'Missing or insufficient permissions.',
+        ),
+      );
+
+      final container = ProviderContainer(
+        overrides: [roomFirestoreProvider.overrideWithValue(throwingFirestore)],
+      );
+
+      await tester.pumpWidget(createTestTarget(container));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'test_room');
+      await tester.pumpAndSettle();
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('接続開始'));
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.pumpAndSettle();
+
+      // permission-denied 用の親切なメッセージが表示されていること
+      expect(find.text('認証準備中です。もう一度「接続開始」を押してください。'), findsOneWidget);
+
+      container.dispose();
+    });
   });
+}
+
+class _ThrowingFirestore extends FakeFirebaseFirestore {
+  final FirebaseException exception;
+  _ThrowingFirestore(this.exception);
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    throw exception;
+  }
 }

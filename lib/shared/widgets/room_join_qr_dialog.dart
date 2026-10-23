@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -71,6 +73,28 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     super.dispose();
   }
 
+  /// 🛡️ Safari Web/PWA環境下での認証未確立（request.auth == null）を水際防衛する安全弁
+  Future<void> _ensureAuth() async {
+    try {
+      if (Firebase.apps.isEmpty) return;
+      if (FirebaseAuth.instance.currentUser != null) return;
+
+      // 既存セッションの復元を最大2秒待機
+      final restoredUser = await FirebaseAuth.instance
+          .authStateChanges()
+          .first
+          .timeout(const Duration(seconds: 2), onTimeout: () => null);
+      if (restoredUser != null) return;
+
+      // それでも未認証なら、その場で匿名認証を同期確立（最大4秒）
+      await FirebaseAuth.instance.signInAnonymously().timeout(
+        const Duration(seconds: 4),
+      );
+    } catch (e) {
+      debugPrint('[RoomJoin] 認証確立試行ログ: $e');
+    }
+  }
+
   /// クラウド（Firestore）へパケットを飛ばし、入力されたIDが既に他者に使われているか
   /// 重複を決定論的に水際検知・ガードする非同期チェックロジック
   void _handleJoin(String roomCode) async {
@@ -88,6 +112,9 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     });
 
     try {
+      // 🛡️ Web/Safari環境での permission-denied を防ぐため、事前に認証確立を保証
+      await _ensureAuth();
+
       // 1. 指定されたIDのフォルダ（組織ドキュメント）がFirestore上に実在するか get 照会
       final docSnapshot = await ref
           .read(roomFirestoreProvider)
@@ -115,9 +142,20 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
           });
 
       _executeFinalConnection(cleanCode);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[RoomJoin] ルーム接続例外: $e\n$stack');
       if (mounted) {
-        setState(() => _errorMessage = '通信エラーが発生しました。電波状況を確認してください。');
+        String message = '通信エラーが発生しました。電波状況を確認してください。';
+        if (e is FirebaseException) {
+          if (e.code == 'permission-denied') {
+            message = '認証準備中です。もう一度「接続開始」を押してください。';
+          } else if (e.code == 'unavailable') {
+            message = '通信エラーが発生しました。電波状況を確認してください。';
+          } else {
+            message = '道場ルームの接続に失敗しました (${e.code})。';
+          }
+        }
+        setState(() => _errorMessage = message);
       }
     } finally {
       if (mounted) {
