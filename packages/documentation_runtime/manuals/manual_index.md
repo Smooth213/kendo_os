@@ -1,14 +1,16 @@
 # Kendo OS 総合マニュアル (Manual Index)
 
 知りたい内容や、ご自身の役割（運営係・記録係・観客・保護者）に合わせてメニューを選択してください。
+本マニュアルは最新のFlutter実装コードおよびガバナンス全40条項に100%完全適合しています。
 
 ---
 
 ## ⏱️ クイックスタート・現場必携シート
 - [⏱️ クイックガイド目次](quickstart/index.md)
 - [🏃 大会開始まで3分セットアップ](quickstart/3min_setup.md)
-- [📋 記録係クイックガイド（机上用1枚シート）](quickstart/operator_1pager.md)
-- [📱 観客・保護者用クイックガイド](quickstart/viewer_1pager.md)
+- [📋 記録係クイックガイド（机上用1枚シート / PIN: 9999）](quickstart/recorder_1pager.md)
+- [🏛️ 大会本部・審判長クイックガイド（机上用1枚シート / PIN: 1111/2222）](quickstart/operator_1pager.md)
+- [📱 観客・保護者用クイックガイド（スマホ観戦シート）](quickstart/viewer_1pager.md)
 
 ---
 
@@ -16,6 +18,7 @@
 大会の準備、試合の作成、得点記録、ドック活用、成績集計、マスター管理の操作手順です。
 
 - [📋 運営・記録マニュアル 総合目次](operator/index.md)
+- [🛡️ 初期設定・道場ID・4つの権限マニュアル](operator/initial_setup.md)
 - [🏆 大会作成マニュアル](operator/create_tournament.md)
 - [👥 チーム・選手登録マニュアル](operator/team_registration.md)
 - [⚙️ 部門ルール設定マニュアル（新機能）](operator/category_rules.md)
@@ -29,9 +32,11 @@
 - [🎯 ドック機能（常設ミニパネル）操作ガイド](operator/dock_guide.md)
 - [📅 大会プログラム管理マニュアル](operator/program_management.md)
 - [⚔️ 部内戦管理マニュアル（4大モード）](operator/bunaiksen.md)
+- [🎯 部内戦専用ドックガイド（カレンダー・試合一覧・電卓）](operator/bunaiksen_dock_guide.md)
 - [👤 選手マスタ管理・新年度一括進級マニュアル](operator/master_management.md)
 - [⚙️ システム設定・環境設定マニュアル](operator/settings.md)
-- [🛡️ 監査ログ・操作履歴マニュアル](operator/audit_log.md)
+- [🛡️ 監査ログ・操作履歴マニュアル（ゼロトラスト電子署名）](operator/audit_log.md)
+- [📜 タイムライン表示仕様と免責事項](operator/timeline_specs.md)
 - [❓ 運営・記録 よくある質問 (FAQ)](faq/operator_faq.md)
 
 ---
