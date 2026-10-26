@@ -19,6 +19,7 @@ class PdfPageLayoutHelper {
     String? tournamentDate,
     String? tournamentVenue,
     required DateTime outputTime,
+    String? ruleSummary,
   }) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -88,13 +89,28 @@ class PdfPageLayoutHelper {
           ),
         ],
         pw.SizedBox(height: 4),
-        pw.Text(
-          'カテゴリ: $categoryName',
-          style: pw.TextStyle(
-            fontSize: AppFontSize.body,
-            color: PdfColors.indigo900,
-            fontWeight: pw.FontWeight.bold,
-          ),
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: [
+            pw.Text(
+              'カテゴリ: $categoryName',
+              style: pw.TextStyle(
+                fontSize: AppFontSize.body,
+                color: PdfColors.indigo900,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+            if (ruleSummary != null && ruleSummary.isNotEmpty) ...[
+              pw.SizedBox(width: 12),
+              pw.Text(
+                '【ルール】$ruleSummary',
+                style: const pw.TextStyle(
+                  fontSize: AppFontSize.caption,
+                  color: PdfColors.grey700,
+                ),
+              ),
+            ],
+          ],
         ),
         pw.Divider(thickness: 2),
         pw.SizedBox(height: 12),

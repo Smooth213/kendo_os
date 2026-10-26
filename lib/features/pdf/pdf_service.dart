@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/utils/file_download_helper.dart'
     as download_helper;
 
 import 'package:kendo_os/features/pdf/helpers/pdf_page_layout_helper.dart';
+import 'package:kendo_os/features/pdf/helpers/pdf_rule_formatter.dart';
 import 'package:kendo_os/features/pdf/services/pdf_font_loader.dart';
 
 class PdfService {
@@ -348,6 +349,10 @@ Future<Uint8List> _generatePdfBytesInWorker(_PdfWorkerParams params) async {
     params.outputTimeMillis,
   );
 
+  final ruleSummary = PdfRuleFormatter.formatFromGroupDataList(
+    params.groupDataList,
+  );
+
   pdf.addPage(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
@@ -359,6 +364,7 @@ Future<Uint8List> _generatePdfBytesInWorker(_PdfWorkerParams params) async {
         tournamentDate: params.tournamentDate,
         tournamentVenue: params.tournamentVenue,
         outputTime: outputTime,
+        ruleSummary: ruleSummary,
       ),
       footer: (pw.Context context) => PdfPageLayoutHelper.buildFooter(context),
       build: (pw.Context context) => PdfPageLayoutHelper.buildContentWidgets(
@@ -384,6 +390,9 @@ Future<Uint8List> _generatePdfBytesInMultiWorker(
   );
 
   for (final catData in params.allCategoryData) {
+    final catRuleSummary = PdfRuleFormatter.formatFromGroupDataList(
+      catData.groupDataList,
+    );
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -395,6 +404,7 @@ Future<Uint8List> _generatePdfBytesInMultiWorker(
           tournamentDate: params.tournamentDate,
           tournamentVenue: params.tournamentVenue,
           outputTime: outputTime,
+          ruleSummary: catRuleSummary,
         ),
         footer: (pw.Context context) =>
             PdfPageLayoutHelper.buildFooter(context),
