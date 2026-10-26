@@ -359,6 +359,24 @@ class _SetupMatchFormatScreenState
                             team.matchType.contains('稽古法')) {
                           _state.isKataMatch = true;
                         }
+                        if (_state.selectedMajorCategory == 'その他' &&
+                            team.category.trim().isNotEmpty) {
+                          final cleanTeamCat = team.category
+                              .replaceAll('の部', '')
+                              .trim();
+                          final basicMinors = ['混成', '混合', '自由'];
+                          if (basicMinors.contains(cleanTeamCat)) {
+                            _state.selectedMinorCategory = cleanTeamCat;
+                            _state.customCategoryName = '';
+                          } else if (cleanTeamCat == 'その他' ||
+                              cleanTeamCat.isEmpty) {
+                            _state.selectedMinorCategory = '全体';
+                            _state.customCategoryName = '';
+                          } else {
+                            _state.selectedMinorCategory = '混成';
+                            _state.customCategoryName = cleanTeamCat;
+                          }
+                        }
                         _loadCategoryRules();
 
                         // チームごとの前回の試合場・試合順（+1）を反映

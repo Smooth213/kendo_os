@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_category_preview_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_selection_card.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_parser.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/category_cascade_selector_view.dart';
@@ -55,6 +56,20 @@ class MatchFormatCategoryStep extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textColor = context.appColors.textColor;
+    final teamsAsync = ref.watch(registeredTeamsProvider(tournamentId));
+    final allRegisteredTeams = teamsAsync.valueOrNull ?? [];
+
+    // 「その他」に属する登録済みチームのカテゴリ名と件数を集計
+    final otherCategoryCounts = <String, int>{};
+    for (final t in allRegisteredTeams) {
+      final parsed = TeamRegistrationCategoryParser.parseCategoryToState(
+        t.category,
+      );
+      if (parsed.majorCategory == 'その他') {
+        final catKey = t.category.trim().isEmpty ? 'その他の部' : t.category.trim();
+        otherCategoryCounts[catKey] = (otherCategoryCounts[catKey] ?? 0) + 1;
+      }
+    }
 
     return ListView(
       padding: const EdgeInsets.symmetric(
@@ -79,6 +94,7 @@ class MatchFormatCategoryStep extends ConsumerWidget {
           selectedMajorCategory: selectedMajorCategory,
           selectedMinorCategory: selectedMinorCategory,
           customCategoryName: customCategoryName,
+          registeredOtherCategoryCounts: otherCategoryCounts,
           themeColors: themeColors,
           onCategoryChanged:
               ({
@@ -132,96 +148,109 @@ class MatchFormatCategoryStep extends ConsumerWidget {
           ],
         ),
 
-        ref
-            .watch(registeredTeamsProvider(tournamentId))
-            .when(
-              data: (teams) {
-                final filteredTeams = teams.where((t) {
-                  // 1. 完全一致
-                  if (t.category == category) return true;
+        teamsAsync.when(
+          data: (teams) {
+            final filteredTeams = teams.where((t) {
+              // 1. 完全一致
+              if (t.category == category) return true;
 
-                  // 2. 「の部」のゆらぎ吸収（例:「その他」と「その他の部」）
-                  final cleanTeamCat = t.category.replaceAll('の部', '').trim();
-                  final cleanTargetCat = category.replaceAll('の部', '').trim();
-                  if (cleanTeamCat.isNotEmpty &&
-                      cleanTeamCat == cleanTargetCat) {
-                    return true;
-                  }
+              // 2. 「の部」のゆらぎ吸収（例:「その他」と「その他の部」）
+              final cleanTeamCat = t.category.replaceAll('の部', '').trim();
+              final cleanTargetCat = category.replaceAll('の部', '').trim();
+              if (cleanTeamCat.isNotEmpty && cleanTeamCat == cleanTargetCat) {
+                return true;
+              }
 
-                  // 3. 大分類が「その他」の場合、チーム側で「その他」として登録されたチームは、
-                  // カスタム表示カテゴリ名（例:「少年の部」）に関わらず同一の「その他」グループとしてマッチ
-                  if (selectedMajorCategory == 'その他') {
-                    if (cleanTeamCat == 'その他') return true;
-                  }
+              // 3. 大分類が「その他」の場合、登録済み「その他」系チームを包括的にマッチ
+              if (selectedMajorCategory == 'その他') {
+                final parsed =
+                    TeamRegistrationCategoryParser.parseCategoryToState(
+                      t.category,
+                    );
+                if (parsed.majorCategory == 'その他') {
+                  return true;
+                }
+              }
 
-                  return false;
-                }).toList();
+              return false;
+            }).toList();
 
-                if (filteredTeams.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.xxl,
-                      horizontal: 20,
+            // 選択中のカテゴリと完全一致するものを先頭にソート
+            filteredTeams.sort((a, b) {
+              final aClean = a.category.replaceAll('の部', '').trim();
+              final bClean = b.category.replaceAll('の部', '').trim();
+              final targetClean = category.replaceAll('の部', '').trim();
+              final aMatch = a.category == category || aClean == targetClean;
+              final bMatch = b.category == category || bClean == targetClean;
+              if (aMatch && !bMatch) return -1;
+              if (!aMatch && bMatch) return 1;
+              return 0;
+            });
+
+            if (filteredTeams.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.xxl,
+                  horizontal: 20,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFF2F2F7),
+                  borderRadius: AppRadius.large,
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF38383A)
+                        : const Color(0x33000000),
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.group_off_outlined,
+                      color: context.appColors.subTextColor,
+                      size: 40,
                     ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : const Color(0xFFF2F2F7),
-                      borderRadius: AppRadius.large,
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF38383A)
-                            : const Color(0x33000000),
-                        width: 1.5,
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
+                      '「$category」のチームが未登録です。\n右上の「チームを追加・編集」から\n登録を行ってください。',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: context.appColors.subTextColor,
+                        fontSize: AppFontSize.bodySmall,
+                        fontWeight: AppFontWeight.bold,
+                        height: 1.5,
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.group_off_outlined,
-                          color: context.appColors.subTextColor,
-                          size: 40,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Text(
-                          '「$category」のチームが未登録です。\n右上の「チームを追加・編集」から\n登録を行ってください。',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: context.appColors.subTextColor,
-                            fontSize: AppFontSize.bodySmall,
-                            fontWeight: AppFontWeight.bold,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                  ],
+                ),
+              );
+            }
 
-                return Column(
-                  children: filteredTeams.map((team) {
-                    final isSelected = selectedTeamId == team.id;
-                    return MatchFormatTeamSelectionCard(
-                      team: team,
-                      isSelected: isSelected,
-                      themeColors: themeColors,
-                      textColor: textColor,
-                      isDark: isDark,
-                      onSelect: () => onTeamSelected(team),
-                      onAdjustOrder: () => onEditTeam(team),
-                      onEdit: () => onEditTeam(team),
-                      onDelete: () => onDeleteTeam(team),
-                    );
-                  }).toList(),
+            return Column(
+              children: filteredTeams.map((team) {
+                final isSelected = selectedTeamId == team.id;
+                return MatchFormatTeamSelectionCard(
+                  team: team,
+                  isSelected: isSelected,
+                  themeColors: themeColors,
+                  textColor: textColor,
+                  isDark: isDark,
+                  onSelect: () => onTeamSelected(team),
+                  onAdjustOrder: () => onEditTeam(team),
+                  onEdit: () => onEditTeam(team),
+                  onDelete: () => onDeleteTeam(team),
                 );
-              },
-              loading: () => const Padding(
-                padding: EdgeInsets.all(AppSpacing.xxl),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (e, s) =>
-                  Text('エラー: $e', style: TextStyle(color: textColor)),
-            ),
+              }).toList(),
+            );
+          },
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xxl),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, s) => Text('エラー: $e', style: TextStyle(color: textColor)),
+        ),
       ],
     );
   }

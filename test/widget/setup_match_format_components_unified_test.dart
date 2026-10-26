@@ -188,5 +188,77 @@ void main() {
       expect(find.text('同点代表戦'), findsOneWidget);
       expect(find.text('勝ち点'), findsOneWidget);
     });
+
+    testWidgets('その他カテゴリ選択時に登録済みその他カテゴリ一覧チップが表示され、チーム選択でカテゴリ名が自動連動すること', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const otherTeam = TeamModel(
+        id: 'team_other_1',
+        tournamentId: 'test_tournament_other',
+        category: '道場対抗の部',
+        teamName: '道場対抗Aチーム',
+        matchType: '5人戦（3本勝負）',
+        playerNames: ['先鋒', '次鋒', '中堅', '副将', '大将'],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(() => _MockSettingsNotifier()),
+            currentDojoIdProvider.overrideWith((ref) => 'test_dojo_id'),
+            playerRepositoryProvider.overrideWith((ref) {
+              final dojoId = ref.watch(currentDojoIdProvider);
+              return PlayerRepository(dojoId: dojoId, firestore: fakeFirestore);
+            }),
+            teamRepositoryProvider.overrideWith((ref) {
+              final dojoId = ref.watch(currentDojoIdProvider);
+              return TeamRepository(dojoId: dojoId, firestore: fakeFirestore);
+            }),
+            registeredTeamsProvider('test_tournament_other').overrideWith((
+              ref,
+            ) {
+              return Stream.value([otherTeam]);
+            }),
+          ],
+          child: const MaterialApp(
+            home: SetupMatchFormatScreen(tournamentId: 'test_tournament_other'),
+          ),
+        ),
+      );
+
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+
+      // 1. 大分類「その他」をタップ
+      expect(find.text('その他'), findsWidgets);
+      await tester.tap(find.text('その他').first);
+      await tester.pumpAndSettle();
+
+      // 2. 登録済みその他カテゴリ一覧チップ「道場対抗の部 (1)」が表示されること
+      expect(find.text('登録済みのカテゴリから選択：'), findsOneWidget);
+      expect(find.text('道場対抗の部 (1)'), findsOneWidget);
+
+      // 3. チーム一覧に「道場対抗Aチーム」が存在すること
+      expect(find.text('道場対抗Aチーム', skipOffstage: false), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('道場対抗Aチーム'),
+        100.0,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('道場対抗Aチーム'), findsOneWidget);
+
+      // 4. 登録済みチップをタップするとカテゴリプレビューに反映されること
+      await tester.tap(find.text('道場対抗の部 (1)'));
+      await tester.pumpAndSettle();
+      expect(find.text('道場対抗の部'), findsWidgets);
+    });
   });
 }

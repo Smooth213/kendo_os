@@ -8,6 +8,7 @@ class CategoryCascadeSelectorView extends StatelessWidget {
   final String selectedMajorCategory;
   final String selectedMinorCategory;
   final String customCategoryName;
+  final Map<String, int>? registeredOtherCategoryCounts;
   final AppThemeColors themeColors;
   final void Function({
     required String majorCategory,
@@ -33,6 +34,7 @@ class CategoryCascadeSelectorView extends StatelessWidget {
     required this.themeColors,
     required this.onCategoryChanged,
     this.customCategoryName = '',
+    this.registeredOtherCategoryCounts,
   });
 
   static List<String> getMinorCategories(String major) {
@@ -107,8 +109,34 @@ class CategoryCascadeSelectorView extends StatelessWidget {
     onCategoryChanged(
       majorCategory: selectedMajorCategory,
       minorCategory: minor,
-      customCategoryName: customCategoryName,
+      customCategoryName: selectedMajorCategory == 'その他'
+          ? ''
+          : customCategoryName,
     );
+  }
+
+  void _handleRegisteredCategorySelected(String catName) {
+    final cleanName = catName.replaceAll('の部', '').trim();
+    final basicMinors = ['混成', '混合', '自由'];
+    if (basicMinors.contains(cleanName)) {
+      onCategoryChanged(
+        majorCategory: 'その他',
+        minorCategory: cleanName,
+        customCategoryName: '',
+      );
+    } else if (cleanName == 'その他' || cleanName.isEmpty) {
+      onCategoryChanged(
+        majorCategory: 'その他',
+        minorCategory: '全体',
+        customCategoryName: '',
+      );
+    } else {
+      onCategoryChanged(
+        majorCategory: 'その他',
+        minorCategory: '混成',
+        customCategoryName: cleanName,
+      );
+    }
   }
 
   @override
@@ -128,7 +156,7 @@ class CategoryCascadeSelectorView extends StatelessWidget {
             return AppChoiceChip(
               label: Text(major),
               selected: isSel,
-              selectedColor: accentColor.withValues(alpha: 0.2),
+              selectedColor: accentColor.withValues(alpha: 0.25),
               onSelected: (s) {
                 if (s) _handleMajorSelected(major);
               },
@@ -153,16 +181,73 @@ class CategoryCascadeSelectorView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 登録済みその他カテゴリ一覧（実績が存在する場合のみ上段に表示）
+              if (selectedMajorCategory == 'その他' &&
+                  registeredOtherCategoryCounts != null &&
+                  registeredOtherCategoryCounts!.isNotEmpty) ...[
+                Row(
+                  children: [
+                    Icon(Icons.group, size: 16, color: accentColor),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      '登録済みのカテゴリから選択：',
+                      style: TextStyle(
+                        fontSize: AppFontSize.caption,
+                        fontWeight: AppFontWeight.bold,
+                        color: accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: registeredOtherCategoryCounts!.entries.map((entry) {
+                    final catName = entry.key;
+                    final count = entry.value;
+                    final cleanRegistered = catName.replaceAll('の部', '').trim();
+                    final currentFullCat = buildCategoryName(
+                      major: selectedMajorCategory,
+                      minor: selectedMinorCategory,
+                      customName: customCategoryName,
+                    );
+                    final cleanCurrent = currentFullCat
+                        .replaceAll('の部', '')
+                        .trim();
+                    final isSel = cleanRegistered == cleanCurrent;
+
+                    return AppChoiceChip(
+                      icon: Icons.group,
+                      label: Text('$catName ($count)'),
+                      selected: isSel,
+                      selectedColor: accentColor.withValues(alpha: 0.25),
+                      onSelected: (s) {
+                        if (s) _handleRegisteredCategorySelected(catName);
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Divider(color: accentColor.withValues(alpha: 0.2), height: 1),
+                const SizedBox(height: AppSpacing.md),
+              ],
+
+              // 基本区分・新規入力セクション
               Row(
                 children: [
                   Icon(
-                    Icons.subdirectory_arrow_right,
+                    selectedMajorCategory == 'その他'
+                        ? Icons.tune
+                        : Icons.subdirectory_arrow_right,
                     size: 16,
                     color: accentColor,
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
-                    '「$selectedMajorCategory」の詳細区分を選択：',
+                    selectedMajorCategory == 'その他'
+                        ? '基本区分から選択・新規手入力：'
+                        : '「$selectedMajorCategory」の詳細区分を選択：',
                     style: TextStyle(
                       fontSize: AppFontSize.caption,
                       fontWeight: AppFontWeight.bold,
@@ -176,7 +261,10 @@ class CategoryCascadeSelectorView extends StatelessWidget {
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.sm,
                 children: minorList.map((minor) {
-                  final isSel = selectedMinorCategory == minor;
+                  final isSel =
+                      selectedMinorCategory == minor &&
+                      (selectedMajorCategory != 'その他' ||
+                          customCategoryName.trim().isEmpty);
                   String label = minor;
                   if (selectedMajorCategory == '小学生') {
                     if (minor == '低学年') label = '低学年 (1-4年)';
@@ -195,6 +283,7 @@ class CategoryCascadeSelectorView extends StatelessWidget {
               if (selectedMajorCategory == 'その他') ...[
                 const SizedBox(height: AppSpacing.md),
                 TextFormField(
+                  key: ValueKey('custom_cat_$customCategoryName'),
                   initialValue: customCategoryName,
                   scrollPadding: EdgeInsets.zero,
                   decoration: InputDecoration(
