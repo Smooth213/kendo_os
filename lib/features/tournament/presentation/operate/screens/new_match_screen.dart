@@ -124,6 +124,8 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -276,6 +278,7 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
                         vertical: AppSpacing.lg,
                       ),
                     ),
+                    const SizedBox(height: AppSpacing.giant * 2),
                   ],
                 ),
               ),

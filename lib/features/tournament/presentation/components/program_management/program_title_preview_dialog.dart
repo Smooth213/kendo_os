@@ -7,6 +7,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// プログラムアップロード前のプレビュー・タイトル・順番確認ダイアログ
 class ProgramTitlePreviewDialog {
@@ -160,7 +161,7 @@ class ProgramTitlePreviewDialog {
                           const SizedBox(height: AppSpacing.sm),
                           TextFormField(
                             initialValue: title,
-                            scrollPadding: EdgeInsets.zero,
+                            scrollPadding: AppTextField.defaultScrollPadding,
                             autofocus: false,
                             style: TextStyle(
                               fontWeight: AppFontWeight.bold,

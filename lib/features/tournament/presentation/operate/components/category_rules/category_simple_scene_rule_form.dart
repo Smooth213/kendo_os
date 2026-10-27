@@ -3,6 +3,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// マルチシーン（錬成・申合せ）における簡易ルール設定フォーム（純粋UIコンポーネント）
 class CategorySimpleSceneRuleForm extends StatelessWidget {
@@ -77,7 +78,7 @@ class CategorySimpleSceneRuleForm extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           TextFormField(
             initialValue: overallTime.toString(),
-            scrollPadding: EdgeInsets.zero,
+            scrollPadding: AppTextField.defaultScrollPadding,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: '全体の制限時間（分）',

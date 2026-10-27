@@ -32,14 +32,14 @@ void main() {
     // 1. 静的アーキテクチャ規約検証
     // -------------------------------------------------------------------------
     test(
-      '基盤統一TextFieldに関して、AppTextField のデフォルト scrollPadding が EdgeInsets.zeroこと',
+      '基盤統一TextFieldに関して、AppTextField のデフォルト scrollPadding が defaultScrollPadding (bottom: 80.0) こと',
       () {
         const field = AppTextField();
         expect(
           field.scrollPadding,
-          equals(EdgeInsets.zero),
+          equals(AppTextField.defaultScrollPadding),
           reason:
-              'AppTextField のデフォルト scrollPadding は余計な強制スクロール（跳ね上がり）を防ぐため EdgeInsets.zero でなければなりません',
+              'AppTextField のデフォルト scrollPadding はキーボード・予測変換バーによるカーソル隠蔽を防ぐため defaultScrollPadding でなければなりません',
         );
       },
     );
@@ -80,7 +80,7 @@ void main() {
     );
 
     test(
-      '全入力フィールド規約に関して、lib/配下の TextField / TextFormField は AppTextField または scrollPadding: EdgeInsets.zero が保証されていること',
+      '全入力フィールド規約に関して、lib/配下の TextField / TextFormField は AppTextField または scrollPadding: AppTextField.defaultScrollPadding が保証されていること',
       () {
         final libDir = Directory('lib');
         final dartFiles = libDir
@@ -111,7 +111,9 @@ void main() {
               start,
               (start + 800 < content.length) ? start + 800 : content.length,
             );
-            if (!snippet.contains('scrollPadding: EdgeInsets.zero')) {
+            if (!snippet.contains(
+              'scrollPadding: AppTextField.defaultScrollPadding',
+            )) {
               final lineNum = content.substring(0, start).split('\n').length;
               violations.add('${file.path}:$lineNum (${m.group(1)})');
             }
@@ -122,10 +124,44 @@ void main() {
           violations,
           isEmpty,
           reason:
-              '生の TextField/TextFormField で scrollPadding: EdgeInsets.zero が指定されていない箇所が検出されました:\n${violations.join('\n')}',
+              '生の TextField/TextFormField で scrollPadding: AppTextField.defaultScrollPadding が指定されていない箇所が検出されました:\n${violations.join('\n')}',
         );
       },
     );
+
+    test('カーソル隠蔽防止に関して、lib/配下の全ファイルで scrollPadding ゼロ指定アンチパターンが完全に 0 件であること', () {
+      final libDir = Directory('lib');
+      final dartFiles = libDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))
+          .where(
+            (f) =>
+                !f.path.endsWith('.freezed.dart') &&
+                !f.path.endsWith('.g.dart'),
+          );
+
+      final zeroPattern = RegExp(
+        r'scrollPadding\s*:\s*EdgeInsets\.(zero|all\(0\)|only\([^)]*bottom:\s*0\))',
+      );
+
+      final violations = <String>[];
+      for (final file in dartFiles) {
+        final content = file.readAsStringSync();
+        final matches = zeroPattern.allMatches(content);
+        for (final m in matches) {
+          final lineNum = content.substring(0, m.start).split('\n').length;
+          violations.add('${file.path}:$lineNum (${m.group(0)})');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'キーボード天面の予測変換バー等によりカーソルが隠蔽されるため、scrollPadding のゼロ余白指定は恒久的に禁止されています:\n${violations.join('\n')}',
+      );
+    });
 
     test(
       '基盤Scaffold二重リサイズ防止に関して、lib/main.dart のベース Scaffold に resizeToAvoidBottomInset: false が設定されていること',

@@ -42,11 +42,15 @@ class ManualSearchAppBarActions extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.navigate_before),
             tooltip: '前へ',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             onPressed: onPreviousPressed,
           ),
           IconButton(
             icon: const Icon(Icons.navigate_next),
             tooltip: '次へ',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             onPressed: onNextPressed,
           ),
         ],
@@ -54,6 +58,8 @@ class ManualSearchAppBarActions extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: 'テキストをクリア',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             onPressed: onClearPressed,
           ),
       ],

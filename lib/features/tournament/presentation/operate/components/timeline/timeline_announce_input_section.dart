@@ -114,7 +114,6 @@ class TimelineAnnounceInputSection extends StatelessWidget {
         AppTextField(
           controller: titleController,
           focusNode: titleFocusNode,
-          scrollPadding: EdgeInsets.zero,
           style: TextStyle(color: context.appColors.textColor),
           decoration: const InputDecoration(
             labelText: 'タイトル（例：【緊急】会場変更）',
@@ -127,7 +126,6 @@ class TimelineAnnounceInputSection extends StatelessWidget {
         AppTextField(
           controller: bodyController,
           focusNode: bodyFocusNode,
-          scrollPadding: EdgeInsets.zero,
           maxLines: 3,
           style: TextStyle(color: context.appColors.textColor),
           decoration: const InputDecoration(

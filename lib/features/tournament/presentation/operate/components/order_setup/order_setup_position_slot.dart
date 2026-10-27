@@ -3,6 +3,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/qui
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// オーダー設定画面におけるポジション別選手スロット（純粋UIコンポーネント）
 class OrderSetupPositionSlot extends StatelessWidget {
@@ -234,7 +235,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('opp_${index}_$opponentPlayerName'),
                 initialValue: opponentPlayerName,
-                scrollPadding: EdgeInsets.zero,
+                scrollPadding: AppTextField.defaultScrollPadding,
                 onChanged: onOpponentChanged,
                 style: TextStyle(color: textColor),
                 decoration: InputDecoration(

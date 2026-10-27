@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 大会新規作成: ステップ2（会場・メモ入力）
 class CreateTournamentPage2 extends StatelessWidget {
@@ -30,7 +31,12 @@ class CreateTournamentPage2 extends StatelessWidget {
         : context.appColors.hintColor;
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.xl,
+        AppSpacing.xl,
+        140.0,
+      ),
       children: [
         Text(
           '開催場所とメモを\n入力してください',
@@ -44,7 +50,7 @@ class CreateTournamentPage2 extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxl),
         TextFormField(
           controller: venueController,
-          scrollPadding: EdgeInsets.zero,
+          scrollPadding: AppTextField.defaultScrollPadding,
           style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '会場・住所',
@@ -87,7 +93,7 @@ class CreateTournamentPage2 extends StatelessWidget {
         const SizedBox(height: AppSpacing.xl),
         TextFormField(
           controller: notesController,
-          scrollPadding: EdgeInsets.zero,
+          scrollPadding: AppTextField.defaultScrollPadding,
           maxLines: 4,
           style: TextStyle(color: textColor),
           decoration: InputDecoration(

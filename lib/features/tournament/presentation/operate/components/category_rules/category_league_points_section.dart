@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// ルール設定画面におけるリーグ勝点配分設定セクション（純粋UIコンポーネント）
 class CategoryLeaguePointsSection extends StatelessWidget {
@@ -43,7 +44,7 @@ class CategoryLeaguePointsSection extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('win_pt_$keyPrefix'),
                 initialValue: winPoint.toString(),
-                scrollPadding: EdgeInsets.zero,
+                scrollPadding: AppTextField.defaultScrollPadding,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -63,7 +64,7 @@ class CategoryLeaguePointsSection extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('loss_pt_$keyPrefix'),
                 initialValue: lossPoint.toString(),
-                scrollPadding: EdgeInsets.zero,
+                scrollPadding: AppTextField.defaultScrollPadding,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -83,7 +84,7 @@ class CategoryLeaguePointsSection extends StatelessWidget {
               child: TextFormField(
                 key: ValueKey('draw_pt_$keyPrefix'),
                 initialValue: drawPoint.toString(),
-                scrollPadding: EdgeInsets.zero,
+                scrollPadding: AppTextField.defaultScrollPadding,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),

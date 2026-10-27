@@ -5,6 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/share_impor
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 大会新規作成: ステップ1（大会名・日付入力）
 class CreateTournamentPage1 extends ConsumerWidget {
@@ -38,7 +39,7 @@ class CreateTournamentPage1 extends ConsumerWidget {
         AppSpacing.xl,
         AppSpacing.lg,
         AppSpacing.xl,
-        AppSpacing.sm,
+        120.0,
       ),
       children: [
         Text(
@@ -53,7 +54,7 @@ class CreateTournamentPage1 extends ConsumerWidget {
         const SizedBox(height: AppSpacing.lg),
         TextFormField(
           controller: nameController,
-          scrollPadding: EdgeInsets.zero,
+          scrollPadding: AppTextField.defaultScrollPadding,
           style: TextStyle(color: textColor, fontWeight: AppFontWeight.bold),
           decoration: InputDecoration(
             labelText: '大会名',

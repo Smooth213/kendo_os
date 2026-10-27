@@ -17,7 +17,7 @@ import re
 import sys
 
 def check_app_text_field_scroll_padding():
-    """AppTextField のデフォルト scrollPadding が EdgeInsets.zero であることを検証"""
+    """AppTextField のデフォルト scrollPadding が defaultScrollPadding (bottom: 80.0) であることを検証"""
     target = "lib/shared/widgets/app_text_field.dart"
     if not os.path.exists(target):
         return False, f"❌ {target} が存在しません"
@@ -25,10 +25,10 @@ def check_app_text_field_scroll_padding():
     with open(target, "r", encoding="utf-8") as f:
         content = f.read()
 
-    if "this.scrollPadding = EdgeInsets.zero" not in content:
-        return False, f"❌ {target} のデフォルト scrollPadding が EdgeInsets.zero に設定されていません"
+    if "this.scrollPadding = defaultScrollPadding" not in content or "bottom: AppSpacing.giant * 2" not in content:
+        return False, f"❌ {target} のデフォルト scrollPadding が defaultScrollPadding (bottom: AppSpacing.giant * 2) に設定されていません"
 
-    return True, "🟢 AppTextField のデフォルト scrollPadding は EdgeInsets.zero に設定されています"
+    return True, "🟢 AppTextField のデフォルト scrollPadding は defaultScrollPadding (bottom: AppSpacing.giant * 2 / 80px) に安全設定されています"
 
 def check_modal_input_bottom_sheet():
     """主要な入力モーダルが showAppDialog ではなく showAppBottomSheet を利用していることを検証"""
@@ -61,8 +61,8 @@ def check_modal_input_bottom_sheet():
         return False, "\n".join(errors)
     return True, "🟢 主要入力モーダルはすべて showAppBottomSheet (isScrollControlled: true) に統一されています"
 
-def check_all_text_fields_scroll_padding_zero():
-    """lib/配下のすべての TextField / TextFormField が scrollPadding: EdgeInsets.zero を保証しているか検証"""
+def check_all_text_fields_scroll_padding_safe():
+    """lib/配下のすべての TextField / TextFormField が AppTextField または defaultScrollPadding を保証しているか検証"""
     allowlist = {
         "lib/shared/widgets/app_text_field.dart",  # AppTextField 自身
         "lib/features/p2p/presentation/assets/web_viewer_html.dart",  # HTML文字列内
@@ -91,21 +91,45 @@ def check_all_text_fields_scroll_padding_zero():
             total_files += 1
             total_fields += len(matches)
 
-            # 各マッチの後に scrollPadding: EdgeInsets.zero が存在するかスコープ検査
+            # 各マッチの後に scrollPadding: AppTextField.defaultScrollPadding が存在するかスコープ検査
             for m in matches:
                 start_idx = m.start()
                 # 括弧の終わりまたは次の30行程度を取得
                 snippet = content[start_idx:start_idx + 800]
-                if "scrollPadding: EdgeInsets.zero" not in snippet:
+                if "scrollPadding: AppTextField.defaultScrollPadding" not in snippet:
                     line_num = content[:start_idx].count("\n") + 1
                     errors.append(
                         f"❌ {path}:{line_num} で生の {m.group(1)} が使用されていますが、"
-                        "scrollPadding: EdgeInsets.zero が明示されていません (AppTextField を使用するか scrollPadding: EdgeInsets.zero を指定してください)"
+                        "scrollPadding: AppTextField.defaultScrollPadding が明示されていません (AppTextField を使用するか scrollPadding: AppTextField.defaultScrollPadding を指定してください)"
                     )
 
     if errors:
         return False, "\n".join(errors)
-    return True, f"🟢 lib/ 配下の全入力フィールド（走査: {total_fields} 箇所 / {total_files} ファイル）で scrollPadding: EdgeInsets.zero または AppTextField が100%保証されています"
+    return True, f"🟢 lib/ 配下の全入力フィールド（走査: {total_fields} 箇所 / {total_files} ファイル）で AppTextField または AppTextField.defaultScrollPadding が100%保証されています"
+
+def check_no_zero_scroll_padding():
+    """lib/配下の全ファイルで scrollPadding: EdgeInsets.zero 等のカーソル隠蔽アンチパターンが完全ゼロ件であることを恒久検証"""
+    errors = []
+    zero_pattern = re.compile(r'scrollPadding\s*:\s*EdgeInsets\.(zero|all\(0\)|only\([^)]*bottom:\s*0\))')
+
+    for root, _, files in os.walk("lib"):
+        for file in files:
+            if not file.endswith(".dart"):
+                continue
+            path = os.path.join(root, file)
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            for m in zero_pattern.finditer(content):
+                line_num = content[:m.start()].count("\n") + 1
+                errors.append(
+                    f"❌ {path}:{line_num} で '{m.group(0)}' が検出されました。"
+                    "キーボード天面の予測変換バー等によりカーソルが隠蔽されるため、ゼロ余白指定は恒久的に禁止されています。"
+                )
+
+    if errors:
+        return False, "\n".join(errors)
+    return True, "🟢 lib/ 配下の全ファイルで scrollPadding ゼロ指定（カーソル隠蔽アンチパターン）は 0 件です"
 
 def check_main_base_scaffold_resize_disabled():
     """lib/main.dart の MaterialApp.router builder 内の外側ベース Scaffold が resizeToAvoidBottomInset: false であることを検証"""
@@ -170,11 +194,12 @@ def main():
     print("=" * 72)
 
     checks = [
-        ("1. AppTextField scrollPadding ゼロ設定検証", check_app_text_field_scroll_padding),
-        ("2. 全入力フィールド scrollPadding ゼロ保証検証", check_all_text_fields_scroll_padding_zero),
+        ("1. AppTextField scrollPadding 視認性マージン設定検証", check_app_text_field_scroll_padding),
+        ("2. 全入力フィールド scrollPadding 視認性マージン保証検証", check_all_text_fields_scroll_padding_safe),
         ("3. 主要入力モーダルのボトムシート＆キーボード追従構造検証", check_modal_input_bottom_sheet),
         ("4. 基盤Scaffold二重リサイズ（跳ね上がり）防止設定検証", check_main_base_scaffold_resize_disabled),
         ("5. Web/PWAキーボード可視性保証＆ボトムシート追従Padding検証", check_no_web_keyboard_suppression_and_bottom_sheet_insets),
+        ("6. scrollPadding ゼロ指定（カーソル隠蔽）完全排除検証", check_no_zero_scroll_padding),
     ]
 
     all_passed = True

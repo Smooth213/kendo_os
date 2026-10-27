@@ -36,7 +36,7 @@ class ManualSearchAppBarTitle extends StatelessWidget {
 
     return Container(
       height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.compact),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       decoration: BoxDecoration(
         color: isDark
             ? context.appColors.cardBackground.withValues(alpha: 0.26)

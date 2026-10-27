@@ -360,6 +360,8 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 _isSearchingPdf)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 onPressed: () {
                   setState(() {
                     _isSearchingPdf = false;
@@ -376,9 +378,12 @@ class _EmbeddedManualScreenState extends ConsumerState<EmbeddedManualScreen>
                 tooltip: '検索を終了',
               )
             : null,
+        centerTitle: !_isSearchingPdf,
         titleWidget: _buildAppBarTitle(),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: '通常クイック'),
             Tab(text: '部内戦クイック'),

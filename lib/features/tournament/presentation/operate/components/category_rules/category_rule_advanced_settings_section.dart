@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 詳細設定（得点制限・反則ルール）＆ 上位戦キーワード設定セクション
 class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
@@ -164,7 +165,7 @@ class CategoryRuleAdvancedSettingsSection extends StatelessWidget {
           TextFormField(
             key: ValueKey('advanced_keywords_field_$categoryKey'),
             controller: keywordsController,
-            scrollPadding: EdgeInsets.zero,
+            scrollPadding: AppTextField.defaultScrollPadding,
             decoration: const InputDecoration(
               labelText: '自動判定キーワード（カンマ「,」区切り）',
               hintText: '例: 準決勝, 決勝, 3位決定',

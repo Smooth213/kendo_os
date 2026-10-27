@@ -9,6 +9,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/shared/time/time_source.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
 
 class TimerWidget extends ConsumerWidget {
@@ -55,7 +56,7 @@ class TimerWidget extends ConsumerWidget {
             Expanded(
               child: TextFormField(
                 initialValue: '$m',
-                scrollPadding: EdgeInsets.zero,
+                scrollPadding: AppTextField.defaultScrollPadding,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -95,7 +96,7 @@ class TimerWidget extends ConsumerWidget {
             Expanded(
               child: TextFormField(
                 initialValue: '$s',
-                scrollPadding: EdgeInsets.zero,
+                scrollPadding: AppTextField.defaultScrollPadding,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 style: TextStyle(

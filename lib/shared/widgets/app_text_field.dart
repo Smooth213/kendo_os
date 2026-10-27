@@ -35,6 +35,12 @@ class AppTextField extends StatelessWidget {
   final bool expands;
   final EdgeInsets scrollPadding;
 
+  /// キーボードおよび予測変換バー（約50px）を確実に回避し、カーソル視認性を保証するデフォルト余白
+  static const EdgeInsets defaultScrollPadding = EdgeInsets.only(
+    bottom: AppSpacing.giant * 2,
+    top: AppSpacing.roundValue,
+  );
+
   const AppTextField({
     super.key,
     this.controller,
@@ -65,7 +71,7 @@ class AppTextField extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.style,
     this.decoration,
-    this.scrollPadding = EdgeInsets.zero,
+    this.scrollPadding = defaultScrollPadding,
   });
 
   @override

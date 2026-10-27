@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 🏆 大分類 ＋ 直下連動サブコンテナの共通カテゴリセレクタ
 class CategoryCascadeSelectorView extends StatelessWidget {
@@ -285,7 +286,7 @@ class CategoryCascadeSelectorView extends StatelessWidget {
                 TextFormField(
                   key: ValueKey('custom_cat_$customCategoryName'),
                   initialValue: customCategoryName,
-                  scrollPadding: EdgeInsets.zero,
+                  scrollPadding: AppTextField.defaultScrollPadding,
                   decoration: InputDecoration(
                     labelText: 'カスタム部門名を入力（任意）',
                     hintText: '例: 小中学生混成、東西対抗、オープン など',

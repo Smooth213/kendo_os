@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
 /// 錬成会・勝ち抜き戦設定セクション
 class CategoryRuleRenseikaiSection extends StatelessWidget {
@@ -82,7 +83,7 @@ class CategoryRuleRenseikaiSection extends StatelessWidget {
             TextFormField(
               key: ValueKey('renseikai_time_${isNormal}_$categoryKey'),
               initialValue: overallTime.toString(),
-              scrollPadding: EdgeInsets.zero,
+              scrollPadding: AppTextField.defaultScrollPadding,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: '全体の制限時間（分）',
