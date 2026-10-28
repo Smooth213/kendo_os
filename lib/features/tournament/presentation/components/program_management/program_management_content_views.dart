@@ -55,12 +55,15 @@ class ProgramManagementContentViews {
           child: Card(
             clipBehavior: Clip.antiAlias,
             shape: RoundedRectangleBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.large,
               side: isSelectionMode && isSelected
                   ? BorderSide(color: context.appColors.primaryAccent, width: 2)
-                  : BorderSide.none,
+                  : BorderSide(
+                      color: context.appColors.hairlineBorder,
+                      width: AppBorderWidth.hairline,
+                    ),
             ),
-            elevation: isSelected ? 4 : 2,
+            elevation: isSelected ? 4 : 0,
             child: Stack(
               fit: StackFit.expand,
               children: [

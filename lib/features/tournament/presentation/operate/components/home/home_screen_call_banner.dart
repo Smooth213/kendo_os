@@ -1,6 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -96,26 +96,6 @@ class HomeScreenCallBanner extends StatelessWidget {
         ? themeColors.primaryAccent.withValues(alpha: isDark ? 0.35 : 0.65)
         : themeColors.primaryAccent;
 
-    final bannerDecoration = BoxDecoration(
-      color: bannerColor,
-      borderRadius: AppRadius.large,
-      border: enableLiquidGlass
-          ? Border.all(
-              color: isDark
-                  ? context.appColors.textColor.withValues(alpha: 0.15)
-                  : const Color(0xFF000000).withValues(alpha: 0.08),
-              width: 0.5,
-            )
-          : null,
-      boxShadow: [
-        BoxShadow(
-          color: themeColors.primaryAccent.withValues(alpha: 0.3),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    );
-
     final bannerContent = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -156,32 +136,7 @@ class HomeScreenCallBanner extends StatelessWidget {
       ],
     );
 
-    if (enableLiquidGlass) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.xs,
-          AppSpacing.lg,
-          AppSpacing.md,
-        ),
-        child: ClipRRect(
-          borderRadius: AppRadius.large,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-            child: Container(
-              width: double.infinity,
-              margin: EdgeInsets.zero,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: bannerDecoration,
-              child: bannerContent,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: double.infinity,
+    return AppGlassContainer(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.xs,
@@ -189,7 +144,10 @@ class HomeScreenCallBanner extends StatelessWidget {
         AppSpacing.md,
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: bannerDecoration,
+      borderRadius: AppSemanticTokens.cardRadius,
+      borderWidth: AppSemanticTokens.cardBorderWidth,
+      enableLiquidGlass: enableLiquidGlass,
+      customBackgroundColor: bannerColor,
       child: bannerContent,
     );
   }

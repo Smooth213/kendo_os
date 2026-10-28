@@ -5,6 +5,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 /// クリップボードからの大会情報取り込みを案内・実行する解説付きバナーカード。
 ///
@@ -50,20 +51,18 @@ class ClipboardImportBannerCard extends ConsumerWidget {
         ? appColors.cardShadowColor
         : const Color(0xFFD97706).withValues(alpha: 0.06);
 
-    return Container(
+    return AppGlassContainer(
       margin: margin,
-      decoration: BoxDecoration(
-        color: cardBgColor,
-        borderRadius: AppRadius.large,
-        border: Border.all(color: borderColor, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      borderRadius: AppRadius.large,
+      color: cardBgColor,
+      border: Border.all(color: borderColor, width: AppBorderWidth.hairline),
+      customShadows: [
+        BoxShadow(
+          color: shadowColor,
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
       child: Material(
         color: AppKendoColors.transparent,
         child: InkWell(

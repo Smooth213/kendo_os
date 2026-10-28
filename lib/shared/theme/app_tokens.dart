@@ -149,3 +149,102 @@ class AppEdgeInsets {
   static const EdgeInsets vXl = EdgeInsets.symmetric(vertical: AppSpacing.xl);
   static const EdgeInsets vXxl = EdgeInsets.symmetric(vertical: AppSpacing.xxl);
 }
+
+/// kendo OS デザインシステムにおける統一ブラー (Blur Sigma) トークン (iOS 27 準拠)
+class AppBlur {
+  AppBlur._();
+
+  static const double none = 0.0;
+  static const double ultraThin = 6.0;
+  static const double thin = 10.0;
+  static const double medium = 16.0;
+  static const double thick = 24.0;
+  static const double heavy = 32.0;
+}
+
+/// kendo OS デザインシステムにおける統一境界線幅 (Border Width) トークン (iOS 27 準拠)
+class AppBorderWidth {
+  AppBorderWidth._();
+
+  static const double hairline = 0.5; // iOS標準サブピクセルヘアライン
+  static const double thin = 1.0;
+  static const double normal = 1.5;
+  static const double thick = 2.0;
+}
+
+/// kendo OS デザインシステムにおける統一ソフトアンビエントシャドウ トークン (iOS 27 準拠)
+class AppShadows {
+  AppShadows._();
+
+  /// iOS 27 自然光アンビエントシャドウ (カード・リスト用)
+  static const List<BoxShadow> iosAmbient = [
+    BoxShadow(
+      color: Color(0x0A000000), // 極微小な広域環境光
+      offset: Offset(0, 2),
+      blurRadius: 10,
+      spreadRadius: 0,
+    ),
+    BoxShadow(
+      color: Color(0x0F000000), // 直下の微小シャドウ
+      offset: Offset(0, 1),
+      blurRadius: 3,
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// iOS 27 浮遊ダイアログ・シート用シャドウ
+  static const List<BoxShadow> iosFloating = [
+    BoxShadow(
+      color: Color(0x14000000),
+      offset: Offset(0, 8),
+      blurRadius: 24,
+      spreadRadius: 0,
+    ),
+    BoxShadow(
+      color: Color(0x0A000000),
+      offset: Offset(0, 2),
+      blurRadius: 6,
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// 常設フローティングドック用アイランドシャドウ
+  static const List<BoxShadow> iosDock = [
+    BoxShadow(
+      color: Color(0x1F000000),
+      offset: Offset(0, 6),
+      blurRadius: 20,
+      spreadRadius: 0,
+    ),
+    BoxShadow(
+      color: Color(0x0D000000),
+      offset: Offset(0, 1),
+      blurRadius: 4,
+      spreadRadius: 0,
+    ),
+  ];
+}
+
+/// kendo OS 次世代着せ替え基盤におけるセマンティック（意味的）トークン層
+class AppSemanticTokens {
+  AppSemanticTokens._();
+
+  // 形状・角丸 (用途別)
+  static const BorderRadius cardRadius = AppRadius.large;
+  static const BorderRadius dialogRadius = AppRadius.round;
+  static const BorderRadius sheetRadius = AppRadius.large;
+  static const BorderRadius dockRadius = AppRadius.full;
+  static const BorderRadius badgeRadius = AppRadius.small;
+  static const BorderRadius buttonRadius = AppRadius.medium;
+
+  // 境界線幅 (用途別)
+  static const double cardBorderWidth = AppBorderWidth.hairline;
+  static const double dialogBorderWidth = AppBorderWidth.hairline;
+  static const double dockBorderWidth = AppBorderWidth.hairline;
+
+  // ブラー度合い (用途別)
+  static const double cardBlur = AppBlur.thin;
+  static const double headerBlur = AppBlur.medium;
+  static const double dockBlur = AppBlur.medium;
+  static const double sheetBlur = AppBlur.thick;
+}

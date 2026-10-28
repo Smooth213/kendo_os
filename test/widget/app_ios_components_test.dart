@@ -1,11 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/admin/presentation/screens/design_system_gallery_screen.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -332,6 +336,81 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('大会一覧画面'), findsOneWidget);
+    });
+  });
+
+  group('AppGlassContainer ＆ AppCard iOS 27 テスト', () {
+    testWidgets('AppGlassContainer が RepaintBoundary で保護され正常に描画されること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: const Scaffold(
+              body: AppGlassContainer(child: Text('フロストガラス')),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('フロストガラス'), findsOneWidget);
+      expect(find.byType(RepaintBoundary), findsWidgets);
+    });
+
+    testWidgets('AppCard がタップ可能でコールバックをトリガーすること', (tester) async {
+      var tapped = false;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: Scaffold(
+              body: AppCard(
+                onTap: () => tapped = true,
+                child: const Text('タップカード'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('タップカード'), findsOneWidget);
+      await tester.tap(find.text('タップカード'));
+      await tester.pumpAndSettle();
+      expect(tapped, isTrue);
+    });
+
+    testWidgets('DesignSystemGalleryScreen が正常に描画され各セクションが表示されること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: ThemeData(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: const DesignSystemGalleryScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('デザインシステム・ギャラリー'), findsOneWidget);
+      expect(find.text('1. 着せ替え基盤・モード制御'), findsOneWidget);
+      expect(
+        find.text('2. iOS 27 フロストガラス (AppGlassContainer)'),
+        findsOneWidget,
+      );
+      expect(find.text('3. 物理スプリングカード (AppCard)'), findsOneWidget);
     });
   });
 }

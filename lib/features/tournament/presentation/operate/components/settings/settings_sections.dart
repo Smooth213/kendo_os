@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/band/presentation/components/band_settings_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_accordion_selector.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
@@ -90,6 +91,14 @@ class SettingsDisplaySection extends ConsumerWidget {
                 final governor = ref.read(thermalPowerGovernorProvider);
                 ThermalStatusBadge.showThermalInfoSheet(context, governor);
               },
+            ),
+            SettingsListTile(
+              title: 'デザインシステム・ギャラリー',
+              icon: Icons.palette_outlined,
+              iconBgColor: AppKendoColors.purple,
+              subtitle: 'iOS 27 デザイン基盤・全UIコンポーネント確認',
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/design-gallery'),
             ),
           ],
         ),

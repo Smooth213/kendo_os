@@ -46,11 +46,11 @@ class DockBottomSheetHeader extends StatelessWidget {
           Center(
             child: Container(
               margin: const EdgeInsets.only(top: AppSpacing.sm, bottom: 4),
-              width: 40,
-              height: 4,
+              width: 36,
+              height: 5,
               decoration: BoxDecoration(
-                color: themeColors.separatorColor,
-                borderRadius: AppRadius.full,
+                color: themeColors.separatorColor.withValues(alpha: 0.5),
+                borderRadius: AppRadius.capsule,
               ),
             ),
           ),

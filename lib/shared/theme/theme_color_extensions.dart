@@ -45,6 +45,19 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       primaryAccent.computeLuminance() > 0.18 ? Colors.black : Colors.white;
   Color get cardShadowColor => Colors.black.withValues(alpha: 0.1);
 
+  /// iOS 27 超薄層フロストガラス用サーフェスカラー（透過率約78%）
+  Color get glassSurface => cardBackground.withValues(alpha: 0.78);
+
+  /// iOS 27 極細0.5pxヘアライン境界線用カラー（光の反射縁を再現）
+  Color get hairlineBorder => separatorColor.withValues(alpha: 0.35);
+
+  /// iOS 27 浮遊カード・シート用のソフトな境界線ハイライトカラー
+  Color get glassBorder =>
+      (primaryAccent.computeLuminance() > 0.5
+              ? const Color(0xFF000000)
+              : const Color(0xFFFFFFFF))
+          .withValues(alpha: 0.12);
+
   @override
   AppThemeColors copyWith({
     Color? primaryAccent,

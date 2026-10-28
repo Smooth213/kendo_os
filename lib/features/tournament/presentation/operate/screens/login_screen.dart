@@ -1,7 +1,9 @@
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -92,29 +94,17 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xxl),
 
-              // 🏢 現在の接続先 道場ID 表示カード（ひと目で認識できる洗練されたデザイン）
-              Container(
+              // 🏢 現在の接続先 道場ID 表示カード (iOS 27 フロストスタイル)
+              AppGlassContainer(
                 margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: AppSpacing.lg,
                 ),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: AppRadius.large,
-                  border: Border.all(
-                    color: buttonColor.withValues(alpha: isDark ? 0.4 : 0.25),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppKendoColors.pureBlack.withValues(
-                        alpha: isDark ? 0.2 : 0.05,
-                      ),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                borderRadius: AppSemanticTokens.cardRadius,
+                borderWidth: AppSemanticTokens.cardBorderWidth,
+                customBorderColor: buttonColor.withValues(
+                  alpha: isDark ? 0.4 : 0.25,
                 ),
                 child: Row(
                   children: [
@@ -214,6 +204,7 @@ class LoginScreen extends ConsumerWidget {
                     ),
                   ),
                   onPressed: () async {
+                    AppHaptics.medium();
                     try {
                       debugPrint("[LoginScreen] ログインボタン押下");
                       await ref.read(authRepositoryProvider).signInWithGoogle();

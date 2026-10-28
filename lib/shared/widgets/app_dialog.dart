@@ -110,7 +110,13 @@ class AppDialog extends StatelessWidget {
     return AlertDialog(
       shape:
           shape ??
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+            side: BorderSide(
+              color: themeColors.hairlineBorder,
+              width: AppBorderWidth.hairline,
+            ),
+          ),
       backgroundColor: backgroundColor ?? themeColors.cardBackground,
       surfaceTintColor: AppKendoColors.transparent,
       clipBehavior: clipBehavior,

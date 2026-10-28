@@ -16,6 +16,7 @@ import 'package:kendo_os/shared/utils/name_formatter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 export 'components/team_scoreboard/team_scoreboard_table_builder.dart'
     show TeamPointDisplay;
@@ -118,9 +119,6 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final cardColor = isDark
-        ? const Color(0xFF1C1C1E)
-        : context.appColors.cardBackground;
     final borderColor = isDark
         ? const Color(0xFF2C2C2E)
         : context.appColors.separatorColor;
@@ -189,13 +187,11 @@ class TeamScoreboardScreen extends ConsumerWidget {
 
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: AppRadius.large,
-                    border: isDark
-                        ? null
-                        : Border.all(color: borderColor, width: 1.0),
+                child: AppGlassContainer(
+                  borderRadius: AppRadius.large,
+                  border: Border.all(
+                    color: context.appColors.hairlineBorder,
+                    width: AppBorderWidth.hairline,
                   ),
                   child: ClipRRect(
                     borderRadius: AppRadius.large,

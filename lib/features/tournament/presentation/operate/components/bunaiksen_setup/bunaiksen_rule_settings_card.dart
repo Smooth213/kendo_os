@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_pr
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/widgets/app_switch.dart';
 
 /// 部内戦ルール設定カード
@@ -60,16 +61,12 @@ class BunaiksenRuleSettingsCard extends ConsumerWidget {
           ],
         ),
         children: [
-          Container(
+          AppGlassContainer(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-              borderRadius: AppRadius.large,
-              border: Border.all(
-                color: isDark
-                    ? const Color(0xFF334155)
-                    : const Color(0xFFE2E8F0),
-              ),
+            borderRadius: AppRadius.large,
+            border: Border.all(
+              color: themeColors.hairlineBorder,
+              width: AppBorderWidth.hairline,
             ),
             child: Column(
               children: [

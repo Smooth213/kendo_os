@@ -11,6 +11,7 @@ import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
 
 final playerListProvider = StreamProvider.autoDispose<List<PlayerModel>>((ref) {
@@ -89,9 +90,6 @@ class StandingsScreen extends ConsumerWidget {
     final subTextColor = isDark
         ? const Color(0xFF8E8E93)
         : context.appColors.textColor;
-    final borderColor = isDark
-        ? const Color(0xFF38383A)
-        : context.appColors.separatorColor;
     final headerTextColor = isDark
         ? const Color(0xFFFFFFFF)
         : context.appColors.primaryAccent;
@@ -313,18 +311,11 @@ class StandingsScreen extends ConsumerWidget {
                                 : const Color(0xFF795548);
                           }
 
-                          return Card(
+                          return AppCard(
                             margin: const EdgeInsets.only(
                               bottom: AppSpacing.md,
                             ),
-                            elevation: 0,
-                            color: cardColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.large, // iOS角丸
-                              side: isDark
-                                  ? BorderSide.none
-                                  : BorderSide(color: borderColor),
-                            ),
+                            padding: EdgeInsets.zero,
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.lg,

@@ -13,8 +13,8 @@ import 'package:kendo_os/security/role_permissions.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 
+import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
-import 'package:kendo_os/shared/widgets/glass_button.dart';
 
 class StartScreen extends ConsumerWidget {
   const StartScreen({super.key});
@@ -33,56 +33,52 @@ class StartScreen extends ConsumerWidget {
         ? const Color(0xFF8E8E93)
         : context.appColors.subTextColor;
 
-    return GlassButton.custom(
-      onPressed: onTap,
-      color: color,
-      surfaceColor: AppKendoColors.pureWhite,
-      glassAlpha: isDark ? 0.08 : 0.5,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.xl,
-          horizontal: AppSpacing.md,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: isDark ? 0.2 : 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 36, color: color),
+    return AppCard(
+      onTap: onTap,
+      borderRadius: AppSemanticTokens.cardRadius,
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.xl,
+        horizontal: AppSpacing.md,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: isDark ? 0.2 : 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: AppSpacing.lg),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppFontSize.bodyMedium,
-                  fontWeight: AppFontWeight.bold,
-                  color: textColor,
-                  height: 1.3,
-                ),
+            child: Icon(icon, size: 36, color: color),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppFontSize.bodyMedium,
+                fontWeight: AppFontWeight.bold,
+                color: textColor,
+                height: 1.3,
               ),
             ),
-            const SizedBox(height: 6),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppFontSize.caption,
-                  color: subTextColor,
-                  fontWeight: AppFontWeight.bold,
-                ),
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppFontSize.caption,
+                color: subTextColor,
+                fontWeight: AppFontWeight.bold,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

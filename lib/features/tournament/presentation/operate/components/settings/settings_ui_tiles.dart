@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -102,32 +102,12 @@ class SettingsBlock extends StatelessWidget {
       child: Column(children: spacedChildren),
     );
 
-    if (enableLiquidGlass) {
-      return ClipRRect(
-        borderRadius: AppRadius.large,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            decoration: BoxDecoration(
-              color: themeColors.cardBackground,
-              borderRadius: AppRadius.large,
-              border: Border.all(color: themeColors.separatorColor),
-            ),
-            child: blockContent,
-          ),
-        ),
-      );
-    } else {
-      return Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: themeColors.cardBackground,
-          borderRadius: AppRadius.large,
-          border: Border.all(color: themeColors.separatorColor),
-        ),
-        child: blockContent,
-      );
-    }
+    return AppGlassContainer(
+      borderRadius: AppSemanticTokens.cardRadius,
+      borderWidth: AppSemanticTokens.cardBorderWidth,
+      enableLiquidGlass: enableLiquidGlass,
+      child: blockContent,
+    );
   }
 }
 

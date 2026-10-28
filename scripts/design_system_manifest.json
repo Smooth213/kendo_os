@@ -1,0 +1,322 @@
+{
+  "version": "1.0.0",
+  "name": "KendoOS iOS 27 Design System Manifest",
+  "description": "全37画面＋ドック＋ボトムシート＋ダイアログ＋部内戦コンポーネント（計45項目）の完全網羅マニフェスト",
+  "items": [
+    {
+      "id": 1,
+      "track": "Track 1: 認証・初期エントリー",
+      "name": "StartScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/start_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 2,
+      "track": "Track 1: 認証・初期エントリー",
+      "name": "LoginScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/login_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 3,
+      "track": "Track 1: 認証・初期エントリー",
+      "name": "PinAuthScreen",
+      "file": "lib/features/auth/presentation/screens/pin_auth_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 4,
+      "track": "Track 1: 認証・初期エントリー",
+      "name": "RoleSelectScreen",
+      "file": "lib/features/auth/presentation/screens/role_select_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 5,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "HomeScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/home_screen.dart",
+      "category": "screen_pilot"
+    },
+    {
+      "id": 6,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "BunaiksenHomeScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 7,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "TournamentListScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/tournament_list_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 8,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "CreateTournamentScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/create_tournament_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 9,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "TeamRegistrationScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/team_registration_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 10,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "OrderSetupScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/order_setup_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 11,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "SetupMatchFormatScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/setup_match_format_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 12,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "BunaiksenSetupScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/bunaiksen_setup_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 13,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "CategoryRulesScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/category_rules_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 14,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "TeamMatchStatusScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/team_match_status_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 15,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "NewMatchScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/new_match_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 16,
+      "track": "Track 2: 大会運営・設定・トーナメント管理",
+      "name": "SettingsScreen",
+      "file": "lib/features/tournament/presentation/operate/settings_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 17,
+      "track": "Track 3: 試合進行・スコアボード・公式記録",
+      "name": "MatchScreen",
+      "file": "lib/features/tournament/presentation/operate/match_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 18,
+      "track": "Track 3: 試合進行・スコアボード・公式記録",
+      "name": "TeamScoreboardScreen",
+      "file": "lib/features/tournament/presentation/operate/team_scoreboard_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 19,
+      "track": "Track 3: 試合進行・スコアボード・公式記録",
+      "name": "KachinukiScoreboardScreen",
+      "file": "lib/features/tournament/presentation/screens/kachinuki_scoreboard_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 20,
+      "track": "Track 3: 試合進行・スコアボード・公式記録",
+      "name": "OfficialRecordScreen",
+      "file": "lib/features/tournament/presentation/operate/official_record_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 21,
+      "track": "Track 3: 試合進行・スコアボード・公式記録",
+      "name": "BunaiksenOfficialRecordScreen",
+      "file": "lib/features/tournament/presentation/screens/bunaiksen_official_record_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 22,
+      "track": "Track 3: 試合進行・スコアボード・公式記録",
+      "name": "StandingsScreen",
+      "file": "lib/features/tournament/presentation/screens/standings_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 23,
+      "track": "Track 4: 大会プログラム・描画・クイックメモ",
+      "name": "ProgramViewerScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/program_viewer_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 24,
+      "track": "Track 4: 大会プログラム・描画・クイックメモ",
+      "name": "ProgramManagementScreen",
+      "file": "lib/features/tournament/presentation/operate/screens/program_management_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 25,
+      "track": "Track 4: 大会プログラム・描画・クイックメモ",
+      "name": "QuickMemoScreen",
+      "file": "lib/features/tournament/presentation/components/program_management/quick_memo_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 26,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerHomeScreen",
+      "file": "lib/features/viewer/presentation/viewer_home_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 27,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerMatchScreen",
+      "file": "lib/features/viewer/presentation/viewer_match_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 28,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerTeamScoreboardScreen",
+      "file": "lib/features/viewer/screens/viewer_team_scoreboard_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 29,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerOfficialRecordScreen",
+      "file": "lib/features/viewer/screens/viewer_official_record_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 30,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerBunaiksenHomeScreen",
+      "file": "lib/features/viewer/screens/viewer_bunaiksen_home_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 31,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerBunaiksenOfficialRecordScreen",
+      "file": "lib/features/viewer/screens/viewer_bunaiksen_official_record_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 32,
+      "track": "Track 5: 観戦モード（Viewer）",
+      "name": "ViewerKachinukiScoreboardScreen",
+      "file": "lib/features/viewer/screens/viewer_kachinuki_scoreboard_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 33,
+      "track": "Track 6: 管理・運用・組込マニュアル",
+      "name": "EmbeddedManualScreen",
+      "file": "lib/shared/presentation/screens/embedded_manual_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 34,
+      "track": "Track 6: 管理・運用・組込マニュアル",
+      "name": "ObservabilityDashboardScreen",
+      "file": "lib/admin/dashboard/observability_dashboard_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 35,
+      "track": "Track 6: 管理・運用・組込マニュアル",
+      "name": "AuditLogScreen",
+      "file": "lib/admin/presentation/screens/audit_log_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 36,
+      "track": "Track 6: 管理・運用・組込マニュアル",
+      "name": "MasterManagementScreen",
+      "file": "lib/admin/presentation/screens/master_management_screen.dart",
+      "category": "screen"
+    },
+    {
+      "id": 37,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "FloatingDock",
+      "file": "lib/features/tournament/presentation/components/program_management/floating_program_dock_button.dart",
+      "category": "dock"
+    },
+    {
+      "id": 38,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "BunaiksenFloatingDock",
+      "file": "lib/features/tournament/presentation/components/bunaiksen/bunaiksen_animated_dock_item.dart",
+      "category": "dock"
+    },
+    {
+      "id": 39,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "AppBottomSheet",
+      "file": "lib/shared/widgets/app_bottom_sheet.dart",
+      "category": "sheet_base"
+    },
+    {
+      "id": 40,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "AppDialog",
+      "file": "lib/shared/widgets/app_dialog.dart",
+      "category": "dialog_base"
+    },
+    {
+      "id": 41,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "DockBottomSheetHeader",
+      "file": "lib/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart",
+      "category": "sheet_header"
+    },
+    {
+      "id": 42,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "BunaiksenDockCalendarSheet",
+      "file": "lib/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_calendar_sheet.dart",
+      "category": "sheet"
+    },
+    {
+      "id": 43,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "BunaiksenScoreTableCard",
+      "file": "lib/features/viewer/components/viewer_bunaiksen_score_table_card.dart",
+      "category": "card"
+    },
+    {
+      "id": 44,
+      "track": "Track 7: 常設ドック・全ボトムシート・全ダイアログ・部内戦",
+      "name": "AppSnackBar",
+      "file": "lib/shared/utils/app_snack_bar.dart",
+      "category": "overlay"
+    },
+    {
+      "id": 45,
+      "track": "Track 6: 管理・運用・組込マニュアル",
+      "name": "DesignSystemGalleryScreen",
+      "file": "lib/admin/presentation/screens/design_system_gallery_screen.dart",
+      "category": "screen"
+    }
+  ]
+}

@@ -37,10 +37,10 @@ class AppSnackBar {
 
   static ShapeBorder _getShape(AppThemeColors themeColors) {
     return RoundedRectangleBorder(
-      borderRadius: AppRadius.medium,
+      borderRadius: AppRadius.large,
       side: BorderSide(
-        color: themeColors.separatorColor.withValues(alpha: 0.35),
-        width: 1,
+        color: themeColors.hairlineBorder,
+        width: AppBorderWidth.hairline,
       ),
     );
   }

@@ -12,6 +12,7 @@ import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 // ★ Phase 5: Firestoreから監査ログをリアルタイム取得するProvider
 final auditLogsProvider =
@@ -129,15 +130,15 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                         actionColor = AppKendoColors.red;
                       }
 
-                      return Card(
+                      return AppGlassContainer(
                         margin: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.lg,
                           vertical: AppSpacing.xs,
                         ),
-                        color: context.appColors.cardBackground,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
+                        borderRadius: AppRadius.large,
+                        border: Border.all(
+                          color: context.appColors.hairlineBorder,
+                          width: AppBorderWidth.hairline,
                         ),
                         child: ListTile(
                           leading: CircleAvatar(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/admin/presentation/screens/design_system_gallery_screen.dart';
 import 'package:kendo_os/admin/presentation/screens/master_management_screen.dart';
 import 'package:kendo_os/features/auth/presentation/screens/pin_auth_screen.dart';
 import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
@@ -72,6 +73,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/design-gallery',
+      builder: (context, state) => const DesignSystemGalleryScreen(),
     ),
     GoRoute(
       path: '/master',

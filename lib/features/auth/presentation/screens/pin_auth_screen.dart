@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +5,7 @@ import 'package:kendo_os/security/pin_guard.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -175,155 +175,131 @@ class _PinAuthScreenState extends ConsumerState<PinAuthScreen> {
                 horizontal: AppSpacing.lg,
                 vertical: AppSpacing.sm,
               ),
-              child: Container(
+              child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
-                decoration: BoxDecoration(
+                child: AppGlassContainer(
                   borderRadius: AppRadius.huge,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppKendoColors.pureBlack.withValues(
-                        alpha: isDark ? 0.35 : 0.08,
-                      ),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: AppRadius.huge,
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.xl,
-                        horizontal: AppSpacing.lg,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cardBgColor,
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
-                              : const Color(0xFFFFFFFF).withValues(alpha: 0.8),
-                          width: 1.5,
+                  borderWidth: AppSemanticTokens.cardBorderWidth,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.xl,
+                    horizontal: AppSpacing.lg,
+                  ),
+                  customBackgroundColor: cardBgColor,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: roleColor.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.lock_outline,
+                          size: 36,
+                          color: roleColor,
                         ),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: roleColor.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.lock_outline,
-                              size: 36,
-                              color: roleColor,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            roleTitle,
-                            style: TextStyle(
-                              fontSize: AppFontSize.headline,
-                              fontWeight: AppFontWeight.bold,
-                              color: textColor,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            '指定のPINコード（4桁）を入力してください',
-                            style: TextStyle(
-                              color: subTextColor,
-                              fontSize: AppFontSize.caption,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        roleTitle,
+                        style: TextStyle(
+                          fontSize: AppFontSize.headline,
+                          fontWeight: AppFontWeight.bold,
+                          color: textColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        '指定のPINコード（4桁）を入力してください',
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontSize: AppFontSize.caption,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                          // 4桁PIN インジケーター
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(4, (index) {
-                              final isFilled = index < pinLength;
-                              return Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm,
-                                ),
-                                width: 18,
-                                height: 18,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isFilled
-                                      ? roleColor
-                                      : subTextColor.withValues(alpha: 0.25),
-                                  border: Border.all(
-                                    color: isFilled
-                                        ? roleColor
-                                        : subTextColor.withValues(alpha: 0.4),
-                                    width: 2,
+                      // 4桁PIN インジケーター
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(4, (index) {
+                          final isFilled = index < pinLength;
+                          return Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                            ),
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isFilled
+                                  ? roleColor
+                                  : subTextColor.withValues(alpha: 0.25),
+                              border: Border.all(
+                                color: isFilled
+                                    ? roleColor
+                                    : subTextColor.withValues(alpha: 0.4),
+                                width: 2,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // オンスクリーン・テンキー
+                      _buildKeypad(isDark, textColor),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // 認証ボタン
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: roleColor,
+                            foregroundColor: AppKendoColors.pureWhite,
+                            elevation: 0,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: AppRadius.large,
+                            ),
+                          ),
+                          onPressed: _isSubmitting ? null : _handleVerify,
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: AppKendoColors.pureWhite,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  '認証して進入',
+                                  style: TextStyle(
+                                    fontWeight: AppFontWeight.bold,
+                                    fontSize: AppFontSize.body,
                                   ),
                                 ),
-                              );
-                            }),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-
-                          // オンスクリーン・テンキー
-                          _buildKeypad(isDark, textColor),
-                          const SizedBox(height: AppSpacing.lg),
-
-                          // 認証ボタン
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: roleColor,
-                                foregroundColor: AppKendoColors.pureWhite,
-                                elevation: 0,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: AppRadius.large,
-                                ),
-                              ),
-                              onPressed: _isSubmitting ? null : _handleVerify,
-                              child: _isSubmitting
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: AppKendoColors.pureWhite,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : const Text(
-                                      '認証して進入',
-                                      style: TextStyle(
-                                        fontWeight: AppFontWeight.bold,
-                                        fontSize: AppFontSize.body,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-
-                          // 明示的な「権限選択に戻る」リンク
-                          TextButton(
-                            onPressed: _handleBack,
-                            child: Text(
-                              '別の利用権限を選択する',
-                              style: TextStyle(
-                                color: subTextColor,
-                                fontSize: AppFontSize.caption,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // 明示的な「権限選択に戻る」リンク
+                      TextButton(
+                        onPressed: _handleBack,
+                        child: Text(
+                          '別の利用権限を選択する',
+                          style: TextStyle(
+                            color: subTextColor,
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

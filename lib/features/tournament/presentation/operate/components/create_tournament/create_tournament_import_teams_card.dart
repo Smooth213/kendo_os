@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/components/share_impor
 import 'package:kendo_os/features/tournament/presentation/components/share_import/match_format_selection_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_import_team_tile.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -204,34 +205,19 @@ class CreateTournamentImportTeamsCard extends StatelessWidget {
     if (teams.isEmpty) return const SizedBox.shrink();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color cardBg = isDark
-        ? const Color(0xFF1E1E24)
-        : AppKendoColors.pureWhite;
     final Color textColor = context.appColors.textColor;
     final Color subTextColor = context.appColors.subTextColor;
     final Color accentColor = context.appColors.primaryAccent;
 
-    return Container(
+    return AppGlassContainer(
       margin: const EdgeInsets.only(top: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(AppRadius.largeValue),
-        border: Border.all(
-          color: isEnabled
-              ? accentColor.withValues(alpha: 0.3)
-              : subTextColor.withValues(alpha: 0.2),
-          width: 1.5,
-        ),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: AppKendoColors.pureBlack.withValues(alpha: 0.05),
-                  blurRadius: AppSpacing.sm,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      borderRadius: BorderRadius.circular(AppRadius.largeValue),
+      border: Border.all(
+        color: isEnabled
+            ? accentColor.withValues(alpha: 0.4)
+            : subTextColor.withValues(alpha: 0.2),
+        width: AppBorderWidth.hairline,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

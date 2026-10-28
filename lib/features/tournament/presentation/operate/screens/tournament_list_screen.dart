@@ -5,13 +5,13 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
 import '../providers/sync_provider.dart';
 import '../providers/tournament_list_provider.dart';
 import 'package:kendo_os/shared/widgets/manual_help_button.dart'; // ファイル上部
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
-import 'dart:ui';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
@@ -78,10 +78,8 @@ class _TournamentListScreenState extends ConsumerState<TournamentListScreen>
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final Color accentColor = themeColors.primaryAccent;
     final Color softAccentColor = themeColors.softAccent;
-    final Color cardColor = themeColors.cardBackground;
     final Color textColor = themeColors.textColor;
     final Color subTextColor = themeColors.subTextColor;
-    final Color separatorColor = themeColors.separatorColor;
 
     final tournamentAsync = widget.isArchive
         ? ref.watch(archivedTournamentListProvider)
@@ -98,7 +96,7 @@ class _TournamentListScreenState extends ConsumerState<TournamentListScreen>
           title: widget.isArchive ? '過去の大会 (アーカイブ)' : '最近の大会',
           backgroundColor: enableLiquidGlass
               ? AppKendoColors.transparent
-              : cardColor,
+              : themeColors.cardBackground,
           actions: [
             if (!widget.isArchive && !isReadOnly) const ClipboardImportButton(),
             const ManualHelpButton(manualPath: 'docs/manuals/manual_index.md'),
@@ -254,120 +252,70 @@ class _TournamentListScreenState extends ConsumerState<TournamentListScreen>
                   final showHeader = currentMonth != previousMonth;
 
                   Widget buildUnifiedCard() {
-                    final isDark =
-                        Theme.of(context).brightness == Brightness.dark;
-                    final Color effectiveCardColor = enableLiquidGlass
-                        ? cardColor.withValues(alpha: isDark ? 0.35 : 0.65)
-                        : cardColor;
-
-                    final ShapeBorder cardShape = RoundedRectangleBorder(
-                      borderRadius: AppRadius.large,
-                      side: enableLiquidGlass
-                          ? BorderSide(
-                              color: isDark
-                                  ? context.appColors.textColor.withValues(
-                                      alpha: 0.15,
-                                    )
-                                  : context.appColors.cardBackground.withValues(
-                                      alpha: 0.08,
-                                    ),
-                              width: 0.5,
-                            )
-                          : (isDark
-                                ? BorderSide.none
-                                : BorderSide(
-                                    color: separatorColor.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    width: 0.5,
-                                  )),
-                    );
-
-                    final cardChild = Card(
+                    return AppCard(
                       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                      elevation: 0,
-                      color: effectiveCardColor,
-                      shape: cardShape,
-                      child: InkWell(
-                        onTap: () {
-                          if (isReadOnly) {
-                            context.push('/viewer-home/$id');
-                          } else {
-                            context.push('/home/$id');
-                          }
-                        },
-                        borderRadius: AppRadius.large,
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(AppSpacing.md),
-                                decoration: BoxDecoration(
-                                  color: softAccentColor,
-                                  shape: BoxShape.circle,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      borderRadius: AppSemanticTokens.cardRadius,
+                      borderWidth: AppSemanticTokens.cardBorderWidth,
+                      onTap: () {
+                        if (isReadOnly) {
+                          context.push('/viewer-home/$id');
+                        } else {
+                          context.push('/home/$id');
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              color: softAccentColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isArchive ? Icons.history : Icons.emoji_events,
+                              color: accentColor,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.lg),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  tournament.name,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: AppFontWeight.semiBold,
+                                        color: textColor,
+                                      ),
                                 ),
-                                child: Icon(
-                                  isArchive
-                                      ? Icons.history
-                                      : Icons.emoji_events,
-                                  color: accentColor,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.lg),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                const SizedBox(height: AppSpacing.xs),
+                                Row(
                                   children: [
                                     Text(
-                                      tournament.name,
+                                      DateFormat(
+                                        'yyyy年MM月dd日',
+                                      ).format(tournament.date),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: AppFontWeight.semiBold,
-                                            color: textColor,
-                                          ),
-                                    ),
-                                    const SizedBox(height: AppSpacing.xs),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          DateFormat(
-                                            'yyyy年MM月dd日',
-                                          ).format(tournament.date),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(color: subTextColor),
-                                        ),
-                                      ],
+                                          .bodyMedium
+                                          ?.copyWith(color: subTextColor),
                                     ),
                                   ],
                                 ),
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: subTextColor,
-                                size: 20,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: subTextColor,
+                            size: 20,
+                          ),
+                        ],
                       ),
                     );
-
-                    if (enableLiquidGlass) {
-                      return ClipRRect(
-                        borderRadius: AppRadius.large,
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-                          child: cardChild,
-                        ),
-                      );
-                    }
-                    return cardChild;
                   }
 
                   // ★ 修正：月別ヘッダーが背景に溶けないよう、アクセントカラーを適用

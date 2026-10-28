@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/components/kachinuki/kachinuki_battle_card_helper.dart';
 
 /// 🥋 勝ち抜き戦 タイムライン中央バトルカード（試合番号、赤白選手、スコアマーク、連勝バッジ表示）
@@ -136,9 +137,8 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                           ? (isDark
                                 ? const Color(0xFFE53935)
                                 : const Color(0xFFE53935))
-                          : (isDark
-                                ? const Color(0xFF38383A)
-                                : const Color(0x33000000)),
+                          : context.appColors.hairlineBorder,
+                      width: rWin ? 1.5 : AppBorderWidth.hairline,
                     ),
                   ),
                   child: Column(
@@ -185,12 +185,11 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                   border: Border.symmetric(
                     horizontal: BorderSide(
                       color: isDone
-                          ? (isDark
-                                ? const Color(0xFF38383A)
-                                : const Color(0x33000000))
+                          ? context.appColors.hairlineBorder
                           : (isDark
                                 ? const Color(0xFF009688)
                                 : const Color(0xFF009688)),
+                      width: isDone ? AppBorderWidth.hairline : 1.0,
                     ),
                   ),
                 ),
@@ -267,9 +266,8 @@ class KachinukiCenterBattleCard extends StatelessWidget {
                           ? (isDark
                                 ? const Color(0xFF607D8B)
                                 : const Color(0xFF607D8B))
-                          : (isDark
-                                ? const Color(0xFF38383A)
-                                : const Color(0x33000000)),
+                          : context.appColors.hairlineBorder,
+                      width: wWin ? 1.5 : AppBorderWidth.hairline,
                     ),
                   ),
                   child: Column(

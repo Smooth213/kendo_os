@@ -53,6 +53,10 @@ Future<T?> showAppBottomSheet<T>({
           constraints ?? const BoxConstraints(maxWidth: double.infinity),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(topRadius)),
+        side: BorderSide(
+          color: themeColors.hairlineBorder,
+          width: AppBorderWidth.hairline,
+        ),
       ),
       builder: builder,
     );
@@ -108,7 +112,7 @@ class AppBottomSheetContent extends StatelessWidget {
                     bottom: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: themeColors.separatorColor,
+                    color: themeColors.separatorColor.withValues(alpha: 0.5),
                     borderRadius: AppRadius.capsule,
                   ),
                 ),

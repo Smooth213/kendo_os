@@ -7,6 +7,8 @@ import 'package:kendo_os/shared/widgets/manual_help_button.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 class ObservabilityDashboardScreen extends ConsumerWidget {
   const ObservabilityDashboardScreen({super.key});
@@ -44,6 +46,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 ),
               ),
               _buildMetricCard(
+                context,
                 '総イベント処理数',
                 '${metrics['totalEvents']} 回',
                 Icons.data_usage,
@@ -51,6 +54,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 isDark,
               ),
               _buildMetricCard(
+                context,
                 'システムエラー率 (直近)',
                 '${(metrics['errorRate'] * 100).toStringAsFixed(2)} %',
                 Icons.error_outline,
@@ -60,6 +64,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 isDark,
               ),
               _buildMetricCard(
+                context,
                 '同時書き込み競合率 (直近)',
                 '${(metrics['conflictRate'] * 100).toStringAsFixed(2)} %',
                 Icons.sync_problem,
@@ -69,6 +74,7 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
                 isDark,
               ),
               _buildMetricCard(
+                context,
                 'Projection遅延 (直近)',
                 '${metrics['lastLagMs']} ms',
                 Icons.timer,
@@ -85,46 +91,48 @@ class ObservabilityDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildMetricCard(
+    BuildContext context,
     String title,
     String value,
     IconData icon,
     Color color,
     bool isDark,
   ) {
-    return Card(
-      color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
+    return AppGlassContainer(
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.roundValue),
-        child: Row(
-          children: [
-            Icon(icon, size: 36, color: color),
-            const SizedBox(width: AppSpacing.lg),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: AppFontSize.small,
-                    color: AppKendoColors.grey,
-                    fontWeight: AppFontWeight.bold,
-                  ),
+      padding: const EdgeInsets.all(AppSpacing.roundValue),
+      borderRadius: AppRadius.large,
+      border: Border.all(
+        color: context.appColors.hairlineBorder,
+        width: AppBorderWidth.hairline,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 36, color: color),
+          const SizedBox(width: AppSpacing.lg),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: AppFontSize.small,
+                  color: AppKendoColors.grey,
+                  fontWeight: AppFontWeight.bold,
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: AppFontSize.display,
-                    fontWeight: AppFontWeight.bold,
-                    color: color,
-                  ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: AppFontSize.display,
+                  fontWeight: AppFontWeight.bold,
+                  color: color,
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

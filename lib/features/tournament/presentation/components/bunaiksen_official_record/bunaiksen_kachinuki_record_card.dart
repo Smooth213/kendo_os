@@ -7,6 +7,7 @@ import 'package:kendo_os/features/tournament/presentation/screens/kachinuki_scor
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 /// 🥋 部内戦公式記録画面 勝ち抜き戦対戦カード
 class BunaiksenKachinukiRecordCard extends StatelessWidget {
@@ -41,17 +42,15 @@ class BunaiksenKachinukiRecordCard extends StatelessWidget {
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final cardColor = themeColors.cardBackground;
 
-    return Card(
+    return AppGlassContainer(
       margin: const EdgeInsets.symmetric(
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.xs,
       ),
-      elevation: 0,
-      color: cardColor,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
-        side: BorderSide(color: themeColors.separatorColor),
+      borderRadius: AppRadius.large,
+      border: Border.all(
+        color: context.appColors.hairlineBorder,
+        width: AppBorderWidth.hairline,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

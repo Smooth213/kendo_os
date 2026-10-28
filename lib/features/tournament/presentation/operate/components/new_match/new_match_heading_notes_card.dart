@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_court_slot_picker.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_private_note_accordion.dart';
-import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 
@@ -51,21 +51,12 @@ class NewMatchHeadingNotesCard extends StatelessWidget {
           courtController.text,
         );
 
-        return Container(
+        return AppGlassContainer(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFFFFFF),
-            borderRadius: AppRadius.large,
-            border: Border.all(
-              color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppKendoColors.pureBlack.withAlpha(isDark ? 30 : 10),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+          borderRadius: AppRadius.large,
+          border: Border.all(
+            color: themeColors.hairlineBorder,
+            width: AppBorderWidth.hairline,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

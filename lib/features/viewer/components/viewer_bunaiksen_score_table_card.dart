@@ -3,6 +3,8 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_team_score_table_row_builder.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 /// 🥋 観客用 部内戦 団体戦スコアテーブルカード（純粋UIコンポーネント）
 class ViewerBunaiksenScoreTableCard extends StatelessWidget {
@@ -93,18 +95,16 @@ class ViewerBunaiksenScoreTableCard extends StatelessWidget {
 
     final bool isSummary = matches.any((m) => m.note.contains('[SUMMARY]'));
 
-    return Card(
+    return AppGlassContainer(
       margin: const EdgeInsets.symmetric(
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.xs,
       ),
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
-        side: BorderSide(color: borderColor),
+      borderRadius: AppRadius.large,
+      border: Border.all(
+        color: context.appColors.hairlineBorder,
+        width: AppBorderWidth.hairline,
       ),
-      clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
           Column(

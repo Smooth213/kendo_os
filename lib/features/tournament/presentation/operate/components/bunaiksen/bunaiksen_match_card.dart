@@ -5,6 +5,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/b
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
 
 /// 部内戦画面の個別試合カード（スワイプ編集・削除対応）
 class BunaiksenMatchCard extends StatelessWidget {
@@ -64,110 +65,96 @@ class BunaiksenMatchCard extends StatelessWidget {
               ? (isDark ? const Color(0xFFBDBDBD) : const Color(0xFF757575))
               : (isDark ? const Color(0xFFBDBDBD) : const Color(0xFF616161)));
 
-    final cardWidget = Card(
-      elevation: 0,
+    final cardWidget = AppCard(
       margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(AppSpacing.lg),
       color: bg,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
-        side: BorderSide(
-          color: isDark
-              ? const Color(0xFFFFFFFF).withValues(alpha: 0.10)
-              : const Color(0xFF000000).withValues(alpha: 0.05),
-        ),
-      ),
-      child: InkWell(
-        borderRadius: AppRadius.large,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '第${index + 1}試合${(match.category != null && match.category!.isNotEmpty) ? ' (${match.category})' : ''}',
-                    style: TextStyle(
-                      fontSize: AppFontSize.subhead,
-                      fontWeight: AppFontWeight.bold,
-                      color: textC,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: badgeBg,
-                      borderRadius: AppRadius.tiny,
-                    ),
-                    child: Text(
-                      isPlaying
-                          ? '試合中'
-                          : (isFinished
-                                ? (match.status == 'approved' ? '確定' : '終了')
-                                : '待機中'),
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        fontWeight: AppFontWeight.bold,
-                        color: badgeText,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                '第${index + 1}試合${(match.category != null && match.category!.isNotEmpty) ? ' (${match.category})' : ''}',
+                style: TextStyle(
+                  fontSize: AppFontSize.subhead,
+                  fontWeight: AppFontWeight.bold,
+                  color: textC,
+                ),
               ),
-              if (match.note.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.xs),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    match.note,
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      color: noteC,
-                      fontWeight: AppFontWeight.medium,
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: AppRadius.tiny,
+                ),
+                child: Text(
+                  isPlaying
+                      ? '試合中'
+                      : (isFinished
+                            ? (match.status == 'approved' ? '確定' : '終了')
+                            : '待機中'),
+                  style: TextStyle(
+                    fontSize: AppFontSize.caption,
+                    fontWeight: AppFontWeight.bold,
+                    color: badgeText,
                   ),
                 ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      match.redName,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: AppFontSize.body,
-                        fontWeight: AppFontWeight.bold,
-                        color: textC,
-                      ),
-                    ),
-                  ),
-                  BunaiksenScoreMarks(
-                    match: match,
-                    isDark: isDark,
-                    isFinished: isFinished,
-                  ),
-                  Expanded(
-                    child: Text(
-                      match.whiteName,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: AppFontSize.body,
-                        fontWeight: AppFontWeight.bold,
-                        color: textC,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
-        ),
+          if (match.note.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                match.note,
+                style: TextStyle(
+                  fontSize: AppFontSize.caption,
+                  color: noteC,
+                  fontWeight: AppFontWeight.medium,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  match.redName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    fontWeight: AppFontWeight.bold,
+                    color: textC,
+                  ),
+                ),
+              ),
+              BunaiksenScoreMarks(
+                match: match,
+                isDark: isDark,
+                isFinished: isFinished,
+              ),
+              Expanded(
+                child: Text(
+                  match.whiteName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppFontSize.body,
+                    fontWeight: AppFontWeight.bold,
+                    color: textC,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
 

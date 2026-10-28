@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/team_scoreboard_screen.dart';
@@ -43,30 +44,19 @@ class TeamStatusCard extends StatelessWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    final cardBgColor = isDark
-        ? const Color(0xFF1C1C1E)
-        : const Color(0xFFFFFFFF);
-
     final borderColor = isLive
         ? AppKendoColors.hansokuRed.withValues(alpha: 0.6)
         : themeColors.borderColor;
 
-    return Container(
+    return AppGlassContainer(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
-      decoration: BoxDecoration(
-        color: cardBgColor,
-        borderRadius: AppRadius.large,
-        border: Border.all(color: borderColor, width: isLive ? 1.5 : 1.0),
-        boxShadow: [
-          BoxShadow(
-            color: themeColors.cardShadowColor,
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      borderRadius: AppRadius.large,
+      border: Border.all(
+        color: borderColor,
+        width: isLive ? 1.5 : AppBorderWidth.hairline,
       ),
       child: Material(
         color: AppKendoColors.transparent,

@@ -19,6 +19,7 @@ import 'package:kendo_os/shared/utils/kendo_position_sorter.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 export '../components/kachinuki/kachinuki_bracket_painter.dart'
     show KachinukiBracketPainter, PlayerSpan;
@@ -345,18 +346,12 @@ class KachinukiScoreboardScreen extends ConsumerWidget {
         );
     final double estimatedWidth = 70.0 + (maxCols * 50.0) + 40.0;
 
-    return Container(
+    return AppGlassContainer(
       margin: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF),
-        borderRadius: AppRadius.large,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      borderRadius: AppRadius.large,
+      border: Border.all(
+        color: context.appColors.hairlineBorder,
+        width: AppBorderWidth.hairline,
       ),
       child: ClipRRect(
         borderRadius: AppRadius.large,

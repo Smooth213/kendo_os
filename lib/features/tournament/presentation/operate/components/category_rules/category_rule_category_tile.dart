@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/cat
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 /// 部門ルール一覧の1行タイルWidget（スワイプ編集・削除対応）
 class CategoryRuleCategoryTile extends StatelessWidget {
@@ -58,77 +59,62 @@ class CategoryRuleCategoryTile extends StatelessWidget {
             ),
           ],
         ),
-        child: Card(
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppRadius.large,
-            side: enableLiquidGlass
-                ? BorderSide(
-                    color: isDark
-                        ? const Color(0xFFFFFFFF).withValues(alpha: 0.15)
-                        : const Color(0xFF000000).withValues(alpha: 0.08),
-                    width: 0.5,
-                  )
-                : BorderSide(
-                    color: isDark
-                        ? const Color(0xFF38383A)
-                        : const Color(0x33000000),
-                  ),
+        child: AppGlassContainer(
+          borderRadius: AppRadius.large,
+          enableLiquidGlass: enableLiquidGlass,
+          border: Border.all(
+            color: context.appColors.hairlineBorder,
+            width: AppBorderWidth.hairline,
           ),
-          color: enableLiquidGlass
-              ? (isDark
-                    ? const Color(0xFF1C1C1E).withValues(alpha: 0.35)
-                    : const Color(0xFFFFFFFF).withValues(alpha: 0.65))
-              : (isDark
-                    ? const Color(0xFF1C1C1E)
-                    : context.appColors.cardBackground),
-          child: ListTile(
-            onTap: onShowRuleDetail,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: AppSpacing.md,
-            ),
-            title: Text(
-              CategoryRuleMatchHelper.formatDisplayTitle(
-                category: category,
-                subtitle: ruleSet.subtitle,
-                allCategoryRules: allCategoryRules,
+          child: Material(
+            color: AppKendoColors.transparent,
+            child: ListTile(
+              onTap: onShowRuleDetail,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: AppSpacing.md,
               ),
-              style: const TextStyle(
-                fontWeight: AppFontWeight.bold,
-                fontSize: AppFontSize.subhead,
+              title: Text(
+                CategoryRuleMatchHelper.formatDisplayTitle(
+                  category: category,
+                  subtitle: ruleSet.subtitle,
+                  allCategoryRules: allCategoryRules,
+                ),
+                style: const TextStyle(
+                  fontWeight: AppFontWeight.bold,
+                  fontSize: AppFontSize.subhead,
+                ),
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CategoryRuleChips(ruleSet: ruleSet, isDark: isDark),
-                if (ruleSet.comment.trim().isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.subValue),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.comment_outlined,
-                        size: 13,
-                        color: context.appColors.subTextColor,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Expanded(
-                        child: Text(
-                          ruleSet.comment.trim(),
-                          style: TextStyle(
-                            fontSize: AppFontSize.small,
-                            color: context.appColors.subTextColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CategoryRuleChips(ruleSet: ruleSet, isDark: isDark),
+                  if (ruleSet.comment.trim().isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.subValue),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.comment_outlined,
+                          size: 13,
+                          color: context.appColors.subTextColor,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Expanded(
+                          child: Text(
+                            ruleSet.comment.trim(),
+                            style: TextStyle(
+                              fontSize: AppFontSize.small,
+                              color: context.appColors.subTextColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

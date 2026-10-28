@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,9 +6,11 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 
@@ -44,273 +45,234 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: AppRadius.huge,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppKendoColors.pureBlack.withValues(
-                        alpha: isDark ? 0.3 : 0.1,
-                      ),
-                      blurRadius: 25,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
+              child: AppGlassContainer(
+                borderRadius: AppRadius.huge,
+                borderWidth: AppSemanticTokens.cardBorderWidth,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 36,
+                  horizontal: AppSpacing.xl,
                 ),
-                child: ClipRRect(
-                  borderRadius: AppRadius.huge,
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 36,
-                        horizontal: AppSpacing.xl,
+                customBackgroundColor: cardBgColor,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/kendo_icon.png',
+                      width: 72,
+                      height: 72,
+                      color: textColor.withValues(alpha: 0.9),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Kendo Sync',
+                      style: TextStyle(
+                        fontSize: AppFontSize.jumbo,
+                        fontWeight: AppFontWeight.bold,
+                        color: textColor,
+                        letterSpacing: 1.5,
                       ),
-                      decoration: BoxDecoration(
-                        color: cardBgColor,
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFFFFFFFF).withValues(alpha: 0.2)
-                              : const Color(0xFFFFFFFF).withValues(alpha: 0.7),
-                          width: 1.5,
-                        ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Stage2 β：利用権限を選択してください',
+                      style: TextStyle(
+                        fontSize: AppFontSize.bodySmall,
+                        color: subTextColor,
+                        fontWeight: AppFontWeight.bold,
+                        letterSpacing: 0.5,
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/kendo_icon.png',
-                            width: 72,
-                            height: 72,
-                            color: textColor.withValues(alpha: 0.9),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Text(
-                            'Kendo Sync',
-                            style: TextStyle(
-                              fontSize: AppFontSize.jumbo,
-                              fontWeight: AppFontWeight.bold,
-                              color: textColor,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            'Stage2 β：利用権限を選択してください',
-                            style: TextStyle(
-                              fontSize: AppFontSize.bodySmall,
-                              color: subTextColor,
-                              fontWeight: AppFontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
 
-                          // 接続中の道場IDバー
-                          Consumer(
-                            builder: (context, ref, child) {
-                              final dojoId = ref.watch(currentDojoIdProvider);
-                              final displayDojoId = dojoId.isNotEmpty
-                                  ? dojoId
-                                  : '未設定';
-                              final isDark =
-                                  Theme.of(context).brightness ==
-                                  Brightness.dark;
+                    // 接続中の道場IDバー
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final dojoId = ref.watch(currentDojoIdProvider);
+                        final displayDojoId = dojoId.isNotEmpty
+                            ? dojoId
+                            : '未設定';
+                        final isDark =
+                            Theme.of(context).brightness == Brightness.dark;
 
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: AppSpacing.xs,
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.xs,
+                          ),
+                          child: InkWell(
+                            onTap: () => RoomJoinQrDialog.show(context),
+                            borderRadius: AppRadius.round,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? context.appColors.textColor.withValues(
+                                        alpha: 0.08,
+                                      )
+                                    : const Color(0xFFF2F3F7),
+                                borderRadius: AppRadius.round,
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(
+                                          0xFFFFFFFF,
+                                        ).withValues(alpha: 0.15)
+                                      : const Color(
+                                          0xFF000000,
+                                        ).withValues(alpha: 0.08),
                                 ),
-                                child: InkWell(
-                                  onTap: () => RoomJoinQrDialog.show(context),
-                                  borderRadius: AppRadius.round,
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSpacing.md,
-                                      vertical: AppSpacing.sm,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.sm,
                                     ),
                                     decoration: BoxDecoration(
                                       color: isDark
-                                          ? context.appColors.textColor
-                                                .withValues(alpha: 0.08)
-                                          : const Color(0xFFF2F3F7),
-                                      borderRadius: AppRadius.round,
-                                      border: Border.all(
-                                        color: isDark
-                                            ? const Color(
-                                                0xFFFFFFFF,
-                                              ).withValues(alpha: 0.15)
-                                            : const Color(
-                                                0xFF000000,
-                                              ).withValues(alpha: 0.08),
-                                      ),
+                                          ? const Color(
+                                              0xFFFFFFFF,
+                                            ).withValues(alpha: 0.1)
+                                          : const Color(
+                                              0xFFFFFFFF,
+                                            ).withValues(alpha: 0.8),
+                                      shape: BoxShape.circle,
                                     ),
-                                    child: Row(
+                                    child: Icon(
+                                      Icons.shield_outlined,
+                                      size: 20,
+                                      color: isDark
+                                          ? context.appColors.textColor
+                                          : AppKendoColors.indigo,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(
-                                            AppSpacing.sm,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isDark
-                                                ? const Color(
-                                                    0xFFFFFFFF,
-                                                  ).withValues(alpha: 0.1)
-                                                : const Color(
-                                                    0xFFFFFFFF,
-                                                  ).withValues(alpha: 0.8),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.shield_outlined,
-                                            size: 20,
-                                            color: isDark
-                                                ? context.appColors.textColor
-                                                : AppKendoColors.indigo,
+                                        Text(
+                                          '接続中の道場ID (ルーム)',
+                                          style: TextStyle(
+                                            fontSize: AppFontSize.caption,
+                                            fontWeight: AppFontWeight.bold,
+                                            color:
+                                                context.appColors.subTextColor,
+                                            letterSpacing: 0.5,
                                           ),
                                         ),
-                                        const SizedBox(width: AppSpacing.sm),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '接続中の道場ID (ルーム)',
-                                                style: TextStyle(
-                                                  fontSize: AppFontSize.caption,
-                                                  fontWeight:
-                                                      AppFontWeight.bold,
-                                                  color: context
-                                                      .appColors
-                                                      .subTextColor,
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  displayDojoId,
-                                                  style: TextStyle(
-                                                    fontSize:
-                                                        AppFontSize.subhead,
-                                                    fontWeight:
-                                                        AppFontWeight.bold,
-                                                    color: isDark
-                                                        ? context
-                                                              .appColors
-                                                              .textColor
-                                                        : AppKendoColors
-                                                              .indigo
-                                                              .shade900,
-                                                    letterSpacing: 0.8,
-                                                  ),
-                                                  maxLines: 1,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSpacing.compact,
-                                            vertical: AppSpacing.subValue,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isDark
-                                                ? const Color(
-                                                    0xFFFFFFFF,
-                                                  ).withValues(alpha: 0.12)
-                                                : const Color(0xFFFFFFFF),
-                                            borderRadius: AppRadius.medium,
-                                            border: Border.all(
+                                        const SizedBox(height: 2),
+                                        FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            displayDojoId,
+                                            style: TextStyle(
+                                              fontSize: AppFontSize.subhead,
+                                              fontWeight: AppFontWeight.bold,
                                               color: isDark
-                                                  ? Colors.transparent
+                                                  ? context.appColors.textColor
                                                   : AppKendoColors
-                                                        .grey
-                                                        .shade300,
+                                                        .indigo
+                                                        .shade900,
+                                              letterSpacing: 0.8,
                                             ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                '変更',
-                                                style: TextStyle(
-                                                  fontSize: AppFontSize.small,
-                                                  fontWeight:
-                                                      AppFontWeight.bold,
-                                                  color: isDark
-                                                      ? AppKendoColors
-                                                            .tealAccent
-                                                      : AppKendoColors
-                                                            .indigo
-                                                            .shade700,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 2),
-                                              Icon(
-                                                Icons.edit,
-                                                size: 13,
-                                                color: isDark
-                                                    ? AppKendoColors.tealAccent
-                                                    : AppKendoColors
-                                                          .indigo
-                                                          .shade700,
-                                              ),
-                                            ],
+                                            maxLines: 1,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                              );
-                            },
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.compact,
+                                      vertical: AppSpacing.subValue,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(
+                                              0xFFFFFFFF,
+                                            ).withValues(alpha: 0.12)
+                                          : const Color(0xFFFFFFFF),
+                                      borderRadius: AppRadius.medium,
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.transparent
+                                            : context.appColors.separatorColor,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '変更',
+                                          style: TextStyle(
+                                            fontSize: AppFontSize.small,
+                                            fontWeight: AppFontWeight.bold,
+                                            color: isDark
+                                                ? AppKendoColors.tealAccent
+                                                : context
+                                                      .appColors
+                                                      .primaryAccent,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 2),
+                                        Icon(
+                                          Icons.edit,
+                                          size: 13,
+                                          color: isDark
+                                              ? AppKendoColors.tealAccent
+                                              : context.appColors.primaryAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-
-                          // 1. 代表・管理者 (Admin)
-                          _buildRoleRow(
-                            title: '代表・管理者 (Admin)',
-                            role: UserRole.admin,
-                            color: AppKendoColors.purple,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // 2. 監督・引率責任者 (Operator)
-                          _buildRoleRow(
-                            title: '監督・引率責任者 (Operator)',
-                            role: UserRole.operator,
-                            color: AppKendoColors.teal,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // 3. スコア・記録係 (Recorder)
-                          _buildRoleRow(
-                            title: 'スコア・記録係 (Recorder)',
-                            role: UserRole.recorder,
-                            color: AppKendoColors.indigo,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-
-                          // 4. 応援・保護者・選手 (Viewer)
-                          _buildRoleRow(
-                            title: '応援・保護者・選手 (Viewer)',
-                            role: UserRole.viewer,
-                            color: AppKendoColors.blueGrey,
-                            isPinFree: true,
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // 1. 代表・管理者 (Admin)
+                    _buildRoleRow(
+                      title: '代表・管理者 (Admin)',
+                      role: UserRole.admin,
+                      color: AppKendoColors.purple,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // 2. 監督・引率責任者 (Operator)
+                    _buildRoleRow(
+                      title: '監督・引率責任者 (Operator)',
+                      role: UserRole.operator,
+                      color: AppKendoColors.teal,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // 3. スコア・記録係 (Recorder)
+                    _buildRoleRow(
+                      title: 'スコア・記録係 (Recorder)',
+                      role: UserRole.recorder,
+                      color: AppKendoColors.indigo,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // 4. 応援・保護者・選手 (Viewer)
+                    _buildRoleRow(
+                      title: '応援・保護者・選手 (Viewer)',
+                      role: UserRole.viewer,
+                      color: AppKendoColors.blueGrey,
+                      isPinFree: true,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -337,6 +299,7 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
         ),
         onPressed: () async {
+          AppHaptics.light();
           final now = DateTime.now();
           if (_lastNavigateTime != null &&
               now.difference(_lastNavigateTime!) <

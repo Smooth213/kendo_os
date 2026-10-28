@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 /// 観客席画面用 進行中・次試合コールバナー
 class ViewerCallBanner extends StatelessWidget {
@@ -99,7 +100,7 @@ class ViewerCallBanner extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
+    return AppGlassContainer(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -108,16 +109,11 @@ class ViewerCallBanner extends StatelessWidget {
         AppSpacing.md,
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: const Color(0xFF607D8B), // 観客席らしい落ち着いた色に変更
-        borderRadius: AppRadius.large,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      borderRadius: AppRadius.large,
+      color: const Color(0xFF607D8B).withValues(alpha: 0.85),
+      border: Border.all(
+        color: const Color(0xFFFFFFFF).withValues(alpha: 0.2),
+        width: AppBorderWidth.hairline,
       ),
       child: Column(
         children: [

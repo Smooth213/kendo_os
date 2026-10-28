@@ -1,7 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -94,20 +94,9 @@ class HomeScreenSetupChecklistCard extends StatelessWidget {
 
     final progress = completedSteps / 4.0;
 
-    final cardBgColor = enableLiquidGlass
+    final customBgColor = enableLiquidGlass
         ? themeColors.primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
-        : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));
-
-    final cardBorder = enableLiquidGlass
-        ? Border.all(
-            color: isDark
-                ? const Color(0xFFFFFFFF).withValues(alpha: 0.1)
-                : const Color(0xFF000000).withValues(alpha: 0.05),
-            width: 0.5,
-          )
-        : Border.all(
-            color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
-          );
+        : null;
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,35 +172,7 @@ class HomeScreenSetupChecklistCard extends StatelessWidget {
       ],
     );
 
-    if (enableLiquidGlass) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          AppSpacing.md,
-          AppSpacing.lg,
-          AppSpacing.sm,
-        ),
-        child: ClipRRect(
-          borderRadius: AppRadius.large,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: cardBgColor,
-                borderRadius: AppRadius.large,
-                border: cardBorder,
-              ),
-              child: content,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: double.infinity,
+    return AppGlassContainer(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.md,
@@ -219,18 +180,10 @@ class HomeScreenSetupChecklistCard extends StatelessWidget {
         AppSpacing.sm,
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cardBgColor,
-        borderRadius: AppRadius.large,
-        border: cardBorder,
-        boxShadow: [
-          BoxShadow(
-            color: AppKendoColors.pureBlack.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      borderRadius: AppSemanticTokens.cardRadius,
+      borderWidth: AppSemanticTokens.cardBorderWidth,
+      enableLiquidGlass: enableLiquidGlass,
+      customBackgroundColor: customBgColor,
       child: content,
     );
   }
