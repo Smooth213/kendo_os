@@ -65,7 +65,7 @@ class MatchEditPlayerSlotTile extends StatelessWidget {
                       vertical: AppSpacing.sm,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.small,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -93,7 +93,7 @@ class MatchEditPlayerSlotTile extends StatelessWidget {
                       vertical: AppSpacing.sm,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.small,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       borderSide: BorderSide.none,
                     ),
                   ),

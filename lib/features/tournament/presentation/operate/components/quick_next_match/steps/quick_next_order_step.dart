@@ -350,7 +350,7 @@ class QuickNextOrderStep extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppKendoColors.teal,
                 foregroundColor: AppKendoColors.pureWhite,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
                 elevation: 0,
               ),
               icon: const Icon(Icons.bolt),
@@ -375,7 +375,7 @@ class QuickNextOrderStep extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: themeColors.primaryAccent,
               foregroundColor: AppKendoColors.pureWhite,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+              shape: const StadiumBorder(),
             ),
             icon: const Icon(Icons.arrow_forward),
             label: const Text(

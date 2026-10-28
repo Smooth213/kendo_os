@@ -72,15 +72,15 @@ class OrderSetupTeamAutocompleteField extends StatelessWidget {
                 hintText: hintText,
                 hintStyle: TextStyle(color: subTextColor),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   borderSide: BorderSide(color: primaryAccent),
                 ),
                 prefixIcon: const Icon(

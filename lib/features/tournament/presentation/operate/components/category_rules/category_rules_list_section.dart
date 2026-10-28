@@ -66,7 +66,7 @@ class CategoryRulesListSection extends StatelessWidget {
                         ? const Color(0xFF1C1C1E)
                         : const Color(0xFFFFFFFF),
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.medium,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -74,7 +74,7 @@ class CategoryRulesListSection extends StatelessWidget {
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.medium,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       borderSide: BorderSide(
                         color: isDark
                             ? const Color(0xFF38383A)
@@ -82,7 +82,7 @@ class CategoryRulesListSection extends StatelessWidget {
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.medium,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       borderSide: BorderSide(
                         color: const Color(0xFF3F51B5),
                         width: 2.0,

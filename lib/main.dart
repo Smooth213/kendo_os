@@ -257,6 +257,16 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       ),
     );
 
+    final commonElevatedButtonTheme = ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+    );
+    final commonOutlinedButtonTheme = OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
+    );
+    final commonFilledButtonTheme = FilledButtonThemeData(
+      style: FilledButton.styleFrom(shape: const StadiumBorder()),
+    );
+
     final darkThemeBase = ThemeData(
       brightness: Brightness.dark,
       useMaterial3: true,
@@ -264,6 +274,9 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
       canvasColor: AppKendoColors.pureBlack,
       dialogTheme: commonDialogTheme,
       bottomSheetTheme: commonBottomSheetTheme,
+      elevatedButtonTheme: commonElevatedButtonTheme,
+      outlinedButtonTheme: commonOutlinedButtonTheme,
+      filledButtonTheme: commonFilledButtonTheme,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.dark().textTheme),
       extensions: [AppThemeColors.ofMode(isDark: true, mode: 'normal')],
     );
@@ -276,6 +289,9 @@ class _KendoOSAppState extends ConsumerState<KendoOSApp>
           : const Color(0xFFF2F2F7),
       dialogTheme: commonDialogTheme,
       bottomSheetTheme: commonBottomSheetTheme,
+      elevatedButtonTheme: commonElevatedButtonTheme,
+      outlinedButtonTheme: commonOutlinedButtonTheme,
+      filledButtonTheme: commonFilledButtonTheme,
       textTheme: GoogleFonts.notoSansJpTextTheme(ThemeData.light().textTheme),
       extensions: [
         AppThemeColors.ofMode(

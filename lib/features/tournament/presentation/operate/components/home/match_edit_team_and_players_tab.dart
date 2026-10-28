@@ -268,7 +268,9 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
               vertical: 10,
             ),
             border: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: maxLines == 1
+                  ? AppSemanticTokens.inputRadius
+                  : AppSemanticTokens.multilineInputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFFFFFFFF)
@@ -276,7 +278,9 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: maxLines == 1
+                  ? AppSemanticTokens.inputRadius
+                  : AppSemanticTokens.multilineInputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFFFFFFFF)

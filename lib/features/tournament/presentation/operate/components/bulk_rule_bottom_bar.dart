@@ -45,7 +45,7 @@ class BulkRuleBottomBar extends StatelessWidget {
                 ? context.appColors.textColor.withValues(alpha: 0.3)
                 : context.appColors.cardBackground.withValues(alpha: 0.38),
             minimumSize: const Size(double.infinity, 50),
-            shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
+            shape: const StadiumBorder(),
             elevation: 0,
           ),
           child: Text(

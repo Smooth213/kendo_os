@@ -155,7 +155,7 @@ class LoginScreen extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                         color: context.appColors.inputBackground,
-                        borderRadius: AppRadius.medium,
+                        borderRadius: AppRadius.round,
                         border: Border.all(
                           color: context.appColors.separatorColor,
                         ),
@@ -225,9 +225,7 @@ class LoginScreen extends ConsumerWidget {
                     minimumSize: const Size(double.infinity, 60),
                     elevation: 0,
                     shadowColor: AppKendoColors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.large,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ),

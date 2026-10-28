@@ -417,6 +417,7 @@ class _ProgramManagementScreenState
         floatingActionButton: (isViewerMode || _isSelectionMode)
             ? null
             : FloatingActionButton.extended(
+                shape: const StadiumBorder(),
                 onPressed: _isUploading ? null : _showPickerMenu,
                 label: const Text('プログラムを追加'),
                 icon: const Icon(Icons.add),

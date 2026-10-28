@@ -324,9 +324,7 @@ class _QuickNextOpponentAndColorStepState
               height: 48,
               child: OutlinedButton(
                 onPressed: widget.isSubmitting ? null : widget.onBack,
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
-                ),
+                style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
                 child: const Text('戻る'),
               ),
             ),
@@ -341,7 +339,7 @@ class _QuickNextOpponentAndColorStepState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColors.primaryAccent,
                   foregroundColor: AppKendoColors.pureWhite,
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                  shape: const StadiumBorder(),
                 ),
                 icon: widget.isSubmitting
                     ? const SizedBox(

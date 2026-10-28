@@ -241,9 +241,7 @@ class StartScreen extends ConsumerWidget {
                         backgroundColor: AppKendoColors.pureWhite.withValues(
                           alpha: 0.15,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.large,
-                        ),
+                        shape: const StadiumBorder(),
                         elevation: 0,
                       ),
                     ),

@@ -317,7 +317,9 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
               vertical: AppSpacing.sm,
             ),
             border: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: maxLines == 1
+                  ? AppSemanticTokens.inputRadius
+                  : AppSemanticTokens.multilineInputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
@@ -325,7 +327,9 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: maxLines == 1
+                  ? AppSemanticTokens.inputRadius
+                  : AppSemanticTokens.multilineInputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)

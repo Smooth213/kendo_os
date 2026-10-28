@@ -89,7 +89,10 @@ class AppTextField extends StatelessWidget {
         ? themeColors.textColor
         : themeColors.disabledTextColor;
 
-    final borderRadius = AppRadius.medium;
+    final bool isMultiline = (maxLines != null && maxLines! > 1) || expands;
+    final borderRadius = isMultiline
+        ? AppSemanticTokens.multilineInputRadius
+        : AppSemanticTokens.inputRadius;
 
     final defaultStyle = TextStyle(
       fontSize: AppFontSize.body,

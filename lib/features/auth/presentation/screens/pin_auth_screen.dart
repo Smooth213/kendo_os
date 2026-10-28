@@ -262,9 +262,7 @@ class _PinAuthScreenState extends ConsumerState<PinAuthScreen> {
                             backgroundColor: roleColor,
                             foregroundColor: AppKendoColors.pureWhite,
                             elevation: 0,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: AppRadius.large,
-                            ),
+                            shape: const StadiumBorder(),
                           ),
                           onPressed: _isSubmitting ? null : _handleVerify,
                           child: _isSubmitting
@@ -357,13 +355,14 @@ class _PinAuthScreenState extends ConsumerState<PinAuthScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       width: 64,
-      height: 52,
+      height: 64,
       child: Material(
         color: context.appColors.textColor.withValues(alpha: 0.08),
-        borderRadius: AppRadius.medium,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _handleKeypadInput(digit),
-          borderRadius: AppRadius.medium,
+          customBorder: const CircleBorder(),
           child: Center(
             child: Text(
               digit,
@@ -388,13 +387,14 @@ class _PinAuthScreenState extends ConsumerState<PinAuthScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       width: 64,
-      height: 52,
+      height: 64,
       child: Material(
         color: context.appColors.textColor.withValues(alpha: 0.04),
-        borderRadius: AppRadius.medium,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadius.medium,
+          customBorder: const CircleBorder(),
           child: Center(
             child: Text(
               label,

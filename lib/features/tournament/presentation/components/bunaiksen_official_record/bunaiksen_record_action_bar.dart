@@ -155,7 +155,7 @@ class BunaiksenRecordActionBar extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: AppKendoColors.pureWhite,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+        shape: const StadiumBorder(),
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         elevation: 0,
       ),

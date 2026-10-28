@@ -212,7 +212,7 @@ class BulkRuleTargetSelectSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-            borderRadius: AppRadius.medium,
+            borderRadius: AppRadius.round,
           ),
           child: DropdownButton<String>(
             value: value,

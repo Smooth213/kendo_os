@@ -73,7 +73,7 @@ class OrderSetupStickyBottomBar extends StatelessWidget {
                 backgroundColor: themeColors.primaryAccent,
                 foregroundColor: AppKendoColors.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
                 elevation: 2,
               ),
               child: Row(

@@ -252,7 +252,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
                       ? const Color(0xFF2C2C2E)
                       : context.appColors.inputBackground,
                   border: OutlineInputBorder(
-                    borderRadius: AppRadius.small,
+                    borderRadius: AppSemanticTokens.inputRadius,
                     borderSide: BorderSide(
                       color: isDark
                           ? const Color(0xFF38383A)
@@ -260,7 +260,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.small,
+                    borderRadius: AppSemanticTokens.inputRadius,
                     borderSide: BorderSide(
                       color: isDark
                           ? const Color(0xFF38383A)
@@ -268,7 +268,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.small,
+                    borderRadius: AppSemanticTokens.inputRadius,
                     borderSide: BorderSide(color: primaryAccent),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
@@ -290,9 +290,7 @@ class OrderSetupPositionSlot extends StatelessWidget {
                         ),
                         minimumSize: Size.zero,
                         backgroundColor: AppKendoColors.hansokuRed,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.sub,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                       icon: const Icon(
                         Icons.block,

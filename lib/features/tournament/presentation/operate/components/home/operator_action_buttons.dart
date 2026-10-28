@@ -117,7 +117,7 @@ class OperatorActionButtons extends ConsumerWidget {
       color: AppKendoColors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.medium,
+        borderRadius: AppSemanticTokens.buttonRadius,
         child: Container(
           height: 50,
           padding: const EdgeInsets.symmetric(
@@ -135,7 +135,7 @@ class OperatorActionButtons extends ConsumerWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: AppRadius.medium,
+            borderRadius: AppSemanticTokens.buttonRadius,
             border: Border.all(
               color: primaryColor.withValues(alpha: 0.6),
               width: 1.2,
@@ -206,7 +206,7 @@ class OperatorActionButtons extends ConsumerWidget {
       color: AppKendoColors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.medium,
+        borderRadius: AppSemanticTokens.buttonRadius,
         child: Container(
           height: 48,
           padding: const EdgeInsets.symmetric(
@@ -219,7 +219,7 @@ class OperatorActionButtons extends ConsumerWidget {
                       ? color.withValues(alpha: 0.18)
                       : color.withValues(alpha: 0.12))
                 : context.appColors.cardBackground,
-            borderRadius: AppRadius.medium,
+            borderRadius: AppSemanticTokens.buttonRadius,
             border: Border.all(
               color: color.withValues(alpha: enableLiquidGlass ? 0.35 : 0.25),
               width: 1.2,
@@ -240,7 +240,7 @@ class OperatorActionButtons extends ConsumerWidget {
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
-                  borderRadius: AppRadius.small,
+                  shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 18, color: color),
               ),

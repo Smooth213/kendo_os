@@ -229,13 +229,16 @@ class AppShadows {
 class AppSemanticTokens {
   AppSemanticTokens._();
 
-  // 形状・角丸 (用途別)
+  // 形状・角丸 (用途別 - iOS 27 カプセル＆Squircle黄金比)
   static const BorderRadius cardRadius = AppRadius.large;
   static const BorderRadius dialogRadius = AppRadius.round;
   static const BorderRadius sheetRadius = AppRadius.large;
   static const BorderRadius dockRadius = AppRadius.full;
   static const BorderRadius badgeRadius = AppRadius.small;
-  static const BorderRadius buttonRadius = AppRadius.medium;
+  static const BorderRadius buttonRadius = AppRadius.full;
+  static const BorderRadius inputRadius = AppRadius.full;
+  static const BorderRadius multilineInputRadius = AppRadius.large;
+  static const OutlinedBorder buttonShape = StadiumBorder();
 
   // 境界線幅 (用途別)
   static const double cardBorderWidth = AppBorderWidth.hairline;

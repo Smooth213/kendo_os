@@ -244,9 +244,7 @@ class QuickNextCourtHeadingStep extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: onBack,
                     style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                     child: const Text('戻る'),
                   ),
@@ -262,9 +260,7 @@ class QuickNextCourtHeadingStep extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: themeColors.primaryAccent,
                       foregroundColor: AppKendoColors.pureWhite,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                     icon: const Icon(Icons.arrow_forward),
                     label: const Text(

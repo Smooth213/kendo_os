@@ -71,7 +71,7 @@ class OfficialRecordExportBar extends StatelessWidget {
           foregroundColor: AppKendoColors.pureWhite,
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
+          shape: const StadiumBorder(),
         ),
       ),
     );

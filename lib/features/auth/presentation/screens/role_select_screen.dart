@@ -199,7 +199,7 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
                                               0xFFFFFFFF,
                                             ).withValues(alpha: 0.12)
                                           : const Color(0xFFFFFFFF),
-                                      borderRadius: AppRadius.medium,
+                                      borderRadius: AppRadius.round,
                                       border: Border.all(
                                         color: isDark
                                             ? Colors.transparent
@@ -296,7 +296,7 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
           backgroundColor: color.withValues(alpha: 0.88),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
+          shape: const StadiumBorder(),
         ),
         onPressed: () async {
           AppHaptics.light();

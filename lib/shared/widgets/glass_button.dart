@@ -89,14 +89,14 @@ class GlassButton extends ConsumerWidget {
 
     Widget buttonContent = Material(
       color: bgColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
+      shape: StadiumBorder(
         side: BorderSide(
           color: borderColor,
           width: (enableLiquidGlass || child != null) ? 1.5 : 0,
         ),
       ),
       child: InkWell(
+        borderRadius: AppRadius.round,
         onTap: onPressed,
         // タップ時のリップルエフェクト
         splashColor: enableLiquidGlass
@@ -113,7 +113,7 @@ class GlassButton extends ConsumerWidget {
     );
 
     return ClipRRect(
-      borderRadius: AppRadius.large,
+      borderRadius: AppRadius.round,
       child: enableLiquidGlass
           ? BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16.0, sigmaY: 16.0),

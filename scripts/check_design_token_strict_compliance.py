@@ -33,7 +33,7 @@ def main():
     else:
         with open(token_path, "r", encoding="utf-8") as f:
             content = f.read()
-        for required_class in ["class AppSpacing", "class AppRadius", "class AppFontSize", "class AppEdgeInsets"]:
+        for required_class in ["class AppSpacing", "class AppRadius", "class AppFontSize", "class AppEdgeInsets", "class AppSemanticTokens"]:
             if required_class not in content:
                 token_classes_ok = False
                 token_errors.append(f"❌ 必須トークンクラスが未定義です: {required_class}")

@@ -53,9 +53,7 @@ class MatchEditSaveButton extends StatelessWidget {
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryAccent,
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppRadius.large,
-              ),
+              shape: const StadiumBorder(),
             ),
             onPressed: onSave,
           ),
