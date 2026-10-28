@@ -75,16 +75,37 @@ jobs:
       - name: 📦 依存パッケージの解決
         run: flutter pub get
 
-      - name: 🗄️ Isar Core バイナリ事前配置 (Linux x64 CI安定化)
+      - name: 🗄️ Isar Core バイナリキャッシュ復元
+        id: isar-cache
+        uses: actions/cache@v4
+        with:
+          path: libisar.so
+          key: isar-binary-linux-x64-3.3.2
+
+      - name: 🗄️ Isar Core バイナリ事前配置 (Linux x64 CI安定化・耐障害多重リトライ)
         run: |
-          curl -fsSL https://binaries.isar-community.dev/3.3.2/libisar_linux_x64.so -o libisar.so
-          cp libisar.so libisar_linux_x64.so
-          sudo cp libisar.so /usr/lib/libisar.so || true
-          sudo cp libisar.so /usr/lib/libisar_linux_x64.so || true
-          sudo cp libisar.so /usr/lib/x86_64-linux-gnu/libisar.so || true
-          sudo cp libisar.so /usr/lib/x86_64-linux-gnu/libisar_linux_x64.so || true
-          sudo cp libisar.so /usr/local/lib/libisar.so || true
-          sudo ldconfig || true
+          if [ ! -s libisar.so ] || [ $(wc -c < libisar.so 2>/dev/null || echo 0) -lt 1000000 ]; then
+            echo "📥 libisar.so をダウンロードします（同時アクセス分散ジッター適用）..."
+            # 8並列シャードの同時アクセス集中による Connection reset を防ぐため、シャードごとに待機時間を分散
+            sleep $(( (${{ matrix.shard-index }} * 2) + (RANDOM % 3) + 1 ))
+            
+            # リトライ付きcurl（接続タイムアウト15秒、リトライ5回、全エラー対象）
+            curl --connect-timeout 15 --max-time 120 --retry 5 --retry-delay 3 --retry-all-errors -fsSL \
+              https://binaries.isar-community.dev/3.3.2/libisar_linux_x64.so -o libisar.so || true
+          fi
+
+          if [ -s libisar.so ]; then
+            cp libisar.so libisar_linux_x64.so
+            sudo cp libisar.so /usr/lib/libisar.so || true
+            sudo cp libisar.so /usr/lib/libisar_linux_x64.so || true
+            sudo cp libisar.so /usr/lib/x86_64-linux-gnu/libisar.so || true
+            sudo cp libisar.so /usr/lib/x86_64-linux-gnu/libisar_linux_x64.so || true
+            sudo cp libisar.so /usr/local/lib/libisar.so || true
+            sudo ldconfig || true
+            echo "🟢 libisar.so の配置とldconfigが完了しました"
+          else
+            echo "⚠️ libisar.so の事前配置に失敗しましたが、テスト実行時フォールバックへ進みます"
+          fi
 
       - name: ⚡ Sharded Test Execution (Shard ${{ matrix.shard-index }}/${{ matrix.total-shards }})
         env:
