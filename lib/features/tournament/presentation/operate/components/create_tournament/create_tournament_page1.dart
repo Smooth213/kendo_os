@@ -69,7 +69,7 @@ class CreateTournamentPage1 extends ConsumerWidget {
               color: Color(0xFFD97706),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
@@ -78,7 +78,7 @@ class CreateTournamentPage1 extends ConsumerWidget {
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: const BorderSide(
                 color: Color(0xFF3F51B5),
                 width: 2.0,
@@ -118,7 +118,7 @@ class CreateTournamentPage1 extends ConsumerWidget {
               color: isDark ? const Color(0xFF38383A) : const Color(0x33000000),
               width: 1.0,
             ),
-            borderRadius: AppRadius.medium,
+            borderRadius: AppSemanticTokens.inputRadius,
           ),
           tileColor: inputBgColor,
           contentPadding: const EdgeInsets.symmetric(

@@ -235,9 +235,7 @@ class _DockTimerBottomSheetState extends ConsumerState<DockTimerBottomSheet> {
                       child: OutlinedButton(
                         onPressed: () => timerNotifier.addSeconds(30),
                         style: OutlinedButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: const Text('+30秒'),
                       ),
@@ -247,9 +245,7 @@ class _DockTimerBottomSheetState extends ConsumerState<DockTimerBottomSheet> {
                       child: OutlinedButton(
                         onPressed: () => timerNotifier.addSeconds(60),
                         style: OutlinedButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: const Text('+1分'),
                       ),
@@ -290,9 +286,7 @@ class _DockTimerBottomSheetState extends ConsumerState<DockTimerBottomSheet> {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.sm,
                         ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                     ),
                   ),
@@ -320,9 +314,7 @@ class _DockTimerBottomSheetState extends ConsumerState<DockTimerBottomSheet> {
                           vertical: AppSpacing.sm,
                         ),
                         side: BorderSide(color: themeColors.separatorColor),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                     ),
                   ),

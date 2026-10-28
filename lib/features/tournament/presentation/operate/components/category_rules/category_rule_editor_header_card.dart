@@ -208,7 +208,9 @@ class CategoryRuleEditorHeaderCard extends StatelessWidget {
             return DropdownButtonFormField<String>(
               initialValue: effectiveMatchType,
               decoration: InputDecoration(
-                border: const OutlineInputBorder(),
+                border: const OutlineInputBorder(
+                  borderRadius: AppSemanticTokens.inputRadius,
+                ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.sm,

@@ -31,7 +31,7 @@ class MatchActionButtonRow extends StatelessWidget {
       foregroundColor: AppKendoColors.pureWhite,
       padding: const EdgeInsets.symmetric(vertical: 0),
       minimumSize: const Size(double.infinity, 38),
-      shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+      shape: const StadiumBorder(),
       elevation: 0,
     );
 

@@ -281,9 +281,7 @@ class TimelineGroupHeader extends ConsumerWidget {
                         side: BorderSide(
                           color: titleColor.withValues(alpha: 0.2),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.sub,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                     ),
                   ),
@@ -313,9 +311,7 @@ class TimelineGroupHeader extends ConsumerWidget {
                       side: BorderSide(
                         color: titleColor.withValues(alpha: 0.2),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.sub,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                     child: Text(
                       'スコア',

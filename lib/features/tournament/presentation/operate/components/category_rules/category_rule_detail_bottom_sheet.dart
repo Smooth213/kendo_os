@@ -256,9 +256,7 @@ class CategoryRuleDetailBottomSheet extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.lg,
                     ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   child: const Text(
                     '閉じる',

@@ -2,6 +2,16 @@
   "version": "1.0.0",
   "name": "KendoOS iOS 27 Design System Manifest",
   "description": "全37画面＋ドック＋ボトムシート＋ダイアログ＋部内戦コンポーネント（計45項目）の完全網羅マニフェスト",
+  "shape_spec": {
+    "action_buttons": "iOS 27 カプセル型 (StadiumBorder / AppSemanticTokens.buttonRadius / AppRadius.full)",
+    "single_line_inputs": "iOS 27 カプセル型 (AppSemanticTokens.inputRadius / AppRadius.full)",
+    "status_badges": "iOS 27 カプセル型 Pill (AppRadius.round)",
+    "multiline_inputs": "Squircle 16px (文字欠け防止黄金比: AppSemanticTokens.multilineInputRadius / AppRadius.medium)",
+    "info_cards": "Squircle 16px (AppRadius.large / AppRadius.medium)",
+    "strike_keypad": "大型正方形角丸 (試合中ブラインド親指タッチ面積最大化: AppRadius.medium)",
+    "numeric_keypad_icons": "正円形 (BoxShape.circle / CircleBorder, 64x64px)",
+    "score_tables": "情報グリッド矩形 (テーブル可読性維持)"
+  },
   "items": [
     {
       "id": 1,

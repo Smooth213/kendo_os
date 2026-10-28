@@ -227,13 +227,15 @@ class MatchFormatSetupHelper {
       ),
       filled: true,
       fillColor: themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+      border: const OutlineInputBorder(
+        borderRadius: AppSemanticTokens.inputRadius,
+      ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppSemanticTokens.inputRadius,
         borderSide: BorderSide(color: themeColors.separatorColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppSemanticTokens.inputRadius,
         borderSide: BorderSide(color: themeColors.primaryAccent, width: 2),
       ),
     );

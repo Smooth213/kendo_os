@@ -167,9 +167,7 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
                                     horizontal: AppSpacing.xl,
                                     vertical: AppSpacing.md,
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: AppRadius.large,
-                                  ),
+                                  shape: const StadiumBorder(),
                                 ),
                                 child: const Text(
                                   'クイック対戦を始める',
@@ -258,6 +256,7 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
                 ? FloatingActionButton.extended(
                     backgroundColor: themeColors.primaryAccent,
                     foregroundColor: AppKendoColors.pureWhite,
+                    shape: const StadiumBorder(),
                     icon: const Icon(Icons.add),
                     label: const Text(
                       '試合作成',

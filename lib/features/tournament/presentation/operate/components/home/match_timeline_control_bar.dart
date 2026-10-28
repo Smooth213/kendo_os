@@ -74,7 +74,7 @@ class MatchTimelineControlBar extends StatelessWidget {
                         color: context.appColors.primaryAccent.withValues(
                           alpha: 0.15,
                         ),
-                        borderRadius: AppRadius.small,
+                        borderRadius: AppRadius.round,
                         border: Border.all(
                           color: context.appColors.primaryAccent.withValues(
                             alpha: 0.5,
@@ -161,9 +161,7 @@ class MatchTimelineControlBar extends StatelessWidget {
                         vertical: 0,
                       ),
                       minimumSize: const Size(0, 30),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.small,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),
@@ -194,9 +192,7 @@ class MatchTimelineControlBar extends StatelessWidget {
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.small,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
@@ -226,9 +222,7 @@ class MatchTimelineControlBar extends StatelessWidget {
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.small,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ],

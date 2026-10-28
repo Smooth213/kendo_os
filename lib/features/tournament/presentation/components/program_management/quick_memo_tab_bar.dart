@@ -67,7 +67,7 @@ class QuickMemoTabBar extends StatelessWidget {
           color: isSelected
               ? themeColors.primaryAccent.withValues(alpha: 0.15)
               : Colors.transparent,
-          borderRadius: AppRadius.medium,
+          borderRadius: AppRadius.round,
           border: Border.all(
             color: isSelected
                 ? themeColors.primaryAccent.withValues(alpha: 0.6)

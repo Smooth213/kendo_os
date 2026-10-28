@@ -212,7 +212,7 @@ class _MatchCalculatorAllocationViewState
                                   color: themeColors.primaryAccent.withValues(
                                     alpha: 0.15,
                                   ),
-                                  borderRadius: AppRadius.micro,
+                                  borderRadius: AppRadius.round,
                                 ),
                                 child: Text(
                                   match.categoryName,
@@ -233,7 +233,7 @@ class _MatchCalculatorAllocationViewState
                                   color: themeColors.subTextColor.withValues(
                                     alpha: 0.1,
                                   ),
-                                  borderRadius: AppRadius.micro,
+                                  borderRadius: AppRadius.round,
                                 ),
                                 child: Text(
                                   CalculatorSettings.formatMinutes(

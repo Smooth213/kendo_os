@@ -38,7 +38,7 @@ class CategoryRuleChips extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.2 : 0.1),
-        borderRadius: AppRadius.sub,
+        borderRadius: AppRadius.round,
         border: Border.all(
           color: color.withValues(alpha: isDark ? 0.45 : 0.35),
           width: 1.0,
@@ -72,7 +72,7 @@ class CategoryRuleChips extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: AppRadius.sub,
+        borderRadius: AppRadius.round,
         border: Border.all(color: border, width: 0.8),
       ),
       child: Text(

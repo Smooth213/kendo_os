@@ -99,16 +99,16 @@ class _TeamRegistrationPlayerSelectBottomSheetState
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: widget.themeColors.inputBackground,
-      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+      border: OutlineInputBorder(borderRadius: AppSemanticTokens.inputRadius),
       enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppSemanticTokens.inputRadius,
         borderSide: BorderSide(
           color: widget.themeColors.separatorColor,
           width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppSemanticTokens.inputRadius,
         borderSide: BorderSide(
           color: widget.themeColors.primaryAccent,
           width: 2,
@@ -235,9 +235,7 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                                 backgroundColor:
                                     widget.themeColors.primaryAccent,
                                 foregroundColor: AppKendoColors.pureWhite,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: AppRadius.medium,
-                                ),
+                                shape: const StadiumBorder(),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.md,
                                   vertical: AppSpacing.xs,
@@ -292,7 +290,7 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                                 ),
                                 decoration: BoxDecoration(
                                   color: widget.themeColors.softAccent,
-                                  borderRadius: AppRadius.tiny,
+                                  borderRadius: AppRadius.round,
                                 ),
                                 child: Text(
                                   '${recommendedPlayers.length}',
@@ -359,7 +357,7 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                                     color: isDark
                                         ? const Color(0xFF38383A)
                                         : const Color(0xFFE5E5EA),
-                                    borderRadius: AppRadius.tiny,
+                                    borderRadius: AppRadius.round,
                                   ),
                                   child: Text(
                                     '${otherPlayers.length}',

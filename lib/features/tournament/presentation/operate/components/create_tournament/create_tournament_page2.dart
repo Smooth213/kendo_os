@@ -70,7 +70,7 @@ class CreateTournamentPage2 extends StatelessWidget {
               tooltip: '地図で場所を確認',
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
@@ -79,7 +79,7 @@ class CreateTournamentPage2 extends StatelessWidget {
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: const BorderSide(
                 color: Color(0xFF3F51B5),
                 width: 2.0,

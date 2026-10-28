@@ -49,7 +49,7 @@ class BunaiksenMatchListHeaderBar extends StatelessWidget {
                     horizontal: AppSpacing.md,
                     vertical: 6,
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                  shape: const StadiumBorder(),
                 ),
                 child: const Text(
                   'クイック対戦',
@@ -85,9 +85,7 @@ class BunaiksenMatchListHeaderBar extends StatelessWidget {
                       horizontal: AppSpacing.sm,
                       vertical: 6,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ],

@@ -62,14 +62,14 @@ class TeamRegistrationAutocompleteField extends StatelessWidget {
                 hintMaxLines: 2,
                 hintStyle: const TextStyle(color: AppKendoColors.grey),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 border: const OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppSemanticTokens.inputRadius,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   borderSide: BorderSide(color: subTextColor, width: 2),
                 ),
                 prefixIcon: Icon(Icons.shield, color: subTextColor),

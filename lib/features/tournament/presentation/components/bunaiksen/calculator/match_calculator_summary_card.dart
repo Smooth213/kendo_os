@@ -248,7 +248,7 @@ class MatchCalculatorSummaryCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: themeColors.subTextColor.withValues(alpha: 0.06),
-        borderRadius: AppRadius.small,
+        borderRadius: AppRadius.round,
         border: Border.all(
           color: themeColors.subTextColor.withValues(alpha: 0.15),
         ),

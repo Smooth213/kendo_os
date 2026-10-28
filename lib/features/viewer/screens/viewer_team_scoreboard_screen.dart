@@ -285,7 +285,7 @@ class ViewerTeamScoreboardScreen extends ConsumerWidget {
                           color: isDark
                               ? const Color(0xFF3F51B5).withValues(alpha: 0.25)
                               : const Color(0xFF3F51B5),
-                          borderRadius: AppRadius.medium,
+                          borderRadius: AppRadius.round,
                           border: Border.all(
                             color: isDark
                                 ? const Color(0xFF5C6BC0)

@@ -196,7 +196,7 @@ class KendoSceneBadge extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: style.textColor,
-          borderRadius: AppRadius.micro,
+          borderRadius: AppRadius.round,
         ),
         child: Text(
           label.replaceAll('【', '').replaceAll('】', ''),
@@ -217,7 +217,7 @@ class KendoSceneBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: style.backgroundColor,
         border: Border.all(color: style.borderColor, width: 1.0),
-        borderRadius: AppRadius.sub,
+        borderRadius: AppRadius.round,
       ),
       child: Text(
         label,

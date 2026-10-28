@@ -114,9 +114,7 @@ class TeamRegistrationSelectHeaderActions extends StatelessWidget {
                     width: 1.2,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.smallValue),
-                  ),
+                  shape: const StadiumBorder(),
                 ),
                 child: const Text(
                   '未定',
@@ -135,9 +133,7 @@ class TeamRegistrationSelectHeaderActions extends StatelessWidget {
                     width: 1.2,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.smallValue),
-                  ),
+                  shape: const StadiumBorder(),
                 ),
                 child: const Text(
                   '欠員',

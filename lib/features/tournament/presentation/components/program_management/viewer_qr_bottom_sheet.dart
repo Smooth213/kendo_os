@@ -193,7 +193,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               ),
               decoration: BoxDecoration(
                 color: themeColors.inputBackground,
-                borderRadius: AppRadius.medium,
+                borderRadius: AppSemanticTokens.inputRadius,
                 border: Border.all(
                   color: themeColors.separatorColor.withValues(alpha: 0.5),
                 ),
@@ -262,9 +262,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.medium,
-                ),
+                shape: const StadiumBorder(),
                 elevation: 0,
               ),
             ),
@@ -293,7 +291,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                       ),
                       decoration: BoxDecoration(
                         color: accentColor,
-                        borderRadius: AppRadius.medium,
+                        borderRadius: AppRadius.round,
                         boxShadow: [
                           BoxShadow(
                             color: accentColor.withValues(alpha: 0.3),
@@ -348,9 +346,7 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
                   color: _isCopied ? accentColor : themeColors.separatorColor,
                   width: _isCopied ? 1.5 : 1.0,
                 ),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.medium,
-                ),
+                shape: const StadiumBorder(),
               ),
             ),
             const SizedBox(height: AppSpacing.md),

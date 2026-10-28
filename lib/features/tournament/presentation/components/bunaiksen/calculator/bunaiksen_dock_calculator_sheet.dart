@@ -115,7 +115,7 @@ class BunaiksenDockCalculatorSheet extends ConsumerWidget {
                   backgroundColor: themeColors.primaryAccent,
                   foregroundColor: themeColors.onPrimaryAccent,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                  shape: const StadiumBorder(),
                   elevation: 2,
                 ),
                 onPressed: () {
@@ -135,7 +135,7 @@ class BunaiksenDockCalculatorSheet extends ConsumerWidget {
                     color: themeColors.primaryAccent.withValues(alpha: 0.5),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                  shape: const StadiumBorder(),
                 ),
                 onPressed: () async {
                   AppHaptics.medium();

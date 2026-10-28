@@ -152,7 +152,7 @@ class QrShareDialog extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: themeColors.inputBackground,
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   border: Border.all(
                     color: themeColors.separatorColor.withValues(alpha: 0.5),
                   ),
@@ -216,9 +216,7 @@ class QrShareDialog extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColor,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppRadius.medium,
-                  ),
+                  shape: const StadiumBorder(),
                   elevation: 0,
                 ),
               ),

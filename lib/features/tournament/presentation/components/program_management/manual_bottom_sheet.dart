@@ -180,9 +180,7 @@ class _ManualBottomSheetState extends ConsumerState<ManualBottomSheet> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppKendoColors.teal,
                     foregroundColor: AppKendoColors.white,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ),

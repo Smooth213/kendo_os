@@ -145,9 +145,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.compact,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.compact,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ),
@@ -166,9 +164,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.compact,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.compact,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ),
@@ -191,7 +187,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                 foregroundColor: widget.themeColors.primaryAccent,
                 side: BorderSide(color: widget.themeColors.softAccent),
                 minimumSize: const Size(double.infinity, 44),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.compact),
+                shape: const StadiumBorder(),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -203,7 +199,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                 filled: true,
                 fillColor: widget.themeColors.inputBackground,
                 border: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
