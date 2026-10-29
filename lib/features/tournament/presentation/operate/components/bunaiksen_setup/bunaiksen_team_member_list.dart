@@ -39,12 +39,11 @@ class BunaiksenTeamMemberList extends StatelessWidget {
                   : (isDark
                         ? const Color(0xFF1E293B)
                         : const Color(0xFFF8FAFC)),
-              shape: RoundedRectangleBorder(
+              shape: StadiumBorder(
                 side: BorderSide(
                   color: teamColor,
                   width: candidateData.isNotEmpty ? 2 : 1,
                 ),
-                borderRadius: AppRadius.large,
               ),
               child: ListTile(
                 dense: true,

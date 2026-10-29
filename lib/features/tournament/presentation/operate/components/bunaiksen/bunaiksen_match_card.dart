@@ -86,11 +86,11 @@ class BunaiksenMatchCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
+                  vertical: 2.0,
                 ),
                 decoration: BoxDecoration(
                   color: badgeBg,
-                  borderRadius: AppRadius.tiny,
+                  borderRadius: AppRadius.round,
                 ),
                 child: Text(
                   isPlaying

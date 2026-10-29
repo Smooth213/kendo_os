@@ -401,15 +401,15 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
         floatingLabelStyle: TextStyle(color: _accentColor),
         suffixIcon: const Icon(Icons.arrow_drop_down), // ボトムシートが開くことを示唆するアイコン
         border: OutlineInputBorder(
-          borderRadius: AppRadius.small,
+          borderRadius: AppSemanticTokens.inputRadius,
           borderSide: BorderSide(color: themeColors.separatorColor),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadius.small,
+          borderRadius: AppSemanticTokens.inputRadius,
           borderSide: BorderSide(color: themeColors.separatorColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: AppRadius.small,
+          borderRadius: AppSemanticTokens.inputRadius,
           borderSide: BorderSide(color: _accentColor, width: 2),
         ),
       ),

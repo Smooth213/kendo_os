@@ -66,7 +66,7 @@ class BunaiksenQuickMatchPlayerSelectSection extends StatelessWidget {
                       onRedPlayerSelected(picked);
                     }
                   },
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -76,7 +76,7 @@ class BunaiksenQuickMatchPlayerSelectSection extends StatelessWidget {
                       color: isDark
                           ? const Color(0xFF2C2C2E)
                           : const Color(0xFFFFFFFF),
-                      borderRadius: AppRadius.small,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       border: Border.all(
                         color: AppKendoColors.hansokuRed.withValues(alpha: 0.5),
                       ),
@@ -154,7 +154,7 @@ class BunaiksenQuickMatchPlayerSelectSection extends StatelessWidget {
                       onWhitePlayerSelected(picked);
                     }
                   },
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppSemanticTokens.inputRadius,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -164,7 +164,7 @@ class BunaiksenQuickMatchPlayerSelectSection extends StatelessWidget {
                       color: isDark
                           ? const Color(0xFF2C2C2E)
                           : const Color(0xFFFFFFFF),
-                      borderRadius: AppRadius.small,
+                      borderRadius: AppSemanticTokens.inputRadius,
                       border: Border.all(
                         color: const Color(0xFF607D8B).withValues(alpha: 0.5),
                       ),

@@ -424,7 +424,7 @@ class _MultiPlayerSelectInputState
 
     return InkWell(
       onTap: _showMultiSelectSheet,
-      borderRadius: AppRadius.small,
+      borderRadius: AppSemanticTokens.inputRadius,
       child: IgnorePointer(
         child: AppTextField(
           readOnly: true,
@@ -438,11 +438,11 @@ class _MultiPlayerSelectInputState
             prefixIcon: Icon(Icons.group_add, color: _accentColor),
             suffixIcon: const Icon(Icons.touch_app),
             border: const OutlineInputBorder(
-              borderRadius: AppRadius.small,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.small,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFFFFFFFF)
@@ -450,7 +450,7 @@ class _MultiPlayerSelectInputState
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.small,
+              borderRadius: AppSemanticTokens.inputRadius,
               borderSide: BorderSide(color: _accentColor, width: 2),
             ),
           ),

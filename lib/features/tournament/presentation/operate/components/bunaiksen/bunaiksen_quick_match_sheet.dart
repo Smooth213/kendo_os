@@ -163,7 +163,7 @@ class _BunaiksenQuickMatchSheetState
                 padding: const EdgeInsets.symmetric(
                   vertical: AppSpacing.modernValue,
                 ),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
+                shape: const StadiumBorder(),
               ),
             ),
           ),
