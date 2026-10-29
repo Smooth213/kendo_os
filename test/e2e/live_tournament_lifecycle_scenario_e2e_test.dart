@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
-import '../../helpers/mock_data.dart';
+import '../helpers/mock_data.dart';
 
 void main() {
   group('[Unit] 大会当日運営シナリオE2E・現場カオス完全制覇テスト要塞', () {

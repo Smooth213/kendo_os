@@ -11,7 +11,7 @@ import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/models/match_entity.dart';
 import 'package:kendo_os/shared/infrastructure/persistence/twin_match_persistence_helper.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
-import '../../helpers/test_isar_helper.dart';
+import '../helpers/test_isar_helper.dart';
 
 void main() {
   TestIsarContext? isarContext;

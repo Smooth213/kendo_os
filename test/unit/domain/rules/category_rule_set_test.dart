@@ -159,4 +159,87 @@ void main() {
       );
     });
   });
+
+  group('全カテゴリーのルール ドメイン不変条件テスト', () {
+    test('主要ルール定義がドメイン不変条件（団体代表戦、個人戦延長判定、錬成会フラグ等）を満たすこと', () {
+      final sampleRules = <String, CategoryRuleSet>{
+        '①トーナメント団体戦': const CategoryRuleSet(
+          matchType: '団体戦',
+          normalRule: MatchRule(
+            matchTimeMinutes: 2.0,
+            hasRepresentativeMatch: true,
+          ),
+        ),
+        '②トーナメント個人戦': const CategoryRuleSet(
+          matchType: '個人戦',
+          normalRule: MatchRule(
+            matchTimeMinutes: 3.0,
+            hasRepresentativeMatch: false,
+            hasHantei: true,
+          ),
+        ),
+        '③錬成会': const CategoryRuleSet(
+          matchType: '錬成会',
+          normalRule: MatchRule(
+            matchTimeMinutes: 2.0,
+            isRenseikai: true,
+            renseikaiType: '一試合制',
+          ),
+        ),
+        '④リーグ戦': const CategoryRuleSet(
+          matchType: 'リーグ団体戦',
+          normalRule: MatchRule(
+            matchTimeMinutes: 2.0,
+            winPoint: 3,
+            drawPoint: 1,
+            lossPoint: 0,
+          ),
+        ),
+        '⑤遠征マルチシーン': const CategoryRuleSet(
+          matchType: '団体戦',
+          isMultiScene: true,
+          useRenseikaiRule: true,
+          useMoushiawaseRule: true,
+          renseikaiRule: MatchRule(isRenseikai: true),
+          moushiawaseRule: MatchRule(isRenseikai: true),
+        ),
+      };
+
+      for (final entry in sampleRules.entries) {
+        final catName = entry.key;
+        final ruleSet = entry.value;
+        final normal = ruleSet.normalRule;
+
+        if (ruleSet.matchType == '個人戦') {
+          expect(
+            normal.hasRepresentativeMatch,
+            isFalse,
+            reason: '$catName: 個人戦は代表戦なし',
+          );
+        } else if (ruleSet.matchType == '錬成会') {
+          expect(normal.isRenseikai, isTrue, reason: '$catName: 錬成会フラグtrue');
+          expect(
+            normal.renseikaiType.isNotEmpty,
+            isTrue,
+            reason: '$catName: 進行方式が定義されていること',
+          );
+        } else if (ruleSet.matchType.contains('リーグ')) {
+          expect(
+            normal.winPoint >= 0,
+            isTrue,
+            reason: '$catName: 勝点が定義されていること',
+          );
+        }
+
+        if (ruleSet.isMultiScene) {
+          if (ruleSet.useRenseikaiRule) {
+            expect(ruleSet.renseikaiRule.isRenseikai, isTrue);
+          }
+          if (ruleSet.useMoushiawaseRule) {
+            expect(ruleSet.moushiawaseRule.isRenseikai, isTrue);
+          }
+        }
+      }
+    });
+  });
 }

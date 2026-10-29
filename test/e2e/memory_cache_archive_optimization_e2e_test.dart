@@ -15,7 +15,7 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/match/presentation/providers/read_announcements_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../helpers/test_isar_helper.dart';
+import '../helpers/test_isar_helper.dart';
 
 class FakeRemoteMatchRepository implements MatchRepository {
   final List<MatchModel> savedMatches = [];
