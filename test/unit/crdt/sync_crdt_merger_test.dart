@@ -118,5 +118,155 @@ void main() {
         expect(merged.events.last.id, 'e_async_2');
       },
     );
+
+    test('同一論理時計および同一時刻の競合イベントにおいて、ID決定論的タイブレーク順序により結果が一意に収束すること', () {
+      final now = DateTime(2026, 10, 1, 10, 0, 0);
+      final evB = ScoreEvent(
+        id: 'ev_device_b',
+        timestamp: now,
+        logicalClock: 1,
+        side: Side.white,
+        strikeType: StrikeType.kote,
+      );
+      final evA = ScoreEvent(
+        id: 'ev_device_a',
+        timestamp: now,
+        logicalClock: 1,
+        side: Side.red,
+        strikeType: StrikeType.men,
+      );
+
+      final rebuilder = RebuildMatchFromEventsUseCase(
+        KendoRuleEngine(),
+        SystemTimeSource(),
+      );
+
+      // パターン1: remoteMatchにevB, localMatchにevA
+      final match1 = SyncCrdtMerger.mergeAndRebuild(
+        remoteMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          events: [evB],
+        ),
+        localMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          pendingEvents: [evA],
+        ),
+        rule: const MatchRule(),
+        rebuilder: rebuilder,
+      );
+
+      // パターン2: remoteMatchにevA, localMatchにevB
+      final match2 = SyncCrdtMerger.mergeAndRebuild(
+        remoteMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          events: [evA],
+        ),
+        localMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          pendingEvents: [evB],
+        ),
+        rule: const MatchRule(),
+        rebuilder: rebuilder,
+      );
+
+      // どちらの順序でマージされても、IDによる決定論的タイブレークで同一順序(ev_device_a -> ev_device_b)になること
+      expect(
+        match1.events.map((e) => e.id).toList(),
+        equals(['ev_device_a', 'ev_device_b']),
+        reason: 'evBが先に入力されてもIDタイブレークでevAが先頭になること',
+      );
+      expect(
+        match2.events.map((e) => e.id).toList(),
+        equals(['ev_device_a', 'ev_device_b']),
+        reason: 'evAが先に入力されてもIDタイブレークでevAが先頭になること',
+      );
+    });
+
+    test('同一論理時計および同一時刻の競合イベントにおいて、ID決定論的タイブレーク順序により結果が一意に収束すること', () {
+      final now = DateTime(2026, 10, 1, 10, 0, 0);
+      final evB = ScoreEvent(
+        id: 'ev_device_b',
+        timestamp: now,
+        logicalClock: 1,
+        side: Side.white,
+        strikeType: StrikeType.kote,
+      );
+      final evA = ScoreEvent(
+        id: 'ev_device_a',
+        timestamp: now,
+        logicalClock: 1,
+        side: Side.red,
+        strikeType: StrikeType.men,
+      );
+
+      final rebuilder = RebuildMatchFromEventsUseCase(
+        KendoRuleEngine(),
+        SystemTimeSource(),
+      );
+
+      // パターン1: remoteMatchにevB, localMatchにevA
+      final match1 = SyncCrdtMerger.mergeAndRebuild(
+        remoteMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          events: [evB],
+        ),
+        localMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          pendingEvents: [evA],
+        ),
+        rule: const MatchRule(),
+        rebuilder: rebuilder,
+      );
+
+      // パターン2: remoteMatchにevA, localMatchにevB
+      final match2 = SyncCrdtMerger.mergeAndRebuild(
+        remoteMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          events: [evA],
+        ),
+        localMatch: MatchModel(
+          id: 'm1',
+          matchType: '個人戦',
+          redName: '赤',
+          whiteName: '白',
+          pendingEvents: [evB],
+        ),
+        rule: const MatchRule(),
+        rebuilder: rebuilder,
+      );
+
+      // どちらの順序でマージされても、IDによる決定論的タイブレークで同一順序(ev_device_a -> ev_device_b)になること
+      expect(
+        match1.events.map((e) => e.id).toList(),
+        equals(['ev_device_a', 'ev_device_b']),
+        reason: 'evBが先に入力されてもIDタイブレークでevAが先頭になること',
+      );
+      expect(
+        match2.events.map((e) => e.id).toList(),
+        equals(['ev_device_a', 'ev_device_b']),
+        reason: 'evAが先に入力されてもIDタイブレークでevAが先頭になること',
+      );
+    });
   });
 }

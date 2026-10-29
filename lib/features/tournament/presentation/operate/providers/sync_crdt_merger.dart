@@ -75,12 +75,7 @@ class SyncCrdtMerger {
     }
 
     final mergedEvents = mergedEventsMap.values.toList()
-      ..sort((a, b) {
-        if (a.logicalClock != b.logicalClock) {
-          return a.logicalClock.compareTo(b.logicalClock);
-        }
-        return a.timestamp.compareTo(b.timestamp);
-      });
+      ..sort((a, b) => a.compareTo(b));
 
     // タイマーおよびステータスの Last-Write-Wins (LWW) 調停
     final bool preferLocal;
