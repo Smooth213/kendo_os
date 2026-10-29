@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 
 void main() {
-  group('[E2E] 100名規模・部内戦無限勝ち抜きストレステスト', () {
+  group('[Unit] 100名規模・部内戦無限勝ち抜きストレステスト', () {
     test('100名参加・50試合連続進行において、待機キュー・飛び入り・棄権・連勝記録（Streak）が破綻せず整合すること', () {
       final queueNotifier = BunaiksenInfiniteQueueNotifier();
       final streakNotifier = BunaiksenInfiniteStreakNotifier();

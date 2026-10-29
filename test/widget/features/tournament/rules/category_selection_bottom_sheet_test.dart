@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../helpers/safe_pump_helper.dart';
+import '../../../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 

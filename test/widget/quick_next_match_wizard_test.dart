@@ -1,29 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/mock_services.dart';
 import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
-import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_screen_providers.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 
-class MockMatchApplicationService extends Mock
-    implements MatchApplicationService {}
-
 void main() {
   setUpAll(() {
-    registerFallbackValue(
-      const MatchModel(
-        id: 'fallback_id',
-        matchType: '先鋒',
-        redName: 'red',
-        whiteName: 'white',
-      ),
-    );
+    registerCommonFallbackValues();
   });
 
   group('[Widget] クイック次戦作成ウィザードの検証', () {

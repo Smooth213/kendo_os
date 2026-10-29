@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../helpers/safe_pump_helper.dart';
+import '../../../../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../helpers/safe_pump_helper.dart';
+import '../../../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_container.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_form_state.dart';
