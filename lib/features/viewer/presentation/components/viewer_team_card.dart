@@ -363,6 +363,7 @@ class ViewerTeamCard extends StatelessWidget {
                 playerName: playerName,
                 playerMatches: playerMatches,
                 matchLabel: label,
+                searchQuery: sanitizedQuery,
               );
             }),
           ],

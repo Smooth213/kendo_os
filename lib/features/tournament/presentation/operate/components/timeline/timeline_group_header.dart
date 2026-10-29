@@ -8,9 +8,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/rul
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_status_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_summary_input_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_highlight_text.dart';
 
 /// タイムライングループカードの1段目〜4段目（ステータス・対戦名・コート情報・アクション操作行）を担当するヘッダーWidget
 class TimelineGroupHeader extends ConsumerWidget {
@@ -39,6 +41,7 @@ class TimelineGroupHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final searchQuery = ref.watch(searchQueryProvider);
     final firstMatch = groupList.first;
     final rTeam = firstMatch.redName.contains(':')
         ? firstMatch.redName.split(':').first.trim()
@@ -130,8 +133,9 @@ class TimelineGroupHeader extends ConsumerWidget {
                     : FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                          '$rTeam vs $wTeam',
+                        child: AppHighlightText(
+                          text: '$rTeam vs $wTeam',
+                          query: searchQuery,
                           style: TextStyle(
                             fontSize: AppFontSize.subhead,
                             fontWeight: AppFontWeight.bold,

@@ -31,6 +31,7 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
   final bool isReadOnlyUI;
   final bool isDark;
   final PermissionState permissions;
+  final String sanitizedQuery;
 
   const TimelineIndividualPlayerCard({
     super.key,
@@ -44,6 +45,7 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
     required this.isReadOnlyUI,
     required this.isDark,
     required this.permissions,
+    this.sanitizedQuery = '',
   });
 
   @override
@@ -130,6 +132,7 @@ class TimelineIndividualPlayerCard extends ConsumerWidget {
               isDark: isDark,
               isReadOnlyUI: isReadOnlyUI,
               titleColor: pTitleColor,
+              searchQuery: sanitizedQuery,
             ),
             children: [
               ReorderableListView(

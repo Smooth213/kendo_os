@@ -17,7 +17,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart'
-    show customTeamNamesProvider;
+    show customTeamNamesProvider, searchQueryProvider;
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
@@ -65,6 +65,7 @@ class MatchListTileCard extends ConsumerWidget {
 
     final match = maybeMatch ?? initialMatch;
     final permissions = ref.watch(permissionProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isFinished = match.status == 'finished' || match.status == 'approved';
     final isPlaying = match.status == 'in_progress';
@@ -307,6 +308,7 @@ class MatchListTileCard extends ConsumerWidget {
                         whiteTeam: wResolvedTeam,
                         isRedOwn: isRedOwn,
                         isWhiteOwn: isWhiteOwn,
+                        searchQuery: searchQuery,
                         textColor: isDark
                             ? const Color(0xFFFFFFFF)
                             : const Color(0x8A000000),
@@ -323,6 +325,7 @@ class MatchListTileCard extends ConsumerWidget {
                         isDraw: isDraw,
                         textColor: context.appColors.textColor,
                         subTextColor: context.appColors.subTextColor,
+                        searchQuery: searchQuery,
                       ),
                     ],
                   );

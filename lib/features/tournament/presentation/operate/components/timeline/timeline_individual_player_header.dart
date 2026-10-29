@@ -7,6 +7,7 @@ import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_highlight_text.dart';
 
 /// タイムライン・観客席ビュアー共通の個人戦アコーディオンヘッダー（1〜4段構造）
 class TimelineIndividualPlayerHeader extends ConsumerWidget {
@@ -15,6 +16,7 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
   final bool isDark;
   final bool isReadOnlyUI;
   final Color titleColor;
+  final String searchQuery;
 
   const TimelineIndividualPlayerHeader({
     super.key,
@@ -23,6 +25,7 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
     required this.isDark,
     required this.isReadOnlyUI,
     required this.titleColor,
+    this.searchQuery = '',
   });
 
   @override
@@ -111,13 +114,15 @@ class TimelineIndividualPlayerHeader extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 text: TextSpan(
                   children: [
-                    TextSpan(
+                    ...AppHighlightText.buildSpans(
                       text: playerName,
+                      query: searchQuery,
                       style: TextStyle(
                         fontSize: AppFontSize.subhead,
                         fontWeight: AppFontWeight.bold,
                         color: titleColor,
                       ),
+                      isDark: isDark,
                     ),
                     TextSpan(
                       text:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_highlight_text.dart';
 
 /// 試合カード上部に左右チーム名を独立表示する純粋UIコンポーネント
 class MatchTeamHeaderRow extends StatelessWidget {
@@ -8,6 +9,7 @@ class MatchTeamHeaderRow extends StatelessWidget {
   final Color textColor;
   final bool isRedOwn;
   final bool isWhiteOwn;
+  final String searchQuery;
 
   const MatchTeamHeaderRow({
     super.key,
@@ -16,6 +18,7 @@ class MatchTeamHeaderRow extends StatelessWidget {
     required this.textColor,
     this.isRedOwn = false,
     this.isWhiteOwn = false,
+    this.searchQuery = '',
   });
 
   @override
@@ -30,8 +33,9 @@ class MatchTeamHeaderRow extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              rDisplay,
+            child: AppHighlightText(
+              text: rDisplay,
+              query: searchQuery,
               style: TextStyle(
                 fontSize: AppFontSize.badge,
                 color: isRedOwn ? const Color(0xFFD97706) : textColor,
@@ -49,8 +53,9 @@ class MatchTeamHeaderRow extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerRight,
-            child: Text(
-              wDisplay,
+            child: AppHighlightText(
+              text: wDisplay,
+              query: searchQuery,
               style: TextStyle(
                 fontSize: AppFontSize.badge,
                 color: isWhiteOwn ? const Color(0xFFD97706) : textColor,

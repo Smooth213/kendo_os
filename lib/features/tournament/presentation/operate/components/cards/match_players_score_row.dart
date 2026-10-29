@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
+import 'package:kendo_os/shared/widgets/app_highlight_text.dart';
 import 'package:kendo_os/shared/widgets/match_tables/point_mark_badge.dart';
 import 'match_score_line.dart';
 
@@ -14,6 +15,7 @@ class MatchPlayersScoreRow extends StatelessWidget {
   final bool isDraw;
   final Color textColor;
   final Color subTextColor;
+  final String searchQuery;
 
   const MatchPlayersScoreRow({
     super.key,
@@ -26,6 +28,7 @@ class MatchPlayersScoreRow extends StatelessWidget {
     required this.isDraw,
     required this.textColor,
     required this.subTextColor,
+    this.searchQuery = '',
   });
 
   @override
@@ -38,8 +41,9 @@ class MatchPlayersScoreRow extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              redName,
+            child: AppHighlightText(
+              text: redName,
+              query: searchQuery,
               style: TextStyle(
                 fontSize: AppFontSize.body,
                 fontWeight: isRedOwn ? AppFontWeight.black : AppFontWeight.bold,
@@ -63,8 +67,9 @@ class MatchPlayersScoreRow extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerRight,
-            child: Text(
-              whiteName,
+            child: AppHighlightText(
+              text: whiteName,
+              query: searchQuery,
               style: TextStyle(
                 fontSize: AppFontSize.body,
                 fontWeight: isWhiteOwn

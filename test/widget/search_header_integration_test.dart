@@ -19,6 +19,7 @@ import 'package:kendo_os/shared/presentation/providers/current_user_role_provide
 import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/widgets/app_highlight_text.dart';
 import 'package:kendo_os/shared/widgets/app_search_header.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:mocktail/mocktail.dart';
@@ -245,5 +246,77 @@ void main() {
         expect(find.byType(AppSearchHeader), findsNothing);
       },
     );
+
+    testWidgets('AppHighlightText: 検索クエリと一致する部分がハイライトスタイルで描画されること', (
+      tester,
+    ) async {
+      // 1. buildSpans の純粋ロジック検証
+      final spans = AppHighlightText.buildSpans(
+        text: '道上剣友会 vs テスト001-1',
+        query: '道上',
+      );
+      expect(spans.length, 2);
+      expect(spans[0].text, '道上');
+      expect(spans[0].style?.backgroundColor, isNotNull);
+      expect(spans[1].text, '剣友会 vs テスト001-1');
+
+      // 2. ウィジェットレンダリング検証
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AppHighlightText(text: '道上剣友会 vs テスト001-1', query: '道上'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final textFinder = find.byType(Text);
+      expect(textFinder, findsOneWidget);
+      final textWidget = tester.widget<Text>(textFinder);
+      expect(textWidget.textSpan, isNotNull);
+      final rootSpan = textWidget.textSpan! as TextSpan;
+      expect(rootSpan.children, isNotNull);
+      expect(rootSpan.children!.length, 2);
+      final childSpan = rootSpan.children![0] as TextSpan;
+      expect(childSpan.text, '道上');
+      expect(childSpan.style?.backgroundColor, isNotNull);
+    });
+
+    test('AppHighlightText: 空クエリ・不一致・大文字小文字のエッジケースが安全に処理されること', () {
+      // 空文字クエリ: スパン分割されず単一テキストとして返ること
+      final emptySpans = AppHighlightText.buildSpans(text: '道上剣友会', query: '');
+      expect(emptySpans.length, 1);
+      expect(emptySpans[0].text, '道上剣友会');
+      expect(emptySpans[0].style?.backgroundColor, isNull);
+
+      // 空白のみのクエリ: トリムされて単一テキストとして返ること
+      final whitespaceSpans = AppHighlightText.buildSpans(
+        text: '道上剣友会',
+        query: '   ',
+      );
+      expect(whitespaceSpans.length, 1);
+      expect(whitespaceSpans[0].text, '道上剣友会');
+      expect(whitespaceSpans[0].style?.backgroundColor, isNull);
+
+      // 一致しないクエリ: 分割されず単一テキストとして返ること
+      final noMatchSpans = AppHighlightText.buildSpans(
+        text: '道上剣友会',
+        query: '東京',
+      );
+      expect(noMatchSpans.length, 1);
+      expect(noMatchSpans[0].text, '道上剣友会');
+      expect(noMatchSpans[0].style?.backgroundColor, isNull);
+
+      // 大文字小文字の差異: 小文字クエリで大文字テキストが正しくハイライトされること
+      final caseInsensitiveSpans = AppHighlightText.buildSpans(
+        text: 'KENDO TEAM vs OPPONENT',
+        query: 'team',
+      );
+      expect(caseInsensitiveSpans.length, 3);
+      expect(caseInsensitiveSpans[0].text, 'KENDO ');
+      expect(caseInsensitiveSpans[1].text, 'TEAM');
+      expect(caseInsensitiveSpans[1].style?.backgroundColor, isNotNull);
+      expect(caseInsensitiveSpans[2].text, ' vs OPPONENT');
+    });
   });
 }

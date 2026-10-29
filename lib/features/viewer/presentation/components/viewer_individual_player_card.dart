@@ -11,12 +11,14 @@ class ViewerIndividualPlayerCard extends StatelessWidget {
   final String playerName;
   final List<MatchModel> playerMatches;
   final String matchLabel;
+  final String searchQuery;
 
   const ViewerIndividualPlayerCard({
     super.key,
     required this.playerName,
     required this.playerMatches,
     required this.matchLabel,
+    this.searchQuery = '',
   });
 
   @override
@@ -96,6 +98,7 @@ class ViewerIndividualPlayerCard extends StatelessWidget {
               isDark: isDark,
               isReadOnlyUI: true,
               titleColor: pTitleColor,
+              searchQuery: searchQuery,
             ),
             children: playerMatches
                 .map(

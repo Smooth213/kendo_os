@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/perm
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
+import 'package:kendo_os/shared/widgets/app_highlight_text.dart';
 
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart'
@@ -177,8 +178,9 @@ class TimelineTeamCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text(
-                    teamName,
+                  child: AppHighlightText(
+                    text: teamName,
+                    query: sanitizedQuery,
                     style: const TextStyle(
                       fontSize: AppFontSize.headline,
                       fontWeight: AppFontWeight.bold,
@@ -382,6 +384,7 @@ class TimelineTeamCard extends ConsumerWidget {
                         isReadOnlyUI: isReadOnlyUI,
                         isDark: isDark,
                         permissions: permissions,
+                        sanitizedQuery: sanitizedQuery,
                       );
                     }
                     return null;
