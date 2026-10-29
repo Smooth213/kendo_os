@@ -157,7 +157,9 @@ class _OrderSetupScreenState extends ConsumerState<OrderSetupScreen> {
     final rule = ref.watch(matchRuleProvider);
     final String matchType =
         ref.watch(lastUsedSettingsProvider)['matchType'] as String? ?? '';
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _themeColors =
         Theme.of(context).extension<AppThemeColors>() ??

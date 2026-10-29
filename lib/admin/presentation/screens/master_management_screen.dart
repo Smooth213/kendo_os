@@ -81,7 +81,9 @@ class _MasterManagementScreenState
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
 
     final Color primaryColor = isDark
         ? AppKendoColors.purpleAccent

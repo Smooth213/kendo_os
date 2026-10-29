@@ -26,7 +26,9 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExporting = ref.watch(isExportingProvider);
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
 
     // tournamentId から日付をパース (例: bunaiksen_20241010)
     String dateDisplay = '部内戦';

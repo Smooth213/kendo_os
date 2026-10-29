@@ -44,7 +44,9 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen');
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final permissions = ref.watch(permissionProvider);
 
     // ★ 修正：今日ではなく「選択された日付」を基準にする

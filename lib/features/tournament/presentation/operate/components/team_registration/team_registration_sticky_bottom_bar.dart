@@ -31,7 +31,9 @@ class TeamRegistrationStickyBottomBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final bottomColor = enableLiquidGlass
         ? Colors.transparent
         : (isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF));

@@ -150,5 +150,23 @@ void main() {
       expect(savedMatches.length, 1);
       expect(savedMatches.first.id, 'mb-match-dispose');
     });
+
+    test('廃棄時安全性において dispose実行時のフラッシュ例外が安全にキャッチされ未処理例外にならないこと', () async {
+      final batch = LocalMatchMicroBatch(
+        saveMatch: (m) async => throw Exception('DB closed'),
+        saveMatchesBulk: (list) async => throw Exception('DB closed'),
+      );
+
+      final match = const MatchModel(
+        id: 'mb-match-dispose-err',
+        matchType: '個人戦',
+        redName: '選手赤',
+        whiteName: '選手白',
+      );
+
+      await batch.saveMatchBatched(match, isCritical: false);
+      expect(() => batch.dispose(), returnsNormally);
+      await Future<void>.delayed(Duration.zero);
+    });
   });
 }

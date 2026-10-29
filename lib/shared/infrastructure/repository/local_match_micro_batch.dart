@@ -76,6 +76,12 @@ class LocalMatchMicroBatch {
   void dispose() {
     _timer?.cancel();
     _timer = null;
-    unawaited(flush());
+    unawaited(
+      flush().catchError((error, stack) {
+        debugPrint(
+          '[WARN] [Adaptive Micro-Batch] dispose 時のフラッシュに失敗しました: $error\n$stack',
+        );
+      }),
+    );
   }
 }

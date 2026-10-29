@@ -47,7 +47,9 @@ class _BunaiksenOfficialRecordScreenState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExporting = ref.watch(isExportingProvider);
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final viewDate = ref.watch(bunaiksenViewDateProvider);
     final tournamentId = 'bunaiksen_${DateFormat('yyyyMMdd').format(viewDate)}';
     final tName = '部内戦';

@@ -16,7 +16,9 @@ class OperatorActionButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final permissions = ref.watch(permissionProvider);
     final bool isReadOnly = permissions.isReadOnly;
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(

@@ -27,7 +27,9 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'bunaiksen_viewer');
-    final enableLiquidGlass = ref.watch(settingsProvider).enableLiquidGlass;
+    final enableLiquidGlass = ref.watch(
+      settingsProvider.select((s) => s.enableLiquidGlass),
+    );
     // 🛡️ QRアクセス防衛判定：外部のQRコード（直リンク）からスタックなしで直接ブラウザで開かれた場合のみ true と判定
     final isQrAccess = !(GoRouter.maybeOf(context)?.canPop() ?? false);
 

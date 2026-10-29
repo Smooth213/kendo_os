@@ -16,16 +16,35 @@ class BunaiksenGuestNotifier extends StateNotifier<List<String>> {
   }
 
   void _listenToGuests() {
+    _bindStream();
+    _ref.listen<String>(currentDojoIdProvider, (prev, next) {
+      if (prev != next) {
+        state = [];
+        _bindStream();
+      }
+    });
+    _ref.listen<DateTime>(bunaiksenViewDateProvider, (prev, next) {
+      if (prev != next) {
+        state = [];
+        _bindStream();
+      }
+    });
+    _ref.listen<FirebaseFirestore>(firestoreProvider, (prev, next) {
+      _bindStream();
+    });
+  }
+
+  void _bindStream() {
     _sub?.cancel();
-    final dojoId = _ref.watch(currentDojoIdProvider);
-    final viewDate = _ref.watch(bunaiksenViewDateProvider);
+    final dojoId = _ref.read(currentDojoIdProvider);
+    final viewDate = _ref.read(bunaiksenViewDateProvider);
 
     final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
     final dateStr = DateFormat('yyyyMMdd').format(viewDate);
     final targetTournamentId = 'bunaiksen_$dateStr';
 
-    _sub = _ref
-        .watch(firestoreProvider)
+    final firestore = _ref.read(firestoreProvider);
+    _sub = firestore
         .collection('organizations')
         .doc(safeDojoId)
         .collection('tournaments')
@@ -33,6 +52,7 @@ class BunaiksenGuestNotifier extends StateNotifier<List<String>> {
         .collection('bunaiksen_guests')
         .snapshots()
         .listen((snap) {
+          if (!mounted) return;
           state = snap.docs.map((doc) => doc.data()['name'] as String).toList();
         });
   }
@@ -51,8 +71,8 @@ class BunaiksenGuestNotifier extends StateNotifier<List<String>> {
       state = [...state, docId];
     }
 
-    await _ref
-        .read(firestoreProvider)
+    final firestore = _ref.read(firestoreProvider);
+    await firestore
         .collection('organizations')
         .doc(safeDojoId)
         .collection('tournaments')
