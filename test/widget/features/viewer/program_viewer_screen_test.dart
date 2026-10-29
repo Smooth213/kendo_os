@@ -1,0 +1,870 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import '../../../helpers/safe_pump_helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_page_cache.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_pdf_body.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/program_viewer_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/components/program_management/program_view_state_service.dart';
+import 'package:kendo_os/features/tournament/presentation/painters/program_viewer_painters.dart';
+import 'package:kendo_os/shared/domain/entities/program_model.dart'
+    hide StrokeModel;
+import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/stroke_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_stroke_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/program_repository.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/infrastructure/persistence/models/local_stroke_model.dart';
+
+class MockStrokeRepository extends Mock implements StrokeRepository {}
+
+class MockLocalStrokeRepository extends Mock implements LocalStrokeRepository {}
+
+class MockProgramRepository extends Mock implements ProgramRepository {}
+
+// ★ PDF表示テスト時の非同期通信クラッシュ(ClientException)を防止する安全なHTTPモック
+class MockHttpOverrides extends HttpOverrides {
+  final HttpClient client;
+  MockHttpOverrides(this.client);
+  @override
+  HttpClient createHttpClient(SecurityContext? context) => client;
+}
+
+class MockHttpClient extends Mock implements HttpClient {}
+
+class MockHttpClientRequest extends Mock implements HttpClientRequest {
+  final HttpClientResponse response;
+  MockHttpClientRequest(this.response);
+
+  @override
+  Future<HttpClientResponse> close() async {
+    return response;
+  }
+
+  @override
+  Future<HttpClientResponse> addStream(Stream<List<int>> stream) {
+    return stream.drain().then((_) => close());
+  }
+
+  @override
+  Future<void> flush() async {}
+
+  @override
+  Future<HttpClientResponse> get done => Future.value(response);
+}
+
+class MockHttpClientResponse extends Mock implements HttpClientResponse {
+  final List<int> _bytes = utf8.encode('%PDF-1.0\n...\n%%EOF');
+  final HttpHeaders _headers;
+
+  MockHttpClientResponse(this._headers);
+
+  @override
+  HttpHeaders get headers => _headers;
+
+  @override
+  int get statusCode => 200;
+
+  @override
+  int get contentLength => _bytes.length;
+
+  @override
+  String get reasonPhrase => 'OK';
+
+  @override
+  bool get isRedirect => false;
+
+  @override
+  bool get persistentConnection => true;
+
+  @override
+  List<RedirectInfo> get redirects => const <RedirectInfo>[];
+
+  @override
+  StreamSubscription<List<int>> listen(
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return Stream<List<int>>.fromIterable([_bytes]).listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+  }
+}
+
+class MockHttpHeaders extends Mock implements HttpHeaders {
+  @override
+  List<String>? operator [](String name) =>
+      name.toLowerCase() == 'content-type' ? ['application/pdf'] : null;
+
+  @override
+  String? value(String name) =>
+      name.toLowerCase() == 'content-type' ? 'application/pdf' : null;
+
+  @override
+  ContentType? get contentType => ContentType.parse('application/pdf');
+
+  @override
+  int get contentLength => 0;
+}
+
+void main() {
+  group('[Widget] ProgramViewerScreen Stability & リグレッションテスト', () {
+    late MockStrokeRepository mockStrokeRepo;
+    late MockLocalStrokeRepository mockLocalStrokeRepo;
+    late MockProgramRepository mockProgramRepo;
+    late SharedPreferences prefs;
+    late MockHttpClient mockHttpClientForDio;
+    late MockHttpClientRequest mockHttpClientRequest;
+    late MockHttpClientResponse mockHttpClientResponse;
+    late MockHttpHeaders mockHttpHeaders;
+
+    setUpAll(() {
+      registerFallbackValue(Uri.parse('https://example.com'));
+    });
+
+    setUp(() async {
+      ProgramViewerMediaCache.shared.clear();
+      ProgramViewerPdfPageCache.shared.clear();
+      ProgramViewStateService.instance.resetForTesting();
+
+      mockStrokeRepo = MockStrokeRepository();
+      mockLocalStrokeRepo = MockLocalStrokeRepository();
+      mockProgramRepo = MockProgramRepository();
+
+      mockHttpHeaders = MockHttpHeaders();
+      mockHttpClientResponse = MockHttpClientResponse(mockHttpHeaders);
+      mockHttpClientRequest = MockHttpClientRequest(mockHttpClientResponse);
+      mockHttpClientForDio = MockHttpClient();
+
+      when(
+        () => mockHttpClientForDio.getUrl(any()),
+      ).thenAnswer((_) async => mockHttpClientRequest);
+      when(
+        () => mockHttpClientForDio.openUrl(any(), any()),
+      ).thenAnswer((_) async => mockHttpClientRequest);
+
+      HttpOverrides.global = MockHttpOverrides(mockHttpClientForDio);
+
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+
+      when(
+        () => mockStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([]));
+      when(
+        () => mockLocalStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([]));
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([])); // Default mock
+    });
+
+    tearDown(() {
+      HttpOverrides.global = null;
+      ProgramViewerMediaCache.shared.clear();
+      ProgramViewerPdfPageCache.shared.clear();
+    });
+
+    Widget createViewerWidget(
+      List<ProgramModel> programs, {
+      bool isReadOnly = false,
+    }) {
+      return ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          strokeRepositoryProvider.overrideWithValue(mockStrokeRepo),
+          localStrokeRepositoryProvider.overrideWithValue(mockLocalStrokeRepo),
+          programRepositoryProvider.overrideWithValue(mockProgramRepo),
+          activeRoleProvider.overrideWith(
+            (ref) => isReadOnly ? Role.viewer : Role.admin,
+          ),
+          permissionProvider.overrideWith(
+            (ref) => AppPermissions(isReadOnly: isReadOnly),
+          ),
+          currentUserRoleProvider.overrideWith(
+            (ref) => isReadOnly ? UserRole.viewer : UserRole.admin,
+          ),
+          currentDojoIdProvider.overrideWith((ref) => 'test_dojo'),
+          isarProvider.overrideWithValue(null),
+        ],
+        child: MaterialApp(
+          home: ProgramViewerScreen(programs: programs, initialIndex: 0),
+        ),
+      );
+    }
+
+    testWidgets('PDFがRenderFlexオーバーフローエラーを起こさずに描画されること', (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+
+      // OverflowBox と ClipRect の効果を検証
+      tester.view.physicalSize = const Size(1080, 1920);
+
+      final pdfProgram = ProgramModel(
+        id: 'pdf_1',
+        tournamentId: 't1',
+        title: '大会進行表 (PDF)',
+        fileUrl: 'https://example.com/dummy.pdf', // ネットワークリクエストは通常モックされます
+        fileType: 'pdf',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([pdfProgram]));
+
+      await tester.pumpWidget(createViewerWidget([pdfProgram]));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1)); // PDF描画エンジンの内部タイマーを消化
+
+      // PDFビューアのコンテナがツリーに存在すること
+      expect(find.byType(ProgramViewerPdfBody), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('Web特有のCORS回避: 画像読み込みが無限クルクルにならずフォールバックされること', (tester) async {
+      final imageProgram = ProgramModel(
+        id: 'img_1',
+        tournamentId: 't1',
+        title: '手書きスコア (画像)',
+        fileUrl:
+            'https://placehold.co/400x600/E8E8E8/808080.png?text=Uploading...',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([imageProgram]));
+
+      await tester.pumpWidget(createViewerWidget([imageProgram]));
+
+      // タイムアウトやダミーURLのショートサーキット処理により即座に画像が表示（またはエラーアイコン化）される
+      await tester.pump();
+      await tester.pump(
+        const Duration(milliseconds: 100),
+      ); // FutureBuilderの解決を待つ
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('OCRの完了状態に応じてアイコンが正しく切り替わること', (tester) async {
+      final streamController = StreamController<List<ProgramModel>>.broadcast();
+      addTearDown(() => streamController.close());
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => streamController.stream);
+
+      final pendingProgram = ProgramModel(
+        id: 'img_2',
+        tournamentId: 't1',
+        title: 'OCR未処理',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+        isOcrProcessed: false,
+      );
+
+      await tester.pumpWidget(createViewerWidget([pendingProgram]));
+      streamController.add([pendingProgram]);
+      await tester.safePumpAndSettle();
+
+      final boltIconPending = tester.widget<Icon>(find.byIcon(Icons.bolt));
+      expect(boltIconPending.color, equals(Colors.grey.shade400));
+
+      final processedProgram = pendingProgram.copyWith(isOcrProcessed: true);
+      streamController.add([processedProgram]);
+
+      await tester.pump(); // Streamの更新をフラッシュ
+      await tester.safePumpAndSettle();
+
+      final boltIconProcessed = tester.widget<Icon>(find.byIcon(Icons.bolt));
+      expect(boltIconProcessed.color, equals(Colors.amber));
+    });
+
+    testWidgets('閲覧専用(Viewer)権限の時は書き込みボタンが完全に非表示になること', (tester) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テスト',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+
+      // 閲覧権限（保護者など）で開く
+      await tester.pumpWidget(createViewerWidget([program], isReadOnly: true));
+      await tester.safePumpAndSettle();
+
+      // 書き込みモードをONにする
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.safePumpAndSettle();
+
+      // 観客権限では共有ペン（ピンク・黄色）が完全に非表示であること
+      expect(find.byTooltip('ピンク'), findsNothing);
+      expect(find.byTooltip('黄色'), findsNothing);
+    });
+
+    testWidgets('手書きアノテーションの Undo 操作が正しくトリガーされること', (tester) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テスト',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+      when(() => mockStrokeRepo.undoLastStroke(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalStrokeRepo.undoLastStroke(any()),
+      ).thenAnswer((_) async {});
+
+      await tester.pumpWidget(createViewerWidget([program]));
+      await tester.safePumpAndSettle();
+
+      // 書き込みモードをONにする (アイコン経由で確実にタップ)
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.safePumpAndSettle();
+
+      // 元に戻す(Undo)ボタンを探してタップ
+      final undoButton = find.byTooltip('1つ戻す');
+      expect(undoButton, findsOneWidget);
+      await tester.tap(undoButton);
+      await tester.safePumpAndSettle();
+
+      // デフォルトの個人ペン（青）の undoLastStroke が呼び出されたことを検証
+      verify(() => mockLocalStrokeRepo.undoLastStroke('p1')).called(1);
+    });
+
+    test('opacity/a の値が半透明の時は BlendMode.multiply が適用されることにおいて蛍光ペンの描画判定こと', () {
+      final painter = StrokePainter(
+        sharedStrokes: [],
+        privateStrokes: [],
+        currentPoints: null,
+        currentLineColor: Colors.pink,
+        activePenWidth: 10.0,
+      );
+
+      // 通常の不透明色 (アルファ=255)
+      final normalPaint = painter.getPaint(Colors.pink, 10.0);
+      expect(normalPaint.blendMode, equals(BlendMode.srcOver));
+
+      // 半透明の蛍光マーカー色 (不透明度 0.35, アルファ=90)
+      final markerPaint = painter.getPaint(Colors.pink.withAlpha(90), 30.0);
+      expect(markerPaint.blendMode, equals(BlendMode.multiply));
+
+      // 🛡️ 視認性向上の救済パッチ検証: 過去のColors.yellow (0xFFFFEB3B) が渡された場合、自動で高視認性の黄色 (0xFFCA8A04) に変換されること
+      final yellowPaint = painter.getPaint(Colors.yellow, 10.0);
+      expect(
+        yellowPaint.color.toARGB32(),
+        equals(const Color(0xFFCA8A04).toARGB32()),
+      );
+
+      // 半透明の過去のColors.yellowに対しても、透明度を維持したまま変換されること
+      final yellowMarkerPaint = painter.getPaint(
+        Colors.yellow.withAlpha(90),
+        30.0,
+      );
+      expect(
+        yellowMarkerPaint.color.toARGB32(),
+        equals(const Color(0xFFCA8A04).withAlpha(90).toARGB32()),
+      );
+      expect(yellowMarkerPaint.blendMode, equals(BlendMode.multiply));
+    });
+
+    testWidgets('消しゴムツールでの近接線の検知と個別削除がトリガーされること', (tester) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テスト',
+        fileUrl: 'https://placehold.co/400x600.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+      when(() => mockStrokeRepo.deleteStroke(any())).thenAnswer((_) async {});
+
+      // 共有線のリストに、座標点 (100, 100) を含む線をあらかじめ流し込む
+      final existingStroke = StrokeModel(
+        id: 'stroke_123',
+        programId: 'p1',
+        points: [const Offset(100, 100), const Offset(105, 105)],
+        color: Colors.pink,
+        strokeWidth: 10.0,
+        isShared: true,
+        pageIndex: 0,
+      );
+
+      when(
+        () => mockStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([existingStroke]));
+
+      await tester.pumpWidget(createViewerWidget([program]));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // 書き込みモードをONにする (アイコン経由で確実にタップ)
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // ツールバーの消しゴムボタンを選択
+      final eraserButton = find.byTooltip('消しゴム');
+      expect(eraserButton, findsOneWidget);
+      await tester.tap(eraserButton);
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // 描画インプットを受け取る Listener を直接探す（onPointerMove を購読している唯一のもの）
+      final listenerFinder = find.byWidgetPredicate(
+        (widget) => widget is Listener && widget.onPointerMove != null,
+      );
+      expect(listenerFinder, findsOneWidget);
+      final Listener listener = tester.widget(listenerFinder);
+
+      // 近接する (102, 102) のローカル座標を PointerDownEvent で直接送信して消しゴムをトリガー
+      listener.onPointerDown!(
+        const PointerDownEvent(position: Offset(102, 102)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // 共有線の deleteStroke('stroke_123') が正しく呼び出されたことを検証！
+      verify(() => mockStrokeRepo.deleteStroke('stroke_123')).called(1);
+    });
+
+    testWidgets('PDFの2重ロード（フェッチ）防止キャッシュの動作が正しく検証されること', (tester) async {
+      final pdfProgram = ProgramModel(
+        id: 'pdf_1',
+        tournamentId: 't1',
+        title: '大会進行表 (PDF)',
+        fileUrl: 'https://example.com/dummy_cache_isolated.pdf',
+        fileType: 'pdf',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([pdfProgram]));
+
+      await tester.pumpWidget(createViewerWidget([pdfProgram]));
+      await tester.pump();
+
+      final dynamic state = tester.state(find.byType(ProgramViewerScreen));
+
+      // あらかじめキャッシュにダミー Future をセットして FirebaseStorage の実際の呼び出しを回避
+      final dummyFuture = Future.value(Uint8List(0));
+      state.setState(() {
+        state.sdkPdfBytesCacheForTesting['https://example.com/dummy_cache_isolated.pdf'] =
+            dummyFuture;
+      });
+      await tester.pump();
+
+      // 同一URLに対するキャッシュ呼び出しが同じ Future インスタンスを返すことを検証
+      final future1 = state.getCachedPdfBytesViaSdk(
+        'https://example.com/dummy_cache_isolated.pdf',
+      );
+      final future2 = state.getCachedPdfBytesViaSdk(
+        'https://example.com/dummy_cache_isolated.pdf',
+      );
+
+      expect(future1, equals(dummyFuture));
+      expect(future2, equals(dummyFuture));
+
+      await tester.pump(const Duration(seconds: 1)); // タイマー消化
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('PDFの複数ページの個別ページ数管理（スワイプ時の競合防止）が正しく検証できること', (tester) async {
+      final program1 = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'PDF 1',
+        fileUrl: 'https://example.com/pdf1.pdf',
+        fileType: 'pdf',
+        pageCount: 2,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      final program2 = ProgramModel(
+        id: 'p2',
+        tournamentId: 't1',
+        title: 'PDF 2',
+        fileUrl: 'https://example.com/pdf2.pdf',
+        fileType: 'pdf',
+        pageCount: 3,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program1, program2]));
+
+      await tester.pumpWidget(createViewerWidget([program1, program2]));
+      await tester.pump();
+
+      final dynamic state = tester.state(find.byType(ProgramViewerScreen));
+
+      // 各URLごとのページ数をキャッシュに代入して検証
+      state.setState(() {
+        state.pdfPageCountsForTesting['https://example.com/pdf1.pdf'] = 2;
+        state.pdfPageCountsForTesting['https://example.com/pdf2.pdf'] = 3;
+      });
+      await tester.pump();
+
+      expect(
+        state.pdfPageCountsForTesting['https://example.com/pdf1.pdf'],
+        equals(2),
+      );
+      expect(
+        state.pdfPageCountsForTesting['https://example.com/pdf2.pdf'],
+        equals(3),
+      );
+
+      await tester.pump(const Duration(seconds: 1)); // タイマー消化
+    });
+
+    testWidgets('画像共有の適切な実施 (プログラム追加によるリアルタイムでのリスト自動更新) が正しく検証できること', (
+      tester,
+    ) async {
+      final streamController = StreamController<List<ProgramModel>>.broadcast();
+      addTearDown(() => streamController.close());
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => streamController.stream);
+
+      final p1 = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: '1枚目の画像',
+        fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=1',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      final p2 = ProgramModel(
+        id: 'p2',
+        tournamentId: 't1',
+        title: '2枚目の画像',
+        fileUrl: 'https://placehold.co/400x600/E8E8E8/808080.png?text=2',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      await tester.pumpWidget(createViewerWidget([p1]));
+
+      // 最初は1枚だけ流す
+      streamController.add([p1]);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // 画像タイマー消化
+
+      // リアルタイム更新前の表示プログラム検証（1枚目なので矢印ナビゲーションなし）
+      expect(find.textContaining('1枚目の画像 (1/1)'), findsOneWidget);
+      expect(find.byTooltip('次のプログラム'), findsNothing);
+
+      // リアルタイムに2枚目を追加して流す
+      streamController.add([p1, p2]);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100)); // 画像タイマー消化
+
+      // リアルタイム更新後: 2枚対応のAppBarナビゲーション（次のプログラムボタン）が出現することを検証
+      expect(find.textContaining('1枚目の画像 (1/2)'), findsOneWidget);
+      expect(find.byTooltip('次のプログラム'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 1)); // タイマー完全消化
+    });
+
+    testWidgets(
+      'ピンチズーム（拡大）中に PDF の縦スクロール PageView のスワイプ物理が NeverScrollableScrollPhysics に切り替わること',
+      (tester) async {
+        final program = ProgramModel(
+          id: 'p1',
+          tournamentId: 't1',
+          title: 'テストPDF',
+          fileUrl: 'https://example.com/test.pdf',
+          fileType: 'pdf',
+          pageCount: 2,
+          createdAt: DateTime(2026, 1, 1, 12, 0),
+        );
+
+        when(
+          () => mockProgramRepo.watchPrograms(any()),
+        ).thenAnswer((_) => Stream.value([program]));
+
+        await tester.pumpWidget(createViewerWidget([program]));
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // ズーム前：通常は PageScrollPhysics
+        final pdfViewerFinder = find.byKey(const ValueKey('viewer_iv_p1_0'));
+        final pdfPageViewFinder = find.descendant(
+          of: pdfViewerFinder,
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is PageView && widget.scrollDirection == Axis.vertical,
+          ),
+        );
+        final PageView initialPageView = tester.widget(pdfPageViewFinder);
+        expect(initialPageView.physics, isA<PageScrollPhysics>());
+
+        // InteractiveViewer の TransformationController でズーム状態を模擬
+        final InteractiveViewer interactiveViewer = tester.widget(
+          pdfViewerFinder,
+        );
+        final controller = interactiveViewer.transformationController!;
+        controller.value = Matrix4.diagonal3Values(2.0, 2.0, 1.0);
+        await tester.pump();
+
+        // ズーム後：NeverScrollableScrollPhysics に切り替わっていることを確認
+        final PageView zoomedPageView = tester.widget(pdfPageViewFinder);
+        expect(zoomedPageView.physics, isA<NeverScrollableScrollPhysics>());
+
+        await tester.pump(const Duration(seconds: 1)); // タイマー消化
+      },
+    );
+
+    testWidgets('ツールバーのグループ分離レイアウト（描画と消去コンテナの分離・配色）が正しく検証できること', (
+      tester,
+    ) async {
+      final program = ProgramModel(
+        id: 'p1',
+        tournamentId: 't1',
+        title: 'テストツールバー',
+        fileUrl: 'https://example.com/dummy.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+
+      await tester.pumpWidget(createViewerWidget([program]));
+      await tester.safePumpAndSettle();
+
+      // 1. 書き込みモードをONにしてツールバーを表示する
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.safePumpAndSettle();
+
+      // 2. 描画グループのContainerを見つける（ライトモード背景色: Colors.grey.shade100）
+      final drawGroupFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final deco = widget.decoration as BoxDecoration;
+          return deco.color == Colors.grey.shade100;
+        }
+        return false;
+      });
+      expect(drawGroupFinder, findsOneWidget);
+
+      // 3. 消去・履歴グループのContainerを見つける（ライトモード背景色: Colors.blueGrey.shade50.withAlpha(220)）
+      final eraseGroupFinder = find.byWidgetPredicate((widget) {
+        if (widget is Container && widget.decoration is BoxDecoration) {
+          final deco = widget.decoration as BoxDecoration;
+          return deco.color == Colors.blueGrey.shade50.withAlpha(220) &&
+              deco.border?.top.color == Colors.blueGrey.shade100;
+        }
+        return false;
+      });
+      expect(eraseGroupFinder, findsOneWidget);
+
+      // 4. 描画グループ内にペン、蛍光マーカーボタンが存在すること
+      expect(find.byTooltip('ペン'), findsOneWidget);
+      expect(find.byTooltip('蛍光マーカー'), findsOneWidget);
+
+      // 5. 消去・履歴グループ内に消しゴム、1つ戻す、すべて消すボタンが存在すること
+      expect(find.byTooltip('消しゴム'), findsOneWidget);
+      expect(find.byTooltip('1つ戻す'), findsOneWidget);
+      expect(find.byTooltip('すべて消す'), findsOneWidget);
+    });
+
+    testWidgets('観客ビュアー(Viewer)権限では、表示されている共有ペンは消しゴムで削除できず、個人ペンのみ削除対象となること', (
+      tester,
+    ) async {
+      final program = ProgramModel(
+        id: 'p_viewer_erase',
+        tournamentId: 't1',
+        title: '観客消しゴムテスト',
+        fileUrl: 'https://placehold.co/400x600.jpg',
+        fileType: 'image',
+        pageCount: 1,
+        createdAt: DateTime(2026, 1, 1, 12, 0),
+      );
+
+      when(
+        () => mockProgramRepo.watchPrograms(any()),
+      ).thenAnswer((_) => Stream.value([program]));
+      when(() => mockStrokeRepo.deleteStroke(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalStrokeRepo.deleteStroke(
+          any(),
+          firestoreId: any(named: 'firestoreId'),
+        ),
+      ).thenAnswer((_) async {});
+
+      // 共有ペン (100, 100)
+      final sharedStroke = StrokeModel(
+        id: 'shared_stroke_999',
+        programId: 'p_viewer_erase',
+        points: [const Offset(100, 100), const Offset(105, 105)],
+        color: Colors.pink,
+        strokeWidth: 10.0,
+        isShared: true,
+        pageIndex: 0,
+      );
+
+      // 個人ペン (200, 200)
+      final privateStroke = LocalStrokeModel()
+        ..id = 888
+        ..programId = 'p_viewer_erase'
+        ..pointsX = [200.0, 205.0]
+        ..pointsY = [200.0, 205.0]
+        ..colorValue = Colors.blue.toARGB32()
+        ..strokeWidth = 5.0
+        ..createdAt = DateTime(2026, 1, 1, 12, 0);
+
+      when(
+        () => mockStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([sharedStroke]));
+      when(
+        () => mockLocalStrokeRepo.watchStrokes(any()),
+      ).thenAnswer((_) => Stream.value([privateStroke]));
+
+      // 観客権限(isReadOnly: true)で画面を起動
+      await tester.pumpWidget(createViewerWidget([program], isReadOnly: true));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // 書き込みモードをONにする
+      await tester.tap(find.byIcon(Icons.edit));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // 消しゴムツールを選択
+      final eraserButton = find.byTooltip('消しゴム');
+      expect(eraserButton, findsOneWidget);
+      await tester.tap(eraserButton);
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final listenerFinder = find.byWidgetPredicate(
+        (widget) => widget is Listener && widget.onPointerMove != null,
+      );
+      expect(listenerFinder, findsOneWidget);
+      final Listener listener = tester.widget(listenerFinder);
+
+      // 1. 共有ペンの位置 (102, 102) をタップして消そうとする
+      listener.onPointerDown!(
+        const PointerDownEvent(position: Offset(102, 102)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // ★ 共有ペンは決して削除されないこと（deleteStrokeが一切呼ばれていないこと）を検証！
+      verifyNever(() => mockStrokeRepo.deleteStroke(any()));
+
+      // 2. 個人ペンの位置 (202, 202) をタップして消す
+      listener.onPointerDown!(
+        const PointerDownEvent(position: Offset(202, 202)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // ★ 個人ペンは正しく削除処理がトリガーされたことを検証！
+      verify(
+        () => mockLocalStrokeRepo.deleteStroke(
+          888,
+          firestoreId: any(named: 'firestoreId'),
+        ),
+      ).called(1);
+    });
+
+    testWidgets(
+      '複数ページPDFで2ページ目以降のとき「最初のページに戻る」ボタンをタップすると1ページ目に戻り保存値が1に更新されること',
+      (tester) async {
+        addTearDown(tester.view.resetPhysicalSize);
+        tester.view.physicalSize = const Size(1080, 1920);
+
+        final pdfProgram = ProgramModel(
+          id: 'pdf_multi',
+          tournamentId: 't1',
+          title: '大会進行表 (複数ページ)',
+          fileUrl: 'https://example.com/multi.pdf',
+          fileType: 'pdf',
+          pageCount: 5,
+          createdAt: DateTime(2026, 1, 1, 12, 0),
+        );
+
+        when(
+          () => mockProgramRepo.watchPrograms(any()),
+        ).thenAnswer((_) => Stream.value([pdfProgram]));
+
+        // 事前に3ページ目を保存
+        ProgramViewStateService.instance.setLastPageNumber('pdf_multi', 3);
+
+        await tester.pumpWidget(createViewerWidget([pdfProgram]));
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // 3ページ目が表示されており、「最初のページに戻る」ボタンが存在して活性化していること
+        final firstPageBtnFinder = find.widgetWithIcon(
+          IconButton,
+          Icons.first_page,
+        );
+        expect(firstPageBtnFinder, findsOneWidget);
+
+        final iconButtonBefore = tester.widget<IconButton>(firstPageBtnFinder);
+        expect(iconButtonBefore.onPressed, isNotNull);
+
+        // 「最初のページに戻る」ボタンをタップ
+        await tester.tap(firstPageBtnFinder);
+        await tester.pump(const Duration(milliseconds: 200));
+
+        // 1ページ目に戻り、保存値も1に更新されること
+        expect(
+          ProgramViewStateService.instance.getLastPageNumber('pdf_multi'),
+          1,
+        );
+
+        // 1ページ目になったためボタンが非活性化（onPressed == null）していること
+        final iconButtonAfter = tester.widget<IconButton>(firstPageBtnFinder);
+        expect(iconButtonAfter.onPressed, isNull);
+
+        await tester.pump(const Duration(seconds: 1)); // タイマー消化
+        await tester.pump(
+          const Duration(milliseconds: 600),
+        ); // SfPdfViewer内部タイマー完全消化
+      },
+    );
+  });
+}

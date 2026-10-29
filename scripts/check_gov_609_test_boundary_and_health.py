@@ -104,7 +104,7 @@ def check_static_dynamic_separation_boundary(scanner: GovStaticScanner) -> Tuple
 
     # 既存の残存レガシーテスト（今後のリファクタリング対象）はホワイトリストで管理し、新規混入を厳格遮断
     KNOWN_LEGACY_ALLOWLIST = {
-        "test/unit/no_hardcoded_specific_names_test.dart",
+        "test/unit/domain/no_hardcoded_specific_names_test.dart",
         "test/unit/security/firestore_rules_governance_test.dart",
         "test/unit/security/storage_rules_governance_test.dart",
         "test/governance/web_browser_optimization_governance_test.dart",
@@ -133,12 +133,12 @@ def check_static_dynamic_separation_boundary(scanner: GovStaticScanner) -> Tuple
         "test/governance/screens_and_bottom_sheets_governance_test.dart",
         "test/governance/projection_updater_memory_leak_governance_test.dart",
         "test/governance/band_live_integration_governance_test.dart",
-        "test/widget/bunaiksen_dock_button_test.dart",
-        "test/widget/viewer_no_dock_governance_test.dart",
+        "test/widget/features/bunaiksen/bunaiksen_dock_button_test.dart",
+        "test/widget/features/dock/viewer_no_dock_governance_test.dart",
         "test/unit/repositories/isar_integer_safety_test.dart",
-        "test/widget/bunaiksen_score_screen_integration_test.dart",
-        "test/widget/match_screen_test.dart",
-        "test/unit/web_pwa_touch_sync_governance_test.dart",
+        "test/widget/features/bunaiksen/bunaiksen_score_screen_integration_test.dart",
+        "test/widget/features/match/match_screen_test.dart",
+        "test/unit/crdt/web_pwa_touch_sync_governance_test.dart",
     }
 
     for rel_path, content in test_files.items():

@@ -8,8 +8,8 @@ import sys
 
 def run_ios_pwa_touch_sync_governance():
     test_files = [
-        "test/unit/web_pwa_touch_sync_governance_test.dart",
-        "test/widget/role_select_screen_regression_test.dart",
+        "test/unit/crdt/web_pwa_touch_sync_governance_test.dart",
+        "test/widget/components/role_select_screen_regression_test.dart",
     ]
 
     # 🛡️ 1. Flutter テストの実行

@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/safe_pump_helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/screens/login_screen.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/dojo_room_sync_provider.dart';
+
+void main() {
+  group('[Widget] 道場ID表示 ＆ ダークモード・リグレッションテスト', () {
+    testWidgets('LoginScreenにおいて ライト・ダーク両モードでアクティブな道場IDが明確に表示されること', (
+      WidgetTester tester,
+    ) async {
+      const testDojoId = 'tokyo_kendo_dojo_2026';
+
+      // Light Mode Test
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [currentDojoIdProvider.overrideWith((ref) => testDojoId)],
+          child: MaterialApp(
+            theme: ThemeData.light(),
+            home: const LoginScreen(),
+          ),
+        ),
+      );
+
+      await tester.safePumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('接続中の道場ID'), findsOneWidget);
+      expect(find.text(testDojoId), findsOneWidget);
+
+      // Dark Mode Test
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [currentDojoIdProvider.overrideWith((ref) => testDojoId)],
+          child: MaterialApp(
+            theme: ThemeData.dark(),
+            home: const LoginScreen(),
+          ),
+        ),
+      );
+
+      await tester.safePumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('接続中の道場ID'), findsOneWidget);
+      expect(find.text(testDojoId), findsOneWidget);
+    });
+
+    testWidgets(
+      'RoleSelectScreenにおいて ライト・ダーク両モードで道場IDカードが2行でオーバーフローなく表示されること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        const testDojoId = 'test204';
+
+        // Light Mode Test on RoleSelectScreen
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => testDojoId),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.light(),
+              home: const RoleSelectScreen(),
+            ),
+          ),
+        );
+
+        await tester.safePumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
+        expect(find.text(testDojoId), findsOneWidget);
+        expect(find.text('変更'), findsOneWidget);
+
+        // Dark Mode Test on RoleSelectScreen
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => testDojoId),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.dark(),
+              home: const RoleSelectScreen(),
+            ),
+          ),
+        );
+
+        await tester.safePumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
+        expect(find.text(testDojoId), findsOneWidget);
+        expect(find.text('変更'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '新権限名称検証において RoleSelectScreen に「代表・管理者」「監督・引率責任者」「スコア・記録係」「応援・保護者・選手」が表示されること',
+      (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              currentDojoIdProvider.overrideWith((ref) => 'test204'),
+              dojoRoomSyncProvider.overrideWith((ref) {}),
+            ],
+            child: MaterialApp(
+              theme: ThemeData.light(),
+              home: const RoleSelectScreen(),
+            ),
+          ),
+        );
+
+        await tester.safePumpAndSettle();
+        expect(find.text('代表・管理者 (Admin)'), findsOneWidget);
+        expect(find.text('監督・引率責任者 (Operator)'), findsOneWidget);
+        expect(find.text('スコア・記録係 (Recorder)'), findsOneWidget);
+        expect(find.text('応援・保護者・選手 (Viewer)'), findsOneWidget);
+        expect(find.text('PIN'), findsOneWidget);
+        expect(find.text('不要'), findsOneWidget);
+      },
+    );
+  });
+}

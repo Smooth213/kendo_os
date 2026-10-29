@@ -36,7 +36,7 @@ flutter test -j 6 --no-pub \
              test/governance/hint_text_theme_contrast_governance_test.dart \
              test/governance/qr_share_design_governance_test.dart \
              test/governance/text_scale_overflow_governance_test.dart \
-             test/widget/all_screens_text_scale_no_overflow_test.dart \
+             test/widget/components/all_screens_text_scale_no_overflow_test.dart \
              test/governance/cross_platform_parity_governance_test.dart \
              test/governance/input_viewport_stability_governance_test.dart \
              test/governance/bottom_sheet_keyboard_tracking_governance_test.dart \
@@ -56,39 +56,39 @@ flutter test -j 6 --no-pub \
              test/governance/team_match_order_governance_test.dart \
              test/governance/kachinuki_selection_and_execution_governance_test.dart \
              test/governance/kachinuki_bracket_layout_governance_test.dart \
-             test/unit/kachinuki_three_players_test.dart \
+             test/unit/domain/kachinuki_three_players_test.dart \
              test/governance/category_rules_fallback_governance_test.dart \
              test/unit/security/firestore_rules_governance_test.dart \
              test/governance/mounted_safety_governance_test.dart \
              test/governance/web_native_isolation_governance_test.dart \
              test/governance/design_token_compliance_governance_test.dart \
-             test/unit/fusensho_two_points_scoring_test.dart \
-             test/unit/hansoku_accumulation_and_undo_test.dart \
-             test/unit/official_record_pdf_font_embedding_test.dart \
+             test/unit/domain/fusensho_two_points_scoring_test.dart \
+             test/unit/domain/hansoku_accumulation_and_undo_test.dart \
+             test/unit/pdf/official_record_pdf_font_embedding_test.dart \
              test/governance/official_record_export_governance_test.dart \
              test/unit/services/csv_service_test.dart \
-             test/widget/tournament_edit_dock_bottom_sheet_integration_test.dart \
-             test/widget/tournament_share_import_and_order_flow_test.dart \
-             test/widget/clipboard_import_button_and_service_test.dart \
-             test/widget/expandable_notes_view_test.dart \
-             test/widget/match_calculator_components_unified_test.dart \
-             test/unit/match_allocation_engine_test.dart \
-             test/unit/no_hardcoded_specific_names_test.dart \
+             test/widget/features/dock/tournament_edit_dock_bottom_sheet_integration_test.dart \
+             test/widget/features/match/tournament_share_import_and_order_flow_test.dart \
+             test/widget/components/clipboard_import_button_and_service_test.dart \
+             test/widget/components/expandable_notes_view_test.dart \
+             test/widget/features/match/match_calculator_components_unified_test.dart \
+             test/unit/application/match_allocation_engine_test.dart \
+             test/unit/domain/no_hardcoded_specific_names_test.dart \
              test/unit/crdt/sync_crdt_merger_test.dart \
              test/unit/services/match_command_queue_test.dart \
-             test/unit/local_match_command_store_web_fallback_test.dart \
-             test/unit/web_navigation_guard_test.dart \
+             test/unit/domain/local_match_command_store_web_fallback_test.dart \
+             test/unit/domain/web_navigation_guard_test.dart \
              test/unit/services/match_data_sanitizer_test.dart \
              test/unit/services/match_rewind_service_test.dart \
              test/unit/routing/app_router_test.dart \
              test/unit/performance/adaptive_power_saving_thermal_test.dart \
-             test/e2e/dock_ui_responsiveness_court_isolation_e2e_test.dart \
-             test/e2e/rapid_fire_score_responsiveness_e2e_test.dart \
+             test/unit/integration/dock_ui_responsiveness_court_isolation_e2e_test.dart \
+             test/unit/integration/rapid_fire_score_responsiveness_e2e_test.dart \
              test/e2e/low_spec_device_power_and_io_buffering_e2e_test.dart \
-             test/e2e/clock_skew_and_crdt_robustness_e2e_test.dart \
-             test/e2e/command_queue_crash_resilience_e2e_test.dart \
+             test/unit/integration/clock_skew_and_crdt_robustness_e2e_test.dart \
+             test/unit/integration/command_queue_crash_resilience_e2e_test.dart \
              test/unit/services/event_history_partition_test.dart \
-             test/e2e/memory_cache_archive_optimization_e2e_test.dart \
+             test/unit/integration/memory_cache_archive_optimization_e2e_test.dart \
              test/e2e/dock_timeline_collaboration_perfection_e2e_test.dart \
              test/golden/pixel_match_scoreboard_golden_test.dart \
              test/golden/pixel_league_matrix_grid_golden_test.dart \
@@ -98,132 +98,132 @@ flutter test -j 6 --no-pub \
              test/golden/pixel_tablet_landscape_scoreboard_golden_test.dart \
              test/unit/application/team_match_representative_decision_test.dart \
              test/unit/services/multi_player_team_match_test.dart \
-             test/e2e/tournament_full_lifecycle_journey_e2e_test.dart \
-             test/e2e/web_pwa_browser_navigation_resilience_e2e_test.dart \
-              test/e2e/operator_to_viewer_realtime_sync_e2e_test.dart \
-              test/widget/pixel_multi_player_scoreboard_golden_test.dart \
+             test/unit/integration/tournament_full_lifecycle_journey_e2e_test.dart \
+             test/unit/integration/web_pwa_browser_navigation_resilience_e2e_test.dart \
+              test/unit/integration/operator_to_viewer_realtime_sync_e2e_test.dart \
+              test/widget/features/match/pixel_multi_player_scoreboard_golden_test.dart \
               test/golden/pixel_official_record_all_categories_golden_test.dart \
               test/golden/pixel_bunaiksen_queue_leaderboard_golden_test.dart \
-              test/unit/team_registration_slot_helper_test.dart \
-              test/unit/kendo_overtime_hansoku_sudden_death_test.dart \
+              test/unit/domain/team_registration_slot_helper_test.dart \
+              test/unit/domain/kendo_overtime_hansoku_sudden_death_test.dart \
               test/unit/services/csv_service_robustness_test.dart \
-              test/widget/expedition_stats_components_unified_test.dart \
-              test/widget/team_registration_views_test.dart \
+              test/widget/components/expedition_stats_components_unified_test.dart \
+              test/widget/features/tournament/team_registration_views_test.dart \
               test/governance/deferred_loading_governance_test.dart \
               test/unit/services/multi_player_team_match_fusensho_test.dart \
               test/e2e/official_record_export_all_categories_e2e_test.dart \
               test/unit/time/pwa_stream_reconnect_resilience_test.dart \
-              test/unit/multi_player_extreme_draw_tiebreak_test.dart \
+              test/unit/domain/multi_player_extreme_draw_tiebreak_test.dart \
               test/unit/services/web_file_download_helper_test.dart \
               test/governance/route_guard_integrity_governance_test.dart \
-              test/widget/pixel_team_registration_order_golden_test.dart \
-              test/widget/pixel_qr_share_dialog_golden_test.dart \
-              test/widget/pixel_expedition_summary_card_golden_test.dart \
+              test/widget/features/match/pixel_team_registration_order_golden_test.dart \
+              test/widget/components/pixel_qr_share_dialog_golden_test.dart \
+              test/widget/components/pixel_expedition_summary_card_golden_test.dart \
               test/unit/services/seven_player_team_match_calculation_test.dart \
-              test/e2e/composite_multi_court_offline_sync_expedition_e2e_test.dart \
+              test/unit/integration/composite_multi_court_offline_sync_expedition_e2e_test.dart \
               test/unit/services/bunaiksen_dynamic_entry_and_retirement_test.dart \
-              test/unit/team_match_double_forfeit_boundary_test.dart \
+              test/unit/domain/team_match_double_forfeit_boundary_test.dart \
               test/governance/court_reassignment_governance_test.dart \
-              test/widget/pixel_safety_net_and_admin_golden_test.dart \
-              test/e2e/composite_court_reassignment_live_sync_e2e_test.dart \
+              test/widget/components/pixel_safety_net_and_admin_golden_test.dart \
+              test/unit/integration/composite_court_reassignment_live_sync_e2e_test.dart \
               test/unit/services/simultaneous_score_input_undo_convergence_test.dart \
               test/governance/p2p_local_broadcast_governance_test.dart \
-              test/unit/kachinuki_daihyosen_and_sweep_boundary_test.dart \
-              test/unit/simultaneous_hansoku_sudden_death_boundary_test.dart \
-              test/widget/pixel_p2p_and_band_share_dialog_golden_test.dart \
-              test/e2e/composite_kachinuki_full_sweep_and_daihyosen_e2e_test.dart \
-              test/e2e/composite_p2p_offline_cloud_blackout_streaming_e2e_test.dart \
+              test/unit/domain/kachinuki_daihyosen_and_sweep_boundary_test.dart \
+              test/unit/domain/simultaneous_hansoku_sudden_death_boundary_test.dart \
+              test/widget/components/pixel_p2p_and_band_share_dialog_golden_test.dart \
+              test/unit/integration/composite_kachinuki_full_sweep_and_daihyosen_e2e_test.dart \
+              test/unit/integration/composite_p2p_offline_cloud_blackout_streaming_e2e_test.dart \
               test/governance/program_view_state_governance_test.dart \
-              test/widget/dock_program_persistence_test.dart \
-              test/widget/dock_sheets_and_memo_unified_test.dart \
-              test/widget/quick_memo_zoom_and_keyboard_test.dart \
+              test/widget/features/dock/dock_program_persistence_test.dart \
+              test/widget/features/dock/dock_sheets_and_memo_unified_test.dart \
+              test/widget/components/quick_memo_zoom_and_keyboard_test.dart \
               test/governance/test_naming_convention_governance_test.dart \
-              test/unit/program_view_state_service_corruption_recovery_test.dart \
-              test/unit/quick_memo_transformation_math_test.dart \
-              test/unit/setup_match_format_multi_player_boundary_test.dart \
+              test/unit/presentation/program_view_state_service_corruption_recovery_test.dart \
+              test/unit/domain/quick_memo_transformation_math_test.dart \
+              test/unit/domain/setup_match_format_multi_player_boundary_test.dart \
               test/governance/drawing_zoom_and_gesture_governance_test.dart \
-              test/widget/pixel_quick_memo_zoom_and_canvas_golden_test.dart \
-              test/widget/pixel_viewer_bunaiksen_official_record_golden_test.dart \
-              test/widget/pixel_program_dock_pagination_and_return_golden_test.dart \
-              test/widget/quick_memo_zoom_lifecycle_and_stress_test.dart \
+              test/widget/components/pixel_quick_memo_zoom_and_canvas_golden_test.dart \
+              test/widget/features/bunaiksen/pixel_viewer_bunaiksen_official_record_golden_test.dart \
+              test/widget/features/dock/pixel_program_dock_pagination_and_return_golden_test.dart \
+              test/widget/components/quick_memo_zoom_lifecycle_and_stress_test.dart \
               test/e2e/viewer_bunaiksen_realtime_record_flow_e2e_test.dart \
               test/unit/services/multi_tenant_dock_program_state_isolation_test.dart \
-              test/e2e/composite_kachinuki_daihyosen_court_reassign_offline_test.dart \
+              test/unit/integration/composite_kachinuki_daihyosen_court_reassign_offline_test.dart \
               test/unit/services/multi_player_fusensho_daihyosen_export_test.dart \
-              test/e2e/composite_room_join_chaos_resilience_test.dart \
+              test/unit/integration/composite_room_join_chaos_resilience_test.dart \
               test/governance/event_signature_governance_test.dart \
-              test/unit/match_signature_verifier_test.dart \
-              test/unit/local_match_micro_batch_test.dart \
-              test/unit/local_match_emergency_backup_rotation_test.dart \
-              test/unit/pdf_kachinuki_widgets_boundary_test.dart \
-              test/unit/expedition_match_processor_test.dart \
-              test/widget/pixel_bunaiksen_dock_calculator_golden_test.dart \
-              test/widget/pixel_room_join_duplicate_warning_golden_test.dart \
-              test/widget/pixel_corrupted_match_banner_golden_test.dart \
-              test/e2e/event_signature_tamper_quarantine_e2e_test.dart \
-              test/e2e/micro_batch_extreme_rapid_score_flush_e2e_test.dart \
-              test/e2e/composite_expedition_multi_court_scene_report_test.dart \
+              test/unit/security/match_signature_verifier_test.dart \
+              test/unit/performance/local_match_micro_batch_test.dart \
+              test/unit/domain/local_match_emergency_backup_rotation_test.dart \
+              test/unit/pdf/pdf_kachinuki_widgets_boundary_test.dart \
+              test/unit/application/expedition_match_processor_test.dart \
+              test/widget/features/bunaiksen/pixel_bunaiksen_dock_calculator_golden_test.dart \
+              test/widget/components/pixel_room_join_duplicate_warning_golden_test.dart \
+              test/widget/features/match/pixel_corrupted_match_banner_golden_test.dart \
+              test/unit/integration/event_signature_tamper_quarantine_e2e_test.dart \
+              test/unit/integration/micro_batch_extreme_rapid_score_flush_e2e_test.dart \
+              test/unit/integration/composite_expedition_multi_court_scene_report_test.dart \
               test/e2e/composite_room_id_collision_resolution_flow_test.dart \
-              test/unit/player_repository_grade_promotion_boundary_test.dart \
-              test/unit/band_repository_local_cache_resilience_test.dart \
-              test/unit/match_snapshot_service_recovery_test.dart \
-              test/unit/match_generator_bulk_creation_test.dart \
-              test/widget/team_scoreboard_daihyo_handler_test.dart \
+              test/unit/infrastructure/player_repository_grade_promotion_boundary_test.dart \
+              test/unit/performance/band_repository_local_cache_resilience_test.dart \
+              test/unit/application/match_snapshot_service_recovery_test.dart \
+              test/unit/application/match_generator_bulk_creation_test.dart \
+              test/widget/features/match/team_scoreboard_daihyo_handler_test.dart \
               test/governance/tournament_rule_config_governance_test.dart \
               test/governance/match_generation_helper_governance_test.dart \
               test/governance/input_sanitization_governance_test.dart \
-              test/unit/rule_config_validator_test.dart \
-              test/unit/rule_serializer_and_resolver_test.dart \
-              test/unit/match_generation_helper_berger_tables_test.dart \
-              test/unit/redo_score_usecase_test.dart \
-              test/unit/timeline_export_service_test.dart \
-              test/unit/organization_repository_test.dart \
-              test/widget/pixel_rule_config_panel_golden_test.dart \
-              test/widget/pixel_viewer_call_banner_golden_test.dart \
-              test/widget/pixel_master_delete_dialog_golden_test.dart \
-              test/e2e/composite_dynamic_rule_change_and_export_e2e_test.dart \
-              test/e2e/composite_odd_league_multi_court_viewer_sync_test.dart \
+              test/unit/domain/rule_config_validator_test.dart \
+              test/unit/domain/rule_serializer_and_resolver_test.dart \
+              test/unit/domain/match_generation_helper_berger_tables_test.dart \
+              test/unit/application/redo_score_usecase_test.dart \
+              test/unit/application/timeline_export_service_test.dart \
+              test/unit/infrastructure/organization_repository_test.dart \
+              test/widget/features/tournament/pixel_rule_config_panel_golden_test.dart \
+              test/widget/features/viewer/pixel_viewer_call_banner_golden_test.dart \
+              test/widget/features/master/pixel_master_delete_dialog_golden_test.dart \
+              test/unit/integration/composite_dynamic_rule_change_and_export_e2e_test.dart \
+              test/unit/integration/composite_odd_league_multi_court_viewer_sync_test.dart \
               test/unit/services/redo_offline_crdt_convergence_test.dart \
               test/governance/role_permissions_centralized_governance_test.dart \
               test/governance/projection_hash_and_sync_queue_governance_test.dart \
               test/governance/thermal_toast_governance_test.dart \
-              test/unit/role_permissions_matrix_test.dart \
-              test/unit/feature_gate_security_level_test.dart \
-              test/unit/pending_sync_queue_test.dart \
-              test/unit/timeline_projection_hash_test.dart \
-              test/unit/match_hantei_finish_helper_test.dart \
-              test/unit/team_progress_status_test.dart \
-              test/widget/pixel_thermal_floating_toast_golden_test.dart \
-              test/widget/pixel_tournament_quick_hub_golden_test.dart \
+              test/unit/security/role_permissions_matrix_test.dart \
+              test/unit/security/feature_gate_security_level_test.dart \
+              test/unit/crdt/pending_sync_queue_test.dart \
+              test/unit/domain/timeline_projection_hash_test.dart \
+              test/unit/domain/match_hantei_finish_helper_test.dart \
+              test/unit/domain/team_progress_status_test.dart \
+              test/widget/components/pixel_thermal_floating_toast_golden_test.dart \
+              test/widget/features/tournament/pixel_tournament_quick_hub_golden_test.dart \
               test/unit/services/offline_fifo_sync_projection_convergence_test.dart \
-              test/e2e/composite_hantei_finish_audio_approval_flow_e2e_test.dart \
+              test/unit/integration/composite_hantei_finish_audio_approval_flow_e2e_test.dart \
               test/e2e/composite_security_role_dynamic_demotion_e2e_test.dart \
-              test/unit/security_guards_test.dart \
-              test/unit/match_corrupted_state_test.dart \
-              test/unit/expedition_event_processor_test.dart \
-              test/unit/dock_slot_layout_calculator_test.dart \
-              test/unit/tournament_aggregate_test.dart \
-              test/unit/pdf_isolate_generation_test.dart \
-              test/unit/in_memory_event_store_occ_test.dart \
-              test/unit/sync_downstream_helper_dirty_protection_test.dart \
-              test/unit/firestore_path_deterministic_test.dart \
-              test/unit/json_converters_type_safety_test.dart \
-              test/unit/bulk_rule_apply_helper_test.dart \
-              test/unit/match_player_roster_resolver_test.dart \
-              test/unit/match_infinite_handler_helper_test.dart \
-              test/unit/projection_updater_test.dart \
-              test/unit/tournament_program_pdf_engine_test.dart \
-              test/unit/team_registration_player_filter_helper_test.dart \
-              test/unit/official_record_export_helper_test.dart \
-              test/unit/platform_boundary_safe_call_test.dart \
-              test/unit/internal_public_router_fallback_test.dart \
-              test/unit/event_settings_serialization_test.dart \
-              test/widget/pixel_expedition_detail_bottom_sheet_golden_test.dart \
-              test/widget/pixel_match_calculator_summary_card_golden_test.dart \
-              test/widget/pixel_vertical_name_text_golden_test.dart \
-              test/widget/corrupted_match_emergency_isolation_test.dart \
+              test/unit/security/security_guards_test.dart \
+              test/unit/presentation/match_corrupted_state_test.dart \
+              test/unit/application/expedition_event_processor_test.dart \
+              test/unit/presentation/dock_slot_layout_calculator_test.dart \
+              test/unit/tournament/tournament_aggregate_test.dart \
+              test/unit/pdf/pdf_isolate_generation_test.dart \
+              test/unit/crdt/in_memory_event_store_occ_test.dart \
+              test/unit/crdt/sync_downstream_helper_dirty_protection_test.dart \
+              test/unit/infrastructure/firestore_path_deterministic_test.dart \
+              test/unit/domain/json_converters_type_safety_test.dart \
+              test/unit/domain/bulk_rule_apply_helper_test.dart \
+              test/unit/domain/match_player_roster_resolver_test.dart \
+              test/unit/domain/match_infinite_handler_helper_test.dart \
+              test/unit/domain/projection_updater_test.dart \
+              test/unit/pdf/tournament_program_pdf_engine_test.dart \
+              test/unit/domain/team_registration_player_filter_helper_test.dart \
+              test/unit/domain/official_record_export_helper_test.dart \
+              test/unit/domain/platform_boundary_safe_call_test.dart \
+              test/unit/routing/internal_public_router_fallback_test.dart \
+              test/unit/domain/event_settings_serialization_test.dart \
+              test/widget/components/pixel_expedition_detail_bottom_sheet_golden_test.dart \
+              test/widget/features/match/pixel_match_calculator_summary_card_golden_test.dart \
+              test/widget/components/pixel_vertical_name_text_golden_test.dart \
+              test/widget/features/match/corrupted_match_emergency_isolation_test.dart \
               test/e2e/expedition_multi_court_scoring_aggregation_e2e_test.dart \
-              test/widget/dock_slot_reorder_and_drag_unified_test.dart \
+              test/widget/features/dock/dock_slot_reorder_and_drag_unified_test.dart \
               test/e2e/composite_deep_link_internal_guard_security_test.dart \
               test/governance/expedition_strike_decision_governance_test.dart \
               test/governance/security_guards_access_control_governance_test.dart \
@@ -238,66 +238,66 @@ flutter test -j 6 --no-pub \
               test/governance/dock_timer_input_parity_governance_test.dart \
               test/governance/match_aggregate_repository_governance_test.dart \
               test/governance/global_error_handler_governance_test.dart \
-              test/unit/global_error_handler_test.dart \
-              test/unit/match_aggregate_repository_test.dart \
-              test/unit/isar_projection_store_test.dart \
-              test/unit/bunaiksen_record_export_helper_test.dart \
-              test/unit/match_format_save_helper_test.dart \
-              test/unit/match_format_team_action_helper_test.dart \
-              test/unit/manual_print_share_service_test.dart \
-              test/unit/time_up_usecase_test.dart \
-              test/unit/calculate_point_displays_usecase_test.dart \
-              test/unit/pending_smart_undo_notifier_test.dart \
-              test/unit/auth_repository_test.dart \
-              test/unit/thermal_monitor_service_test.dart \
-              test/unit/metrics_service_test.dart \
-              test/unit/app_bootstrap_helper_test.dart \
-              test/unit/team_registration_save_helper_test.dart \
-              test/unit/in_memory_projection_store_test.dart \
-              test/widget/dock_timer_display_card_test.dart \
-              test/widget/master_organization_components_unified_test.dart \
-              test/widget/embedded_manual_screen_test.dart \
-              test/widget/tournament_share_import_raw_view_test.dart \
-              test/widget/program_dialogs_and_file_list_unified_test.dart \
-              test/widget/viewer_header_and_dialog_components_unified_test.dart \
-              test/widget/match_renseikai_next_button_test.dart \
-              test/widget/league_grid_card_test.dart \
-              test/widget/order_setup_components_unified_test.dart \
-              test/widget/team_sort_and_badge_components_unified_test.dart \
-              test/widget/bunaiksen_cards_and_calendar_components_unified_test.dart \
-              test/widget/pixel_dock_timer_display_card_golden_test.dart \
-              test/widget/pixel_master_register_organization_golden_test.dart \
-              test/widget/pixel_embedded_manual_tab_views_golden_test.dart \
-              test/e2e/global_crash_emergency_trap_and_recovery_e2e_test.dart \
-              test/e2e/master_organization_provisioning_isolation_e2e_test.dart \
+              test/unit/domain/global_error_handler_test.dart \
+              test/unit/infrastructure/match_aggregate_repository_test.dart \
+              test/unit/infrastructure/isar_projection_store_test.dart \
+              test/unit/tournament/bunaiksen_record_export_helper_test.dart \
+              test/unit/domain/match_format_save_helper_test.dart \
+              test/unit/domain/match_format_team_action_helper_test.dart \
+              test/unit/application/manual_print_share_service_test.dart \
+              test/unit/application/time_up_usecase_test.dart \
+              test/unit/application/calculate_point_displays_usecase_test.dart \
+              test/unit/domain/pending_smart_undo_notifier_test.dart \
+              test/unit/security/auth_repository_test.dart \
+              test/unit/performance/thermal_monitor_service_test.dart \
+              test/unit/application/metrics_service_test.dart \
+              test/unit/domain/app_bootstrap_helper_test.dart \
+              test/unit/domain/team_registration_save_helper_test.dart \
+              test/unit/domain/in_memory_projection_store_test.dart \
+              test/widget/features/dock/dock_timer_display_card_test.dart \
+              test/widget/features/master/master_organization_components_unified_test.dart \
+              test/widget/components/embedded_manual_screen_test.dart \
+              test/widget/features/tournament/tournament_share_import_raw_view_test.dart \
+              test/widget/features/tournament/program_dialogs_and_file_list_unified_test.dart \
+              test/widget/features/viewer/viewer_header_and_dialog_components_unified_test.dart \
+              test/widget/features/match/match_renseikai_next_button_test.dart \
+              test/widget/features/tournament/league_grid_card_test.dart \
+              test/widget/features/match/order_setup_components_unified_test.dart \
+              test/widget/features/tournament/team_sort_and_badge_components_unified_test.dart \
+              test/widget/features/bunaiksen/bunaiksen_cards_and_calendar_components_unified_test.dart \
+              test/widget/features/dock/pixel_dock_timer_display_card_golden_test.dart \
+              test/widget/features/master/pixel_master_register_organization_golden_test.dart \
+              test/widget/components/pixel_embedded_manual_tab_views_golden_test.dart \
+              test/unit/integration/global_crash_emergency_trap_and_recovery_e2e_test.dart \
+              test/unit/integration/master_organization_provisioning_isolation_e2e_test.dart \
               test/unit/services/occ_auto_repair_concurrency_convergence_test.dart \
-              test/widget/bunaiksen_match_components_test.dart \
+              test/widget/features/bunaiksen/bunaiksen_match_components_test.dart \
               test/governance/firestore_indexes_governance_test.dart \
-              test/unit/overtime_hansoku_carryover_rule_test.dart \
-              test/unit/multi_player_fusensho_tiebreak_resolution_test.dart \
-              test/unit/kanji_ivs_surrogate_pair_fuzzing_test.dart \
-              test/unit/startup_service_timeout_offline_fallback_test.dart \
-              test/widget/hold_confirm_button_gesture_deviation_test.dart \
-              test/unit/bunaiksen_midnight_date_boundary_resolution_test.dart \
-              test/unit/pwa_indexeddb_quota_exceeded_fallback_test.dart \
+              test/unit/domain/overtime_hansoku_carryover_rule_test.dart \
+              test/unit/domain/multi_player_fusensho_tiebreak_resolution_test.dart \
+              test/unit/domain/kanji_ivs_surrogate_pair_fuzzing_test.dart \
+              test/unit/application/startup_service_timeout_offline_fallback_test.dart \
+              test/widget/components/hold_confirm_button_gesture_deviation_test.dart \
+              test/unit/tournament/bunaiksen_midnight_date_boundary_resolution_test.dart \
+              test/unit/routing/pwa_indexeddb_quota_exceeded_fallback_test.dart \
               test/unit/services/web_share_api_fallback_to_download_test.dart \
-              test/unit/match_concurrent_point_input_occ_test.dart \
-              test/unit/program_viewer_large_pdf_page_cache_test.dart \
-              test/unit/player_batch_promotion_boundary_test.dart \
-              test/unit/pdf_raster_memory_budget_test.dart \
+              test/unit/crdt/match_concurrent_point_input_occ_test.dart \
+              test/unit/pdf/program_viewer_large_pdf_page_cache_test.dart \
+              test/unit/performance/player_batch_promotion_boundary_test.dart \
+              test/unit/pdf/pdf_raster_memory_budget_test.dart \
               test/governance/manual_route_integrity_governance_test.dart \
               test/governance/url_qr_encoding_safety_governance_test.dart \
               test/governance/web_unsupported_plugin_leak_governance_test.dart \
               test/governance/blob_url_leak_governance_test.dart \
-              test/widget/pixel_representative_match_transition_scoreboard_golden_test.dart \
-              test/widget/pixel_quick_memo_scale_extremes_golden_test.dart \
-              test/widget/pixel_ultra_wide_display_scoreboard_golden_test.dart \
-              test/widget/pixel_high_contrast_sunlight_mode_golden_test.dart \
-              test/widget/pixel_vertical_name_complex_foreign_golden_test.dart \
+              test/widget/features/match/pixel_representative_match_transition_scoreboard_golden_test.dart \
+              test/widget/components/pixel_quick_memo_scale_extremes_golden_test.dart \
+              test/widget/features/match/pixel_ultra_wide_display_scoreboard_golden_test.dart \
+              test/widget/components/pixel_high_contrast_sunlight_mode_golden_test.dart \
+              test/widget/components/pixel_vertical_name_complex_foreign_golden_test.dart \
               test/unit/services/bunaiksen_streak_leaderboard_test.dart \
-              test/e2e/timer_pause_across_app_lifecycle_sleep_e2e_test.dart \
-              test/widget/official_record_export_components_test.dart \
-              test/widget/external_keyboard_timer_shortcuts_test.dart \
+              test/unit/integration/timer_pause_across_app_lifecycle_sleep_e2e_test.dart \
+              test/widget/features/tournament/official_record_export_components_test.dart \
+              test/widget/components/external_keyboard_timer_shortcuts_test.dart \
               test/unit/domain/overtime_hansoku_carryover_composite_test.dart \
               test/unit/domain/team_league_fusensho_double_disqualification_composite_test.dart \
               test/unit/infrastructure/disk_full_emergency_buffer_flush_composite_test.dart \

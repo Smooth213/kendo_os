@@ -9,7 +9,7 @@ import sys
 def run_dock_lifecycle_governance():
     test_files = [
         "test/governance/floating_dock_lifecycle_governance_test.dart",
-        "test/widget/viewer_no_dock_governance_test.dart",
+        "test/widget/features/dock/viewer_no_dock_governance_test.dart",
         "test/governance/bunaiksen_dock_isolation_governance_test.dart",
         "test/governance/dock_subsheet_and_navigation_governance_test.dart",
         "test/governance/tournament_edit_sheet_governance_test.dart",

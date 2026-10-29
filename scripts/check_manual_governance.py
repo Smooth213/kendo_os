@@ -90,8 +90,8 @@ def run_manual_governance():
     test_files = [
         "test/unit/manuals/manual_integrity_test.dart",
         "test/unit/manuals/manual_search_and_query_test.dart",
-        "test/widget/manual_index_search_test.dart",
-        "test/widget/manual_ui_integrity_golden_test.dart",
+        "test/widget/components/manual_index_search_test.dart",
+        "test/widget/components/manual_ui_integrity_golden_test.dart",
     ]
 
     cmd = ["python3", "scripts/gov_test_helper.py"] + test_files + ["--reporter=expanded"]

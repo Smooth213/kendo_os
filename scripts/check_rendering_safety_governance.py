@@ -32,7 +32,7 @@ def run_rendering_safety_governance():
 
     # 2. 全画面・全ボトムシート UI レンダリング動的テスト
     cmd = ["python3", "scripts/gov_test_helper.py",
-        "test/widget/all_screens_rendering_safety_governance_test.dart",
+        "test/widget/components/all_screens_rendering_safety_governance_test.dart",
         "--reporter=expanded"
     ]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
