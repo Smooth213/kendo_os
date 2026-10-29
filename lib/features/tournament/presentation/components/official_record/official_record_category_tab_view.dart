@@ -36,6 +36,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
   final bool isReadOnly;
   final WidgetRef ref;
   final String highlightQuery;
+  final Future<void> Function()? onRefresh;
 
   const OfficialRecordCategoryTabView({
     super.key,
@@ -60,6 +61,7 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
     required this.isReadOnly,
     required this.ref,
     this.highlightQuery = '',
+    this.onRefresh,
   });
 
   void _handleExport(BuildContext context, String type) {
@@ -118,68 +120,72 @@ class OfficialRecordCategoryTabView extends StatelessWidget {
             registeredPlayerNames: categoryRegisteredPlayerNames,
           ),
         Expanded(
-          child: ListView.builder(
-            physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            itemCount: sortedGroupKeys.length,
-            itemBuilder: (context, index) {
-              final groupName = sortedGroupKeys[index];
-              final matches = mergedGroups[groupName]!
-                ..sort((a, b) => a.order.compareTo(b.order));
+          child: RefreshIndicator(
+            onRefresh: onRefresh ?? () async {},
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              itemCount: sortedGroupKeys.length,
+              itemBuilder: (context, index) {
+                final groupName = sortedGroupKeys[index];
+                final matches = mergedGroups[groupName]!
+                  ..sort((a, b) => a.order.compareTo(b.order));
 
-              if (matches.isNotEmpty && matches.first.isKachinuki) {
-                return OfficialRecordKachinukiCard(
-                  matches: matches,
-                  isDark: isDark,
-                  ref: ref,
-                );
-              } else if (matches.isNotEmpty &&
-                  BunaiksenHelper.isLeagueMatches(matches)) {
-                final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
-                return OfficialRecordLeagueSection(
-                  groupName: groupName,
-                  matches: matches,
-                  cardColor: cardColor,
-                  isDark: isDark,
-                  ownTeams: ownTeams,
-                  scoreTableBuilder:
-                      (name, bouts, {cardColor, isDark = false}) =>
-                          OfficialRecordScoreTableBuilder.buildScoreTable(
-                            name,
-                            bouts,
-                            cardColor: cardColor,
-                            isDark: isDark,
-                            highlightQuery: highlightQuery,
-                          ),
-                );
-              } else if (matches.isNotEmpty &&
-                  matches.any(
-                    (m) =>
-                        m.matchType == 'individual' ||
-                        m.matchType == '選手' ||
-                        m.matchType.contains('個人戦') ||
-                        m.rule?.isKataMatch == true ||
-                        m.matchType.contains('形') ||
-                        m.matchType.contains('稽古法'),
-                  )) {
-                return OfficialRecordIndividualMatchesList(
-                  groupName: groupName,
-                  matches: matches,
-                  cardColor: cardColor,
-                  isDark: isDark,
-                  applySort: true,
-                  highlightQuery: highlightQuery,
-                );
-              } else {
-                return OfficialRecordScoreTableBuilder.buildScoreTable(
-                  groupName,
-                  matches,
-                  cardColor: cardColor,
-                  isDark: isDark,
-                  highlightQuery: highlightQuery,
-                );
-              }
-            },
+                if (matches.isNotEmpty && matches.first.isKachinuki) {
+                  return OfficialRecordKachinukiCard(
+                    matches: matches,
+                    isDark: isDark,
+                    ref: ref,
+                  );
+                } else if (matches.isNotEmpty &&
+                    BunaiksenHelper.isLeagueMatches(matches)) {
+                  final ownTeams =
+                      ref.watch(customTeamNamesProvider).value ?? [];
+                  return OfficialRecordLeagueSection(
+                    groupName: groupName,
+                    matches: matches,
+                    cardColor: cardColor,
+                    isDark: isDark,
+                    ownTeams: ownTeams,
+                    scoreTableBuilder:
+                        (name, bouts, {cardColor, isDark = false}) =>
+                            OfficialRecordScoreTableBuilder.buildScoreTable(
+                              name,
+                              bouts,
+                              cardColor: cardColor,
+                              isDark: isDark,
+                              highlightQuery: highlightQuery,
+                            ),
+                  );
+                } else if (matches.isNotEmpty &&
+                    matches.any(
+                      (m) =>
+                          m.matchType == 'individual' ||
+                          m.matchType == '選手' ||
+                          m.matchType.contains('個人戦') ||
+                          m.rule?.isKataMatch == true ||
+                          m.matchType.contains('形') ||
+                          m.matchType.contains('稽古法'),
+                    )) {
+                  return OfficialRecordIndividualMatchesList(
+                    groupName: groupName,
+                    matches: matches,
+                    cardColor: cardColor,
+                    isDark: isDark,
+                    applySort: true,
+                    highlightQuery: highlightQuery,
+                  );
+                } else {
+                  return OfficialRecordScoreTableBuilder.buildScoreTable(
+                    groupName,
+                    matches,
+                    cardColor: cardColor,
+                    isDark: isDark,
+                    highlightQuery: highlightQuery,
+                  );
+                }
+              },
+            ),
           ),
         ),
       ],

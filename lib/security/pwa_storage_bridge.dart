@@ -8,4 +8,5 @@ class PwaStorage {
       platformStorage.setItem(key, value);
   static String? getItem(String key) => platformStorage.getItem(key);
   static void removeItem(String key) => platformStorage.removeItem(key);
+  static void reload() => platformStorage.reload();
 }

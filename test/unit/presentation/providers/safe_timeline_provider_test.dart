@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_provider.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
 void main() {
@@ -171,6 +172,40 @@ void main() {
       // ネイティブ環境(テスト実行環境)ではmatchListProviderの空リストが返るためエラーにはならない
       expect(result.hasError, false);
       expect(result.entries, isEmpty);
+    });
+
+    test('teamProgressByTournamentProvider が大会IDで正しく進行状況を抽出すること', () async {
+      final otherMatch = MatchModel(
+        id: 'other_match',
+        tournamentId: 'other_tournament',
+        category: '一般の部',
+        groupName: 'Cリーグ',
+        redName: 'Xチーム : 選手X',
+        whiteName: 'Yチーム : 選手Y',
+        order: 1.0,
+        matchType: '団体戦',
+        status: 'waiting',
+        note: '',
+      );
+
+      final container = createContainer(
+        overrides: [
+          matchListProvider.overrideWith(
+            (ref) => [testMatch1, testMatch2, otherMatch],
+          ),
+          customTeamNamesProvider.overrideWith((ref) => Stream.value([])),
+          timelinePlayerListProvider.overrideWith((ref) => Stream.value([])),
+          currentDojoNameProvider.overrideWith((ref) => Stream.value('')),
+        ],
+      );
+
+      final list = container.read(
+        teamProgressByTournamentProvider('test_tournament'),
+      );
+
+      // 他大会の試合は除外され、test_tournamentのチームのみ抽出される
+      expect(list.any((t) => t.teamName.contains('Xチーム')), false);
+      expect(list.isNotEmpty, true);
     });
   });
 }

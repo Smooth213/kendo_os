@@ -88,6 +88,13 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final currentTid = ref.watch(currentTournamentIdProvider);
+    final effectiveTournamentId = (widget.tournamentId?.isNotEmpty == true)
+        ? widget.tournamentId!
+        : (currentTid.isNotEmpty
+              ? currentTid
+              : (ref.watch(webCurrentTournamentIdProvider) ?? ''));
+
     final teamList = ref.watch(teamProgressListProvider);
 
     final totalLiveCount = teamList.where((t) => t.hasLiveMatch).length;
@@ -126,11 +133,16 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
     final permissions = ref.watch(permissionProvider);
     final isReadOnly = permissions.isReadOnly;
 
-    final effectiveTournamentId = (widget.tournamentId?.isNotEmpty == true)
-        ? widget.tournamentId!
-        : (ref.watch(currentTournamentIdProvider).isNotEmpty
-              ? ref.watch(currentTournamentIdProvider)
-              : (ref.watch(webCurrentTournamentIdProvider) ?? ''));
+    Future<void> handleRefresh() async {
+      if (effectiveTournamentId.isNotEmpty) {
+        ref.invalidate(matchListByTournamentProvider(effectiveTournamentId));
+        ref.invalidate(teamProgressByTournamentProvider(effectiveTournamentId));
+        await ref.read(
+          matchListByTournamentProvider(effectiveTournamentId).future,
+        );
+      }
+      ref.invalidate(matchListProvider);
+    }
 
     Widget buildMainContent(BuildContext innerContext) {
       return Column(
@@ -185,24 +197,30 @@ class _TeamMatchStatusScreenState extends ConsumerState<TeamMatchStatusScreen> {
                   _sortType,
                 );
 
-                if (sortedList.isEmpty) {
-                  return _buildEmptyState(innerContext);
-                }
-
-                return ListView.builder(
-                  key: PageStorageKey(
-                    'team_status_list_${currentCat}_${_sortType.name}',
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.md,
-                    horizontal: AppSpacing.xs,
-                  ),
-                  itemCount: sortedList.length,
-                  itemBuilder: (context, index) {
-                    final teamStatus = sortedList[index];
-                    return TeamStatusCard(status: teamStatus, isDark: isDark);
-                  },
-                );
+                final child = sortedList.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          const SizedBox(height: 80),
+                          _buildEmptyState(innerContext),
+                        ],
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        key: PageStorageKey(
+                          'team_status_list_${currentCat}_${_sortType.name}',
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.md,
+                          horizontal: AppSpacing.xs,
+                        ),
+                        itemCount: sortedList.length,
+                        itemBuilder: (context, index) => TeamStatusCard(
+                          status: sortedList[index],
+                          isDark: isDark,
+                        ),
+                      );
+                return RefreshIndicator(onRefresh: handleRefresh, child: child);
               },
             ),
           ),

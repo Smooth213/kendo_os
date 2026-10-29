@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_session.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/security/session_storage.dart';
@@ -108,10 +109,13 @@ final authSessionProvider =
 /// 本部で権限が切り替えられた瞬間に0秒で端末に反映させるプロバイダー。
 final firestoreRoleStreamProvider = StreamProvider<UserRole>((ref) {
   final dojoId = ref.watch(currentDojoIdProvider);
-  final currentUser = FirebaseAuth.instance.currentUser;
+  // 🔑 Firebase認証状態の変化（未ログイン→ログイン完了）もリアクティブに監視
+  final authUser =
+      ref.watch(authStateProvider).valueOrNull ??
+      FirebaseAuth.instance.currentUser;
 
-  // 匿名認証が未完了、または未ログインの場合は最安全な viewer 固定
-  if (currentUser == null) {
+  // 匿名認証が未完了、未ログイン、または道場IDが未設定の場合は最安全な viewer 固定
+  if (authUser == null || dojoId.isEmpty) {
     return Stream.value(UserRole.viewer);
   }
 
@@ -120,14 +124,14 @@ final firestoreRoleStreamProvider = StreamProvider<UserRole>((ref) {
       .collection('organizations')
       .doc(dojoId)
       .collection('members')
-      .doc(currentUser.uid)
+      .doc(authUser.uid)
       .snapshots()
       .map((snapshot) {
         if (!snapshot.exists || snapshot.data() == null) {
           return UserRole.viewer; // ドキュメントがなければ一般観客
         }
         final data = snapshot.data()!;
-        final roleStr = data['role'] as String? ?? 'viewer';
+        final roleStr = data['role']?.toString() ?? 'viewer';
         return UserRole.values.firstWhere(
           (e) => e.name == roleStr,
           orElse: () => UserRole.viewer,

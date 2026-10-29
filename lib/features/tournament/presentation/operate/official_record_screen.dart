@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -87,6 +88,17 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
     super.dispose();
   }
 
+  Future<void> _handleRefresh(String tId) async {
+    if (tId.isEmpty) return;
+    ref.invalidate(matchListByTournamentProvider(tId));
+    ref.invalidate(tournamentProvider(tId));
+    ref.invalidate(registeredTeamsProvider(tId));
+    await Future.wait([
+      ref.read(matchListByTournamentProvider(tId).future),
+      ref.read(tournamentProvider(tId).future),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final tournamentId = widget.tournamentId;
@@ -125,15 +137,17 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         .where((p) => p.isNotEmpty)
         .toSet();
 
-    final matchesForThisTournament = ref
-        .watch(
-          matchListProvider.select(
-            (list) => ListEqualityWrapper<MatchModel>(
-              list.where((m) => m.tournamentId == tournamentId).toList(),
-            ),
-          ),
-        )
-        .list;
+    final matchesForThisTournament = kIsWeb
+        ? (ref.watch(matchListByTournamentProvider(tournamentId)).value ?? [])
+        : ref
+              .watch(
+                matchListProvider.select(
+                  (list) => ListEqualityWrapper<MatchModel>(
+                    list.where((m) => m.tournamentId == tournamentId).toList(),
+                  ),
+                ),
+              )
+              .list;
 
     final categoryGroups = OfficialRecordGroupHelper.groupMatchesByCategory(
       matchesForThisTournament,
@@ -176,10 +190,19 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
               ),
             ],
           ),
-          body: Center(
-            child: Text(
-              '記録データがありません',
-              style: TextStyle(color: context.appColors.textColor),
+          body: RefreshIndicator(
+            onRefresh: () => _handleRefresh(tournamentId),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                const SizedBox(height: 120),
+                Center(
+                  child: Text(
+                    '記録データがありません',
+                    style: TextStyle(color: context.appColors.textColor),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -277,6 +300,7 @@ class _OfficialRecordScreenState extends ConsumerState<OfficialRecordScreen> {
         isReadOnly: permissions.isReadOnly,
         ref: ref,
         highlightQuery: _searchQuery,
+        onRefresh: () => _handleRefresh(tournamentId),
       );
     }).toList();
 

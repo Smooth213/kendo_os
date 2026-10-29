@@ -501,6 +501,7 @@ void main() {
           settingsProvider.overrideWith(() => MockSettingsNotifier()),
         ],
       );
+      addTearDown(container.dispose);
       final permissions = container.read(permissionProvider);
 
       expect(permissions.isReadOnly, isTrue);

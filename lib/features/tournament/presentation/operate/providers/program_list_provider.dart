@@ -22,6 +22,14 @@ final programListProvider = StreamProvider.family<List<ProgramModel>, String>((
     return;
   }
 
+  final syncContext = ref.watch(currentSyncContextProvider);
+  if (syncContext.organizationId.isNotEmpty &&
+      syncContext.organizationId != 'default_dojo_room') {
+    final syncRepo = ProgramRepository(dojoId: syncContext.organizationId);
+    yield* syncRepo.watchPrograms(tournamentId);
+    return;
+  }
+
   // 2. 道場IDが未確定（default_dojo_room または空）の場合、大会の所属道場IDを探索
   String? resolvedDojoId;
   try {

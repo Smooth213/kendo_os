@@ -52,6 +52,12 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
       (m) => m.isKachinuki && m.matchType == '無限勝ち抜き',
     );
 
+    Future<void> handleRefresh() async {
+      ref.invalidate(bunaiksenMatchesProvider(tournamentId));
+      ref.invalidate(bunaiksenAvailableDatesProvider);
+      ref.invalidate(matchListByTournamentProvider(tournamentId));
+    }
+
     return AnnouncePopupListener(
       tournamentId: tournamentId,
       isStaffRoom: false,
@@ -90,99 +96,113 @@ class ViewerBunaiksenHomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            body: matches.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            body: RefreshIndicator(
+              onRefresh: handleRefresh,
+              child: matches.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        Icon(
-                          Icons.event_busy,
-                          size: 64,
-                          color: AppKendoColors.grey.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        const Text(
-                          'この日の記録はありません',
-                          style: TextStyle(color: AppKendoColors.grey),
+                        const SizedBox(height: 120),
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.event_busy,
+                                size: 64,
+                                color: AppKendoColors.grey.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                              const Text(
+                                'この日の記録はありません',
+                                style: TextStyle(color: AppKendoColors.grey),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  )
-                : CustomScrollView(
-                    slivers: [
-                      if (hasInfiniteKachinuki) ...[
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            child: Card(
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : const Color(0xFFFFFFFF),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppRadius.large,
-                              ),
-                              elevation: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.local_fire_department,
-                                          color: AppKendoColors.deepOrange,
-                                        ),
-                                        const SizedBox(width: AppSpacing.sm),
-                                        Text(
-                                          '無限勝ち抜き 連勝ランキング',
-                                          style: TextStyle(
-                                            fontSize: AppFontSize.subhead,
-                                            fontWeight: AppFontWeight.bold,
-                                            color: context.appColors.textColor,
+                    )
+                  : CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        if (hasInfiniteKachinuki) ...[
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.lg),
+                              child: Card(
+                                color: isDark
+                                    ? const Color(0xFFFFFFFF)
+                                    : const Color(0xFFFFFFFF),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: AppRadius.large,
+                                ),
+                                elevation: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppSpacing.lg),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.local_fire_department,
+                                            color: AppKendoColors.deepOrange,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Divider(),
-                                    const InfiniteStreakLeaderboard(),
-                                  ],
+                                          const SizedBox(width: AppSpacing.sm),
+                                          Text(
+                                            '無限勝ち抜き 連勝ランキング',
+                                            style: TextStyle(
+                                              fontSize: AppFontSize.subhead,
+                                              fontWeight: AppFontWeight.bold,
+                                              color:
+                                                  context.appColors.textColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const Divider(),
+                                      const InfiniteStreakLeaderboard(),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                              vertical: AppSpacing.sm,
-                            ),
-                            color: themeColors.softAccent,
-                            width: double.infinity,
-                            child: Text(
-                              '本日の試合一覧',
-                              style: TextStyle(
-                                fontWeight: AppFontWeight.bold,
-                                color: themeColors.primaryAccent,
+                          SliverToBoxAdapter(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                                vertical: AppSpacing.sm,
+                              ),
+                              color: themeColors.softAccent,
+                              width: double.infinity,
+                              child: Text(
+                                '本日の試合一覧',
+                                style: TextStyle(
+                                  fontWeight: AppFontWeight.bold,
+                                  color: themeColors.primaryAccent,
+                                ),
                               ),
                             ),
                           ),
+                        ],
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => ViewerBunaiksenMatchCard(
+                              match: matches[index],
+                              index: index,
+                              tournamentId: tournamentId,
+                              dojoId: dojoId,
+                            ),
+                            childCount: matches.length,
+                          ),
                         ),
                       ],
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => ViewerBunaiksenMatchCard(
-                            match: matches[index],
-                            index: index,
-                            tournamentId: tournamentId,
-                            dojoId: dojoId,
-                          ),
-                          childCount: matches.length,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+            ),
             floatingActionButton: null,
           ),
         ),

@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_status_message_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_team_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
@@ -54,141 +55,166 @@ class MatchTimelineList extends ConsumerWidget {
     final ownTeams = ref.watch(customTeamNamesProvider).value ?? [];
     final ownInfo = ref.watch(tournamentOwnInfoProvider(tournamentId));
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
-      children: [
-        ...headerWidgets,
-        // ============================================================
-        // ★ 移設: 大会ヘッダー（HomeScreen から移動。リストと一緒にスクロールさせる）
-        // ============================================================
-        ref
-            .watch(tournamentProvider(tournamentId))
-            .when(
-              data: (tournament) => tournament != null
-                  ? TournamentHeaderCard(tournament: tournament)
-                  : const SizedBox.shrink(),
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.lg),
-                  child: CircularProgressIndicator(),
+    Future<void> handleRefresh() async {
+      ref.invalidate(matchListByTournamentProvider(tournamentId));
+      ref.invalidate(tournamentProvider(tournamentId));
+      ref.invalidate(commentStreamProvider(tournamentId));
+      ref.invalidate(tournamentOwnInfoProvider(tournamentId));
+      ref.invalidate(customTeamNamesProvider);
+      await Future.wait([
+        ref.read(matchListByTournamentProvider(tournamentId).future),
+        ref.read(tournamentProvider(tournamentId).future),
+      ]);
+    }
+
+    return RefreshIndicator(
+      onRefresh: handleRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: AppSpacing.giant * 2),
+        children: [
+          ...headerWidgets,
+          // ============================================================
+          // ★ 移設: 大会ヘッダー（HomeScreen から移動。リストと一緒にスクロールさせる）
+          // ============================================================
+          ref
+              .watch(tournamentProvider(tournamentId))
+              .when(
+                data: (tournament) => tournament != null
+                    ? TournamentHeaderCard(tournament: tournament)
+                    : const SizedBox.shrink(),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.lg),
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
+                error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
               ),
-              error: (e, s) => Text('大会情報の読み込みに失敗しました: $e'),
+
+          MatchTimelineControlBar(
+            isSearchVisible: ref.watch(isSearchVisibleProvider),
+            searchQuery: ref.watch(searchQueryProvider),
+            isSortAscending: ref.watch(categorySortProvider),
+            isAllExpanded: isAllExpanded,
+            isReadOnlyUI: isReadOnlyUI,
+            allMatches: allMatches,
+            isDark: isDark,
+            onSearchVisibilityChanged: (val) =>
+                ref.read(isSearchVisibleProvider.notifier).state = val,
+            onSearchQueryChanged: (val) =>
+                ref.read(searchQueryProvider.notifier).state = val,
+            onToggleSort: () => ref.read(categorySortProvider.notifier).state =
+                !ref.read(categorySortProvider),
+            onToggleExpandAll: () {
+              final nextExpanded = !isAllExpanded;
+              ref.read(timelineAllExpandedProvider.notifier).state =
+                  nextExpanded;
+              ref.read(timelineExpansionVersionProvider.notifier).state++;
+              final allGroupIds = allMatches
+                  .map((m) => m.groupName)
+                  .whereType<String>()
+                  .toSet()
+                  .toList();
+              ref
+                  .read(timelineGroupExpansionMapProvider.notifier)
+                  .setAll(allGroupIds, nextExpanded);
+            },
+            onBulkRuleEdit: () => showBulkRuleEditSheet(
+              context,
+              tournamentId,
+              allMatches,
+              isBunaiksen: false,
+            ),
+          ),
+
+          TimelineCategoryFilterChipsBar(
+            categoryEntries: timelineResult.entries,
+            isDark: isDark,
+          ),
+
+          TimelineStatusMessageSection(
+            timelineResult: timelineResult,
+            sanitizedQuery: sanitizedQuery,
+            isDark: isDark,
+          ),
+
+          if (timelineResult.isLoading && allMatches.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.xxl),
+              child: Center(child: CircularProgressIndicator()),
             ),
 
-        MatchTimelineControlBar(
-          isSearchVisible: ref.watch(isSearchVisibleProvider),
-          searchQuery: ref.watch(searchQueryProvider),
-          isSortAscending: ref.watch(categorySortProvider),
-          isAllExpanded: isAllExpanded,
-          isReadOnlyUI: isReadOnlyUI,
-          allMatches: allMatches,
-          isDark: isDark,
-          onSearchVisibilityChanged: (val) =>
-              ref.read(isSearchVisibleProvider.notifier).state = val,
-          onSearchQueryChanged: (val) =>
-              ref.read(searchQueryProvider.notifier).state = val,
-          onToggleSort: () => ref.read(categorySortProvider.notifier).state =
-              !ref.read(categorySortProvider),
-          onToggleExpandAll: () {
-            final nextExpanded = !isAllExpanded;
-            ref.read(timelineAllExpandedProvider.notifier).state = nextExpanded;
-            ref.read(timelineExpansionVersionProvider.notifier).state++;
-            final allGroupIds = allMatches
-                .map((m) => m.groupName)
-                .whereType<String>()
-                .toSet()
-                .toList();
-            ref
-                .read(timelineGroupExpansionMapProvider.notifier)
-                .setAll(allGroupIds, nextExpanded);
-          },
-          onBulkRuleEdit: () => showBulkRuleEditSheet(
-            context,
-            tournamentId,
-            allMatches,
-            isBunaiksen: false,
-          ),
-        ),
+          ...(() {
+            if (timelineResult.entries.isEmpty) return <Widget>[];
+            final sortedEntries = timelineResult.entries;
+            final displayEntries = selectedCategory == null
+                ? sortedEntries
+                : sortedEntries
+                      .where((e) => e.key == selectedCategory)
+                      .toList();
 
-        TimelineCategoryFilterChipsBar(
-          categoryEntries: timelineResult.entries,
-          isDark: isDark,
-        ),
+            return displayEntries.map<Widget>((catEntry) {
+              final categoryName = catEntry.key;
+              final catMatches = catEntry.value;
+              final sortedTeams =
+                  TimelineCategoryTeamResolver.resolveMatchesByTeam(
+                    catMatches: catMatches,
+                    ownTeams: ownTeams,
+                    ownInfo: ownInfo,
+                  );
 
-        TimelineStatusMessageSection(
-          timelineResult: timelineResult,
-          sanitizedQuery: sanitizedQuery,
-          isDark: isDark,
-        ),
-
-        ...(() {
-          if (timelineResult.entries.isEmpty) return <Widget>[];
-          final sortedEntries = timelineResult.entries;
-          final displayEntries = selectedCategory == null
-              ? sortedEntries
-              : sortedEntries.where((e) => e.key == selectedCategory).toList();
-
-          return displayEntries.map<Widget>((catEntry) {
-            final categoryName = catEntry.key;
-            final catMatches = catEntry.value;
-            final sortedTeams =
-                TimelineCategoryTeamResolver.resolveMatchesByTeam(
-                  catMatches: catMatches,
-                  ownTeams: ownTeams,
-                  ownInfo: ownInfo,
-                );
-
-            return RepaintBoundary(
-              key: ValueKey('category_section_$categoryName'),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.xl,
-                      AppSpacing.xl,
-                      AppSpacing.lg,
-                      AppSpacing.md,
-                    ),
-                    child: Text(
-                      categoryName,
-                      style: TextStyle(
-                        fontSize: AppFontSize.subhead,
-                        fontWeight: AppFontWeight.bold,
-                        color: isDark
-                            ? context.appColors.primaryAccent
-                            : const Color(0xFF3F51B5),
-                        letterSpacing: 1.2,
+              return RepaintBoundary(
+                key: ValueKey('category_section_$categoryName'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.xl,
+                        AppSpacing.xl,
+                        AppSpacing.lg,
+                        AppSpacing.md,
+                      ),
+                      child: Text(
+                        categoryName,
+                        style: TextStyle(
+                          fontSize: AppFontSize.subhead,
+                          fontWeight: AppFontWeight.bold,
+                          color: isDark
+                              ? context.appColors.primaryAccent
+                              : const Color(0xFF3F51B5),
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
-                  ),
 
-                  ...sortedTeams.map((teamEntry) {
-                    return RepaintBoundary(
-                      child: TimelineTeamCard(
-                        teamName: teamEntry.key,
-                        teamMatchesList: teamEntry.value,
-                        categoryName: categoryName,
-                        tournamentId: tournamentId,
-                        sanitizedQuery: sanitizedQuery,
-                        matchedMatchIds: matchedMatchIds,
-                        matchedGroupNames: matchedGroupNames,
-                        ownTeams: ownTeams,
-                        comments: comments,
-                        isReadOnlyUI: isReadOnlyUI,
-                        canManageTournamentUI: canManageTournamentUI,
-                        isDark: isDark,
-                        permissions: permissions,
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            );
-          }).toList();
-        })(),
-      ],
+                    ...sortedTeams.map((teamEntry) {
+                      return RepaintBoundary(
+                        child: TimelineTeamCard(
+                          teamName: teamEntry.key,
+                          teamMatchesList: teamEntry.value,
+                          categoryName: categoryName,
+                          tournamentId: tournamentId,
+                          sanitizedQuery: sanitizedQuery,
+                          matchedMatchIds: matchedMatchIds,
+                          matchedGroupNames: matchedGroupNames,
+                          ownTeams: ownTeams,
+                          comments: comments,
+                          isReadOnlyUI: isReadOnlyUI,
+                          canManageTournamentUI: canManageTournamentUI,
+                          isDark: isDark,
+                          permissions: permissions,
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            }).toList();
+          })(),
+        ],
+      ),
     );
   }
 }

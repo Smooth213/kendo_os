@@ -18,6 +18,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/sync
 import 'package:kendo_os/shared/bootstrap/app_bootstrap_helper.dart';
 import 'package:kendo_os/shared/errors/emergency_crash_preserver.dart';
 import 'package:kendo_os/shared/errors/global_error_handler.dart';
+import 'package:kendo_os/shared/errors/safety_net_error_view.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 import 'package:kendo_os/shared/infrastructure/repository/sync_engine.dart';
 import 'package:kendo_os/shared/infrastructure/services/notification_service.dart';
@@ -104,73 +105,7 @@ void main() {
       };
 
       ErrorWidget.builder = (FlutterErrorDetails details) {
-        return Scaffold(
-          backgroundColor: AppKendoColors.pureBlack,
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: AppKendoColors.pureBlack,
-                    borderRadius: AppRadius.large,
-                    border: Border.all(
-                      color: AppKendoColors.ipponGold.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.shield,
-                            color: AppKendoColors.ipponGold,
-                            size: 28,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          const Expanded(
-                            child: Text(
-                              '🛡️ KendoOS 不壊セーフティネット作動',
-                              style: TextStyle(
-                                color: AppKendoColors.pureWhite,
-                                fontWeight: AppFontWeight.bold,
-                                fontSize: AppFontSize.headline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      const Text(
-                        '試合データは自動退避・保護されました。クラッシュによるデータ消失は発生していません。',
-                        style: TextStyle(
-                          color: AppKendoColors.pureWhite,
-                          fontSize: AppFontSize.body,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        details.exceptionAsString(),
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppKendoColors.pureWhite.withValues(
-                            alpha: 0.6,
-                          ),
-                          fontSize: AppFontSize.small,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
+        return SafetyNetErrorView(details: details);
       };
 
       runApp(

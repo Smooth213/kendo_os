@@ -5,6 +5,7 @@ class PwaPlatformStorage {
   void setItem(String key, String value) => _memoryStorage[key] = value;
   String? getItem(String key) => _memoryStorage[key];
   void removeItem(String key) => _memoryStorage.remove(key);
+  void reload() {}
 }
 
 PwaPlatformStorage get platformStorage => PwaPlatformStorage();

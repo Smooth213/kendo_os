@@ -67,6 +67,13 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
       (m) => m.isKachinuki && m.matchType == '無限勝ち抜き',
     );
 
+    Future<void> handleRefresh() async {
+      ref.invalidate(bunaiksenMatchesProvider(dateId));
+      ref.invalidate(bunaiksenAvailableDatesProvider);
+      ref.invalidate(matchListProvider);
+      ref.invalidate(matchListByTournamentProvider(dateId));
+    }
+
     return AnnouncePopupListener(
       tournamentId: dateId,
       isStaffRoom: true,
@@ -119,132 +126,146 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
             ),
             body: Stack(
               children: [
-                matches.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                RefreshIndicator(
+                  onRefresh: handleRefresh,
+                  child: matches.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           children: [
-                            Image.asset(
-                              'assets/kendo_icon.png',
-                              width: 64,
-                              height: 64,
-                              color: themeColors.subTextColor.withValues(
-                                alpha: 0.5,
+                            const SizedBox(height: 100),
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/kendo_icon.png',
+                                    width: 64,
+                                    height: 64,
+                                    color: themeColors.subTextColor.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  Text(
+                                    isToday
+                                        ? '本日の試合はまだありません'
+                                        : '$dateDisplay の試合はありません',
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.headline,
+                                      color: themeColors.subTextColor,
+                                      fontWeight: AppFontWeight.bold,
+                                    ),
+                                  ),
+                                  if (isToday) ...[
+                                    const SizedBox(height: AppSpacing.sm),
+                                    Text(
+                                      '右下の「試合作成」からリーグや個人戦を登録するか、\n下のボタンから手軽に対戦を開始できます。',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: AppFontSize.small,
+                                        color: themeColors.subTextColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.xl),
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          BunaiksenQuickMatchSheet.show(
+                                            context,
+                                            ref,
+                                            dateId,
+                                          ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            themeColors.primaryAccent,
+                                        foregroundColor:
+                                            AppKendoColors.pureWhite,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.xl,
+                                          vertical: AppSpacing.md,
+                                        ),
+                                        shape: const StadiumBorder(),
+                                      ),
+                                      child: const Text(
+                                        'クイック対戦を始める',
+                                        style: TextStyle(
+                                          fontWeight: AppFontWeight.bold,
+                                          fontSize: AppFontSize.body,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            const SizedBox(height: AppSpacing.md),
-                            Text(
-                              isToday
-                                  ? '本日の試合はまだありません'
-                                  : '$dateDisplay の試合はありません',
-                              style: TextStyle(
-                                fontSize: AppFontSize.headline,
-                                color: themeColors.subTextColor,
-                                fontWeight: AppFontWeight.bold,
-                              ),
-                            ),
-                            if (isToday) ...[
-                              const SizedBox(height: AppSpacing.sm),
-                              Text(
-                                '右下の「試合作成」からリーグや個人戦を登録するか、\n下のボタンから手軽に対戦を開始できます。',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: AppFontSize.small,
-                                  color: themeColors.subTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.xl),
-                              ElevatedButton(
-                                onPressed: () => BunaiksenQuickMatchSheet.show(
-                                  context,
-                                  ref,
-                                  dateId,
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: themeColors.primaryAccent,
-                                  foregroundColor: AppKendoColors.pureWhite,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.xl,
-                                    vertical: AppSpacing.md,
-                                  ),
-                                  shape: const StadiumBorder(),
-                                ),
-                                child: const Text(
-                                  'クイック対戦を始める',
-                                  style: TextStyle(
-                                    fontWeight: AppFontWeight.bold,
-                                    fontSize: AppFontSize.body,
-                                  ),
-                                ),
+                          ],
+                        )
+                      : CustomScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            if (hasInfiniteKachinuki) ...[
+                              const SliverToBoxAdapter(
+                                child: BunaiksenLeaderboardCard(),
                               ),
                             ],
+                            SliverToBoxAdapter(
+                              child: BunaiksenMatchListHeaderBar(
+                                themeColors: themeColors,
+                                hasMatches: matches.isNotEmpty,
+                                onQuickMatch: () =>
+                                    BunaiksenQuickMatchSheet.show(
+                                      context,
+                                      ref,
+                                      dateId,
+                                    ),
+                                onBulkRuleEdit: () => showBulkRuleEditSheet(
+                                  context,
+                                  dateId,
+                                  matches,
+                                  isBunaiksen: true,
+                                ),
+                              ),
+                            ),
+                            SliverList(
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final match = matches[index];
+                                return BunaiksenMatchCard(
+                                  match: match,
+                                  index: index,
+                                  dateId: dateId,
+                                  isDark: isDark,
+                                  canEdit: !permissions.isReadOnly,
+                                  canDelete:
+                                      permissions.canDeleteData ||
+                                      permissions.canManageTournament,
+                                  onTap: () {
+                                    final dojoId = ref.read(
+                                      currentDojoIdProvider,
+                                    );
+                                    context.push(
+                                      '/match/${match.id}?tournamentId=$dateId&dojoId=$dojoId',
+                                    );
+                                  },
+                                  onEditNote: () =>
+                                      BunaiksenHomeActionHelper.showEditNoteDialog(
+                                        context: context,
+                                        match: match,
+                                        themeColors: themeColors,
+                                      ),
+                                  onDelete: () =>
+                                      BunaiksenHomeActionHelper.confirmDeleteMatch(
+                                        context: context,
+                                        ref: ref,
+                                        matchId: match.id,
+                                      ),
+                                );
+                              }, childCount: matches.length),
+                            ),
                           ],
                         ),
-                      )
-                    : CustomScrollView(
-                        slivers: [
-                          if (hasInfiniteKachinuki) ...[
-                            const SliverToBoxAdapter(
-                              child: BunaiksenLeaderboardCard(),
-                            ),
-                          ],
-                          SliverToBoxAdapter(
-                            child: BunaiksenMatchListHeaderBar(
-                              themeColors: themeColors,
-                              hasMatches: matches.isNotEmpty,
-                              onQuickMatch: () => BunaiksenQuickMatchSheet.show(
-                                context,
-                                ref,
-                                dateId,
-                              ),
-                              onBulkRuleEdit: () => showBulkRuleEditSheet(
-                                context,
-                                dateId,
-                                matches,
-                                isBunaiksen: true,
-                              ),
-                            ),
-                          ),
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final match = matches[index];
-                              return BunaiksenMatchCard(
-                                match: match,
-                                index: index,
-                                dateId: dateId,
-                                isDark: isDark,
-                                canEdit: !permissions.isReadOnly,
-                                canDelete:
-                                    permissions.canDeleteData ||
-                                    permissions.canManageTournament,
-                                onTap: () {
-                                  final dojoId = ref.read(
-                                    currentDojoIdProvider,
-                                  );
-                                  context.push(
-                                    '/match/${match.id}?tournamentId=$dateId&dojoId=$dojoId',
-                                  );
-                                },
-                                onEditNote: () =>
-                                    BunaiksenHomeActionHelper.showEditNoteDialog(
-                                      context: context,
-                                      match: match,
-                                      themeColors: themeColors,
-                                    ),
-                                onDelete: () =>
-                                    BunaiksenHomeActionHelper.confirmDeleteMatch(
-                                      context: context,
-                                      ref: ref,
-                                      matchId: match.id,
-                                    ),
-                              );
-                            }, childCount: matches.length),
-                          ),
-                        ],
-                      ),
+                ),
                 // 🥋 部内戦専用フローティングドック
                 BunaiksenDockButton(
                   tournamentId: dateId,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_category_content.dart';
 import 'package:kendo_os/features/viewer/services/viewer_bunaiksen_export_service.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -52,6 +53,12 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
       bunaiksenRecordCategoryGroupsProvider(tournamentId),
     );
 
+    Future<void> handleRefresh() async {
+      ref.invalidate(bunaiksenRecordCategoryGroupsProvider(tournamentId));
+      ref.invalidate(bunaiksenMatchesProvider(tournamentId));
+      ref.invalidate(matchListByTournamentProvider(tournamentId));
+    }
+
     if (categoryGroups.isEmpty) {
       return LiquidBackground(
         child: Scaffold(
@@ -71,10 +78,19 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                   )
                 : null,
           ),
-          body: const Center(
-            child: Text(
-              'この日の記録データはありません',
-              style: TextStyle(color: AppKendoColors.grey),
+          body: RefreshIndicator(
+            onRefresh: handleRefresh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: const [
+                SizedBox(height: 120),
+                Center(
+                  child: Text(
+                    'この日の記録データはありません',
+                    style: TextStyle(color: AppKendoColors.grey),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -127,6 +143,7 @@ class ViewerBunaiksenOfficialRecordScreen extends ConsumerWidget {
                   ),
                   tDate: tDate,
                   exportService: _exportService,
+                  onRefresh: handleRefresh,
                 );
               }).toList(),
             ),

@@ -369,51 +369,69 @@ class _ProgramManagementScreenState
                   ),
                 ],
         ),
-        body: () {
-          final programAsync = ref.watch(
-            programListProvider(widget.tournamentId),
-          );
+        body: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(programListProvider(widget.tournamentId));
+            await ref.read(programListProvider(widget.tournamentId).future);
+          },
+          child: () {
+            final programAsync = ref.watch(
+              programListProvider(widget.tournamentId),
+            );
 
-          return programAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, stack) {
-              debugPrint('[ERROR] Local Projection Error: $err');
-              return const Center(child: Text('プログラムデータの読み込みに失敗しました。'));
-            },
-            data: (programs) {
-              if (programs.isEmpty) {
-                return Center(
-                  child: Text(
-                    isViewerMode ? 'プログラムはありません。' : 'プログラムを追加してください。',
-                  ),
+            return programAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) {
+                debugPrint('[ERROR] Local Projection Error: $err');
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: const [
+                    SizedBox(height: 120),
+                    Center(child: Text('プログラムデータの読み込みに失敗しました。')),
+                  ],
                 );
-              }
-              return _isGridView
-                  ? ProgramManagementContentViews.buildGridView(
-                      context: context,
-                      programs: programs,
-                      getSafeUrl: _getSafeUrl,
-                      onDelete: _confirmDelete,
-                      isViewerMode: isViewerMode,
-                      isSelectionMode: _isSelectionMode,
-                      selectedProgramIds: _selectedProgramIds,
-                      onToggleSelection: _toggleSelection,
-                      onLongPress: _startSelection,
-                    )
-                  : ProgramManagementContentViews.buildListView(
-                      context: context,
-                      programs: programs,
-                      getSafeUrl: _getSafeUrl,
-                      onDelete: _confirmDelete,
-                      isViewerMode: isViewerMode,
-                      isSelectionMode: _isSelectionMode,
-                      selectedProgramIds: _selectedProgramIds,
-                      onToggleSelection: _toggleSelection,
-                      onLongPress: _startSelection,
-                    );
-            },
-          );
-        }(),
+              },
+              data: (programs) {
+                if (programs.isEmpty) {
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      const SizedBox(height: 120),
+                      Center(
+                        child: Text(
+                          isViewerMode ? 'プログラムはありません。' : 'プログラムを追加してください。',
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return _isGridView
+                    ? ProgramManagementContentViews.buildGridView(
+                        context: context,
+                        programs: programs,
+                        getSafeUrl: _getSafeUrl,
+                        onDelete: _confirmDelete,
+                        isViewerMode: isViewerMode,
+                        isSelectionMode: _isSelectionMode,
+                        selectedProgramIds: _selectedProgramIds,
+                        onToggleSelection: _toggleSelection,
+                        onLongPress: _startSelection,
+                      )
+                    : ProgramManagementContentViews.buildListView(
+                        context: context,
+                        programs: programs,
+                        getSafeUrl: _getSafeUrl,
+                        onDelete: _confirmDelete,
+                        isViewerMode: isViewerMode,
+                        isSelectionMode: _isSelectionMode,
+                        selectedProgramIds: _selectedProgramIds,
+                        onToggleSelection: _toggleSelection,
+                        onLongPress: _startSelection,
+                      );
+              },
+            );
+          }(),
+        ),
         floatingActionButton: (isViewerMode || _isSelectionMode)
             ? null
             : FloatingActionButton.extended(

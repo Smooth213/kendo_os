@@ -7,6 +7,8 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/application/projections/match_projection.dart';
 import 'package:kendo_os/shared/application/projections/tournament_projection.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/viewer/presentation/providers/viewer_tournament_provider.dart';
 import '../providers/viewer_view_state_provider.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -37,6 +39,13 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
     final asyncProj = ref.watch(
       viewerTournamentProjectionProvider(tournamentId),
     );
+
+    Future<void> handleRefresh() async {
+      ref.invalidate(viewerTournamentProjectionProvider(tournamentId));
+      ref.invalidate(matchListByTournamentProvider(tournamentId));
+      ref.invalidate(viewerTournamentProvider(tournamentId));
+      await ref.read(matchListByTournamentProvider(tournamentId).future);
+    }
 
     return asyncProj.when(
       loading: () => Scaffold(
@@ -88,10 +97,19 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                 title: screenTitle,
                 elevation: 0,
               ),
-              body: Center(
-                child: Text(
-                  '記録データがありません',
-                  style: TextStyle(color: context.appColors.textColor),
+              body: RefreshIndicator(
+                onRefresh: handleRefresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    const SizedBox(height: 120),
+                    Center(
+                      child: Text(
+                        '記録データがありません',
+                        style: TextStyle(color: context.appColors.textColor),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -220,75 +238,78 @@ class ViewerOfficialRecordScreen extends ConsumerWidget {
                         tournamentVenue: tVenue,
                       ),
                       Expanded(
-                        child: ListView.builder(
-                          physics: const ClampingScrollPhysics(),
-                          padding: const EdgeInsets.all(AppSpacing.sm),
-                          itemCount: sortedGroupKeys.length,
-                          itemBuilder: (context, index) {
-                            final groupName = sortedGroupKeys[index];
-                            final teamProj = effectiveTeamMatches[groupName];
-                            if (teamProj == null) {
-                              return const SizedBox.shrink();
-                            }
+                        child: RefreshIndicator(
+                          onRefresh: handleRefresh,
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            itemCount: sortedGroupKeys.length,
+                            itemBuilder: (context, index) {
+                              final groupName = sortedGroupKeys[index];
+                              final teamProj = effectiveTeamMatches[groupName];
+                              if (teamProj == null) {
+                                return const SizedBox.shrink();
+                              }
 
-                            final matches = List<MatchListProjection>.from(
-                              teamProj.matches,
-                            )..sort((a, b) => a.order.compareTo(b.order));
+                              final matches = List<MatchListProjection>.from(
+                                teamProj.matches,
+                              )..sort((a, b) => a.order.compareTo(b.order));
 
-                            // ★ STEP 4/6: matchesが空の場合に matches.first が呼ばれて Bad state で落ちるのを完全に防ぐ防波堤
-                            if (matches.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
+                              // ★ STEP 4/6: matchesが空の場合に matches.first が呼ばれて Bad state で落ちるのを完全に防ぐ防波堤
+                              if (matches.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
 
-                            if (matches.isNotEmpty && teamProj.isKachinuki) {
-                              return ViewerOfficialRecordCardItemBuilder.buildKachinukiCard(
-                                context: context,
-                                groupName: groupName,
-                                matches: matches,
-                                isDark: isDark,
-                              );
-                            } else if (matches.isNotEmpty &&
-                                teamProj.isLeague) {
-                              return ViewerOfficialRecordCardItemBuilder.buildLeagueSection(
-                                context: context,
-                                groupName: groupName,
-                                matches: matches,
-                                teamProj: teamProj,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                              );
-                            } else if (matches.isNotEmpty &&
-                                matches.any(
-                                  (m) =>
-                                      m.matchType == 'individual' ||
-                                      m.matchType == '選手' ||
-                                      m.matchType.contains('個人戦') ||
-                                      m.matchType.contains('形') ||
-                                      m.matchType.contains('稽古法'),
-                                )) {
-                              // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
-                              matches.sort(
-                                (a, b) => a.order.compareTo(b.order),
-                              );
-                              // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
-                              return ViewerOfficialIndividualListCard(
-                                groupName: groupName,
-                                matches: matches,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                                applySort: true,
-                              );
-                            } else {
-                              // 通常団体戦の描画
-                              return ViewerOfficialScoreTableCard(
-                                groupName: groupName,
-                                matches: matches,
-                                result: teamProj.result,
-                                cardColor: cardColor,
-                                isDark: isDark,
-                              );
-                            }
-                          },
+                              if (matches.isNotEmpty && teamProj.isKachinuki) {
+                                return ViewerOfficialRecordCardItemBuilder.buildKachinukiCard(
+                                  context: context,
+                                  groupName: groupName,
+                                  matches: matches,
+                                  isDark: isDark,
+                                );
+                              } else if (matches.isNotEmpty &&
+                                  teamProj.isLeague) {
+                                return ViewerOfficialRecordCardItemBuilder.buildLeagueSection(
+                                  context: context,
+                                  groupName: groupName,
+                                  matches: matches,
+                                  teamProj: teamProj,
+                                  cardColor: cardColor,
+                                  isDark: isDark,
+                                );
+                              } else if (matches.isNotEmpty &&
+                                  matches.any(
+                                    (m) =>
+                                        m.matchType == 'individual' ||
+                                        m.matchType == '選手' ||
+                                        m.matchType.contains('個人戦') ||
+                                        m.matchType.contains('形') ||
+                                        m.matchType.contains('稽古法'),
+                                  )) {
+                                // ★ 修正: 表示前のタイミングで、本部によるドラッグ並び替え順を強制固定
+                                matches.sort(
+                                  (a, b) => a.order.compareTo(b.order),
+                                );
+                                // 👇 追加: 個人戦の場合は、専用の縦並びリスト形式で描画する
+                                return ViewerOfficialIndividualListCard(
+                                  groupName: groupName,
+                                  matches: matches,
+                                  cardColor: cardColor,
+                                  isDark: isDark,
+                                  applySort: true,
+                                );
+                              } else {
+                                // 通常団体戦の描画
+                                return ViewerOfficialScoreTableCard(
+                                  groupName: groupName,
+                                  matches: matches,
+                                  result: teamProj.result,
+                                  cardColor: cardColor,
+                                  isDark: isDark,
+                                );
+                              }
+                            },
+                          ),
                         ),
                       ),
                     ],

@@ -22,6 +22,7 @@ class ViewerBunaiksenCategoryContent extends ConsumerWidget {
   final StateController<bool> isExportingController;
   final String tDate;
   final ViewerBunaiksenExportService exportService;
+  final Future<void> Function()? onRefresh;
 
   const ViewerBunaiksenCategoryContent({
     super.key,
@@ -34,6 +35,7 @@ class ViewerBunaiksenCategoryContent extends ConsumerWidget {
     required this.isExportingController,
     required this.tDate,
     required this.exportService,
+    this.onRefresh,
   });
 
   @override
@@ -132,48 +134,53 @@ class ViewerBunaiksenCategoryContent extends ConsumerWidget {
         ),
         // 記録コンテンツリスト
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            itemCount: sortedGroupKeys.length,
-            itemBuilder: (context, index) {
-              final groupName = sortedGroupKeys[index];
-              final bouts = mergedGroups[groupName]!
-                ..sort((a, b) => a.order.compareTo(b.order));
+          child: RefreshIndicator(
+            onRefresh: onRefresh ?? () async {},
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              itemCount: sortedGroupKeys.length,
+              itemBuilder: (context, index) {
+                final groupName = sortedGroupKeys[index];
+                final bouts = mergedGroups[groupName]!
+                  ..sort((a, b) => a.order.compareTo(b.order));
 
-              if (bouts.isNotEmpty && bouts.first.isKachinuki) {
-                return ViewerKachinukiRecordCard(
-                  matches: bouts,
-                  isDark: isDark,
-                  ref: ref,
-                );
-              }
+                if (bouts.isNotEmpty && bouts.first.isKachinuki) {
+                  return ViewerKachinukiRecordCard(
+                    matches: bouts,
+                    isDark: isDark,
+                    ref: ref,
+                  );
+                }
 
-              if (bouts.isNotEmpty && BunaiksenHelper.isLeagueMatches(bouts)) {
-                return _buildLeagueSection(context, groupName, bouts);
-              }
+                if (bouts.isNotEmpty &&
+                    BunaiksenHelper.isLeagueMatches(bouts)) {
+                  return _buildLeagueSection(context, groupName, bouts);
+                }
 
-              if (bouts.isNotEmpty &&
-                  bouts.any(
-                    (m) =>
-                        m.matchType == 'individual' ||
-                        m.matchType == '選手' ||
-                        m.matchType.contains('個人戦'),
-                  )) {
-                return ViewerIndividualMatchesListCard(
-                  groupName: groupName,
-                  matches: bouts,
-                  cardColor: cardColor,
-                  isDark: isDark,
-                );
-              } else {
-                return ViewerBunaiksenScoreTableCard(
-                  groupName: groupName,
-                  matches: bouts,
-                  cardColor: cardColor,
-                  isDark: isDark,
-                );
-              }
-            },
+                if (bouts.isNotEmpty &&
+                    bouts.any(
+                      (m) =>
+                          m.matchType == 'individual' ||
+                          m.matchType == '選手' ||
+                          m.matchType.contains('個人戦'),
+                    )) {
+                  return ViewerIndividualMatchesListCard(
+                    groupName: groupName,
+                    matches: bouts,
+                    cardColor: cardColor,
+                    isDark: isDark,
+                  );
+                } else {
+                  return ViewerBunaiksenScoreTableCard(
+                    groupName: groupName,
+                    matches: bouts,
+                    cardColor: cardColor,
+                    isDark: isDark,
+                  );
+                }
+              },
+            ),
           ),
         ),
       ],

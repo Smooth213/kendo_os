@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/safe_timeline_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'team_progress_helper.dart';
 
 // 後方互換性エイリアス
@@ -308,9 +310,65 @@ List<TeamProgressStatus> calculateTeamProgress(
   return results;
 }
 
+/// 🥋 チーム進行状況リストを提供するRiverpodプロバイダー（大会IDスコープ対応・Web同期最適化）
+final teamProgressByTournamentProvider = Provider.family
+    .autoDispose<List<TeamProgressStatus>, String>((ref, tournamentId) {
+      final List<MatchModel> matches;
+      if (kIsWeb) {
+        matches =
+            ref
+                .watch(matchListByTournamentProvider(tournamentId))
+                .valueOrNull ??
+            [];
+      } else {
+        final all = ref.watch(matchListProvider);
+        matches = tournamentId.isNotEmpty
+            ? all.where((m) => m.tournamentId == tournamentId).toList()
+            : all;
+      }
+
+      final myDojoAsync = ref.watch(currentDojoNameProvider);
+      final myDojoName = myDojoAsync.value ?? '';
+
+      final teamsAsync = ref.watch(customTeamNamesProvider);
+      final registeredTeams = teamsAsync.value ?? [];
+
+      final playersAsync = ref.watch(timelinePlayerListProvider);
+      final registeredPlayers = (playersAsync.value ?? [])
+          .map((p) => p.name.trim())
+          .where((n) => n.isNotEmpty)
+          .toList();
+
+      return calculateTeamProgress(
+        matches,
+        myDojoName: myDojoName,
+        registeredTeamNames: registeredTeams,
+        registeredPlayerNames: registeredPlayers,
+      );
+    });
+
 /// 🥋 チーム進行状況リストを提供するRiverpodプロバイダー
 final teamProgressListProvider = Provider<List<TeamProgressStatus>>((ref) {
-  final matches = ref.watch(matchListProvider);
+  final currentTid = ref.watch(currentTournamentIdProvider);
+  final webTid = ref.watch(webCurrentTournamentIdProvider);
+  final effectiveTournamentId = currentTid.isNotEmpty
+      ? currentTid
+      : (webTid ?? '');
+
+  final List<MatchModel> matches;
+  if (kIsWeb && effectiveTournamentId.isNotEmpty) {
+    matches =
+        ref
+            .watch(matchListByTournamentProvider(effectiveTournamentId))
+            .valueOrNull ??
+        [];
+  } else {
+    final all = ref.watch(matchListProvider);
+    matches = effectiveTournamentId.isNotEmpty
+        ? all.where((m) => m.tournamentId == effectiveTournamentId).toList()
+        : all;
+  }
+
   final myDojoAsync = ref.watch(currentDojoNameProvider);
   final myDojoName = myDojoAsync.value ?? '';
 

@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_o
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_record_action_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_record_export_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_team_score_table.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/bunaiksen_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -64,6 +65,12 @@ class _BunaiksenOfficialRecordScreenState
       bunaiksenRecordCategoryGroupsProvider(tournamentId),
     );
 
+    Future<void> handleRefresh() async {
+      ref.invalidate(bunaiksenRecordCategoryGroupsProvider(tournamentId));
+      ref.invalidate(bunaiksenMatchesProvider(tournamentId));
+      ref.invalidate(matchListByTournamentProvider(tournamentId));
+    }
+
     if (categoryGroups.isEmpty) {
       return PopScope(
         onPopInvokedWithResult: (didPop, _) {
@@ -83,10 +90,19 @@ class _BunaiksenOfficialRecordScreenState
             ),
             body: Stack(
               children: [
-                const Center(
-                  child: Text(
-                    'この日の記録データはありません',
-                    style: TextStyle(color: AppKendoColors.grey),
+                RefreshIndicator(
+                  onRefresh: handleRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 120),
+                      Center(
+                        child: Text(
+                          'この日の記録データはありません',
+                          style: TextStyle(color: AppKendoColors.grey),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 BunaiksenDockButton(tournamentId: tournamentId),
@@ -217,59 +233,64 @@ class _BunaiksenOfficialRecordScreenState
                         ),
                         // 記録コンテンツ
                         Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(AppSpacing.sm),
-                            itemCount: sortedGroupKeys.length,
-                            itemBuilder: (context, index) {
-                              final groupName = sortedGroupKeys[index];
-                              final bouts = mergedGroups[groupName]!
-                                ..sort((a, b) => a.order.compareTo(b.order));
+                          child: RefreshIndicator(
+                            onRefresh: handleRefresh,
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              itemCount: sortedGroupKeys.length,
+                              itemBuilder: (context, index) {
+                                final groupName = sortedGroupKeys[index];
+                                final bouts = mergedGroups[groupName]!
+                                  ..sort((a, b) => a.order.compareTo(b.order));
 
-                              // 1. 勝ち抜き戦の描画
-                              if (bouts.isNotEmpty && bouts.first.isKachinuki) {
-                                return BunaiksenKachinukiRecordCard(
-                                  matches: bouts,
-                                  isDark: isDark,
-                                  ref: ref,
-                                );
-                              }
+                                // 1. 勝ち抜き戦の描画
+                                if (bouts.isNotEmpty &&
+                                    bouts.first.isKachinuki) {
+                                  return BunaiksenKachinukiRecordCard(
+                                    matches: bouts,
+                                    isDark: isDark,
+                                    ref: ref,
+                                  );
+                                }
 
-                              // 2. リーグ戦の描画
-                              if (bouts.isNotEmpty &&
-                                  BunaiksenHelper.isLeagueMatches(bouts)) {
-                                return _buildLeagueSection(
-                                  context,
-                                  ref,
-                                  groupName,
-                                  bouts,
-                                  cardColor,
-                                  isDark,
-                                );
-                              }
+                                // 2. リーグ戦の描画
+                                if (bouts.isNotEmpty &&
+                                    BunaiksenHelper.isLeagueMatches(bouts)) {
+                                  return _buildLeagueSection(
+                                    context,
+                                    ref,
+                                    groupName,
+                                    bouts,
+                                    cardColor,
+                                    isDark,
+                                  );
+                                }
 
-                              // 3. 通常の団体戦・個人戦の描画
-                              if (bouts.isNotEmpty &&
-                                  bouts.any(
-                                    (m) =>
-                                        m.matchType == 'individual' ||
-                                        m.matchType == '選手' ||
-                                        m.matchType.contains('個人戦'),
-                                  )) {
-                                return BunaiksenIndividualMatchesList(
-                                  groupName: groupName,
-                                  matches: bouts,
-                                  cardColor: cardColor,
-                                  isDark: isDark,
-                                );
-                              } else {
-                                return BunaiksenTeamScoreTable(
-                                  groupName: groupName,
-                                  matches: bouts,
-                                  cardColor: cardColor,
-                                  isDark: isDark,
-                                );
-                              }
-                            },
+                                // 3. 通常の団体戦・個人戦の描画
+                                if (bouts.isNotEmpty &&
+                                    bouts.any(
+                                      (m) =>
+                                          m.matchType == 'individual' ||
+                                          m.matchType == '選手' ||
+                                          m.matchType.contains('個人戦'),
+                                    )) {
+                                  return BunaiksenIndividualMatchesList(
+                                    groupName: groupName,
+                                    matches: bouts,
+                                    cardColor: cardColor,
+                                    isDark: isDark,
+                                  );
+                                } else {
+                                  return BunaiksenTeamScoreTable(
+                                    groupName: groupName,
+                                    matches: bouts,
+                                    cardColor: cardColor,
+                                    isDark: isDark,
+                                  );
+                                }
+                              },
+                            ),
                           ),
                         ),
                       ],

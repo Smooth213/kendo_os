@@ -6,6 +6,11 @@ class PwaPlatformStorage {
       web.window.localStorage.setItem(key, value);
   String? getItem(String key) => web.window.localStorage.getItem(key);
   void removeItem(String key) => web.window.localStorage.removeItem(key);
+  void reload() {
+    try {
+      web.window.location.reload();
+    } catch (_) {}
+  }
 }
 
 PwaPlatformStorage get platformStorage => PwaPlatformStorage();
