@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_expedition_summary_card.dart';
@@ -64,7 +65,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. タイトルとLINE・共有ボタン、開くボタンの存在確認
       expect(find.text('成績サマリー'), findsOneWidget);
@@ -73,7 +74,7 @@ void main() {
 
       // カードを展開
       await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 展開後に実施された本戦(団体)のみが表示され、未実施の錬成会や申し合わせが表示されないこと
       expect(find.text('閉じる'), findsOneWidget);
@@ -126,11 +127,11 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // LINE・共有ボタンをタップ
       await tester.tap(find.text('LINE・共有'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // クリップボードにテキストが格納されたことを検証
       expect(mockClipboardText, isNotNull);
@@ -176,15 +177,15 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // サマリーカードを展開
       await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 詳細分析ボタンをタップ
       await tester.tap(find.text('詳細分析 ›'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // モーダルが開いて「対戦カード履歴」が表示され、「全剣連基準」が含まれていないことを検証
       expect(find.text('有効打突・取得技内訳'), findsOneWidget);
@@ -227,7 +228,7 @@ void main() {
 
       // カードを展開
       await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('閉じる'), findsOneWidget);
       expect(find.text('本戦 (団体)'), findsOneWidget);
@@ -237,19 +238,19 @@ void main() {
 
       // 選手別成績のアコーディオンをタップして展開
       await tester.tap(find.text('選手別成績 (1名)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('佐藤: 1勝0敗'), findsOneWidget);
 
       // もう一度タップして選手別成績を折りたたみ
       await tester.tap(find.text('選手別成績 (1名)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('表示する'), findsOneWidget);
 
       // カード全体の「閉じる」をタップしてサマリーを折りたたむ
       await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('開く'), findsOneWidget);
     });

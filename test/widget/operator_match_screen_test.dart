@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // 🛡️ 補正：未使用の match_model.dart インポートを完全物理排除し、警告を撲滅
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -47,7 +48,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('メ'), findsWidgets);
       },
     );

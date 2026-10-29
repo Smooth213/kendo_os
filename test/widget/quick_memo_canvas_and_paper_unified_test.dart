@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_canvas_painter.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_paper_view.dart';
@@ -128,7 +129,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fittedBoxFinder = find.byType(FittedBox);
         expect(fittedBoxFinder, findsOneWidget);
@@ -183,7 +184,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fittedBoxFinder = find.byType(FittedBox);
         expect(fittedBoxFinder, findsOneWidget);

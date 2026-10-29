@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -36,7 +37,7 @@ void main() {
         );
 
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('任意の試合時間'), findsOneWidget);
         expect(find.text('2'), findsOneWidget);
@@ -69,7 +70,7 @@ void main() {
         );
 
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final minField = find.widgetWithText(TextField, '1');
         await tester.enterText(minField, '3');
@@ -78,7 +79,7 @@ void main() {
         await tester.enterText(secField, '45');
 
         await tester.tap(find.text('設定する'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(result, equals(3.75));
       });

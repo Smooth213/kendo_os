@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
@@ -67,7 +68,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ヘッダー確認
       expect(find.text('試合ルール設定'), findsOneWidget);
@@ -114,7 +115,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門名入力欄に「高校生の部」を入力
       await tester.enterText(find.byType(TextField).first, '高校生の部');
@@ -122,7 +123,7 @@ void main() {
 
       // 追加ボタン（＋アイコン）をタップ
       await tester.tap(find.byIcon(Icons.add));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ルールの編集画面に遷移し、タイトルが「ルールの編集」になること
       expect(find.text('ルールの編集'), findsOneWidget);
@@ -162,11 +163,11 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 定番部門チップ「小学生の部」をタップ
       await tester.tap(find.text('小学生の部').first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ルールの編集画面に遷移すること
       expect(find.text('ルールの編集'), findsOneWidget);
@@ -209,11 +210,11 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 中学生の部カードをタップ
       await tester.tap(find.text('中学生の部').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 詳細ボトムシートが表示されること
       expect(find.text('中学生の部 のルール設定'), findsOneWidget);
@@ -267,7 +268,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門名入力欄に「テスト部門」を入力
       await tester.enterText(find.byType(TextField).first, 'テスト部門');
@@ -275,16 +276,16 @@ void main() {
 
       // 追加ボタン（＋アイコン）をタップして編集画面へ
       await tester.tap(find.byIcon(Icons.add));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('ルールの編集'), findsOneWidget);
       expect(find.text('試合時間'), findsOneWidget); // 通常試合なので試合時間設定が表示されている
 
       // 試合方式のドロップダウンから「剣道形」を選択
       await tester.tap(find.byType(DropdownButtonFormField<String>));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('剣道形').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 剣道形用のルールが適用され、試合時間設定が消え、形用案内が表示されること
       expect(find.text('試合時間'), findsNothing);

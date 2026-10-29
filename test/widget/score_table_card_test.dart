@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/score_table_card.dart';
 
@@ -96,7 +97,7 @@ void main() {
             isDark: true,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final expectedDarkTextColor = AppThemeColors.ofMode(
           isDark: true,
@@ -148,7 +149,7 @@ void main() {
           isDark: false,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final expectedLightTextColor = AppThemeColors.ofMode(
         isDark: false,
@@ -238,7 +239,7 @@ void main() {
             isDark: true,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final expectedDarkTextColor = AppThemeColors.ofMode(
           isDark: true,
@@ -290,7 +291,7 @@ void main() {
             isDark: false,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // SingleChildScrollView(scrollDirection: Axis.horizontal) が存在すること
         final scrollFinder = find.byWidgetPredicate(
@@ -308,7 +309,7 @@ void main() {
             isDark: false,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(scrollFinder, findsNothing);
       },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/application/mappers/match_projection_mapper.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -131,22 +132,22 @@ void main() {
 
       // ボタンを押してウィザードを開く
       await tester.tap(find.text('ウィザードを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 0: オーダー確認画面
       expect(find.textContaining('オーダー確認'), findsOneWidget);
       await tester.tap(find.text('試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1: コート・見出し確認
       expect(find.text('対戦相手・紅白へ進む'), findsOneWidget);
       await tester.tap(find.text('対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2: 対戦相手・紅白設定
       expect(find.text('このオーダーで確定して進む'), findsOneWidget);
       await tester.tap(find.text('このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // コールバックにより5ポジションの試合モデルが生成され、mockMatchService経由で保存されていること
       expect(matchStore.length, equals(5));

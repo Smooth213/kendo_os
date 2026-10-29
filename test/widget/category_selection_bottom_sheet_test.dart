@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/category_selection_bottom_sheet.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -26,7 +27,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('「テストチーム」の部門選択'), findsOneWidget);
       expect(find.text('中学生'), findsOneWidget);
@@ -42,11 +43,11 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 小学生を選択
       await tester.tap(find.text('小学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('低学年 (1-4年)'), findsOneWidget);
       expect(find.text('高学年 (5-6年)'), findsOneWidget);
@@ -62,10 +63,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('その他'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('カスタム部門名を入力（任意）'), findsOneWidget);
     });
@@ -93,11 +94,11 @@ void main() {
       );
 
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('この部門に設定'), findsOneWidget);
       await tester.tap(find.text('この部門に設定'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(result, equals('中学生男子の部'));
     });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/application/clipboard_import_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/clipboard_import_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_sheet.dart';
@@ -27,7 +28,7 @@ void main() {
           home: const Scaffold(body: Center(child: ClipboardImportButton())),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // アイコンの存在確認
       final iconFinder = find.byIcon(Icons.content_paste_go_rounded);
@@ -58,7 +59,7 @@ void main() {
           home: const Scaffold(body: Center(child: ClipboardImportButton())),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final iconFinder = find.byIcon(Icons.content_paste_go_rounded);
       expect(iconFinder, findsOneWidget);
@@ -74,7 +75,7 @@ void main() {
           child: MaterialApp(home: Scaffold(body: ClipboardImportButton())),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final buttonFinder = find.byType(IconButton);
       expect(buttonFinder, findsOneWidget);
@@ -119,10 +120,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('取り込みテスト'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // スナックバーメッセージの検証
       expect(find.text('クリップボードにテキストがコピーされていません'), findsOneWidget);
@@ -168,10 +169,10 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('取り込みテスト'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 誤爆防止メッセージの検証
         expect(find.text('クリップボードに大会情報やオーダーが見つかりませんでした'), findsOneWidget);
@@ -232,10 +233,10 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('取り込みテスト'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // シートが正常に表示されること
       expect(find.byType(TournamentShareImportSheet), findsOneWidget);

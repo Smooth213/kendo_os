@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/widgets/action_buttons.dart';
 
 void main() {
@@ -49,7 +50,7 @@ void main() {
 
       // 領域外で指を離す
       await gesture.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 領域外逸脱によりキャンセルされ、確定コールバックは発火していないこと
       expect(isConfirmed, isFalse);
@@ -94,7 +95,7 @@ void main() {
       expect(isConfirmed, isTrue);
 
       await gesture.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
     });
   });
 }

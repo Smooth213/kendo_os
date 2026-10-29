@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_individual_matches_list.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/tournament_own_info_provider.dart';
@@ -100,7 +101,7 @@ void main() {
       ];
 
       await tester.pumpWidget(buildOfficialWidget(matches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final texts = tester
           .widgetList<Text>(find.byType(Text))
@@ -154,7 +155,7 @@ void main() {
       ];
 
       await tester.pumpWidget(buildOfficialWidget(matches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final texts = tester
           .widgetList<Text>(find.byType(Text))
@@ -228,7 +229,7 @@ void main() {
       ];
 
       await tester.pumpWidget(buildOfficialWidget(matches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final texts = tester
           .widgetList<Text>(find.byType(Text))
@@ -310,7 +311,7 @@ void main() {
       ];
 
       await tester.pumpWidget(buildViewerWidget(viewerMatches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final texts = tester
           .widgetList<Text>(find.byType(Text))
@@ -408,7 +409,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final texts = tester
           .widgetList<Text>(find.byType(Text))

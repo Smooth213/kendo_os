@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
@@ -127,9 +128,9 @@ void main() {
 
   Future<void> openProgramFromDock(WidgetTester tester) async {
     await tester.tap(find.byType(FloatingProgramDockButton));
-    await tester.pumpAndSettle();
+    await tester.safePumpAndSettle();
     await tester.tap(find.byIcon(Icons.menu_book_rounded));
-    await tester.pumpAndSettle();
+    await tester.safePumpAndSettle();
   }
 
   group('[Widget] ドックプログラム閲覧位置端末永続化 ＆ 全画面ビューア連携検証', () {
@@ -155,7 +156,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('Main Screen Content'), findsOneWidget);
         expect(find.byType(FloatingProgramDockButton), findsOneWidget);
@@ -170,9 +171,9 @@ void main() {
         final nextButton = find.byTooltip('次のページ');
         expect(nextButton, findsOneWidget);
         await tester.tap(nextButton); // 2
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(nextButton); // 3
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('3 / 8'), findsOneWidget);
 
         expect(
@@ -184,7 +185,7 @@ void main() {
 
         // 4. ボトムシートを閉じる
         await FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.byType(ProgramBottomSheet), findsNothing);
 
         // 5. 再度ドックからプログラムを展開 → 3ページ目が自動復元されていること
@@ -194,7 +195,7 @@ void main() {
 
         // 6. ボトムシートを閉じて、全画面ビューアへ遷移
         await FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.pumpWidget(
           buildE2EAppScope(
@@ -202,7 +203,7 @@ void main() {
             child: ProgramViewerScreen(programs: testPrograms, initialIndex: 0),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.byType(ProgramViewerScreen), findsOneWidget);
         final fullscreenPdfBody = tester.widget<ProgramViewerPdfBody>(
@@ -216,7 +217,7 @@ void main() {
 
         // 7. 全画面ビューア内でさらに 5ページ目へ進めたイベントをトリガー
         fullscreenPdfBody.onPageChanged?.call(4);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(
           ProgramViewStateService.instance.getLastPageNumber(
@@ -241,7 +242,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.byType(ProgramViewerScreen), findsNothing);
 
         // 9. 再度ドックからプログラムシートを展開 → 5ページ目が引き継がれていること
@@ -254,7 +255,7 @@ void main() {
         );
 
         await FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 10. 【コールドブート再現】
         expect(
@@ -280,7 +281,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await openProgramFromDock(tester);
 
         expect(find.byType(ProgramBottomSheet), findsOneWidget);
@@ -313,7 +314,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await openProgramFromDock(tester);
         expect(find.byType(ProgramBottomSheet), findsOneWidget);
@@ -322,11 +323,11 @@ void main() {
         // ページを 1 から 4 へ進める
         final nextButton = find.byTooltip('次のページ');
         await tester.tap(nextButton); // 2
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(nextButton); // 3
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(nextButton); // 4
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('4 / 8'), findsOneWidget);
         expect(
           ProgramViewStateService.instance.getLastPageNumber(
@@ -339,7 +340,7 @@ void main() {
         final firstPageBtnFinder = find.byTooltip('最初のページに戻る');
         expect(firstPageBtnFinder, findsOneWidget);
         await tester.tap(firstPageBtnFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('1 / 8'), findsOneWidget);
         expect(
@@ -355,12 +356,12 @@ void main() {
 
         // 1ページ目の状態でさらにタップしても 1 / 8 のまま維持
         await tester.tap(firstPageBtnFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('1 / 8'), findsOneWidget);
 
         // 全画面ビューアへ遷移
         await FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.pumpWidget(
           buildE2EAppScope(
@@ -368,7 +369,7 @@ void main() {
             child: ProgramViewerScreen(programs: testPrograms, initialIndex: 0),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fullscreenPdfBody = tester.widget<ProgramViewerPdfBody>(
           find.byType(ProgramViewerPdfBody),
@@ -392,7 +393,7 @@ void main() {
           find.byType(ProgramViewerPdfBody),
         );
         currentPdfBody.onPageChanged?.call(5);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(
           ProgramViewStateService.instance.getLastPageNumber(
             'prog_e2e_schedule',
@@ -405,7 +406,7 @@ void main() {
 
         // AppBarの「最初のページに戻る」ボタンをタップ
         await tester.tap(fsFirstPageFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(
           ProgramViewStateService.instance.getLastPageNumber(
@@ -436,7 +437,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await openProgramFromDock(tester);
         expect(find.byType(ProgramBottomSheet), findsOneWidget);
@@ -447,7 +448,7 @@ void main() {
         );
 
         await FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // コールドブート
         ProgramViewStateService.instance.resetForTesting();
@@ -468,7 +469,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await openProgramFromDock(tester);
 
         expect(find.byType(ProgramBottomSheet), findsOneWidget);

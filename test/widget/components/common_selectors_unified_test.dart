@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/category_cascade_selector_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_format_selector_view.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -49,7 +50,7 @@ void main() {
 
         // 「中学生」をタップ
         await tester.tap(find.text('中学生'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(selectedMajor, '中学生');
         // 中学生に連動して「1年」「男子」などが表示されること
@@ -96,32 +97,32 @@ void main() {
 
       // 「3人制」をタップ
       await tester.tap(find.text('3人制'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '団体戦（3人制）');
 
       // 「個人戦」をタップすると1タップで確定すること
       await tester.tap(find.text('個人戦'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '個人戦');
 
       // 「リーグ戦」をタップすると団体戦が初期選択されること
       await tester.tap(find.text('リーグ戦'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, 'リーグ団体戦');
 
       // リーグ戦のサブオプションから「個人戦」を選択
       await tester.tap(find.text('個人戦').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, 'リーグ個人戦');
 
       // 「勝ち抜き戦」をタップ
       await tester.tap(find.text('勝ち抜き戦'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '勝ち抜き戦（5人制）');
 
       // 「剣道形」をタップ
       await tester.tap(find.text('剣道形'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '日本剣道形（太刀の形3本）');
 
       // 種別（日本剣道形・木刀による剣道基本技稽古法）が表示されていること
@@ -136,12 +137,12 @@ void main() {
 
       // 「太刀の形（7本）」をタップ
       await tester.tap(find.text('太刀の形（7本）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '日本剣道形（太刀の形7本）');
 
       // 「木刀による剣道基本技稽古法」に切り替え
       await tester.tap(find.text('木刀による剣道基本技稽古法'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '木刀による剣道基本技稽古法（5本）');
 
       // 基本技稽古法の本数選択肢が表示されていること
@@ -150,7 +151,7 @@ void main() {
 
       // 「基本技（9本）」をタップ
       await tester.tap(find.text('基本技（9本）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchType, '木刀による剣道基本技稽古法（9本）');
     });
   });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -75,7 +76,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. ヘッダーの丸アバター頭文字「皿」
       expect(find.text('皿'), findsOneWidget);
@@ -104,7 +105,7 @@ void main() {
 
       // 7. アコーディオンを展開
       await tester.tap(find.byType(ExpansionTile));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 8. 展開された MatchListTileCard が個人戦スタイルで描画されること
       expect(find.byType(MatchListTileCard), findsOneWidget);
@@ -185,7 +186,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // カード上段の左上に【錬成】バッジが表示されていること
         expect(find.text('【錬成】'), findsOneWidget);
@@ -257,7 +258,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1段目のバッジに【錬成】および【申合せ】が表示されること
         expect(find.text('【錬成】'), findsWidgets);
@@ -301,7 +302,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // リーグ戦中枠ヘッダーにも【錬成】バッジが表示されること
         expect(find.text('【錬成】'), findsOneWidget);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
@@ -76,7 +77,7 @@ void main() {
 
         // ダイアログを開く
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 3つの選択肢チップが存在することを確認
         expect(find.text('全員に通知'), findsOneWidget);
@@ -92,11 +93,11 @@ void main() {
           find.widgetWithText(TextField, 'アナウンス本文内容'),
           '順延のため第3コートで開始します',
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「🔕 通知なし」チップを選択
         await tester.tap(find.byKey(const Key('timeline_target_none_chip')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボタンの文言が「コメントを保存」に切り替わること
         expect(find.text('コメントを保存'), findsOneWidget);
@@ -105,7 +106,7 @@ void main() {
         await tester.tap(
           find.byKey(const Key('timeline_submit_announce_button')),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ダイアログが閉じること
         expect(find.text('公式アナウンス・コメントの一斉発信'), findsNothing);
@@ -159,7 +160,7 @@ void main() {
 
         // ダイアログを開く
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // デフォルトは「一斉発信して保存」
         expect(find.text('一斉発信して保存'), findsOneWidget);
@@ -173,13 +174,13 @@ void main() {
           find.widgetWithText(TextField, 'アナウンス本文内容'),
           '開会式のため本部前へ集合してください',
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「一斉発信して保存」ボタンをタップ
         await tester.tap(
           find.byKey(const Key('timeline_submit_announce_button')),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Firestoreの announcements コレクションに発信データが保存されていること
         final announceDocs = await fakeFirestore
@@ -232,22 +233,22 @@ void main() {
         );
 
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「スタッフ限定」チップを選択
         await tester.tap(find.byKey(const Key('timeline_target_staff_chip')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.enterText(
           find.widgetWithText(TextField, 'アナウンス本文内容'),
           '審判員は本部へ集合してください',
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(
           find.byKey(const Key('timeline_submit_announce_button')),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final announceDocs = await fakeFirestore
             .collection('announcements')
@@ -302,7 +303,7 @@ void main() {
         );
 
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 全てのチップとボタンが表示され、例外(Overflow等)が一切発生しないこと
         expect(find.text('全員に通知'), findsOneWidget);

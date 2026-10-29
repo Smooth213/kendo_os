@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -99,7 +100,7 @@ void main() {
             ),
           );
 
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // ----------------------------------------------------
           // 監査①: 遷移ファイル・コンポーネント配置の同一性検証
@@ -129,7 +130,7 @@ void main() {
           final expansionTile = find.byKey(const ValueKey('player_剣道太郎'));
           await tester.ensureVisible(expansionTile);
           await tester.tap(expansionTile);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // ----------------------------------------------------
           // 監査③: ボタン・操作配置のネイティブ整合性検証

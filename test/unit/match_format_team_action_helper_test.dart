@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_action_helper.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
 import 'package:kendo_os/shared/infrastructure/repository/team_repository.dart';
@@ -65,11 +66,11 @@ void main() {
         },
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // キャンセルボタンをタップ
       await tester.tap(find.text('キャンセル'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(fakeRepo.deletedId, isNull);
       expect(deletedCallbackCalled, isFalse);
@@ -115,11 +116,11 @@ void main() {
         },
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 削除ボタンをタップ
       await tester.tap(find.text('削除'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(fakeRepo.deletedId, 'team-to-delete');
       expect(deletedCallbackCalled, isTrue);

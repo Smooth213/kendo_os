@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_detail_setting_cards.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -59,7 +60,7 @@ void main() {
       expect(find.text('一本勝負形式にする'), findsOneWidget);
 
       await tester.tap(find.text('一本勝負形式にする'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(isIpponShobu, isTrue);
     });
 
@@ -108,7 +109,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. 各カードのMaterial背景色が半透明グレー（Color(0x80FFFFFF)など）ではなくダーク背景であること
         final materialFinder = find.byType(Material);
@@ -177,7 +178,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('⏱️ 基本ルール'), findsOneWidget);
       expect(find.text('試合時間'), findsOneWidget);

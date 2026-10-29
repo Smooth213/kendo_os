@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -107,7 +108,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(mockMatches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 本戦（大将戦）のチーム勝数「1勝 0敗」が集計サマリーに描画されていること
       expect(
@@ -148,7 +149,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(mockMatches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // KendoRuleEngine を通して「判定」が返ってくるが、UIで「判」に圧縮される
       expect(find.text('判'), findsOneWidget);
@@ -180,7 +181,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(matches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('先鋒'), findsOneWidget);
       expect(find.text('(欠員)'), findsNothing);
@@ -221,7 +222,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(matches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // イニシャル '太' と '花' が画面上に描画されていることを確認
       expect(find.text('太'), findsOneWidget);
@@ -251,7 +252,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(matches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // PDFボタンを探す
       final pdfButton = find.text('PDF').first;
@@ -265,7 +266,7 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsWidgets);
 
       // 非同期処理が完了するまで待機（SnackBar等が出た場合も消えるまで待機）
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ダイアログが消えていることを確認
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -309,7 +310,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(mockMatches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 先鋒が画面上（または左側）で大将より前にレイアウトされていることを確認
       final senhoPos = tester.getTopLeft(find.text('先鋒'));
@@ -342,7 +343,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(mockMatches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検索アイコンが存在することを確認
       final searchIcon = find.byIcon(Icons.search);
@@ -350,7 +351,7 @@ void main() {
 
       // 検索アイコンをタップして検索モードに入る
       await tester.tap(searchIcon);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検索テキストフィールドが表示されること
       final textField = find.byType(TextField);
@@ -358,7 +359,7 @@ void main() {
 
       // 「岡田」と入力する
       await tester.enterText(textField, '岡田');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 該当選手「岡田」が存在し、ハイライト用のAnimatedContainer（アンバー枠線など）が生成されていること
       expect(find.text('岡田'), findsOneWidget);
@@ -377,12 +378,12 @@ void main() {
 
       // クリアボタンをタップすると入力がクリアされること
       await tester.tap(cancelIcon);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.byIcon(Icons.cancel), findsNothing);
 
       // フルネーム（スペースなし「岡田太郎」等）でもハイライトされること
       await tester.enterText(textField, '岡田太郎');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final containersAfterFullName = tester.widgetList<AnimatedContainer>(
         find.byType(AnimatedContainer),
@@ -401,7 +402,7 @@ void main() {
       final closeIcon = find.byIcon(Icons.close);
       expect(closeIcon, findsOneWidget);
       await tester.tap(closeIcon);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検索テキストフィールドが閉じられ、通常のタイトルに戻ること
       expect(find.byType(TextField), findsNothing);
@@ -441,7 +442,7 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestableWidget(multiCategoryMatches));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2つのタブが表示されていること
       expect(find.text('中学生の部'), findsOneWidget);
@@ -449,14 +450,14 @@ void main() {
 
       // 検索アイコンをタップ
       await tester.tap(find.byIcon(Icons.search));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final textField = find.byType(TextField);
       expect(textField, findsOneWidget);
 
       // 「岡田」と入力
       await tester.enterText(textField, '岡田');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       bool checkHighlighted(String name) {
         final target = find.byWidgetPredicate(
@@ -479,14 +480,14 @@ void main() {
 
       // 「高校生の部」タブをタップして切り替える
       await tester.tap(find.widgetWithText(Tab, '高校生の部'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 高校生の部では「木場」が表示されるが、検索クエリ「岡田」には一致しないためハイライトされないこと
       expect(checkHighlighted('木場'), isFalse, reason: '高校生の部で木場はハイライトされないこと');
 
       // 検索クエリを「木場」に変更するとハイライトされること
       await tester.enterText(textField, '木場');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(checkHighlighted('木場'), isTrue, reason: '高校生の部で木場がハイライトされること');
     });
   });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/timeline_category_filter_chips_bar.dart';
@@ -72,9 +73,9 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('簡易入力ダイアログを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('他コートの簡易入力'), findsOneWidget);
       expect(find.text('赤心館'), findsOneWidget);
@@ -127,9 +128,9 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('決定戦ダイアログを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('決定戦の形式を選択'), findsOneWidget);
       expect(find.text('代表戦（1名）'), findsOneWidget);
@@ -179,14 +180,14 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('すべて'), findsOneWidget);
       expect(find.text('小学生低学年'), findsOneWidget);
       expect(find.text('小学生高学年'), findsOneWidget);
 
       await tester.tap(find.text('小学生低学年'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
     });
 
     testWidgets('TimelineDialogAndHelper 各種ヘルパーおよびシートが正しく動作すること', (
@@ -428,11 +429,11 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ダイアログを開く
       await tester.tap(find.text('アナウンスを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. ヘッダーおよびカテゴリタブが表示されていること
       expect(find.text('公式アナウンス・コメントの一斉発信'), findsOneWidget);
@@ -444,7 +445,7 @@ void main() {
 
       // 2. 「☕ 進行・休憩」カテゴリタブをタップしてアコーディオンを開く
       await tester.tap(find.text('☕ 進行・休憩'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 進行・休憩のチップが表示されていること
       expect(find.text('昼休憩'), findsOneWidget);
@@ -452,7 +453,7 @@ void main() {
 
       // 3. チップ「昼休憩」をタップするとタイトルに【昼休憩】が反映され、本文が自動補完されること
       await tester.tap(find.text('昼休憩'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('【昼休憩】'), findsOneWidget);
       expect(find.text('昼休憩に入ります。'), findsOneWidget);
 
@@ -462,7 +463,7 @@ void main() {
         findsOneWidget,
       );
       await tester.tap(find.byKey(const Key('timeline_title_undo_button')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 5. 変更先展開ボタン（＋ 変更先（➔）を指定）を押すと変更先スロットが展開されること
       expect(
@@ -472,7 +473,7 @@ void main() {
       await tester.tap(
         find.byKey(const Key('timeline_toggle_destination_button')),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('【変更元】'), findsOneWidget);
       expect(find.text('【変更先】'), findsOneWidget);
@@ -483,13 +484,13 @@ void main() {
       final plusIcons = find.byIcon(Icons.add);
       if (plusIcons.evaluate().isNotEmpty) {
         await tester.tap(plusIcons.first);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         // 本文に第1試合場が入ること
         expect(find.textContaining('第1試合場'), findsWidgets);
 
         // もう一度タップしても重複せず数字が更新されること（第2試合場）
         await tester.tap(plusIcons.first);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.textContaining('第2試合場'), findsWidgets);
       }
     });

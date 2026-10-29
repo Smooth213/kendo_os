@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/edit_parsed_member_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/tournament_share_import_cards.dart';
@@ -151,7 +152,7 @@ void main() {
 
       // チーム名タップ
       await tester.tap(find.text('低学年A'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('チーム名の変更'), findsOneWidget);
       final field = find.widgetWithText(TextField, '低学年A');
@@ -159,22 +160,22 @@ void main() {
       final saveBtn = find.text('変更を保存');
       await tester.ensureVisible(saveBtn);
       await tester.tap(saveBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(updatedTeamName, equals('低学年選抜'));
 
       // カテゴリタップ
       await tester.tap(find.text('小学生低学年の部'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('「低学年A」のカテゴリ（部門）'), findsOneWidget);
       // 小分類「高学年」を選択
       await tester.tap(find.textContaining('高学年'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 確定ボタンをタップ
       await tester.tap(find.text('この部門に設定'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(updatedCategory, equals('小学生高学年の部'));
     });
@@ -211,7 +212,7 @@ void main() {
         );
 
         await tester.tap(find.text('選手編集を開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボトムシートが開く
         expect(find.text('選手の編集'), findsOneWidget);
@@ -220,7 +221,7 @@ void main() {
         final positionChip = find.text('次鋒');
         expect(positionChip, findsOneWidget);
         await tester.tap(positionChip);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 名簿サジェストリスト（EditParsedMemberRosterList）が存在すること
         expect(find.text('道場名簿から選択'), findsOneWidget);
@@ -231,16 +232,16 @@ void main() {
         // 「皿田 脩人」を選択
         final playerTile = find.text('皿田 脩人').first;
         await tester.tap(playerTile);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 外側のListViewをスクロールして保存ボタンを表示・タップ
         await tester.drag(find.text('役職・ポジション'), const Offset(0, -500));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final applyBtn = find.text('変更を適用');
         expect(applyBtn, findsOneWidget);
         await tester.tap(applyBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(resultMember, isNotNull);
         expect(resultMember!.position, equals('次鋒'));

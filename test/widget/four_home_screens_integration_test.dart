@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mocktail/mocktail.dart';
@@ -154,7 +155,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 通常大会ホーム画面の基本UI要素アサーション
       expect(find.text('大会ホーム'), findsOneWidget);
@@ -167,7 +168,7 @@ void main() {
 
       // 個別試合のアコーディオンを展開する
       await tester.tap(find.byType(ExpansionTile).first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('相手選手'), findsWidgets);
     });
@@ -232,7 +233,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 特設部内戦ホーム画面の描画アサーション
       expect(find.text('部内太郎'), findsOneWidget);
@@ -288,7 +289,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 観客用通常大会ホーム画面の基本UI要素アサーション
       expect(find.text('大会ホーム (観客席)'), findsOneWidget);
@@ -368,7 +369,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 観客用特設部内戦ホーム画面の描画アサーション
         expect(find.text('観戦太郎'), findsOneWidget);
@@ -580,7 +581,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 本部画面AppBarに「観客の画面を確認」ボタンが存在することを確認
         final viewerButton = find.byTooltip('観客の画面を確認');
@@ -588,7 +589,7 @@ void main() {
 
         // ボタンをタップして観客席画面へ遷移
         await tester.tap(viewerButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 観客席画面に遷移し、観客用UI（閲覧専用）が完全に一致して描画されること
         expect(find.text('大会ホーム (観客席)'), findsOneWidget);

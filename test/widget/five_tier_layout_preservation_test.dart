@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
@@ -72,7 +73,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1段目: 属性プレフィックスバッジ + ステータスバッジ（LIVE）
       expect(find.text('【錬成】'), findsWidgets);
@@ -118,7 +119,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1段目: ステータスバッジ
       expect(find.text('試合中 (LIVE)'), findsOneWidget);
@@ -168,7 +169,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1段目: チーム名・カテゴリ名・ステータスバッジ
       expect(find.text('道上剣友会'), findsWidgets);

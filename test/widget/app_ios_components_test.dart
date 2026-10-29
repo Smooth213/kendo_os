@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/admin/presentation/screens/design_system_gallery_screen.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -113,7 +114,7 @@ void main() {
 
       // タップして切り替え
       await tester.tap(switchFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(currentValue, isTrue);
     });
@@ -154,7 +155,7 @@ void main() {
       expect(shape.borderRadius, AppRadius.capsule);
 
       await tester.tap(chipFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(isSelected, isTrue);
     });
@@ -248,7 +249,7 @@ void main() {
       );
 
       await tester.tap(find.text('Go'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('サブ画面'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
@@ -292,7 +293,7 @@ void main() {
       );
 
       await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(backPressed, isTrue);
     });
@@ -327,13 +328,13 @@ void main() {
           routerConfig: router,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('ホーム画面'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('大会一覧画面'), findsOneWidget);
     });
@@ -384,7 +385,7 @@ void main() {
 
       expect(find.text('タップカード'), findsOneWidget);
       await tester.tap(find.text('タップカード'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tapped, isTrue);
     });
 

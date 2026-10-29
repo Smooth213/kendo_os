@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_score_action_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/smart_undo_floating_bar.dart';
@@ -92,7 +93,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態: 正面視点
       expect(find.text('正面視点'), findsOneWidget);

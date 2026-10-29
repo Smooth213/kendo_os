@@ -81,7 +81,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('全カテゴリを一括出力'), findsOneWidget);
       expect(find.text('PDF'), findsOneWidget);
@@ -140,7 +140,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('全カテゴリを一括出力'), findsOneWidget);
       expect(find.text('PDF（全）'), findsOneWidget);

@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_delete_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_reorderable_file_list.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_title_preview_dialog.dart';
@@ -125,13 +126,13 @@ void main() {
       );
 
       await tester.tap(find.text('削除ボタン'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('プログラムの削除'), findsOneWidget);
       expect(find.text('「進行表1」を削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
 
       await tester.tap(find.text('削除'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(mockRepo.deletedIds, contains('p1'));
     });
@@ -187,13 +188,13 @@ void main() {
       );
 
       await tester.tap(find.text('一括削除ボタン'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('プログラムの一括削除'), findsOneWidget);
       expect(find.text('選択した 2件のプログラムを削除しますか？\nこの操作は取り消せません。'), findsOneWidget);
 
       await tester.tap(find.text('すべて削除'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(mockRepo.deletedIds, containsAll(['p1', 'p2']));
       expect(onDeletedCalled, isTrue);
@@ -240,10 +241,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Dialog'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.textContaining('プログラム名'), findsWidgets);
       expect(find.text('第41回大会要項.pdf'), findsOneWidget);

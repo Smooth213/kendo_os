@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -169,7 +170,7 @@ void main() {
           child: MaterialApp.router(routerConfig: router),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ポジションテキストの描画縦位置 (Y座標) を検証
       final sempoY = tester.getTopLeft(find.text('先鋒')).dy;
@@ -244,7 +245,7 @@ void main() {
           child: MaterialApp.router(routerConfig: router),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final sempoY = tester.getTopLeft(find.text('先鋒')).dy;
       final chukenY = tester.getTopLeft(find.text('中堅')).dy;

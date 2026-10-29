@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_league_grid_cell_renderer.dart';
@@ -65,7 +66,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('【錬成】'), findsOneWidget);
         expect(find.byType(MatchStatusBadge), findsOneWidget);
@@ -101,7 +102,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.byType(MatchStatusBadge), findsOneWidget);
         expect(find.text('試合中 (LIVE)'), findsOneWidget);

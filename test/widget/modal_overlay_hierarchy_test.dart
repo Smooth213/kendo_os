@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/band/presentation/providers/band_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
@@ -63,11 +64,11 @@ void main() {
             child: MaterialApp.router(routerConfig: router),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. ドックを開く
         await tester.tap(find.text('Open Settings Dock'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('システム設定'), findsOneWidget);
 
@@ -78,13 +79,13 @@ void main() {
           150,
           scrollable: find.byType(Scrollable).first,
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 3. BAND設定タイルをタップ
         await tester.tap(bandTile);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('BANDグループ管理'), findsOneWidget);
         debugPrint('Successfully opened BANDグループ管理!');

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/widgets/action_buttons.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -32,7 +33,7 @@ void main() {
 
       // 指を離す
       await gesture.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // インジケーターが消滅したことを確認
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -68,7 +69,7 @@ void main() {
       // アニメーション完了時間まで進めても発火しないことを確認
       await tester.pump(const Duration(milliseconds: 300));
       await gesture.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(isConfirmed, isFalse, reason: '無効化されている場合はonConfirmが呼ばれてはいけません');
     });
@@ -109,7 +110,7 @@ void main() {
       expect(isConfirmed, isTrue, reason: '長押し完了時にonConfirmが呼ばれる必要があります');
 
       await gesture.up(); // 指を離す
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
     });
 
     testWidgets('ScoreActionPanel has no overlapping artifactsこと', (
@@ -221,7 +222,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final containerFinder = find.byWidgetPredicate(
           (widget) =>

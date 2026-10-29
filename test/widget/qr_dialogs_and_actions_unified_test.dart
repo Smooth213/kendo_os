@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/band/presentation/providers/band_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/web_app_qr_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
@@ -49,7 +50,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('大会観戦リンク'), findsOneWidget);
       expect(find.textContaining('離れた場所にいる保護者や仲間も'), findsOneWidget);
@@ -87,7 +88,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('Webアプリ版（kendo_os）'), findsOneWidget);
       expect(find.text('URLをシェア・共有'), findsOneWidget);
@@ -156,7 +157,7 @@ void main() {
           home: const Scaffold(body: WebAppQrDialog()),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('Webアプリ版（kendo_os）'), findsOneWidget);
       expect(find.text('https://kendo-os-beta.web.app'), findsOneWidget);
@@ -189,19 +190,19 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final tileFinder = find.text('Webアプリ版 QRコード');
       expect(tileFinder, findsOneWidget);
 
       await tester.tap(tileFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(WebAppQrDialog), findsOneWidget);
       expect(find.text('https://kendo-os-beta.web.app'), findsOneWidget);
 
       await tester.tap(find.text('閉じる'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(WebAppQrDialog), findsNothing);
     });

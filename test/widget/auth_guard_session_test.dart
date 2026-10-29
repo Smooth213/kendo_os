@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -46,7 +47,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // childが描画され、RoleSelectScreenに弾かれないこと
       expect(find.text('🛡️ 運営画面コンテンツ'), findsOneWidget);
@@ -74,7 +75,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // RoleSelectScreenが表示されること
       expect(find.byType(RoleSelectScreen), findsOneWidget);

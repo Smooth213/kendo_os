@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_add_next_match_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/renseikai_master_timer_widget.dart';
@@ -172,7 +173,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);
       expect(find.text('決定して開始'), findsOneWidget);

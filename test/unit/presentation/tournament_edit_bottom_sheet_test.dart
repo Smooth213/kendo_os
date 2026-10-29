@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_bottom_sheet.dart';
 import 'package:kendo_os/shared/domain/entities/tournament_model.dart';
@@ -124,7 +125,7 @@ void main() {
 
       // ボトムシートを開く
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 項目を編集
       final nameField = find.widgetWithText(TextField, '全国剣道大会2026');
@@ -153,7 +154,7 @@ void main() {
         ),
       ).called(1);
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       // ボトムシートが閉じていること
       expect(find.text('第50回 全日本選手権'), findsNothing);
     });
@@ -188,12 +189,12 @@ void main() {
       );
 
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 下部固定アクションボタンまでスクロールしてタップ
       final saveButton = find.text('大会情報を保存する');
       await tester.ensureVisible(saveButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(saveButton);
       await tester.pump();
@@ -209,7 +210,7 @@ void main() {
         ),
       ).called(1);
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
     });
 
     testWidgets('「キャンセル」ボタンを押した際、保存されずにボトムシートが閉じること', (tester) async {
@@ -232,13 +233,13 @@ void main() {
       );
 
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('大会情報の編集'), findsOneWidget);
 
       // キャンセルボタンをタップ
       await tester.tap(find.text('キャンセル'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // リポジトリは呼ばれず、シートが閉じていること
       verifyNever(
@@ -263,7 +264,7 @@ void main() {
 
       // 開催年月日フィールドをタップ
       await tester.tap(find.text('2026年10月15日'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 日付選択ダイアログが表示されること（年やOKボタンの存在確認）
       expect(find.byType(DatePickerDialog), findsOneWidget);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_daihyo_handler.dart';
@@ -102,7 +103,7 @@ void main() {
       );
 
       await tester.tap(find.text('代表戦追加ボタン'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 新規代表戦モデルが正しく構築されて追加されたことの検証
       final captured = verify(
@@ -141,11 +142,11 @@ void main() {
       );
 
       await tester.tap(find.text('代表戦追加ボタン'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「試合へ進む」ボタンをタップ
       await tester.tap(find.text('試合へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 試合画面への遷移とIDの一致を検証
       expect(find.text('試合画面: $expectedMatchId'), findsOneWidget);
@@ -169,11 +170,11 @@ void main() {
       );
 
       await tester.tap(find.text('代表戦追加ボタン'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「一覧に戻る」ボタンをタップ
       await tester.tap(find.text('一覧に戻る'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ダイアログが閉じられ、スコアボード（元の画面）に留まること
       expect(find.text('代表戦を追加しました'), findsNothing);

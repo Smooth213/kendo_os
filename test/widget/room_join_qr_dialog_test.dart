@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -56,11 +57,11 @@ void main() {
 
       // 1. ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 新規の道場ID「osaka_dojo统计」を入力
       await tester.enterText(find.byType(TextField), 'osaka_dojo');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 🌟 修正核心：Firestoreの多層非同期フューチャーを、リアルタイム非同期スレッド（runAsync）内で
       // 完全に回しきることで、テスト空間での時間差による「未作成バグ」を根絶します。
@@ -71,7 +72,7 @@ void main() {
       });
 
       // 3. 通信結果に伴うUI更新の反映
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // アサーション1：Firestoreの「organizations/osaka_dojo」にデータが正しく自動創設されていること
       final doc = await fakeFirestore
@@ -107,11 +108,11 @@ void main() {
 
       // 1. ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 被っているID「tokyo_dojo」を入力
       await tester.enterText(find.byType(TextField), 'tokyo_dojo');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 🌟 修正核心：存在チェックの get() 通信パケットを安全に解決させます
       await tester.runAsync(() async {
@@ -120,7 +121,7 @@ void main() {
       });
 
       // 3. 警告ダイアログのポップアップアニメーションを消化
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 🚨 アサーション1：無断での上書き接続はされず、画面に重複警告ポップアップが出現していることを証明
       expect(find.text('⚠️ ID重複・既存の部屋'), findsOneWidget);
@@ -133,7 +134,7 @@ void main() {
       });
 
       // 5. 画面が閉じるのを待機
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // アサーション2：承認を経て、最終的に既存の「tokyo_dojo」空間への直結が執行されたこと
       expect(container.read(currentDojoIdProvider), equals('tokyo_dojo'));
@@ -159,7 +160,7 @@ void main() {
 
         // ダイアログを開く
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // はみ出しエラー（RenderFlex overflowed）などのレイアウト例外が一切スローされていないことをアサート
         expect(tester.takeException(), isNull);
@@ -184,7 +185,7 @@ void main() {
 
       // ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 説明文テキストの視認性検証
       final instructionFinder = find.textContaining('会場のQRコードをスキャンするか');
@@ -232,7 +233,7 @@ void main() {
 
       // ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. タイトル、説明文、注意書きの描画検証
       expect(find.text('道場ルームへの参加'), findsOneWidget);
@@ -263,17 +264,17 @@ void main() {
 
       // ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 既存の部屋名を入力
       await tester.enterText(find.byType(TextField), 'existing_room');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
         await Future<void>.delayed(Duration.zero);
       });
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 警告ダイアログ内のメッセージ色検証
       final warningMsgFinder = find.textContaining('はすでに存在しています。');
@@ -306,7 +307,7 @@ void main() {
 
       // ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 履歴チップ「tokyo_dojo_2026」が表示されていること
       final historyFinder = find.text('tokyo_dojo_2026');
@@ -327,7 +328,7 @@ void main() {
 
       // 履歴チップをタップするとTextFieldに入力されること
       await tester.tap(historyFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.widgetWithText(TextField, 'tokyo_dojo_2026'), findsOneWidget);
 
       container.dispose();
@@ -343,7 +344,7 @@ void main() {
       await tester.pumpWidget(createTestTarget(container));
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // iOS Safari / Web での描画消失（グレーアウト）原因となる BackdropFilter が存在しないことを検証
       expect(find.byType(BackdropFilter), findsNothing);
@@ -371,7 +372,7 @@ void main() {
 
       // ダイアログを開く
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態ではQRアイコンが表示されていること
       expect(find.byIcon(Icons.qr_code_2), findsOneWidget);
@@ -379,7 +380,7 @@ void main() {
       // 入力欄にフォーカス＆キーボードを出現させる
       await tester.tap(find.byType(TextField));
       tester.view.viewInsets = const FakeViewPadding(bottom: 336);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // キーボード表示時はQRアイコンが非表示になりコンパクト化されること
       expect(find.byIcon(Icons.qr_code_2), findsNothing);
@@ -433,12 +434,12 @@ void main() {
 
         // 1. 開く
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 2. 入力欄にフォーカス＆キーボード（高さ300px）出現
         await tester.tap(find.byType(TextField));
         tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 🚨 跳ね上がり絶対防止アサーション：シート上端が画面外（Y < 0）に突き抜けていないこと
         final containerBox = tester.renderObject<RenderBox>(
@@ -463,7 +464,7 @@ void main() {
 
         // 3. テキストが正常に入力・反映されること
         await tester.enterText(find.byType(TextField), 'chiba_dojo');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.widgetWithText(TextField, 'chiba_dojo'), findsOneWidget);
 
         // 4. キーボード出現下の小型画面でも「接続開始」ボタンをタップして正常接続できること
@@ -471,7 +472,7 @@ void main() {
           await tester.tap(find.text('接続開始'));
           await Future<void>.delayed(Duration.zero);
         });
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 接続完了確認
         expect(container.read(currentDojoIdProvider), equals('chiba_dojo'));
@@ -496,7 +497,7 @@ void main() {
       await tester.pumpWidget(createTestTarget(container));
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final containerFinder = find
           .descendant(
@@ -509,7 +510,7 @@ void main() {
       for (int cycle = 1; cycle <= 3; cycle++) {
         // キーボード開
         tester.view.viewInsets = const FakeViewPadding(bottom: 336);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final offsetOpen = tester.getTopLeft(containerFinder);
         expect(
@@ -520,7 +521,7 @@ void main() {
 
         // キーボード閉
         tester.view.viewInsets = FakeViewPadding.zero;
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final offsetClosed = tester.getTopLeft(containerFinder);
         expect(
@@ -543,7 +544,7 @@ void main() {
         await tester.pumpWidget(createTestTarget(container));
 
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. 中央配置Dialog（跳ね上がりの主因）が使用されていないこと
         expect(find.byType(Dialog), findsNothing);
@@ -584,7 +585,7 @@ void main() {
       await tester.pumpWidget(createTestTarget(container));
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 履歴チップが表示されていること
       expect(find.text('kyoto_dojo'), findsOneWidget);
@@ -592,12 +593,12 @@ void main() {
 
       // 途中までユーザーが文字を入力
       await tester.enterText(find.byType(TextField), 'wrong_code');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.widgetWithText(TextField, 'wrong_code'), findsOneWidget);
 
       // 履歴「kyoto_dojo」チップをタップ
       await tester.tap(find.text('kyoto_dojo'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 入力欄が「kyoto_dojo」に正しく上書きされていること
       expect(find.widgetWithText(TextField, 'kyoto_dojo'), findsOneWidget);
@@ -607,7 +608,7 @@ void main() {
         await tester.tap(find.text('接続開始'));
         await Future<void>.delayed(Duration.zero);
       });
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 正常に「kyoto_dojo」に直結されたこと
       expect(container.read(currentDojoIdProvider), equals('kyoto_dojo'));
@@ -634,16 +635,16 @@ void main() {
       await tester.pumpWidget(createTestTarget(container));
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.enterText(find.byType(TextField), 'test_room');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
         await Future<void>.delayed(Duration.zero);
       });
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // permission-denied 用の親切なメッセージが表示されていること
       expect(find.text('認証準備中です。もう一度「接続開始」を押してください。'), findsOneWidget);

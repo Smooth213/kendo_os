@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
@@ -153,7 +154,7 @@ void main() {
           },
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 初期状態（アコーディオンは閉じた状態）
       expect(find.text('よく使う組み合わせ（ワンタップ入力）'), findsOneWidget);
@@ -161,7 +162,7 @@ void main() {
 
       // アコーディオンをタップして展開
       await tester.tap(find.text('よく使う組み合わせ（ワンタップ入力）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 定番プリセットが表示されていること
       expect(find.text('小学生高学年 / 団体 5人制'), findsOneWidget);
@@ -188,21 +189,21 @@ void main() {
 
       // 4. 次へ進んでチーム名・選手入力（Step 2）
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final teamNameField = find.byType(TextField);
       expect(teamNameField, findsWidgets);
       await tester.enterText(teamNameField.first, 'ライフサイクル修道館');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 5. 次へ進んで登録確認（Step 3）
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 6. 登録完了をタップ
       expect(find.text('登録を完了してルール設定へ'), findsOneWidget);
       await tester.tap(find.text('登録を完了してルール設定へ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // リポジトリに正しく保存が呼ばれたこと
       verify(() => mockTeamRepo.saveTeam(any())).called(1);

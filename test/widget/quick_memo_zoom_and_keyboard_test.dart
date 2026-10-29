@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_canvas_painter.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
@@ -53,7 +54,7 @@ void main() {
         await tester.pumpWidget(
           buildCanvasTestWidget(screenSize: const Size(800, 1000)),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 初期状態では「100%に戻す」ボタンは非表示
         expect(find.text('100%に戻す'), findsNothing);
@@ -83,14 +84,14 @@ void main() {
 
         await touch1.up();
         await touch2.up();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「100%に戻す」ボタンが残っていること
         expect(find.text('100%に戻す'), findsOneWidget);
 
         // リセットボタンをタップ
         await tester.tap(find.text('100%に戻す'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // リセット後は「100%に戻す」ボタンが非表示になること
         expect(find.text('100%に戻す'), findsNothing);
@@ -107,7 +108,7 @@ void main() {
       await tester.pumpWidget(
         buildCanvasTestWidget(screenSize: const Size(800, 1000)),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final gestureFinder = find.byWidgetPredicate(
         (w) => w is GestureDetector && w.onScaleStart != null,
@@ -131,7 +132,7 @@ void main() {
       // 間隔がほぼ変わっていないため、ズームバッジは表示されず純粋にパン移動が成立すること
       await touch1.up();
       await touch2.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 描画エラーなく安全に完了すること
       expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
@@ -174,7 +175,7 @@ void main() {
 
         // 1. キーボード非表示時
         await tester.pumpWidget(buildTextViewWidget(viewInsetsBottom: 0));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final initialToolbarPositioned = tester.widget<Positioned>(
           find
@@ -188,7 +189,7 @@ void main() {
 
         // 2. キーボード出現時 (300px)
         await tester.pumpWidget(buildTextViewWidget(viewInsetsBottom: 300));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final raisedToolbarPositioned = tester.widget<Positioned>(
           find
@@ -236,14 +237,14 @@ void main() {
 
         // 1. キーボード非表示時は初期高さ（58%）
         await tester.pumpWidget(buildSheetWidget(viewInsetsBottom: 0));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('Sheet Content'), findsOneWidget);
 
         // 2. キーボード出現時 (250px)
         await tester.pumpWidget(buildSheetWidget(viewInsetsBottom: 250));
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // DockSheetScope が isExpanded: true に自動展開されていること
         final scopeFinder = find.byType(DockSheetScope);

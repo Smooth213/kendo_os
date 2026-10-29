@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 
@@ -165,30 +166,30 @@ void main() {
 
       // 1. スペースキー押下 -> タイマー開始
       await tester.sendKeyEvent(LogicalKeyboardKey.space);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('タイマー状態: 進行中'), findsOneWidget);
 
       // 2. 'M' キー押下 -> 赤選手に面が追加される
       await tester.sendKeyEvent(LogicalKeyboardKey.keyM);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('赤選手: 山田 太郎 (本数: 1)'), findsOneWidget);
       expect(find.text('イベント総数: 1'), findsOneWidget);
 
       // 3. 'D' キー押下 -> 白選手に胴が追加される
       await tester.sendKeyEvent(LogicalKeyboardKey.keyD);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('白選手: 佐藤 次郎 (本数: 1)'), findsOneWidget);
       expect(find.text('イベント総数: 2'), findsOneWidget);
 
       // 4. テンキー '2' 押下 -> 赤選手に小手が追加される
       await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('赤選手: 山田 太郎 (本数: 2)'), findsOneWidget);
       expect(find.text('イベント総数: 3'), findsOneWidget);
 
       // 5. スペースキー押下 -> タイマー停止
       await tester.sendKeyEvent(LogicalKeyboardKey.space);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('タイマー状態: 停止中'), findsOneWidget);
     });
   });

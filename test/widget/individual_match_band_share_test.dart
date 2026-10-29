@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/band/domain/entities/band_group_model.dart';
 import 'package:kendo_os/features/band/presentation/components/band_share_button.dart';
 import 'package:kendo_os/features/band/presentation/providers/band_provider.dart';
@@ -130,11 +131,11 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 初期状態：親アコーディオンヘッダーをタップして展開
       await tester.tap(find.byKey(const ValueKey('player_橋本 璃久')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 展開された各試合カード（第8試合場, 25試合目）内にBANDボタンが存在することを確認
       expect(find.byType(MatchListTileCard), findsOneWidget);
@@ -165,7 +166,7 @@ void main() {
 
       // 6. グループをタップしてBANDが起動すること
       await tester.tap(find.text('中学生個人戦グループ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(launchedUri, isNotNull);
       expect(launchedUri.toString(), 'https://band.us/@kendo_indiv_jhs');
@@ -220,7 +221,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. リーグ個人戦の試合カードにBANDボタンが表示されること
       final bandBtnFinder = find.byType(BandShareButton);

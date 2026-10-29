@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/new_match/new_match_heading_notes_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/new_match/new_match_mode_input_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/new_match/new_match_scene_rule_selector_section.dart';
@@ -89,14 +90,14 @@ void main() {
       );
 
       await tester.tap(find.byType(TextField));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('山田'), findsOneWidget);
       expect(find.text('佐藤'), findsOneWidget);
       expect(find.text('田中'), findsOneWidget);
 
       await tester.tap(find.text('山田'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(controller.text, '山田');
     });
@@ -141,19 +142,19 @@ void main() {
       expect(find.text('準決勝'), findsOneWidget);
 
       await tester.tap(find.text('準決勝'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(courtController.text, contains('準決勝'));
       expect(find.text('クリア'), findsOneWidget);
 
       await tester.tap(find.text('クリア'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(courtController.text, '');
 
       expect(find.textContaining('運営メモ・特記事項'), findsOneWidget);
       await tester.tap(find.textContaining('運営メモ・特記事項'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(TextField), findsWidgets);
     });
@@ -207,13 +208,13 @@ void main() {
       expect(find.text('チームテンプレを選択'), findsNothing);
 
       await tester.tap(find.text('組織（道場・学校）を選択'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('東京剣道クラブ'), findsOneWidget);
       expect(find.text('大阪剣友会'), findsOneWidget);
 
       await tester.tap(find.text('東京剣道クラブ').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedOrg, org1);
       expect(find.text('チームテンプレを選択'), findsOneWidget);

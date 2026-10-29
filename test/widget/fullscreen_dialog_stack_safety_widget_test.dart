@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
 void main() {
@@ -58,30 +59,30 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 第1ダイアログを開く
       await tester.tap(find.byKey(const Key('open_dialog_stack_btn')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('第1ダイアログ: 試合終了確認'), findsOneWidget);
 
       // 2. 第2ダイアログを開く（多重スタック）
       await tester.tap(find.byKey(const Key('open_sub_dialog_btn')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('第2ダイアログ: 承認確認'), findsOneWidget);
 
       // 3. 連続Popを実行（Android戻るボタン／画面外タップ等）
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
       expect(navigator.canPop(), isTrue);
       navigator.pop(); // 第2ダイアログ閉じる
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('第2ダイアログ: 承認確認'), findsNothing);
       expect(find.text('第1ダイアログ: 試合終了確認'), findsOneWidget);
 
       expect(navigator.canPop(), isTrue);
       navigator.pop(); // 第1ダイアログ閉じる
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('第1ダイアログ: 試合終了確認'), findsNothing);
       expect(find.byKey(const Key('open_dialog_stack_btn')), findsOneWidget);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -104,7 +105,7 @@ void main() {
 
         // 初期ビルドと非同期ストリームの解決を待機
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // -----------------------------------------------------------------------
         // 📌 監査項目①: 遷移先・包含ファイルの完全同一性検証
@@ -149,7 +150,7 @@ void main() {
           if (tileFinder.evaluate().isNotEmpty) {
             final tile = tileFinder.first;
             await tester.ensureVisible(tile);
-            await tester.pumpAndSettle();
+            await tester.safePumpAndSettle();
             final listTileFinder = find.descendant(
               of: tile,
               matching: find.byType(ListTile),
@@ -159,7 +160,7 @@ void main() {
             } else {
               await tester.tap(tile);
             }
-            await tester.pumpAndSettle();
+            await tester.safePumpAndSettle();
           }
         }
 

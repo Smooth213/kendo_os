@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_team_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
@@ -95,7 +96,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 画面内に両方の対戦カードが表示されていること
       expect(find.text('道上剣友会A vs 相手チーム02'), findsOneWidget);
@@ -165,7 +166,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // アコーディオンを展開
       await tester.tap(
@@ -173,7 +174,7 @@ void main() {
           (w) => w is RichText && w.text.toPlainText().contains('皿田 脩人'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('相手 次郎'), findsOneWidget);
       expect(find.text('相手 太郎'), findsOneWidget);
@@ -251,7 +252,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // アナウンスと試合カードが表示されていること
       expect(find.text('【連絡】第2試合場へ移動してください'), findsOneWidget);

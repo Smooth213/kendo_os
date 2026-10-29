@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/config/runtime_mode.dart';
@@ -19,7 +20,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. フラグがOFF（BetaFeatureFlags.showObservability == false）であるため、画面が表示されずアクセス制限テキストが出ていることをアサート
       expect(find.textContaining('アクセス制限'), findsOneWidget);

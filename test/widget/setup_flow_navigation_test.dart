@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -113,29 +114,29 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify page 0 is rendered (we see "次へ進む" button)
         expect(find.text('次へ進む'), findsOneWidget);
         await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Page 1 is visible. Enter team name in TextField
         final textField = find.byType(TextField);
         expect(textField, findsOneWidget);
         await tester.enterText(textField, '修武館A');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Tap Next on Page 1 to go to Page 2 Confirm screen
         await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify "登録を完了してルール設定へ" button is now visible on Page 2
         expect(find.text('登録を完了してルール設定へ'), findsOneWidget);
 
         // Tap completion button
         await tester.tap(find.text('登録を完了してルール設定へ'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify it navigated to CategoryRulesScreen with isFromSetup=true
         expect(
@@ -199,7 +200,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Check skip button is visible in AppBar
         expect(find.text('スキップ'), findsOneWidget);
@@ -209,7 +210,7 @@ void main() {
 
         // Tap bottom completion button
         await tester.tap(find.text('設定を完了して大会ホームへ進む'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify it redirected to home
         expect(find.text('Home: test_tournament_123'), findsOneWidget);
@@ -264,11 +265,11 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Tap skip button in AppBar
       await tester.tap(find.text('スキップ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify it redirected to home
       expect(find.text('Home: test_tournament_123'), findsOneWidget);
@@ -316,7 +317,7 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Setup specific UI elements should NOT be rendered
       expect(find.text('スキップ'), findsNothing);

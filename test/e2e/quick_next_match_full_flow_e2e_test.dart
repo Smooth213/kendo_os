@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -145,18 +146,18 @@ void main() {
           teamMatches: [baseMatch],
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. スワイプして「次戦追加」を展開・タップ
       final cardFinder = find.byType(Slidable);
       expect(cardFinder, findsOneWidget);
       await tester.drag(cardFinder, const Offset(-300, 0));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final addNextButton = find.text('次戦追加');
       expect(addNextButton, findsOneWidget);
       await tester.tap(addNextButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. ウィザードが表示される
       expect(find.byType(QuickNextMatchWizardSheet), findsOneWidget);
@@ -165,30 +166,30 @@ void main() {
       final toStep1Button = find.text('試合詳細の設定へ進む');
       expect(toStep1Button, findsOneWidget);
       await tester.tap(toStep1Button);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1（試合詳細）: 特記事項アコーディオンを展開
       final accordionTile = find.text('＋ 運営メモ・特記事項を追加（任意）');
       expect(accordionTile, findsOneWidget);
       await tester.tap(accordionTile);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 特記事項を入力
       final noteField = find.byType(TextField).last;
       await tester.enterText(noteField, '1本勝負・延長あり');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「対戦相手・紅白へ進む」をタップして Step 2 へ進む
       final toStep2Button = find.text('対戦相手・紅白へ進む');
       expect(toStep2Button, findsOneWidget);
       await tester.tap(toStep2Button);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2（対戦相手・紅白・確定）
       final confirmButton = find.text('このオーダーで確定して進む');
       expect(confirmButton, findsOneWidget);
       await tester.tap(confirmButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. 保存が実行されたことを検証
       verify(() => mockMatchService.saveMatch(any())).called(1);
@@ -229,15 +230,15 @@ void main() {
           teamMatches: [baseMatch],
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // スワイプして「次戦追加」タップ
       final cardFinder = find.byType(Slidable);
       await tester.drag(cardFinder, const Offset(-300, 0));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('次戦追加'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 0: 形ペアスロットの確認（オーダー編成画面準拠の2スロット）
       expect(find.text('皿田 脩人'), findsOneWidget);
@@ -247,30 +248,30 @@ void main() {
       final changeButtons = find.text('変更');
       expect(changeButtons, findsNWidgets(2));
       await tester.tap(changeButtons.at(1)); // 2人目スロット
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選手選択ボトムシートで「佐藤 健」を選択
       expect(find.text('選手の選択'), findsOneWidget);
       final playerTile = find.text('佐藤 健');
       expect(playerTile, findsOneWidget);
       await tester.tap(playerTile);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 仕太刀が「佐藤 健」に変更されたことを確認
       expect(find.text('佐藤 健'), findsOneWidget);
 
       // Step 0 ➔ Step 1
       await tester.tap(find.text('試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1 ➔ Step 2
       await tester.tap(find.text('対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2 ➔ 確定
       final confirmButton = find.text('このオーダーで確定して進む');
       await tester.tap(confirmButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 保存された試合の選手名が「皿田 脩人・佐藤 健」と結合されていることを検証
       verify(() => mockMatchService.saveMatch(any())).called(1);
@@ -345,13 +346,13 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // カードを左にスワイプ
       final cardFinder = find.byType(Slidable);
       expect(cardFinder, findsOneWidget);
       await tester.drag(cardFinder, const Offset(-300, 0));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「編集」アクションが表示されていることを確認
       final editButton = find.text('編集');
@@ -359,7 +360,7 @@ void main() {
 
       // 「編集」をタップ
       await tester.tap(editButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // MatchEditSheet がモーダルとして開いていることを検証
       expect(find.byType(MatchEditSheet), findsOneWidget);

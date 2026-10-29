@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -201,7 +202,7 @@ void main() {
       );
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 表示検証
       expect(find.text('試合レギュレーション確認'), findsOneWidget);

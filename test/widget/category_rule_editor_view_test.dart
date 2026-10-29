@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_view.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -176,7 +177,7 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('小学生高学年の部'), findsOneWidget);
       expect(find.text('通常戦のルール'), findsOneWidget);

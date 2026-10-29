@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_form_state.dart';
@@ -160,14 +161,14 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 対戦カードの描画検証
       expect(find.text('混成剣友会A vs 対戦道場B'), findsOneWidget);
 
       // アコーディオンを展開
       await tester.tap(find.text('混成剣友会A vs 対戦道場B'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 各対戦選手名が表示されること
       expect(find.text('混成剣友会A vs 対戦道場B'), findsOneWidget);

@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_category_preview_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_dynamic_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_section_header.dart';
@@ -171,16 +172,16 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('千代田チーム'), findsOneWidget);
 
       await tester.tap(find.text('千代田チーム'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('次へ進む'), findsOneWidget);
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('試合方式'), findsOneWidget);
       expect(find.text('リーグ団体戦'), findsAtLeast(1));
@@ -234,12 +235,12 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 大分類「その他」をタップ
       expect(find.text('その他'), findsWidgets);
       await tester.tap(find.text('その他').first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 登録済みその他カテゴリ一覧チップ「道場対抗の部 (1)」が表示されること
       expect(find.text('登録済みのカテゴリから選択：'), findsOneWidget);
@@ -252,12 +253,12 @@ void main() {
         100.0,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('道場対抗Aチーム'), findsOneWidget);
 
       // 4. 登録済みチップをタップするとカテゴリプレビューに反映されること
       await tester.tap(find.text('道場対抗の部 (1)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('道場対抗の部'), findsWidgets);
     });
   });

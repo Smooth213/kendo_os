@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/operator_action_buttons.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_quick_action_buttons.dart';
@@ -54,7 +55,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 最上段プライマリボタン
         expect(find.text('試合（対戦）を作成'), findsOneWidget);
@@ -99,7 +100,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 本部用ボタンは非表示
         expect(find.text('試合（対戦）を作成'), findsNothing);
@@ -134,7 +135,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合結果一覧'), findsOneWidget);
         expect(find.text('大会プログラム'), findsOneWidget);
@@ -180,7 +181,7 @@ void main() {
             ),
           );
 
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(find.text('試合（対戦）を作成'), findsOneWidget);
           expect(find.text('試合ルール設定'), findsOneWidget);

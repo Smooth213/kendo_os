@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/utils/promotion_display_helper.dart';
 
 void main() {
@@ -91,7 +92,7 @@ void main() {
         );
       }
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(controller.value, equals(1.0));
     });
   });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_infinite_handler_helper.dart';
@@ -80,7 +81,7 @@ void main() {
         winnerColor: 'red',
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(fakeAppService.savedMatch, isNotNull);
       expect(fakeAppService.savedMatch!.status, 'finished');

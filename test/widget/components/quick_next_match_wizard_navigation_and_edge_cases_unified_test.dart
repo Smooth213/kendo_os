@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -107,13 +108,13 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 0: 「試合詳細の設定へ進む」をタップ
       final nextButton1 = find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む');
       expect(nextButton1, findsOneWidget);
       await tester.tap(nextButton1);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1: 「対戦相手・紅白へ進む」が表示されていること
       final nextButton2 = find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む');
@@ -123,7 +124,7 @@ void main() {
       final backButton = find.widgetWithText(OutlinedButton, '戻る');
       expect(backButton, findsOneWidget);
       await tester.tap(backButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 再び Step 0 の「試合詳細の設定へ進む」が表示されていること
       expect(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'), findsOneWidget);
@@ -151,12 +152,12 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final closeBtn = find.byIcon(Icons.close);
       if (closeBtn.evaluate().isNotEmpty) {
         await tester.tap(closeBtn.first);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
       }
       expect(tester.takeException(), isNull);
     });
@@ -189,7 +190,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(baseMatch: baseMatch));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1: 自チーム選手（皿田 脩人、塚本 大道）の2スロットが表示されていることを確認
       expect(find.text('皿田 脩人'), findsOneWidget);
@@ -197,10 +198,10 @@ void main() {
 
       // Step 2 ➔ Step 3へ進む
       await tester.tap(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 3: 対戦相手側の2スロットが表示されている
       final absentButtons = find.text('欠員');
@@ -208,11 +209,11 @@ void main() {
 
       // 相手の2人目（仕太刀側）のみ「欠員」をタップ
       await tester.tap(absentButtons.at(1));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 確定
       await tester.tap(find.widgetWithText(ElevatedButton, 'このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: saveMatch が呼ばれ、白（相手側）の2人目が「選手」補完され結合されていること
       final captured = verify(
@@ -254,14 +255,14 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, isSameTeamContinue: true),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1 ➔ Step 2 ➔ Step 3 へ進む
       await tester.tap(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 相手道場名と相手ペア2名（伊藤 誠、田中 太郎）が引き継がれていることを確認
       expect(find.text('相手道場'), findsOneWidget);
@@ -270,7 +271,7 @@ void main() {
 
       // 確定
       await tester.tap(find.widgetWithText(ElevatedButton, 'このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final captured = verify(
         () => mockMatchService.saveMatch(captureAny()),

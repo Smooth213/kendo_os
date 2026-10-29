@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_container.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_editor_header_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rules_form_state.dart';
@@ -70,7 +71,7 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('対象部門'), findsOneWidget);
       expect(find.text('一般の部'), findsOneWidget);
@@ -184,11 +185,11 @@ void main() {
 
       // ドロップダウンを開く
       await tester.tap(find.byType(DropdownButtonFormField<String>));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「剣道形」を選択
       await tester.tap(find.text('剣道形').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedType, '剣道形');
     });

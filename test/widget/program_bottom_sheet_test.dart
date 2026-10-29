@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_stroke_layer.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/program_list_provider.dart';
@@ -84,10 +85,10 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: []));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('プログラム（進行表・トーナメント表）を登録してください'), findsOneWidget);
     });
@@ -98,17 +99,17 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('進行表_1日目'), findsWidgets);
       expect(find.text('トーナメント表_女子'), findsOneWidget);
 
       // 2つ目のチップをタップして切り替え
       await tester.tap(find.text('トーナメント表_女子'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(InteractiveViewer), findsOneWidget);
     });
@@ -119,16 +120,16 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(ProgramBottomSheet), findsOneWidget);
 
       // 閉じるボタンをタップ
       await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(ProgramBottomSheet), findsNothing);
     });
@@ -141,10 +142,10 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(programs: dummyPrograms, isViewerMode: false),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 右下の「プログラム管理」ボタンは削除されていること
       expect(find.text('プログラム管理'), findsNothing);
@@ -161,10 +162,10 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(programs: dummyPrograms, isViewerMode: true),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 観客モードでも個人メモ用にペン編集ボタンが存在すること
       expect(find.byIcon(Icons.brush_rounded), findsOneWidget);
@@ -178,10 +179,10 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ProgramStrokeLayer が描画ツリーに配置されていること
       expect(find.byType(ProgramStrokeLayer), findsOneWidget);
@@ -193,10 +194,10 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 全画面ボタンが存在すること
       expect(find.byIcon(Icons.open_in_full_rounded), findsOneWidget);
@@ -222,10 +223,10 @@ void main() {
       ];
 
       await tester.pumpWidget(createTestWidget(programs: pdfPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // PDF の場合も ProgramStrokeLayer が重畳配置されていること
       expect(find.byType(ProgramStrokeLayer), findsOneWidget);
@@ -237,10 +238,10 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final interactiveFinder = find.byType(InteractiveViewer);
       expect(interactiveFinder, findsOneWidget);

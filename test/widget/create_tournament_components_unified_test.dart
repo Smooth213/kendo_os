@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_dynamic_header.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page1.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page2.dart';
@@ -137,7 +138,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fills = _collectFillColors(tester);
         expect(fills, isNotEmpty);
@@ -157,7 +158,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final tiles = _collectTileColors(tester);
         expect(tiles, isNotEmpty);
@@ -179,7 +180,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final expectedBg = Colors.grey.shade100;
         final fills = _collectFillColors(tester);
@@ -216,7 +217,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fills = _collectFillColors(tester);
         expect(fills, isNotEmpty);
@@ -236,7 +237,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final expectedBg = Colors.grey.shade100;
         final fills = _collectFillColors(tester);
@@ -278,7 +279,7 @@ void main() {
             dark: true,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fills = _collectFillColors(tester);
         for (final fill in fills) {
@@ -297,7 +298,7 @@ void main() {
             dark: true,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final fills = _collectFillColors(tester);
         for (final fill in fills) {

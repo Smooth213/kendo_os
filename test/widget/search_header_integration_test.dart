@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -159,7 +160,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 初期状態: 通常の「大会ホーム」ヘッダーが表示されていること
         expect(find.text('大会ホーム'), findsOneWidget);
@@ -169,7 +170,7 @@ void main() {
         final searchButton = find.byTooltip('試合を検索');
         expect(searchButton, findsOneWidget);
         await tester.tap(searchButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 検索モード: AppSearchHeader が AppBar に表示されていること
         expect(find.byType(AppSearchHeader), findsOneWidget);
@@ -179,11 +180,11 @@ void main() {
 
         // 検索ワードを入力
         await tester.enterText(find.byType(AppTextField), '選手A');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「キャンセル」ボタンを押下して検索を終了
         await tester.tap(find.text('キャンセル'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 検索終了: 通常の「大会ホーム」ヘッダーに復帰すること
         expect(find.text('大会ホーム'), findsOneWidget);
@@ -220,7 +221,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 初期状態: 「大会ホーム (観客席)」ヘッダーが表示されていること
         expect(find.text('大会ホーム (観客席)'), findsOneWidget);
@@ -230,7 +231,7 @@ void main() {
         final searchButton = find.byTooltip('試合を検索');
         expect(searchButton, findsOneWidget);
         await tester.tap(searchButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 検索モード: AppSearchHeader が表示されること
         expect(find.byType(AppSearchHeader), findsOneWidget);
@@ -239,7 +240,7 @@ void main() {
 
         // 「キャンセル」ボタンを押下して検索を終了
         await tester.tap(find.text('キャンセル'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 検索終了: 「大会ホーム (観客席)」ヘッダーに復帰すること
         expect(find.text('大会ホーム (観客席)'), findsOneWidget);
@@ -268,7 +269,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final textFinder = find.byType(Text);
       expect(textFinder, findsOneWidget);

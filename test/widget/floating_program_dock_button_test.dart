@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/presentation/providers/unread_announcement_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_speed_dial_item.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_program_dock_button.dart';
@@ -75,7 +76,7 @@ void main() {
           child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(FloatingProgramDockButton), findsOneWidget);
       expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
@@ -91,14 +92,14 @@ void main() {
           child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態では✕アイコンは無く、本アイコンのみ
       expect(find.byIcon(Icons.close_rounded), findsNothing);
 
       // ドックボタンをタップして展開
       await tester.tap(find.byType(FloatingProgramDockButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 親ボタンが✕マークに回転変形していること
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
@@ -113,7 +114,7 @@ void main() {
 
       // 背景バリア（画面左上 X=50, Y=50）をタップすると収納されること
       await tester.tapAt(const Offset(50, 50));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 収納後は✕アイコンが消え、通常状態に戻ること
       expect(find.byIcon(Icons.close_rounded), findsNothing);
@@ -132,22 +133,22 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 右端外側へドラッグ（dx > 5）
       await tester.drag(
         find.byType(FloatingProgramDockButton),
         const Offset(20, 0),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ドック状態のボタン（画面端のツマミ部: X=790, Y=700）をタップして再展開
       await tester.tapAt(const Offset(790, 700));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 再展開後にタップするとスピードダイヤルが展開される
       await tester.tap(find.byType(FloatingProgramDockButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
     });
@@ -165,14 +166,14 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 右端から左方向へ大きくドラッグ（-100px）
       await tester.drag(
         find.byType(FloatingProgramDockButton),
         const Offset(-100, 0),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 左端位置（X座標が画面左側 < 100）に移動していることを検証
       final topLeft = tester.getTopLeft(find.byType(FloatingProgramDockButton));
@@ -201,11 +202,11 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(ProgramHeaderAction), findsOneWidget);
       await tester.tap(find.byType(ProgramHeaderAction));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(ProgramBottomSheet), findsOneWidget);
     });
@@ -223,7 +224,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期位置が画面左側にあることを検証
       final initialPos = tester.getTopLeft(
@@ -236,7 +237,7 @@ void main() {
         find.byType(FloatingProgramDockButton),
         const Offset(100, 0),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 右端位置（X座標 > 700）に移動していることを検証
       final newPos = tester.getTopLeft(find.byType(FloatingProgramDockButton));
@@ -253,7 +254,7 @@ void main() {
           child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final initialY = tester
           .getTopLeft(find.byType(FloatingProgramDockButton))
@@ -264,7 +265,7 @@ void main() {
         find.byType(FloatingProgramDockButton),
         const Offset(0, -100),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final newY = tester.getTopLeft(find.byType(FloatingProgramDockButton)).dy;
       expect(newY < initialY, isTrue);
@@ -282,7 +283,7 @@ void main() {
           child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // AnimatedPositioned ウィジェットが存在すること
       final animatedPosFinder = find.descendant(
@@ -306,7 +307,7 @@ void main() {
           unreadCount: 5,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // バッジの数字 '5' が描画されていること
       expect(find.text('5'), findsOneWidget);
@@ -327,10 +328,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.byType(FloatingProgramDockButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ✕アイコンと子アイコン群が展開されること
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
@@ -351,11 +352,11 @@ void main() {
           child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ① 中央付近でタップして展開 ➔ 縦1列(vertical)
       await tester.tap(find.byType(FloatingProgramDockButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final centerItemWidgets = tester.widgetList<DockSpeedDialItemWidget>(
         find.byType(DockSpeedDialItemWidget),
@@ -365,18 +366,18 @@ void main() {
 
       // 一旦閉じる
       await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ② 下端へ大きくドラッグ（+400px）
       await tester.drag(
         find.byType(FloatingProgramDockButton),
         const Offset(0, 400),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 下端でタップして展開 ➔ L字(lShape)
       await tester.tap(find.byType(FloatingProgramDockButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final edgeItemWidgets = tester.widgetList<DockSpeedDialItemWidget>(
         find.byType(DockSpeedDialItemWidget),
@@ -395,7 +396,7 @@ void main() {
           child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 親ボタンのAnimatedContainerのdecorationにipponGoldが含まれていること
       final animatedContainer = tester.widget<AnimatedContainer>(
@@ -424,7 +425,7 @@ void main() {
               child: const FloatingProgramDockButton(tournamentId: 'tour_123'),
             ),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           final animatedContainer = tester.widget<AnimatedContainer>(
             find.byType(AnimatedContainer).first,

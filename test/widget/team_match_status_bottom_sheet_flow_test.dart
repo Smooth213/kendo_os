@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
@@ -163,7 +164,7 @@ void main() {
           await tester.tap(
             find.byKey(const Key('open_team_status_sheet_button')),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.text('チーム試合状況'), findsOneWidget);
@@ -171,7 +172,7 @@ void main() {
 
           // 2. 団体戦カードをタップ ➔ TeamScoreboardScreen にネスト遷移
           await tester.tap(find.text('道上剣友会').first);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.byType(TeamScoreboardScreen), findsOneWidget);
@@ -181,7 +182,7 @@ void main() {
           final taishoCell = find.text('大将');
           expect(taishoCell, findsOneWidget);
           await tester.tap(taishoCell);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // 4. MatchScreen 内要素の確認
           expect(FloatingDockSheetManager.isOpen, isTrue);
@@ -191,7 +192,7 @@ void main() {
           final backButton = find.byIcon(Icons.arrow_back_ios_new);
           expect(backButton, findsOneWidget);
           await tester.tap(backButton);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.byType(TeamScoreboardScreen), findsOneWidget);
@@ -200,7 +201,7 @@ void main() {
           // 5. TeamScoreboardScreen の戻るボタン押下 ➔ TeamMatchStatusScreen (一覧) に戻る
           expect(backButton, findsOneWidget);
           await tester.tap(backButton);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.byType(TeamScoreboardScreen), findsNothing);
@@ -208,7 +209,7 @@ void main() {
           expect(find.text('道上剣友会'), findsWidgets);
 
           FloatingDockSheetManager.close(immediate: true);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
         },
       );
 
@@ -226,7 +227,7 @@ void main() {
           await tester.tap(
             find.byKey(const Key('open_team_status_sheet_button')),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.text('直前の結果: 【大将】'), findsOneWidget);
@@ -234,7 +235,7 @@ void main() {
 
           // 2. 「記録を開く 👉」をタップ ➔ MatchScreen へ直接遷移
           await tester.tap(find.text('記録を開く 👉'));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.byType(MatchScreen), findsOneWidget);
@@ -248,14 +249,14 @@ void main() {
 
           // 4. 戻るボタンで復帰
           await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.byType(MatchScreen), findsNothing);
           expect(find.text('直前の結果: 【大将】'), findsOneWidget);
 
           FloatingDockSheetManager.close(immediate: true);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
         },
       );
 
@@ -273,7 +274,7 @@ void main() {
         await tester.tap(
           find.byKey(const Key('open_team_status_sheet_button')),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(FloatingDockSheetManager.isOpen, isTrue);
         expect(find.text('すべて表示 (1)'), findsOneWidget);
@@ -282,20 +283,20 @@ void main() {
 
         // カテゴリタブ「中学生男子の部 (1)」をタップ
         await tester.tap(find.text('中学生男子の部 (1)'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(FloatingDockSheetManager.isOpen, isTrue);
         expect(find.text('道上剣友会'), findsWidgets);
 
         // カテゴリタブ「全カテゴリ (1)」をタップして戻る
         await tester.tap(find.text('全カテゴリ (1)'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(FloatingDockSheetManager.isOpen, isTrue);
         expect(find.text('道上剣友会'), findsWidgets);
 
         FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
       });
     },
   );

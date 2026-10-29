@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_base_order_actions_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/order_setup/order_setup_league_participants_section.dart';
@@ -236,14 +237,14 @@ void main() {
       );
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('選手の選択'), findsOneWidget);
       expect(find.text('未定（空枠）'), findsOneWidget);
       expect(find.text('山田 太郎'), findsOneWidget);
 
       await tester.tap(find.text('山田 太郎'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedResult, '山田 太郎');
     });

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -122,14 +123,14 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 無限ローディングがなく、試合テキストが正しく表示されること
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('赤選手 vs 白選手'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       container.dispose();
     });
 
@@ -199,7 +200,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 観客席画面が正しく描画され、フリーズしないこと
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -207,7 +208,7 @@ void main() {
       expect(find.byType(MatchScoreboard, skipOffstage: false), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       container.dispose();
     });
   });

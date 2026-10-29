@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/setup_match_format/match_format_team_selection_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_edit_basic_fields.dart';
@@ -60,7 +61,7 @@ void main() {
 
         // 添付ファイル１: スワイプ操作で「編集」「削除」アクションが出現
         await tester.drag(find.text('洗心道場 A'), const Offset(-300, 0));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('編集'), findsOneWidget);
         expect(find.text('削除'), findsOneWidget);
@@ -114,13 +115,13 @@ void main() {
 
       // 中学生をタップして切り替え
       await tester.tap(find.text('中学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedCat, equals('中学生の部'));
 
       // 連動サブコンテナの「男子」をタップ
       expect(find.text('男子'), findsOneWidget);
       await tester.tap(find.text('男子'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedCat, equals('中学生男子の部'));
     });
 
@@ -216,7 +217,7 @@ void main() {
         );
 
         await tester.tap(find.text('選手選択を開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. 同カテゴリ（低学年）が「おすすめの選手」として表示されること
         expect(find.text('おすすめの選手（同カテゴリ）'), findsOneWidget);
@@ -233,7 +234,7 @@ void main() {
 
         // 3. 助っ人カードをタップするとその名前が返却されてシートが閉じること
         await tester.tap(find.text('助っ人として「助っ人 太郎」を登録'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(selectedResult, equals('助っ人 太郎'));
       },
@@ -282,22 +283,22 @@ void main() {
 
       // 「勝ち抜き戦」をタップしてサブオプションを展開
       await tester.tap(find.text('勝ち抜き戦'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedType, equals('勝ち抜き戦（5人制）'));
 
       // 「3人制」をタップ
       await tester.tap(find.text('3人制'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedType, equals('勝ち抜き戦（3人制）'));
 
       // 「リーグ戦」をタップしてサブオプションを展開
       await tester.tap(find.text('リーグ戦'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedType, equals('リーグ団体戦'));
 
       // 「個人戦」をタップ
       await tester.tap(find.text('個人戦').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedType, equals('リーグ個人戦'));
     });
   });

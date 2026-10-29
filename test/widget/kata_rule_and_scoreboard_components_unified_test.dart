@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -112,7 +113,7 @@ void main() {
         );
 
         await tester.tap(find.text('Open Rule Sheet'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('試合形式'), findsOneWidget);
@@ -245,7 +246,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('山田・佐藤'), findsOneWidget);
       expect(find.text('鈴木・田中'), findsOneWidget);

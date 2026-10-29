@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/manual/manual_index_pane.dart';
 
 void main() {
@@ -77,7 +78,7 @@ void main() {
 
       // 検索入力
       await tester.enterText(find.byType(TextField), '部内戦');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('クイックスタート'), findsNothing);
       expect(find.text('部内戦ガイド'), findsOneWidget);
@@ -124,7 +125,7 @@ void main() {
 
       // 「ドック」で検索
       await tester.enterText(find.byType(TextField), 'ドック');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final targetTileFinder = find.widgetWithText(
         ListTile,
@@ -134,14 +135,14 @@ void main() {
 
       // タップ
       await tester.tap(targetTileFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(selectedPath, contains('dock_guide.md'));
 
       // 検索クリア
       final clearButtonFinder = find.byTooltip('検索をクリアして一覧に戻る');
       expect(clearButtonFinder, findsOneWidget);
       await tester.tap(clearButtonFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(controller.text, isEmpty);
     });
@@ -183,13 +184,13 @@ void main() {
       );
 
       await tester.enterText(find.byType(TextField), 'ルール設定');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final targetTileFinder = find.widgetWithText(ListTile, '部門別ルール設定');
       expect(targetTileFinder, findsOneWidget);
 
       await tester.tap(targetTileFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedPath, contains('category_rules.md'));
     });

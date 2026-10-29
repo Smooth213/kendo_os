@@ -3,7 +3,7 @@ import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/match_context.dart';
 import '../test/helpers/test_match_factory.dart';
-import '../test/golden/historic_events_archive.dart';
+import '../test/fixtures/historic_events_archive.dart';
 
 void main() {
   final engine = KendoRuleEngine();

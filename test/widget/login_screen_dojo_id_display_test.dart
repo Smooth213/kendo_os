@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
@@ -26,7 +27,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text('接続中の道場ID'), findsOneWidget);
       expect(find.text(testDojoId), findsOneWidget);
@@ -42,7 +43,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text('接続中の道場ID'), findsOneWidget);
       expect(find.text(testDojoId), findsOneWidget);
@@ -70,7 +71,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
         expect(find.text(testDojoId), findsOneWidget);
@@ -91,7 +92,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.text('接続中の道場ID (ルーム)'), findsOneWidget);
         expect(find.text(testDojoId), findsOneWidget);
@@ -119,7 +120,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('代表・管理者 (Admin)'), findsOneWidget);
         expect(find.text('監督・引率責任者 (Operator)'), findsOneWidget);
         expect(find.text('スコア・記録係 (Recorder)'), findsOneWidget);

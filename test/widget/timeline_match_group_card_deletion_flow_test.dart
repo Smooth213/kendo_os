@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_match_group_card.dart';
@@ -153,20 +154,20 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 団体戦グループカードが表示されていること
       expect(find.text('赤道場 vs 白道場'), findsOneWidget);
 
       // カードを左にドラッグして Slidable の削除アクションを表示
       await tester.drag(find.text('赤道場 vs 白道場'), const Offset(-300, 0));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「削除」のアクションボタンを見つけてタップ
       final deleteActionFinder = find.widgetWithText(InkWell, '削除');
       expect(deleteActionFinder, findsWidgets);
       await tester.tap(deleteActionFinder.first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 確認ダイアログが表示されること
       expect(find.text('グループ全削除の確認'), findsOneWidget);
@@ -176,7 +177,7 @@ void main() {
       final confirmButtonFinder = find.widgetWithText(ElevatedButton, '全削除する');
       expect(confirmButtonFinder, findsOneWidget);
       await tester.tap(confirmButtonFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 5件すべての試合IDが一度にアトミック一括削除されたこと
       final expectedIds = [

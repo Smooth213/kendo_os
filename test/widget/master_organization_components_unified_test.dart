@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/admin/presentation/components/master_edit_organization_bottom_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_empty_state_card.dart';
 import 'package:kendo_os/admin/presentation/components/master_menu_bottom_sheet.dart';
@@ -248,7 +249,7 @@ void main() {
         );
 
         await tester.tap(find.text('組織登録開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('道場名・学校名の登録'), findsOneWidget);
         expect(find.text('選手を追加する前に、道場名または学校名を入力してください。'), findsOneWidget);
@@ -256,7 +257,7 @@ void main() {
         expect(find.text('キャンセル'), findsOneWidget);
 
         await tester.tap(find.text('キャンセル'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('道場名・学校名の登録'), findsNothing);
       });
 
@@ -285,13 +286,13 @@ void main() {
         );
 
         await tester.tap(find.text('警告開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('道場名の登録が必要です'), findsOneWidget);
         expect(find.text('道場名を入力'), findsOneWidget);
 
         await tester.tap(find.text('キャンセル'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('道場名の登録が必要です'), findsNothing);
       });
 
@@ -316,7 +317,7 @@ void main() {
         );
 
         await tester.tap(find.text('メニュー開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('データとストレージ管理'), findsOneWidget);
         expect(find.text('新年度の一括進級'), findsOneWidget);

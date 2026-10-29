@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,11 +84,11 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Tap button to open bottom sheet
       await tester.tap(find.text('Open Bottom Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Both should be found
       expect(find.text('全員向け避難警報'), findsOneWidget);
@@ -134,11 +135,11 @@ void main() {
           isStaffRoom: false,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Tap button to open bottom sheet
       await tester.tap(find.text('Open Bottom Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 'all' is found, but 'staff' is filtered out
       expect(find.text('全員向け避難警報'), findsOneWidget);
@@ -173,11 +174,11 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Open bottom sheet
       await tester.tap(find.text('Open Bottom Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Find unread indicator (pink dot Container)
       final pinkDotFinder = find.byWidgetPredicate((widget) {
@@ -193,7 +194,7 @@ void main() {
 
       // Tap the card to read
       await tester.tap(find.text('避難警報'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Pink dot should disappear (local read cache updates UI immediately)
       expect(pinkDotFinder, findsNothing);
@@ -230,7 +231,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. Initial State: No unread documents
       final badgeDotFinder = find.byWidgetPredicate((widget) {
@@ -257,7 +258,7 @@ void main() {
 
       // Trigger stream update
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. Dot should appear
       expect(badgeDotFinder, findsOneWidget);
@@ -280,11 +281,11 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Tap button to open bottom sheet
       await tester.tap(find.text('Open Bottom Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ボトムシートのルートContainerを取得
       final sheetFinder = find.byType(AnnounceHistoryBottomSheet);

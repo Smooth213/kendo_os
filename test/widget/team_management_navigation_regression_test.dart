@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -131,12 +132,12 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. ホーム画面から参加チーム管理へ遷移
       expect(find.text('大会ホーム画面: test_tournament_123'), findsOneWidget);
       await tester.tap(find.text('参加チーム管理を開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 参加チーム管理画面（Page 2）が表示されていることを確認
       expect(find.text('登録済みチーム (0)'), findsOneWidget);
@@ -156,7 +157,7 @@ void main() {
 
       // 5. 下部の「大会ホームへ戻る」ボタンを押下してホーム画面へ正常復帰すること
       await tester.tap(find.text('大会ホームへ戻る'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('大会ホーム画面: test_tournament_123'), findsOneWidget);
     });
@@ -207,7 +208,7 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. ルール設定画面が表示されていること
       expect(find.text('試合ルール設定'), findsOneWidget);
@@ -216,7 +217,7 @@ void main() {
       final backButton = find.byIcon(Icons.arrow_back_ios_new);
       expect(backButton, findsOneWidget);
       await tester.tap(backButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. 履歴がない場合でもフォールバックにより大会ホームへ正常復帰すること
       expect(find.text('大会ホーム画面: test_tournament_123'), findsOneWidget);

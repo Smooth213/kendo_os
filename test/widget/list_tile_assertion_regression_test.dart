@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
@@ -105,7 +106,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final exception = tester.takeException();
       expect(
@@ -135,7 +136,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(MasterManagementScreen), findsOneWidget);
     });
@@ -160,7 +161,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(TeamRegistrationScreen), findsOneWidget);
     });
@@ -185,7 +186,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(SetupMatchFormatScreen), findsOneWidget);
     });
@@ -210,7 +211,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(OrderSetupScreen), findsOneWidget);
     });
@@ -235,7 +236,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(BunaiksenSetupScreen), findsOneWidget);
     });

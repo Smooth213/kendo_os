@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_canvas_painter.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_drawing_canvas.dart';
@@ -198,7 +199,7 @@ void main() {
       }
 
       await tester.pumpWidget(buildTestHarness());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 初期表示でキャンバスが存在すること
       expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
@@ -222,7 +223,7 @@ void main() {
       }
       await touch1.up();
       await touch2.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 拡大リセットボタンが表示されていること
       expect(find.text('100%に戻す'), findsOneWidget);
@@ -234,20 +235,20 @@ void main() {
       await drawTouch.moveBy(const Offset(50, 50));
       await tester.pump(const Duration(milliseconds: 20));
       await drawTouch.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(strokesState.isNotEmpty, isTrue);
 
       // 4. ドック最小化（スコアボード画面へ遷移）
       await tester.tap(find.text('ドック最小化'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('スコアボード画面（ドック最小化中）'), findsOneWidget);
       expect(find.byType(QuickMemoDrawingCanvas), findsNothing);
 
       // 5. ドック再展開
       await tester.tap(find.text('ドック再展開'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // キャンバスが再マウントされ、ストロークが完全に維持されていること
       expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);

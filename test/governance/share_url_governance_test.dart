@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/band/presentation/services/band_match_text_formatter.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -206,7 +207,7 @@ void main() {
 
       final sendButton = find.text('LINEやSNSでURLを送る');
       await tester.tap(sendButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final shared = _FakeSharePlatform.instance.sharedText!;
       final uri = Uri.parse(
@@ -413,7 +414,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(BandShareButton), findsOneWidget);
       expect(find.text('BAND'), findsOneWidget);
@@ -449,7 +450,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(BandShareButton), findsNothing);
       expect(find.text('BAND'), findsNothing);

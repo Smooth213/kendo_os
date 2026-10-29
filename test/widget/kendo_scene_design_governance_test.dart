@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_chips.dart';
@@ -79,7 +80,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('【本戦】'), findsOneWidget);
       expect(find.text('【錬成】'), findsOneWidget);
@@ -130,7 +131,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 一覧バッジの確認
       expect(find.text('⚔️ 錬成'), findsOneWidget);
@@ -141,7 +142,7 @@ void main() {
 
       // ボトムシートを開く
       await tester.tap(find.text('OpenSheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('⚔️ 錬成ルール'), findsOneWidget);
       expect(find.text('🏆 本戦ルール'), findsOneWidget);

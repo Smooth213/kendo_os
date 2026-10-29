@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_sheet_pagination_bar.dart';
@@ -72,7 +73,7 @@ void main() {
       ProgramViewStateService.instance.setLastProgramIndex('tour_persist_1', 1);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態で2番目のプログラム「トーナメント表_女子」が選択されていることを検証
       final filterChips = tester
@@ -89,7 +90,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 最初はインデックス0
       expect(
@@ -99,7 +100,7 @@ void main() {
 
       // 2つ目のチップ（トーナメント表_女子）をタップ
       await tester.tap(find.text('トーナメント表_女子'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // インデックス1が保存されていること
       expect(
@@ -121,7 +122,7 @@ void main() {
 
       // 2件しかないプログラムで開く
       await tester.pumpWidget(createTestWidget(programs: dummyPrograms));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // クラッシュせず、1番目が安全に選択されること
       final filterChips = tester
@@ -153,7 +154,7 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(programs: pdfPrograms, tournamentId: 'tour_pdf'),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ページャーに 3 / 5 が表示されていること
       expect(find.byType(ProgramSheetPaginationBar), findsOneWidget);
@@ -163,7 +164,7 @@ void main() {
       final nextButton = find.byTooltip('次のページ');
       expect(nextButton, findsOneWidget);
       await tester.tap(nextButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 4 / 5 になり、保存値も 4 に更新されること
       expect(find.text('4 / 5'), findsOneWidget);
@@ -176,7 +177,7 @@ void main() {
       final firstPageButton = find.byTooltip('最初のページに戻る');
       expect(firstPageButton, findsOneWidget);
       await tester.tap(firstPageButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('1 / 5'), findsOneWidget);
       expect(
@@ -186,7 +187,7 @@ void main() {
 
       // 1ページ目では「最初のページに戻る」ボタンをタップしてもページが変わらない（非活性）ことを検証
       await tester.tap(firstPageButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('1 / 5'), findsOneWidget);
     });
 
@@ -210,7 +211,7 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(programs: singlePagePdf, tournamentId: 'tour_single'),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byTooltip('最初のページに戻る'), findsNothing);
       expect(find.byTooltip('前のページ'), findsNothing);
@@ -265,7 +266,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final firstPageButtonFinder = find.widgetWithIcon(
         IconButton,
@@ -277,7 +278,7 @@ void main() {
       expect(iconButton.onPressed, isNotNull);
 
       await tester.tap(firstPageButtonFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(firstPageCalled, isTrue);
     });
 
@@ -322,7 +323,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final firstPageButtonFinder = find.widgetWithIcon(
         IconButton,
@@ -375,7 +376,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byTooltip('最初のページに戻る'), findsNothing);
     });

@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_page_two_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_page_three_view.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_providers.dart';
@@ -68,7 +69,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('チーム名とオーダーを\n入力してください'), findsOneWidget);
       expect(find.text('山田 太郎'), findsOneWidget);
@@ -129,7 +130,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.textContaining('赤心館B'), findsWidgets);
       expect(find.textContaining('登録済みチーム'), findsOneWidget);

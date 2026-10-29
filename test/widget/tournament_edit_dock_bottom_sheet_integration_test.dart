@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_header_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/tournament_edit_bottom_sheet.dart';
@@ -73,13 +74,13 @@ void main() {
       final menuButton = find.byIcon(Icons.more_horiz);
       expect(menuButton, findsOneWidget);
       await tester.tap(menuButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // メニュー内の「大会情報の編集」タップ
       final editTile = find.text('大会情報の編集');
       expect(editTile, findsOneWidget);
       await tester.tap(editTile);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // TournamentEditBottomSheet が開いていること
       expect(find.byType(TournamentEditBottomSheet), findsOneWidget);
@@ -148,7 +149,7 @@ void main() {
       );
 
       await tester.tap(find.text('編集シートを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // フィールド編集
       final nameField = find.widgetWithText(TextField, '第45回 全道剣道大会');
@@ -176,7 +177,7 @@ void main() {
         ),
       ).called(1);
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       // ボトムシートが閉じていること
       expect(find.byType(TournamentEditBottomSheet), findsNothing);
     });
@@ -209,11 +210,11 @@ void main() {
       );
 
       await tester.tap(find.text('編集シートを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final bottomSaveBtn = find.text('大会情報を保存する');
       await tester.ensureVisible(bottomSaveBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(bottomSaveBtn);
       await tester.pump();
@@ -228,7 +229,7 @@ void main() {
         ),
       ).called(1);
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.byType(TournamentEditBottomSheet), findsNothing);
     });
 
@@ -276,12 +277,12 @@ void main() {
       );
 
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(TournamentEditBottomSheet), findsOneWidget);
 
       await tester.tap(find.text('キャンセル'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(TournamentEditBottomSheet), findsNothing);
       verifyNever(

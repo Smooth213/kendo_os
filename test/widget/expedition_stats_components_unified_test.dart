@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/expedition_player_stats_section.dart';
@@ -178,11 +179,11 @@ void main() {
         expect(find.byType(DropdownButton<String>), findsOneWidget);
 
         await tester.tap(find.byType(DropdownButton<String>));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final itemFinder = find.text('チームA').last;
         await tester.tap(itemFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(changedTeam, 'チームA');
       });
@@ -244,7 +245,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final selectedChipFinder = find.byWidgetPredicate((widget) {
           if (widget is AppChoiceChip && widget.selected) {
@@ -281,7 +282,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final points4Finder = find.text('(4本)');
         expect(points4Finder, findsOneWidget);

@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_edit_sheet.dart';
@@ -121,7 +122,7 @@ void main() {
 
       // 3. Open BulkRuleEditSheet
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 4. Verify title and dynamic select lists
       expect(find.text('⚡ ルール一括変更'), findsOneWidget);
@@ -133,10 +134,10 @@ void main() {
 
       // 5. Select Category Filter: 小学生低学年の部
       await tester.tap(find.text('すべて').first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('小学生低学年の部').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify count decreases to 2
       expect(find.text('現在 2 件を選択中 / 全 2 件中'), findsOneWidget);
@@ -146,20 +147,20 @@ void main() {
 
       // 6. Manual Override: Uncheck one match
       await tester.tap(find.text('[小学生低学年の部] 鈴木 三郎 vs 高橋 四郎'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('現在 1 件を選択中 / 全 2 件中'), findsOneWidget);
 
       // 7. Adjust rules inside the sheet (Set Match Time to 2分 & Toggle Hantei ON)
       await tester.tap(find.text('2分').first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('判定の適用'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 8. Apply Rules
       await tester.tap(find.text('選択した 1 件にルールを適用する'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify sheet closes and correct matches are updated with correct rules
       expect(lastUpdatedIds, ['match_1']);

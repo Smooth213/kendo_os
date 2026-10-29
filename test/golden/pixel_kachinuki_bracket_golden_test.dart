@@ -101,7 +101,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(CustomPaint), findsWidgets);
       expect(tester.takeException(), isNull);
@@ -158,7 +158,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(CustomPaint), findsWidgets);
       expect(tester.takeException(), isNull);
@@ -211,7 +211,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(CustomPaint), findsWidgets);
       expect(tester.takeException(), isNull);
@@ -323,7 +323,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(CustomPaint), findsWidgets);
       expect(tester.takeException(), isNull);

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
@@ -150,7 +151,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態: 個別カテゴリ出力モード
       expect(find.text('PDF'), findsOneWidget);
@@ -158,7 +159,7 @@ void main() {
 
       // スイッチをタップして「全カテゴリ一括出力」へ切り替え
       await tester.tap(find.text('全カテゴリを一括出力'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ボタンの表記が「PDF（全）」に変わっていること
       expect(find.text('PDF（全）'), findsOneWidget);
@@ -172,7 +173,7 @@ void main() {
 
       // 出力完了を通知
       exportCompleter.complete();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 完了スナックバーの表示確認
       expect(find.text('全4カテゴリの一括PDF出力を完了しました'), findsOneWidget);

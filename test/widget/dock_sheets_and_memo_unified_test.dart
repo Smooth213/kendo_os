@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/manual_bottom_sheet.dart';
@@ -63,7 +64,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('クイックメモ'), findsOneWidget);
       expect(find.byIcon(Icons.brush_rounded), findsWidgets);
@@ -82,7 +83,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('操作マニュアル・ヘルプ'), findsOneWidget);
       expect(find.byIcon(Icons.open_in_full_rounded), findsWidgets);
@@ -100,7 +101,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('表示設定'), findsOneWidget);
       expect(find.text('テーマの切り替え'), findsOneWidget);
@@ -129,17 +130,17 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.expand_less_rounded), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.expand_less_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.expand_more_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.expand_less_rounded), findsOneWidget);
     });
@@ -165,12 +166,12 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.expand_less_rounded), findsOneWidget);
 
       await tester.drag(find.text('ドラッグテスト'), const Offset(0, -300));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
     });
@@ -202,7 +203,7 @@ void main() {
           child: const QuickMemoBottomSheet(tournamentId: testTournamentId),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('クイックメモ'), findsOneWidget);
       expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
@@ -239,14 +240,14 @@ void main() {
 
       await touch1.up();
       await touch2.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final drawTouch = await tester.startGesture(center);
       await tester.pump();
       await drawTouch.moveBy(const Offset(50, 50));
       await tester.pump();
       await drawTouch.up();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final savedMemo = await QuickMemoStorageService.instance.loadMemo(
         testTournamentId,
@@ -254,7 +255,7 @@ void main() {
       expect(savedMemo.strokes.isNotEmpty, isTrue);
 
       await tester.tap(find.text('テキストメモ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.pumpWidget(
         buildTestApp(
@@ -263,7 +264,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final expandedScope = tester.widget<DockSheetScope>(
         find.byType(DockSheetScope),
@@ -273,19 +274,19 @@ void main() {
       final textFieldFinder = find.byType(AppTextField);
       expect(textFieldFinder, findsOneWidget);
       await tester.enterText(textFieldFinder, 'E2Eテスト実証用メモ内容テキスト');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.pumpWidget(
         buildTestApp(
           child: const QuickMemoScreen(tournamentId: testTournamentId),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('E2Eテスト実証用メモ内容テキスト'), findsOneWidget);
 
       await tester.tap(find.text('手書きメモ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(QuickMemoDrawingCanvas), findsOneWidget);
       final fullScreenCanvas = tester.widget<QuickMemoDrawingCanvas>(

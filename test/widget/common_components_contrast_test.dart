@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_rule_summary_card.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -72,7 +73,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1行で画面内の全文字の視認性コントラストを自動検証
       await expectValidThemeContrast(tester);
@@ -99,7 +100,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1行で画面内の全文字の視認性コントラストを自動検証
       await expectValidThemeContrast(tester);
@@ -127,7 +128,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await expectValidThemeContrast(tester);
       }

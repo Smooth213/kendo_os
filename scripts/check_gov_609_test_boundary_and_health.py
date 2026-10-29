@@ -9,6 +9,7 @@ kendo OS のテストスイート（全1,000+ファイル・3,300+テスト）�
 ② テストスキップ放置の完全排除（skip: true ゼロ）
 ③ 同期スリープによるハング・タイムアウト誘発の完全排除（sleep(Duration) ゼロ）
 ④ アサーション欠落・空テストの完全排除（expect/verify 必須化）
+⑤ 無制限 pumpAndSettle() による10分ハング・フレーキー化の完全排除（safePumpAndSettle 必須化）
 を自動監査し、テスト全体の健全性と高速性を恒久的に保証します。
 """
 
@@ -157,6 +158,26 @@ def check_static_dynamic_separation_boundary(scanner: GovStaticScanner) -> Tuple
     return len(violations) == 0, violations
 
 
+def check_no_unbounded_pump_and_settle(scanner: GovStaticScanner) -> Tuple[bool, List[str]]:
+    """⑤ [無制限待機排除規約] 引数なし pumpAndSettle() ゼロ保証 (safePumpAndSettle または pump を使用)"""
+    test_files = scanner.get_test_files()
+    violations = []
+    pattern = re.compile(r'\bpumpAndSettle\s*\(\s*\)')
+
+    for rel_path, content in test_files.items():
+        lines = content.splitlines()
+        for idx, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("//") or stripped.startswith("*"):
+                continue
+            if pattern.search(line):
+                violations.append(
+                    f"{rel_path}:{idx} - 引数なし pumpAndSettle() が検出されました (10分ハング防止のため safePumpAndSettle() または tester.pump() を使用してください): {stripped}"
+                )
+
+    return len(violations) == 0, violations
+
+
 def main():
     print("=" * 68)
     print(" 📊 【第609条 ガバナンス監査】🧪 静的・動的テスト責務分離境界 ＆ テストスイート健全性完全保証規約")
@@ -168,12 +189,14 @@ def main():
     ok2, v2 = check_no_test_skips(scanner)
     ok3, v3 = check_no_sync_sleep(scanner)
     ok4, v4 = check_no_empty_assertions(scanner)
+    ok5, v5 = check_no_unbounded_pump_and_settle(scanner)
 
     rules = [
         ("① [責務分離境界] 静的解析 Dart 逆流ゼロ ＆ プロダクション直接走査新設完全禁止規約", ok1, v1),
         ("② [スキップ排除] テストスキップ放置（skip: true）ゼロ規約", ok2, v2),
         ("③ [ハング防止] 同期 sleep(Duration) によるブロッキング完全排除規約", ok3, v3),
         ("④ [テスト有効性] アサーション欠落・空テスト完全検知規約", ok4, v4),
+        ("⑤ [無制限待機排除] 引数なし pumpAndSettle() による10分ハング完全排除規約", ok5, v5),
     ]
 
     all_passed = all(r[1] for r in rules)

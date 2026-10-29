@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -198,9 +199,9 @@ void main() {
       );
 
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('保存実行'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(savedMatches, isNotNull);
       expect(savedMatches!.first.rule?.teamName, '道上剣友会');
@@ -233,9 +234,9 @@ void main() {
       );
 
       await tester.tap(find.text('開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('中立保存実行'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(savedMatches, isNotNull);
       expect(savedMatches!.first.rule?.teamName, '');
@@ -289,12 +290,12 @@ void main() {
 
         // 「⚪ 白（道上剣友会）」をタップ
         await tester.tap(find.text('⚪ 白（道上剣友会）'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedChoice, MatchEditOwnTeamChoice.white);
 
         // 「✖ なし（他チーム同士）」をタップ
         await tester.tap(find.text('✖ なし（他チーム同士）'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedChoice, MatchEditOwnTeamChoice.none);
       },
     );

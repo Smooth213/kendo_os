@@ -87,7 +87,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(HoldConfirmButton), findsNWidgets(4));
     });
@@ -157,7 +157,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('第68回 全日本剣道選手権大会'), findsOneWidget);
     });

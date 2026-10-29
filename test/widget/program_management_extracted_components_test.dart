@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/program_management_content_views.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
 
@@ -62,7 +63,7 @@ void main() {
 
         // スワイプ（右から左へドラッグ）して削除アクションを表示
         await tester.drag(find.text('進行表'), const Offset(-300, 0));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 削除アクションが表示されること
         expect(find.text('削除'), findsOneWidget);
@@ -70,7 +71,7 @@ void main() {
 
         // 削除タップでコールバックが呼ばれること
         await tester.tap(find.text('削除'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(deletedProgram, isNotNull);
         expect(deletedProgram!.id, 'p1');
@@ -130,7 +131,7 @@ void main() {
 
       // 長押し操作
       await tester.longPress(find.text('進行表'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(longPressedProgram, isNotNull);
       expect(longPressedProgram!.id, 'p1');
@@ -172,7 +173,7 @@ void main() {
 
         // p2をタップして選択切り替えコールバックが呼ばれること
         await tester.tap(find.text('トーナメント表'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(toggledProgram, isNotNull);
         expect(toggledProgram!.id, 'p2');
@@ -209,7 +210,7 @@ void main() {
       expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
 
       await tester.tap(find.text('トーナメント表'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(toggledProgram, isNotNull);
       expect(toggledProgram!.id, 'p2');

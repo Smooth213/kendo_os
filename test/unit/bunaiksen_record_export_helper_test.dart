@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_record_export_helper.dart';
 
@@ -92,7 +93,7 @@ void main() {
       // プログレスインジケータが表示されている
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await exportFuture;
 
       // 処理完了後、状態がfalseに復帰しダイアログが閉じている

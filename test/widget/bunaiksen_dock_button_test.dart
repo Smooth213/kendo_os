@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_parent_button.dart';
@@ -67,7 +68,7 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(isViewerMode: false, role: UserRole.admin),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(BunaiksenDockButton), findsOneWidget);
       expect(find.byType(DockParentButton), findsOneWidget);
@@ -79,7 +80,7 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(isViewerMode: true, role: UserRole.admin),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.byType(DockParentButton), findsNothing);
       },
@@ -91,7 +92,7 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(isViewerMode: false, role: UserRole.viewer),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.byType(DockParentButton), findsNothing);
       },
@@ -107,7 +108,7 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(isViewerMode: false, role: UserRole.admin),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初回はスピードダイヤルの子アイテムは未展開、親ボタンは盾（Icons.shield_rounded）
       expect(find.byIcon(Icons.shield_rounded), findsOneWidget);
@@ -116,7 +117,7 @@ void main() {
 
       // 親ボタンをタップして展開
       await tester.tap(find.byIcon(Icons.shield_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 純粋アイコン仕様: タイトルラベルは一切表示されないこと
       expect(find.text('対戦一覧'), findsNothing);
@@ -143,7 +144,7 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(isViewerMode: false, role: UserRole.admin),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // タイマーを開始
         final element = tester.element(find.byType(BunaiksenDockButton));
@@ -156,7 +157,7 @@ void main() {
 
         // 親ボタンをタップして展開
         await tester.tap(find.byIcon(Icons.shield_rounded));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 展開時のタイマーアイテムは Icons.timer_rounded（大会ホームと同一）になること
         expect(find.byIcon(Icons.timer_rounded), findsOneWidget);
@@ -174,7 +175,7 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(isViewerMode: false, role: UserRole.admin),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 盾アイコンが表示されていること
       expect(find.byIcon(Icons.shield_rounded), findsOneWidget);
@@ -208,7 +209,7 @@ void main() {
               isDark: isDark,
             ),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           final animatedContainer = tester.widget<AnimatedContainer>(
             find.byType(AnimatedContainer).first,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_app_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_autocomplete_field.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_category_step.dart';
@@ -144,7 +145,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('登録済みチーム (1)'), findsOneWidget);
       expect(find.text('白龍会A'), findsOneWidget);
@@ -200,14 +201,14 @@ void main() {
       );
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('選手の選択 (先鋒)'), findsWidgets);
       expect(find.text('山田 太郎'), findsOneWidget);
       expect(find.text('佐藤 花子'), findsOneWidget);
 
       await tester.tap(find.text('山田 太郎'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('山田 太郎'), findsNothing);
     });
@@ -266,7 +267,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('次へ進む'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back_ios_new), findsNothing);

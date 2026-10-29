@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_timer_display_card.dart';
 import 'package:kendo_os/features/tournament/presentation/providers/dock_timer_provider.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -60,7 +61,7 @@ void main() {
 
       // 分ブロックをタップ
       await tester.tap(find.text('03'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('分を入力して確定（または秒をタップ）'), findsOneWidget);
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
@@ -90,13 +91,13 @@ void main() {
 
       // 長押しを実行してホイールピッカーモードへ
       await tester.longPress(find.byType(DockTimerDisplayCard));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('完了'), findsOneWidget);
 
       // 完了タップで通常モードへ復帰
       await tester.tap(find.text('完了'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('タップで手入力 ｜ 長押しでダイヤル'), findsOneWidget);
     });
@@ -141,7 +142,7 @@ void main() {
 
       // 分ブロックをタップして手入力モードへ
       await tester.tap(find.text('03'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(TextField), findsOneWidget);
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
@@ -150,7 +151,7 @@ void main() {
       await tester.enterText(find.byType(TextField), '5');
       await tester.pump();
       await tester.tap(find.byIcon(Icons.check_circle));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(changedMinutes, 5);
       expect(changedSeconds, 0);

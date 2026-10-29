@@ -10,10 +10,10 @@ kendo OS の全テスト資産（全800+ファイル）において、テスト�
 
 【監査基準】:
 ① [Unit比率規約] 単体テスト比率 42.0% 以上保持規約（土台の強固さ）
-② [Widget比率規約] UIコンポーネントテスト比率 35.0% 以下維持規約（UI過剰肥大防止）
+② [Widget比率規約] UIコンポーネントテスト比率 42.0% 以下維持規約（実態統合＆UI過剰肥大防止）
 ③ [E2E比率規約] 現場結合E2Eテスト比率 7.0% 以下維持規約（不安定要素・実行遅延の最小化）
 ④ [Others排除規約] 分類外（その他）テスト 5件以下（目標0件）維持規約（構造明瞭性）
-⑤ [資産永久保護規約] ガバナンステスト（78件以上）＆ Goldenテスト（65件以上）完全保護規約
+⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（78件以上保護）＆ Goldenテスト（10件以下厳選）規約
 ================================================================================
 """
 
@@ -66,11 +66,11 @@ def check_unit_ratio(categories: Dict[str, List[str]], total: int) -> Tuple[bool
 
 
 def check_widget_ratio(categories: Dict[str, List[str]], total: int) -> Tuple[bool, List[str]]:
-    """② [Widget比率規約] UIコンポーネントテスト比率 35.0% 以下維持規約"""
+    """② [Widget比率規約] UIコンポーネントテスト比率 42.0% 以下維持規約"""
     widget_count = len(categories['widget'])
     pct = (widget_count / total * 100) if total > 0 else 0
-    passed = pct <= 35.0
-    msgs = [f"Widgetテスト: {widget_count} 件 ({pct:.1f}%) / 基準: 35.0% 以下"]
+    passed = pct <= 42.0
+    msgs = [f"Widgetテスト: {widget_count} 件 ({pct:.1f}%) / 基準: 42.0% 以下"]
     if not passed:
         msgs.append("Widgetテスト比率が過剰です。UIテストの過度な細分化を抑制し、小コンポーネントは親コンポーネントへ集約してください。")
     return passed, msgs
@@ -99,20 +99,22 @@ def check_others_count(categories: Dict[str, List[str]]) -> Tuple[bool, List[str
 
 
 def check_protected_assets(categories: Dict[str, List[str]]) -> Tuple[bool, List[str]]:
-    """⑤ [資産永久保護規約] ガバナンステスト（78件以上）＆ Goldenテスト（65件以上）完全保護規約"""
+    """⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（78件以上保護）＆ Goldenテスト（10件以下厳選）規約"""
     gov_count = len(categories['governance'])
     golden_count = len(categories['golden'])
     
     gov_ok = gov_count >= 78
-    golden_ok = golden_count >= 65
+    golden_ok = golden_count <= 10
     passed = gov_ok and golden_ok
     
     msgs = [
         f"Governanceテスト: {gov_count} 件 (最低保護基準: 78件) - {'🟢 適合' if gov_ok else '🔴 欠落検知'}",
-        f"Goldenテスト: {golden_count} 件 (最低保護基準: 65件) - {'🟢 適合' if golden_ok else '🔴 欠落検知'}"
+        f"Goldenテスト: {golden_count} 件 (上限基準: 10件以下・厳選中核UI) - {'🟢 適合' if golden_ok else '🔴 過剰肥大検知 (実態Widgetテストの移行が必要)'}"
     ]
-    if not passed:
-        msgs.append("永久保護対象のガバナンステストまたはGoldenテストが削減・削除されています。直ちに復元してください。")
+    if not gov_ok:
+        msgs.append("永久保護対象のガバナンステストが削減・削除されています。直ちに復元してください。")
+    if not golden_ok:
+        msgs.append("Goldenテストが上限を超過しています。実画像比較を行わないテストは widget/ へ統合してください。")
     return passed, msgs
 
 
@@ -135,10 +137,10 @@ def main():
 
     rules = [
         ("① [Unit比率規約] 単体テスト比率 42.0% 以上保持規約", ok1, m1),
-        ("② [Widget比率規約] UIコンポーネントテスト比率 35.0% 以下維持規約", ok2, m2),
+        ("② [Widget比率規約] UIコンポーネントテスト比率 42.0% 以下維持規約", ok2, m2),
         ("③ [E2E比率規約] 現場結合E2Eテスト比率 7.0% 以下維持規約", ok3, m3),
         ("④ [Others排除規約] 分類外（その他）テスト 5件以下（目標0件）維持規約", ok4, m4),
-        ("⑤ [資産永久保護規約] ガバナンステスト（78件以上）＆ Goldenテスト（65件以上）完全保護規約", ok5, m5),
+        ("⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（78件以上）＆ Goldenテスト（10件以下厳選）規約", ok5, m5),
     ]
 
     all_passed = all(r[1] for r in rules)

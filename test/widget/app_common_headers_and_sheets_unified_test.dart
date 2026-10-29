@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -54,7 +55,7 @@ void main() {
       expect(find.byType(AppSwitch), findsOneWidget);
 
       await tester.tap(find.byType(SettingsSwitchTile));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(currentValue, isTrue);
     });
@@ -92,7 +93,7 @@ void main() {
       );
 
       await tester.tap(find.text('Open Viewer Settings'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('表示設定'), findsOneWidget);
       expect(find.text('省エネモード'), findsOneWidget);
@@ -136,7 +137,7 @@ void main() {
       );
 
       await tester.tap(find.text('Open Sheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('小学生の部 のルール設定'), findsOneWidget);
       expect(find.text('閉じる'), findsOneWidget);
@@ -183,7 +184,7 @@ void main() {
       );
 
       await tester.tap(find.text('Open Modal'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('代表戦の準備'), findsOneWidget);
     });
@@ -225,7 +226,7 @@ void main() {
       );
 
       await tester.tap(find.text('Open Share'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('観戦の共有方法を選択'), findsOneWidget);
     });
@@ -268,19 +269,19 @@ void main() {
 
       final textField = find.byType(AppTextField);
       await tester.enterText(textField, '山田');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(currentQuery, '山田');
       expect(find.byIcon(Icons.cancel), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.cancel));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(currentQuery, '');
       expect(find.byIcon(Icons.cancel), findsNothing);
 
       await tester.tap(find.text('キャンセル'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(isClosed, isTrue);
     });
   });

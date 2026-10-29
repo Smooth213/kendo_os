@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_text_view.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -183,7 +184,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // キーボード出現
       await tester.pumpWidget(
@@ -205,7 +206,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final scope = tester.widget<DockSheetScope>(find.byType(DockSheetScope));
       expect(scope.isExpanded, isTrue);
@@ -241,7 +242,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final toolbarPositioned = tester.widget<Positioned>(
         find

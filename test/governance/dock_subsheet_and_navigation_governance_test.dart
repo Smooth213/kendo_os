@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/auth/application/google_auth_service.dart';
 import 'package:kendo_os/features/band/domain/entities/band_group_model.dart';
@@ -177,26 +178,26 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // サブシートを開く
       await tester.tap(find.text('Open SubSheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('Front Subsheet Content'), findsOneWidget);
 
       // 閉じる
       Navigator.of(tester.element(find.text('Front Subsheet Content'))).pop();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('Front Subsheet Content'), findsNothing);
 
       // ダイアログを開く
       await tester.tap(find.text('Open Dialog'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('Front Dialog Title'), findsOneWidget);
 
       // 閉じる
       Navigator.of(tester.element(find.text('Front Dialog Title'))).pop();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('Front Dialog Title'), findsNothing);
     });
 
@@ -260,18 +261,18 @@ void main() {
           child: MaterialApp.router(routerConfig: router),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Settings Dock'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('システム設定'), findsOneWidget);
 
       // (A) サーマル冷却
       await tester.tap(find.text('サーマル冷却・省電力制御'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsOneWidget);
       Navigator.of(tester.element(find.text('🛡️ サーマル冷却＆省電力ステータス'))).pop();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsNothing);
 
       // (B) BAND設定
@@ -281,12 +282,12 @@ void main() {
         150,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(bandTile);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('BANDグループ管理'), findsOneWidget);
       Navigator.of(tester.element(find.text('BANDグループ管理'))).pop();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('BANDグループ管理'), findsNothing);
 
       // (C) Google解除
@@ -296,13 +297,13 @@ void main() {
         150,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(unlinkButton, findsOneWidget);
       await tester.tap(unlinkButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('Google連携を解除しますか？'), findsOneWidget);
       await tester.tap(find.text('キャンセル'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('Google連携を解除しますか？'), findsNothing);
 
       // (D) ログアウト
@@ -312,12 +313,12 @@ void main() {
         150,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(logoutTile);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('ログアウトしますか？'), findsOneWidget);
       await tester.tap(find.text('キャンセル'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('ログアウトしますか？'), findsNothing);
     });
 
@@ -438,26 +439,26 @@ void main() {
           child: MaterialApp.router(routerConfig: router),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('Open Team Status Dock'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('チーム試合状況'), findsOneWidget);
 
       // (A) BANDボタンタップ ➔ BANDグループ選択サブシートが最前面に出ること
       await tester.tap(find.text('BAND'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('BANDでLIVE配信・共有'), findsOneWidget);
       await tester.tap(find.text('コピーのみで閉じる'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('BANDでLIVE配信・共有'), findsNothing);
 
       // (B) 「【先鋒】タップして記録を開く 👉」タップ ➔ シート内で MatchScreen にネスト遷移
       final senpoSection = find.text('タップして記録を開く 👉');
       expect(senpoSection, findsOneWidget);
       await tester.tap(senpoSection);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(MatchScreen), findsOneWidget);
       expect(FloatingDockSheetManager.isOpen, isTrue); // ドックはアンマウントされずに開いたまま
@@ -466,14 +467,14 @@ void main() {
       final backButton = find.byIcon(Icons.arrow_back_ios_new);
       expect(backButton, findsOneWidget);
       await tester.tap(backButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(MatchScreen), findsNothing);
       expect(find.text('チーム試合状況'), findsOneWidget);
 
       // (C) カード全体タップ ➔ シート内で TeamScoreboardScreen にネスト遷移
       await tester.tap(find.text('道上剣友会A').first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(TeamScoreboardScreen), findsOneWidget);
       expect(FloatingDockSheetManager.isOpen, isTrue); // ドックはアンマウントされずに開いたまま
@@ -481,7 +482,7 @@ void main() {
       // スコアボードの「＜」で一覧に戻る
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
       await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(TeamScoreboardScreen), findsNothing);
       expect(find.text('チーム試合状況'), findsOneWidget);

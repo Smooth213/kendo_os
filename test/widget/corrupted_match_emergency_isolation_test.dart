@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/shared/domain/entities/match_corrupted_state.dart';
 import 'package:kendo_os/shared/widgets/corrupted_match_banner.dart';
@@ -51,7 +52,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 赤色警告バナーの文言が表示されていること
       expect(find.text('データに問題が発生しました'), findsOneWidget);

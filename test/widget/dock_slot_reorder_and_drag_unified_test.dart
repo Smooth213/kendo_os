@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_sub_item_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_items_reorder_bottom_sheet.dart';
@@ -126,7 +127,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('ドックの並び替え'), findsOneWidget);
       expect(find.byType(ReorderableListView), findsOneWidget);
@@ -195,12 +196,12 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final parentBtn = find.byType(DockParentButton);
       expect(parentBtn, findsOneWidget);
       await tester.tap(parentBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(DockSpeedDialItemWidget), findsWidgets);
 
@@ -231,10 +232,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.byType(DockParentButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final subButtons = find.byType(BunaiksenSubItemButton);
       expect(subButtons, findsWidgets);
@@ -262,10 +263,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.byType(DockParentButton));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final groupsIcon = tester.widget<Icon>(find.byIcon(Icons.groups_rounded));
       expect(groupsIcon.color, const Color(0xFF818CF8));

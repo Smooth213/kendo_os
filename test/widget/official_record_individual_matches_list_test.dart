@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_individual_matches_list.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/screens/home_screen.dart';
@@ -40,7 +41,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify header and names
       expect(find.text('【個人戦】 1回戦'), findsOneWidget);
@@ -107,7 +108,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ヘッダーは単一の「【個人戦】」として表示される（個別の試合番号などが付かない）
         expect(find.text('【個人戦】'), findsOneWidget);
@@ -212,7 +213,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 各試合のnoteまたは選手名ウィジェットの表示順序を取得
         final textWidgets = tester

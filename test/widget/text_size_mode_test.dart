@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/settings_screen.dart';
 
@@ -23,7 +24,7 @@ void main() {
           child: MaterialApp(home: Scaffold(body: SettingsScreen())),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('文字サイズ'), findsOneWidget);
     });

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../../helpers/safe_pump_helper.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -80,7 +81,7 @@ void main() {
       // 初期化（sleepPrevent: true）
       final notifier = container.read(settingsProvider.notifier);
       await notifier.updateField(sleepPrevent: true);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       toggleCalls.clear();
 
@@ -88,7 +89,7 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(
         toggleCalls,
@@ -102,7 +103,7 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(
         toggleCalls,
@@ -124,7 +125,7 @@ void main() {
 
       final notifier = container.read(settingsProvider.notifier);
       await notifier.updateField(sleepPrevent: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       toggleCalls.clear();
 
@@ -132,7 +133,7 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       toggleCalls.clear();
 
@@ -140,7 +141,7 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(
         toggleCalls.contains(true),
@@ -160,26 +161,26 @@ void main() {
 
       final notifier = container.read(settingsProvider.notifier);
       await notifier.updateField(sleepPrevent: true);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       toggleCalls.clear();
 
       // inactive状態
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(toggleCalls, contains(false));
 
       toggleCalls.clear();
 
       // hidden状態
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(toggleCalls, contains(false));
 
       // 復帰
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
     });
   });
 }

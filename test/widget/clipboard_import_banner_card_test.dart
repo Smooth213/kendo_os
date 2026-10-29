@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/application/clipboard_import_service.dart';
 import 'package:kendo_os/features/tournament/presentation/components/share_import/clipboard_import_banner_card.dart';
@@ -134,7 +135,7 @@ void main() {
 
       // カードをタップ
       await tester.tap(find.byType(ClipboardImportBannerCard));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // サービスメソッドとコールバック双方が呼び出されたことを検証
       expect(fakeService.importManuallyCallCount, 1);
@@ -206,7 +207,7 @@ void main() {
 
       // バナーカードをタップ
       await tester.tap(find.byType(ClipboardImportBannerCard));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(fakeService.importManuallyCallCount, 1);
     });

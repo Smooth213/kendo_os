@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -137,7 +138,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「試合ルール設定から一括セット」のセクションが表示されていること
       expect(find.text('試合ルール設定から一括セット'), findsOneWidget);
@@ -148,7 +149,7 @@ void main() {
       // 「小学生低学年の部」チップをタップ
       final chipFinder = find.text('小学生低学年の部');
       await tester.tap(chipFinder, warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(tester.takeException(), isNull);
     });
@@ -228,11 +229,11 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 部門名「小学生の部」チップをタップ
       await tester.tap(find.text('小学生の部'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 2段目のシーンサブチップ群（本戦、錬成、申合せ）が動的に表示されていること
       expect(find.text('試合シーン・ルール用途を選択:'), findsOneWidget);
@@ -242,7 +243,7 @@ void main() {
 
       // 3. 「⚔️ 錬成 (2分・1本)」サブチップをタップ
       await tester.tap(find.text('⚔️ 錬成 (2分・1本)'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 4. 下部の入力フォーム（試合時間 2分・勝負形式 1本勝負 選択）がリアルタイム連動して更新されていることを直接アサート
       expect(find.text('2分'), findsWidgets);
@@ -322,11 +323,11 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 団体戦部門「団体小学生の部」をタップ
       await tester.tap(find.text('団体小学生の部'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // エラーなくスマート自動OFFリセットが完了していること
       expect(tester.takeException(), isNull);
@@ -405,11 +406,11 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門「完全シンプルルール」をタップ
       await tester.tap(find.text('完全シンプルルール'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 既存試合でONだった延長や判定が、プリセット適用により厳格にOFFにクリアリセットされたことを検証
       expect(tester.takeException(), isNull);
@@ -491,19 +492,19 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 部門「小学生の部」をタップ
       await tester.tap(find.text('小学生の部'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 「⚔️ 錬成 (2分・1本)」をタップ
       await tester.tap(find.text('⚔️ 錬成 (2分・1本)'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. 「🤝 申合せ (1.5分・1本)」をタップ
       await tester.tap(find.text('🤝 申合せ (1.5分・1本)'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(tester.takeException(), isNull);
     });
@@ -593,21 +594,21 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. STEP 1 の対象選択が表示されていること
       expect(find.text('STEP 1: 変更対象の試合を選択'), findsOneWidget);
 
       // 2. 部門別ルール「小学生の部」をタップして新ルール（2.5分・1本勝負）を一括セット
       await tester.tap(find.text('小学生の部'), warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. 一括変更実行ボタン（ElevatedButton）を探してタップ
       final applyButtonFinder = find.byType(ElevatedButton);
       expect(applyButtonFinder, findsWidgets);
 
       await tester.tap(applyButtonFinder.last, warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 4. Provider 経由で bulkUpdateMatchRules が新しいルール(2.5分・1本)で正しくコールされたことを証明
       expect(mockService.bulkUpdateCalled, isTrue);

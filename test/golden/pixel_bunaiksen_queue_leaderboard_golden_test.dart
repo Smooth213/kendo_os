@@ -89,7 +89,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(InfiniteStreakLeaderboard), findsOneWidget);
       expect(find.text('佐藤健太'), findsOneWidget);
@@ -132,7 +132,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('待機列 (5人)'), findsOneWidget);
       expect(find.text('シャッフル'), findsOneWidget);

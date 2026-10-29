@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -30,7 +31,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createTestWidget(UserRole.viewer));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('新しい大会\nを作る'), findsNothing);
     });
 
@@ -38,7 +39,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createTestWidget(UserRole.operator));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('新しい大会\nを作る'), findsOneWidget);
     });
 
@@ -46,7 +47,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(createTestWidget(UserRole.recorder));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       // 設定進入アイコンが出ないことを厳格に検証
       expect(find.byIcon(Icons.settings_outlined), findsNothing);
     });
@@ -55,7 +56,7 @@ void main() {
       'Operator（運営者）モード時、Admin特権である一括破棄（delete_sweep）などの危険機能が露出しないこと',
       (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(UserRole.operator));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.byIcon(Icons.delete_sweep), findsNothing);
       },
     );

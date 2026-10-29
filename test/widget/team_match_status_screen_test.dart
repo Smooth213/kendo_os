@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -168,7 +169,7 @@ void main() {
           child: MaterialApp.router(routerConfig: router),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ----------------------------------------------------
       // Step 1: 初期表示 & 自チーム認識（ヘッダー）の検証
@@ -192,13 +193,13 @@ void main() {
       // Step 3: コートタップ直接編集シート起動＆復帰検証
       // ----------------------------------------------------
       await tester.tap(find.text('第3試合場 (2回戦・第3試合)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('団体戦対戦の編集'), findsOneWidget);
       expect(find.text('コート・メモ'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.close));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('チーム試合状況'), findsOneWidget);
 
@@ -206,13 +207,13 @@ void main() {
       // Step 4: フィルター動作の検証
       // ----------------------------------------------------
       await tester.tap(find.text('🔴 試合中のみ (1)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('道上剣友会A'), findsWidgets);
       expect(find.text('道上選抜'), findsNothing);
 
       await tester.tap(find.textContaining('すべて表示'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('道上剣友会A'), findsWidgets);
       expect(find.text('道上選抜'), findsWidgets);
@@ -221,7 +222,7 @@ void main() {
       // Step 5: 終了した団体戦カードタップでスコアボード遷移検証
       // ----------------------------------------------------
       await tester.tap(find.text('道上選抜').first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('団体戦スコアボード画面: group_league_dohjo_1'), findsOneWidget);
     });
@@ -290,7 +291,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('並び替え:'), findsOneWidget);
       expect(find.text('⚡ 進行状況順'), findsOneWidget);
@@ -320,7 +321,7 @@ void main() {
 
       // 2. 「試合会場順」をタップ
       await tester.tap(find.text('🏟️ 試合会場順'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final courtOrdered = getRenderedTeamNames();
       expect(courtOrdered[0], 'チームC');
@@ -329,7 +330,7 @@ void main() {
 
       // 3. 「試合順」をタップ
       await tester.tap(find.text('🔢 試合順'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final matchOrdered = getRenderedTeamNames();
       expect(matchOrdered[0], 'チームC');
@@ -338,7 +339,7 @@ void main() {
 
       // 4. 「進行状況順」に戻す
       await tester.tap(find.text('⚡ 進行状況順'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(getRenderedTeamNames().first, 'チームA');
     });

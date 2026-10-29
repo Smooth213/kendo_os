@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_header_widgets.dart';
@@ -48,7 +49,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // タイトルと選手名が表示されていること
       expect(find.text('小学生の部 - 中堅'), findsOneWidget);
@@ -59,7 +60,7 @@ void main() {
 
       // 三点リーダーをタップしてメニューが展開すること
       await tester.tap(find.byIcon(Icons.more_horiz_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('スコア左右入れ替え'), findsOneWidget);
       expect(find.text('途中棄権の記録'), findsOneWidget);
@@ -103,7 +104,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final titleFinder = find.text('大会ホーム');
       expect(titleFinder, findsOneWidget);
@@ -137,7 +138,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final titleFinder = find.text('第1回 練成大会 公式記録');
       expect(titleFinder, findsOneWidget);
@@ -189,7 +190,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // タイトルおよび戻るボタン、Moreボタンの中心がステータスバー(47pt)より下に配置され被らないこと
         final titleTop = tester.getTopLeft(find.text('小学生低学年の部 - 先鋒')).dy;
@@ -239,7 +240,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // タイトルが文字切れせず描画されていること
         expect(find.text('大会ホーム (観客席)'), findsOneWidget);
@@ -284,13 +285,13 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('2026/08/29 の記録 (観戦)'), findsOneWidget);
         expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
 
         await tester.tap(find.byIcon(Icons.more_horiz_rounded));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('部内戦 成績一覧'), findsOneWidget);
         expect(find.text('観戦リンクを共有する'), findsOneWidget);

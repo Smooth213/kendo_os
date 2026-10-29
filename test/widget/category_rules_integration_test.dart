@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
@@ -98,7 +99,7 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Check category card is rendered
       expect(find.text('小学生の部'), findsAtLeast(1));
@@ -110,9 +111,9 @@ void main() {
         find.byKey(const ValueKey('slidable_rule_小学生の部')),
         const Offset(-500, 0),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('編集'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Inside rule editor
       expect(find.text('準決勝・決勝は別ルールにする'), findsOneWidget);
@@ -130,9 +131,9 @@ void main() {
 
       // Change Match Format to Team Match
       await tester.tap(find.byType(DropdownButtonFormField<String>));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('団体戦').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Representative Match setting should now be visible!
       expect(find.text('代表戦あり（団体戦用）'), findsOneWidget);
@@ -185,7 +186,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Page 1: Select "小学生" (Major) + "全体" (Minor) -> "小学生の部"
         expect(find.text('小学生'), findsOneWidget);
@@ -193,29 +194,29 @@ void main() {
           find.widgetWithText(ChoiceChip, '小学生'),
           warnIfMissed: false,
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('全体'), findsOneWidget);
         await tester.tap(
           find.widgetWithText(ChoiceChip, '全体'),
           warnIfMissed: false,
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Select "千代田チーム"
         expect(find.text('千代田チーム'), findsOneWidget);
         await tester.tap(find.text('千代田チーム'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Tap Next to go to Page 2 (Summary & Details Page)
         await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Enter "準決勝" in the note field to trigger auto advanced rules toggle
         final noteField = find.widgetWithText(TextField, '試合のメモ・詳細コメント');
         expect(noteField, findsOneWidget);
         await tester.enterText(noteField, 'Aコート 準決勝 第1試合');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify rule switcher toggle appeared and "上位戦のルール" is selected
         expect(find.text('適用ルール（自動判別・手動切替）'), findsOneWidget);
@@ -223,7 +224,7 @@ void main() {
 
         // Tap "通常戦のルール" to manually override
         await tester.tap(find.text('通常戦のルール'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
       },
     );
 
@@ -264,7 +265,7 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Check category card is rendered
       expect(find.text('小学生の部'), findsAtLeast(1));
@@ -276,7 +277,7 @@ void main() {
           matching: find.text('小学生の部'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Bottom sheet should open with detailed rules
       expect(find.text('小学生の部 のルール設定'), findsOneWidget);
@@ -287,7 +288,7 @@ void main() {
       // We should see a close button
       expect(find.text('閉じる'), findsOneWidget);
       await tester.tap(find.text('閉じる'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Bottom sheet should be closed
       expect(find.text('小学生の部 のルール設定'), findsNothing);
@@ -365,7 +366,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 小学生の部が表示されていること
         expect(find.text('小学生の部'), findsAtLeast(1));
@@ -441,7 +442,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 小学生の部カードをタップして詳細ボトムシートを開く
         await tester.tap(
@@ -450,7 +451,7 @@ void main() {
             matching: find.text('小学生の部'),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボトムシートが開いていること
         expect(find.text('小学生の部 のルール設定'), findsOneWidget);
@@ -535,7 +536,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 中学生個人の部カードをタップ
         await tester.tap(
@@ -544,7 +545,7 @@ void main() {
             matching: find.text('中学生個人の部'),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 個人戦の設定が表示されること
         expect(find.text('中学生個人の部 のルール設定'), findsOneWidget);
@@ -623,7 +624,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(
           find.descendant(
@@ -631,7 +632,7 @@ void main() {
             matching: find.text('高校生の部'),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('高校生の部 のルール設定'), findsOneWidget);
         expect(find.text('勝ち抜き戦'), findsOneWidget);
@@ -709,7 +710,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(
           find.descendant(
@@ -717,7 +718,7 @@ void main() {
             matching: find.text('合同錬成の部'),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('合同錬成の部 のルール設定'), findsOneWidget);
         expect(find.text('錬成会'), findsOneWidget);
@@ -807,7 +808,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(
           find.descendant(
@@ -815,7 +816,7 @@ void main() {
             matching: find.text('選抜小学生の部'),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ★ チェックを入れた「本戦」「申合せ」セクションは表示されること
         expect(find.text('🏆 本戦ルール'), findsOneWidget);

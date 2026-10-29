@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -266,10 +267,10 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.tap(find.text('OpenSheet'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       for (final text in expectedTexts) {
         expect(
@@ -778,7 +779,7 @@ void main() {
 
         // 1つ目のシートを閉じる
         Navigator.pop(tester.element(find.text('団体戦')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 9人制
         const rule9 = MatchRule(
@@ -921,7 +922,7 @@ void main() {
         );
 
         Navigator.pop(tester.element(find.text('勝ち抜き戦')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 完全無制限
         const kachinukiRuleB = MatchRule(
@@ -991,7 +992,7 @@ void main() {
           );
 
           Navigator.pop(tester.element(find.text('リーグ団体戦')));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
         }
       },
     );

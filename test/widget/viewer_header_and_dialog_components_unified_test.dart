@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/viewer_qr_bottom_sheet.dart';
 import 'package:kendo_os/features/viewer/components/viewer_bunaiksen_category_content.dart';
@@ -150,7 +151,7 @@ void main() {
       );
 
       await tester.tap(find.text('共有ダイアログを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('2026年10月2日 観戦リンク'), findsOneWidget);
       expect(find.text('部内戦ID: t-12345'), findsOneWidget);
@@ -219,13 +220,13 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final qrBtn = find.byIcon(Icons.qr_code_2);
       expect(qrBtn, findsOneWidget);
 
       await tester.tap(qrBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.byType(ViewerShareDialog), findsOneWidget);
     });
 
@@ -257,14 +258,14 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byIcon(Icons.calendar_month), findsOneWidget);
       final moreBtn = find.byIcon(Icons.more_horiz_rounded);
       expect(moreBtn, findsOneWidget);
 
       await tester.tap(moreBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('部内戦 成績一覧'), findsOneWidget);
       expect(find.text('観戦リンクを共有する'), findsOneWidget);
@@ -333,7 +334,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('観戦用QRコード ＆ 速報共有'), findsOneWidget);
       expect(find.byType(QrImageView), findsOneWidget);

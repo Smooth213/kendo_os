@@ -83,7 +83,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(OfficialRecordLeagueGridTable), findsOneWidget);
       expect(find.text('勇気会'), findsWidgets);

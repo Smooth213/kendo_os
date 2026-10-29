@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_share_data.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_text_parser.dart';
@@ -102,7 +103,7 @@ void main() {
 
         // 試合形式チップをタップしてボトムシートを開く
         await tester.tap(find.text('団体戦（3人制）'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボトムシート内に5大分類が表示されていること
         expect(find.text('団体戦'), findsWidgets);
@@ -112,17 +113,17 @@ void main() {
 
         // 「勝ち抜き戦」をタップしてサブオプションを展開
         await tester.tap(find.text('勝ち抜き戦').last);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「5人制」サブチップをタップ
         expect(find.text('5人制'), findsWidgets);
         await tester.tap(find.text('5人制').last);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「この形式に設定」ボタンをタップして確定
         expect(find.text('この形式に設定'), findsOneWidget);
         await tester.tap(find.text('この形式に設定'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // コールバック経由で形式が更新されたこと
         expect(updatedMatchType, equals('勝ち抜き戦（5人制）'));
@@ -174,17 +175,17 @@ void main() {
 
         // チップをタップして編集ボトムシートを開く
         await tester.tap(find.text('団体戦（5人制）'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「リーグ戦」をタップしてサブオプションを選択
         expect(find.text('リーグ戦'), findsWidgets);
         await tester.tap(find.text('リーグ戦').last);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 「この形式に設定」ボタンをタップして確定
         expect(find.text('この形式に設定'), findsOneWidget);
         await tester.tap(find.text('この形式に設定'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 更新されたチームの matchType が「リーグ団体戦」になっていること
         expect(resultTeams, isNotNull);
@@ -236,17 +237,17 @@ void main() {
 
         // 「勝ち抜き戦」をタップ
         await tester.tap(find.text('勝ち抜き戦'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedType, equals('勝ち抜き戦（5人制）'));
 
         // 「リーグ戦」をタップ
         await tester.tap(find.text('リーグ戦'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedType, equals('リーグ団体戦'));
 
         // 「個人戦」をタップ
         await tester.tap(find.text('個人戦').last);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedType, equals('リーグ個人戦'));
       },
     );
@@ -478,7 +479,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「個人戦」バッジが画面上に2つ存在すること
       expect(find.text('個人戦'), findsNWidgets(2));
@@ -565,7 +566,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 全ての部門名バッジが画面上に描画されていること
         for (final catName in expectedCategories) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_advanced_settings_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_advanced_tabs_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_dialogs.dart';
@@ -48,16 +49,16 @@ void main() {
 
       // 一括適用ダイアログ
       await tester.tap(find.text('Open Bulk Dialog'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('作成済みの試合に一括適用しますか？'), findsOneWidget);
       expect(find.text('一括適用する'), findsOneWidget);
 
       await tester.tap(find.text('適用しない（新規試合のみ）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 削除ダイアログ
       await tester.tap(find.text('Open Delete Dialog'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('部門を削除しますか？'), findsOneWidget);
       expect(find.text('削除'), findsOneWidget);
     });

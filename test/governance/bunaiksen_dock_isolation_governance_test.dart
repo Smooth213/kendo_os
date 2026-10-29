@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
@@ -66,7 +67,7 @@ void main() {
           child: const MaterialApp(home: StartScreen()),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // スタート画面に BunaiksenDockButton が一切存在しないこと
       expect(find.byType(BunaiksenDockButton), findsNothing);
@@ -113,14 +114,14 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態：ドックシートは開いていない
       expect(FloatingDockSheetManager.isOpen, isFalse);
 
       // 部内戦ホームへ遷移
       await tester.tap(find.text('Go to Bunaiksen'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部内戦ホーム内ではドックボタンが存在する
       expect(find.byType(BunaiksenDockButton), findsOneWidget);
@@ -133,7 +134,7 @@ void main() {
           child: Text('Bunaiksen Active Sheet Content'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(FloatingDockSheetManager.isOpen, isTrue);
       expect(find.text('Bunaiksen Active Sheet Content'), findsOneWidget);
@@ -141,7 +142,7 @@ void main() {
       // 部内戦画面の戻るボタン（AppHeaderの戻る矢印）をタップして部内戦を出る
       final backButton = find.byType(IconButton).first;
       await tester.tap(backButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ★ 検証: 部内戦を出たため、ドックシートは即座に自動破棄され、画面上に一切残っていないこと！
       expect(FloatingDockSheetManager.isOpen, isFalse);
@@ -168,7 +169,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(BunaiksenDockButton), findsOneWidget);
       // SizedBox.shrink なので実体ボタンアイコンは見つからない

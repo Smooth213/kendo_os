@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_individual_list.dart';
 import 'package:kendo_os/features/pdf/widgets/pdf_team_table.dart';
@@ -38,7 +39,7 @@ void main() {
         );
 
         await tester.pumpWidget(MaterialApp(home: Scaffold(body: widget)));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ヘッダー先頭に【錬成】バッジが表示されていること
         expect(find.text('【錬成】'), findsOneWidget);
@@ -80,7 +81,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ヘッダー先頭に【申合せ】バッジが表示されていること
         expect(find.text('【申合せ】'), findsOneWidget);
@@ -118,7 +119,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('【錬成】'), findsOneWidget);
         expect(find.text('【勝ち抜き戦】 道上剣友会 vs 相手05'), findsOneWidget);

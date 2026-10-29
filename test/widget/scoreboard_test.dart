@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -86,7 +87,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. Verify scoreboard row dimensions (width: 800, height: 320)
         final rowFinder = find.byWidgetPredicate(
@@ -196,7 +197,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify that the "引き分け" text overlay is NOT present in the tree
       expect(find.text('引き分け'), findsNothing);
@@ -219,7 +220,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify that the "引き分け" text overlay IS present in the tree
       expect(find.text('引き分け'), findsOneWidget);
@@ -274,7 +275,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. 赤側選手名「久安 智也」が表示されていること
         expect(find.text('久安 智也'), findsOneWidget);
@@ -348,7 +349,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. 赤側選手名「久安 智也」が表示され赤色であること
         expect(find.text('久安 智也'), findsOneWidget);

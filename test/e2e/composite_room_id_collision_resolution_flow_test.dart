@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/room_join_duplicate_warning_dialog.dart';
 
@@ -36,14 +37,14 @@ void main() {
 
       // ダイアログ表示
       await tester.tap(find.text('参加モーダル表示'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(RoomJoinDuplicateWarningDialog), findsOneWidget);
       expect(find.textContaining('COLLISION-ROOM-001'), findsOneWidget);
 
       // キャンセル（変更する）をタップ
       await tester.tap(find.text('キャンセル（変更する）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ダイアログが閉じ、接続確定処理が実行されていないこと
       expect(find.byType(RoomJoinDuplicateWarningDialog), findsNothing);
@@ -79,13 +80,13 @@ void main() {
 
       // ダイアログ表示
       await tester.tap(find.text('参加モーダル表示'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(RoomJoinDuplicateWarningDialog), findsOneWidget);
 
       // このまま接続をタップ
       await tester.tap(find.text('このまま接続'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ダイアログが閉じ、確定コールバックが正常に実行されたこと
       expect(find.byType(RoomJoinDuplicateWarningDialog), findsNothing);

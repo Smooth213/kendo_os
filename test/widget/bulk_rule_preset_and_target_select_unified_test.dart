@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/bulk_rule_preset_card.dart';
@@ -188,7 +189,7 @@ void main() {
       expect(find.text('現在 0 件を選択中 / 全 1 件中'), findsOneWidget);
 
       await tester.tap(find.text('全選択'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(toggleAllCalled, isTrue);
     });
 
@@ -228,7 +229,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. チェックリストのMaterial背景色が白（Color(0xFFFFFFFF)）ではないことを検証
         final materialFinder = find.descendant(
@@ -292,7 +293,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final matchTitleFinder = find.text('1回戦: チームA vs チームB');
       expect(matchTitleFinder, findsOneWidget);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -50,7 +51,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(tester.takeException(), isNull);
 
         // OrderSetupScreen が正常に構築されること
@@ -77,7 +78,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
 
       // 「クイック対戦を始める」ボタンが存在すること
@@ -118,13 +119,13 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(tester.takeException(), isNull);
 
         // 1. クイック対戦ボタンをタップしてボトムシートを開く
         final quickButton = find.text('クイック対戦を始める');
         await tester.tap(quickButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 2. ボトムシートの各表示要素の初期状態を検証
         expect(find.text('クイック対戦'), findsOneWidget);
@@ -135,25 +136,25 @@ void main() {
         // 3. ＋ボタンをタップして 2.5分 に変更されること
         final addButton = find.byIcon(Icons.add).last;
         await tester.tap(addButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('2.5分'), findsOneWidget);
 
         // 4. －ボタンをタップして 2分 に戻ること
         final removeButton = find.byIcon(Icons.remove).last;
         await tester.tap(removeButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('2分'), findsOneWidget);
 
         // 5. 勝負形式「1本勝負」をタップ
         final oneIpponBtn = find.text('1本勝負');
         await tester.tap(oneIpponBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 6. 試合スタートボタンをタップ
         final startBtn = find.text('試合スタート');
         expect(startBtn, findsOneWidget);
         await tester.tap(startBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 例外が発生せず、ダミー試合画面に安全に遷移できたことを検証
         expect(find.text('Match Screen Dummy'), findsOneWidget);

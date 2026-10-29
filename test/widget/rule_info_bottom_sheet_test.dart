@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -72,10 +73,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match, isDark: true));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // [表示されるべき正しい項目]
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
@@ -121,10 +122,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🎯 試合形式'), findsOneWidget);
@@ -174,10 +175,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🎯 試合形式'), findsOneWidget);
@@ -216,10 +217,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🎯 試合形式'), findsOneWidget);
@@ -260,10 +261,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🎯 試合形式'), findsOneWidget);
@@ -301,10 +302,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('⏱️ 試合時間'), findsOneWidget);
@@ -344,10 +345,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('⏱️ 試合時間'), findsOneWidget);
@@ -383,10 +384,10 @@ void main() {
         );
 
         await tester.pumpWidget(buildTestableApp(match: match));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🥋 代表戦'), findsOneWidget);
@@ -422,10 +423,10 @@ void main() {
         await tester.pumpWidget(
           buildTestableApp(match: match, isDark: true, mode: 'bunaiksen'),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.byKey(const ValueKey('open_rule_sheet_button')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('試合レギュレーション確認'), findsOneWidget);
         expect(find.text('🎯 試合形式'), findsOneWidget);
@@ -459,12 +460,12 @@ void main() {
           );
 
           await tester.pumpWidget(buildTestableApp(match: match));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           await tester.tap(
             find.byKey(const ValueKey('open_rule_sheet_button')),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(find.text('試合レギュレーション確認'), findsOneWidget);
           expect(find.text('🎯 試合形式'), findsOneWidget);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_timeline_list.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/sheets/order_reorder_bottom_sheet.dart';
@@ -56,7 +57,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('オーダー編集 : 道上'), findsOneWidget);
         expect(find.text('先鋒'), findsOneWidget);

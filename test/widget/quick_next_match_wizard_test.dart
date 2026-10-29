@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -104,25 +105,25 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1: 「試合詳細の設定へ進む」をタップ
       final nextButton1 = find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む');
       expect(nextButton1, findsOneWidget);
       await tester.tap(nextButton1);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2: 「対戦相手・紅白へ進む」をタップ
       final nextButton2 = find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む');
       expect(nextButton2, findsOneWidget);
       await tester.tap(nextButton2);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 3: 「白 (右側)」をタップして自チームを白に変更
       final whiteToggle = find.text('白 (右側)');
       expect(whiteToggle, findsOneWidget);
       await tester.tap(whiteToggle);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「このオーダーで確定して進む」をタップ
       final confirmButton = find.widgetWithText(
@@ -131,7 +132,7 @@ void main() {
       );
       expect(confirmButton, findsOneWidget);
       await tester.tap(confirmButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: 保存された MatchModel の redName が相手、whiteName が自チームになっていること
       final captured = verify(
@@ -166,7 +167,7 @@ void main() {
           isSameTeamContinue: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 錬成会即開始ボタンが存在すること
       final quickStartButton = find.widgetWithText(
@@ -177,7 +178,7 @@ void main() {
 
       // タップして即時作成
       await tester.tap(quickStartButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: Step 2/3 を経由せずに即 saveMatch が呼ばれたこと
       final captured = verify(
@@ -211,25 +212,25 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1 ➔ Step 2 へ進む
       await tester.tap(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2: 「2回戦」チップをタップ
       final round2Chip = find.text('2回戦');
       expect(round2Chip, findsOneWidget);
       await tester.tap(round2Chip);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2 ➔ Step 3 へ進む
       await tester.tap(find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 3: 確定
       await tester.tap(find.widgetWithText(ElevatedButton, 'このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: note に '2回戦' が反映されていること
       final captured = verify(
@@ -266,15 +267,15 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1 ➔ Step 2
       await tester.tap(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2 ➔ Step 3
       await tester.tap(find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 3: オーダー編成準拠の要素が表示されていること
       expect(find.text('自チームの紅白（タスキ）'), findsOneWidget);
@@ -285,11 +286,11 @@ void main() {
       final vacantButtons = find.widgetWithText(TextButton, '欠員');
       expect(vacantButtons, findsWidgets);
       await tester.tap(vacantButtons.first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 確定ボタンをタップ
       await tester.tap(find.widgetWithText(ElevatedButton, 'このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: 先鋒の相手選手名が「欠員」として保存されたこと
       final captured = verify(
@@ -329,11 +330,11 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1 ➔ Step 2
       await tester.tap(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2: 運営メモアコーディオンが存在し、初期状態では閉じていること
       final accordionHeader = find.text('＋ 運営メモ・特記事項を追加（任意）');
@@ -345,7 +346,7 @@ void main() {
 
       // タップしてアコーディオンを展開
       await tester.tap(accordionHeader);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 展開後、注記とテキストフィールドが表示されること
       expect(
@@ -357,15 +358,15 @@ void main() {
       final noteTextField = find.widgetWithText(TextField, '');
       expect(noteTextField, findsWidgets);
       await tester.enterText(noteTextField.last, '相手先鋒上段注意');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2 ➔ Step 3
       await tester.tap(find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 3 ➔ 確定
       await tester.tap(find.widgetWithText(ElevatedButton, 'このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: 保存された MatchModel の note に見出しと運営メモが含まれていること
       final captured = verify(
@@ -405,7 +406,7 @@ void main() {
       await tester.pumpWidget(
         createTestWidget(baseMatch: baseMatch, teamMatches: [baseMatch]),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 1: オーダー編成画面準拠で2スロットに分かれて選手が表示されていることを確認
       expect(find.text('皿田 脩人'), findsOneWidget);
@@ -417,13 +418,13 @@ void main() {
 
       // 1人目（皿田 脩人）の変更ボタンをタップ
       await tester.tap(changeButtons.first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選手選択ボトムシートで「佐藤 健（p2）」を選択
       final playerOption = find.text('佐藤 健');
       expect(playerOption, findsOneWidget);
       await tester.tap(playerOption);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 検証: 1人目だけが「佐藤 健」に変更され、2人目の「塚本 大道」が維持されていること！
       expect(find.text('佐藤 健'), findsOneWidget);
@@ -432,15 +433,15 @@ void main() {
 
       // Step 1 ➔ Step 2
       await tester.tap(find.widgetWithText(ElevatedButton, '試合詳細の設定へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 2 ➔ Step 3
       await tester.tap(find.widgetWithText(ElevatedButton, '対戦相手・紅白へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Step 3 ➔ 確定
       await tester.tap(find.widgetWithText(ElevatedButton, 'このオーダーで確定して進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 保存された MatchModel の redName が「道上剣友会 : 佐藤 健・塚本 大道」になっていること
       final captured = verify(

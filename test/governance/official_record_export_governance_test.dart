@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 import 'package:kendo_os/features/viewer/components/official_record_action_button.dart';
@@ -74,7 +75,7 @@ void main() {
                   ),
                 );
 
-                await tester.pumpAndSettle();
+                await tester.safePumpAndSettle();
 
                 // Flutterの例外（RenderFlexオーバーフローエラーなど）が一切発生していないこと
                 expect(
@@ -240,7 +241,7 @@ void main() {
             ),
           );
 
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // オーバーフローエラーが一切ないこと
           expect(tester.takeException(), isNull);

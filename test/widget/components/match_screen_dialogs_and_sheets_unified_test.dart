@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_finished_navigation_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/match_screen/match_retirement_dialog.dart';
@@ -182,7 +183,7 @@ void main() {
       testWidgets('ダイアログが正常に表示され、赤・白の棄権選択肢が表示されること', (tester) async {
         await tester.pumpWidget(createRetirementWidget());
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('途中棄権の記録'), findsOneWidget);
         expect(find.text('赤 側が棄権'), findsOneWidget);
@@ -204,11 +205,11 @@ void main() {
       testWidgets('赤の棄権を選択すると確定ボタンが有効化されること', (tester) async {
         await tester.pumpWidget(createRetirementWidget());
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 赤をタップ
         await tester.tap(find.text('赤 側が棄権'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final confirmBtn = tester.widget<ElevatedButton>(
           find.widgetWithText(ElevatedButton, '棄権を確定して終了'),
@@ -219,10 +220,10 @@ void main() {
       testWidgets('キャンセルボタンでダイアログが閉じること', (tester) async {
         await tester.pumpWidget(createRetirementWidget());
         await tester.tap(find.text('ダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('キャンセル'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('途中棄権の記録'), findsNothing);
       });

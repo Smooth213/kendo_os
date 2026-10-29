@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -199,7 +200,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // サマリーカードが表示されていることを検証
       expect(find.text('成績サマリー'), findsOneWidget);
@@ -207,7 +208,7 @@ void main() {
 
       // サマリーカードを展開
       await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 団体戦1試合（本数差勝ち）と個人戦1試合がそれぞれ「1勝 0敗」として独立集計されていることを検証
       expect(find.text('1勝 0敗'), findsNWidgets(2));
@@ -218,7 +219,7 @@ void main() {
 
       // 「詳細分析 ›」をタップしてチーム遠征カルテボトムシートを展開
       await tester.tap(detailBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // チーム詳細ボトムシートの内容（技別内訳・全剣連対戦カード履歴）を検証
       expect(find.text('成績 詳細分析 (全体)'), findsOneWidget);
@@ -235,18 +236,18 @@ void main() {
 
       // ボトムシートを閉じる
       await tester.tap(find.byIcon(Icons.close));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選手別成績アコーディオンを展開
       await tester.tap(find.textContaining('選手別成績'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選手バッジ（山田）をタップして個人カルテボトムシートを展開
       final yamadaBadge = find.textContaining('山田:');
       expect(yamadaBadge, findsOneWidget);
 
       await tester.tap(yamadaBadge);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選手個人カルテの内容を検証
       expect(find.text('山田 選手の個人カルテ'), findsOneWidget);
@@ -362,7 +363,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 375px幅でサマリーヘッダーが正常に描画され、エラーがないことを検証
       expect(find.text('成績サマリー'), findsOneWidget);
@@ -370,13 +371,13 @@ void main() {
 
       // サマリーカードを展開
       await tester.tap(find.byKey(const Key('btn_toggle_expedition_summary')));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('詳細分析 ›'), findsOneWidget);
 
       // 詳細分析を開いてUUIDが排除され「10:15 錬成会」と表示されていることを検証
       await tester.tap(find.text('詳細分析 ›'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('10:15 錬成'), findsOneWidget);
       expect(find.textContaining('edb185f4'), findsNothing);

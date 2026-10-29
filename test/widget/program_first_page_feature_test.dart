@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -52,14 +53,14 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final firstPageButtonFinder = find.byTooltip('最初のページに戻る');
       expect(firstPageButtonFinder, findsOneWidget);
 
       // タップしても非活性なのでコールバックは発火しない
       await tester.tap(firstPageButtonFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(requestedPage, isNull);
     });
@@ -84,13 +85,13 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final firstPageButtonFinder = find.byTooltip('最初のページに戻る');
         expect(firstPageButtonFinder, findsOneWidget);
 
         await tester.tap(firstPageButtonFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(requestedPage, 1);
       },
@@ -113,7 +114,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byTooltip('最初のページに戻る'), findsNothing);
       expect(find.byTooltip('前のページ'), findsNothing);
@@ -166,7 +167,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final firstPageButton = find.widgetWithIcon(IconButton, Icons.first_page);
       expect(firstPageButton, findsOneWidget);
@@ -175,7 +176,7 @@ void main() {
       expect(iconBtn.onPressed, isNotNull);
 
       await tester.tap(firstPageButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(firstPagePressed, isTrue);
     });
@@ -219,7 +220,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final firstPageButton = find.widgetWithIcon(IconButton, Icons.first_page);
       expect(firstPageButton, findsOneWidget);
@@ -267,7 +268,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.widgetWithIcon(IconButton, Icons.first_page), findsNothing);
     });
@@ -313,7 +314,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.widgetWithIcon(IconButton, Icons.first_page), findsNothing);
     });
@@ -358,7 +359,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 5 / 8 と表示されていること
       expect(find.text('5 / 8'), findsOneWidget);
@@ -368,7 +369,7 @@ void main() {
 
       // タップして 1 ページ目に戻る
       await tester.tap(firstPageButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('1 / 8'), findsOneWidget);
       expect(
@@ -378,7 +379,7 @@ void main() {
 
       // 1 ページ目の状態でもう一度タップしても 1 / 8 のまま維持されること
       await tester.tap(firstPageButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('1 / 8'), findsOneWidget);
     });
   });

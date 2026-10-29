@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/auth/application/google_auth_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_google_auth_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
@@ -27,7 +28,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('Googleアカウント連携'), findsOneWidget);
       expect(find.text('PCとiPadでクイックメモや通知既読を自動同期します'), findsOneWidget);
@@ -51,7 +52,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('Google連携中'), findsOneWidget);
       expect(find.text('kendo.sensei@gmail.com'), findsOneWidget);
@@ -132,7 +133,7 @@ void main() {
       expect(switchValue, isFalse);
 
       await tester.tap(find.byType(Switch));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(switchValue, isTrue);
     });
@@ -160,7 +161,7 @@ void main() {
 
       await tester.tap(find.text('テスト用：試合終了ボタン'));
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('✅ 確定しました (通常タップ)'), findsOneWidget);
     });

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/band/presentation/components/band_group_edit_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page1.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/create_tournament/create_tournament_page2.dart';
@@ -289,10 +290,10 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ダイアログ・ボトムシートが開いていること
         expect(find.text('公式アナウンス・コメントの一斉発信'), findsOneWidget);
@@ -300,7 +301,7 @@ void main() {
         // ソフトウェアキーボード出現シミュレーション (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // キーボード出現後もタイトルおよび入力欄が消滅・跳ね上がらず、画面内に存在すること
         expect(find.text('公式アナウンス・コメントの一斉発信'), findsOneWidget);
@@ -350,17 +351,17 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('見出し（コメント）の編集'), findsOneWidget);
 
         // ソフトウェアキーボード出現シミュレーション (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('見出し（コメント）の編集'), findsOneWidget);
         expect(find.text('保存'), findsOneWidget);
@@ -400,17 +401,17 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('道場ルームへの参加'), findsOneWidget);
 
         // ソフトウェアキーボード出現シミュレーション (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('道場ルームへの参加'), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -467,17 +468,17 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('ダイアログ開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('テスト入力ダイアログ'), findsOneWidget);
 
         // キーボード出現 (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ダイアログのタイトルが画面内に存在すること
         final titleFinder = find.text('テスト入力ダイアログ');
@@ -530,7 +531,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('大会の名前と日付'), findsOneWidget);
         expect(find.text('大会名'), findsOneWidget);
@@ -538,7 +539,7 @@ void main() {
         // キーボード出現 (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // キーボード出現後も通常画面のAppBarおよびヘッダー・入力欄が正常に画面内に存在すること
         final headerFinder = find.text('大会の名前と日付');
@@ -592,7 +593,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final initialOffset = scrollController.offset;
         final initialFieldY = tester
@@ -602,7 +603,7 @@ void main() {
 
         // 🎯 入力欄をタップしてカーソルを合わせる（フォーカス付与）
         await tester.tap(find.byKey(const Key('focus_test_field')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(focusNode.hasFocus, isTrue);
 
@@ -662,7 +663,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final titleFinder = find.text('大会の名前と日付を\n教えてください');
         expect(titleFinder, findsOneWidget);
@@ -672,12 +673,12 @@ void main() {
         final inputFinder = find.byType(TextFormField);
         expect(inputFinder, findsOneWidget);
         await tester.tap(inputFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // キーボード出現シミュレーション (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // フォーカス＆キーボード出現後も見出しが画面上部外(Y < 0)へ跳ね上がらず、画面内に保持されていること
         final currentTitleY = tester.getTopLeft(titleFinder).dy;
@@ -734,19 +735,19 @@ void main() {
         // 🎯 会場名入力欄をタップしてカーソルを合わせる
         final venueFinder = find.byType(TextFormField).first;
         await tester.tap(venueFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // キーボード出現
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('会場・住所'), findsOneWidget);
 
         // 🎯 備考欄へカーソル移動
         final notesFinder = find.byType(TextFormField).last;
         await tester.tap(notesFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('大会メモ（任意）'), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -790,22 +791,22 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('ダイアログ開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('新しいBANDグループを追加'), findsOneWidget);
 
         // 🎯 グループ名入力欄にカーソルを合わせる
         final nameField = find.byType(AppTextField).first;
         await tester.tap(nameField);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // キーボード出現 (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ダイアログのタイトルが画面内に存在し、上端が正の座標（Y > 0）に留まること
         final dialogTitleFinder = find.text('新しいBANDグループを追加');
@@ -870,28 +871,28 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // キーボード常時出現 (320px)
         tester.view.viewInsets = const FakeViewPadding(bottom: 320);
         addTearDown(() => tester.view.viewInsets = FakeViewPadding.zero);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1番目をタップしてフォーカス
         await tester.tap(find.byKey(const Key('field_item_1')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(node1.hasFocus, isTrue);
         expect(tester.getTopLeft(find.text('フォーム見出し')).dy >= 0, isTrue);
 
         // 2番目をタップしてフォーカス遷移
         await tester.tap(find.byKey(const Key('field_item_2')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(node2.hasFocus, isTrue);
         expect(tester.getTopLeft(find.text('フォーム見出し')).dy >= 0, isTrue);
 
         // 3番目をタップしてフォーカス遷移
         await tester.tap(find.byKey(const Key('field_item_3')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(node3.hasFocus, isTrue);
         expect(tester.getTopLeft(find.text('フォーム見出し')).dy >= 0, isTrue);
 

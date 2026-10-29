@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
 
 void main() {
@@ -38,14 +39,14 @@ void main() {
 
           // 開く
           await tester.tap(find.text('Open Dock'));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isTrue);
           expect(find.text('Dock Sheet Content'), findsOneWidget);
 
           // 即時閉じる
           await FloatingDockSheetManager.close(immediate: true);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(FloatingDockSheetManager.isOpen, isFalse);
           expect(find.text('Dock Sheet Content'), findsNothing);
@@ -90,18 +91,18 @@ void main() {
 
         // Sheet 1 を開く
         await tester.tap(find.text('Open 1'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('Sheet 1'), findsOneWidget);
 
         // Sheet 2 を開く（Sheet 1 が自動で閉じられる）
         await tester.tap(find.text('Open 2'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('Sheet 1'), findsNothing);
         expect(find.text('Sheet 2'), findsOneWidget);
 
         // クリーンアップ
         await FloatingDockSheetManager.close(immediate: true);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(FloatingDockSheetManager.isOpen, isFalse);
       });
 

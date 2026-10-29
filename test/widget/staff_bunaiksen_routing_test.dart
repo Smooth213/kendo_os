@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -183,14 +184,14 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // GoRouterを取得してルート / (StartScreen) へ遷移
         final routerContext = tester.element(find.byType(Navigator).first);
         GoRouter.of(routerContext).go('/');
 
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // StartScreenが表示されていることを検証
         expect(find.byType(StartScreen), findsOneWidget);
@@ -201,7 +202,7 @@ void main() {
         await tester.tap(startBunaiksenButton);
 
         await tester.pump();
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 運営用の BunaiksenHomeScreen がマウントされていることを検証
         expect(find.byType(BunaiksenHomeScreen), findsOneWidget);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/band/domain/entities/band_group_model.dart';
 import 'package:kendo_os/features/band/presentation/components/band_group_edit_dialog.dart';
 import 'package:kendo_os/features/band/presentation/components/band_group_select_sheet.dart';
@@ -238,7 +239,7 @@ void main() {
       );
 
       await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('新しいBANDグループを追加'), findsOneWidget);
     });
@@ -265,7 +266,7 @@ void main() {
         );
 
         await tester.tap(find.text('OpenSheet'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('BANDでLIVE配信・共有'), findsOneWidget);
 
@@ -273,7 +274,7 @@ void main() {
         final addBtn = find.text('Bandを追加');
         expect(addBtn, findsOneWidget);
         await tester.tap(addBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ダイアログが正常に表示されること（クラッシュしないこと）
         expect(find.text('新しいBANDグループを追加'), findsOneWidget);

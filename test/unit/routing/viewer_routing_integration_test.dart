@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -176,14 +177,14 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // GoRouterを取得して /viewer-home/test_tournament_123 へ遷移
       final routerContext = tester.element(find.byType(Navigator).first);
       GoRouter.of(routerContext).go('/viewer-home/test_tournament_123');
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ViewerHomeScreenがマウントされていることを検証
       expect(find.byType(ViewerHomeScreen), findsOneWidget);
@@ -264,7 +265,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // GoRouterを取得して /bunaiksen-viewer-home/bunaiksen_20260619 へ遷移
       final routerContext = tester.element(find.byType(Navigator).first);
@@ -273,7 +274,7 @@ void main() {
       ).go('/bunaiksen-viewer-home/bunaiksen_20260619');
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ViewerBunaiksenHomeScreenがマウントされていることを検証
       expect(find.byType(ViewerBunaiksenHomeScreen), findsOneWidget);
@@ -287,14 +288,14 @@ void main() {
       expect(cardFinder, findsOneWidget);
       await tester.tap(cardFinder);
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ViewerMatchScreenがマウントされていることを検証
       expect(find.byType(ViewerMatchScreen), findsOneWidget);
 
       // 次のテストへの状態リークを防ぐため、ルーターを初期位置に戻しておく
       GoRouter.of(routerContext).go('/');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
     });
 
     testWidgets('一般観客セッション（PINなし通過）の連動テスト：StartScreenから自動で観客席専用パスへ遷移すること', (
@@ -357,14 +358,14 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // GoRouterを取得してルート / (StartScreen) へ遷移
       final routerContext = tester.element(find.byType(Navigator).first);
       GoRouter.of(routerContext).go('/');
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // AuthGuardに弾かれずStartScreenが表示されていることを検証
       expect(find.byType(StartScreen), findsOneWidget);
@@ -375,7 +376,7 @@ void main() {
       await tester.tap(startBunaiksenButton);
 
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ViewerBunaiksenHomeScreenがマウントされていることを検証（観客席専用パスへの正しい遷移）
       expect(find.byType(ViewerBunaiksenHomeScreen), findsOneWidget);

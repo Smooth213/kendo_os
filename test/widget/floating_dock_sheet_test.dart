@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
@@ -68,7 +69,7 @@ void main() {
 
       // シートを開く
       await tester.tap(find.text('シートを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // シートが表示されていること
       expect(FloatingDockSheetManager.isOpen, isTrue);
@@ -121,13 +122,13 @@ void main() {
 
       // シートを開く
       await tester.tap(find.text('ヘルプを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('ヘルプ'), findsOneWidget);
       expect(FloatingDockSheetManager.isOpen, isTrue);
 
       // 右上の閉じるボタン（close_rounded）をタップ
       await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // シートが閉じていること
       expect(FloatingDockSheetManager.isOpen, isFalse);
@@ -166,12 +167,12 @@ void main() {
 
       // シートを開く
       await tester.tap(find.text('対戦表を開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('対戦表'), findsOneWidget);
 
       // シートのタイトル行を下へ大きくドラッグ＆フリック
       await tester.fling(find.text('対戦表'), const Offset(0, 500), 1000);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // シートが消えていること
       expect(FloatingDockSheetManager.isOpen, isFalse);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_order_step.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -40,7 +41,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('チーム名とオーダーを\n入力してください'), findsOneWidget);
       expect(find.text('選手1'), findsOneWidget);
@@ -83,7 +84,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「補」の文字が描画されていること
       final subTextFinder = find.text('補');
@@ -147,7 +148,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final subTextFinder = find.text('補');
       expect(subTextFinder, findsOneWidget);
@@ -221,7 +222,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態: アコーディオンは閉じており、「変更・入替」と現在の「表示なし（選手）」が見える
       expect(find.text('変更・入替'), findsOneWidget);
@@ -230,7 +231,7 @@ void main() {
 
       // アコーディオンバーをタップして展開
       await tester.tap(find.text('変更・入替'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 展開状態: 「閉じる」になり、5つのチップが見える
       expect(find.text('閉じる'), findsOneWidget);
@@ -240,13 +241,13 @@ void main() {
 
       // 「打太刀・仕太刀」を選択
       await tester.tap(find.text('打太刀・仕太刀'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedRoleOption, equals('uchidachi_shidachi'));
 
       // アコーディオンバーをタップして折り畳む
       await tester.tap(find.text('閉じる'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 折り畳まれた状態になり、チップは消え、ヘッダーに「打太刀・仕太刀」が表示されていること
       expect(find.text('変更・入替'), findsOneWidget);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -119,7 +120,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(MultiPlayerSelectInput), findsOneWidget);
 
@@ -146,7 +147,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(SmartPlayerInput), findsOneWidget);
     });
@@ -203,17 +204,17 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // クイック対戦シートを起動
       final quickButton = find.text('クイック対戦を始める');
       await tester.tap(quickButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「赤」選手ドロップダウン枠をタップして名簿シートを開く
       final redPlayerDropdown = find.text('選手A');
       await tester.tap(redPlayerDropdown);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 名簿シートが開き「赤の選手を選択」が表示されていること
       expect(find.text('赤の選手を選択'), findsOneWidget);
@@ -225,7 +226,7 @@ void main() {
       // 「高学年」チップをタップ
       final highGradeChip = find.text('高学年');
       await tester.tap(highGradeChip);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 高学年 太郎 のみが残り、中学生 次郎 と 初心者 花子 がフィルタリングされて非表示になること
       expect(find.text('高学年 太郎'), findsOneWidget);
@@ -235,7 +236,7 @@ void main() {
       // 「初心者」チップをタップ
       final beginnerChip = find.text('初心者');
       await tester.tap(beginnerChip);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初心者 花子 のみが表示されること
       expect(find.text('初心者 花子'), findsOneWidget);
@@ -315,36 +316,36 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. クイック対戦 ➔ 名簿シート起動
       await tester.tap(find.text('クイック対戦を始める'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('選手A'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 「幼年」フィルターを検証
       await tester.tap(find.text('幼年'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('幼年 花子'), findsOneWidget);
       expect(find.text('低学年 一郎'), findsNothing);
 
       // 3. 「低学年」フィルターを検証
       await tester.tap(find.text('低学年'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('低学年 一郎'), findsOneWidget);
       expect(find.text('幼年 花子'), findsNothing);
 
       // 4. 「中学生」フィルターを検証
       await tester.tap(find.text('中学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('中学生 三郎'), findsOneWidget);
       expect(find.text('低学年 一郎'), findsNothing);
 
       // 5. 「一般」フィルターを検証
       await tester.ensureVisible(find.text('一般'));
       await tester.tap(find.text('一般'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('一般 五郎'), findsOneWidget);
       expect(find.text('中学生 三郎'), findsNothing);
     });

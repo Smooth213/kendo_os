@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/config/beta_feature_flags.dart';
 import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
@@ -184,7 +185,7 @@ void main() {
 
       // 2. タップしてエラーキュー詳細ボトムシートを開く
       await tester.tap(find.text('再接続中'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. ボトムシート内のメッセージとエラーリストが表示されていることを確認
       expect(find.text('☁️ クラウド同期ステータス'), findsOneWidget);
@@ -194,7 +195,7 @@ void main() {
       final retryBtnFinder = find.widgetWithText(ElevatedButton, '再送');
       expect(retryBtnFinder, findsOneWidget);
       await tester.tap(retryBtnFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(mockNotifier.wasRetryCalled, true);
     });

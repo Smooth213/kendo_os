@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/security/internal_route_guard.dart';
 import 'package:kendo_os/security/route_guard.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -98,14 +99,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(child: MaterialApp.router(routerConfig: appRouter)),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期画面が正常表示されること
       expect(find.byType(MaterialApp), findsOneWidget);
 
       // 未知ルートへの強制遷移
       appRouter.go('/unknown-nonexistent-path-404-xyz');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // errorBuilder により「ページが見つかりません」または Scaffold が表示されクラッシュしないこと
       expect(find.byType(Scaffold), findsWidgets);

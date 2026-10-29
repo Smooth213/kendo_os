@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_list_tile_card.dart';
@@ -97,7 +98,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ── 2. 赤・白の選手／チーム名を入力 ──
         final redField = find.widgetWithText(TextField, '赤の選手名（またはチーム名）');
@@ -108,7 +109,7 @@ void main() {
 
         await tester.enterText(redField, '道上剣友会A');
         await tester.enterText(whiteField, '修道館B');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ── 3. 試合場・試合順スロットPickerで「14」と「4」を入力 ──
         expect(find.byType(MatchCourtSlotPicker), findsOneWidget);
@@ -116,22 +117,22 @@ void main() {
 
         // 試合場の中央数字（初期値 '-'）をタップしてテンキーダイアログ起動
         await tester.tap(find.text('-').first);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('試合場番号を入力'), findsOneWidget);
         await tester.enterText(find.byType(TextField).last, '14');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(find.text('決定'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 試合順の中央数字（初期値 '-'）をタップしてテンキーダイアログ起動
         await tester.ensureVisible(find.byType(MatchCourtSlotPicker));
         await tester.tap(find.text('-').first);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('試合順を入力'), findsOneWidget);
         await tester.enterText(find.byType(TextField).last, '4');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(find.text('決定'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // カプセル中央に 14, 4 が反映されていること
         expect(find.text('14'), findsOneWidget);
@@ -142,18 +143,18 @@ void main() {
         // ── 4. 運営メモアコーディオンを展開して内部メモを入力 ──
         await tester.ensureVisible(find.text('＋ 運営メモ・特記事項を追加（任意）'));
         await tester.tap(find.text('＋ 運営メモ・特記事項を追加（任意）'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 展開されたメモ入力欄に特記事項を入力
         final noteField = find.widgetWithText(TextField, '運営メモ・特記事項');
         await tester.enterText(noteField, '本部席アナウンス注意');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ── 5. 「単発試合 を実行」ボタンをタップして保存 ──
         final submitButton = find.text('単発試合 を実行');
         await tester.ensureVisible(submitButton);
         await tester.tap(submitButton);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ── 6. DB永続化アサーション ──
         expect(savedMatches.length, 1);
@@ -205,7 +206,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 公開見出し（第14試合場, 4試合目）がチップ行に表示されていること
       expect(find.textContaining('第14試合場, 4試合目'), findsOneWidget);

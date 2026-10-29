@@ -5,6 +5,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_unified_announce_dialog.dart';
@@ -96,18 +97,18 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. ボタンタップでダイアログ表示
         await tester.tap(find.text('危険操作を実行'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('⚠️ 危険操作の再認証'), findsOneWidget);
 
         // 2. 誤ったPINを入力して「認証して実行」タップ ➔ エラー表示
         await tester.enterText(find.byType(TextField), '0000');
         await tester.tap(find.text('認証して実行'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('PINコードが一致しません'), findsOneWidget);
         expect(verifiedCalled, isFalse);
@@ -115,7 +116,7 @@ void main() {
         // 3. 正しいAdmin用PIN('9999')を入力して「認証して実行」タップ ➔ ダイアログが閉じ、コールバック発火
         await tester.enterText(find.byType(TextField), '9999');
         await tester.tap(find.text('認証して実行'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('⚠️ 危険操作の再認証'), findsNothing);
         expect(verifiedCalled, isTrue);
@@ -186,11 +187,11 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. ダイアログを開く
         await tester.tap(find.text('アナウンスダイアログを開く'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('公式アナウンス・コメントの一斉発信'), findsOneWidget);
 
@@ -199,11 +200,11 @@ void main() {
           find.widgetWithText(TextField, 'アナウンス本文内容'),
           'E2Eテストのアナウンスメッセージ',
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 3. 一斉発信して保存をタップ ➔ popアニメーション後に安全に破棄されること
         await tester.tap(find.text('一斉発信して保存'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ダイアログが消去され、SnackBarが表示されていること
         expect(find.text('公式アナウンス・コメントの一斉発信'), findsNothing);
@@ -226,7 +227,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('Dock Content Inside'), findsOneWidget);
 

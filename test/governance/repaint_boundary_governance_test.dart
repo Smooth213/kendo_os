@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/shared/widgets/scoreboard.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -62,7 +63,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // MatchScoreboard の内部ツリーに RepaintBoundary が存在することを検証
         final scoreboardFinder = find.byType(MatchScoreboard);

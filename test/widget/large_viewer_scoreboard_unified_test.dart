@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
 import 'package:kendo_os/features/match/domain/services/kendo_rule_engine.dart';
@@ -98,7 +99,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 赤側選手名「選手」が濃赤(hansokuRed)で表示され、赤背景と同化しないこと
         final redNameFinder = find.text('選手');
@@ -142,7 +143,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final redNameFinder = find.text('選手');
         expect(redNameFinder, findsOneWidget);
@@ -201,7 +202,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 先取点マーク（㋱）と2本目マーク（コ）が表示されること
         expect(find.text('㋱コ'), findsOneWidget);
@@ -252,7 +253,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('Aチーム vs Bチーム'), findsOneWidget);
         expect(find.text('先鋒'), findsOneWidget);

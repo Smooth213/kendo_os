@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_individual_player_card.dart';
@@ -92,7 +93,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1段目: 属性バッジ（【錬成】） + MatchStatusBadge（LIVE）
         expect(find.text('【錬成】'), findsWidgets);
@@ -138,7 +139,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1段目: 待機中バッジ
       expect(find.text('⏳ 待機中'), findsOneWidget);
@@ -170,7 +171,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1段目: 終了バッジ
       expect(find.text('終了'), findsOneWidget);
@@ -203,7 +204,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1段目: MatchStatusBadge（LIVE）
         expect(find.text('試合中 (LIVE)'), findsOneWidget);

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_material_placeholder.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_page_item.dart';
@@ -64,7 +65,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(ProgramViewerPageItem), findsOneWidget);
       expect(find.byType(ProgramViewerMaterialPlaceholder), findsOneWidget);

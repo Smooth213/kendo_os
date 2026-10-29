@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/court_status/team_match_sort_bar.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_quick_badges.dart';
@@ -104,7 +105,7 @@ void main() {
       await tester.pumpWidget(
         buildQuickBadgesTestWidget(onPresetSelected: (_) {}),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('よく使う組み合わせ（ワンタップ入力）'), findsOneWidget);
       expect(find.text('開く'), findsOneWidget);
@@ -123,11 +124,11 @@ void main() {
           },
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 開く
       await tester.tap(find.text('よく使う組み合わせ（ワンタップ入力）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('閉じる'), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
@@ -135,7 +136,7 @@ void main() {
 
       // プリセットをタップ
       await tester.tap(find.text('小学生高学年 / 団体 5人制'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedPreset, isNotNull);
       expect(selectedPreset!.category, equals('小学生高学年の部'));
@@ -143,7 +144,7 @@ void main() {
 
       // 再度ヘッダーをタップすると折りたたまれること
       await tester.tap(find.text('よく使う組み合わせ（ワンタップ入力）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('開く'), findsOneWidget);
       expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);

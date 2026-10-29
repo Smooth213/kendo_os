@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen_official_record/bunaiksen_individual_matches_list.dart';
@@ -67,13 +68,13 @@ void main() {
       );
 
       await tester.pumpWidget(container);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final calendarFinder = find.byTooltip('日付選択');
       expect(calendarFinder, findsOneWidget);
 
       await tester.tap(calendarFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(DatePickerDialog), findsOneWidget);
     });
@@ -105,7 +106,7 @@ void main() {
       );
 
       await tester.pumpWidget(container);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final WidgetRef ref =
           tester.element(find.byType(BunaiksenHomeScreen)) as WidgetRef;

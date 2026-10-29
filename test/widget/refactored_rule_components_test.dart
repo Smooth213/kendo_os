@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rules/sections/match_rule_daihyo_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rules/sections/match_rule_dialog_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/rules/sections/match_rule_encho_section.dart';
@@ -80,12 +81,12 @@ void main() {
 
       // 時間制に切り替え
       await tester.tap(find.text('時間制'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(renseikaiType, '時間制');
 
       // 4分タップ
       await tester.tap(find.text('4分'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(matchTime, 4.0);
     });
 
@@ -127,12 +128,12 @@ void main() {
 
       // 延長戦をON
       await tester.tap(find.text('延長戦を行う'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(hasExtension, true);
 
       // 3分を選択
       await tester.tap(find.text('3分'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(enchoTime, 3.0);
     });
 
@@ -162,7 +163,7 @@ void main() {
       expect(find.text('判定の適用'), findsOneWidget);
 
       await tester.tap(find.text('判定の適用'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(hasHantei, true);
     });
 
@@ -297,13 +298,13 @@ void main() {
       );
 
       await tester.tap(find.text('ダイアログを開く'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('カスタム時間テスト'), findsOneWidget);
       expect(find.text('決定'), findsOneWidget);
 
       await tester.tap(find.text('決定'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(selectedTime, 2.5);
     });

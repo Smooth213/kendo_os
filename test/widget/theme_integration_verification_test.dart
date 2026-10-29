@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
@@ -77,7 +78,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(StartScreen), findsOneWidget);
 
@@ -125,7 +126,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.byType(CreateTournamentScreen), findsOneWidget);
       },
@@ -157,7 +158,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(SetupMatchFormatScreen), findsOneWidget);
     });
@@ -190,7 +191,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.byType(OrderSetupScreen), findsOneWidget);
       },
@@ -223,7 +224,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final standardBtnFinder = find.text('参加チーム管理');
       expect(standardBtnFinder, findsOneWidget);
@@ -251,7 +252,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final bunaiksenBtnFinder = find.text('参加チーム管理');
       expect(bunaiksenBtnFinder, findsOneWidget);
@@ -308,7 +309,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(tester.takeException(), isNull);
 
       // Verify image button color (Color(0xFF06C755))

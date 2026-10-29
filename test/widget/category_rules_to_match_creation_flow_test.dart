@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
@@ -204,25 +205,25 @@ void main() {
 
         await tester.pumpWidget(buildTestableSetupScreen());
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 部門選択: 小学生 -> 全体 -> 小学生の部
         expect(find.text('小学生'), findsOneWidget);
         await tester.tap(find.widgetWithText(ChoiceChip, '小学生'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('全体'), findsOneWidget);
         await tester.tap(find.widgetWithText(ChoiceChip, '全体'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // チーム選択
         expect(find.text('道上剣友会A'), findsOneWidget);
         await tester.tap(find.text('道上剣友会A'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 次へ進む (Page 2 へ)
         await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Page 2 で設定されたルールセレクターが表示されていることを確認
         expect(find.text('適用ルール（自動判別・手動切替）'), findsOneWidget);
@@ -266,7 +267,7 @@ void main() {
           ),
         );
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('団体戦'), findsOneWidget);
         expect(find.text('2分 (都度ストップ)'), findsOneWidget);
@@ -290,7 +291,7 @@ void main() {
 
         await tester.pumpWidget(buildTestableSetupScreen());
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final multiRule = testTournament.categoryRules['遠征マルチの部']!;
 
@@ -353,32 +354,32 @@ void main() {
 
         await tester.pumpWidget(buildTestableSetupScreen());
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 小学生 -> 全体
         await tester.tap(find.widgetWithText(ChoiceChip, '小学生'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(find.widgetWithText(ChoiceChip, '全体'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         await tester.tap(find.text('道上剣友会A'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Page 2 へ
         await tester.tap(find.text('次へ進む'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // メモに「準決勝」を入力して自動切替
         final noteField = find.widgetWithText(TextField, '試合のメモ・詳細コメント');
         expect(noteField, findsOneWidget);
         await tester.enterText(noteField, '第1コート 準決勝 第1試合');
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 上位戦ルールが自動選択されていること
         expect(find.text('上位戦のルール'), findsOneWidget);
 
         // 手動で「通常戦のルール」に切り替え
         await tester.tap(find.text('通常戦のルール'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 通常戦ルールが選択されていること
         expect(find.text('通常戦のルール'), findsOneWidget);
@@ -455,14 +456,14 @@ void main() {
           ),
         );
         await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('🥋 代表戦'), findsOneWidget);
         expect(find.textContaining('3分・三本勝負・延長2分・1回・判定あり'), findsOneWidget);
 
         // 1つ目のシートを閉じる
         Navigator.pop(tester.element(find.text('団体戦')));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // パターンB: 代表戦なし
         const noDaihyoRule = MatchRule(
@@ -494,7 +495,7 @@ void main() {
           ),
         );
         await tester.tap(find.text('OpenB'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('🥋 代表戦'), findsOneWidget);
         expect(find.text('なし'), findsAtLeast(1));
@@ -578,7 +579,7 @@ void main() {
             ),
           );
           await tester.tap(find.text('OpenIndiv_$i'));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(find.text('個人戦'), findsOneWidget);
           expect(find.text(expTime), findsOneWidget);
@@ -590,7 +591,7 @@ void main() {
 
           // シートを閉じる
           Navigator.pop(tester.element(find.text('個人戦')));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
         }
       },
     );
@@ -659,7 +660,7 @@ void main() {
             ),
           );
           await tester.tap(find.text('OpenDaihyo_$i'));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           expect(find.text('🥋 代表戦'), findsOneWidget);
           expect(find.textContaining(expSummary), findsOneWidget);
@@ -669,7 +670,7 @@ void main() {
 
           // シートを閉じる
           Navigator.pop(tester.element(find.text('団体戦')));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
         }
       },
     );

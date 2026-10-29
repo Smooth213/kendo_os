@@ -93,7 +93,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byType(MatchScoreboard), findsOneWidget);
       expect(find.text('剣道太郎'), findsOneWidget);

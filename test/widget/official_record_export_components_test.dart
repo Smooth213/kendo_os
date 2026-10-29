@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/services/team_match_calculator.dart';
 import 'package:kendo_os/features/tournament/presentation/components/official_record/official_record_export_bar.dart';
 import 'package:kendo_os/features/viewer/components/official_record_action_button.dart';
@@ -38,7 +39,7 @@ void main() {
         expect(find.byIcon(Icons.picture_as_pdf), findsOneWidget);
 
         await tester.tap(find.byType(OfficialRecordActionButton));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(tapped, isTrue);
       });

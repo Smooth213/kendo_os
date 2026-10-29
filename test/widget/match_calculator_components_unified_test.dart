@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/bunaiksen_dock_calculator_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/calculator/match_calculator_time_dial_picker.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -31,7 +32,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(buildCalculatorSheet());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 基本設定カードの重要ラベルが文字切れなく描画されていること
       expect(find.text('試合数・コート配分計算'), findsOneWidget);
@@ -59,7 +60,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(buildCalculatorSheet());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態ではSizeTransitionのサイズ係数が0.0（折りたたまれた状態）
       final sizeTransitions = find.byType(SizeTransition);
@@ -77,9 +78,9 @@ void main() {
       );
       // ヘッダー被りを避けてタップ可能な位置へ微調整
       await tester.drag(find.byType(Scrollable).first, const Offset(0, 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(timeAccordion);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // サイズ係数が1.0（完全に展開）になり、中身が操作可能になること
       expect(
@@ -90,7 +91,7 @@ void main() {
 
       // 2. 再度タップして折りたたむ
       await tester.tap(timeAccordion);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // サイズ係数が0.0に戻り、完全に折りたたまれること
       expect(
@@ -105,7 +106,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(buildCalculatorSheet());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // タイムラインエリアまでスクロール
       final court1Tab = find.text('第1コート (6試合)');
@@ -124,7 +125,7 @@ void main() {
 
       // 第2コートをタップ
       await tester.tap(find.text('第2コート (6試合)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 第2コートの状況バーに更新されること
       expect(find.text('第2コート 進行順 (6試合)'), findsOneWidget);
@@ -154,7 +155,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(
         find.byKey(const ValueKey('wheel_picker_container')),
@@ -170,12 +171,12 @@ void main() {
       expect(cupertinoPickers, findsNWidgets(2));
 
       await tester.drag(cupertinoPickers.first, const Offset(0, -70));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(changedHour, greaterThanOrEqualTo(0));
 
       // 分ホイールをスクロール
       await tester.drag(cupertinoPickers.last, const Offset(0, -70));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(changedMinute, greaterThanOrEqualTo(0));
 
       hourController.dispose();
@@ -204,7 +205,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(
         find.byKey(const ValueKey('wheel_picker_container')),

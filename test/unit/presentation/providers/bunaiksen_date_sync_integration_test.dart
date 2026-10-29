@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:intl/intl.dart';
@@ -122,7 +123,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // SmartPlayerInputのコントローラに直接値を設定
       final redInput = tester.widget<TextField>(
@@ -136,7 +137,7 @@ void main() {
 
       // 試合開始ボタンをタップ
       await tester.tap(find.text('試合開始'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 保存されたMatchModelがUTC時間(20260621)ではなく、JSTローカル時間(DateTime.now())の日付になっていることを検証
       expect(capturedMatch, isNotNull);

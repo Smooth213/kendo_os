@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/shared/application/services/thermal_power_governor.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
@@ -133,7 +134,7 @@ void main() {
 
       // バッジをタップ
       await tester.tap(find.byType(ThermalStatusBadge));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ボトムシートが展開され、安心解説テキストが表示されること
       expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsOneWidget);
@@ -143,7 +144,7 @@ void main() {
 
       // 「閉じる」ボタンでシートが閉じること
       await tester.tap(find.text('閉じる'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsNothing);
     });
 
@@ -183,7 +184,7 @@ void main() {
           child: const MaterialApp(home: Scaffold(body: SettingsScreen())),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. タイトル「外観テーマ」と三日月アイコンが存在すること
       expect(find.text('外観テーマ'), findsOneWidget);
@@ -198,7 +199,7 @@ void main() {
 
       // アコーディオンを展開
       await tester.tap(selectorFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. 4つのテーマ選択肢がすべて存在すること
       expect(find.text('端末連動'), findsWidgets);
@@ -208,7 +209,7 @@ void main() {
 
       // 4. 「☀️ サンシャイン」をタップして選択できること
       await tester.tap(find.text('☀️ サンシャイン').last);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選択が反映されていること
       expect(find.text('☀️ サンシャイン'), findsWidgets);
@@ -226,7 +227,7 @@ void main() {
             child: const MaterialApp(home: Scaffold(body: SettingsScreen())),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. サーマル冷却制御タイルが存在すること
         expect(find.text('サーマル冷却・省電力制御'), findsOneWidget);
@@ -240,13 +241,13 @@ void main() {
 
         // 3. バッジをタップして設定画面上でも安心解説シートが開くこと
         await tester.tap(badgeFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsOneWidget);
         expect(find.textContaining('端末の内蔵絶対時計から計算'), findsOneWidget);
 
         await tester.tap(find.text('閉じる'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('🛡️ サーマル冷却＆省電力ステータス'), findsNothing);
       },
     );

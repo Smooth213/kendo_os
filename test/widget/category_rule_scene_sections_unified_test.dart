@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_league_points_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_individual_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_renseikai_section.dart';
@@ -47,7 +48,7 @@ void main() {
         find.byKey(const ValueKey('win_pt_test_category')),
         '5.0',
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(win, 5.0);
     });
@@ -261,7 +262,7 @@ void main() {
       expect(find.text('流し（タイマーを止めない）'), findsOneWidget);
 
       await tester.tap(find.text('時間制'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(type, '時間制');
       expect(find.text('全体の制限時間（分）'), findsOneWidget);
@@ -301,7 +302,7 @@ void main() {
         expect(find.text('3分'), findsOneWidget);
 
         await tester.tap(find.byIcon(Icons.add));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(currentTime, 3.5);
         expect(find.text('3分30秒'), findsOneWidget);

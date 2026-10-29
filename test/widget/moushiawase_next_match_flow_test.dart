@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -168,7 +169,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 試合終了状態の確定ボタン（「確定・大会ホームへ」）が存在することを確認
         final confirmBtn = find.text('確定・大会ホームへ');
@@ -176,7 +177,7 @@ void main() {
 
         // 「確定・大会ホームへ」をタップして試合を確定し、ナビゲーションダイアログを表示
         await tester.tap(confirmBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 対戦終了ダイアログが表示され、申し合わせ用の追加設定ボタンが存在することを確認
         expect(find.text('対戦終了'), findsOneWidget);
@@ -185,7 +186,7 @@ void main() {
 
         // 「試合を追加（現在のチームと続行）」ボタンをタップ
         await tester.tap(nextMoushiawaseBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 404エラーにならず、選手選択ボトムシートが正常に開いたことを検証
         expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);

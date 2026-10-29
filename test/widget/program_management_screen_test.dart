@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -108,19 +109,19 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(createManagementWidget());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 「プログラムを追加」FloatingActionButtonをタップ
       final addButton = find.byType(FloatingActionButton);
       expect(addButton, findsOneWidget);
       await tester.tap(addButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. ボトムシートの「ファイルから選ぶ」をタップ
       final fileOption = find.text('ファイルから選ぶ (複数可)');
       expect(fileOption, findsOneWidget);
       await tester.tap(fileOption);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 3. ダイアログ「順番とタイトルの確認」が起動していることを検証
       expect(find.text('順番とタイトルの確認'), findsOneWidget);
@@ -135,7 +136,7 @@ void main() {
       final startButton = find.text('アップロード開始');
       expect(startButton, findsOneWidget);
       await tester.tap(startButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 6. ダイアログが閉じずに残り、赤文字のバリデーションエラーが表示されていることを検証
       expect(find.text('順番とタイトルの確認'), findsOneWidget);
@@ -143,11 +144,11 @@ void main() {
 
       // 7. タイトルを入力して再度「アップロード開始」をタップ
       await tester.enterText(titleField, '新大会進行表');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(startButton);
       // アップロード処理が進むため、ロードダイアログ等のポップイベントを処理
       await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 8. 正常に入力されたため、ダイアログ「順番とタイトルの確認」が完全に閉じていることを検証
       expect(find.text('順番とタイトルの確認'), findsNothing);

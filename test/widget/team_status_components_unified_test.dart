@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/domain/team_progress_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
@@ -62,7 +63,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1段目: チーム名・カテゴリ名・ステータスバッジ
         expect(find.text('道上剣友会'), findsWidgets);
@@ -125,7 +126,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('🏁 全試合終了'), findsOneWidget);
         expect(find.text('試合中 (LIVE)'), findsNothing);
@@ -173,7 +174,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('終了'), findsOneWidget);
         expect(find.text('🏁 全試合終了'), findsNothing);

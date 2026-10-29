@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
@@ -187,25 +188,25 @@ void main() {
 
       final container = createContainer();
       await tester.pumpWidget(createTestApp(container: container));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門「小学生」->「低学年」を選択して「小学生低学年の部」にする
       expect(find.text('小学生'), findsOneWidget);
       await tester.tap(find.text('小学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('低学年 (1-4年)'), findsOneWidget);
       await tester.tap(find.text('低学年 (1-4年)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // チーム選択
       expect(find.text('道上剣友会 低学年チーム'), findsOneWidget);
       await tester.tap(find.text('道上剣友会 低学年チーム'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 次へ進む (Page 2 へ)
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 案内文の検証
       expect(find.text('この部門（小学生低学年の部）に登録されているルールを選択:'), findsOneWidget);
@@ -239,17 +240,17 @@ void main() {
 
       final container = createContainer();
       await tester.pumpWidget(createTestApp(container: container));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門・チーム選択 -> Page 2 へ
       await tester.tap(find.text('小学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('低学年 (1-4年)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('道上剣友会 低学年チーム'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // --- [状態 1: 初期選択（予選リーグ）の適応確認] ---
       // 概要カードタイトル
@@ -259,7 +260,7 @@ void main() {
 
       // --- [状態 2: 「🏆 決勝トーナメント」を選択] ---
       await tester.tap(find.text('🏆 決勝トーナメント'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 概要カードタイトルが決勝トーナメントに即時更新
       expect(find.textContaining('🏆 通常戦ルール（決勝トーナメント）'), findsOneWidget);
@@ -268,7 +269,7 @@ void main() {
 
       // --- [状態 3: 「⭐ 決勝トーナメント（上位戦）」を選択] ---
       await tester.tap(find.text('⭐ 決勝トーナメント（上位戦）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 概要カードタイトルが上位戦に即時更新
       expect(find.textContaining('⭐ 上位戦ルール（決勝トーナメント）'), findsOneWidget);
@@ -279,7 +280,7 @@ void main() {
 
       // --- [状態 4: 「⚔️ 錬成会（錬成）」を選択] ---
       await tester.tap(find.text('⚔️ 錬成会（錬成）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 概要カードタイトルが錬成ルールに即時更新
       expect(find.textContaining('⚔️ 錬成ルール（錬成会）'), findsOneWidget);
@@ -290,7 +291,7 @@ void main() {
 
       // --- [状態 5: 「🤝 錬成会（申合せ）」を選択] ---
       await tester.tap(find.text('🤝 錬成会（申合せ）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 概要カードタイトルが申合せルールに即時更新
       expect(find.textContaining('🤝 申合せルール（錬成会）'), findsOneWidget);
@@ -310,26 +311,26 @@ void main() {
 
       final container = createContainer();
       await tester.pumpWidget(createTestApp(container: container));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門・チーム選択 -> Page 2 へ
       await tester.tap(find.text('小学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('低学年 (1-4年)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('道上剣友会 低学年チーム'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「⭐ 決勝トーナメント（上位戦）」を選択
       await tester.tap(find.text('⭐ 決勝トーナメント（上位戦）'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「このルールで枠を作成」ボタンをタップして確定
       expect(find.text('このルールで枠を作成'), findsOneWidget);
       await tester.tap(find.text('このルールで枠を作成'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // オーダー設定画面への遷移成功を確認
       expect(find.text('オーダー設定画面へ遷移成功'), findsOneWidget);
@@ -355,22 +356,22 @@ void main() {
 
       final container = createContainer();
       await tester.pumpWidget(createTestApp(container: container));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 部門・チーム選択 -> Page 2 へ
       await tester.tap(find.text('小学生'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('低学年 (1-4年)'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('道上剣友会 低学年チーム'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(find.text('次へ進む'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態で「予選リーグ」が選択されている状態で完了
       expect(find.text('このルールで枠を作成'), findsOneWidget);
       await tester.tap(find.text('このルールで枠を作成'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('オーダー設定画面へ遷移成功'), findsOneWidget);
 

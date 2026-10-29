@@ -1,0 +1,679 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import '../../../helpers/safe_pump_helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
+import 'package:kendo_os/features/match/presentation/providers/match_rule_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_view_state_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/last_used_settings_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_timer_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/domain/entities/settings_model.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/widgets/glass_button.dart';
+import 'package:kendo_os/shared/widgets/timer_widget.dart';
+import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/sync_provider.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/shared/widgets/sync_status_bar.dart';
+import 'package:kendo_os/shared/domain/entities/player_model.dart';
+
+class MockMatchApplicationService extends Mock
+    implements MatchApplicationService {}
+
+class MockMatchRuleNotifier extends MatchRuleNotifier {
+  final MatchRule initialRule;
+  MockMatchRuleNotifier(this.initialRule);
+
+  @override
+  MatchRule build() => initialRule;
+}
+
+class MockSettingsNotifier extends SettingsNotifier {
+  final SettingsModel initialSettings;
+  MockSettingsNotifier(this.initialSettings);
+
+  @override
+  SettingsModel build() => initialSettings;
+}
+
+class MockRenseikaiMasterTimerNotifier extends RenseikaiMasterTimerNotifier {
+  final int initialValue;
+  MockRenseikaiMasterTimerNotifier(this.initialValue);
+
+  @override
+  int build(String arg) {
+    state = initialValue;
+    return initialValue;
+  }
+
+  @override
+  void initialize(int initialSeconds) {
+    state = initialValue;
+  }
+
+  @override
+  void start() {}
+
+  @override
+  void pause() {}
+
+  @override
+  void toggleTimer() {}
+}
+
+class FakeSyncEngine implements SyncEngine {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+void main() {
+  group('[Widget] MatchScreen Renseikai ChoiceChips Player Selection ウィジェットテスト', () {
+    testWidgets(
+      'ダイアログにおいて present own-チーム 選手一覧 as ChoiceChips and update TextField on tapすること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const mockMatch = MatchModel(
+          id: 'test_match_renseikai',
+          tournamentId: 'tourney_1',
+          matchType: '錬成会',
+          redName: '自チーム : 武田 修二',
+          whiteName: '相手 : 選手A',
+          status: 'finished',
+          groupName: '団体A',
+          order: 1.0,
+        );
+
+        const mockMatch2 = MatchModel(
+          id: 'test_match_renseikai_2',
+          tournamentId: 'tourney_1',
+          matchType: '錬成会',
+          redName: '自チーム : 佐藤 健',
+          whiteName: '相手 : 選手B',
+          status: 'waiting',
+          groupName: '団体A',
+          order: 2.0,
+        );
+
+        final router = GoRouter(
+          initialLocation: '/match/test_match_renseikai',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => [mockMatch, mockMatch2]),
+            matchRuleProvider.overrideWith(
+              () => MockMatchRuleNotifier(
+                const MatchRule(
+                  teamName: '自チーム',
+                  isRenseikai: true,
+                  renseikaiType: '時間制',
+                  positions: ['先鋒', '大将'],
+                ),
+              ),
+            ),
+            lastUsedSettingsProvider.overrideWith((ref) => {'matchTime': 3.0}),
+            renseikaiMasterTimerProvider.overrideWith(
+              () => MockRenseikaiMasterTimerNotifier(1800),
+            ),
+            matchViewStateProvider('test_match_renseikai').overrideWith(
+              (ref) => MatchViewState(
+                scoreText: '2 - 0',
+                redScore: 2,
+                whiteScore: 0,
+                isEncho: false,
+                winner: 'red',
+                lastEventText: '',
+                canUndo: false,
+                statusText: '対戦終了',
+                syncStatus: SyncStatus.synced,
+                isViewOnly: false,
+                isInputLocked: false,
+                isAllDone: true,
+                isTie: false,
+                redCleanName: '武田 修二',
+                whiteCleanName: '選手A',
+              ),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            isarProvider.overrideWithValue(null),
+            playerListProvider.overrideWith(
+              (ref) => Stream.value([
+                PlayerModel(
+                  id: 'p1',
+                  lastName: '武田',
+                  firstName: '修二',
+                  lastNameKana: 'たけだ',
+                  firstNameKana: 'しゅうじ',
+                  grade: 1,
+                  organization: '自チーム',
+                ),
+                PlayerModel(
+                  id: 'p2',
+                  lastName: '佐藤',
+                  firstName: '健',
+                  lastNameKana: 'さとう',
+                  firstNameKana: 'たける',
+                  grade: 1,
+                  organization: '自チーム',
+                ),
+                PlayerModel(
+                  id: 'p3',
+                  lastName: '補欠',
+                  firstName: '次郎',
+                  lastNameKana: 'ほけつ',
+                  firstNameKana: 'じろう',
+                  grade: 1,
+                  organization: '自チーム',
+                ),
+                PlayerModel(
+                  id: 'p4',
+                  lastName: '他チーム',
+                  firstName: '太郎',
+                  lastNameKana: 'たちーむ',
+                  firstNameKana: 'たろう',
+                  grade: 1,
+                  organization: '他チーム',
+                ),
+              ]),
+            ),
+          ],
+        );
+
+        // playerListProvider の Stream が流れて値が AsyncValue.data に入るのを強制する
+        container.listen<AsyncValue<List<PlayerModel>>>(
+          playerListProvider,
+          (previous, next) {},
+          fireImmediately: true,
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+
+        await tester.pump(Duration.zero);
+
+        await tester.safePumpAndSettle();
+
+        // Find the "追加して継続" GlassButton
+        final nextBtnFinder = find.widgetWithText(GlassButton, '追加して継続');
+        expect(nextBtnFinder, findsOneWidget);
+
+        // Tap the button to launch the Renseikai match popup dialog
+        await tester.tap(nextBtnFinder);
+        await tester.safePumpAndSettle();
+
+        // Verify the dialog is displayed
+        expect(find.text('次の試合を追加 (錬成会)'), findsOneWidget);
+
+        // Verify that Red team players (武田 修二, 佐藤 健, 補欠 次郎) are presented as ChoiceChips
+        final chipTakedafinder = find.widgetWithText(ChoiceChip, '武田 修二');
+        final chipSatofinder = find.widgetWithText(ChoiceChip, '佐藤 健');
+        final chipHoketsufinder = find.widgetWithText(ChoiceChip, '補欠 次郎');
+        expect(chipTakedafinder, findsOneWidget);
+        expect(chipSatofinder, findsOneWidget);
+        expect(chipHoketsufinder, findsOneWidget);
+
+        // Verify that players from other teams (e.g. 他チーム 太郎) are NOT presented as ChoiceChips
+        final chipOtherFinder = find.widgetWithText(ChoiceChip, '他チーム 太郎');
+        expect(chipOtherFinder, findsNothing);
+
+        // Verify that White team players (選手A, 選手B) are presented as ChoiceChips
+        final chipAFinder = find.widgetWithText(ChoiceChip, '選手A');
+        final chipBFinder = find.widgetWithText(ChoiceChip, '選手B');
+        expect(chipAFinder, findsOneWidget);
+        expect(chipBFinder, findsOneWidget);
+
+        // Initially, the text fields are empty
+        final textFields = find.byType(TextField);
+        expect(textFields, findsNWidgets(2));
+
+        final redTextField = tester.widget<TextField>(textFields.first);
+        final whiteTextField = tester.widget<TextField>(textFields.last);
+        expect(redTextField.controller?.text, isEmpty);
+        expect(whiteTextField.controller?.text, isEmpty);
+
+        // Tap the '佐藤 健' chip to select that player for Red
+        await tester.tap(chipSatofinder);
+        await tester.safePumpAndSettle();
+
+        // Verify that the red team TextField has been populated with '佐藤 健'
+        expect(redTextField.controller?.text, '佐藤 健');
+
+        // Tap the '選手B' chip to select that player for White
+        await tester.tap(chipBFinder);
+        await tester.safePumpAndSettle();
+
+        // Verify that the white team TextField has been populated with '選手B'
+        expect(whiteTextField.controller?.text, '選手B');
+
+        // Clean up
+        await tester.pumpWidget(const SizedBox());
+        await tester.safePumpAndSettle();
+        container.dispose();
+      },
+    );
+
+    testWidgets('ボトムシートに「確定して終了」ボタンが表示されタップ時に試合終了済みダイアログへ遷移すること', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      const mockMatch = MatchModel(
+        id: 'test_match_renseikai_finish',
+        tournamentId: 'tourney_1',
+        matchType: '錬成会',
+        redName: '自チーム : 武田 修二',
+        whiteName: '相手 : 選手A',
+        status: 'finished',
+        groupName: '団体A',
+        order: 1.0,
+      );
+
+      final router = GoRouter(
+        initialLocation: '/match/test_match_renseikai_finish',
+        routes: [
+          GoRoute(
+            path: '/match/:id',
+            builder: (context, state) =>
+                MatchScreen(matchId: state.pathParameters['id']!),
+          ),
+        ],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          matchListProvider.overrideWith((ref) => [mockMatch]),
+          matchRuleProvider.overrideWith(
+            () => MockMatchRuleNotifier(
+              const MatchRule(
+                teamName: '自チーム',
+                isRenseikai: true,
+                renseikaiType: '時間制',
+                positions: ['先鋒', '大将'],
+              ),
+            ),
+          ),
+          lastUsedSettingsProvider.overrideWith((ref) => {'matchTime': 3.0}),
+          renseikaiMasterTimerProvider.overrideWith(
+            () => MockRenseikaiMasterTimerNotifier(1800),
+          ),
+          settingsProvider.overrideWith(
+            () => MockSettingsNotifier(
+              const SettingsModel(
+                confirmBehavior: 'single',
+                showConfirmDialog: false,
+              ),
+            ),
+          ),
+          matchViewStateProvider('test_match_renseikai_finish').overrideWith(
+            (ref) => MatchViewState(
+              scoreText: '2 - 0',
+              redScore: 2,
+              whiteScore: 0,
+              isEncho: false,
+              winner: 'red',
+              lastEventText: '',
+              canUndo: false,
+              statusText: '対戦終了',
+              syncStatus: SyncStatus.synced,
+              isViewOnly: false,
+              isInputLocked: false,
+              isAllDone: true,
+              isTie: false,
+              redCleanName: '武田 修二',
+              whiteCleanName: '選手A',
+            ),
+          ),
+          permissionProvider.overrideWith(
+            (ref) => const AppPermissions(
+              isReadOnly: false,
+              canManageTournament: true,
+              canCreateMatch: true,
+              canChangeSettings: true,
+              canDeleteData: true,
+            ),
+          ),
+          isarProvider.overrideWithValue(null),
+          matchApplicationServiceProvider.overrideWith((ref) {
+            final mock = MockMatchApplicationService();
+            when(() => mock.approveMatch(any())).thenAnswer((_) async {});
+            return mock;
+          }),
+        ],
+      );
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            theme: ThemeData.light(),
+          ),
+        ),
+      );
+
+      await tester.safePumpAndSettle();
+
+      // Verify the "確定して終了" button is displayed on the bottom bar of match screen
+      final finishBtnFinder = find.widgetWithText(ElevatedButton, '確定して終了');
+      expect(finishBtnFinder, findsOneWidget);
+
+      // Tap the "確定して終了" button
+      await tester.tap(finishBtnFinder);
+      await tester.safePumpAndSettle();
+
+      // Verify the final "対戦終了" dialog pops up
+      expect(find.text('対戦終了'), findsOneWidget);
+
+      // Clean up
+      await tester.pumpWidget(const SizedBox());
+      await tester.safePumpAndSettle();
+      container.dispose();
+    });
+
+    testWidgets(
+      'Renseikai time-based modeにおいて side-by-side timers (Match Timer and Total Timer)が表示されること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const mockMatch = MatchModel(
+          id: 'test_match_renseikai_timer',
+          tournamentId: 'tourney_1',
+          matchType: '錬成会',
+          redName: '自チーム : 武田 修二',
+          whiteName: '相手 : 選手A',
+          status: 'in_progress',
+          groupName: '団体A',
+          order: 1.0,
+        );
+
+        final router = GoRouter(
+          initialLocation: '/match/test_match_renseikai_timer',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            matchListProvider.overrideWith((ref) => [mockMatch]),
+            matchRuleProvider.overrideWith(
+              () => MockMatchRuleNotifier(
+                const MatchRule(
+                  teamName: '自チーム',
+                  isRenseikai: true,
+                  renseikaiType: '時間制',
+                  positions: ['先鋒', '大将'],
+                  overallTimeMinutes: 30,
+                ),
+              ),
+            ),
+            lastUsedSettingsProvider.overrideWith((ref) => {'matchTime': 3.0}),
+            renseikaiMasterTimerProvider.overrideWith(
+              () => MockRenseikaiMasterTimerNotifier(1800),
+            ),
+            matchViewStateProvider('test_match_renseikai_timer').overrideWith(
+              (ref) => MatchViewState(
+                scoreText: '0 - 0',
+                redScore: 0,
+                whiteScore: 0,
+                isEncho: false,
+                winner: '',
+                lastEventText: '',
+                canUndo: false,
+                statusText: '進行中',
+                syncStatus: SyncStatus.synced,
+                isViewOnly: false,
+                isInputLocked: false,
+                isAllDone: false,
+                isTie: false,
+                redCleanName: '武田 修二',
+                whiteCleanName: '選手A',
+              ),
+            ),
+            permissionProvider.overrideWith(
+              (ref) => const AppPermissions(
+                isReadOnly: false,
+                canManageTournament: true,
+                canCreateMatch: true,
+                canChangeSettings: true,
+                canDeleteData: true,
+              ),
+            ),
+            isarProvider.overrideWithValue(null),
+          ],
+        );
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+
+        await tester.safePumpAndSettle();
+
+        // 1. 試合用タイマーが表示されていることを確認
+        // (操作用のタイマーである TimerWidget を探す)
+        expect(find.byType(TimerWidget), findsOneWidget);
+
+        // 2. トータルタイマーが表示されていることを確認
+        // プライベートクラス _RenseikaiMasterTimerWidget なのでテキストで特定する
+        expect(find.text('トータル'), findsOneWidget);
+        expect(find.text('30:00'), findsOneWidget);
+
+        // Clean up
+        await tester.pumpWidget(const SizedBox());
+        await tester.safePumpAndSettle();
+        container.dispose();
+      },
+    );
+
+    testWidgets(
+      'SyncStatusBarにおいて be rendered for operators (scorer/管理者) and hidden for viewersすること',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        const mockMatch = MatchModel(
+          id: 'test_match_sync_bar',
+          tournamentId: 'tourney_1',
+          matchType: '錬成会',
+          redName: '自チーム : 武田 修二',
+          whiteName: '相手 : 選手A',
+          status: 'in_progress',
+          groupName: '団体A',
+          order: 1.0,
+        );
+
+        final router = GoRouter(
+          initialLocation: '/match/test_match_sync_bar',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+
+        Future<ProviderContainer> buildWithRole(Role role) async {
+          final container = ProviderContainer(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              matchListProvider.overrideWith((ref) => [mockMatch]),
+              matchRuleProvider.overrideWith(
+                () => MockMatchRuleNotifier(
+                  const MatchRule(
+                    teamName: '自チーム',
+                    isRenseikai: true,
+                    renseikaiType: '時間制',
+                    positions: ['先鋒', '大将'],
+                  ),
+                ),
+              ),
+              lastUsedSettingsProvider.overrideWith(
+                (ref) => {'matchTime': 3.0},
+              ),
+              renseikaiMasterTimerProvider.overrideWith(
+                () => MockRenseikaiMasterTimerNotifier(1800),
+              ),
+              matchViewStateProvider('test_match_sync_bar').overrideWith(
+                (ref) => MatchViewState(
+                  scoreText: '0 - 0',
+                  redScore: 0,
+                  whiteScore: 0,
+                  isEncho: false,
+                  winner: '',
+                  lastEventText: '',
+                  canUndo: false,
+                  statusText: '進行中',
+                  syncStatus: SyncStatus.synced,
+                  isViewOnly: false,
+                  isInputLocked: false,
+                  isAllDone: false,
+                  isTie: false,
+                  redCleanName: '武田 修二',
+                  whiteCleanName: '選手A',
+                ),
+              ),
+              permissionProvider.overrideWith(
+                (ref) => const AppPermissions(
+                  isReadOnly: false,
+                  canManageTournament: true,
+                  canCreateMatch: true,
+                  canChangeSettings: true,
+                  canDeleteData: true,
+                ),
+              ),
+              isarProvider.overrideWithValue(null),
+              activeRoleProvider.overrideWithValue(role),
+              connectivityProvider.overrideWith((ref) => Stream.value(true)),
+              syncEngineProvider.overrideWith((ref) => FakeSyncEngine()),
+            ],
+          );
+          return container;
+        }
+
+        // Test Scorer role (Operator) -> SyncStatusBar must be shown
+        final containerScorer = await buildWithRole(Role.scorer);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: containerScorer,
+            child: MaterialApp.router(
+              routerConfig: router,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+        await tester.safePumpAndSettle();
+        expect(find.byType(SyncStatusBar), findsOneWidget);
+
+        // Clean up scorer widget
+        await tester.pumpWidget(const SizedBox());
+        await tester.safePumpAndSettle();
+        containerScorer.dispose();
+
+        // Test Viewer role -> SyncStatusBar must be hidden
+        final containerViewer = await buildWithRole(Role.viewer);
+        final router2 = GoRouter(
+          initialLocation: '/match/test_match_sync_bar',
+          routes: [
+            GoRoute(
+              path: '/match/:id',
+              builder: (context, state) =>
+                  MatchScreen(matchId: state.pathParameters['id']!),
+            ),
+          ],
+        );
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: containerViewer,
+            child: MaterialApp.router(
+              routerConfig: router2,
+              theme: ThemeData.light(),
+            ),
+          ),
+        );
+        await tester.safePumpAndSettle();
+        expect(find.byType(SyncStatusBar), findsNothing);
+
+        // Clean up viewer widget
+        await tester.pumpWidget(const SizedBox());
+        await tester.safePumpAndSettle();
+        containerViewer.dispose();
+      },
+    );
+  });
+}

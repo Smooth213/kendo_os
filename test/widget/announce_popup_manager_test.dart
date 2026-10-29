@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,7 +71,7 @@ void main() {
             isStaffRoom: false,
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.byType(AlertDialog), findsNothing);
 
@@ -87,7 +88,7 @@ void main() {
 
         // Pump to trigger snapshot stream listener
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Dialog should appear
         expect(find.byType(AlertDialog), findsOneWidget);
@@ -97,7 +98,7 @@ void main() {
         final confirmBtn = find.text('内容を確認しました');
         expect(confirmBtn, findsOneWidget);
         await tester.tap(confirmBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Dialog should be gone
         expect(find.byType(AlertDialog), findsNothing);
@@ -126,7 +127,7 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Add emergency announcement
       await fakeFirestore.collection('announcements').add({
@@ -140,7 +141,7 @@ void main() {
       });
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Should NOT find dialog
       expect(find.byType(AlertDialog), findsNothing);
@@ -163,7 +164,7 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Add old announcement (31 minutes ago)
       final oldTime = DateTime.now().subtract(const Duration(minutes: 31));
@@ -178,7 +179,7 @@ void main() {
       });
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
     });
@@ -201,7 +202,7 @@ void main() {
           isStaffRoom: false,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Add staff-only emergency announcement
       await fakeFirestore.collection('announcements').add({
@@ -215,7 +216,7 @@ void main() {
       });
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Dialog should NOT appear on non-staff screen (skipped)
       expect(find.byType(AlertDialog), findsNothing);
@@ -228,10 +229,10 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Dialog should now appear on staff screen
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -257,7 +258,7 @@ void main() {
           isStaffRoom: true,
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       const myAnnounceId = 'my_special_announce_id';
 
@@ -277,7 +278,7 @@ void main() {
       });
 
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Should NOT display the dialog (skipped because isMySentAnnounceId was true)
       expect(find.byType(AlertDialog), findsNothing);

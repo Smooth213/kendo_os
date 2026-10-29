@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -123,7 +124,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // MatchScreen が正常にレンダリングされ、無限ロード(クルクル) が表示されないこと
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -133,7 +134,7 @@ void main() {
       // テストが終わる前に別のWidgetをPumpし、現在の画面をdisposeさせる。
       // ProviderContainer は UncontrolledProviderScope の外で管理しているため破棄されない。
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // テスト終了前に手動でコンテナを破棄し、内部のTimer(SyncEngineなど)を確実にキャンセルする
       container.dispose();
@@ -209,7 +210,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 観戦URLを共有ボタンが表示されていることを検証
       final shareBtnFinder = find.text('観戦URLを共有');
@@ -217,10 +218,10 @@ void main() {
 
       // タップしてもエラーにならず正常終了することを検証
       await tester.tap(shareBtnFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       container.dispose();
     });
 
@@ -362,13 +363,13 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 赤チーム（自チーム）の選手名をタップしてボトムシートを開く
         final redNameFinder = find.text('元中堅');
         expect(redNameFinder, findsOneWidget);
         await tester.tap(redNameFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボトムシートが開き、名簿が表示されていることを確認
         expect(find.text('選手名の変更'), findsOneWidget);
@@ -382,7 +383,7 @@ void main() {
 
         // 控え 太郎 をタップして保存するテスト
         await tester.tap(find.text('控え 太郎'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボトムシートが閉じ、saveMatch が呼び出されたことを確認
         expect(fakeAppService.savedMatches.length, 1);
@@ -393,11 +394,11 @@ void main() {
 
         // 再度ボトムシートを開く
         await tester.tap(redNameFinder);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 出場 次郎 をタップしてスマートスワップのテスト
         await tester.tap(find.text('出場 次郎'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // ボトムシートが閉じ、saveMatchesBulk が呼び出され、2つの試合（先鋒と中堅）がスワップされたことを確認
         expect(fakeAppService.savedMatches.length, 2);
@@ -415,7 +416,7 @@ void main() {
         expect(updatedMatch1.redName, 'チームA : 元中堅');
 
         await tester.pumpWidget(const SizedBox());
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         container.dispose();
       },
     );
@@ -563,12 +564,12 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ボトムシートを開く
       final redNameFinder = find.text('元中堅');
       await tester.tap(redNameFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 同カテゴリの控え選手（同カテゴリ 四郎）が表示されていることを検証
       expect(find.text('同カテゴリの控え選手'), findsOneWidget);
@@ -614,7 +615,7 @@ void main() {
       expect(padding, const EdgeInsets.symmetric(vertical: 10));
 
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       container.dispose();
     });
   });

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,7 +47,7 @@ void main() {
         );
 
         // セッション確立の非同期処理とUIの再描画を待つ
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 管理者(Admin)専用の「＋ 試合（対戦）を作成」ボタンが確実に画面に存在することを検証
         // 過去の不具合（キャッシュ依存）が再発した場合、ここはViewerに降格してしまいボタンが見つからずFailする
@@ -87,7 +88,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 未ログイン状態（Viewer降格状態）では管理者ボタンが存在しないことを厳密に検証
         expect(find.textContaining('試合（対戦）を作成'), findsNothing);

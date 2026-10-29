@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
@@ -70,11 +71,11 @@ void main() {
 
         // Wait for stream to emit values
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 3. Tap on SmartPlayerInput to trigger the player select sheet
         await tester.tap(find.byType(SmartPlayerInput));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 4. Verify candidate is displayed inside the bottom sheet
         expect(find.text('選手を選択'), findsOneWidget);
@@ -82,7 +83,7 @@ void main() {
 
         // 5. Select the player and verify it fills the controller
         await tester.tap(find.text('山田 太郎'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(controller.text, '山田 太郎');
       },
@@ -145,11 +146,11 @@ void main() {
 
         // Wait for stream to emit values
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 3. Tap on SmartPlayerInput to trigger the player select sheet
         await tester.tap(find.byType(SmartPlayerInput));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 4. Verify candidate is displayed inside the bottom sheet (under fallback test201)
         expect(find.text('選手を選択'), findsOneWidget);
@@ -157,7 +158,7 @@ void main() {
 
         // 5. Select the player and verify it fills the controller
         await tester.tap(find.text('鈴木 一郎'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(controller.text, '鈴木 一郎');
       },
@@ -273,11 +274,11 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 3. Tap on SmartPlayerInput to trigger the player select sheet
         await tester.tap(find.byType(SmartPlayerInput));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 4. By default ('すべて'), all players and guest are displayed
         expect(find.text('山田 太郎'), findsOneWidget);
@@ -304,7 +305,7 @@ void main() {
         final sortToggle = find.text('学年 昇順');
         expect(sortToggle, findsOneWidget);
         await tester.tap(sortToggle);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.text('学年 降順'), findsOneWidget);
         listTiles = tester.widgetList<ListTile>(find.byType(ListTile));
@@ -322,13 +323,13 @@ void main() {
 
         // 昇順に戻す
         await tester.tap(find.text('学年 降順'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 5. Tap '低学年' filter chip
         final lowGradeChip = find.widgetWithText(ChoiceChip, '低学年');
         await tester.ensureVisible(lowGradeChip);
         await tester.tap(lowGradeChip);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify only '山田 太郎' is displayed (elementary low)
         expect(find.text('山田 太郎'), findsOneWidget);
@@ -341,7 +342,7 @@ void main() {
         final beginnerChip = find.widgetWithText(ChoiceChip, '初心者');
         await tester.ensureVisible(beginnerChip);
         await tester.tap(beginnerChip);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify only '木村 初心者' is displayed
         expect(find.text('木村 初心者'), findsOneWidget);
@@ -351,7 +352,7 @@ void main() {
         final guestChip = find.widgetWithText(ChoiceChip, 'ゲスト');
         await tester.ensureVisible(guestChip);
         await tester.tap(guestChip);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // Verify only '田中 ゲスト' is displayed
         expect(find.text('田中 ゲスト'), findsOneWidget);
@@ -361,7 +362,7 @@ void main() {
         final allChip = find.widgetWithText(ChoiceChip, 'すべて');
         await tester.ensureVisible(allChip);
         await tester.tap(allChip);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('山田 太郎'), findsOneWidget);
       },
     );

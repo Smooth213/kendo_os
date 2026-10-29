@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/match_tables/components/score_table_cell.dart';
@@ -133,7 +134,7 @@ void main() {
       );
 
       await tester.pumpWidget(testWidget);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final okadaFinder = find.byWidgetPredicate(
         (w) => w is VerticalNameText && w.text == '岡田',
@@ -222,7 +223,7 @@ void main() {
       );
 
       await tester.pumpWidget(testWidget);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final fukuyamaTeamFinder = find.text('福山道場');
       expect(fukuyamaTeamFinder, findsOneWidget);

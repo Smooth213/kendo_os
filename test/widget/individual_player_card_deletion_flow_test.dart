@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_individual_player_card.dart';
@@ -123,7 +124,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 選手アコーディオンが表示されていること
       expect(find.byKey(const ValueKey('player_佐藤 太郎')), findsOneWidget);
@@ -133,13 +134,13 @@ void main() {
         find.byKey(const ValueKey('player_佐藤 太郎')),
         const Offset(-300, 0),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 「削除」アクションをタップ
       final deleteActionFinder = find.widgetWithText(InkWell, '削除');
       expect(deleteActionFinder, findsWidgets);
       await tester.tap(deleteActionFinder.first);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 確認ダイアログが表示されること
       expect(find.text('試合削除の確認'), findsOneWidget);
@@ -149,7 +150,7 @@ void main() {
       final confirmButtonFinder = find.widgetWithText(ElevatedButton, '全削除する');
       expect(confirmButtonFinder, findsOneWidget);
       await tester.tap(confirmButtonFinder);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2試合とも削除されたこと
       expect(

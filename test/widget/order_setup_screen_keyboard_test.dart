@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mocktail/mocktail.dart';
@@ -42,7 +43,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify screen rendered and confirm button is initially visible
       expect(find.byType(OrderSetupScreen), findsOneWidget);
@@ -66,7 +67,7 @@ void main() {
 
       // Unfocus (simulates keyboard dismissing)
       FocusManager.instance.primaryFocus?.unfocus();
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Verify that the bottom confirm button is still visible
       expect(find.text('このオーダーで確定して進む'), findsOneWidget);

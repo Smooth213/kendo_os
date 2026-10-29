@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/score/stroke_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_controls.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart';
@@ -134,7 +135,7 @@ void main() {
         );
 
         await tester.tap(find.byIcon(Icons.arrow_drop_down));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.textContaining('共有ペン'), findsNothing);
         expect(
@@ -159,7 +160,7 @@ void main() {
         await tester.tap(
           find.widgetWithText(ProgramViewerPenOption, 'ブラック (個人)'),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedColor, equals(AppKendoColors.pureBlack));
       });
 
@@ -185,7 +186,7 @@ void main() {
         );
 
         await tester.tap(find.byIcon(Icons.arrow_drop_down));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.textContaining('共有ペン'), findsOneWidget);
         expect(
@@ -209,7 +210,7 @@ void main() {
         await tester.tap(
           find.widgetWithText(ProgramViewerPenOption, 'イエロー (共有)'),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(selectedColor, equals(const Color(0xFFCA8A04)));
       });
     });

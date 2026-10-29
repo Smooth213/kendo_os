@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/quick_memo_screen.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +28,7 @@ void main() {
           child: const QuickMemoScreen(tournamentId: 'test_tournament'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // タイトル「クイックメモ」が存在すること
       expect(find.text('クイックメモ'), findsOneWidget);
@@ -49,7 +50,7 @@ void main() {
           child: const QuickMemoScreen(tournamentId: 'test_tournament'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // キャンバスの CustomPaint を検索
       final canvasCustomPaintFinder = find.byWidgetPredicate(
@@ -59,7 +60,7 @@ void main() {
 
       // キャンバス中央からドラッグ
       await tester.dragFrom(canvasCenter, const Offset(30, 20));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 描画後は空状態のガイダンスが非表示になること
       expect(find.text('ここに指やペンでメモを自由に書けます'), findsNothing);
@@ -74,7 +75,7 @@ void main() {
       final undoBtn = find.byIcon(Icons.undo_rounded);
       expect(undoBtn, findsOneWidget);
       await tester.tap(undoBtn);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // ストロークが戻って再びガイダンスが表示されること
       expect(find.text('ここに指やペンでメモを自由に書けます'), findsOneWidget);
@@ -88,7 +89,7 @@ void main() {
           child: const QuickMemoScreen(tournamentId: 'test_tournament'),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // モード切り替えタブが存在すること
       expect(find.text('手書きメモ'), findsOneWidget);
@@ -96,7 +97,7 @@ void main() {
 
       // 「テキストメモ」タブをタップ
       await tester.tap(find.text('テキストメモ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 手書きガイダンスと手書きツールバーが非表示になり、テキスト入力欄が表示されること
       expect(find.text('ここに指やペンでメモを自由に書けます'), findsNothing);
@@ -111,13 +112,13 @@ void main() {
 
       // テキストを入力
       await tester.enterText(find.byType(TextField), '第1試合: 赤コート 延長戦へ突入');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('第1試合: 赤コート 延長戦へ突入'), findsOneWidget);
       expect(find.text('17 文字'), findsOneWidget);
 
       // 下部クイックアクションバーの「時刻挿入」ボタンをタップ
       await tester.tap(find.text('時刻挿入'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 時刻形式 '[' が挿入されていること
       final textField = tester.widget<TextField>(find.byType(TextField));
@@ -135,27 +136,27 @@ void main() {
           child: const QuickMemoScreen(tournamentId: tournamentId),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // テキストメモに切り替えて入力
       await tester.tap(find.text('テキストメモ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.enterText(find.byType(TextField), '大会記録メモ: 永続化テスト');
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 手書きメモに戻して描画
       await tester.tap(find.text('手書きメモ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       final canvasFinder = find.byWidgetPredicate(
         (w) => w is CustomPaint && w.painter is MemoCanvasPainter,
       );
       final canvasCenter = tester.getCenter(canvasFinder);
       await tester.dragFrom(canvasCenter, const Offset(80, 40));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 画面を破棄（別のウィジェットに切り替えてアンマウント）
       await tester.pumpWidget(createTestWidget(child: const SizedBox()));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 再度 QuickMemoScreen をオープン
       await tester.pumpWidget(
@@ -163,14 +164,14 @@ void main() {
           child: const QuickMemoScreen(tournamentId: tournamentId),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 手書きストロークが存在するため、初期空状態ガイダンスが表示されていないこと
       expect(find.text('ここに指やペンでメモを自由に書けます'), findsNothing);
 
       // テキストメモに切り替えると、前回のテキストが復元されていること
       await tester.tap(find.text('テキストメモ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(find.text('大会記録メモ: 永続化テスト'), findsOneWidget);
     });
   });

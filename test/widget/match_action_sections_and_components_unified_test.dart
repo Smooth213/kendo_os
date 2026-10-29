@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/rules/match_rule.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -66,7 +67,7 @@ void main() {
       await tester.tap(find.text('記録を確定して次へ'));
       await tester.pump(const Duration(milliseconds: 50));
       await tester.tap(find.text('記録を確定して次へ'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       expect(doubleTriggered, isTrue);
     });
 

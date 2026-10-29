@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/auth/presentation/screens/role_select_screen.dart';
 import 'package:kendo_os/shared/domain/entities/user_session.dart';
@@ -63,7 +64,7 @@ void main() {
       '全4権限ボタンが常にenabled（onPressed != null）であり、グレーアウトしないことが正しく検証できること',
       (tester) async {
         await tester.pumpWidget(buildTestApp());
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final adminFinder = find.widgetWithText(
           ElevatedButton,
@@ -108,12 +109,12 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(buildTestApp());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // Adminボタンを押してPIN画面へ遷移
       final adminButton = find.widgetWithText(ElevatedButton, '代表・管理者 (Admin)');
       await tester.tap(adminButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('PIN認証: admin'), findsOneWidget);
 
@@ -121,7 +122,7 @@ void main() {
       final backButton = find.byType(BackButton);
       expect(backButton, findsOneWidget);
       await tester.tap(backButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('Kendo Sync'), findsOneWidget);
 
@@ -152,11 +153,11 @@ void main() {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 650)),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       await tester.tap(
         find.widgetWithText(ElevatedButton, '監督・引率責任者 (Operator)'),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('PIN認証: operator'), findsOneWidget);
     });
@@ -165,7 +166,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(buildTestApp());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final adminRect = tester.getRect(
         find.widgetWithText(ElevatedButton, '代表・管理者 (Admin)'),
@@ -206,7 +207,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(buildTestApp());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final adminButton = find.widgetWithText(ElevatedButton, '代表・管理者 (Admin)');
 
@@ -217,7 +218,7 @@ void main() {
       // 100ms後の連打（デバウンスにより無視されること）
       await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(adminButton, warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('PIN認証: admin'), findsOneWidget);
     });

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_group_score_summary.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_league_team_match_header.dart';
@@ -75,7 +76,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1段目: ステータスバッジ（赤色LIVE）
         expect(find.text('試合中 (LIVE)'), findsOneWidget);
@@ -122,7 +123,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1段目: ステータスバッジ
         expect(find.text('試合中 (LIVE)'), findsOneWidget);
@@ -180,7 +181,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.byType(TimelineMatchGroupCard), findsOneWidget);
 
@@ -189,7 +190,7 @@ void main() {
           find.byType(TimelineMatchGroupCard),
           const Offset(-500, 0),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // スワイプ時に「メモ」ではなく「編集」が表示されていること
         expect(find.text('編集'), findsOneWidget);

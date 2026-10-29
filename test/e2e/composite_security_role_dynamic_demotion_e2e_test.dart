@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/match_screen.dart';
@@ -152,7 +153,7 @@ void main() {
       expect(find.byType(MatchScreen), findsNothing);
 
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       container.dispose();
     });
 
@@ -247,7 +248,7 @@ void main() {
       expect(find.byType(MatchScreen), findsNothing);
 
       await tester.pumpWidget(const SizedBox());
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
       container.dispose();
     });
   });

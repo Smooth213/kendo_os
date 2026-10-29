@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/presentation/providers/match_view_model_provider.dart';
 import 'package:kendo_os/features/viewer/components/official_record_action_button.dart';
@@ -99,7 +100,7 @@ void main() {
 
       await tester.pumpWidget(buildViewerApp());
       matchStreamController.add(initialMatches);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 初期状態の検証（進行中試合あり）
       expect(find.byType(OfficialRecordActionButton), findsNWidgets(2));
@@ -124,7 +125,7 @@ void main() {
       ];
 
       matchStreamController.add(finishedMatches);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 観戦側UIが自動更新され、エラーなく再描画されること
       expect(tester.takeException(), isNull);

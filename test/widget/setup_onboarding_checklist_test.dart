@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -114,7 +115,7 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         // 1. チェックリストが表示されていること
         expect(find.text('大会準備ステップ'), findsOneWidget);
@@ -187,7 +188,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. チーム(25%) + ルール(25%) + 作成(25%) = 75% 完了 になっていること
       expect(find.text('大会準備ステップ'), findsOneWidget);
@@ -246,7 +247,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 試合がすでに作成されているため、チェックリストが表示されないこと
       expect(find.text('大会準備ステップ'), findsNothing);

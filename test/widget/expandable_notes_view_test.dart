@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/widgets/expandable_notes_view.dart';
 
 void main() {
@@ -52,14 +53,14 @@ void main() {
 
       // 「もっと見る」をタップ
       await tester.tap(find.text('もっと見る'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('もっと見る'), findsNothing);
       expect(find.text('閉じる'), findsOneWidget);
 
       // 「閉じる」をタップして再度折りたたむ
       await tester.tap(find.text('閉じる'));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       expect(find.text('もっと見る'), findsOneWidget);
       expect(find.text('閉じる'), findsNothing);

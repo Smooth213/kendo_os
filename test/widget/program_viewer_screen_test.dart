@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_viewer/program_viewer_media_cache.dart';
@@ -290,7 +291,7 @@ void main() {
 
       await tester.pumpWidget(createViewerWidget([pendingProgram]));
       streamController.add([pendingProgram]);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final boltIconPending = tester.widget<Icon>(find.byIcon(Icons.bolt));
       expect(boltIconPending.color, equals(Colors.grey.shade400));
@@ -299,7 +300,7 @@ void main() {
       streamController.add([processedProgram]);
 
       await tester.pump(); // Streamの更新をフラッシュ
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final boltIconProcessed = tester.widget<Icon>(find.byIcon(Icons.bolt));
       expect(boltIconProcessed.color, equals(Colors.amber));
@@ -322,11 +323,11 @@ void main() {
 
       // 閲覧権限（保護者など）で開く
       await tester.pumpWidget(createViewerWidget([program], isReadOnly: true));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 書き込みモードをONにする
       await tester.tap(find.byIcon(Icons.edit));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 観客権限では共有ペン（ピンク・黄色）が完全に非表示であること
       expect(find.byTooltip('ピンク'), findsNothing);
@@ -353,17 +354,17 @@ void main() {
       ).thenAnswer((_) async {});
 
       await tester.pumpWidget(createViewerWidget([program]));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 書き込みモードをONにする (アイコン経由で確実にタップ)
       await tester.tap(find.byIcon(Icons.edit));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 元に戻す(Undo)ボタンを探してタップ
       final undoButton = find.byTooltip('1つ戻す');
       expect(undoButton, findsOneWidget);
       await tester.tap(undoButton);
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // デフォルトの個人ペン（青）の undoLastStroke が呼び出されたことを検証
       verify(() => mockLocalStrokeRepo.undoLastStroke('p1')).called(1);
@@ -676,11 +677,11 @@ void main() {
       ).thenAnswer((_) => Stream.value([program]));
 
       await tester.pumpWidget(createViewerWidget([program]));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 1. 書き込みモードをONにしてツールバーを表示する
       await tester.tap(find.byIcon(Icons.edit));
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       // 2. 描画グループのContainerを見つける（ライトモード背景色: Colors.grey.shade100）
       final drawGroupFinder = find.byWidgetPredicate((widget) {

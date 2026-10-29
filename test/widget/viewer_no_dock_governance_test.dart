@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/features/match/presentation/components/announce_history_bottom_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_dock_button.dart';
@@ -147,7 +148,7 @@ void main() {
         expect(find.byType(ThermalStatusBadge), findsOneWidget);
         // ドロップダウンを展開してサンシャインモードが存在すること
         await tester.tap(find.text('📱 端末連動'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(find.text('☀️ サンシャイン'), findsWidgets);
       },
     );

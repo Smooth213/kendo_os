@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
@@ -66,7 +67,7 @@ void main() {
           ],
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final textWidget = tester.widget<Text>(find.byType(Text).first);
       expect(textWidget.style?.color, AppKendoColors.pureWhite);
@@ -99,7 +100,7 @@ void main() {
           ],
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.safePumpAndSettle();
 
       final textWidget = tester.widget<Text>(find.byType(Text).first);
       expect(textWidget.style?.color, AppKendoColors.pureWhite);
@@ -134,7 +135,7 @@ void main() {
             ],
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final textWidget = tester.widget<Text>(find.byType(Text).first);
         expect(textWidget.style?.color, const Color(0xFF000000));
@@ -170,7 +171,7 @@ void main() {
             ],
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final textWidget = tester.widget<Text>(find.byType(Text).first);
         expect(textWidget.style?.color, const Color(0xFFFFFFFF));

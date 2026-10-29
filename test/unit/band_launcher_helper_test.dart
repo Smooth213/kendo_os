@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/safe_pump_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kendo_os/features/band/domain/entities/band_group_model.dart';
 import 'package:kendo_os/features/band/presentation/components/band_group_select_sheet.dart';
@@ -236,13 +237,13 @@ void main() {
               ),
             ),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // 少年部（招待URL）をタップ
           final tile = find.text('少年部（招待URL）');
           expect(tile, findsOneWidget);
           await tester.tap(tile);
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // LIVE配信・投稿が自由にできるグループトップ画面へ直行するため、登録グループURLが直接キックされること
           expect(launchedUrl, 'https://band.us/n/inv12345');
@@ -273,12 +274,12 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         final openAppBtn = find.text('BANDアプリを開く');
         expect(openAppBtn, findsOneWidget);
         await tester.tap(openAppBtn);
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(launchedUrl, 'bandapp://');
       });
@@ -313,10 +314,10 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         await tester.tap(find.text('低学年チーム'));
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
         expect(launchedUrl, 'https://band.us/n/low_invite_123');
       });
 
@@ -352,10 +353,10 @@ void main() {
               ),
             ),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           await tester.tap(find.text('中学生チーム'));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
           expect(launchedUrl, 'bandapp://band/998877');
         },
       );
@@ -377,7 +378,7 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await tester.safePumpAndSettle();
 
         expect(find.textContaining('端末に「BANDアプリ」のインストールが必要です'), findsOneWidget);
         expect(find.text('コピーのみで閉じる'), findsOneWidget);
@@ -410,10 +411,10 @@ void main() {
               ),
             ),
           );
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           await tester.tap(find.text('少年部（招待URL）'));
-          await tester.pumpAndSettle();
+          await tester.safePumpAndSettle();
 
           // bandapp://create/post ではなく、LIVE配信・投稿が可能なグループURLであること
           expect(launchedUrl, isNot(startsWith('bandapp://create/post')));
