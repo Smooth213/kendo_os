@@ -6,10 +6,48 @@ import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_individual_player_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_individual_player_header.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_individual_player_card.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
+import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import '../../helpers/test_app.dart';
+
+class _TrackingLocalMatchRepository implements LocalMatchRepository {
+  List<String> bulkDeletedIds = [];
+
+  @override
+  Future<void> deleteMatch(String matchId) async {
+    bulkDeletedIds.add(matchId);
+  }
+
+  @override
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    bulkDeletedIds.addAll(matchIds);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _TrackingMatchRepository implements MatchRepository {
+  List<String> bulkDeletedIds = [];
+
+  @override
+  Future<void> deleteMatch(String matchId) async {
+    bulkDeletedIds.add(matchId);
+  }
+
+  @override
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    bulkDeletedIds.addAll(matchIds);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -56,7 +94,7 @@ void main() {
     order: 1.0,
   );
 
-  group('[Widget] 個人戦カード 5段構造レイアウト ＆ 統一バッジ 永続保持テスト要塞', () {
+  group('[Widget] 個人戦カード レイアウト ＆ スワイプ削除 統合テスト', () {
     testWidgets(
       '管理画面（TimelineIndividualPlayerCard）で試合中（LIVE）の5段構造が正しく描画されること',
       (tester) async {
@@ -95,12 +133,10 @@ void main() {
         );
         await tester.safePumpAndSettle();
 
-        // 1段目: 属性バッジ（【錬成】） + MatchStatusBadge（LIVE）
         expect(find.text('【錬成】'), findsWidgets);
         expect(find.byType(MatchStatusBadge), findsOneWidget);
         expect(find.text('試合中 (LIVE)'), findsOneWidget);
 
-        // 2段目: マーク（CircleAvatar: '皿'） + 選手名（皿田 脩人）
         expect(find.text('皿'), findsOneWidget);
         expect(
           find.byWidgetPredicate(
@@ -109,16 +145,13 @@ void main() {
           findsOneWidget,
         );
 
-        // 3段目: コート情報（第1試合場）
         expect(find.textContaining('第1試合場'), findsWidgets);
-
-        // 4段目: 進行中状態（🔴 試合中: vs 相手 太郎（ライバル道場））
         expect(find.textContaining('🔴 試合中: vs 相手 太郎（ライバル道場）'), findsOneWidget);
         expect(find.text('(1 - 0)'), findsOneWidget);
       },
     );
 
-    testWidgets('待機中（pendingのみ）の場合、4段目に「 次の出番」が表示されること', (tester) async {
+    testWidgets('待機中（pendingのみ）の場合、4段目に「次の出番」が表示されること', (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
       await tester.pumpWidget(
@@ -141,16 +174,11 @@ void main() {
       );
       await tester.safePumpAndSettle();
 
-      // 1段目: 待機中バッジ
       expect(find.text('⏳ 待機中'), findsOneWidget);
-
-      // 4段目: 次の出番
       expect(find.textContaining('⏳ 次の出番: vs 相手 次郎（強豪館）'), findsOneWidget);
     });
 
-    testWidgets('全試合終了時、1段目に「終了」バッジ、4段目に「 全試合終了: 通算 1勝 0敗」が表示されること', (
-      tester,
-    ) async {
+    testWidgets('全試合終了時、1段目に「終了」バッジ、4段目に「全試合終了」が表示されること', (tester) async {
       final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
 
       await tester.pumpWidget(
@@ -173,10 +201,7 @@ void main() {
       );
       await tester.safePumpAndSettle();
 
-      // 1段目: 終了バッジ
       expect(find.text('終了'), findsOneWidget);
-
-      // 4段目: 全試合終了サマリー
       expect(find.textContaining('🏁 全試合終了: 通算 1勝 0敗 0分 (2本)'), findsOneWidget);
     });
 
@@ -206,20 +231,122 @@ void main() {
         );
         await tester.safePumpAndSettle();
 
-        // 1段目: MatchStatusBadge（LIVE）
         expect(find.text('試合中 (LIVE)'), findsOneWidget);
-
-        // 2段目: 選手名
         expect(
           find.byWidgetPredicate(
             (w) => w is RichText && w.text.toPlainText().contains('皿田 脩人'),
           ),
           findsOneWidget,
         );
-
-        // 4段目: 試合中対戦相手
         expect(find.textContaining('🔴 試合中: vs 相手 太郎（ライバル道場）'), findsOneWidget);
       },
     );
+
+    testWidgets('個人戦カード自体を左スワイプして確認ダイアログから全試合一括削除できること', (tester) async {
+      final mockLocalRepo = _TrackingLocalMatchRepository();
+      final mockRemoteRepo = _TrackingMatchRepository();
+
+      const tournamentId = 'test_tournament_indiv';
+      const playerName = '佐藤 太郎';
+
+      final samplePlayerMatches = [
+        const MatchModel(
+          id: 'indiv_match_001',
+          tournamentId: tournamentId,
+          matchType: '個人戦',
+          redName: '道上剣友会:佐藤 太郎',
+          whiteName: '友道館:鈴木 次郎',
+          status: 'waiting',
+          order: 1.0,
+        ),
+        const MatchModel(
+          id: 'indiv_match_002',
+          tournamentId: tournamentId,
+          matchType: '個人戦',
+          redName: '道上剣友会:佐藤 太郎',
+          whiteName: '青藍館:高橋 三郎',
+          status: 'waiting',
+          order: 2.0,
+        ),
+      ];
+
+      await tester.binding.setSurfaceSize(const Size(800, 1000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+            matchRepositoryProvider.overrideWithValue(mockRemoteRepo),
+            matchListProvider.overrideWithValue(samplePlayerMatches),
+            permissionProvider.overrideWithValue(
+              const PermissionState(
+                role: UserRole.admin,
+                isReadOnly: false,
+                canManageTournament: true,
+                canDeleteData: true,
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            theme: ThemeData.light().copyWith(
+              extensions: [
+                AppThemeColors.ofMode(isDark: false, mode: 'normal'),
+              ],
+            ),
+            home: Scaffold(
+              body: ListView(
+                children: [
+                  TimelineIndividualPlayerCard(
+                    playerName: playerName,
+                    playerMatches: samplePlayerMatches,
+                    playerComments: const [],
+                    categoryName: '小学生の部',
+                    teamName: '道上剣友会',
+                    isReadOnlyUI: false,
+                    isDark: false,
+                    permissions: const PermissionState(
+                      role: UserRole.admin,
+                      isReadOnly: false,
+                      canManageTournament: true,
+                      canDeleteData: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.safePumpAndSettle();
+
+      expect(find.byKey(const ValueKey('player_佐藤 太郎')), findsOneWidget);
+
+      await tester.drag(
+        find.byKey(const ValueKey('player_佐藤 太郎')),
+        const Offset(-300, 0),
+      );
+      await tester.safePumpAndSettle();
+
+      final deleteActionFinder = find.widgetWithText(InkWell, '削除');
+      expect(deleteActionFinder, findsWidgets);
+      await tester.tap(deleteActionFinder.first);
+      await tester.safePumpAndSettle();
+
+      expect(find.text('試合削除の確認'), findsOneWidget);
+      expect(find.textContaining('2件'), findsOneWidget);
+
+      final confirmButtonFinder = find.widgetWithText(ElevatedButton, '全削除する');
+      expect(confirmButtonFinder, findsOneWidget);
+      await tester.tap(confirmButtonFinder);
+      await tester.safePumpAndSettle();
+
+      expect(
+        mockLocalRepo.bulkDeletedIds,
+        containsAll(['indiv_match_001', 'indiv_match_002']),
+      );
+      expect(mockLocalRepo.bulkDeletedIds.length, 2);
+    });
   });
 }

@@ -242,5 +242,92 @@ void main() {
         expect(textWidget.style?.color, equals(const Color(0x66FFFFFF)));
       },
     );
+
+    testWidgets('長押し中に指をボタン領域外へドラッグ移動して離した場合に確定処理が発火せずキャンセルされること', (
+      WidgetTester tester,
+    ) async {
+      bool isConfirmed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 120,
+                height: 80,
+                child: HoldConfirmButton(
+                  label: '確定',
+                  color: Colors.red,
+                  textColor: Colors.white,
+                  disabled: false,
+                  onConfirm: () {
+                    isConfirmed = true;
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final buttonFinder = find.byType(HoldConfirmButton);
+      expect(buttonFinder, findsOneWidget);
+
+      final gesture = await tester.startGesture(tester.getCenter(buttonFinder));
+      await tester.pump(const Duration(milliseconds: 150));
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      await gesture.moveTo(
+        tester.getCenter(buttonFinder) + const Offset(0, 500),
+      );
+      await tester.pump(const Duration(milliseconds: 250));
+
+      await gesture.up();
+      await tester.safePumpAndSettle();
+
+      expect(isConfirmed, isFalse);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
+
+    testWidgets('長押し完了時間まで領域内で保持し続けた場合は確定処理が正常に発火すること', (
+      WidgetTester tester,
+    ) async {
+      bool isConfirmed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 120,
+                height: 80,
+                child: HoldConfirmButton(
+                  label: '確定',
+                  color: Colors.red,
+                  textColor: Colors.white,
+                  disabled: false,
+                  onConfirm: () {
+                    isConfirmed = true;
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final buttonFinder = find.byType(HoldConfirmButton);
+
+      final gesture = await tester.startGesture(tester.getCenter(buttonFinder));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      expect(isConfirmed, isTrue);
+
+      await gesture.up();
+      await tester.safePumpAndSettle();
+    });
   });
 }

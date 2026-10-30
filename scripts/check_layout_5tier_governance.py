@@ -10,7 +10,7 @@ def run_layout_governance():
     cmd = ["python3", "scripts/gov_test_helper.py",
         "test/widget/components/five_tier_layout_preservation_test.dart",
         "test/widget/features/tournament/team_status_components_unified_test.dart",
-        "test/widget/components/individual_player_card_5tier_layout_test.dart",
+        "test/widget/components/individual_player_card_components_unified_test.dart",
         "test/widget/features/match/league_matchup_and_grid_components_unified_test.dart",
         "--reporter=expanded"
     ]

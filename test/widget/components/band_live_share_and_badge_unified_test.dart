@@ -1,3 +1,5 @@
+import '../../helpers/safe_pump_helper.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -312,6 +314,45 @@ void main() {
       await pumpAnimation(tester);
 
       expect(find.text('新しいBANDグループを追加'), findsOneWidget);
+    });
+
+    testWidgets('BandShareButton と MatchStatusBadge の高さが完全に一致（22px）すること', (
+      tester,
+    ) async {
+      const dummyMatch = MatchModel(
+        id: 'm1',
+        tournamentId: 't1',
+        status: 'pending',
+        matchType: '団体戦',
+        redName: '自道場',
+        whiteName: '相手道場',
+      );
+
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  MatchStatusBadge(
+                    isPlaying: true,
+                    isFinished: false,
+                    isDark: false,
+                  ),
+                  BandShareButton(matches: [dummyMatch]),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.safePumpAndSettle();
+
+      final badgeSize = tester.getSize(find.byType(MatchStatusBadge));
+      final bandButtonSize = tester.getSize(find.byType(BandShareButton));
+
+      expect(badgeSize.height, equals(22.0));
+      expect(bandButtonSize.height, equals(22.0));
     });
   });
 }

@@ -13,7 +13,7 @@ def run_test_pair_governance():
         "test/widget/features/tournament/team_status_components_unified_test.dart",
         "test/widget/features/match/match_action_sections_and_components_unified_test.dart",
         "test/widget/features/bunaiksen/bunaiksen_match_components_test.dart",
-        "test/widget/components/multi_player_candidate_chip_test.dart",
+        "test/widget/components/player_candidate_components_unified_test.dart",
         "test/unit/infrastructure/local_match_entity_mapper_test.dart",
         "test/unit/domain/services/kendo_overtime_evaluator_test.dart",
         "test/unit/application/match_progress_calculator_test.dart",

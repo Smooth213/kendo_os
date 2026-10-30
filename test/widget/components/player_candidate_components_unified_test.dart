@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/widgets/multi_player_candidate_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/safe_pump_helper.dart';
@@ -366,5 +367,32 @@ void main() {
         expect(find.text('山田 太郎'), findsOneWidget);
       },
     );
+
+    testWidgets('MultiPlayerCandidateTileにおいて選手名とサブタイトル描画およびタップ選択が連動すること', (
+      tester,
+    ) async {
+      bool? changedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MultiPlayerCandidateTile(
+              name: '山田 太郎',
+              subtitle: '中学2年',
+              isSelected: false,
+              accentColor: Colors.red,
+              onChanged: (val) => changedValue = val,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('山田 太郎'), findsOneWidget);
+      expect(find.text('中学2年'), findsOneWidget);
+
+      await tester.tap(find.text('山田 太郎'));
+      await tester.safePumpAndSettle();
+      expect(changedValue, isTrue);
+    });
   });
 }

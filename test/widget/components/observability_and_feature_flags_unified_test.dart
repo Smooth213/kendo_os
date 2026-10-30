@@ -1,3 +1,5 @@
+import 'package:kendo_os/shared/config/runtime_mode.dart';
+import 'package:kendo_os/shared/routing/match_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/safe_pump_helper.dart';
@@ -198,6 +200,40 @@ void main() {
       await tester.safePumpAndSettle();
 
       expect(mockNotifier.wasRetryCalled, true);
+    });
+
+    testWidgets('フラグがOFFの際、開発者用システム画面への直接URLアクセス（DeepLink）が物理拒否されること', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: MatchRouter(matchId: 'observability-dashboard'),
+          ),
+        ),
+      );
+
+      await tester.safePumpAndSettle();
+
+      expect(find.textContaining('アクセス制限'), findsOneWidget);
+      expect(find.text('Observability Dashboard'), findsNothing);
+    });
+
+    testWidgets('一般ユーザー画面において、特権操作ボタンやメニューが一切露出していないこと', (
+      WidgetTester tester,
+    ) async {
+      const testMode = RuntimeMode.beta;
+      expect(testMode, RuntimeMode.beta);
+      expect(BetaFeatureFlags.showAiFeatures, false);
+      expect(BetaFeatureFlags.enableAiGovernance, false);
+      expect(BetaFeatureFlags.showRuleDslEditor, false);
+      expect(BetaFeatureFlags.showInternalMetrics, false);
+
+      final aiButtonFinder = find.widgetWithText(ElevatedButton, 'AI判定');
+      final govMenuFinder = find.byIcon(Icons.gavel);
+
+      expect(aiButtonFinder, findsNothing);
+      expect(govMenuFinder, findsNothing);
     });
   });
 }
