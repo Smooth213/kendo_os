@@ -37,8 +37,8 @@ NUMBERING_PATTERN = re.compile(
 )
 
 # ③ 括弧パターン（最上位タグ以外）
-ALLOWED_TAGS = {'[Unit]', '[Widget]', '[Governance]', '[Golden]', '[E2E]', '[Security]'}
-TAG_PATTERN = re.compile(r'^\[(Unit|Widget|Governance|Golden|E2E|Security)\]')
+ALLOWED_TAGS = {'[Unit]', '[Widget]', '[Integration]', '[Governance]', '[Golden]', '[E2E]', '[Security]'}
+TAG_PATTERN = re.compile(r'^\[(Unit|Widget|Integration|Governance|Golden|E2E|Security)\]')
 
 def check_brackets_violation(fn_name, title, is_top_group):
     # 【】はいかなる場合も禁止
@@ -180,7 +180,7 @@ def main():
         ("③ [【】/[] 括弧排除] 最上位種別タグ以外の【】および[]の完全排除", len(bracket_v) == 0, bracket_v),
         ("④ [文末「こと」統一＆文法規約] 「〜べき」排除、二重語尾排除、末尾「こと」統一", len(koto_v) == 0, koto_v),
         ("⑤ [英語混在・英文タイトル排除] 英文主体のテストタイトル排除と日本語統一", len(en_v) == 0, en_v),
-        ("⑥ [テスト種別タグ] 最上位 group の [Unit]/[Widget]/[Governance]/[Golden]/[E2E]/[Security] プレフィックス準拠", len(tag_v) == 0, tag_v),
+        ("⑥ [テスト種別タグ] 最上位 group の [Unit]/[Widget]/[Integration]/[Governance]/[Golden]/[E2E]/[Security] プレフィックス準拠", len(tag_v) == 0, tag_v),
     ]
 
     all_passed = True

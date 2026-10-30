@@ -8,7 +8,7 @@ import '../../../helpers/test_match_factory.dart'; // ★ 修正: ファイル�
 
 void main() {
   final engine = KendoRuleEngine();
-  final random = Random();
+  final random = Random(42); // 再現性担保のためシード固定
 
   group('[Unit] 1: Property-based testing (不変条件の自動検証)', () {
     test('10,000回のランダムな試合展開（技・反則・Undo）でも不変条件が絶対に壊れないこと', () {
