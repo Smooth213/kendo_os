@@ -156,5 +156,39 @@ void main() {
         expect(rawJson.contains('match-999'), isTrue);
       },
     );
+
+    test('ストレージ破損耐性に関して、不正なJSONデータが混入していてもクラッシュせず空リストへ安全フォールバックすること', () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'kendo_os_pending_commands_queue',
+        '{{MALFORMED_CORRUPTED_JSON_DATA}}',
+      );
+
+      final result = await LocalMatchCommandStore.getPendingCommands(null);
+      expect(result, isNotNull);
+      expect(result, isEmpty);
+    });
+
+    test(
+      'アプリ再起動復旧シナリオに関して、SharedPreferencesに事前永続化された未送信キューが起動時に作成日時順で完全復元されること',
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        final preExistingJson =
+            '[{"id":"restart-cmd-2","type":"addScore","payload":{"id":"m1"},"createdAt":"2026-10-30T10:05:00.000","status":"pending"},'
+            '{"id":"restart-cmd-1","type":"updateMatch","payload":{"id":"m1"},"createdAt":"2026-10-30T10:00:00.000","status":"pending"},'
+            '{"id":"restart-cmd-3","type":"undoLastEvent","payload":{"id":"m1"},"createdAt":"2026-10-30T10:02:00.000","status":"done"}]';
+
+        await prefs.setString(
+          'kendo_os_pending_commands_queue',
+          preExistingJson,
+        );
+
+        final restored = await LocalMatchCommandStore.getPendingCommands(null);
+        expect(restored.length, equals(2));
+        expect(restored[0].id, equals('restart-cmd-1'));
+        expect(restored[1].id, equals('restart-cmd-2'));
+        expect(restored.any((c) => c.id == 'restart-cmd-3'), isFalse);
+      },
+    );
   });
 }
