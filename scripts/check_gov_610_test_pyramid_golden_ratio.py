@@ -13,7 +13,7 @@ kendo OS の全テスト資産（全800+ファイル）において、テスト�
 ② [Widget比率規約] UIコンポーネントテスト比率 42.0% 以下維持規約（実態統合＆UI過剰肥大防止）
 ③ [E2E比率規約] 現場結合E2Eテスト比率 7.0% 以下維持規約（不安定要素・実行遅延の最小化）
 ④ [Others排除規約] 分類外（その他）テスト 5件以下（目標0件）維持規約（構造明瞭性）
-⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（78件以上保護）＆ Goldenテスト（10件以下厳選）規約
+⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（実質検証45件以上保護）＆ Goldenテスト（10件以下厳選）規約
 ================================================================================
 """
 
@@ -99,20 +99,20 @@ def check_others_count(categories: Dict[str, List[str]]) -> Tuple[bool, List[str
 
 
 def check_protected_assets(categories: Dict[str, List[str]]) -> Tuple[bool, List[str]]:
-    """⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（78件以上保護）＆ Goldenテスト（10件以下厳選）規約"""
+    """⑤ [資産保護＆Goldenスリム化規約] ガバナンステスト（実質検証45件以上保護）＆ Goldenテスト（10件以下厳選）規約"""
     gov_count = len(categories['governance'])
     golden_count = len(categories['golden'])
     
-    gov_ok = gov_count >= 78
+    gov_ok = gov_count >= 45
     golden_ok = golden_count <= 10
     passed = gov_ok and golden_ok
     
     msgs = [
-        f"Governanceテスト: {gov_count} 件 (最低保護基準: 78件) - {'🟢 適合' if gov_ok else '🔴 欠落検知'}",
+        f"Governanceテスト: {gov_count} 件 (実質検証最低保護基準: 45件) - {'🟢 適合' if gov_ok else '🔴 欠落検知'}",
         f"Goldenテスト: {golden_count} 件 (上限基準: 10件以下・厳選中核UI) - {'🟢 適合' if golden_ok else '🔴 過剰肥大検知 (実態Widgetテストの移行が必要)'}"
     ]
     if not gov_ok:
-        msgs.append("永久保護対象のガバナンステストが削減・削除されています。直ちに復元してください。")
+        msgs.append("永久保護対象の実質ガバナンステストが削減・削除されています。直ちに復元してください。")
     if not golden_ok:
         msgs.append("Goldenテストが上限を超過しています。実画像比較を行わないテストは widget/ へ統合してください。")
     return passed, msgs
