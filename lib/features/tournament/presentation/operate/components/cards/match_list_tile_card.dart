@@ -22,6 +22,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/tour
 import 'package:kendo_os/shared/presentation/utils/match_calculator_helper.dart';
 
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -356,9 +357,10 @@ class MatchListTileCard extends ConsumerWidget {
       key: ValueKey(match.id),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
+        extentRatio: 0.44,
         children: [
           if (canEdit)
-            SlidableAction(
+            AppSlidableAction(
               onPressed: (context) {
                 showAppBottomSheet(
                   context: context,
@@ -376,12 +378,11 @@ class MatchListTileCard extends ConsumerWidget {
                 );
               },
               backgroundColor: AppKendoColors.blueAccent,
-              foregroundColor: AppKendoColors.pureWhite,
               icon: Icons.edit,
               label: '編集',
             ),
           if (canDelete)
-            SlidableAction(
+            AppSlidableAction(
               onPressed: (context) async {
                 final confirm = await showAppDialog<bool>(
                   context: context,
@@ -423,7 +424,6 @@ class MatchListTileCard extends ConsumerWidget {
                 }
               },
               backgroundColor: AppKendoColors.redAccent,
-              foregroundColor: AppKendoColors.pureWhite,
               icon: Icons.delete,
               label: '削除',
             ),

@@ -18,6 +18,7 @@ import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/routing/app_router.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -193,6 +194,7 @@ void main() {
       expect(find.text('クイック対戦'), findsNothing);
       expect(find.text('ルール一括変更'), findsNothing);
       expect(find.byType(SlidableAction), findsNothing);
+      expect(find.byType(AppSlidableAction), findsNothing);
     });
 
     testWidgets('観客画面の専用機能パリティ検証においてこと'

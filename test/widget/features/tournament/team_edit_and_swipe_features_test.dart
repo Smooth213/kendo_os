@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/tournament/domain/share_import/tournament_team_auto_register_service.dart';
@@ -9,6 +8,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tea
 import 'package:kendo_os/features/tournament/presentation/operate/components/team_registration/team_registration_player_select_bottom_sheet.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
@@ -67,8 +67,8 @@ void main() {
         expect(find.text('削除'), findsOneWidget);
 
         // 「編集」アクションの背景色が大会ホームと統一された blueAccent であること
-        final editAction = tester.widget<SlidableAction>(
-          find.widgetWithText(SlidableAction, '編集'),
+        final editAction = tester.widget<AppSlidableAction>(
+          find.widgetWithText(AppSlidableAction, '編集'),
         );
         expect(editAction.backgroundColor, equals(AppKendoColors.blueAccent));
 

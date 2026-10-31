@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kendo_os/shared/domain/entities/program_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -254,11 +255,11 @@ class ProgramManagementContentViews {
           key: ValueKey('slidable_program_${program.id}'),
           endActionPane: ActionPane(
             motion: const ScrollMotion(),
+            extentRatio: 0.22,
             children: [
-              SlidableAction(
+              AppSlidableAction(
                 onPressed: (_) => onDelete(program),
                 backgroundColor: AppKendoColors.redAccent,
-                foregroundColor: AppKendoColors.pureWhite,
                 icon: Icons.delete,
                 label: '削除',
               ),

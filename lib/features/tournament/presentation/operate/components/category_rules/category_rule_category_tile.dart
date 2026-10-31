@@ -3,10 +3,11 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/rules/category_rule_set.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_chips.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/category_rules/category_rule_match_helper.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/presentation/widgets/app_glass_container.dart';
 
 /// 部門ルール一覧の1行タイルWidget（スワイプ編集・削除対応）
 class CategoryRuleCategoryTile extends StatelessWidget {
@@ -39,23 +40,19 @@ class CategoryRuleCategoryTile extends StatelessWidget {
         key: ValueKey('slidable_rule_$category'),
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
+          extentRatio: 0.44,
           children: [
-            SlidableAction(
+            AppSlidableAction(
               onPressed: (_) => onStartEditing(),
               backgroundColor: AppKendoColors.blueAccent,
-              foregroundColor: AppKendoColors.pureWhite,
               icon: Icons.edit,
               label: '編集',
             ),
-            SlidableAction(
+            AppSlidableAction(
               onPressed: (_) => onDeleteCategory(),
               backgroundColor: AppKendoColors.redAccent,
-              foregroundColor: AppKendoColors.pureWhite,
               icon: Icons.delete,
               label: '削除',
-              borderRadius: const BorderRadius.horizontal(
-                right: Radius.circular(AppRadius.largeValue),
-              ),
             ),
           ],
         ),

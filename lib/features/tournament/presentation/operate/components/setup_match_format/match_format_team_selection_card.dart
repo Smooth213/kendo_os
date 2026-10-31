@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/shared/domain/entities/team_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -40,19 +41,17 @@ class MatchFormatTeamSelectionCard extends StatelessWidget {
           key: ValueKey(team.id),
           endActionPane: ActionPane(
             motion: const ScrollMotion(),
-            extentRatio: 0.45,
+            extentRatio: 0.44,
             children: [
-              SlidableAction(
+              AppSlidableAction(
                 onPressed: (_) => onEdit(),
                 backgroundColor: AppKendoColors.blueAccent,
-                foregroundColor: AppKendoColors.pureWhite,
                 icon: Icons.edit,
                 label: '編集',
               ),
-              SlidableAction(
+              AppSlidableAction(
                 onPressed: (_) => onDelete(),
                 backgroundColor: AppKendoColors.redAccent,
-                foregroundColor: AppKendoColors.pureWhite,
                 icon: Icons.delete_outline,
                 label: '削除',
               ),

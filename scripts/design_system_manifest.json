@@ -12,7 +12,8 @@
     "info_cards": "Squircle 16px/20px (AppRadius.large / AppRadius.medium / 包摂面コンテナ)",
     "strike_keypad": "大型正方形角丸 (試合中ブラインド親指タッチ面積最大化: AppRadius.medium)",
     "numeric_keypad_icons": "正円形 (BoxShape.circle / CircleBorder, 64x64px)",
-    "score_tables": "情報グリッド矩形 (テーブル可読性維持)"
+    "score_tables": "情報グリッド矩形 (テーブル可読性維持)",
+    "floating_swipe_actions": "iOS メモアプリ風 浮遊カプセル型 (AppSlidableAction / AppRadius.round / 完全透過背景 & マージン配置)"
   },
   "items": [
     {

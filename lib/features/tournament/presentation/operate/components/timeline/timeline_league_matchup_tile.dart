@@ -10,6 +10,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/tim
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_command_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -78,7 +79,7 @@ class TimelineLeagueMatchupTile extends ConsumerWidget {
               : (!isReadOnlyUI ? 0.46 : 0.25),
           children: [
             if (!isReadOnlyUI) ...[
-              CustomSlidableAction(
+              AppSlidableAction(
                 onPressed: (context) {
                   QuickNextMatchWizardSheet.show(
                     context,
@@ -87,29 +88,10 @@ class TimelineLeagueMatchupTile extends ConsumerWidget {
                   );
                 },
                 backgroundColor: AppKendoColors.teal,
-                foregroundColor: AppKendoColors.pureWhite,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.playlist_add,
-                      size: 22,
-                      color: AppKendoColors.pureWhite,
-                    ),
-                    SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      '次戦追加',
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        fontWeight: AppFontWeight.bold,
-                        color: AppKendoColors.pureWhite,
-                      ),
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
+                icon: Icons.playlist_add,
+                label: '次戦追加',
               ),
-              CustomSlidableAction(
+              AppSlidableAction(
                 onPressed: (context) {
                   showAppBottomSheet(
                     context: context,
@@ -128,27 +110,12 @@ class TimelineLeagueMatchupTile extends ConsumerWidget {
                   );
                 },
                 backgroundColor: AppKendoColors.blueAccent,
-                foregroundColor: AppKendoColors.pureWhite,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.edit, size: 20, color: AppKendoColors.pureWhite),
-                    SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      '編集',
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        fontWeight: AppFontWeight.bold,
-                        color: AppKendoColors.pureWhite,
-                      ),
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
+                icon: Icons.edit,
+                label: '編集',
               ),
             ],
             if (canManage && !isReadOnlyUI)
-              CustomSlidableAction(
+              AppSlidableAction(
                 onPressed: (context) async {
                   final confirm = await showAppDialog<bool>(
                     context: context,
@@ -186,27 +153,8 @@ class TimelineLeagueMatchupTile extends ConsumerWidget {
                   }
                 },
                 backgroundColor: context.appColors.errorColor,
-                foregroundColor: AppKendoColors.pureWhite,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.delete,
-                      size: 20,
-                      color: AppKendoColors.pureWhite,
-                    ),
-                    SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      '削除',
-                      style: TextStyle(
-                        fontSize: AppFontSize.caption,
-                        fontWeight: AppFontWeight.bold,
-                        color: AppKendoColors.pureWhite,
-                      ),
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
+                icon: Icons.delete,
+                label: '削除',
               ),
           ],
         ),

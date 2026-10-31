@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/components/bunaiksen/bunaiksen_score_marks.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/presentation/widgets/app_card.dart';
 
 /// 部内戦画面の個別試合カード（スワイプ編集・削除対応）
 class BunaiksenMatchCard extends StatelessWidget {
@@ -177,25 +178,21 @@ class BunaiksenMatchCard extends StatelessWidget {
         key: ValueKey(match.id),
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
+          extentRatio: 0.44,
           children: [
             if (canEdit)
-              SlidableAction(
+              AppSlidableAction(
                 onPressed: (_) => onEditNote(),
                 backgroundColor: AppKendoColors.blueAccent,
-                foregroundColor: AppKendoColors.pureWhite,
                 icon: Icons.edit,
                 label: '編集',
               ),
             if (canDelete)
-              SlidableAction(
+              AppSlidableAction(
                 onPressed: (_) => onDelete(),
                 backgroundColor: AppKendoColors.redAccent,
-                foregroundColor: AppKendoColors.pureWhite,
                 icon: Icons.delete,
                 label: '削除',
-                borderRadius: const BorderRadius.horizontal(
-                  right: Radius.circular(AppRadius.largeValue),
-                ),
               ),
           ],
         ),

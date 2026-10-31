@@ -16,6 +16,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/home/match_edit_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/quick_next_match/quick_next_match_wizard_sheet.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 
@@ -109,7 +110,7 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                           : (!isReadOnlyUI ? 0.46 : 0.25)),
                 children: [
                   if (!isReadOnlyUI && !isLeague) ...[
-                    CustomSlidableAction(
+                    AppSlidableAction(
                       onPressed: (context) {
                         QuickNextMatchWizardSheet.show(
                           context,
@@ -118,29 +119,10 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                         );
                       },
                       backgroundColor: AppKendoColors.teal,
-                      foregroundColor: AppKendoColors.pureWhite,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.playlist_add,
-                            size: 22,
-                            color: AppKendoColors.pureWhite,
-                          ),
-                          SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            '次戦追加',
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              fontWeight: AppFontWeight.bold,
-                              color: AppKendoColors.pureWhite,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ],
-                      ),
+                      icon: Icons.playlist_add,
+                      label: '次戦追加',
                     ),
-                    CustomSlidableAction(
+                    AppSlidableAction(
                       onPressed: (context) {
                         showAppBottomSheet(
                           context: context,
@@ -160,31 +142,12 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                         );
                       },
                       backgroundColor: AppKendoColors.blueAccent,
-                      foregroundColor: AppKendoColors.pureWhite,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.edit,
-                            size: 20,
-                            color: AppKendoColors.pureWhite,
-                          ),
-                          SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            '編集',
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              fontWeight: AppFontWeight.bold,
-                              color: AppKendoColors.pureWhite,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ],
-                      ),
+                      icon: Icons.edit,
+                      label: '編集',
                     ),
                   ],
                   if (canManageTournamentUI && !isReadOnlyUI)
-                    CustomSlidableAction(
+                    AppSlidableAction(
                       onPressed: (context) async {
                         final confirm = await showAppDialog<bool>(
                           context: context,
@@ -235,27 +198,8 @@ class TimelineMatchGroupCard extends ConsumerWidget {
                         }
                       },
                       backgroundColor: context.appColors.errorColor,
-                      foregroundColor: AppKendoColors.pureWhite,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(
-                            Icons.delete,
-                            size: 20,
-                            color: AppKendoColors.pureWhite,
-                          ),
-                          SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            '削除',
-                            style: TextStyle(
-                              fontSize: AppFontSize.caption,
-                              fontWeight: AppFontWeight.bold,
-                              color: AppKendoColors.pureWhite,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ],
-                      ),
+                      icon: Icons.delete,
+                      label: '削除',
                     ),
                 ],
               ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_edit_comment_dialog.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_provider.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/components/timeline/timeline_edit_comment_dialog.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/app_slidable_action.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -98,30 +99,16 @@ class TimelineInnerCommentWidget extends StatelessWidget {
         key: ValueKey('slidable_inner_comment_${comment.id}'),
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
+          extentRatio: 0.44,
           children: [
-            CustomSlidableAction(
+            AppSlidableAction(
               onPressed: (ctx) =>
                   TimelineEditCommentDialog.show(context, ref, comment),
               backgroundColor: AppKendoColors.blueAccent,
-              foregroundColor: AppKendoColors.pureWhite,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.edit, size: 16, color: AppKendoColors.pureWhite),
-                  SizedBox(width: AppSpacing.xs),
-                  Text(
-                    '編集',
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.pureWhite,
-                    ),
-                  ),
-                ],
-              ),
+              icon: Icons.edit,
+              label: '編集',
             ),
-            CustomSlidableAction(
+            AppSlidableAction(
               onPressed: (ctx) async {
                 final confirm = await showAppDialog<bool>(
                   context: context,
@@ -168,26 +155,8 @@ class TimelineInnerCommentWidget extends StatelessWidget {
                 }
               },
               backgroundColor: AppKendoColors.redAccent,
-              foregroundColor: AppKendoColors.pureWhite,
-              borderRadius: const BorderRadius.horizontal(
-                right: Radius.circular(AppRadius.smallValue),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.delete, size: 16, color: AppKendoColors.pureWhite),
-                  SizedBox(width: AppSpacing.xs),
-                  Text(
-                    '削除',
-                    style: TextStyle(
-                      fontSize: AppFontSize.caption,
-                      fontWeight: AppFontWeight.bold,
-                      color: AppKendoColors.pureWhite,
-                    ),
-                  ),
-                ],
-              ),
+              icon: Icons.delete,
+              label: '削除',
             ),
           ],
         ),
