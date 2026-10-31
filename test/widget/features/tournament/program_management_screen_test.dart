@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import '../../../helpers/safe_pump_helper.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mocktail/mocktail.dart';
@@ -19,6 +21,14 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockProgramRepository extends Mock implements ProgramRepository {}
 
 class MockFilePicker extends FilePicker with MockPlatformInterfaceMixin {
+  List<PlatformFile> filesToReturn = [
+    PlatformFile(
+      name: 'test_program.pdf',
+      size: 500,
+      bytes: Uint8List.fromList([0, 1, 2, 3]),
+    ),
+  ];
+
   @override
   Future<FilePickerResult?> pickFiles({
     String? dialogTitle,
@@ -34,13 +44,7 @@ class MockFilePicker extends FilePicker with MockPlatformInterfaceMixin {
     bool lockParentWindow = false,
     bool readSequential = false,
   }) async {
-    return FilePickerResult([
-      PlatformFile(
-        name: 'test_program.pdf',
-        size: 500,
-        bytes: Uint8List.fromList([0, 1, 2, 3]),
-      ),
-    ]);
+    return FilePickerResult(filesToReturn);
   }
 }
 
@@ -153,6 +157,59 @@ void main() {
       // 8. 正常に入力されたため、ダイアログ「順番とタイトルの確認」が完全に閉じていることを検証
       expect(find.text('順番とタイトルの確認'), findsNothing);
       expect(find.text('プログラムのタイトルを入力してください'), findsNothing);
+    });
+
+    testWidgets('画像ファイルアップロード完了時に軽量化された削減サイズを含むトーストが表示されること', (tester) async {
+      // 1. 圧縮対象となる画像データ（未圧縮BMPデータ: 約30KB -> JPEG圧縮で約2KBに軽量化）を生成し一時ファイルに保存
+      final rawImage = img.Image(width: 100, height: 100);
+      img.fill(rawImage, color: img.ColorRgb8(255, 0, 0));
+      final rawBytes = Uint8List.fromList(img.encodeBmp(rawImage));
+
+      final tempDir = Directory.systemTemp.createTempSync('kendo_test_');
+      final tempFile = File('${tempDir.path}/large_poster.png');
+      tempFile.writeAsBytesSync(rawBytes);
+
+      mockFilePicker.filesToReturn = [
+        PlatformFile(
+          name: 'large_poster.png',
+          path: tempFile.path,
+          size: rawBytes.length,
+          bytes: rawBytes,
+        ),
+      ];
+
+      await tester.pumpWidget(createManagementWidget());
+      await tester.safePumpAndSettle();
+
+      // 2. 「プログラムを追加」FloatingActionButtonをタップ
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.safePumpAndSettle();
+
+      // 3. ボトムシートの「写真ライブラリから選ぶ」をタップ
+      await tester.tap(find.text('写真ライブラリから選ぶ (複数可)'));
+      await tester.safePumpAndSettle();
+
+      // 4. タイトルを入力して「アップロード開始」をタップ
+      final titleField = find.byType(TextFormField);
+      await tester.enterText(titleField, '大ポスター');
+      await tester.safePumpAndSettle();
+
+      await tester.tap(find.text('アップロード開始'));
+      // compute (Isolate) の処理完了をリアルタイムで待機
+      await tester.runAsync(() async {
+        await Future.delayed(const Duration(milliseconds: 500));
+      });
+      await tester.pump();
+      await tester.safePumpAndSettle();
+
+      // 5. トーストに「画像軽量化:」および「削減」という文言が含まれていることを検証
+      expect(find.textContaining('画像軽量化:'), findsOneWidget);
+      expect(find.textContaining('削減)'), findsOneWidget);
+
+      // 一時ファイルのクリーンアップ
+      try {
+        tempDir.deleteSync(recursive: true);
+      } catch (_) {}
     });
   });
 }

@@ -14,6 +14,7 @@ import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/utils/image_compressor.dart';
+import 'package:kendo_os/shared/utils/pdf_compressor.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
@@ -206,6 +207,8 @@ class _ProgramManagementScreenState
       final messageNotifier = ValueNotifier<String>('準備中...');
       if (mounted) _showLoadingDialog(messageNotifier);
 
+      int imageSavedBytes = 0;
+      int pdfSavedBytes = 0;
       final fileCount = orderedFiles.length;
       for (int i = 0; i < fileCount; i++) {
         final platformFile = orderedFiles[i];
@@ -220,44 +223,62 @@ class _ProgramManagementScreenState
             'アップロード中 (${i + 1}/$fileCount)\n${platformFile.name}';
 
         if (fileType == 'image') {
-          Uint8List? imageBytes;
-          if (kIsWeb) {
-            imageBytes = platformFile.bytes;
-          } else if (platformFile.path != null) {
-            imageBytes = await File(platformFile.path!).readAsBytes();
+          Uint8List? imageBytes = platformFile.bytes;
+          if (!kIsWeb && imageBytes == null && platformFile.path != null) {
+            final localFile = File(platformFile.path!);
+            if (await localFile.exists()) {
+              imageBytes = await localFile.readAsBytes();
+            }
           }
 
           if (imageBytes != null) {
             final compressedBytes = await ImageCompressor.compress(
               bytes: imageBytes,
             );
+            final uploadBytes = compressedBytes ?? imageBytes;
+            if (uploadBytes.length < imageBytes.length) {
+              imageSavedBytes += (imageBytes.length - uploadBytes.length);
+            }
             await ref
                 .read(programRepositoryProvider)
                 .uploadProgram(
                   tournamentId: widget.tournamentId,
                   title: finalTitle,
-                  bytes: compressedBytes ?? imageBytes,
+                  bytes: uploadBytes,
                   fileType: fileType,
                   pageCount: 1,
                 );
           }
         } else {
-          File? fileToUpload;
           Uint8List? pdfBytes = platformFile.bytes;
           if (!kIsWeb && platformFile.path != null) {
-            fileToUpload = File(platformFile.path!);
-            pdfBytes ??= await fileToUpload.readAsBytes();
+            final localFile = File(platformFile.path!);
+            if (await localFile.exists()) {
+              pdfBytes = await localFile.readAsBytes();
+            }
           }
-          await ref
-              .read(programRepositoryProvider)
-              .uploadProgram(
-                tournamentId: widget.tournamentId,
-                title: finalTitle,
-                file: fileToUpload,
-                bytes: pdfBytes,
-                fileType: fileType,
-                pageCount: 1,
-              );
+
+          if (pdfBytes != null) {
+            if (pdfBytes.length >= PdfCompressor.defaultThresholdBytes) {
+              messageNotifier.value =
+                  'PDFを最適化中 (${i + 1}/$fileCount)\n${platformFile.name}';
+            }
+            final compressedBytes = await PdfCompressor.compress(
+              bytes: pdfBytes,
+            );
+            if (compressedBytes.length < pdfBytes.length) {
+              pdfSavedBytes += (pdfBytes.length - compressedBytes.length);
+            }
+            await ref
+                .read(programRepositoryProvider)
+                .uploadProgram(
+                  tournamentId: widget.tournamentId,
+                  title: finalTitle,
+                  bytes: compressedBytes,
+                  fileType: fileType,
+                  pageCount: 1,
+                );
+          }
         }
       }
 
@@ -265,7 +286,21 @@ class _ProgramManagementScreenState
         Navigator.of(context, rootNavigator: true).pop();
       }
       if (mounted) {
-        AppSnackBar.showSuccess(context, '$fileCount件のプログラムをアップロードしました');
+        final totalSaved = imageSavedBytes + pdfSavedBytes;
+        String successMsg = '$fileCount件のプログラムをアップロードしました';
+        if (totalSaved > 0) {
+          final prefix = (pdfSavedBytes > 0 && imageSavedBytes == 0)
+              ? 'PDF軽量化'
+              : (imageSavedBytes > 0 && pdfSavedBytes == 0)
+              ? '画像軽量化'
+              : '軽量化';
+          final savedMb = totalSaved / (1024 * 1024);
+          final savedStr = savedMb >= 0.1
+              ? '${savedMb.toStringAsFixed(1)} MB'
+              : '${(totalSaved / 1024).toStringAsFixed(0)} KB';
+          successMsg += ' ($prefix: $savedStr削減)';
+        }
+        AppSnackBar.showSuccess(context, successMsg);
       }
     } catch (e) {
       if (mounted) {
