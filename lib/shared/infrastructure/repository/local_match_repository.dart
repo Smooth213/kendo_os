@@ -400,6 +400,22 @@ class LocalMatchRepository {
   Future<List<MatchCommandModel>> getPendingCommands([int? limit]) =>
       LocalMatchCommandStore.getPendingCommands(_isar, limit: limit);
 
+  Future<Set<String>> getPendingDeleteMatchIds() async {
+    final pendingCmds = await getPendingCommands();
+    final deleteIds = <String>{};
+    for (final cmd in pendingCmds) {
+      if (cmd.type == CommandType.deleteMatch) {
+        final list = cmd.payload['matchIds'] as List<dynamic>?;
+        if (list != null) {
+          deleteIds.addAll(list.map((e) => e.toString()));
+        } else if (cmd.payload.containsKey('matchId')) {
+          deleteIds.add(cmd.payload['matchId'].toString());
+        }
+      }
+    }
+    return deleteIds;
+  }
+
   Stream<List<MatchModel>> watchLocalMatches(String tournamentId) =>
       _isar == null
       ? Stream.value([])

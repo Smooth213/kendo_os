@@ -112,7 +112,6 @@ class HomeScreen extends ConsumerWidget {
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
 
-    final asyncMatches = ref.watch(matchListByTournamentProvider(tournamentId));
     final asyncTournament = ref.watch(tournamentProvider(tournamentId));
     final asyncTeams = ref.watch(registeredTeamsProvider(tournamentId));
 
@@ -122,9 +121,6 @@ class HomeScreen extends ConsumerWidget {
     final allMatchesList = matchGroups.allMatches;
     final uniqueInProgress = matchGroups.uniqueInProgress;
     final uniqueWaiting = matchGroups.uniqueWaiting;
-
-    final isSearchVisible = ref.watch(isSearchVisibleProvider);
-    final searchQuery = ref.watch(searchQueryProvider);
 
     return AnnouncePopupListener(
       tournamentId: tournamentId,
@@ -137,8 +133,8 @@ class HomeScreen extends ConsumerWidget {
               // =========================================================================
               // 🛡️ Phase 3 - STEP 3-3 要件：オフライン画面防衛インジケータバナー
               // =========================================================================
-              Builder(
-                builder: (context) {
+              Consumer(
+                builder: (context, ref, _) {
                   // 1. 物理的な電波断（オフラインモード）
                   if (isPhysicalOffline) {
                     return SafeArea(
@@ -178,8 +174,13 @@ class HomeScreen extends ConsumerWidget {
                   }
 
                   // 2. クラウドデータ取得・同期中（電波あり時）
+                  final isMatchesLoading = ref.watch(
+                    matchListByTournamentProvider(
+                      tournamentId,
+                    ).select((v) => v.isLoading),
+                  );
                   final isSyncing =
-                      asyncMatches.isLoading || asyncTournament.isLoading;
+                      isMatchesLoading || asyncTournament.isLoading;
                   if (isSyncing) {
                     return SafeArea(
                       bottom: false,
@@ -226,54 +227,16 @@ class HomeScreen extends ConsumerWidget {
               Expanded(
                 child: Scaffold(
                   backgroundColor: AppKendoColors.transparent,
-                  appBar: isSearchVisible
-                      ? AppSearchHeader(
-                          searchQuery: searchQuery,
-                          enableLiquidGlass: enableLiquidGlass,
-                          onSearchQueryChanged: (val) =>
-                              ref.read(searchQueryProvider.notifier).state =
-                                  val,
-                          onClose: () {
-                            ref.read(searchQueryProvider.notifier).state = '';
-                            ref.read(isSearchVisibleProvider.notifier).state =
-                                false;
-                          },
-                        )
-                      : AppHeader(
-                          title: '大会ホーム',
-                          fallbackRoute: '/tournament-list',
-                          backgroundColor: enableLiquidGlass
-                              ? AppKendoColors.transparent
-                              : themeColors.cardBackground,
-                          actions: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.visibility,
-                                color: isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : themeColors.primaryAccent,
-                              ),
-                              tooltip: '観客の画面を確認',
-                              onPressed: () => _navigateToViewerPreview(
-                                context,
-                                ref,
-                                tournamentId,
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.qr_code_2,
-                                color: isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : themeColors.primaryAccent,
-                              ),
-                              tooltip: '大会を共有する',
-                              onPressed: () =>
-                                  _showShareDialog(context, ref, tournamentId),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                          ],
-                        ),
+                  appBar: _HomeScreenAppBar(
+                    tournamentId: tournamentId,
+                    enableLiquidGlass: enableLiquidGlass,
+                    themeColors: themeColors,
+                    isDark: isDark,
+                    onNavigateToViewerPreview: () =>
+                        _navigateToViewerPreview(context, ref, tournamentId),
+                    onShowShareDialog: () =>
+                        _showShareDialog(context, ref, tournamentId),
+                  ),
                   body: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -371,6 +334,72 @@ class HomeScreen extends ConsumerWidget {
         shareUrl: shareUrl,
         onClose: () => Navigator.pop(ctx),
       ),
+    );
+  }
+}
+
+class _HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  final String tournamentId;
+  final bool enableLiquidGlass;
+  final AppThemeColors themeColors;
+  final bool isDark;
+  final VoidCallback onNavigateToViewerPreview;
+  final VoidCallback onShowShareDialog;
+
+  const _HomeScreenAppBar({
+    required this.tournamentId,
+    required this.enableLiquidGlass,
+    required this.themeColors,
+    required this.isDark,
+    required this.onNavigateToViewerPreview,
+    required this.onShowShareDialog,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSearchVisible = ref.watch(isSearchVisibleProvider);
+    if (isSearchVisible) {
+      final searchQuery = ref.watch(searchQueryProvider);
+      return AppSearchHeader(
+        searchQuery: searchQuery,
+        enableLiquidGlass: enableLiquidGlass,
+        onSearchQueryChanged: (val) =>
+            ref.read(searchQueryProvider.notifier).state = val,
+        onClose: () {
+          ref.read(searchQueryProvider.notifier).state = '';
+          ref.read(isSearchVisibleProvider.notifier).state = false;
+        },
+      );
+    }
+
+    return AppHeader(
+      title: '大会ホーム',
+      fallbackRoute: '/tournament-list',
+      backgroundColor: enableLiquidGlass
+          ? AppKendoColors.transparent
+          : themeColors.cardBackground,
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.visibility,
+            color: isDark ? const Color(0xFFFFFFFF) : themeColors.primaryAccent,
+          ),
+          tooltip: '観客の画面を確認',
+          onPressed: onNavigateToViewerPreview,
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.qr_code_2,
+            color: isDark ? const Color(0xFFFFFFFF) : themeColors.primaryAccent,
+          ),
+          tooltip: '大会を共有する',
+          onPressed: onShowShareDialog,
+        ),
+        const SizedBox(width: AppSpacing.sm),
+      ],
     );
   }
 }

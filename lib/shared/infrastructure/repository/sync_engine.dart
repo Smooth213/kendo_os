@@ -334,6 +334,24 @@ class SyncEngine {
     try {
       final remoteRepo = _ref.read(matchRepositoryProvider);
 
+      if (action.type == CommandType.deleteMatch) {
+        final matchIds =
+            (action.payload['matchIds'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            (action.payload.containsKey('matchId')
+                ? [action.payload['matchId'].toString()]
+                : <String>[]);
+        if (matchIds.isEmpty) return true;
+        try {
+          await remoteRepo.deleteMatchesBulk(matchIds);
+          return true;
+        } catch (e) {
+          debugPrint('[Sync Engine] 削除コマンドのアップロード失敗 (matchIds: $matchIds): $e');
+          return false;
+        }
+      }
+
       // ペイロード（Map形式）からドメインモデルへ完全復元
       // (※既存リポジトリが要求する型に合わせて安全にアップロードを試みます)
       if (action.payload.containsKey('id')) {

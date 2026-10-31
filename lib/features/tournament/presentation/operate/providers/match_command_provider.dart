@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:kendo_os/features/match/application/usecases/match_application_service.dart';
 import 'package:kendo_os/features/match/domain/match_aggregate.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
@@ -158,9 +159,23 @@ class MatchCommandService {
 
       await ref.read(matchRepositoryProvider).deleteMatchesBulk(matchIds);
     } else {
+      final deleteCommand = MatchCommandModel(
+        id: const Uuid().v4(),
+        type: CommandType.deleteMatch,
+        payload: {'matchIds': matchIds},
+        createdAt: DateTime.now(),
+      );
       await ref.read(localMatchRepositoryProvider).deleteMatchesBulk(matchIds);
       try {
+        await ref.read(localMatchRepositoryProvider).savePendingCommandsBulk([
+          deleteCommand,
+        ]);
+      } catch (_) {}
+      try {
         await ref.read(matchRepositoryProvider).deleteMatchesBulk(matchIds);
+        await ref
+            .read(localMatchRepositoryProvider)
+            .deleteCommand(deleteCommand.id);
       } catch (_) {}
     }
   }

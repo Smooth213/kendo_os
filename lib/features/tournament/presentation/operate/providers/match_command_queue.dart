@@ -11,6 +11,7 @@ enum CommandType {
   approveMatch,
   rewindTo,
   updateMatch,
+  deleteMatch,
 }
 
 enum CommandStatus { pending, done, failed }
@@ -208,6 +209,8 @@ class MatchCommandQueue {
         await appService.rewindTo(matchId, version);
         break;
       case CommandType.updateMatch:
+        break;
+      case CommandType.deleteMatch:
         break;
     }
   }

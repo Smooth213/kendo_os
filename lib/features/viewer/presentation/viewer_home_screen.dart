@@ -64,18 +64,17 @@ class ViewerHomeScreen extends ConsumerWidget {
       final (uniqueInProgress, uniqueWaiting) =
           ViewerMatchFilterHelper.extractActiveMatches(allMatchesList);
 
-      final sanitizedQuery = ref
-          .watch(searchQueryProvider)
-          .replaceAll(RegExp(r'\s+'), '')
-          .toLowerCase();
+      final sanitizedQuery = ref.watch(
+        searchQueryProvider.select(
+          (q) => q.replaceAll(RegExp(r'\s+'), '').toLowerCase(),
+        ),
+      );
       final timelineResult = ref.watch(
         safeViewerTimelineProvider(tournamentId),
       );
       final matchedGroupNames = timelineResult.matchedGroupNames;
       final matchedMatchIds = timelineResult.matchedMatchIds;
       final ownTeams = ref.watch(customTeamNamesProvider).valueOrNull ?? [];
-      final isSearchVisible = ref.watch(isSearchVisibleProvider);
-      final searchQuery = ref.watch(searchQueryProvider);
       final selectedCategory = ref.watch(selectedCategoryFilterProvider);
 
       return AnnouncePopupListener(
@@ -86,43 +85,12 @@ class ViewerHomeScreen extends ConsumerWidget {
           child: LiquidBackground(
             child: Scaffold(
               backgroundColor: AppKendoColors.transparent,
-              appBar: isSearchVisible
-                  ? AppSearchHeader(
-                      searchQuery: searchQuery,
-                      enableLiquidGlass: enableLiquidGlass,
-                      onSearchQueryChanged: (val) =>
-                          ref.read(searchQueryProvider.notifier).state = val,
-                      onClose: () {
-                        ref.read(searchQueryProvider.notifier).state = '';
-                        ref.read(isSearchVisibleProvider.notifier).state =
-                            false;
-                      },
-                    )
-                  : AppHeader(
-                      leading: (GoRouter.maybeOf(context)?.canPop() ?? false)
-                          ? IconButton(
-                              icon: const Icon(
-                                Icons.exit_to_app,
-                                color: AppKendoColors.deepOrange,
-                              ),
-                              tooltip: '管理画面に戻る',
-                              onPressed: () => context.pop(),
-                            )
-                          : null,
-                      title: '大会ホーム (観客席)',
-                      backgroundColor: enableLiquidGlass
-                          ? AppKendoColors.transparent
-                          : (context.appColors.cardBackground),
-                      actions: [
-                        ViewerHomeHeaderActions(
-                          tournamentId: tournamentId,
-                          isDark: isDark,
-                          iconColor: isDark
-                              ? const Color(0xFFFFFFFF)
-                              : themeColors.primaryAccent,
-                        ),
-                      ],
-                    ),
+              appBar: _ViewerHomeScreenAppBar(
+                tournamentId: tournamentId,
+                enableLiquidGlass: enableLiquidGlass,
+                themeColors: themeColors,
+                isDark: isDark,
+              ),
               body: RefreshIndicator(
                 onRefresh: () async {
                   ref.invalidate(matchListByTournamentProvider(tournamentId));
@@ -428,5 +396,67 @@ class ViewerHomeScreen extends ConsumerWidget {
         ),
       );
     }
+  }
+}
+
+class _ViewerHomeScreenAppBar extends ConsumerWidget
+    implements PreferredSizeWidget {
+  final String tournamentId;
+  final bool enableLiquidGlass;
+  final AppThemeColors themeColors;
+  final bool isDark;
+
+  const _ViewerHomeScreenAppBar({
+    required this.tournamentId,
+    required this.enableLiquidGlass,
+    required this.themeColors,
+    required this.isDark,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSearchVisible = ref.watch(isSearchVisibleProvider);
+    if (isSearchVisible) {
+      final searchQuery = ref.watch(searchQueryProvider);
+      return AppSearchHeader(
+        searchQuery: searchQuery,
+        enableLiquidGlass: enableLiquidGlass,
+        onSearchQueryChanged: (val) =>
+            ref.read(searchQueryProvider.notifier).state = val,
+        onClose: () {
+          ref.read(searchQueryProvider.notifier).state = '';
+          ref.read(isSearchVisibleProvider.notifier).state = false;
+        },
+      );
+    }
+
+    return AppHeader(
+      leading: (GoRouter.maybeOf(context)?.canPop() ?? false)
+          ? IconButton(
+              icon: const Icon(
+                Icons.exit_to_app,
+                color: AppKendoColors.deepOrange,
+              ),
+              tooltip: '管理画面に戻る',
+              onPressed: () => context.pop(),
+            )
+          : null,
+      title: '大会ホーム (観客席)',
+      backgroundColor: enableLiquidGlass
+          ? AppKendoColors.transparent
+          : (context.appColors.cardBackground),
+      actions: [
+        ViewerHomeHeaderActions(
+          tournamentId: tournamentId,
+          isDark: isDark,
+          iconColor: isDark
+              ? const Color(0xFFFFFFFF)
+              : themeColors.primaryAccent,
+        ),
+      ],
+    );
   }
 }

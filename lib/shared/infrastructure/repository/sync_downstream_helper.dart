@@ -122,7 +122,12 @@ class SyncDownstreamHelper {
   }) async {
     final localMatches = await localRepo.watchAllLocalMatches().first;
     final localById = {for (final match in localMatches) match.id: match};
+    Set<String> pendingDeleteIds = const <String>{};
+    try {
+      pendingDeleteIds = await localRepo.getPendingDeleteMatchIds();
+    } catch (_) {}
     final safeMatches = remoteMatches.where((remote) {
+      if (pendingDeleteIds.contains(remote.id)) return false;
       final local = localById[remote.id];
       return local == null || !local.isDirty;
     }).toList();

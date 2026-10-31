@@ -9,6 +9,8 @@ import 'package:kendo_os/shared/infrastructure/repository/match_repository.dart'
 
 class MockLocalMatchRepository implements LocalMatchRepository {
   final List<String> deletedMatchIds = [];
+  final List<MatchCommandModel> queuedCommands = [];
+  final List<String> purgedCommandIds = [];
 
   @override
   Future<void> deleteMatch(String matchId) async {
@@ -18,6 +20,17 @@ class MockLocalMatchRepository implements LocalMatchRepository {
   @override
   Future<void> deleteMatchesBulk(List<String> matchIds) async {
     deletedMatchIds.addAll(matchIds);
+  }
+
+  @override
+  Future<void> savePendingCommandsBulk(List<MatchCommandModel> cmds) async {
+    queuedCommands.addAll(cmds);
+  }
+
+  @override
+  Future<void> deleteCommand(String id) async {
+    purgedCommandIds.add(id);
+    queuedCommands.removeWhere((c) => c.id == id);
   }
 
   @override
@@ -35,6 +48,16 @@ class MockMatchRepository implements MatchRepository {
   @override
   Future<void> deleteMatchesBulk(List<String> matchIds) async {
     deletedMatchIds.addAll(matchIds);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class MockThrowingMatchRepository implements MatchRepository {
+  @override
+  Future<void> deleteMatchesBulk(List<String> matchIds) async {
+    throw Exception('Offline network failure');
   }
 
   @override
@@ -157,6 +180,68 @@ void main() {
       expect(classified.sortedGroups.first.key, equals('group_team_1'));
       expect(classified.sortedGroups.first.value.first.id, equals('m_taisho'));
       expect(classified.sortedPlayers.isEmpty, isTrue);
+    });
+
+    test('ネイティブ環境でオフライン時に削除コマンドがキューに蓄積され通信復帰時にSyncEngineで処理可能であること', () async {
+      final mockLocalRepo = MockLocalMatchRepository();
+      final mockRemoteRepo = MockThrowingMatchRepository();
+
+      final container = ProviderContainer(
+        overrides: [
+          localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+          matchRepositoryProvider.overrideWithValue(mockRemoteRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final service = container.read(matchCommandProvider);
+      await service.deleteMatchesBulk(['m1', 'm2']);
+
+      // ローカルからは即座に削除されている
+      expect(mockLocalRepo.deletedMatchIds, equals(['m1', 'm2']));
+      // オフラインのため削除コマンドがキューに保持されている
+      expect(mockLocalRepo.queuedCommands.length, equals(1));
+      expect(
+        mockLocalRepo.queuedCommands.first.type,
+        equals(CommandType.deleteMatch),
+      );
+      expect(
+        mockLocalRepo.queuedCommands.first.payload['matchIds'],
+        equals(['m1', 'm2']),
+      );
+      // 通信失敗のためキューからは削除されていない
+      expect(mockLocalRepo.purgedCommandIds, isEmpty);
+    });
+
+    test('ネイティブ環境でオフライン時に削除コマンドがキューに蓄積され通信復帰時にSyncEngineで処理可能であること', () async {
+      final mockLocalRepo = MockLocalMatchRepository();
+      final mockRemoteRepo = MockThrowingMatchRepository();
+
+      final container = ProviderContainer(
+        overrides: [
+          localMatchRepositoryProvider.overrideWithValue(mockLocalRepo),
+          matchRepositoryProvider.overrideWithValue(mockRemoteRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final service = container.read(matchCommandProvider);
+      await service.deleteMatchesBulk(['m1', 'm2']);
+
+      // ローカルからは即座に削除されている
+      expect(mockLocalRepo.deletedMatchIds, equals(['m1', 'm2']));
+      // オフラインのため削除コマンドがキューに保持されている
+      expect(mockLocalRepo.queuedCommands.length, equals(1));
+      expect(
+        mockLocalRepo.queuedCommands.first.type,
+        equals(CommandType.deleteMatch),
+      );
+      expect(
+        mockLocalRepo.queuedCommands.first.payload['matchIds'],
+        equals(['m1', 'm2']),
+      );
+      // 通信失敗のためキューからは削除されていない
+      expect(mockLocalRepo.purgedCommandIds, isEmpty);
     });
   });
 }
