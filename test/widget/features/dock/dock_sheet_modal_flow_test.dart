@@ -173,6 +173,8 @@ void main() {
       // 4. Googleアカウント連携解除
       expect(find.byType(SettingsGoogleAuthTile), findsOneWidget);
       final unlinkButton = find.text('解除');
+      await tester.ensureVisible(unlinkButton);
+      await tester.safePumpAndSettle();
       expect(unlinkButton, findsOneWidget);
 
       await tester.tap(unlinkButton);

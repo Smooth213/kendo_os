@@ -6,6 +6,9 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/shared/constants/legal_texts.dart';
+import 'package:kendo_os/shared/presentation/widgets/legal_document_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ★ 旧 permissionProvider を完全撤廃し、新設計の RolePermissions に一元結合
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -362,6 +365,8 @@ class StartScreen extends ConsumerWidget {
                                 letterSpacing: 1.5,
                               ),
                             ),
+                            const SizedBox(height: AppSpacing.xs),
+                            _buildLegalFooter(context, isDark),
                           ],
                         ),
                       ),
@@ -373,6 +378,66 @@ class StartScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLegalFooter(BuildContext context, bool isDark) {
+    final linkColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+
+    Widget buildFooterLink(String label, VoidCallback onTap) {
+      return TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xs,
+            vertical: 0,
+          ),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: linkColor, fontSize: AppFontSize.caption),
+        ),
+      );
+    }
+
+    final bullet = Text(
+      '•',
+      style: TextStyle(color: linkColor, fontSize: AppFontSize.caption),
+    );
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        buildFooterLink(
+          '利用規約',
+          () => LegalDocumentDialog.show(
+            context: context,
+            title: AppLegalTexts.termsOfServiceTitle,
+            content: AppLegalTexts.termsOfServiceContent,
+            icon: Icons.description_outlined,
+          ),
+        ),
+        bullet,
+        buildFooterLink(
+          'プライバシーポリシー',
+          () => LegalDocumentDialog.show(
+            context: context,
+            title: AppLegalTexts.privacyPolicyTitle,
+            content: AppLegalTexts.privacyPolicyContent,
+            icon: Icons.privacy_tip_outlined,
+          ),
+        ),
+        bullet,
+        buildFooterLink('お問い合わせ', () async {
+          final uri = Uri.parse(AppLegalTexts.contactFormUrl);
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }),
+      ],
     );
   }
 }

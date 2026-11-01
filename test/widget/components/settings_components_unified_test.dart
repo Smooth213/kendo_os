@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/safe_pump_helper.dart';
 import 'package:kendo_os/features/auth/application/google_auth_service.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_google_auth_tile.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_support_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_test_action_panel.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
+import 'package:kendo_os/shared/constants/legal_texts.dart';
 import 'package:kendo_os/shared/domain/entities/settings_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -164,6 +166,46 @@ void main() {
       await tester.safePumpAndSettle();
 
       expect(find.text('✅ 確定しました (通常タップ)'), findsOneWidget);
+    });
+
+    testWidgets('SettingsSupportSection: サポート・規約・情報セクションと各タイルが表示されダイアログが開くこと', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(extensions: [themeColors]),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: SettingsSupportSection(
+                enableLiquidGlass: false,
+                themeColors: themeColors,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.safePumpAndSettle();
+
+      expect(find.text('サポート・規約・情報'), findsOneWidget);
+      expect(find.text('お問い合わせ・ご意見'), findsOneWidget);
+      expect(find.text('操作マニュアル'), findsOneWidget);
+      expect(find.text('利用規約'), findsOneWidget);
+      expect(find.text('プライバシーポリシー'), findsOneWidget);
+      expect(find.text('KendoSync について'), findsOneWidget);
+      expect(find.text('オープンソースライセンス'), findsOneWidget);
+
+      // 利用規約をタップしてダイアログが表示されることを検証（タイル＋ダイアログタイトルで2つ存在）
+      await tester.tap(find.text('利用規約'));
+      await tester.safePumpAndSettle();
+
+      expect(find.text(AppLegalTexts.termsOfServiceTitle), findsNWidgets(2));
+      expect(find.text('閉じる'), findsOneWidget);
+
+      // ダイアログを閉じる（ダイアログが消え、タイルの1つのみに戻る）
+      await tester.tap(find.text('閉じる'));
+      await tester.safePumpAndSettle();
+
+      expect(find.text(AppLegalTexts.termsOfServiceTitle), findsOneWidget);
     });
   });
 }
