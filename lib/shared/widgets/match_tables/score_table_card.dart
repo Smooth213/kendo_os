@@ -1,3 +1,4 @@
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -247,44 +248,27 @@ class ScoreTableCard extends StatelessWidget {
                   width: double.infinity,
                   child: Row(
                     children: [
-                      if (info.scenePrefix.isNotEmpty) ...[
+                      if (info.scenePrefix.isNotEmpty)
                         Builder(
                           builder: (context) {
-                            final isMoushiawase = info.scenePrefix.contains(
-                              '申合せ',
-                            );
-                            final badgeColor = isMoushiawase
-                                ? themeColors.warningColor
-                                : themeColors.primaryAccent;
+                            final scene = info.scenePrefix.contains('申合せ')
+                                ? KendoMatchScene.moushiawase
+                                : (info.scenePrefix.contains('錬成')
+                                      ? KendoMatchScene.renseikai
+                                      : (info.scenePrefix.contains('部内戦')
+                                            ? KendoMatchScene.bunaiksen
+                                            : KendoMatchScene.honsen));
+                            if (scene == KendoMatchScene.honsen) {
+                              return const SizedBox.shrink();
+                            }
                             return Padding(
                               padding: const EdgeInsets.only(
                                 right: AppSpacing.xs,
                               ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.subValue,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: badgeColor.withValues(alpha: 0.12),
-                                  borderRadius: AppRadius.sub,
-                                  border: Border.all(
-                                    color: badgeColor.withValues(alpha: 0.35),
-                                  ),
-                                ),
-                                child: Text(
-                                  info.scenePrefix,
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.caption,
-                                    fontWeight: AppFontWeight.bold,
-                                    color: badgeColor,
-                                  ),
-                                ),
-                              ),
+                              child: KendoSceneBadge(scene: scene),
                             );
                           },
                         ),
-                      ],
                       Expanded(
                         child: Text(
                           info.headerTitle,

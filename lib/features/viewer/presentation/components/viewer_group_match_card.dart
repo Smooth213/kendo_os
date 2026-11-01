@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/cards/match_status_badge.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/common/match_heading_format_helper.dart';
-import 'package:kendo_os/features/tournament/presentation/operate/providers/team_progress_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/timeline_ui_state_provider.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_group_match_score_summary.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_league_matchup_tile.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_league_title_helper.dart';
 import 'package:kendo_os/features/viewer/presentation/components/viewer_match_list_tile_card.dart';
 import 'package:kendo_os/shared/domain/entities/match_comment_model.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
@@ -151,45 +151,17 @@ class ViewerGroupMatchCard extends ConsumerWidget {
                       // 🔽 【1段目】: 属性プレフィックス（左） ────── ステータスバッジ（右）
                       Row(
                         children: [
-                          if (firstMatch.matchType.isNotEmpty)
-                            Builder(
-                              builder: (context) {
-                                final scenePrefix =
-                                    TeamProgressHelper.getScenePrefix(
-                                      firstMatch,
-                                    );
-                                if (scenePrefix.isEmpty) {
-                                  return const SizedBox.shrink();
-                                }
-                                final isMoushiawase = scenePrefix.contains(
-                                  '申合せ',
-                                );
-                                final badgeColor = isMoushiawase
-                                    ? context.appColors.warningColor
-                                    : context.appColors.primaryAccent;
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.subValue,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: badgeColor.withValues(alpha: 0.12),
-                                    borderRadius: AppRadius.sub,
-                                    border: Border.all(
-                                      color: badgeColor.withValues(alpha: 0.35),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    scenePrefix,
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.nano,
-                                      fontWeight: AppFontWeight.bold,
-                                      color: badgeColor,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
+                          Builder(
+                            builder: (context) {
+                              final scene = KendoSceneHelper.detectScene(
+                                firstMatch,
+                              );
+                              if (scene == KendoMatchScene.honsen) {
+                                return const SizedBox.shrink();
+                              }
+                              return KendoSceneBadge(scene: scene);
+                            },
+                          ),
                           const Spacer(),
                           MatchStatusBadge(
                             isPlaying: hasInProgress,
@@ -299,9 +271,7 @@ class ViewerGroupMatchCard extends ConsumerWidget {
                                     side: BorderSide(
                                       color: titleColor.withValues(alpha: 0.2),
                                     ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: AppRadius.sub,
-                                    ),
+                                    shape: const StadiumBorder(),
                                   ),
                                   child: Text(
                                     'スコア',

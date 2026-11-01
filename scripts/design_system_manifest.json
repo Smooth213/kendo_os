@@ -13,7 +13,9 @@
     "strike_keypad": "大型正方形角丸 (試合中ブラインド親指タッチ面積最大化: AppRadius.medium)",
     "numeric_keypad_icons": "正円形 (BoxShape.circle / CircleBorder, 64x64px)",
     "score_tables": "情報グリッド矩形 (テーブル可読性維持)",
-    "floating_swipe_actions": "iOS メモアプリ風 浮遊カプセル型 (AppSlidableAction / AppRadius.round / 完全透過背景 & マージン配置)"
+    "floating_swipe_actions": "iOS メモアプリ風 浮遊カプセル型 (AppSlidableAction / AppRadius.round / 完全透過背景 & マージン配置)",
+    "scene_badges": "iOS 27 カプセル型 Pill (KendoSceneBadge / AppRadius.round / 【錬成】【申合せ】等)",
+    "inline_action_buttons": "iOS 27 カプセル型 (StadiumBorder / OutlinedButton / スコア・簡易入力・PDF印刷)"
   },
   "items": [
     {

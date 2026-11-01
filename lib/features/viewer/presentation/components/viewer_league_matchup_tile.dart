@@ -102,9 +102,7 @@ class ViewerLeagueMatchupTile extends StatelessWidget {
                             side: BorderSide(
                               color: mTitleColor.withValues(alpha: 0.2),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.sub,
-                            ),
+                            shape: const StadiumBorder(),
                           ),
                           child: Text(
                             'スコア',

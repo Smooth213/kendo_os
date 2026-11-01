@@ -55,7 +55,7 @@ class MatchCardActionButtons extends StatelessWidget {
                     horizontal: AppSpacing.subValue,
                   ),
                   side: BorderSide(color: textColor.withValues(alpha: 0.2)),
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.sub),
+                  shape: const StadiumBorder(),
                 ),
               ),
             ),
@@ -86,7 +86,7 @@ class MatchCardActionButtons extends StatelessWidget {
                     horizontal: AppSpacing.sm,
                   ),
                   side: BorderSide(color: textColor.withValues(alpha: 0.2)),
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.sub),
+                  shape: const StadiumBorder(),
                 ),
                 child: Text(
                   'スコア',

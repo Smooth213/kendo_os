@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/shared/presentation/widgets/kendo_scene_badge.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -131,40 +132,25 @@ class IndividualListCard extends StatelessWidget {
               width: double.infinity,
               child: Row(
                 children: [
-                  if (scenePrefix.isNotEmpty) ...[
+                  if (scenePrefix.isNotEmpty)
                     Builder(
                       builder: (context) {
-                        final isMoushiawase = scenePrefix.contains('申合せ');
-                        final badgeColor = isMoushiawase
-                            ? themeColors.warningColor
-                            : themeColors.primaryAccent;
+                        final scene = scenePrefix.contains('申合せ')
+                            ? KendoMatchScene.moushiawase
+                            : (scenePrefix.contains('錬成')
+                                  ? KendoMatchScene.renseikai
+                                  : (scenePrefix.contains('部内戦')
+                                        ? KendoMatchScene.bunaiksen
+                                        : KendoMatchScene.honsen));
+                        if (scene == KendoMatchScene.honsen) {
+                          return const SizedBox.shrink();
+                        }
                         return Padding(
                           padding: const EdgeInsets.only(right: AppSpacing.xs),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.subValue,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badgeColor.withValues(alpha: 0.12),
-                              borderRadius: AppRadius.sub,
-                              border: Border.all(
-                                color: badgeColor.withValues(alpha: 0.35),
-                              ),
-                            ),
-                            child: Text(
-                              scenePrefix,
-                              style: TextStyle(
-                                fontSize: AppFontSize.caption,
-                                fontWeight: AppFontWeight.bold,
-                                color: badgeColor,
-                              ),
-                            ),
-                          ),
+                          child: KendoSceneBadge(scene: scene),
                         );
                       },
                     ),
-                  ],
                   Expanded(
                     child: Text(
                       headerTitle,
