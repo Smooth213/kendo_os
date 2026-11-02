@@ -4,6 +4,19 @@
 
 ---
 
+## 📌 最新仕様アップデート履歴（2026/11/02 追記・改訂反映）
+* **【PINコード統一】**: Step 25/26のドラフト誤記を是正し、現行実装（Admin: `9999` / Operator: `2468` / Recorder: `1357` / Viewer: 不要）に完全統一。
+* **【最新機能反映】**:
+  - 設定画面・スタート画面への「サポート・規約・情報」セクション（オフライン規約ダイアログ）追加、および机上・手元スマホ読み取り用「お問い合わせQRコード」配置指示を追加
+  - プログラム管理の検索性維持PDF自動最適化（3MB以上・Isolate軽量化）と削減量トースト表示
+  - 公式記録PDFへの「基本ルール要約フォーマット（`PdfRuleFormatter`）」自動印字
+  - チーム登録・試合作成の「その他」カテゴリにおける登録済みカスタム部門一覧チップ自動サジェスト
+  - 全インクリメンタル検索バーにおける一致キーワードの蛍光黄色ハイライト（`AppHighlightText`）
+  - 全ホーム・主要画面における下スワイプ強制同期（Pull-to-Refresh）耐障害導線
+* **【デザイン言語最新化】**: 全ボタン・入力欄のカプセル型（Stadium/Pill形状）統一、およびiOSメモ風 浮遊カプセル型スワイプアクション（`AppSlidableAction`）を各該当ステップに反映。
+
+---
+
 ## 進捗サマリー
 * 全ステップ数: 27ステップ
 * 完了ステップ: **27 / 27 (全8フェーズ・全27ステップ 完全制覇！ 100% 完了 🎉)**
@@ -155,6 +168,8 @@
   - [x] **スタート画面（入口）**:
     - 「新しい大会を作る」カード（トロフィー＋プラスアイコン、サブタイトル「大会・錬成会」）
     - ※ ViewerやRecorderなど権限のない端末ではカード自体が非表示
+    - **フッターエリア（サポート・規約リンク）**:
+      - 「利用規約」「プライバシーポリシー」「お問い合わせ」リンク（タップで共通スクロールダイアログ `LegalDocumentDialog` が起動、完全オフライン閲覧可能）
   - [x] **大会新規作成ウィザード（動的ヘッダー & プログレスバー）**:
     - ヘッダー文言: 「大会を新規作成」「魔法のウィザードに従って、2つのステップで設定を完了しましょう」
     - プログレスインジケータ（Step 1/2）
@@ -203,7 +218,7 @@
   - [x] **ステップ ❶：部門（カテゴリ）と試合形式**:
     - **大カテゴリ**: 小学生、中学生、高校生、一般、その他
     - **小カテゴリ**: 低学年、高学年、男子、女子、混成、全体など
-    - **カスタム部門名**: 「その他」選択時に自由入力欄が出現（「〇〇の部」自動成形）
+    - **カスタム部門名（登録済みチップ自動表示）**: 「その他」選択時に自由入力欄が出現（「〇〇の部」自動成形）。さらに過去に登録済みのカスタム部門が一覧チップとして自動表示されワンタップ選択可能
     - **試合形式**: 団体戦（5人制）、団体戦（3人制）、個人戦、日本剣道形、木刀基本技稽古法、それ以上（カスタムスロット）
     - プリセット選択チップ
     - 【次へ進む】ボタン
@@ -288,7 +303,7 @@
 * **UI全要素リスト**:
   - [x] **試合作成フォーマット画面 (`SetupMatchFormatScreen`)**:
     - **Page 1（部門・自チーム選択）**:
-      - 大カテゴリ・小カテゴリ選択チップ
+      - 大カテゴリ・小カテゴリ選択チップ（「その他」選択時は登録済みカスタム部門一覧チップが自動表示されワンタップ選択可能）
       - 登録済みチーム一覧カード（タップで出場する自チームを選択）
       - ※ チーム選択時に前回のコート番号・試合順（+1）が自動入力される
     - **Page 2（ルール・試合場設定）**:
@@ -380,9 +395,11 @@
     - 同期中: 「☁️ クラウドから大会データを同期中...」（ブルー）
   - [x] **ヘッダーバー & ナビゲーション**:
     - 大会ホームタイトル ＆ 戻るボタン（`/tournament-list` へ）
-    - 🔍 検索アイコン（インクリメンタル検索バー展開）
+    - 🔍 検索アイコン（インクリメンタル検索バー展開、キーワードの蛍光黄色ハイライト連動）
     - 👁️ **「観客の画面を確認」ボタン**（ワンタップで観客ビューをリアルタイムプレビュー）
     - 📲 **「大会を共有する」ボタン**（QRコード・観客用URL共有ダイアログ）
+  - [x] **下スワイプ強制同期 (Pull-to-Refresh)**:
+    - タイムラインを下スワイプしてローカル・クラウド間の全データを即座に強制再同期
   - [x] **初期準備チェックリストカード (`HomeScreenSetupChecklistCard`)**:
     - 試合未登録時に出現し、「チーム登録」「部門ルール」「試合作成」へのクイックリンクを提供
   - [x] **呼び出しバナーエリア (`HomeScreenCallBanner`)**:
@@ -390,6 +407,7 @@
     - **次の試合・待機（黄色バッジ）**: 次に呼び出す対戦カード
     - タップで即座に対象の試合記録画面へジャンプ
   - [x] **運営アクションボタンバー (`OperatorActionButtons`)**:
+    - 全ボタンがカプセル型（Stadium/Pill形状）に統一
     - 【＋ 試合作成】（対戦カード追加）
     - 【⚙️ 部門ルール】（ルール確認・変更）
     - 【⚡ 一括ルール変更】（緊急ルール調整）
@@ -398,7 +416,7 @@
     - 昇順/降順ソート ＆ 全カード一括開閉トグル
     - 試合カード（赤チーム vs 白チーム、スコア、コート名、ステータス）
     - カードタップでアコーディオン開閉（先鋒〜大将の個別スコア表示）
-    - 左スワイプで個別削除・編集
+    - **浮遊カプセル型スワイプアクション (`AppSlidableAction`)**: iOSメモ風の角丸余白を持つ浮遊ピル型メニュー（個別削除・編集）
   - [x] **常設フローティングドック (`FloatingProgramDockButton`)**:
     - 画面右下に常駐（プログラム・チーム状況・サブタイマー呼び出し）
 
@@ -612,10 +630,15 @@
       - 📅 **日付選択カレンダーアイコン**: 過去の部内戦記録（試合が存在する日）を瞬時にロード
       - 👁️ **観戦プレビューアイコン**: 観客・保護者用画面をワンタップで確認
       - 📊 **成績一覧アイコン**: 部内戦公式記録（`/bunaiksen-record`）へジャンプ
+    - **下スワイプ強制同期 (Pull-to-Refresh)**:
+      - 画面を下スワイプして本日の部内戦スコアを即座に強制再同期
     - **無限勝ち抜きリーダーボードカード (`BunaiksenLeaderboardCard`)**:
       - 現在の王座、連勝数ランキング、取得本数上位者をリアルタイム表示
+    - **対戦タイムライン ＆ 浮遊カプセル型スワイプ (`AppSlidableAction`)**:
+      - 紅白戦・個人戦・リーグ戦・無限戦の対戦カード
+      - iOSメモ風の浮遊カプセル型スワイプ（編集・削除）
     - **クイック対戦シート呼出ボタン (`BunaiksenQuickMatchSheet`)**:
-      - 練習途中の飛び入り対戦を即座に割り込み作成
+      - カプセル型デザイン、練習途中の飛び入り対戦を即座に割り込み作成
     - **部内戦専用ドックボタン (`BunaiksenDockButton`)**:
       - 画面右下に常駐（部内戦専用機能群を呼び出し）
 
@@ -691,13 +714,16 @@
   * カテゴリ別タブビュー: [`official_record_category_tab_view.dart:L16-L190`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/components/official_record/official_record_category_tab_view.dart#L16-L190)
   * 遠征成績集計サマリーカード: [`official_record_expedition_summary_card.dart:L18-L229`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/components/official_record/official_record_expedition_summary_card.dart#L18-L229)
   * エクスポートヘルパー: [`official_record_export_helper.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/components/official_record/official_record_export_helper.dart)
+  * PDFルール要約フォーマッター: [`lib/features/pdf/helpers/pdf_rule_formatter.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/pdf/helpers/pdf_rule_formatter.dart)
   * PDFサービス: [`lib/features/pdf/pdf_service.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/pdf/pdf_service.dart)
 
 * **UI全要素リスト**:
   - [x] **ヘッダーバー & 検索バー**:
     - タイトル「大会 公式記録」（閲覧者モード時は「全試合スコア」へ自動切り替え）
-    - 🔍 **試合・選手名インクリメンタル検索バー**: 選手名・チーム名でリアルタイム絞り込み＆ハイライト
+    - 🔍 **試合・選手名インクリメンタル検索バー**: 選手名・チーム名でリアルタイム絞り込み＆キーワードの蛍光黄色ハイライト（`AppHighlightText`）
     - ❓ ヘルプボタン
+  - [x] **下スワイプ強制同期 (Pull-to-Refresh)**:
+    - 画面を下スワイプして最新の全試合スコアを即時強制同期
   - [x] **遠征・戦績集計サマリーカード (`OfficialRecordExpeditionSummaryCard`)**:
     - **全体 / チーム別切り替えタブ**: 道場全体または各チーム別の勝率・勝数・本数
     - **個人別戦績アコーディオン**: 選手の勝敗、技内訳（面・小手・胴・突き・反則）、引き分け数一覧
@@ -711,6 +737,7 @@
       - ON: 全カテゴリ・全対戦を一括出力
     - **📄 PDF出力ボタン (`Icons.print`)**:
       - A4高コントラスト組版（日本剣道連盟書式準拠）、ブラウザ自動ダウンロード、モバイルAirPrint・共有シート対応
+      - **基本ルール要約の自動印字 (`PdfRuleFormatter`)**: 試合時間・勝負形式・延長・判定・代表戦などの適用ルールをPDFヘッダー/フッターに自動出力
     - **🖼️ 画像出力ボタン (`Icons.ios_share`)**:
       - LINEグリーン（#06C755）カラー、SNS/LINE用画像共有に特化
     - **📊 CSV出力ボタン (`Icons.table_chart`)**:
@@ -722,13 +749,15 @@
     - ドックからの呼び出し時は Googleマップ型可動ボトムシート（全画面切り替え対応）として展開
 
 * **現行マニュアル（PDF P34）との差分**:
-  1. **エクスポートバーの3大出力形式（PDF・画像・CSV）の明確化**:
+  1. **基本ルール要約のPDF自動印字 (`PdfRuleFormatter`)**:
+     * 試合結果だけでなく、各部門で適用された試合時間や延長・代表戦ルール要約が公式帳票として美しく記載される仕様を明記。
+  2. **エクスポートバーの3大出力形式（PDF・画像・CSV）の明確化**:
      * PDFだけでなく、LINE送信用画像出力ボタン（#06C755）の役割を明記。
-  2. **「全カテゴリを一括出力」トグルスイッチの解説**:
+  3. **「全カテゴリを一括出力」トグルスイッチの解説**:
      * 複数部門を抱える大会で、全記録をまとめて1ファイルに出力できるスイッチ仕様を追加。
-  3. **選手・チーム名のインクリメンタル検索機能**:
-     * 大規模大会で特定の選手やチームの対戦カードを即座に探し出せる検索バーを追記。
-  4. **遠征成績サマリーのLINEコピーと観客非表示（Parity規約）**:
+  4. **選手・チーム名のインクリメンタル検索＆ハイライト機能**:
+     * 大規模大会で特定の選手やチームの対戦カードを即座に探し出せる検索バーと蛍光黄色ハイライト仕様を追記。
+  5. **遠征成績サマリーのLINEコピーと観客非表示（Parity規約）**:
      * 遠征時の迅速な保護者報告機能と、公平性保持のための観客自動非表示仕様を明記。
 
 * **PDF用スクショ撮影リスト（全3枚）**:
@@ -787,6 +816,7 @@
 * **対象マニュアル**: [`packages/documentation_runtime/manuals/operator/program_management.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/operator/program_management.md)
 * **コード根拠**:
   * プログラム管理画面: [`lib/features/tournament/presentation/operate/screens/program_management_screen.dart:L26-L428`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/screens/program_management_screen.dart#L26-L428)
+  * PDF自動軽量化ユーティリティ: [`lib/shared/utils/pdf_compressor.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/utils/pdf_compressor.dart)
   * プログラムビューワー画面: [`lib/features/tournament/presentation/operate/screens/program_viewer_screen.dart:L31-L442`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/screens/program_viewer_screen.dart#L31-L442)
   * 手書き描画ツールバー: [`lib/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart:L10-L405`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/components/program_viewer/program_viewer_drawing_toolbar.dart#L10-L405)
   * タイトル・並び替えダイアログ: [`program_title_preview_dialog.dart:L15-L210`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/components/program_management/program_title_preview_dialog.dart#L15-L210)
@@ -799,15 +829,22 @@
       - 戻るボタン、タイトル「プログラム管理」
       - グリッド/リスト切り替えアイコン (`_isGridView`)
       - 複数選択時の「ゴミ箱」一括削除アイコン (`confirmBulkDelete`)
+    - **下スワイプ強制同期 (Pull-to-Refresh)**:
+      - 画面を下スワイプしてクラウド上の最新プログラム一覧を即時再取得
     - **アップロードFAB＆追加ボトムシート (`_showPickerMenu`)**:
       - 📷 **写真ライブラリから選ぶ (複数可)**: JPEG/PNG画像を複数選択
       - 📄 **ファイルから選ぶ (複数可)**: PDF/画像ファイルを複数選択
       - 📋 **クリップボードから貼り付け (`ClipboardProgramHelper`)**: コピーした画像やURLから即座に追加
+    - **検索性を維持したPDF自動軽量化 (`PdfCompressor`) ＆ 削減量トースト**:
+      - 3MB以上の大容量PDFを対象にバックグラウンド（Isolate）で自動最適化を実行
+      - テキストレイヤー・OCR検索性を100%保護しながらファイルサイズを大幅削減
+      - アップロード完了トーストに削減量（例: `PDF軽量化: 3.2 MB削減 (3.5秒)`）を表示
     - **タイトル・並び替えプレビューダイアログ (`ProgramTitlePreviewDialog`)**:
       - 選択した複数ファイルの順序をドラッグ並び替え
       - ベースタイトル入力（複数時は自動で「タイトル (1/N)」とナンバリング付与）
     - **プログラムカード一覧**:
       - サムネイル、タイトル、ページ数バッジ、OCRテキスト化バッジ
+      - 浮遊カプセル型スワイプアクション（個別編集・削除）
       - 長押しで複数選択モード突入、タップでビューワー起動
   - [x] **プログラムビューワー画面 (`ProgramViewerScreen` / `/program-viewer`)**:
     - **直交ナビゲーション（直感的な2軸スクロール）**:
@@ -833,15 +870,17 @@
     - 試合中やドックから開くクイック確認シートから、画面上部の⤢アイコンで全画面ビューワーへワンタップ展開
 
 * **現行マニュアルとの差分**:
-  1. **クリップボードからの直接貼り付け（画像・URL）機能の明記**:
+  1. **文字検索を維持したPDF自動軽量化と削減量トースト表示**:
+     * 3MB以上の重いプログラムPDFでもOCR検索性を失わずに自動最適化し、トーストで削減量（MB）を可視化する仕様を明記。
+  2. **クリップボードからの直接貼り付け（画像・URL）機能の明記**:
      * カメラやファイルだけでなく、WEBや他アプリからコピーした画像を即座に登録できる新フローを解説。
-  2. **タイトル自動ナンバリング＆ファイル並び替えダイアログの仕様**:
+  3. **タイトル自動ナンバリング＆ファイル並び替えダイアログの仕様**:
      * 複数ファイル選択時に、順序の入れ替えと一括ナンバリング（1/N）ができる仕様を追記。
-  3. **共有ペン（ピンク・黄）と個人ペン（青・黒）の厳格な権限・同期分離**:
+  4. **共有ペン（ピンク・黄）と個人ペン（青・黒）の厳格な権限・同期分離**:
      * 本部から全員へ送る共有ペン（Firestore同期）と、個人の秘密メモ用ペン（Isar保存）の違いを対比表で明確化。
-  4. **ピンチズーム排他制御（誤スワイプロック）の技術的解説**:
+  5. **ピンチズーム排他制御（誤スワイプロック）の技術的解説**:
      * 拡大観察中に別ファイルへ誤って切り替わらない安心設計を明記。
-  5. **ドック（ボトムシート）と全画面ビューワーの連携利用フロー**:
+  6. **ドック（ボトムシート）と全画面ビューワーの連携利用フロー**:
      * 試合記録中もドックから瞬時に確認できる動線を整理。
 
 * **PDF用スクショ撮影リスト（全3枚）**:
@@ -858,6 +897,8 @@
 * **コード根拠**:
   * 設定画面本体: [`lib/features/tournament/presentation/operate/settings_screen.dart:L22-L222`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/settings_screen.dart#L22-L222)
   * 設定セクション群: [`settings_sections.dart:L18-L345`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/settings/settings_sections.dart#L18-L345)
+  * サポート・規約セクション: [`settings_support_section.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/settings/settings_support_section.dart)
+  * アプリ内規約・情報定数: [`lib/shared/constants/legal_texts.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/constants/legal_texts.dart)
   * サーマル冷却ガバナー: [`lib/shared/application/services/thermal_power_governor.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/application/services/thermal_power_governor.dart)
   * サーマルバッジ・解説シート: [`lib/shared/widgets/thermal_status_badge.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/widgets/thermal_status_badge.dart)
   * WebアプリQRダイアログ: [`web_app_qr_dialog.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/settings/web_app_qr_dialog.dart)
@@ -890,6 +931,15 @@
   - [x] **外部連携・LIVE配信セクション (`BandSettingsTile`)**:
     - 低学年・高学年ごとのBANDグループURL登録
     - 試合カードからワンタップで対戦情報をコピーして配信起動、道場ID内全端末自動同期
+  - [x] **サポート・規約・情報セクション (`SettingsSupportSection`)**:
+    - **お問い合わせ（Googleフォーム外部連携 ＆ QRコード案内）**:
+      - タップで直接外部ブラウザを起動（`https://forms.gle/rymMtJUyhWNtrD819`）
+      - 取説・机上掲示用に手持ちスマホでカメラ読み取りできる「お問い合わせ用QRコード」を完備
+    - **取扱説明書（マニュアル）**: 画面別・ロール別公式マニュアル一覧起動
+    - **利用規約 (`LegalDocumentDialog`)**: オフライン完全対応・高速スクロールダイアログ
+    - **プライバシーポリシー (`LegalDocumentDialog`)**: 個人情報・戦績データの保護方針
+    - **KendoSync について (`AppAboutDialog`)**: アプリ名称、Stage2 βバージョン番号・ビルド番号、開発理念
+    - **オープンソースライセンス (`showLicensePage`)**: Flutterおよび各オープンソースライブラリの権利表記
   - [x] **ローカル保存と保護**:
     - **記録確定後の修正ロック (`isLocked`)**: 確定スコアの誤操作・改ざん防止
   - [x] **Webアプリ版（他端末アクセス） (`WebAppQrDialog`)**:
@@ -898,21 +948,24 @@
     - Googleアカウント連携・ログイン状態表示、ログアウト
 
 * **現行マニュアル（PDF P35〜P37）との差分**:
-  1. **文字サイズ（標準・大・特大）設定の追加**:
+  1. **サポート・規約・情報セクションとお問い合わせQRコードの追加**:
+     * お問い合わせフォーム（URLリンクおよびスマホ読取用QRコード）、取扱説明書、およびオフラインでも閲覧可能な利用規約・プライバシーポリシー・アプリ情報ダイアログの仕様を明記。
+  2. **文字サイズ（標準・大・特大）設定の追加**:
      * 体育館の遠距離からの視認性を高めるフォントサイズ切り替え機能を追記。
-  2. **BANDグループ外部連携・LIVE配信設定の解説**:
+  3. **BANDグループ外部連携・LIVE配信設定の解説**:
      * 学年別BANDグループURLの登録と、道場ID内自動同期の仕組みを明記。
-  3. **記録確定後の修正ロックスイッチの役割**:
+  4. **記録確定後の修正ロックスイッチの役割**:
      * スコア誤改変を防ぎ、オフラインローカル保存の安全性を高めるロック機能を解説。
-  4. **Webアプリ版 QRコードの存在と活用法**:
+  5. **Webアプリ版 QRコードの存在と活用法**:
      * 観客用モードではなく、他端末で操作用本体アプリを開くQRコードの仕様を追加。
-  5. **プッシュ通知のSafari/PWA対応要件**:
+  6. **プッシュ通知のSafari/PWA対応要件**:
      * iOS/iPadOS Safariで通知を受信するための「ホーム画面に追加」必須手順を明記。
 
-* **PDF用スクショ撮影リスト（全3枚）**:
+* **PDF用スクショ撮影リスト（全4枚）**:
   * `[SS-17-1]` **設定画面全体（表示と画面セクション）**: サンシャインモード、文字サイズ（標準/大/特大）、サーマル冷却バッジが見えている状態。
   * `[SS-17-2]` **音と振動＆プッシュ通知セクション**: 音声設定アコーディオン、マナーモード強制鳴動、4つの通知スイッチが見えている状態。
   * `[SS-17-3]` **外部連携・保護・Web版QRコードダイアログ表示画面**: BAND設定、記録修正ロック、Web版QRコードが表示された状態。
+  * `[SS-17-4]` **サポート・規約セクション＆お問い合わせQR画面**: お問い合わせリンク・QRコード、利用規約・ポリシー・アプリ情報ダイアログが見えている状態。
 
 ---
 
@@ -1080,18 +1133,21 @@
   - [x] **ヘッダーバー & ナビゲーション**:
     - タイトル「大会ホーム (観客席)」
     - 🔍 検索トグルアイコン、📲 共有ダイアログアイコン、⚙️ 観客用設定シートアイコン
+  - [x] **下スワイプ強制同期 (Pull-to-Refresh)**:
+    - 画面を下スワイプして試合進行状況を即座に再同期（通信瞬断時の手動復帰に有効）
   - [x] **招集・呼出バナー (`ViewerCallBanner`)**:
     - 🔴 **進行中 (Live)**: 現在対戦中の試合（コート名、選手名、ポジション）
     - 🟡 **待機中 (Next)**: 次、またはその次に控えている試合順
     - タップで当該コートのリアルタイムスコアボード画面へ即時ジャンプ
   - [x] **クイックアクションボタン (`ViewerQuickActionButtons`)**:
+    - 全ボタンがカプセル型（Stadium/Pill形状）に統一
     - **📄 プログラム**: 大会トーナメント表（個人メモ書き込み・拡大ズーム対応）
     - **📊 対戦表・スコア**: 大会公式記録・全対戦結果一覧
     - **🏆 順位表**: 勝率・勝ち点ランキング
   - [x] **大会情報カード (`ViewerTournamentInfoCard`)**:
     - 大会名、開催日、会場名、主催者、現在の進行状況
   - [x] **タイムライン検索・ソートバー (`ViewerMatchListSearchBar`)**:
-    - 選手名・道場名インクリメンタル検索フィールド
+    - 選手名・道場名インクリメンタル検索フィールド（キーワードの蛍光黄色ハイライト連動）
     - 試合順ソート切り替え（昇順 / 降順）
     - すべて展開 / 折りたたみトグル
   - [x] **部門フィルターチップスバー (`TimelineCategoryFilterChipsBar`)**:
@@ -1282,13 +1338,13 @@
   * 観客・保護者用1枚ガイド: [`packages/documentation_runtime/manuals/quickstart/viewer_1pager.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/quickstart/viewer_1pager.md)
   * ガイド目次: [`packages/documentation_runtime/manuals/quickstart/index.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/quickstart/index.md)
 * **コード根拠**:
-  * マスターPIN定義: [`lib/security/pin_guard.dart:L6-L17`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/security/pin_guard.dart#L6-L17) (記録員: 9999, 運営: 1111, 管理者: 2222)
+  * マスターPIN定義: [`lib/security/pin_guard.dart:L6-L17`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/security/pin_guard.dart#L6-L17) (Admin: 9999, Operator: 2468, Recorder: 1357, Viewer: PIN不要)
   * 試合画面・Undoバー・確定ボタン: [`lib/features/tournament/presentation/operate/match_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/match_screen.dart)
-  * フローティングドック: [`lib/features/tournament/presentation/operate/components/floating_program_dock_button.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/floating_program_dock_button.dart)
+  * フローティングドック: [`lib/features/tournament/presentation/components/program_management/floating_program_dock_button.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/components/program_management/floating_program_dock_button.dart)
 
 * **UI全要素リスト**:
   - [x] **📋 記録係 机上1枚ガイド (`recorder_1pager.md`)**:
-    - ログインPIN: `9999`（記録員ロール）
+    - ログインPIN: `1357`（スコア・記録係）
     - 🥋 計時スタート/ストップ（計時中赤背景点灯、タップで開始/停止）
     - 🔴⚪ スコア入力（面・小手・胴・突、反則2回で自動1本付与）
     - ↩️ 5秒スマートUndoバー ＆ 画面下部Undoボタンによる即時取り消し
@@ -1296,7 +1352,7 @@
     - 💡 試合中ドックボタン活用（背面スコア操作継続・トーナメント確認）
     - 🚨 オフライン時の鉄則（画面を閉じずにそのまま入力継続）
   - [x] **🏛️ 大会本部・審判長 机上ガイド (`operator_1pager.md`)**:
-    - ログインPIN: `1111`（引率・運営） / `2222`（管理者）
+    - ログインPIN: `2468`（監督・引率責任者） / `9999`（代表・管理者）
     - 🏆 大会作成・コート割り当て・部門ルール設定
     - ⚙️ 一括ルール変更（全コート残り時間・延長設定の一括適用）
     - 📢 本部一斉アナウンス配信（選手招集・審判合議の全端末ポップアップ）
@@ -1311,7 +1367,7 @@
 
 * **現行マニュアル（旧PDF P40 机上ガイド等）との差分**:
   1. **マスターPINコードの是正明記**:
-     * 記録員 `9999`、運営 `1111`、管理者 `2222` を明確に記載。
+     * 代表・管理者 `9999`、監督・引率 `2468`、スコア・記録 `1357`（Viewerは不要）を明確に記載。
   2. **記録係と大会本部ガイドの完全分離**:
      * 現場の記録机に置くべきシートと、本部席に置くべきシートの責務を完全分離。
   3. **計時中赤背景点灯・5秒Undoバー・1.5秒長押しの最新操作感**:
@@ -1331,25 +1387,27 @@
   * 運営・記録向けFAQ: [`packages/documentation_runtime/manuals/faq/operator_faq.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/faq/operator_faq.md)
   * 観客・保護者向けFAQ: [`packages/documentation_runtime/manuals/faq/viewer_faq.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/faq/viewer_faq.md)
 * **コード根拠**:
-  * マスターPIN定義: [`lib/security/pin_guard.dart:L6-L17`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/security/pin_guard.dart#L6-L17)
+  * マスターPIN定義: [`lib/security/pin_guard.dart:L6-L17`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/security/pin_guard.dart#L6-L17) (Admin: 9999, Operator: 2468, Recorder: 1357)
   * 第502条Clock Skew補正: [`server_clock_offset_service.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/time/server_clock_offset_service.dart)
   * 第503条自己修復: [`twin_match_persistence_helper.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/infrastructure/persistence/twin_match_persistence_helper.dart)
   * 第504条障害隔離: [`match_corrupted_state.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/shared/domain/entities/match_corrupted_state.dart)
   * 5秒Undoバー ＆ 1.5秒長押し: `match_screen.dart`
+  * 全画面Pull-to-Refresh耐障害性: 各画面 `RefreshIndicator`
 
 * **UI全要素リスト**:
   - [x] **運営・記録係向けFAQ (`operator_faq.md`)**:
-    - **PINコード一覧**: 記録係 `9999`、運営 `1111`、管理者 `2222`（忘れた場合の対応）
+    - **PINコード一覧**: 代表・管理者 `9999`、監督・引率 `2468`、スコア・記録 `1357`（忘れた場合の対応）
     - **計時・タイマー精度**: コート主時計との運用ルール、第502条Clock Skew自動補正によるミリ秒整合性
     - **スコア誤入力・Undo**: 5秒カウントダウンUndoバー、下部Undoボタン、試合確定後のホームからの安全再編集
     - **通信切断（オフライン）**: アプリを閉じずに入力継続（Isarローカル保存 ➔ 自動再送）
+    - **強制再同期（下スワイプ）**: 電波回復時や通信ラグ時に画面を下スワイプ（Pull-to-Refresh）して最新状態を即時再同期
     - **クラッシュ・強制終了**: 第503条ツインエンジン自己修復による100%自動復元（Startup Restore）
     - **赤色障害警告バナー**: 第504条障害隔離モード（二次破壊防止ロック・生データエクスポート救済）
     - **部内戦ドック・ジグル**: 長押し揺れ並び替え、電卓シミュレーション活用法
     - **公式記録出力**: A4日本剣道連盟公式書式PDF印刷、LINEグリーン画像出力（#06C755）
   - [x] **観客・保護者向けFAQ (`viewer_faq.md`)**:
     - **接続・アクセス**: カメラでQRコードを読み取るだけで即入場（完全無料・登録不要・PIN不要）
-    - **数字が止まった？**: 通信瞬断時の挙動（画面を閉じたりリロードせず数秒待機で自動追従）
+    - **数字が止まった？**: 通信瞬断時の挙動（画面を下スワイプして強制再同期、または数秒待機で自動追従）
     - **大画面表示**: スマホを横向きに倒すだけで電光掲示板スタイル大迫力スコアボードに変形
     - **手書きメモのプライバシー**: 個人ペン（青・黒）は端末ローカル（Isar DB）保存のため他者には非公開
     - **本部からの勝ち上がり線**: 本部共有ペン（ピンク・イエロー）のリアルタイム自動表示
@@ -1359,10 +1417,10 @@
 * **現行マニュアルとの差分**:
   1. **最新ガバナンス（第502条〜第504条）に裏打ちされた安心回答**:
      * 単なる気休めではなく、IsarローカルDB、Clock Skew、ツインエンジンの技術的根拠に基づいた的確なトラブル対応を提示。
-  2. **最新UI仕様（5秒Undoバー、1.5秒長押し、横画面変形）の完全網羅**:
+  2. **最新UI仕様（5秒Undoバー、1.5秒長押し、横画面変形、下スワイプ再同期）の完全網羅**:
      * 現場で記録員や観客が直面する疑問に100%即答できるQ&Aへ大幅拡充。
-  3. **正式マスターPINコード（9999/1111/2222）の完全統一**:
-     * 旧マニュアルの誤記（0000や1234）を完全に是正。
+  3. **正式マスターPINコード（9999/2468/1357）の完全統一**:
+     * 旧マニュアルの誤記（0000や1234）およびドラフト誤記（1111や2222）を完全に是正。
 
 * **PDF用スクショ撮影リスト（全3枚）**:
   * `[SS-26-1]` **運営FAQ画面（PIN一覧・Undo・確定手順セクション）**
