@@ -50,8 +50,8 @@ class MasterPlayerTile extends StatelessWidget {
               : context.appColors.errorColor.withValues(alpha: 0.1));
 
     final selectedColor = isDark
-        ? context.appColors.primaryAccent.withValues(alpha: 0.2)
-        : const Color(0xFF9C27B0);
+        ? context.appColors.primaryAccent.withValues(alpha: 0.25)
+        : context.appColors.primaryAccent.withValues(alpha: 0.12);
 
     final tile = Material(
       color: isSelectionMode && isSelected
@@ -73,8 +73,10 @@ class MasterPlayerTile extends StatelessWidget {
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
                     color: isSelected
-                        ? const Color(0xFF9C27B0)
-                        : const Color(0x8A000000),
+                        ? context.appColors.primaryAccent
+                        : (isDark
+                              ? AppKendoColors.pureWhite.withValues(alpha: 0.6)
+                              : context.appColors.subTextColor),
                     size: 22,
                   ),
                 ),
@@ -150,18 +152,14 @@ class MasterPlayerTile extends StatelessWidget {
                           Text(
                             '${player.nameKana} ',
                             style: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFFFFFFFF)
-                                  : const Color(0x8A000000),
+                              color: context.appColors.subTextColor,
                               fontSize: AppFontSize.caption,
                             ),
                           ),
                         Text(
                           '${player.gradeName} / ${player.gender}',
                           style: TextStyle(
-                            color: isDark
-                                ? const Color(0xFFFFFFFF)
-                                : const Color(0x8A000000),
+                            color: context.appColors.subTextColor,
                             fontSize: AppFontSize.caption,
                           ),
                         ),

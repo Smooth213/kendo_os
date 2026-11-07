@@ -44,9 +44,9 @@ class MasterRegisterOrganizationBottomSheet {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'キャンセル',
-              style: TextStyle(color: AppKendoColors.grey),
+              style: TextStyle(color: context.appColors.subTextColor),
             ),
           ),
           ElevatedButton(
@@ -101,16 +101,16 @@ class _MasterRegisterOrganizationSheetState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeColors =
+        Theme.of(context).extension<AppThemeColors>() ??
+        AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final primaryColor = isDark
         ? AppKendoColors.purpleAccent
-        : context.appColors.primaryAccent;
-    final dialogBgColor = isDark
-        ? const Color(0xFF1E1E1E)
-        : context.appColors.textColor;
-    final inputBgColor = isDark
-        ? const Color(0xFF2C2C2C)
-        : context.appColors.cardBackground;
-    final textColor = context.appColors.textColor;
+        : themeColors.primaryAccent;
+    final dialogBgColor = themeColors.cardBackground;
+    final inputBgColor = themeColors.inputBackground;
+    final textColor = themeColors.textColor;
+    final subTextColor = themeColors.subTextColor;
 
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -158,18 +158,16 @@ class _MasterRegisterOrganizationSheetState
                 '道場名・学校名の登録',
                 style: TextStyle(
                   fontWeight: AppFontWeight.bold,
-                  color: isDark
-                      ? AppKendoColors.purpleAccent
-                      : const Color(0xFF9C27B0),
+                  color: primaryColor,
                   fontSize: AppFontSize.header,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              const Text(
+              Text(
                 '選手を追加する前に、道場名または学校名を入力してください。',
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
-                  color: AppKendoColors.grey,
+                  color: subTextColor,
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -179,12 +177,7 @@ class _MasterRegisterOrganizationSheetState
                 style: TextStyle(color: textColor),
                 decoration: InputDecoration(
                   labelText: '道場名・学校名',
-                  prefixIcon: Icon(
-                    Icons.account_balance,
-                    color: isDark
-                        ? const Color(0xFFFFFFFF)
-                        : AppKendoColors.grey,
-                  ),
+                  prefixIcon: Icon(Icons.account_balance, color: subTextColor),
                   border: OutlineInputBorder(borderRadius: AppRadius.medium),
                   filled: true,
                   fillColor: inputBgColor,
@@ -199,9 +192,7 @@ class _MasterRegisterOrganizationSheetState
                     child: Text(
                       'キャンセル',
                       style: TextStyle(
-                        color: isDark
-                            ? context.appColors.subTextColor
-                            : AppKendoColors.grey,
+                        color: subTextColor,
                         fontWeight: AppFontWeight.bold,
                       ),
                     ),

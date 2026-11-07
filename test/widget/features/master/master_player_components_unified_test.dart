@@ -93,7 +93,7 @@ void main() {
         expect(find.text('初心者'), findsOneWidget);
       });
 
-      testWidgets('選択モード時のタップ操作が正しく処理されること', (tester) async {
+      testWidgets('選択モード時のタップ操作およびアイコン・背景の視認性が保たれること', (tester) async {
         final player = PlayerModel(
           id: 'p1',
           lastName: '佐藤',
@@ -124,6 +124,11 @@ void main() {
         );
 
         expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        final materialFinder = find.byType(Material).first;
+        final materialWidget = tester.widget<Material>(materialFinder);
+        // 背景が不透明度100%の濃い紫（0xFF9C27B0）ではなく淡いアクセントカラーティントであること
+        expect(materialWidget.color, isNot(equals(const Color(0xFF9C27B0))));
+
         await tester.tap(find.text('佐藤 花子'));
         await tester.pump();
         expect(tappedSelection, isTrue);
