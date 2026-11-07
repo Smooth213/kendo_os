@@ -87,7 +87,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                 backgroundColor: context.appColors.primaryAccent,
                 foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
+                shape: const StadiumBorder(),
               ),
               child: const Text(
                 '実行',
@@ -202,7 +202,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                 backgroundColor: context.appColors.infoColor,
                 foregroundColor: AppKendoColors.pureWhite,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
+                shape: const StadiumBorder(),
               ),
               child: const Text(
                 '書き出し',
@@ -261,9 +261,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppKendoColors.red,
                             foregroundColor: AppKendoColors.pureWhite,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.medium,
-                            ),
+                            shape: const StadiumBorder(),
                             elevation: 0,
                           ),
                           onPressed: () => Navigator.pop(c, true),
@@ -326,7 +324,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                   backgroundColor: AppKendoColors.hansokuRed,
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
+                  shape: const StadiumBorder(),
                 ),
                 child: const Text(
                   '削除',

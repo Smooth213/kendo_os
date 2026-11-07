@@ -15,7 +15,10 @@
     "score_tables": "情報グリッド矩形 (テーブル可読性維持)",
     "floating_swipe_actions": "iOS メモアプリ風 浮遊カプセル型 (AppSlidableAction / AppRadius.round / 完全透過背景 & マージン配置)",
     "scene_badges": "iOS 27 カプセル型 Pill (KendoSceneBadge / AppRadius.round / 【錬成】【申合せ】等)",
-    "inline_action_buttons": "iOS 27 カプセル型 (StadiumBorder / OutlinedButton / スコア・簡易入力・PDF印刷)"
+    "inline_action_buttons": "iOS 27 カプセル型 (StadiumBorder / OutlinedButton / スコア・簡易入力・PDF印刷)",
+    "floating_action_buttons": "iOS 27 浮遊カプセル型 (FloatingActionButton.extended / shape: StadiumBorder)",
+    "dialog_action_buttons": "iOS 27 カプセル型 (ElevatedButton / shape: StadiumBorder)",
+    "list_inline_action_buttons": "iOS 27 カプセル型 (ElevatedButton / shape: StadiumBorder / リストタイル内実行・書出・削除)"
   },
   "items": [
     {

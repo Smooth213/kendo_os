@@ -116,11 +116,9 @@ class MasterMenuBottomSheet {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppKendoColors.purple,
+              backgroundColor: themeColors.primaryAccent,
               foregroundColor: AppKendoColors.pureWhite,
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppRadius.medium,
-              ),
+              shape: const StadiumBorder(),
               elevation: 0,
             ),
             child: const Text(

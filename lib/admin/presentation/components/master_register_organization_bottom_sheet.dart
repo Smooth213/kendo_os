@@ -26,10 +26,7 @@ class MasterRegisterOrganizationBottomSheet {
   }
 
   static void showMustRegisterDialog(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? AppKendoColors.purpleAccent
-        : context.appColors.primaryAccent;
+    final primaryColor = context.appColors.primaryAccent;
 
     showAppDialog(
       context: context,
@@ -57,7 +54,7 @@ class MasterRegisterOrganizationBottomSheet {
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
               foregroundColor: AppKendoColors.pureWhite,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+              shape: const StadiumBorder(),
               elevation: 0,
             ),
             child: const Text(
@@ -104,9 +101,7 @@ class _MasterRegisterOrganizationSheetState
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
-    final primaryColor = isDark
-        ? AppKendoColors.purpleAccent
-        : themeColors.primaryAccent;
+    final primaryColor = themeColors.primaryAccent;
     final dialogBgColor = themeColors.cardBackground;
     final inputBgColor = themeColors.inputBackground;
     final textColor = themeColors.textColor;
@@ -202,9 +197,7 @@ class _MasterRegisterOrganizationSheetState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: AppKendoColors.pureWhite,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
+                      shape: const StadiumBorder(),
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.xl,

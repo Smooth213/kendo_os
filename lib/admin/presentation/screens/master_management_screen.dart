@@ -85,9 +85,7 @@ class _MasterManagementScreenState
       settingsProvider.select((s) => s.enableLiquidGlass),
     );
 
-    final Color primaryColor = isDark
-        ? AppKendoColors.purpleAccent
-        : context.appColors.primaryAccent;
+    final Color primaryColor = context.appColors.primaryAccent;
 
     return LiquidBackground(
       child: Scaffold(
@@ -291,6 +289,7 @@ class _MasterManagementScreenState
                 },
                 backgroundColor: primaryColor,
                 foregroundColor: AppKendoColors.pureWhite,
+                shape: const StadiumBorder(),
                 elevation: 4,
                 icon: const Icon(Icons.person_add),
                 label: const Text(
