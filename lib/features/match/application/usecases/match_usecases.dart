@@ -111,20 +111,8 @@ class AddScoreUseCase {
       }
     }
 
-    final bool isRunningTimerMode = rule.isRunningTime;
-
     MatchModel updatedMatch = currentMatch;
-    if (!isRunningTimerMode && currentMatch.timerIsRunning) {
-      final elapsed = _timeSource
-          .now()
-          .difference(currentMatch.timerStartedAt!)
-          .inMilliseconds;
-      updatedMatch = currentMatch.copyWith(
-        timerStartedAt: null,
-        accumulatedPauseDurationMs:
-            currentMatch.accumulatedPauseDurationMs + elapsed,
-      );
-    }
+    // ★ 修正: 一本入力時もタイマーを停止させず、赤色のままスムーズに進み続けさせる
 
     return updatedMatch.copyWith(
       events: updatedEvents,

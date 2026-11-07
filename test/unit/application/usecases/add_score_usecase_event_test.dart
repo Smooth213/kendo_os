@@ -61,5 +61,38 @@ void main() {
       expect(updatedMatch.events.first.strikeType, StrikeType.men);
       expect(updatedMatch.redScore, 1);
     });
+
+    test('タイマー稼働中に一本が追加されてもタイマーが停止せず維持されること', () {
+      final startedTime = DateTime.now();
+      final initialMatch = MatchModel(
+        id: 'test_running',
+        tournamentId: 't1',
+        matchOrder: 1,
+        redName: 'Red',
+        whiteName: 'White',
+        status: 'in_progress',
+        matchType: '個人戦',
+        timerStartedAt: startedTime,
+      );
+
+      final newEvent = ScoreEventLegacyAdapter.fromLegacy(
+        side: Side.red,
+        type: PointType.men,
+        sequence: 1,
+        userId: testUser.id,
+      );
+      final rule = const MatchRule();
+
+      final updatedMatch = usecase.execute(
+        testUser,
+        initialMatch,
+        newEvent,
+        rule,
+      );
+
+      // タイマーが停止されず、稼働状態が維持されていること
+      expect(updatedMatch.timerStartedAt, startedTime);
+      expect(updatedMatch.timerIsRunning, isTrue);
+    });
   });
 }

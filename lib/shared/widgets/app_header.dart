@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
@@ -82,26 +84,48 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               )
             : null);
 
+    final isDarkBg = effectiveBgColor.computeLuminance() < 0.5;
+    final overlayStyle = isDarkBg
+        ? SystemUiOverlayStyle.light.copyWith(
+            statusBarColor: AppKendoColors.transparent,
+            statusBarBrightness: Brightness.dark,
+            statusBarIconBrightness: Brightness.light,
+          )
+        : SystemUiOverlayStyle.dark.copyWith(
+            statusBarColor: AppKendoColors.transparent,
+            statusBarBrightness: Brightness.light,
+            statusBarIconBrightness: Brightness.dark,
+          );
+
     return AppBar(
-      title:
-          titleWidget ??
-          (title != null
-              ? FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    title!,
-                    style: TextStyle(
-                      fontSize: AppFontSize.headline,
-                      fontWeight: AppFontWeight.semiBold,
-                      color: effectiveFgColor,
+      systemOverlayStyle: overlayStyle,
+      flexibleSpace: Container(color: effectiveBgColor),
+      title: titleWidget != null
+          ? Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: titleWidget,
+            )
+          : (title != null
+                ? Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        title!,
+                        style: TextStyle(
+                          fontSize: AppFontSize.headline,
+                          fontWeight: AppFontWeight.semiBold,
+                          color: effectiveFgColor,
+                        ),
+                        maxLines: 1,
+                      ),
                     ),
-                    maxLines: 1,
-                  ),
-                )
-              : null),
+                  )
+                : null),
       centerTitle: centerTitle,
       backgroundColor: effectiveBgColor,
       foregroundColor: effectiveFgColor,
+      surfaceTintColor: AppKendoColors.transparent,
       elevation: elevation,
       scrolledUnderElevation: 0.0,
       leading: effectiveLeading,
