@@ -139,7 +139,7 @@ void main() {
       await openDialog(tester);
 
       // キャッシュクリアの「実行」ボタンを検索
-      final executeButton = find.widgetWithText(ElevatedButton, '実行');
+      final executeButton = find.widgetWithText(OutlinedButton, '実行');
       expect(executeButton, findsOneWidget);
 
       await tester.tap(executeButton);
@@ -166,7 +166,7 @@ void main() {
 
       await openDialog(tester, matches: [dummyMatch]);
 
-      final exportButton = find.widgetWithText(ElevatedButton, '書き出し');
+      final exportButton = find.widgetWithText(OutlinedButton, '書き出し');
       await tester.tap(exportButton);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -242,7 +242,7 @@ void main() {
       await openDialog(tester, tournamentRepo: repo);
 
       // 「削除」ボタンをタップ
-      final deleteButton = find.widgetWithText(ElevatedButton, '削除');
+      final deleteButton = find.widgetWithText(OutlinedButton, '削除');
       expect(deleteButton, findsOneWidget);
       await tester.tap(deleteButton);
       await tester.safePumpAndSettle();
@@ -331,7 +331,7 @@ void main() {
 
       await openDialog(tester, tournamentRepo: repo);
 
-      await tester.tap(find.widgetWithText(ElevatedButton, '削除'));
+      await tester.tap(find.widgetWithText(OutlinedButton, '削除'));
       await tester.safePumpAndSettle();
 
       await tester.tap(find.widgetWithText(ElevatedButton, '完全に削除する'));

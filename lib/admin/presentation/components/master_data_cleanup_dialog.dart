@@ -58,8 +58,8 @@ class MasterDataCleanupDialog extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
-              backgroundColor: AppKendoColors.purple,
-              child: const Icon(Icons.cached, color: AppKendoColors.pureWhite),
+              backgroundColor: AppKendoColors.purple.withValues(alpha: 0.12),
+              child: const Icon(Icons.cached, color: AppKendoColors.purple),
             ),
             title: const Text(
               '一時キャッシュをクリア',
@@ -72,7 +72,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
               '表示を軽くします（データは消えません）',
               style: TextStyle(fontSize: AppFontSize.small),
             ),
-            trailing: ElevatedButton(
+            trailing: OutlinedButton(
               onPressed: () {
                 try {
                   PaintingBinding.instance.imageCache.clear();
@@ -83,9 +83,9 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                 }
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.appColors.primaryAccent,
-                foregroundColor: AppKendoColors.pureWhite,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.appColors.primaryAccent,
+                side: BorderSide(color: context.appColors.primaryAccent),
                 elevation: 0,
                 shape: const StadiumBorder(),
               ),
@@ -101,11 +101,8 @@ class MasterDataCleanupDialog extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: CircleAvatar(
-              backgroundColor: AppKendoColors.blue,
-              child: const Icon(
-                Icons.download,
-                color: AppKendoColors.pureWhite,
-              ),
+              backgroundColor: AppKendoColors.blue.withValues(alpha: 0.12),
+              child: const Icon(Icons.download, color: AppKendoColors.blue),
             ),
             title: const Text(
               '全データをJSONでバックアップ',
@@ -118,7 +115,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
               '端末内に完全な状態のファイルを書き出します',
               style: TextStyle(fontSize: AppFontSize.small),
             ),
-            trailing: ElevatedButton(
+            trailing: OutlinedButton(
               onPressed: () async {
                 try {
                   final matches = ref.read(matchListProvider);
@@ -198,9 +195,9 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.appColors.infoColor,
-                foregroundColor: AppKendoColors.pureWhite,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.appColors.primaryAccent,
+                side: BorderSide(color: context.appColors.primaryAccent),
                 elevation: 0,
                 shape: const StadiumBorder(),
               ),
@@ -220,10 +217,12 @@ class MasterDataCleanupDialog extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
-                backgroundColor: AppKendoColors.hansokuRed,
+                backgroundColor: AppKendoColors.hansokuRed.withValues(
+                  alpha: 0.12,
+                ),
                 child: const Icon(
                   Icons.delete_sweep,
-                  color: AppKendoColors.pureWhite,
+                  color: AppKendoColors.hansokuRed,
                 ),
               ),
               title: const Text(
@@ -237,7 +236,7 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                 '古いデータを完全に消去し容量を空けます',
                 style: TextStyle(fontSize: AppFontSize.small),
               ),
-              trailing: ElevatedButton(
+              trailing: OutlinedButton(
                 onPressed: () async {
                   final confirm = await showAppDialog<bool>(
                     context: context,
@@ -320,9 +319,9 @@ class MasterDataCleanupDialog extends ConsumerWidget {
                     }
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppKendoColors.hansokuRed,
-                  foregroundColor: AppKendoColors.pureWhite,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppKendoColors.hansokuRed,
+                  side: const BorderSide(color: AppKendoColors.hansokuRed),
                   elevation: 0,
                   shape: const StadiumBorder(),
                 ),
