@@ -411,6 +411,7 @@ void main() {
         find.text('2. iOS 27 フロストガラス (AppGlassContainer)'),
         findsOneWidget,
       );
+      expect(find.text('Loading例'), findsOneWidget);
       expect(find.text('3. 物理スプリングカード (AppCard)'), findsOneWidget);
     });
   });

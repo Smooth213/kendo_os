@@ -162,7 +162,20 @@ class _DesignSystemGalleryScreenState
                 ),
               ),
               const Spacer(),
-              const AppLoadingIndicator.small(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Loading例',
+                    style: TextStyle(
+                      fontSize: AppFontSize.caption,
+                      color: context.appColors.subTextColor,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  const AppLoadingIndicator.small(),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
