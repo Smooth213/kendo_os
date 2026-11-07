@@ -18,6 +18,7 @@
     "inline_action_buttons": "iOS 27 カプセル型 (StadiumBorder / OutlinedButton / スコア・簡易入力・PDF印刷)",
     "floating_action_buttons": "iOS 27 浮遊カプセル型 (FloatingActionButton.extended / shape: StadiumBorder)",
     "dialog_action_buttons": "iOS 27 カプセル型 (ElevatedButton / shape: StadiumBorder)",
+    "bottom_sheet_action_buttons": "iOS 27 カプセル型 (ElevatedButton / shape: StadiumBorder / 登録・一括更新・追加)",
     "list_inline_action_buttons": "iOS 27 カプセル型 (ElevatedButton / shape: StadiumBorder / リストタイル内実行・書出・削除)"
   },
   "items": [

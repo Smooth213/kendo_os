@@ -47,9 +47,7 @@ class _MasterTeamNameManagementSheetState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? AppKendoColors.purpleAccent
-        : context.appColors.primaryAccent;
+    final primaryColor = context.appColors.primaryAccent;
 
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
 
@@ -134,9 +132,7 @@ class _MasterTeamNameManagementSheetState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: AppKendoColors.pureWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   child: const Text('追加'),
                 ),

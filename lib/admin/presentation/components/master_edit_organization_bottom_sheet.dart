@@ -115,9 +115,7 @@ class _MasterEditOrganizationBottomSheetState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? AppKendoColors.purpleAccent
-        : context.appColors.primaryAccent;
+    final primaryColor = context.appColors.primaryAccent;
 
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -214,9 +212,7 @@ class _MasterEditOrganizationBottomSheetState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: AppKendoColors.pureWhite,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
+                      shape: const StadiumBorder(),
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.xl,
