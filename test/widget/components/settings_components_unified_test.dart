@@ -193,6 +193,7 @@ void main() {
       expect(find.text('プライバシーポリシー'), findsOneWidget);
       expect(find.text('KendoSync について'), findsOneWidget);
       expect(find.text('オープンソースライセンス'), findsOneWidget);
+      expect(find.text('デザインシステム・ギャラリー'), findsOneWidget);
 
       // 利用規約をタップしてダイアログが表示されることを検証（タイル＋ダイアログタイトルで2つ存在）
       await tester.tap(find.text('利用規約'));

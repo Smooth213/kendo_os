@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
 import 'package:kendo_os/shared/constants/legal_texts.dart';
 import 'package:kendo_os/shared/presentation/screens/embedded_manual_screen.dart';
@@ -138,6 +139,14 @@ class SettingsSupportSection extends StatelessWidget {
               iconBgColor: themeColors.subTextColor,
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _showLicenses(context),
+            ),
+            SettingsListTile(
+              title: 'デザインシステム・ギャラリー',
+              subtitle: 'iOS 27 デザイン基盤・全UIコンポーネント確認',
+              icon: Icons.palette_outlined,
+              iconBgColor: AppKendoColors.purple,
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/design-gallery'),
             ),
           ],
         ),
