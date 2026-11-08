@@ -20,6 +20,7 @@ SUB_AUDITS = [
     ("④ 文字拡大（標準・大・特大）文字切れ・省略（...）完全防止規約", ["python3", "scripts/check_text_overflow_governance.py"]),
     ("⑤ デザインシステムトークン厳格準拠規約", ["python3", "scripts/check_design_token_strict_compliance.py"]),
     ("⑥ タイムラインスワイプアクション3要素（次戦追加・編集・削除）完全保証規約", ["python3", "scripts/check_timeline_slidable_actions_governance.py"]),
+    ("⑦ デザインカタログ 全UIパーツ網羅性保証規約", ["python3", "scripts/check_design_gallery_coverage.py"]),
 ]
 
 
