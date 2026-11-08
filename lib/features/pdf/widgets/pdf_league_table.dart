@@ -345,7 +345,6 @@ class PdfLeagueTable {
       String displayTech = p.mark == '判定' ? '判' : p.mark;
       if (p.isFirstOverall &&
           displayTech != '◯' &&
-          displayTech != '反' &&
           displayTech != '✕' &&
           displayTech != '×') {
         return pw.Container(

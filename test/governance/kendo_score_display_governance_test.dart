@@ -78,7 +78,7 @@ void main() {
       expect(circleContainers.isNotEmpty, isTrue);
     });
 
-    testWidgets('先取丸囲み規約において 有効打突の先取は丸囲みされ、反則(反)・不戦勝(◯)・引き分け(×)は丸囲みされないこと', (
+    testWidgets('先取丸囲み規約において 有効打突および反則(反)の先取は丸囲みされ、不戦勝(◯)・引き分け(×)は丸囲みされないこと', (
       tester,
     ) async {
       const menFirst = KendoPointMark(mark: 'メ', isFirst: true);
@@ -106,7 +106,7 @@ void main() {
           });
       expect(menCircle.isNotEmpty, isTrue);
 
-      // 反則（反・先取）➔ 丸囲みなし
+      // 反則（反・先取）➔ 丸囲みあり
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -124,7 +124,7 @@ void main() {
             final dec = c.decoration;
             return dec is BoxDecoration && dec.shape == BoxShape.circle;
           });
-      expect(hansokuCircle.isEmpty, isTrue);
+      expect(hansokuCircle.isNotEmpty, isTrue);
 
       // 不戦勝（◯・先取）➔ 丸囲みなし
       await tester.pumpWidget(
@@ -229,6 +229,30 @@ void main() {
       final container = widget as pw.Container;
       expect(container.constraints?.maxWidth, 26.0);
       expect(container.constraints?.maxHeight, 26.0);
+    });
+
+    test('PDF描画規約において 先取の反則「反」が丸囲みContainerとして描画されること', () {
+      final fontBold = pw.Font.helveticaBold();
+      final pts = [PdfPointData('反', true), PdfPointData('メ', false)];
+
+      final widget = PdfTeamTableCellRenderer.buildPointBox(
+        pts,
+        true,
+        true,
+        fontBold,
+      );
+
+      expect(widget, isA<pw.Container>());
+      final container = widget as pw.Container;
+      final outerStack = container.child as pw.Stack;
+      final innerStack = outerStack.children[1] as pw.Stack;
+      // 1本目（左上）のPositioned子要素が丸囲み（BoxDecorationのshape == circle）であること
+      final firstPointPos = innerStack.children[0] as pw.Positioned;
+      final firstPointWidget = firstPointPos.child;
+      expect(firstPointWidget, isA<pw.Container>());
+      final markContainer = firstPointWidget as pw.Container;
+      final decoration = markContainer.decoration as pw.BoxDecoration;
+      expect(decoration.shape, pw.BoxShape.circle);
     });
 
     testWidgets(

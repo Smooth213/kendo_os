@@ -364,7 +364,6 @@ class LargeViewerScoreboard extends StatelessWidget {
     final bool isSpecialNonCircle =
         pd.mark == '◯' ||
         pd.mark == '◎' ||
-        pd.mark == '反' ||
         pd.mark == '×' ||
         pd.mark == '✕' ||
         pd.mark == '△' ||

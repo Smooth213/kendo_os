@@ -379,7 +379,6 @@ class PdfTeamTableCellRenderer {
         p.mark == '○' ||
         p.mark == '✕' ||
         p.mark == '×' ||
-        p.mark == '反' ||
         p.mark == '△' ||
         p.mark == '▲' ||
         int.tryParse(p.mark) != null;

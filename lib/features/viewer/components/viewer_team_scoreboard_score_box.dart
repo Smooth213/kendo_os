@@ -126,7 +126,6 @@ class ViewerTeamScoreboardScoreBox {
     final bool isSpecial =
         mark == '◯' ||
         mark == '◎' ||
-        mark == '反' ||
         mark == '×' ||
         mark == '✕' ||
         mark == '△' ||

@@ -319,7 +319,6 @@ class TeamScoreboardTableBuilder {
     final bool isSpecial =
         p.mark == '◯' ||
         p.mark == '◎' ||
-        p.mark == '反' ||
         p.mark == '×' ||
         p.mark == '✕' ||
         p.mark == '△' ||

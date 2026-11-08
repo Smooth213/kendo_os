@@ -25,7 +25,6 @@ class KendoPointMark {
   bool get isSpecialNonCircle =>
       mark == '◯' ||
       mark == '◎' ||
-      mark == '反' ||
       mark == '×' ||
       mark == '✕' ||
       mark == '△' ||
