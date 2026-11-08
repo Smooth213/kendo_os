@@ -413,6 +413,47 @@ void main() {
       );
       expect(find.text('Loading例'), findsOneWidget);
       expect(find.text('3. 物理スプリングカード (AppCard)'), findsOneWidget);
+
+      // タブ「競技・スコア」への切り替え検証 (index: 1)
+      await tester.tap(find.byType(AppChoiceChip).at(1));
+      await tester.safePumpAndSettle();
+      expect(find.text('1. 紅白対戦対比（Red vs White）'), findsOneWidget);
+
+      // タブ「シーン・状態」への切り替え検証 (index: 2)
+      await tester.tap(find.byType(AppChoiceChip).at(2));
+      await tester.safePumpAndSettle();
+      expect(find.text('1. 4大試合シーンバッジ (KendoSceneBadge)'), findsOneWidget);
+
+      // タブ「ボタン」への切り替え検証 (index: 3)
+      await tester.tap(find.byType(AppChoiceChip).at(3));
+      await tester.safePumpAndSettle();
+      expect(find.text('1. ボタンの階層言語 (Hierarchy)'), findsOneWidget);
+
+      // タブ「入力フォーム」への切り替え検証 (index: 4)
+      await tester.tap(find.byType(AppChoiceChip).at(4));
+      await tester.safePumpAndSettle();
+      expect(
+        find.text('1. 単一行入力: iOS 27 カプセル型 (StadiumBorder)'),
+        findsOneWidget,
+      );
+
+      // タブ「ドック・シート」への切り替え検証 (index: 5)
+      await tester.tap(find.byType(AppChoiceChip).at(5));
+      await tester.safePumpAndSettle();
+      expect(
+        find.text('1. 常設フローティングドック (Floating Dock アイランド)'),
+        findsOneWidget,
+      );
+
+      // タブ「カラー・文字」への切り替え検証 (index: 6)
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(-300, 0),
+      );
+      await tester.safePumpAndSettle();
+      await tester.tap(find.byType(AppChoiceChip).at(6));
+      await tester.safePumpAndSettle();
+      expect(find.text('1. セマンティックカラーパレット (AppThemeColors)'), findsOneWidget);
     });
   });
 }
