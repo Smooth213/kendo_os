@@ -6,3 +6,4 @@
 - **[Domain Glossary](./glossary.md)** - 競技用語とシステム用語の定義
 - **[Match Lifecycle FSM](./match_lifecycle_fsm.md)** - 試合状態遷移の唯一の真実（状態遷移マトリクス定義）
 - **[Timer Accuracy Policy](./timer_accuracy_policy.md)** - 試合時間計測の精度および同期運用方針
+- **[Kendo Score Display Specification](./kendo_score_display_spec.md)** - 剣道公式スコア表示・対戦表・星取表の正本仕様書

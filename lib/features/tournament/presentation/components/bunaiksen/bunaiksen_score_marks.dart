@@ -63,7 +63,7 @@ class BunaiksenScoreMarks extends StatelessWidget {
           if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
           if (d.mark == '反') return '反';
           if (d.mark == '判定') return '判';
-          if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
+          if (d.mark == '◯') return '◯';
           return d.mark;
         })
         .join('');
@@ -76,7 +76,7 @@ class BunaiksenScoreMarks extends StatelessWidget {
           if (d.mark == 'ツ') return d.isFirstMatchPoint ? '㋡' : 'ツ';
           if (d.mark == '反') return '反';
           if (d.mark == '判定') return '判';
-          if (d.mark == '◯') return d.isFirstMatchPoint ? '◎' : '◯';
+          if (d.mark == '◯') return '◯';
           return d.mark;
         })
         .join('');

@@ -362,5 +362,32 @@ void main() {
       expect(stack.children.length, 1);
       expect(stack.children.first, isA<pw.Text>());
     });
+
+    testWidgets('不戦勝規約において 1本目であっても「◎」にならず純粋な「◯」として描画されること', (tester) async {
+      const fusenPoints = [
+        KendoPointMark(mark: '◯', isFirst: true),
+        KendoPointMark(mark: '◯', isFirst: false),
+      ];
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: KendoScoreBox(
+                points: fusenPoints,
+                isWinner: true,
+                isRed: true,
+                variant: ScoreDisplayVariant.table,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // 「◎」は一切存在しないこと
+      expect(find.text('◎'), findsNothing);
+      // 「◯」が2つ存在すること
+      expect(find.text('◯'), findsNWidgets(2));
+    });
   });
 }
