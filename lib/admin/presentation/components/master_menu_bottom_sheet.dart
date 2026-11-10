@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/admin/presentation/components/master_annual_promotion_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_data_cleanup_dialog.dart';
+import 'package:kendo_os/admin/presentation/components/master_graduated_players_sheet.dart';
+import 'package:kendo_os/admin/presentation/screens/master_management_screen.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -79,6 +81,50 @@ class MasterMenuBottomSheet {
                 onTap: () {
                   Navigator.pop(ctx);
                   _openAnnualPromotionSheet(context, ref);
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Divider(height: 1, color: themeColors.separatorColor),
+              ),
+              Consumer(
+                builder: (_, consumerRef, _) {
+                  final graduatedCount =
+                      consumerRef
+                          .watch(playerListProvider)
+                          .value
+                          ?.where((p) => p.isGraduated)
+                          .length ??
+                      0;
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppKendoColors.teal.withValues(
+                        alpha: 0.1,
+                      ),
+                      child: const Icon(
+                        Icons.history_edu,
+                        color: AppKendoColors.teal,
+                      ),
+                    ),
+                    title: Text(
+                      '卒業・OB/OG名簿（$graduatedCount名）',
+                      style: TextStyle(
+                        fontWeight: AppFontWeight.bold,
+                        color: themeColors.textColor,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'アーカイブされた卒業生の閲覧・現役復帰を行います',
+                      style: TextStyle(
+                        fontSize: AppFontSize.small,
+                        color: AppKendoColors.grey,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      MasterGraduatedPlayersSheet.show(context);
+                    },
+                  );
                 },
               ),
             ],

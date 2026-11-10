@@ -107,45 +107,6 @@ void main() {
         expect(find.text('学年別'), findsOneWidget);
         expect(find.text('カテゴリ別'), findsOneWidget);
       });
-
-      testWidgets('MasterOrganizationHeaderBarで現役/卒業・OB/OGタブ切替が表示・動作すること', (
-        tester,
-      ) async {
-        final themeColors = AppThemeColors.ofMode(
-          isDark: false,
-          mode: 'normal',
-        );
-        bool? changedTo;
-
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData.light().copyWith(extensions: [themeColors]),
-            home: Scaffold(
-              body: MasterOrganizationHeaderBar(
-                orgName: '練馬道場',
-                players: [player],
-                groupingMode: 0,
-                isSelectionMode: false,
-                isReadOnly: false,
-                canManageMaster: true,
-                isDark: false,
-                primaryColor: AppKendoColors.indigo,
-                onGroupingModeChanged: (_) {},
-                showGraduated: false,
-                activeCount: 10,
-                graduatedCount: 3,
-                onShowGraduatedChanged: (val) => changedTo = val,
-              ),
-            ),
-          ),
-        );
-
-        expect(find.text('現役 (10)'), findsOneWidget);
-        expect(find.text('卒業・OB/OG (3)'), findsOneWidget);
-        await tester.tap(find.text('卒業・OB/OG (3)'));
-        await tester.safePumpAndSettle();
-        expect(changedTo, isTrue);
-      });
     });
 
     // ----------------------------------------------------------
@@ -360,6 +321,7 @@ void main() {
 
         expect(find.text('データとストレージ管理'), findsOneWidget);
         expect(find.text('新年度の一括進級'), findsOneWidget);
+        expect(find.text('卒業・OB/OG名簿（0名）'), findsOneWidget);
       });
     });
 

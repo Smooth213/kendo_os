@@ -54,6 +54,7 @@ class MasterAnnualPromotionHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: AppSpacing.md),
         if (alreadyPromoted) ...[
           Container(
             width: double.infinity,
@@ -112,7 +113,7 @@ class MasterAnnualPromotionHeader extends StatelessWidget {
             if (val != null) onTypeChanged(val);
           },
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.lg),
         if (activeType.graduationGrade != null)
           DropdownButtonFormField<int>(
             initialValue: graduationFiscalYear,

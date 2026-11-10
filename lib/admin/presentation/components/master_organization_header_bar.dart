@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kendo_os/admin/presentation/components/master_edit_organization_bottom_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_team_name_management_sheet.dart';
-import 'package:kendo_os/shared/domain/entities/organization_graduation_type.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -19,11 +18,6 @@ class MasterOrganizationHeaderBar extends StatelessWidget {
   final bool isDark;
   final Color primaryColor;
   final ValueChanged<int> onGroupingModeChanged;
-  final bool showGraduated;
-  final int activeCount;
-  final int graduatedCount;
-  final ValueChanged<bool>? onShowGraduatedChanged;
-  final OrganizationGraduationType? graduationType;
 
   const MasterOrganizationHeaderBar({
     super.key,
@@ -36,11 +30,6 @@ class MasterOrganizationHeaderBar extends StatelessWidget {
     required this.isDark,
     required this.primaryColor,
     required this.onGroupingModeChanged,
-    this.showGraduated = false,
-    this.activeCount = 0,
-    this.graduatedCount = 0,
-    this.onShowGraduatedChanged,
-    this.graduationType,
   });
 
   @override
@@ -61,28 +50,13 @@ class MasterOrganizationHeaderBar extends StatelessWidget {
               Icon(Icons.account_balance, color: primaryColor, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      orgName,
-                      style: TextStyle(
-                        fontSize: AppFontSize.headline,
-                        fontWeight: AppFontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    if (graduationType != null) ...[
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        '${graduationType!.label} ・ ${graduationType!.description}',
-                        style: TextStyle(
-                          fontSize: AppFontSize.caption,
-                          color: context.appColors.subTextColor,
-                        ),
-                      ),
-                    ],
-                  ],
+                child: Text(
+                  orgName,
+                  style: TextStyle(
+                    fontSize: AppFontSize.headline,
+                    fontWeight: AppFontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
               ),
               if (!isSelectionMode && !isReadOnly && canManageMaster) ...[
@@ -123,74 +97,37 @@ class MasterOrganizationHeaderBar extends StatelessWidget {
             ],
           ),
         ),
-        if (onShowGraduatedChanged != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl,
-              vertical: AppSpacing.xs,
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<bool>(
-                segments: [
-                  ButtonSegment(value: false, label: Text('現役 ($activeCount)')),
-                  ButtonSegment(
-                    value: true,
-                    label: Text('卒業・OB/OG ($graduatedCount)'),
-                  ),
-                ],
-                selected: {showGraduated},
-                onSelectionChanged: (set) => onShowGraduatedChanged!(set.first),
-                style: SegmentedButton.styleFrom(
-                  selectedBackgroundColor: primaryColor,
-                  selectedForegroundColor: AppKendoColors.pureWhite,
-                  backgroundColor: isDark
-                      ? const Color(0xFF1E1E20)
-                      : context.appColors.cardBackground,
-                  foregroundColor: isDark
-                      ? context.appColors.subTextColor
-                      : context.appColors.textColor,
-                  side: BorderSide(color: context.appColors.separatorColor),
-                  textStyle: const TextStyle(
-                    fontSize: AppFontSize.bodySmall,
-                    fontWeight: AppFontWeight.bold,
-                  ),
-                ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.sm,
+          ),
+          child: SegmentedButton<int>(
+            segments: const [
+              ButtonSegment(value: 0, label: Text('学年別')),
+              ButtonSegment(value: 1, label: Text('カテゴリ別')),
+            ],
+            selected: {groupingMode},
+            onSelectionChanged: (Set<int> newSelection) {
+              onGroupingModeChanged(newSelection.first);
+            },
+            style: SegmentedButton.styleFrom(
+              selectedBackgroundColor: primaryColor,
+              selectedForegroundColor: AppKendoColors.pureWhite,
+              backgroundColor: isDark
+                  ? const Color(0xFF1E1E20)
+                  : context.appColors.cardBackground,
+              foregroundColor: isDark
+                  ? context.appColors.subTextColor
+                  : context.appColors.textColor,
+              side: BorderSide(color: context.appColors.separatorColor),
+              textStyle: const TextStyle(
+                fontSize: AppFontSize.bodySmall,
+                fontWeight: AppFontWeight.bold,
               ),
             ),
           ),
-        if (!showGraduated)
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl,
-              vertical: AppSpacing.sm,
-            ),
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, label: Text('学年別')),
-                ButtonSegment(value: 1, label: Text('カテゴリ別')),
-              ],
-              selected: {groupingMode},
-              onSelectionChanged: (Set<int> newSelection) {
-                onGroupingModeChanged(newSelection.first);
-              },
-              style: SegmentedButton.styleFrom(
-                selectedBackgroundColor: primaryColor,
-                selectedForegroundColor: AppKendoColors.pureWhite,
-                backgroundColor: isDark
-                    ? const Color(0xFF1E1E20)
-                    : context.appColors.cardBackground,
-                foregroundColor: isDark
-                    ? context.appColors.subTextColor
-                    : context.appColors.textColor,
-                side: BorderSide(color: context.appColors.separatorColor),
-                textStyle: const TextStyle(
-                  fontSize: AppFontSize.bodySmall,
-                  fontWeight: AppFontWeight.bold,
-                ),
-              ),
-            ),
-          ),
+        ),
       ],
     );
   }
