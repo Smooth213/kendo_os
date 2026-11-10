@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
+import 'package:kendo_os/shared/domain/entities/organization_graduation_type.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_data_sanitizer.dart';
 import 'package:kendo_os/shared/infrastructure/repository/local_match_repository.dart';
 
@@ -202,6 +203,29 @@ final currentDojoNameProvider = StreamProvider.autoDispose<String>((ref) {
       .snapshots()
       .map((doc) => doc.exists ? (doc.data()?['name'] as String? ?? '') : '');
 });
+
+/// 現在の組織（道場・部活）の卒業ライン・最終進級履歴を取得する Provider
+final organizationPromotionConfigProvider =
+    StreamProvider.autoDispose<OrganizationPromotionConfig>((ref) {
+      final dojoId = ref.watch(currentDojoIdProvider);
+      final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+      FirebaseFirestore? firestore;
+      try {
+        firestore = ref.watch(firestoreProvider);
+      } catch (_) {}
+      if (firestore == null) {
+        return Stream.value(const OrganizationPromotionConfig());
+      }
+      return firestore
+          .collection('organizations')
+          .doc(safeDojoId)
+          .snapshots()
+          .map(
+            (doc) => OrganizationPromotionConfig.fromMap(
+              doc.exists ? doc.data() : null,
+            ),
+          );
+    });
 
 /// ⚡ 最適化: 単一試合（matchId）専用のセレクタープロバイダ
 /// 他の試合や別コートの更新による画面全体のリビルド連鎖を完全に遮断します

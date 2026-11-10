@@ -15,6 +15,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/include_graduated_filter_chip.dart';
 
 /// 試合画面用 選手名編集・スマートスワップボトムシート
 class MatchPlayerNameEditBottomSheet extends ConsumerStatefulWidget {
@@ -51,6 +52,7 @@ class _MatchPlayerNameEditBottomSheetState
   late final TextEditingController _ctrl;
   late final String _teamName;
   late final String _playerName;
+  bool _includeGraduated = false;
 
   @override
   void initState() {
@@ -133,6 +135,7 @@ class _MatchPlayerNameEditBottomSheetState
       currentGroupMatches: currentGroupMatches,
       players: players,
       registeredTeams: registeredTeams,
+      includeGraduated: _includeGraduated,
     );
 
     final activePlayerNames = roster.activePlayerNames;
@@ -314,16 +317,25 @@ class _MatchPlayerNameEditBottomSheetState
                 const SizedBox(height: AppSpacing.md),
                 const Divider(),
                 const SizedBox(height: AppSpacing.sm),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '道場の名簿から選ぶ (${widget.match.category ?? "カテゴリ指定なし"})',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.body,
-                      fontWeight: AppFontWeight.bold,
-                      color: Color(0xFF3F51B5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '道場の名簿から選ぶ (${widget.match.category ?? "カテゴリ指定なし"})',
+                        style: const TextStyle(
+                          fontSize: AppFontSize.body,
+                          fontWeight: AppFontWeight.bold,
+                          color: Color(0xFF3F51B5),
+                        ),
+                      ),
                     ),
-                  ),
+                    IncludeGraduatedFilterChip(
+                      includeGraduated: _includeGraduated,
+                      onChanged: (val) =>
+                          setState(() => _includeGraduated = val),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Expanded(

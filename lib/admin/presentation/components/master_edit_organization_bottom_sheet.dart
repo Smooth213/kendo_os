@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/domain/entities/organization_graduation_type.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
@@ -51,11 +52,15 @@ class MasterEditOrganizationBottomSheet extends ConsumerStatefulWidget {
 class _MasterEditOrganizationBottomSheetState
     extends ConsumerState<MasterEditOrganizationBottomSheet> {
   late final TextEditingController _controller;
+  late OrganizationGraduationType _selectedGraduationType;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.currentName);
+    _selectedGraduationType =
+        ref.read(organizationPromotionConfigProvider).value?.graduationType ??
+        OrganizationGraduationType.juniorDojo;
   }
 
   @override
@@ -86,6 +91,7 @@ class _MasterEditOrganizationBottomSheetState
       if (firestore != null) {
         await firestore.collection('organizations').doc(safeDojoId).set({
           'name': newName,
+          'graduationType': _selectedGraduationType.id,
         }, SetOptions(merge: true));
 
         final batch = firestore.batch();
@@ -169,7 +175,7 @@ class _MasterEditOrganizationBottomSheetState
               ),
               const SizedBox(height: AppSpacing.lg),
               const Text(
-                '登録されている全選手の所属名を一括で書き換えます。',
+                '登録されている全選手の所属名と、一括進級時の卒業ラインを設定します。',
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
                   color: AppKendoColors.grey,
@@ -190,6 +196,48 @@ class _MasterEditOrganizationBottomSheetState
                   fillColor: isDark
                       ? const Color(0xFF2C2C2E)
                       : const Color(0xFFF2F2F7),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              DropdownButtonFormField<OrganizationGraduationType>(
+                initialValue: _selectedGraduationType,
+                dropdownColor: context.appColors.cardBackground,
+                style: TextStyle(
+                  color: context.appColors.textColor,
+                  fontSize: AppFontSize.body,
+                ),
+                decoration: InputDecoration(
+                  labelText: '組織種別（卒業ライン）',
+                  prefixIcon: const Icon(
+                    Icons.school,
+                    color: AppKendoColors.grey,
+                  ),
+                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFF2F2F7),
+                ),
+                items: OrganizationGraduationType.values
+                    .map(
+                      (type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() => _selectedGraduationType = val);
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                _selectedGraduationType.description,
+                style: TextStyle(
+                  fontSize: AppFontSize.small,
+                  color: context.appColors.subTextColor,
                 ),
               ),
               const SizedBox(height: AppSpacing.xxl),

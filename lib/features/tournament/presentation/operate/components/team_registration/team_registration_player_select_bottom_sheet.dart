@@ -8,6 +8,8 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
+import 'package:kendo_os/shared/widgets/include_graduated_filter_chip.dart';
+import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
 
 /// 🏆 チーム登録: カテゴリ連動上位表示 ＋ リアルタイム絞り込み ＋ 助っ人即時登録対応の選手選択ボトムシート
 class TeamRegistrationPlayerSelectBottomSheet extends StatefulWidget {
@@ -66,6 +68,7 @@ class _TeamRegistrationPlayerSelectBottomSheetState
     extends State<TeamRegistrationPlayerSelectBottomSheet> {
   final TextEditingController _customNameController = TextEditingController();
   bool _showAllPlayers = true; // デフォルトで同カテゴリ優先の上位表示＋その他表示
+  bool _includeGraduated = false;
 
   @override
   void initState() {
@@ -126,7 +129,8 @@ class _TeamRegistrationPlayerSelectBottomSheetState
 
     return TeamRegistrationSelectionCard(
       name: p.name,
-      subtitle: '${p.gradeName}${p.isBeginner ? " (🔰初心者)" : ""}',
+      subtitle:
+          '${MultiPlayerFilterHelper.formatPlayerCandidateGrade(p)}${p.isBeginner ? " (🔰初心者)" : ""}',
       isUsed: isUsed,
       usedPos: usedIdx != null
           ? (usedIdx! < widget.posNames.length
@@ -157,6 +161,7 @@ class _TeamRegistrationPlayerSelectBottomSheetState
           majorCategory: widget.selectedMajorCategory,
           minorCategory: widget.selectedMinorCategory,
           query: query,
+          includeGraduated: _includeGraduated,
         );
 
     final otherPlayers = TeamRegistrationPlayerFilterHelper.getOtherPlayers(
@@ -164,6 +169,7 @@ class _TeamRegistrationPlayerSelectBottomSheetState
       majorCategory: widget.selectedMajorCategory,
       minorCategory: widget.selectedMinorCategory,
       query: query,
+      includeGraduated: _includeGraduated,
     );
 
     final currentPosName = widget.index < widget.posNames.length
@@ -250,7 +256,16 @@ class _TeamRegistrationPlayerSelectBottomSheetState
                     : null,
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IncludeGraduatedFilterChip(
+                includeGraduated: _includeGraduated,
+                accentColor: widget.themeColors.primaryAccent,
+                onChanged: (val) => setState(() => _includeGraduated = val),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             Expanded(
               child: CustomScrollView(
                 slivers: [

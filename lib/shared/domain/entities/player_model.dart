@@ -1,4 +1,7 @@
 class PlayerModel {
+  static const String statusActive = 'active';
+  static const String statusGraduated = 'graduated';
+
   final String id;
 
   /// ★ 新・同期空間統治キー：名簿データが所属する固有の道場ID
@@ -12,6 +15,15 @@ class PlayerModel {
   final String gender;
   final bool isBeginner; // ★ 追加：初心者フラグ
 
+  /// 在籍ステータス（'active' = 現役 / 'graduated' = 卒業・OB/OG）
+  final String status;
+
+  /// 卒業年度（例：2027年3月卒 = 2026年度卒）
+  final int? graduatedFiscalYear;
+
+  /// 卒業アーカイブ処理日時
+  final DateTime? graduatedAt;
+
   PlayerModel({
     required this.id,
     this.organizationId = 'default_org',
@@ -23,10 +35,24 @@ class PlayerModel {
     this.organization = '',
     this.gender = '男子',
     this.isBeginner = false, // デフォルトは通常選手
+    this.status = statusActive,
+    this.graduatedFiscalYear,
+    this.graduatedAt,
   });
 
   String get name => '$lastName $firstName'.trim();
   String get nameKana => '$lastNameKana $firstNameKana'.trim(); // ★ よみがなフルネーム
+  bool get isGraduated => status == statusGraduated;
+  bool get isActive => !isGraduated;
+
+  String get graduationLabel =>
+      graduatedFiscalYear != null ? '$graduatedFiscalYear年度卒' : 'OB/OG';
+
+  String get gradeOrGraduationDisplay {
+    if (!isGraduated) return gradeName;
+    if (grade >= 17 || grade < 0) return 'OB/OG';
+    return '$gradeName卒';
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -39,7 +65,23 @@ class PlayerModel {
       'organization': organization,
       'gender': gender,
       'isBeginner': isBeginner,
+      'status': status,
+      if (graduatedFiscalYear != null)
+        'graduatedFiscalYear': graduatedFiscalYear,
+      if (graduatedAt != null) 'graduatedAt': graduatedAt!.toIso8601String(),
     };
+  }
+
+  static DateTime? _parseDateTime(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is DateTime) return raw;
+    if (raw is int) return DateTime.fromMillisecondsSinceEpoch(raw);
+    if (raw is String) return DateTime.tryParse(raw);
+    try {
+      final dynamic converted = (raw as dynamic).toDate();
+      if (converted is DateTime) return converted;
+    } catch (_) {}
+    return null;
   }
 
   factory PlayerModel.fromMap(Map<String, dynamic> map, String documentId) {
@@ -54,6 +96,11 @@ class PlayerModel {
       }
     }
 
+    final rawStatus = map['status']?.toString().trim() ?? '';
+    final normalizedStatus = rawStatus == statusGraduated
+        ? statusGraduated
+        : statusActive;
+
     return PlayerModel(
       id: documentId,
       lastName: lName,
@@ -64,11 +111,15 @@ class PlayerModel {
       organization: map['organization'] ?? '',
       gender: map['gender'] ?? '男子',
       isBeginner: map['isBeginner'] ?? false,
+      status: normalizedStatus,
+      graduatedFiscalYear: (map['graduatedFiscalYear'] as num?)?.toInt(),
+      graduatedAt: _parseDateTime(map['graduatedAt']),
     );
   }
 
   PlayerModel copyWith({
     String? id,
+    String? organizationId,
     String? lastName,
     String? firstName,
     String? lastNameKana,
@@ -77,9 +128,15 @@ class PlayerModel {
     String? organization,
     String? gender,
     bool? isBeginner,
+    String? status,
+    int? graduatedFiscalYear,
+    bool clearGraduatedFiscalYear = false,
+    DateTime? graduatedAt,
+    bool clearGraduatedAt = false,
   }) {
     return PlayerModel(
       id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
       lastName: lastName ?? this.lastName,
       firstName: firstName ?? this.firstName,
       lastNameKana: lastNameKana ?? this.lastNameKana,
@@ -88,6 +145,11 @@ class PlayerModel {
       organization: organization ?? this.organization,
       gender: gender ?? this.gender,
       isBeginner: isBeginner ?? this.isBeginner,
+      status: status ?? this.status,
+      graduatedFiscalYear: clearGraduatedFiscalYear
+          ? null
+          : (graduatedFiscalYear ?? this.graduatedFiscalYear),
+      graduatedAt: clearGraduatedAt ? null : (graduatedAt ?? this.graduatedAt),
     );
   }
 

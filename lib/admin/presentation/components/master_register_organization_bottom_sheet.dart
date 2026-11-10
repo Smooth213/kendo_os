@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
+import 'package:kendo_os/shared/domain/entities/organization_graduation_type.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -81,12 +82,20 @@ class _MasterRegisterOrganizationSheet extends StatefulWidget {
 class _MasterRegisterOrganizationSheetState
     extends State<_MasterRegisterOrganizationSheet> {
   late final TextEditingController controller;
+  OrganizationGraduationType _selectedGraduationType =
+      OrganizationGraduationType.juniorDojo;
 
   @override
   void initState() {
     super.initState();
     final initialName = widget.ref.read(currentDojoNameProvider).value ?? '';
     controller = TextEditingController(text: initialName);
+    _selectedGraduationType =
+        widget.ref
+            .read(organizationPromotionConfigProvider)
+            .value
+            ?.graduationType ??
+        OrganizationGraduationType.juniorDojo;
   }
 
   @override
@@ -178,6 +187,40 @@ class _MasterRegisterOrganizationSheetState
                   fillColor: inputBgColor,
                 ),
               ),
+              const SizedBox(height: AppSpacing.lg),
+              DropdownButtonFormField<OrganizationGraduationType>(
+                initialValue: _selectedGraduationType,
+                dropdownColor: dialogBgColor,
+                style: TextStyle(color: textColor, fontSize: AppFontSize.body),
+                decoration: InputDecoration(
+                  labelText: '組織種別（一括進級の卒業ライン）',
+                  prefixIcon: Icon(Icons.school, color: subTextColor),
+                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  filled: true,
+                  fillColor: inputBgColor,
+                ),
+                items: OrganizationGraduationType.values
+                    .map(
+                      (type) => DropdownMenuItem(
+                        value: type,
+                        child: Text(type.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() => _selectedGraduationType = val);
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                _selectedGraduationType.description,
+                style: TextStyle(
+                  fontSize: AppFontSize.small,
+                  color: subTextColor,
+                ),
+              ),
               const SizedBox(height: AppSpacing.xxl),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -217,7 +260,10 @@ class _MasterRegisterOrganizationSheetState
                       await firestore
                           .collection('organizations')
                           .doc(safeDojoId)
-                          .set({'name': newName}, SetOptions(merge: true));
+                          .set({
+                            'name': newName,
+                            'graduationType': _selectedGraduationType.id,
+                          }, SetOptions(merge: true));
 
                       if (context.mounted) {
                         Navigator.pop(context);

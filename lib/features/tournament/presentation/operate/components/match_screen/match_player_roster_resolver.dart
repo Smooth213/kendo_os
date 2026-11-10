@@ -41,6 +41,7 @@ class MatchPlayerRosterResolver {
     required List<MatchModel> currentGroupMatches,
     required List<PlayerModel> players,
     required List<TeamModel> registeredTeams,
+    bool includeGraduated = false,
   }) {
     final activePlayerNames = <String>{};
     final playerPositions = <String, String>{};
@@ -65,6 +66,7 @@ class MatchPlayerRosterResolver {
     }
 
     final ownTeamPlayers = players.where((p) {
+      if (!includeGraduated && p.isGraduated) return false;
       final org = p.organization.trim();
       if (org.isEmpty) return false;
       return teamName.contains(org) || org.contains(teamName);
@@ -151,6 +153,7 @@ class MatchPlayerRosterResolver {
         .toList();
 
     final otherCategoryPlayers = players.where((p) {
+      if (!includeGraduated && p.isGraduated) return false;
       if (sameCatActive.any((a) => a.name == p.name)) return false;
       if (quickAccessPlayers.any((q) => q.name == p.name)) return false;
       if (dojoListSubstitutes.any((d) => d.name == p.name)) return false;

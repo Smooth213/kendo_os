@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_gender_selector.dart';
+import 'package:kendo_os/admin/presentation/components/master_player_status_selector.dart';
 import 'package:kendo_os/admin/presentation/helpers/auto_kana_helper.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -59,6 +60,8 @@ class _MasterPlayerEditBottomSheetState
   late int _selectedGrade;
   late String _selectedGender;
   late bool _isBeginner;
+  late String _selectedStatus;
+  int? _graduatedFiscalYear;
 
   static const Map<int, String> _gradeOptions = {
     0: '未就学',
@@ -97,6 +100,8 @@ class _MasterPlayerEditBottomSheetState
     _selectedGrade = p?.grade ?? 1;
     _selectedGender = p?.gender ?? '男子';
     _isBeginner = p?.isBeginner ?? false;
+    _selectedStatus = p?.status ?? PlayerModel.statusActive;
+    _graduatedFiscalYear = p?.graduatedFiscalYear;
 
     AutoKanaHelper.setupAutoKana(_lastNameController, _lastNameKanaController);
     AutoKanaHelper.setupAutoKana(
@@ -123,7 +128,8 @@ class _MasterPlayerEditBottomSheetState
       firestore = ref.read(firestoreProvider);
     } catch (_) {}
 
-    final pData = {
+    final isGraduated = _selectedStatus == PlayerModel.statusGraduated;
+    final pData = <String, dynamic>{
       'lastName': _lastNameController.text.trim(),
       'firstName': _firstNameController.text.trim(),
       'lastNameKana': _lastNameKanaController.text.trim(),
@@ -131,13 +137,24 @@ class _MasterPlayerEditBottomSheetState
       'grade': _selectedGrade,
       'gender': _selectedGender,
       'isBeginner': _isBeginner,
+      'status': _selectedStatus,
       'organization': widget.cloudDojoName.isNotEmpty
           ? widget.cloudDojoName
           : 'テスト道場',
+      if (isGraduated && _graduatedFiscalYear != null)
+        'graduatedFiscalYear': _graduatedFiscalYear,
+      if (isGraduated && widget.player?.graduatedAt == null)
+        'graduatedAt': DateTime.now().toIso8601String(),
     };
 
     if (firestore != null) {
       if (widget.player != null) {
+        if (!isGraduated) {
+          pData['graduatedFiscalYear'] = FieldValue.delete();
+          pData['graduatedAt'] = FieldValue.delete();
+        } else if (_graduatedFiscalYear == null) {
+          pData['graduatedFiscalYear'] = FieldValue.delete();
+        }
         await firestore
             .collection('organizations')
             .doc(safeDojoId)
@@ -382,6 +399,14 @@ class _MasterPlayerEditBottomSheetState
           onChanged: (val) {
             if (val != null) setState(() => _selectedGrade = val);
           },
+        ),
+        SizedBox(height: gapLarge),
+        MasterPlayerStatusSelector(
+          selectedStatus: _selectedStatus,
+          graduatedFiscalYear: _graduatedFiscalYear,
+          onStatusChanged: (val) => setState(() => _selectedStatus = val),
+          onGraduatedYearChanged: (val) =>
+              setState(() => _graduatedFiscalYear = val),
         ),
         SizedBox(height: isKeyboardVisible ? 16.0 : 32.0),
 

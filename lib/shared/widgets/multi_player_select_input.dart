@@ -9,6 +9,7 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
+import 'package:kendo_os/shared/widgets/include_graduated_filter_chip.dart';
 import 'package:kendo_os/shared/widgets/multi_player_candidate_chip.dart';
 import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
 import 'smart_player_input.dart';
@@ -85,6 +86,7 @@ class _MultiPlayerSelectInputState
     String searchText = '';
     String selectedFilter = 'すべて';
     bool isAscending = true;
+    bool includeGraduated = false;
     List<String> tempSelected = List.from(widget.initialSelected);
 
     if (!mounted) return;
@@ -109,6 +111,7 @@ class _MultiPlayerSelectInputState
                       searchText: searchText,
                       selectedFilter: selectedFilter,
                       isAscending: isAscending,
+                      includeGraduated: includeGraduated,
                     );
                 final filteredGuest = MultiPlayerFilterHelper.filterGuests(
                   guestPlayers: guestPlayers,
@@ -248,31 +251,44 @@ class _MultiPlayerSelectInputState
                           horizontal: AppSpacing.lg,
                         ),
                         child: Row(
-                          children: MultiPlayerFilterHelper.filterCategories
-                              .map((filterName) {
-                                final isSelected = selectedFilter == filterName;
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: AppSpacing.sm,
-                                  ),
-                                  child: AppChoiceChip(
-                                    label: Text(filterName),
-                                    selected: isSelected,
-                                    customSelectedColor: _accentColor,
-                                    customTextColor: isSelected
-                                        ? AppKendoColors.pureWhite
-                                        : null,
-                                    onSelected: (bool selected) {
-                                      if (selected) {
-                                        setStateSheet(
-                                          () => selectedFilter = filterName,
-                                        );
-                                      }
-                                    },
-                                  ),
-                                );
-                              })
-                              .toList(),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                right: AppSpacing.sm,
+                              ),
+                              child: IncludeGraduatedFilterChip(
+                                includeGraduated: includeGraduated,
+                                accentColor: _accentColor,
+                                onChanged: (val) =>
+                                    setStateSheet(() => includeGraduated = val),
+                              ),
+                            ),
+                            ...MultiPlayerFilterHelper.filterCategories.map((
+                              filterName,
+                            ) {
+                              final isSelected = selectedFilter == filterName;
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.sm,
+                                ),
+                                child: AppChoiceChip(
+                                  label: Text(filterName),
+                                  selected: isSelected,
+                                  customSelectedColor: _accentColor,
+                                  customTextColor: isSelected
+                                      ? AppKendoColors.pureWhite
+                                      : null,
+                                  onSelected: (bool selected) {
+                                    if (selected) {
+                                      setStateSheet(
+                                        () => selectedFilter = filterName,
+                                      );
+                                    }
+                                  },
+                                ),
+                              );
+                            }),
+                          ],
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -354,7 +370,10 @@ class _MultiPlayerSelectInputState
                                   );
                                   return MultiPlayerCandidateTile(
                                     name: p.name,
-                                    subtitle: p.gradeName,
+                                    subtitle:
+                                        MultiPlayerFilterHelper.formatPlayerCandidateGrade(
+                                          p,
+                                        ),
                                     isSelected: isSelected,
                                     accentColor: _accentColor,
                                     onChanged: (bool? val) {

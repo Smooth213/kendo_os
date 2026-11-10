@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_edit_bottom_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_gender_selector.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_grouping_helper.dart';
+import 'package:kendo_os/admin/presentation/components/master_player_status_selector.dart';
 import 'package:kendo_os/admin/presentation/components/master_player_tile.dart';
 import 'package:kendo_os/admin/presentation/helpers/auto_kana_helper.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
@@ -277,6 +278,88 @@ void main() {
         expect(find.text('選手情報を編集'), findsOneWidget);
         expect(find.text('佐藤'), findsOneWidget);
         expect(find.text('次郎'), findsOneWidget);
+      });
+    });
+
+    // ----------------------------------------------------------
+    // 在籍区分セレクター・卒業年度グループ化
+    // ----------------------------------------------------------
+    group('卒業・OB/OGステータス管理テスト', () {
+      test('groupGraduatedPlayersにおいて卒業年度降順で正しくグループ化されること', () {
+        final players = [
+          PlayerModel(
+            id: 'g1',
+            lastName: '先輩',
+            firstName: '甲',
+            lastNameKana: 'センパイ',
+            firstNameKana: 'コウ',
+            grade: 9,
+            status: PlayerModel.statusGraduated,
+            graduatedFiscalYear: 2024,
+          ),
+          PlayerModel(
+            id: 'g2',
+            lastName: '先輩',
+            firstName: '乙',
+            lastNameKana: 'センパイ',
+            firstNameKana: 'オツ',
+            grade: 9,
+            status: PlayerModel.statusGraduated,
+            graduatedFiscalYear: 2026,
+          ),
+          PlayerModel(
+            id: 'g3',
+            lastName: '先輩',
+            firstName: '丙',
+            lastNameKana: 'センパイ',
+            firstNameKana: 'ヘイ',
+            grade: 9,
+            status: PlayerModel.statusGraduated,
+          ),
+        ];
+
+        final grouped = MasterPlayerGroupingHelper.groupGraduatedPlayers(
+          players: players,
+        );
+        expect(
+          grouped.keys.toList(),
+          equals(['2026年度卒', '2024年度卒', '卒業（年度未設定）']),
+        );
+      });
+
+      testWidgets('MasterPlayerStatusSelectorにおいて卒業・OB/OG選択時に卒業年度入力が表示されること', (
+        tester,
+      ) async {
+        String currentStatus = PlayerModel.statusActive;
+        int? currentYear;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) {
+                  return MasterPlayerStatusSelector(
+                    selectedStatus: currentStatus,
+                    graduatedFiscalYear: currentYear,
+                    onStatusChanged: (val) =>
+                        setState(() => currentStatus = val),
+                    onGraduatedYearChanged: (val) =>
+                        setState(() => currentYear = val),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('卒業年度'), findsNothing);
+        await tester.tap(find.text('卒業・OB/OG'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 200));
+
+        expect(currentStatus, equals(PlayerModel.statusGraduated));
+        expect(find.text('卒業年度'), findsOneWidget);
+        expect(currentYear, isNotNull);
       });
     });
   });

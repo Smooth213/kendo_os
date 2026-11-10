@@ -105,7 +105,9 @@ class _NewMatchScreenState extends ConsumerState<NewMatchScreen> {
     final history = ref.watch(newMatchHistoryProvider);
     final Set<String> combinedSet = {};
     for (var p in masterPlayers) {
-      combinedSet.add(p.name);
+      if (p.isActive) {
+        combinedSet.add(p.name);
+      }
     }
     combinedSet.addAll(history);
     final combinedSuggestions = combinedSet.toList();

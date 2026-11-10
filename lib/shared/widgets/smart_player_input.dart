@@ -10,6 +10,8 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
+import 'package:kendo_os/shared/widgets/include_graduated_filter_chip.dart';
+import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
 
 // 部内戦機能で利用する選手マスタを取得する専用Provider
 final bunaiksenPlayerMasterProvider =
@@ -51,6 +53,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
     String searchText = '';
     String selectedFilter = 'すべて';
     bool isAscending = true;
+    bool includeGraduated = false;
 
     await showAppBottomSheet(
       context: context,
@@ -60,73 +63,23 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
           builder: (context, setStateSheet) {
             final isDark = Theme.of(context).brightness == Brightness.dark;
 
-            // 1. 検索ワードによる絞り込み ＋ カテゴリ別フィルタ
-            List<PlayerModel> filteredMaster = masterPlayers
-                .where((p) => p.name.contains(searchText))
-                .toList();
-
-            if (selectedFilter != 'すべて') {
-              if (selectedFilter == 'ゲスト') {
-                filteredMaster = [];
-              } else if (selectedFilter == '初心者') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '幼年') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade == 0 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '低学年') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 1 && p.grade <= 4 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '高学年') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 5 && p.grade <= 6 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '中学生') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 7 && p.grade <= 9 && !p.isBeginner)
-                    .toList();
-              } else if (selectedFilter == '高校生') {
-                filteredMaster = filteredMaster
-                    .where(
-                      (p) => p.grade >= 10 && p.grade <= 12 && !p.isBeginner,
-                    )
-                    .toList();
-              } else if (selectedFilter == '一般') {
-                filteredMaster = filteredMaster
-                    .where((p) => p.grade >= 13 && !p.isBeginner)
-                    .toList();
-              } else {
-                filteredMaster = [];
-              }
-            }
-
-            // 学年順（同一年齢内はよみがな順）でソート（昇順 / 降順）
-            filteredMaster.sort((a, b) {
-              final gradeCompare = isAscending
-                  ? a.grade.compareTo(b.grade)
-                  : b.grade.compareTo(a.grade);
-              if (gradeCompare != 0) return gradeCompare;
-              return isAscending
-                  ? a.nameKana.compareTo(b.nameKana)
-                  : b.nameKana.compareTo(a.nameKana);
-            });
-
-            // ゲストは「すべて」または「ゲスト」フィルターの時のみ表示
-            final filteredGuest =
-                (selectedFilter == 'すべて' || selectedFilter == 'ゲスト')
-                ? guestPlayers
-                      .where((name) => name.contains(searchText))
-                      .toList()
-                : <String>[];
-
-            // 入力文字が完全に新しい（名簿・ゲストともに重複しない）場合のみ「追加」ボタンを表示
-            final isNewName =
-                searchText.trim().isNotEmpty &&
-                !masterPlayers.any((p) => p.name == searchText.trim()) &&
-                !guestPlayers.any((name) => name == searchText.trim());
+            final filteredMaster = MultiPlayerFilterHelper.filterAndSortMaster(
+              masterPlayers: masterPlayers,
+              searchText: searchText,
+              selectedFilter: selectedFilter,
+              isAscending: isAscending,
+              includeGraduated: includeGraduated,
+            );
+            final filteredGuest = MultiPlayerFilterHelper.filterGuests(
+              guestPlayers: guestPlayers,
+              searchText: searchText,
+              selectedFilter: selectedFilter,
+            );
+            final isNewName = MultiPlayerFilterHelper.isNewName(
+              searchText: searchText,
+              masterPlayers: masterPlayers,
+              guestPlayers: guestPlayers,
+            );
 
             return Padding(
               padding: EdgeInsets.only(
@@ -240,41 +193,43 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                       horizontal: AppSpacing.lg,
                     ),
                     child: Row(
-                      children:
-                          [
-                            'すべて',
-                            '初心者',
-                            '幼年',
-                            '低学年',
-                            '高学年',
-                            '中学生',
-                            '高校生',
-                            '一般',
-                            'ゲスト',
-                          ].map((filterName) {
-                            final isSelected = selectedFilter == filterName;
-                            final activeColor = _accentColor;
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                right: AppSpacing.sm,
-                              ),
-                              child: AppChoiceChip(
-                                label: Text(filterName),
-                                selected: isSelected,
-                                customSelectedColor: activeColor,
-                                customTextColor: isSelected
-                                    ? AppKendoColors.pureWhite
-                                    : null,
-                                onSelected: (bool selected) {
-                                  if (selected) {
-                                    setStateSheet(() {
-                                      selectedFilter = filterName;
-                                    });
-                                  }
-                                },
-                              ),
-                            );
-                          }).toList(),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.sm),
+                          child: IncludeGraduatedFilterChip(
+                            includeGraduated: includeGraduated,
+                            accentColor: _accentColor,
+                            onChanged: (val) =>
+                                setStateSheet(() => includeGraduated = val),
+                          ),
+                        ),
+                        ...MultiPlayerFilterHelper.filterCategories.map((
+                          filterName,
+                        ) {
+                          final isSelected = selectedFilter == filterName;
+                          final activeColor = _accentColor;
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              right: AppSpacing.sm,
+                            ),
+                            child: AppChoiceChip(
+                              label: Text(filterName),
+                              selected: isSelected,
+                              customSelectedColor: activeColor,
+                              customTextColor: isSelected
+                                  ? AppKendoColors.pureWhite
+                                  : null,
+                              onSelected: (bool selected) {
+                                if (selected) {
+                                  setStateSheet(() {
+                                    selectedFilter = filterName;
+                                  });
+                                }
+                              },
+                            ),
+                          );
+                        }),
+                      ],
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -360,7 +315,9 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                           ),
                           title: Text(p.name),
                           subtitle: Text(
-                            p.gradeName,
+                            MultiPlayerFilterHelper.formatPlayerCandidateGrade(
+                              p,
+                            ),
                             style: const TextStyle(
                               fontSize: AppFontSize.small,
                               color: AppKendoColors.grey,

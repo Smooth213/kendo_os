@@ -17,6 +17,7 @@ class MasterPlayerTile extends StatelessWidget {
   final VoidCallback? onLongPress;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onReactivate;
 
   const MasterPlayerTile({
     super.key,
@@ -29,6 +30,7 @@ class MasterPlayerTile extends StatelessWidget {
     this.onLongPress,
     this.onEdit,
     this.onDelete,
+    this.onReactivate,
   });
 
   @override
@@ -112,6 +114,27 @@ class MasterPlayerTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (player.isGraduated) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.subValue,
+                              vertical: AppSpacing.xxs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppKendoColors.indigo,
+                              borderRadius: AppRadius.tiny,
+                            ),
+                            child: Text(
+                              player.graduationLabel,
+                              style: const TextStyle(
+                                color: AppKendoColors.pureWhite,
+                                fontSize: AppFontSize.nano,
+                                fontWeight: AppFontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                         if (player.isBeginner) ...[
                           const SizedBox(width: AppSpacing.sm),
                           Container(
@@ -157,7 +180,7 @@ class MasterPlayerTile extends StatelessWidget {
                             ),
                           ),
                         Text(
-                          '${player.gradeName} / ${player.gender}',
+                          '${player.gradeOrGraduationDisplay} / ${player.gender}',
                           style: TextStyle(
                             color: context.appColors.subTextColor,
                             fontSize: AppFontSize.caption,
@@ -178,12 +201,21 @@ class MasterPlayerTile extends StatelessWidget {
       return tile;
     }
 
+    final showReactivate = player.isGraduated && onReactivate != null;
+
     return Slidable(
       key: ValueKey(player.id),
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
-        extentRatio: 0.44,
+        extentRatio: showReactivate ? 0.66 : 0.44,
         children: [
+          if (showReactivate)
+            AppSlidableAction(
+              onPressed: (_) => onReactivate!(),
+              backgroundColor: AppKendoColors.successGreen,
+              icon: Icons.restore,
+              label: '復帰',
+            ),
           AppSlidableAction(
             onPressed: onEdit != null ? (_) => onEdit!() : null,
             backgroundColor: AppKendoColors.blueAccent,

@@ -55,10 +55,12 @@ class TeamRegistrationPlayerFilterHelper {
     required String majorCategory,
     required String minorCategory,
     required String query,
+    bool includeGraduated = false,
   }) {
     return players
         .where(
           (p) =>
+              (includeGraduated || p.isActive) &&
               isSameCategory(
                 player: p,
                 majorCategory: majorCategory,
@@ -76,10 +78,12 @@ class TeamRegistrationPlayerFilterHelper {
     required String majorCategory,
     required String minorCategory,
     required String query,
+    bool includeGraduated = false,
   }) {
     return players
         .where(
           (p) =>
+              (includeGraduated || p.isActive) &&
               !isSameCategory(
                 player: p,
                 majorCategory: majorCategory,

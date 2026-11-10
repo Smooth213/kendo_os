@@ -140,7 +140,9 @@ class _CreateTournamentScreenState
           debugPrint('[ERROR] [DEBUG] 現在のUID: "$uid"');
 
           final hasTeams = _teams.isNotEmpty;
-          final roster = ref.read(playerListProvider).value ?? <PlayerModel>[];
+          final roster = (ref.read(playerListProvider).value ?? <PlayerModel>[])
+              .where((p) => p.isActive)
+              .toList();
           final categories = (_shouldAutoRegisterTeams && hasTeams)
               ? TournamentTeamAutoRegisterService.extractCategories(
                   _teams,
@@ -165,7 +167,9 @@ class _CreateTournamentScreenState
           int autoRegisteredCount = 0;
           if (_shouldAutoRegisterTeams && hasTeams) {
             final roster =
-                ref.read(playerListProvider).value ?? <PlayerModel>[];
+                (ref.read(playerListProvider).value ?? <PlayerModel>[])
+                    .where((p) => p.isActive)
+                    .toList();
             autoRegisteredCount =
                 await TournamentTeamAutoRegisterService.registerTeams(
                   teams: _teams,
@@ -206,7 +210,9 @@ class _CreateTournamentScreenState
   @override
   Widget build(BuildContext context) {
     final playerListAsync = ref.watch(playerListProvider);
-    final roster = playerListAsync.value ?? <PlayerModel>[];
+    final roster = (playerListAsync.value ?? <PlayerModel>[])
+        .where((p) => p.isActive)
+        .toList();
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return LiquidBackground(

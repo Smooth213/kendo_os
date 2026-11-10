@@ -14,6 +14,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/matc
 import 'package:kendo_os/security/feature_gate.dart';
 import 'package:kendo_os/shared/domain/entities/player_model.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/security_level_provider.dart';
@@ -21,6 +22,8 @@ import 'package:kendo_os/shared/presentation/providers/settings_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
+import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_header.dart';
 import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
@@ -60,6 +63,7 @@ class MasterManagementScreen extends ConsumerStatefulWidget {
 class _MasterManagementScreenState
     extends ConsumerState<MasterManagementScreen> {
   int _groupingMode = 0;
+  bool _showGraduated = false;
   bool _isSelectionMode = false;
   final Set<String> _selectedPlayerIds = {};
 
@@ -67,6 +71,7 @@ class _MasterManagementScreenState
   Widget build(BuildContext context) {
     final playerListAsync = ref.watch(playerListProvider);
     final cloudDojoName = ref.watch(currentDojoNameProvider).value ?? '';
+    final promoConfig = ref.watch(organizationPromotionConfigProvider).value;
 
     final currentRole = ref.watch(currentUserRoleProvider);
     final currentLevel = ref.watch(securityLevelProvider);
@@ -168,12 +173,22 @@ class _MasterManagementScreenState
             final orgName = players.isNotEmpty
                 ? players.first.organization
                 : cloudDojoName;
+            final activePlayers = players.where((p) => p.isActive).toList();
+            final graduatedPlayers = players
+                .where((p) => p.isGraduated)
+                .toList();
+            final displayPlayers = _showGraduated
+                ? graduatedPlayers
+                : activePlayers;
 
-            final Map<String, List<PlayerModel>> groupedPlayers =
-                MasterPlayerGroupingHelper.groupPlayers(
-                  players: players,
-                  groupingMode: _groupingMode,
-                );
+            final Map<String, List<PlayerModel>> groupedPlayers = _showGraduated
+                ? MasterPlayerGroupingHelper.groupGraduatedPlayers(
+                    players: displayPlayers,
+                  )
+                : MasterPlayerGroupingHelper.groupPlayers(
+                    players: displayPlayers,
+                    groupingMode: _groupingMode,
+                  );
             final groupKeys = groupedPlayers.keys.toList();
 
             return Column(
@@ -189,81 +204,110 @@ class _MasterManagementScreenState
                   primaryColor: primaryColor,
                   onGroupingModeChanged: (val) =>
                       setState(() => _groupingMode = val),
+                  showGraduated: _showGraduated,
+                  activeCount: activePlayers.length,
+                  graduatedCount: graduatedPlayers.length,
+                  onShowGraduatedChanged: (val) {
+                    setState(() {
+                      _showGraduated = val;
+                      _isSelectionMode = false;
+                      _selectedPlayerIds.clear();
+                    });
+                  },
+                  graduationType: promoConfig?.graduationType,
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(
-                      bottom: AppSpacing.giant * 2.5,
-                    ),
-                    itemCount: groupKeys.length,
-                    itemBuilder: (context, index) {
-                      final groupName = groupKeys[index];
-                      final groupItems = groupedPlayers[groupName]!;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: AppSpacing.xl,
-                              bottom: AppSpacing.sm,
-                              left: 32,
-                            ),
+                  child: displayPlayers.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.xl),
                             child: Text(
-                              groupName.toUpperCase(),
+                              _showGraduated
+                                  ? '卒業・OB/OGとしてアーカイブされた選手はまだいません'
+                                  : '現役の選手はまだ登録されていません',
                               style: TextStyle(
-                                fontSize: AppFontSize.bodySmall,
-                                fontWeight: AppFontWeight.semiBold,
-                                color: isDark
-                                    ? const Color(0xFFFFFFFF)
-                                    : const Color(0x8A000000),
-                                letterSpacing: 0.5,
+                                color: context.appColors.subTextColor,
+                                fontSize: AppFontSize.body,
                               ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                            ),
-                            decoration: BoxDecoration(
-                              color: context.appColors.cardBackground,
-                              borderRadius: AppRadius.medium,
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Column(
-                              children: groupItems.asMap().entries.map((entry) {
-                                final int idx = entry.key;
-                                final PlayerModel player = entry.value;
-                                final bool isLast =
-                                    idx == groupItems.length - 1;
-                                return Column(
-                                  children: [
-                                    _buildPlayerTile(
-                                      context,
-                                      ref,
-                                      player,
-                                      isReadOnly,
-                                      canManageMaster,
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(
+                            bottom: AppSpacing.giant * 2.5,
+                          ),
+                          itemCount: groupKeys.length,
+                          itemBuilder: (context, index) {
+                            final groupName = groupKeys[index];
+                            final groupItems = groupedPlayers[groupName]!;
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: AppSpacing.xl,
+                                    bottom: AppSpacing.sm,
+                                    left: 32,
+                                  ),
+                                  child: Text(
+                                    groupName.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: AppFontSize.bodySmall,
+                                      fontWeight: AppFontWeight.semiBold,
+                                      color: isDark
+                                          ? const Color(0xFFFFFFFF)
+                                          : const Color(0x8A000000),
+                                      letterSpacing: 0.5,
                                     ),
-                                    if (!isLast)
-                                      Divider(
-                                        height: 1,
-                                        thickness: 1,
-                                        color: isDark
-                                            ? const Color(0xFF38383A)
-                                            : const Color(0xFFC6C6C8),
-                                        indent: 68,
-                                        endIndent: 0,
-                                      ),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                                  ),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.lg,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: context.appColors.cardBackground,
+                                    borderRadius: AppRadius.medium,
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Column(
+                                    children: groupItems.asMap().entries.map((
+                                      entry,
+                                    ) {
+                                      final int idx = entry.key;
+                                      final PlayerModel player = entry.value;
+                                      final bool isLast =
+                                          idx == groupItems.length - 1;
+                                      return Column(
+                                        children: [
+                                          _buildPlayerTile(
+                                            context,
+                                            ref,
+                                            player,
+                                            isReadOnly,
+                                            canManageMaster,
+                                          ),
+                                          if (!isLast)
+                                            Divider(
+                                              height: 1,
+                                              thickness: 1,
+                                              color: isDark
+                                                  ? const Color(0xFF38383A)
+                                                  : const Color(0xFFC6C6C8),
+                                              indent: 68,
+                                              endIndent: 0,
+                                            ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                 ),
               ],
             );
@@ -341,6 +385,80 @@ class _MasterManagementScreenState
       ),
       onDelete: () =>
           MasterDeleteDialogHelper.confirmSingleDelete(context, ref, player),
+      onReactivate: player.isGraduated
+          ? () => _confirmReactivatePlayer(context, ref, player)
+          : null,
     );
+  }
+
+  Future<void> _confirmReactivatePlayer(
+    BuildContext context,
+    WidgetRef ref,
+    PlayerModel player,
+  ) async {
+    final int? promotedGrade = (player.grade >= 0 && player.grade < 16)
+        ? player.grade + 1
+        : (player.grade == 16 ? 99 : null);
+    final String promotedLabel = promotedGrade != null
+        ? PlayerModel(
+            id: '',
+            lastName: '',
+            firstName: '',
+            lastNameKana: '',
+            firstNameKana: '',
+            grade: promotedGrade,
+          ).gradeName
+        : '一般';
+
+    final int? chosenGrade = await showAppDialog<int?>(
+      context: context,
+      builder: (ctx) => AppDialog(
+        titleIcon: Icons.restore,
+        iconColor: AppKendoColors.successGreen,
+        title: '現役への復帰',
+        content: Text(
+          '${player.name} さんを現役名簿へ復帰させます。\n復帰時の学年・区分を選択してください。',
+          style: const TextStyle(height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, -1),
+            child: const Text('キャンセル'),
+          ),
+          if (promotedGrade != null)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 99),
+              child: const Text('一般として復帰'),
+            ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, promotedGrade ?? player.grade),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppKendoColors.successGreen,
+              foregroundColor: AppKendoColors.pureWhite,
+              shape: const StadiumBorder(),
+              elevation: 0,
+            ),
+            child: Text(
+              promotedGrade != null ? '$promotedLabel で復帰' : '現役へ復帰',
+              style: const TextStyle(fontWeight: AppFontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (chosenGrade == null || chosenGrade == -1) return;
+
+    final dojoId = ref.read(currentDojoIdProvider);
+    final safeDojoId = dojoId.isNotEmpty ? dojoId : 'test201';
+    FirebaseFirestore? firestore;
+    try {
+      firestore = ref.read(firestoreProvider);
+    } catch (_) {}
+
+    final repo = PlayerRepository(dojoId: safeDojoId, firestore: firestore);
+    await repo.reactivatePlayer(player.id, nextGrade: chosenGrade);
+    if (!context.mounted) return;
+    AppSnackBar.showSuccess(context, '${player.name} さんを現役へ復帰しました');
   }
 }

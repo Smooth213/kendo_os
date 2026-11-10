@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/admin/presentation/components/master_annual_promotion_sheet.dart';
 import 'package:kendo_os/admin/presentation/components/master_data_cleanup_dialog.dart';
 import 'package:kendo_os/shared/infrastructure/repository/player_repository.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
-import 'package:kendo_os/shared/widgets/app_loading_indicator.dart';
 
 /// 選手マスタ画面の管理メニューボトムシート（データクリーンアップ・一括進級）
 class MasterMenuBottomSheet {
@@ -71,7 +70,7 @@ class MasterMenuBottomSheet {
                   ),
                 ),
                 subtitle: const Text(
-                  'すべての選手の学年を1つ繰り上げます',
+                  '卒業ライン選択・卒業生アーカイブ・学年繰り上げを行います',
                   style: TextStyle(
                     fontSize: AppFontSize.small,
                     color: AppKendoColors.grey,
@@ -79,7 +78,7 @@ class MasterMenuBottomSheet {
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _showPromoteConfirmDialog(context, ref);
+                  _openAnnualPromotionSheet(context, ref);
                 },
               ),
             ],
@@ -89,64 +88,27 @@ class MasterMenuBottomSheet {
     );
   }
 
-  static void _showPromoteConfirmDialog(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final themeColors = context.appColors;
-
-    final confirm = await showAppDialog<bool>(
-      context: context,
-      builder: (ctx) => AppDialog(
-        titleIcon: Icons.school,
-        iconColor: themeColors.primaryAccent,
-        title: '新年度の一括進級',
-        content: const Text(
-          'すべての選手の学年を1つ繰り上げます。\n（例：小学6年 ➔ 中学1年）\n\n※この操作は取り消せません。本当によろしいですか？',
-          style: TextStyle(height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'キャンセル',
-              style: TextStyle(color: AppKendoColors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: themeColors.primaryAccent,
-              foregroundColor: AppKendoColors.pureWhite,
-              shape: const StadiumBorder(),
-              elevation: 0,
-            ),
-            child: const Text(
-              '一括進級を実行',
-              style: TextStyle(fontWeight: AppFontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+  static void _openAnnualPromotionSheet(BuildContext context, WidgetRef ref) {
+    MasterAnnualPromotionSheet.show(
+      context,
+      onExecutePromotion:
+          ({
+            required graduationType,
+            required retainPlayerIds,
+            required graduationFiscalYear,
+            required promotionFiscalYear,
+          }) {
+            return ref
+                .read(playerRepositoryProvider)
+                .promoteAllPlayers(
+                  organization: null,
+                  graduationType: graduationType,
+                  retainPlayerIds: retainPlayerIds,
+                  graduationFiscalYear: graduationFiscalYear,
+                  promotionFiscalYear: promotionFiscalYear,
+                  recordOrganizationHistory: true,
+                );
+          },
     );
-
-    if (confirm == true) {
-      if (!context.mounted) return;
-      showAppDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: AppLoadingIndicator()),
-      );
-      try {
-        await ref.read(playerRepositoryProvider).promoteAllPlayers();
-        if (!context.mounted) return;
-        Navigator.pop(context);
-        AppSnackBar.showSuccess(context, '一括進級が完了しました🌸');
-      } catch (e) {
-        if (!context.mounted) return;
-        Navigator.pop(context);
-        AppSnackBar.showError(context, 'エラーが発生しました: $e');
-      }
-    }
   }
 }

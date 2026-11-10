@@ -16,15 +16,25 @@ class MultiPlayerFilterHelper {
     'ゲスト',
   ];
 
+  /// 選手候補サブタイトル向けの学年・卒業年度表記を返す
+  static String formatPlayerCandidateGrade(PlayerModel player) {
+    if (!player.isGraduated) return player.gradeName;
+    return '${player.gradeOrGraduationDisplay} (${player.graduationLabel})';
+  }
+
   /// カテゴリフィルターおよび検索文字列に基づいてマスタ選手リストを絞り込み、ソートして返す
   static List<PlayerModel> filterAndSortMaster({
     required List<PlayerModel> masterPlayers,
     required String searchText,
     required String selectedFilter,
     required bool isAscending,
+    bool includeGraduated = false,
   }) {
     List<PlayerModel> list = masterPlayers
-        .where((p) => p.name.contains(searchText))
+        .where(
+          (p) =>
+              (includeGraduated || p.isActive) && p.name.contains(searchText),
+        )
         .toList();
 
     if (selectedFilter != 'すべて') {

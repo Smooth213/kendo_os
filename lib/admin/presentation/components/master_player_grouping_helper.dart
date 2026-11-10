@@ -31,4 +31,28 @@ class MasterPlayerGroupingHelper {
     }
     return groupedPlayers;
   }
+
+  /// 卒業・OB/OG選手を卒業年度別（降順）にグループ化する
+  static Map<String, List<PlayerModel>> groupGraduatedPlayers({
+    required List<PlayerModel> players,
+  }) {
+    final sorted = List<PlayerModel>.from(players)
+      ..sort((a, b) {
+        final yA = a.graduatedFiscalYear ?? -1;
+        final yB = b.graduatedFiscalYear ?? -1;
+        if (yA != yB) return yB.compareTo(yA);
+        final kanaCmp = a.nameKana.compareTo(b.nameKana);
+        if (kanaCmp != 0) return kanaCmp;
+        return a.name.compareTo(b.name);
+      });
+
+    final Map<String, List<PlayerModel>> grouped = {};
+    for (final p in sorted) {
+      final key = p.graduatedFiscalYear != null
+          ? '${p.graduatedFiscalYear}年度卒'
+          : '卒業（年度未設定）';
+      grouped.putIfAbsent(key, () => []).add(p);
+    }
+    return grouped;
+  }
 }

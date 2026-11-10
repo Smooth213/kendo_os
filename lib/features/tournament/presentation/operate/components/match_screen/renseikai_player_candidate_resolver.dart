@@ -130,6 +130,7 @@ class RenseikaiPlayerCandidateResolver {
 
     final List<String> dojoPlayers = localPlayers
         .where((p) {
+          if (p.isGraduated) return false;
           final org = p.organization.trim();
           if (org.isEmpty) return false;
           final orgMatch =

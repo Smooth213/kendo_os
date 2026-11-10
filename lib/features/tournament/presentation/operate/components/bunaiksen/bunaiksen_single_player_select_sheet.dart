@@ -8,6 +8,8 @@ import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
+import 'package:kendo_os/shared/widgets/include_graduated_filter_chip.dart';
+import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
 
 /// 🥋 部内戦 選手選択モーダルシート（カテゴリ別フィルタリング＆テキスト検索＆手入力）
 class BunaiksenSinglePlayerSelectSheet extends StatefulWidget {
@@ -58,12 +60,14 @@ class _BunaiksenSinglePlayerSelectSheetState
   String _searchText = '';
   String _selectedFilter = 'すべて';
   bool _isAscending = true;
+  bool _includeGraduated = false;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final filtered = widget.masterPlayers.where((p) {
+      if (!_includeGraduated && p.isGraduated) return false;
       final matchSearch =
           _searchText.isEmpty ||
           p.name.contains(_searchText) ||
@@ -208,8 +212,18 @@ class _BunaiksenSinglePlayerSelectSheetState
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: ['すべて', '初心者', '幼年', '低学年', '高学年', '中学生', '高校生', '一般']
-                    .map((filterName) {
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.subValue),
+                    child: IncludeGraduatedFilterChip(
+                      includeGraduated: _includeGraduated,
+                      accentColor: widget.accentColor,
+                      onChanged: (val) =>
+                          setState(() => _includeGraduated = val),
+                    ),
+                  ),
+                  ...['すべて', '初心者', '幼年', '低学年', '高学年', '中学生', '高校生', '一般'].map(
+                    (filterName) {
                       final isSel = _selectedFilter == filterName;
                       return Padding(
                         padding: const EdgeInsets.only(
@@ -229,8 +243,9 @@ class _BunaiksenSinglePlayerSelectSheetState
                           },
                         ),
                       );
-                    })
-                    .toList(),
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -284,7 +299,9 @@ class _BunaiksenSinglePlayerSelectSheetState
                               ),
                             ),
                             subtitle: Text(
-                              p.gradeName,
+                              MultiPlayerFilterHelper.formatPlayerCandidateGrade(
+                                p,
+                              ),
                               style: TextStyle(
                                 color: widget.accentColor,
                                 fontSize: AppFontSize.small,

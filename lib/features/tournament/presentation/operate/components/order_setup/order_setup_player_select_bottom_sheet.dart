@@ -7,6 +7,8 @@ import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
 import 'package:kendo_os/shared/widgets/app_chip.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
+import 'package:kendo_os/shared/widgets/include_graduated_filter_chip.dart';
+import 'package:kendo_os/shared/widgets/multi_player_filter_helper.dart';
 
 /// オーダー設定用の選手選択ボトムシート
 class OrderSetupPlayerSelectBottomSheet extends StatefulWidget {
@@ -50,6 +52,7 @@ class _OrderSetupPlayerSelectBottomSheetState
     extends State<OrderSetupPlayerSelectBottomSheet> {
   String _searchText = '';
   String _selectedFilter = 'すべて';
+  bool _includeGraduated = false;
 
   Future<String?> _showManualInputDialog(BuildContext context) async {
     String manualName = '';
@@ -88,7 +91,10 @@ class _OrderSetupPlayerSelectBottomSheetState
     final textColor = context.appColors.textColor;
 
     List<PlayerModel> filteredMaster = widget.masterPlayers
-        .where((p) => p.name.contains(_searchText))
+        .where(
+          (p) =>
+              (_includeGraduated || p.isActive) && p.name.contains(_searchText),
+        )
         .toList();
 
     if (_selectedFilter != 'すべて') {
@@ -211,8 +217,18 @@ class _OrderSetupPlayerSelectBottomSheetState
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: ['すべて', '初心者', '幼年', '低学年', '高学年', '中学生', '高校生', '一般']
-                    .map((filterName) {
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.sm),
+                    child: IncludeGraduatedFilterChip(
+                      includeGraduated: _includeGraduated,
+                      accentColor: widget.themeColors.primaryAccent,
+                      onChanged: (val) =>
+                          setState(() => _includeGraduated = val),
+                    ),
+                  ),
+                  ...['すべて', '初心者', '幼年', '低学年', '高学年', '中学生', '高校生', '一般'].map(
+                    (filterName) {
                       final isSelected = _selectedFilter == filterName;
                       return Padding(
                         padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -226,8 +242,9 @@ class _OrderSetupPlayerSelectBottomSheetState
                           },
                         ),
                       );
-                    })
-                    .toList(),
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -269,7 +286,7 @@ class _OrderSetupPlayerSelectBottomSheetState
                         ),
                       ),
                       subtitle: Text(
-                        p.gradeName,
+                        MultiPlayerFilterHelper.formatPlayerCandidateGrade(p),
                         style: TextStyle(
                           color: widget.themeColors.primaryAccent,
                           fontSize: AppFontSize.small,
