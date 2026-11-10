@@ -1,0 +1,12 @@
+{
+  "context-drift-reminder": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 hooks/context_drift_reminder.py",
+        "timeout": 5
+      }
+    ]
+  }
+}
+
