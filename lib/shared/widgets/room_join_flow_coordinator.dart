@@ -123,6 +123,12 @@ class RoomJoinFlowCoordinator {
       context: context,
       dojoId: code,
       mode: mode,
+      onRecoveredJoinPin: (newJoinPinHash) => completeRoomConnection(
+        context: context,
+        ref: ref,
+        code: code,
+        joinPinHash: newJoinPinHash,
+      ),
       onSubmitPin: (pin) async {
         try {
           if (mode == RoomJoinPinMode.initializeLegacy) {

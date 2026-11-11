@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/auth/presentation/widgets/dojo_pin_recovery_sheet.dart';
 import 'package:kendo_os/features/auth/presentation/widgets/initial_role_pin_prompt_dialog.dart';
 import 'package:kendo_os/security/dojo_join_access_storage.dart';
 import 'package:kendo_os/security/dojo_security_repository.dart';
@@ -342,6 +343,24 @@ class _PinAuthScreenState extends ConsumerState<PinAuthScreen> {
                             color: subTextColor,
                             fontSize: AppFontSize.caption,
                             fontWeight: AppFontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _isSubmitting
+                            ? null
+                            : () => DojoPinRecoverySheet.openForRoleAuthScreen(
+                                context: context,
+                                ref: ref,
+                                elevateToAdmin: widget.role == UserRole.admin,
+                                onRecovered: _controller.clear,
+                              ),
+                        child: const Text(
+                          'PINを忘れた場合（代表者Googleで初期化）',
+                          style: TextStyle(
+                            color: AppKendoColors.teal,
+                            fontSize: AppFontSize.caption,
+                            fontWeight: AppFontWeight.semiBold,
                           ),
                         ),
                       ),

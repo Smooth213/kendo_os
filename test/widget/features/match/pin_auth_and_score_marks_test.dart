@@ -188,8 +188,9 @@ void main() {
       // AppBarの戻るボタンが存在すること
       expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
 
-      // 画面下部の「別の利用権限を選択する」リンクが存在すること
+      // 画面下部の「別の利用権限を選択する」リンクおよび復旧導線が存在すること
       expect(find.text('別の利用権限を選択する'), findsOneWidget);
+      expect(find.text('PINを忘れた場合（代表者Googleで初期化）'), findsOneWidget);
     });
 
     test('PinGuard によるロール別PINコードの正確性が正しく検証されること', () {

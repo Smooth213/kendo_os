@@ -238,5 +238,55 @@ void main() {
       );
       expect(revokedRes.status, ViewerShareAccessStatus.revoked);
     });
+
+    test('Admin本人確認後に設定済みの入室PINと全ロールPINが復号され、一部変更後も他項目が維持されること', () async {
+      final joinHash = await repo.createDojoWithPin(
+        dojoId: 'dojo_vault',
+        joinPin: 'kendo2026',
+        uid: 'u1',
+      );
+
+      final wrongUnlock = await repo.verifyAdminAndUnlockVault(
+        dojoId: 'dojo_vault',
+        currentAdminPin: '0000',
+        joinPinHash: joinHash,
+        uid: 'u1',
+      );
+      expect(wrongUnlock.status, AdminVaultUnlockStatus.invalidAdminPin);
+
+      final initialUnlock = await repo.verifyAdminAndUnlockVault(
+        dojoId: 'dojo_vault',
+        currentAdminPin: '9999',
+        joinPinHash: joinHash,
+        uid: 'u1',
+      );
+      expect(initialUnlock.status, AdminVaultUnlockStatus.unlocked);
+      expect(initialUnlock.payload?.joinPin, 'kendo2026');
+      expect(initialUnlock.payload?.adminPin, '9999');
+      expect(initialUnlock.payload?.operatorPin, '2468');
+      expect(initialUnlock.payload?.recorderPin, '1357');
+
+      // Operator PIN のみ変更しても入室PIN・Admin・Recorderが維持されること
+      final updateRes = await repo.updateDojoSecurityPins(
+        dojoId: 'dojo_vault',
+        currentAdminPin: '9999',
+        newRolePins: {UserRole.operator: '4455', UserRole.admin: '1122'},
+        currentVault: initialUnlock.payload,
+        uid: 'u1',
+      );
+      expect(updateRes.success, isTrue);
+
+      final nextUnlock = await repo.verifyAdminAndUnlockVault(
+        dojoId: 'dojo_vault',
+        currentAdminPin: '1122',
+        joinPinHash: joinHash,
+        uid: 'u1',
+      );
+      expect(nextUnlock.status, AdminVaultUnlockStatus.unlocked);
+      expect(nextUnlock.payload?.joinPin, 'kendo2026');
+      expect(nextUnlock.payload?.adminPin, '1122');
+      expect(nextUnlock.payload?.operatorPin, '4455');
+      expect(nextUnlock.payload?.recorderPin, '1357');
+    });
   });
 }

@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/security/pin_hasher.dart';
+import 'package:kendo_os/security/pin_vault_cipher.dart';
 import 'package:kendo_os/security/viewer_share_models.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 
@@ -34,6 +35,9 @@ class DojoSecurityRepository {
 
   DocumentReference<Map<String, dynamic>> _securityDoc(String dojoId) =>
       _orgDoc(dojoId).collection('private').doc('security');
+
+  DocumentReference<Map<String, dynamic>> _adminVaultDoc(String dojoId) =>
+      _orgDoc(dojoId).collection('private').doc('admin_vault');
 
   DocumentReference<Map<String, dynamic>> _memberDoc(
     String dojoId,
@@ -76,6 +80,16 @@ class DojoSecurityRepository {
       'updatedAt': FieldValue.serverTimestamp(),
       'updatedBy': uid,
     });
+    batch.set(_adminVaultDoc(dojoId), {
+      'ciphertext': PinVaultCipher.encrypt(
+        dojoId: dojoId,
+        adminPin: PinHasher.defaultRolePin(UserRole.admin),
+        payload: DojoPinVaultPayload.defaults(joinPin: joinPin.trim()),
+      ),
+      'version': 1,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedBy': uid,
+    });
     batch.set(_memberDoc(dojoId, uid), {
       'role': UserRole.viewer.name,
       'accessScope': 'dojo',
@@ -107,6 +121,16 @@ class DojoSecurityRepository {
     batch.set(_securityDoc(dojoId), {
       'joinPinHash': joinPinHash,
       'rolePinHashes': rolePinHashes,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedBy': uid,
+    });
+    batch.set(_adminVaultDoc(dojoId), {
+      'ciphertext': PinVaultCipher.encrypt(
+        dojoId: dojoId,
+        adminPin: PinHasher.defaultRolePin(UserRole.admin),
+        payload: DojoPinVaultPayload.defaults(joinPin: joinPin.trim()),
+      ),
+      'version': 1,
       'updatedAt': FieldValue.serverTimestamp(),
       'updatedBy': uid,
     });
@@ -232,14 +256,80 @@ class DojoSecurityRepository {
     ).set({'rolePinPromptCompleted': true}, SetOptions(merge: true));
   }
 
+  /// 現在の Admin PIN を照合し、暗号化ボールトから設定済み現在PIN一式を復号して返す
+  Future<AdminVaultUnlockResult> verifyAdminAndUnlockVault({
+    required String dojoId,
+    required String currentAdminPin,
+    required String? joinPinHash,
+    required String uid,
+  }) async {
+    final ok = await authenticateRoleWithPin(
+      dojoId: dojoId,
+      role: UserRole.admin,
+      rolePin: currentAdminPin,
+      joinPinHash: joinPinHash,
+      uid: uid,
+    );
+    if (!ok) {
+      return const AdminVaultUnlockResult(
+        status: AdminVaultUnlockStatus.invalidAdminPin,
+        errorMessage: '現在の管理者(Admin) PINが一致しません',
+      );
+    }
+
+    try {
+      final vaultDoc = await _adminVaultDoc(dojoId).get();
+      final token = vaultDoc.data()?['ciphertext']?.toString() ?? '';
+      if (vaultDoc.exists && token.isNotEmpty) {
+        final decrypted = PinVaultCipher.decrypt(
+          dojoId: dojoId,
+          adminPin: currentAdminPin,
+          encryptedToken: token,
+        );
+        if (decrypted != null) {
+          return AdminVaultUnlockResult(
+            status: AdminVaultUnlockStatus.unlocked,
+            payload: decrypted,
+          );
+        }
+      }
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+    }
+
+    final trimmedAdmin = currentAdminPin.trim();
+    if (trimmedAdmin == PinHasher.defaultRolePin(UserRole.admin)) {
+      return const AdminVaultUnlockResult(
+        status: AdminVaultUnlockStatus.legacyUnmigrated,
+        payload: DojoPinVaultPayload(
+          joinPin: '',
+          adminPin: '9999',
+          operatorPin: '2468',
+          recorderPin: '1357',
+        ),
+      );
+    }
+
+    return AdminVaultUnlockResult(
+      status: AdminVaultUnlockStatus.legacyUnmigrated,
+      payload: DojoPinVaultPayload(
+        joinPin: '',
+        adminPin: trimmedAdmin,
+        operatorPin: '',
+        recorderPin: '',
+      ),
+    );
+  }
+
   /// Admin権限で道場入室PINおよび各ロールPINを更新する。
-  /// 成功時は更新後の joinPinHash（未変更時は null）を返す。現在のAdmin PINが不正なら例外または null ではなく結果を返す。
+  /// 成功時は更新後の joinPinHash（未変更時は null）を返す。現在のAdmin PINが不正なら結果を返す。
   Future<({bool success, String? newJoinPinHash, String? errorMessage})>
   updateDojoSecurityPins({
     required String dojoId,
     required String currentAdminPin,
     String? newJoinPin,
     Map<UserRole, String>? newRolePins,
+    DojoPinVaultPayload? currentVault,
     required String uid,
   }) async {
     final currentAdminHash = PinHasher.hashRolePin(
@@ -276,6 +366,21 @@ class DojoSecurityRepository {
       if (e.code != 'permission-denied') rethrow;
     }
 
+    var resolvedVault = currentVault;
+    if (resolvedVault == null) {
+      try {
+        final vaultDoc = await _adminVaultDoc(dojoId).get();
+        final token = vaultDoc.data()?['ciphertext']?.toString() ?? '';
+        if (vaultDoc.exists && token.isNotEmpty) {
+          resolvedVault = PinVaultCipher.decrypt(
+            dojoId: dojoId,
+            adminPin: currentAdminPin,
+            encryptedToken: token,
+          );
+        }
+      } catch (_) {}
+    }
+
     String? updatedJoinPinHash;
     final securityUpdate = <String, dynamic>{
       'submittedCurrentAdminPinHash': currentAdminHash,
@@ -298,9 +403,43 @@ class DojoSecurityRepository {
       }
     }
 
+    final nextAdminPin =
+        (newRolePins?[UserRole.admin]?.trim().isNotEmpty ?? false)
+        ? newRolePins![UserRole.admin]!.trim()
+        : currentAdminPin.trim();
+    final nextJoinPin = (newJoinPin != null && newJoinPin.trim().isNotEmpty)
+        ? newJoinPin.trim()
+        : (resolvedVault?.joinPin ?? '');
+    final nextOperatorPin =
+        (newRolePins?[UserRole.operator]?.trim().isNotEmpty ?? false)
+        ? newRolePins![UserRole.operator]!.trim()
+        : (resolvedVault?.operatorPin ?? '');
+    final nextRecorderPin =
+        (newRolePins?[UserRole.recorder]?.trim().isNotEmpty ?? false)
+        ? newRolePins![UserRole.recorder]!.trim()
+        : (resolvedVault?.recorderPin ?? '');
+
+    final nextVaultCiphertext = PinVaultCipher.encrypt(
+      dojoId: dojoId,
+      adminPin: nextAdminPin,
+      payload: DojoPinVaultPayload(
+        joinPin: nextJoinPin,
+        adminPin: nextAdminPin,
+        operatorPin: nextOperatorPin,
+        recorderPin: nextRecorderPin,
+      ),
+    );
+
     try {
       final batch = _firestore.batch();
       batch.update(_securityDoc(dojoId), securityUpdate);
+      batch.set(_adminVaultDoc(dojoId), {
+        'ciphertext': nextVaultCiphertext,
+        'version': 1,
+        'submittedCurrentAdminPinHash': currentAdminHash,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedBy': uid,
+      }, SetOptions(merge: true));
       batch.set(_orgDoc(dojoId), {
         'rolePinPromptCompleted': true,
       }, SetOptions(merge: true));

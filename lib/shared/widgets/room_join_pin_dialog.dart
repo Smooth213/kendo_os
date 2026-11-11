@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kendo_os/features/auth/presentation/widgets/dojo_pin_recovery_sheet.dart';
 import 'package:kendo_os/security/pin_hasher.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
@@ -18,12 +19,14 @@ class RoomJoinPinDialog extends StatefulWidget {
   final String dojoId;
   final RoomJoinPinMode mode;
   final Future<String?> Function(String pin) onSubmitPin;
+  final Future<void> Function(String newJoinPinHash)? onRecoveredJoinPin;
 
   const RoomJoinPinDialog({
     super.key,
     required this.dojoId,
     required this.mode,
     required this.onSubmitPin,
+    this.onRecoveredJoinPin,
   });
 
   static Future<bool?> show({
@@ -31,6 +34,7 @@ class RoomJoinPinDialog extends StatefulWidget {
     required String dojoId,
     required RoomJoinPinMode mode,
     required Future<String?> Function(String pin) onSubmitPin,
+    Future<void> Function(String newJoinPinHash)? onRecoveredJoinPin,
   }) {
     return showAppBottomSheet<bool>(
       context: context,
@@ -44,6 +48,7 @@ class RoomJoinPinDialog extends StatefulWidget {
         dojoId: dojoId,
         mode: mode,
         onSubmitPin: onSubmitPin,
+        onRecoveredJoinPin: onRecoveredJoinPin,
       ),
     );
   }
@@ -361,6 +366,44 @@ class _RoomJoinPinDialogState extends State<RoomJoinPinDialog> {
                         ),
                 ],
               ),
+              if (widget.mode == RoomJoinPinMode.joinExisting &&
+                  widget.onRecoveredJoinPin != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () async {
+                            final res = await DojoPinRecoverySheet.show(
+                              context: context,
+                              dojoId: widget.dojoId,
+                              mode: DojoRecoveryMode.joinPin,
+                            );
+                            if (!mounted ||
+                                res == null ||
+                                !res.recovered ||
+                                res.newJoinPinHash == null) {
+                              return;
+                            }
+                            await widget.onRecoveredJoinPin!(
+                              res.newJoinPinHash!,
+                            );
+                            if (context.mounted) {
+                              Navigator.of(context).pop(true);
+                            }
+                          },
+                    child: const Text(
+                      '入室PINを忘れた場合（代表者Googleで再設定）',
+                      style: TextStyle(
+                        color: AppKendoColors.teal,
+                        fontSize: AppFontSize.caption,
+                        fontWeight: AppFontWeight.semiBold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

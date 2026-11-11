@@ -12,7 +12,7 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         (isFullDojoMember() && getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']) ||
         (resource.data.get('hasJoinPin', false) == false && request.resource.data.get('hasJoinPin', false) == true) ||
-        (isFullDojoMember() && getUserRole() in ['admin', 'Admin', 'owner', 'Owner'] &&
+        ((isFullDojoMember() && isAdminRole() || isVerifiedDojoOwner()) &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rolePinPromptCompleted']))
       );
 
@@ -20,6 +20,23 @@ service cloud.firestore {
       function getUserRole() {
         let memberPath = /databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid);
         return exists(memberPath) ? get(memberPath).data.get('role', 'none') : 'none';
+      }
+
+      function isAdminRole() {
+        return getUserRole() in ['admin', 'Admin', 'owner', 'Owner'];
+      }
+
+      function isVerifiedGoogleEmail() {
+        return request.auth != null &&
+          request.auth.token.get('email_verified', false) == true &&
+          request.auth.token.get('email', '') != '';
+      }
+
+      function isVerifiedDojoOwner() {
+        let ownersPath = /databases/$(database)/documents/organizations/$(dojoId)/private/owners;
+        return isVerifiedGoogleEmail() &&
+          exists(ownersPath) &&
+          request.auth.token.email.lower() in get(ownersPath).data.get('ownerEmails', []);
       }
 
       // 道場入室PINを通過した正規メンバーかどうか
@@ -88,7 +105,13 @@ service cloud.firestore {
             get(sharePath).data.get('tournamentId', '') == sharedTId &&
             get(sharePath).data.get('isRevoked', false) == false &&
             (get(sharePath).data.get('expiresAt', null) == null ||
-             get(sharePath).data.get('expiresAt', null) > request.time))
+             get(sharePath).data.get('expiresAt', null) > request.time)) ||
+          // E. 登録済み代表者（Google認証＋メール確認済み）によるPIN復旧時の自己メンバー登録
+          (scope == 'dojo' &&
+            isVerifiedDojoOwner() &&
+            getAfter(secPath).data.joinPinHash == joinHash &&
+            (role == 'viewer' ||
+             (role == 'admin' && getAfter(secPath).data.rolePinHashes.admin == roleHash)))
         );
       }
 
@@ -103,9 +126,55 @@ service cloud.firestore {
       match /private/security {
         allow read: if false;
         allow create: if canCreateSecurityDoc();
-        allow update: if request.auth != null && isFullDojoMember() &&
-          getUserRole() in ['admin', 'Admin', 'owner', 'Owner'] &&
-          resource.data.rolePinHashes.admin == request.resource.data.get('submittedCurrentAdminPinHash', '');
+        allow update: if request.auth != null && (
+          (isFullDojoMember() &&
+           isAdminRole() &&
+           resource.data.rolePinHashes.admin == request.resource.data.get('submittedCurrentAdminPinHash', '')) ||
+          isVerifiedDojoOwner()
+        );
+        allow delete: if false;
+      }
+
+      // Admin確認用暗号化PINボールト（Admin本人確認通過メンバーのみ読取可、Admin更新またはオーナー復旧のみ書込可）
+      match /private/admin_vault {
+        allow read: if request.auth != null && isFullDojoMember() && isAdminRole();
+        allow create: if canCreateSecurityDoc() ||
+          (request.auth != null && isFullDojoMember() && isAdminRole()) ||
+          isVerifiedDojoOwner();
+        allow update: if request.auth != null && (
+          (isFullDojoMember() &&
+           isAdminRole() &&
+           get(/databases/$(database)/documents/organizations/$(dojoId)/private/security).data.rolePinHashes.admin == request.resource.data.get('submittedCurrentAdminPinHash', '')) ||
+          isVerifiedDojoOwner()
+        );
+        allow delete: if false;
+      }
+
+      // 道場代表者（PIN復旧・引き継ぎ用Googleアカウント、最大5名）：本人またはAdminのみ参照・管理可
+      match /private/owners {
+        allow read: if request.auth != null && (
+          (isFullDojoMember() && isAdminRole()) ||
+          (isVerifiedGoogleEmail() &&
+           resource != null &&
+           request.auth.token.email.lower() in resource.data.get('ownerEmails', []))
+        );
+        allow create: if request.auth != null &&
+          request.resource.data.get('ownerEmails', []).size() <= 5 &&
+          (
+            canCreateSecurityDoc() ||
+            (isFullDojoMember() &&
+             isAdminRole() &&
+             get(/databases/$(database)/documents/organizations/$(dojoId)/private/security).data.rolePinHashes.admin == request.resource.data.get('submittedCurrentAdminPinHash', ''))
+          );
+        allow update: if request.auth != null &&
+          request.resource.data.get('ownerEmails', []).size() <= 5 &&
+          (
+            (isFullDojoMember() &&
+             isAdminRole() &&
+             get(/databases/$(database)/documents/organizations/$(dojoId)/private/security).data.rolePinHashes.admin == request.resource.data.get('submittedCurrentAdminPinHash', '')) ||
+            (isVerifiedGoogleEmail() &&
+             request.auth.token.email.lower() in resource.data.get('ownerEmails', []))
+          );
         allow delete: if false;
       }
 

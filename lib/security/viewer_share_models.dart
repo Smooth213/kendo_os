@@ -1,3 +1,5 @@
+import 'package:kendo_os/security/pin_vault_cipher.dart';
+
 /// 1大会限定 観戦共有リンクの有効期限プリセット
 enum ViewerShareExpiryPreset {
   hours24('24h', '24時間'),
@@ -88,3 +90,55 @@ class ViewerShareVerificationResult {
 
 /// 道場ルームのPIN保護状態
 enum DojoJoinStatus { notFound, requiresPin, legacyUnsetPin }
+
+/// 道場ごとの復旧・引き継ぎ用 代表者Googleアカウント上限人数
+const int maxDojoOwnerAccounts = 5;
+
+/// Admin 本人確認およびPIN暗号化ボールト復号の結果区分
+enum AdminVaultUnlockStatus { unlocked, invalidAdminPin, legacyUnmigrated }
+
+/// Admin 本人確認と現在PIN復号の結果
+class AdminVaultUnlockResult {
+  final AdminVaultUnlockStatus status;
+  final DojoPinVaultPayload? payload;
+  final String? errorMessage;
+
+  const AdminVaultUnlockResult({
+    required this.status,
+    this.payload,
+    this.errorMessage,
+  });
+
+  bool get isVerified =>
+      status == AdminVaultUnlockStatus.unlocked ||
+      status == AdminVaultUnlockStatus.legacyUnmigrated;
+}
+
+/// 道場オーナー（PIN初期化・引き継ぎ用Googleアカウント）情報
+class DojoOwnerAccount {
+  final String email;
+  final String? displayName;
+  final String? addedBy;
+
+  const DojoOwnerAccount({required this.email, this.displayName, this.addedBy});
+
+  String get normalizedEmail => email.trim().toLowerCase();
+
+  Map<String, dynamic> toMetaMap() => {
+    if (displayName != null && displayName!.trim().isNotEmpty)
+      'displayName': displayName!.trim(),
+    if (addedBy != null && addedBy!.trim().isNotEmpty)
+      'addedBy': addedBy!.trim(),
+  };
+
+  factory DojoOwnerAccount.fromMeta(String email, dynamic meta) {
+    if (meta is Map) {
+      return DojoOwnerAccount(
+        email: email.trim().toLowerCase(),
+        displayName: meta['displayName']?.toString(),
+        addedBy: meta['addedBy']?.toString(),
+      );
+    }
+    return DojoOwnerAccount(email: email.trim().toLowerCase());
+  }
+}

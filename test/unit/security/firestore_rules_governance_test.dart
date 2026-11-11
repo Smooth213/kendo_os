@@ -62,5 +62,21 @@ void main() {
         isTrue,
       );
     });
+
+    test(
+      'Admin暗号化ボールト(/private/admin_vault)と最大5名の代表者管理(/private/owners)が定義されていること',
+      () {
+        expect(rulesContent.contains('match /private/admin_vault'), isTrue);
+        expect(rulesContent.contains('match /private/owners'), isTrue);
+        expect(
+          rulesContent.contains(
+            "request.resource.data.get('ownerEmails', []).size() <= 5",
+          ),
+          isTrue,
+        );
+        expect(rulesContent.contains('function isVerifiedDojoOwner()'), isTrue);
+        expect(rulesContent.contains('isVerifiedDojoOwner()'), isTrue);
+      },
+    );
   });
 }

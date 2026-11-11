@@ -281,5 +281,71 @@ void main() {
       await tester.safePumpAndSettle();
       expect(submittedPin, 'dojo2026');
     });
+
+    testWidgets('RoomJoinPinDialog が joinExisting モードで代表者Google再設定導線を表示すること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  RoomJoinPinDialog.show(
+                    context: context,
+                    dojoId: 'existing_dojo',
+                    mode: RoomJoinPinMode.joinExisting,
+                    onRecoveredJoinPin: (_) async {},
+                    onSubmitPin: (_) async => null,
+                  );
+                },
+                child: const Text('OpenJoin'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('OpenJoin'));
+      await tester.safePumpAndSettle();
+
+      expect(find.text('入室PINを忘れた場合（代表者Googleで再設定）'), findsOneWidget);
+    });
+
+    testWidgets('RoomJoinPinDialog が joinExisting モードで代表者Google再設定導線を表示すること', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  RoomJoinPinDialog.show(
+                    context: context,
+                    dojoId: 'existing_dojo',
+                    mode: RoomJoinPinMode.joinExisting,
+                    onRecoveredJoinPin: (_) async {},
+                    onSubmitPin: (_) async => null,
+                  );
+                },
+                child: const Text('OpenJoin'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('OpenJoin'));
+      await tester.safePumpAndSettle();
+
+      expect(find.text('入室PINを忘れた場合（代表者Googleで再設定）'), findsOneWidget);
+    });
   });
 }
