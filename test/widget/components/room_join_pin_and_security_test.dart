@@ -151,5 +151,135 @@ void main() {
         expect(find.text('道場入室PIN・ロールPINの変更'), findsOneWidget);
       },
     );
+
+    testWidgets('RoomJoinPinDialog がモバイルキーボード表示中でも上下見切れやオーバーフローを起こさないこと', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(375, 667);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetViewInsets();
+      });
+
+      String? submittedPin;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  RoomJoinPinDialog.show(
+                    context: context,
+                    dojoId: 'test204',
+                    mode: RoomJoinPinMode.initializeLegacy,
+                    onSubmitPin: (pin) async {
+                      submittedPin = pin;
+                      return null;
+                    },
+                  );
+                },
+                child: const Text('OpenLegacyPin'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('OpenLegacyPin'));
+      await tester.safePumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final sheetTop = tester.getTopLeft(find.byType(RoomJoinPinDialog)).dy;
+      expect(sheetTop, greaterThanOrEqualTo(0));
+
+      await tester.enterText(find.byType(TextField), 'dojo2026');
+      await tester.safePumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('推奨文字数（6文字以上）を満たしています'), findsOneWidget);
+
+      final submitFinder = find.text('PINを設定して接続');
+      expect(submitFinder, findsOneWidget);
+      await tester.ensureVisible(submitFinder);
+      await tester.safePumpAndSettle();
+
+      final submitBottom = tester.getBottomRight(submitFinder).dy;
+      expect(submitBottom, lessThanOrEqualTo(667 - 300));
+
+      await tester.tap(submitFinder);
+      await tester.safePumpAndSettle();
+      expect(submittedPin, 'dojo2026');
+    });
+
+    testWidgets('RoomJoinPinDialog がモバイルキーボード表示中でも上下見切れやオーバーフローを起こさないこと', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(375, 667);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetViewInsets();
+      });
+
+      String? submittedPin;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.light().copyWith(
+            extensions: [AppThemeColors.ofMode(isDark: false, mode: 'normal')],
+          ),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  RoomJoinPinDialog.show(
+                    context: context,
+                    dojoId: 'test204',
+                    mode: RoomJoinPinMode.initializeLegacy,
+                    onSubmitPin: (pin) async {
+                      submittedPin = pin;
+                      return null;
+                    },
+                  );
+                },
+                child: const Text('OpenLegacyPin'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('OpenLegacyPin'));
+      await tester.safePumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final sheetTop = tester.getTopLeft(find.byType(RoomJoinPinDialog)).dy;
+      expect(sheetTop, greaterThanOrEqualTo(0));
+
+      await tester.enterText(find.byType(TextField), 'dojo2026');
+      await tester.safePumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('推奨文字数（6文字以上）を満たしています'), findsOneWidget);
+
+      final submitFinder = find.text('PINを設定して接続');
+      expect(submitFinder, findsOneWidget);
+      await tester.ensureVisible(submitFinder);
+      await tester.safePumpAndSettle();
+
+      final submitBottom = tester.getBottomRight(submitFinder).dy;
+      expect(submitBottom, lessThanOrEqualTo(667 - 300));
+
+      await tester.tap(submitFinder);
+      await tester.safePumpAndSettle();
+      expect(submittedPin, 'dojo2026');
+    });
   });
 }

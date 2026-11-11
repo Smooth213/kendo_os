@@ -281,89 +281,104 @@ class _DojoSecuritySettingsSheetState
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
     final dojoId = ref.watch(currentDojoIdProvider);
 
+    final mediaQuery = MediaQuery.of(context);
+    final maxScrollHeight =
+        (mediaQuery.size.height -
+                mediaQuery.viewInsets.bottom -
+                mediaQuery.padding.top -
+                120)
+            .clamp(220.0, 560.0);
+
     return AppBottomSheetContent(
       title: '道場セキュリティ・PIN設定',
       titleIcon: Icons.shield_outlined,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            '対象道場: $dojoId\n変更したい項目だけ入力し、保存してください（空欄の項目は維持されます）。',
-            style: TextStyle(
-              color: themeColors.subTextColor,
-              fontSize: AppFontSize.bodySmall,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _buildPinField(
-            themeColors: themeColors,
-            controller: _currentAdminPinCtrl,
-            label: '現在の代表・管理者 (Admin) PIN（必須・確認用）',
-            hint: '現在の4桁数字（初期値: 9999）',
-            obscure: true,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _buildPinField(
-            themeColors: themeColors,
-            controller: _newJoinPinCtrl,
-            label: '新しい道場入室PIN（合言葉）',
-            hint: '変更する場合のみ入力（6文字以上の英数字推奨）',
-            isNumeric4: false,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _buildPinField(
-            themeColors: themeColors,
-            controller: _newAdminPinCtrl,
-            label: '新しい 代表・管理者 (Admin) PIN',
-            hint: '変更する場合のみ4桁数字を入力',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildPinField(
-            themeColors: themeColors,
-            controller: _newOperatorPinCtrl,
-            label: '新しい 監督・引率責任者 (Operator) PIN',
-            hint: '変更する場合のみ4桁数字を入力',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildPinField(
-            themeColors: themeColors,
-            controller: _newRecorderPinCtrl,
-            label: '新しい スコア・記録係 (Recorder) PIN',
-            hint: '変更する場合のみ4桁数字を入力',
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(
-                color: AppKendoColors.orangeAccent,
-                fontSize: AppFontSize.bodySmall,
-                fontWeight: AppFontWeight.bold,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxScrollHeight),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '対象道場: $dojoId\n変更したい項目だけ入力し、保存してください（空欄の項目は維持されます）。',
+                style: TextStyle(
+                  color: themeColors.subTextColor,
+                  fontSize: AppFontSize.bodySmall,
+                  height: 1.4,
+                ),
               ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.lg),
-          _isSaving
-              ? const Center(
-                  child: AppLoadingIndicator(color: AppKendoColors.purple),
-                )
-              : ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppKendoColors.purple,
-                    foregroundColor: AppKendoColors.pureWhite,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                    shape: const StadiumBorder(),
-                  ),
-                  onPressed: _handleSave,
-                  child: const Text(
-                    'PIN変更を保存する',
-                    style: TextStyle(fontWeight: AppFontWeight.bold),
+              const SizedBox(height: AppSpacing.md),
+              _buildPinField(
+                themeColors: themeColors,
+                controller: _currentAdminPinCtrl,
+                label: '現在の代表・管理者 (Admin) PIN（必須・確認用）',
+                hint: '現在の4桁数字（初期値: 9999）',
+                obscure: true,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _buildPinField(
+                themeColors: themeColors,
+                controller: _newJoinPinCtrl,
+                label: '新しい道場入室PIN（合言葉）',
+                hint: '変更する場合のみ入力（6文字以上の英数字推奨）',
+                isNumeric4: false,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _buildPinField(
+                themeColors: themeColors,
+                controller: _newAdminPinCtrl,
+                label: '新しい 代表・管理者 (Admin) PIN',
+                hint: '変更する場合のみ4桁数字を入力',
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildPinField(
+                themeColors: themeColors,
+                controller: _newOperatorPinCtrl,
+                label: '新しい 監督・引率責任者 (Operator) PIN',
+                hint: '変更する場合のみ4桁数字を入力',
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildPinField(
+                themeColors: themeColors,
+                controller: _newRecorderPinCtrl,
+                label: '新しい スコア・記録係 (Recorder) PIN',
+                hint: '変更する場合のみ4桁数字を入力',
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(
+                    color: AppKendoColors.orangeAccent,
+                    fontSize: AppFontSize.bodySmall,
+                    fontWeight: AppFontWeight.bold,
                   ),
                 ),
-        ],
+              ],
+              const SizedBox(height: AppSpacing.lg),
+              _isSaving
+                  ? const Center(
+                      child: AppLoadingIndicator(color: AppKendoColors.purple),
+                    )
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppKendoColors.purple,
+                        foregroundColor: AppKendoColors.pureWhite,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.md,
+                        ),
+                        shape: const StadiumBorder(),
+                      ),
+                      onPressed: _handleSave,
+                      child: const Text(
+                        'PIN変更を保存する',
+                        style: TextStyle(fontWeight: AppFontWeight.bold),
+                      ),
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }
