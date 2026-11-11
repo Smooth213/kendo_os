@@ -355,7 +355,7 @@ class StartScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Text(
-                              'Kendo Sync v1.0.0',
+                              'Kendo Sync ${AppLegalTexts.appVersion}',
                               style: TextStyle(
                                 color: isDark
                                     ? const Color(0xFF94A3B8)

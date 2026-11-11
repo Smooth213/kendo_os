@@ -87,7 +87,7 @@ void main() {
       expect(find.textContaining('今日の試合'), findsOneWidget);
 
       // フッターのバージョン表記・アイコンの視認性検証 (ダークモード)
-      final versionTextFinder = find.text('Kendo Sync v1.0.0');
+      final versionTextFinder = find.text('Kendo Sync v1.1.0');
       expect(versionTextFinder, findsOneWidget);
       final versionText = tester.widget<Text>(versionTextFinder);
       expect(versionText.style?.color, isNot(equals(const Color(0x8A000000))));

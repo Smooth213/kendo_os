@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart'; // ★ クリップボード操作用
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/security/viewer_share_repository.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/match/domain/score/score_event.dart';
@@ -43,10 +46,30 @@ class ShareService {
       targetId = match.id;
     }
 
+    String? shareToken;
+    try {
+      final shareRepo = ref.read(viewerShareRepositoryProvider);
+      if (shareRepo != null &&
+          dojoId != 'default_org' &&
+          dojoId != 'default_dojo_room' &&
+          resolvedTournamentId.isNotEmpty) {
+        final uid = Firebase.apps.isNotEmpty
+            ? (FirebaseAuth.instance.currentUser?.uid ?? 'staff_terminal')
+            : 'staff_terminal';
+        final info = await shareRepo.getOrCreateDefaultShareLink(
+          dojoId: dojoId,
+          tournamentId: resolvedTournamentId,
+          uid: uid,
+        );
+        shareToken = info.token;
+      }
+    } catch (_) {}
+
     final queryParams = <String, String>{
       if (resolvedTournamentId.isNotEmpty) 'tournamentId': resolvedTournamentId,
       'role': 'viewer',
       'dojoId': dojoId,
+      if (shareToken != null && shareToken.isNotEmpty) 'token': shareToken,
     };
     final queryString = Uri(queryParameters: queryParams).query;
     final String matchUrl =

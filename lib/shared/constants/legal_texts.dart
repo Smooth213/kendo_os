@@ -10,7 +10,7 @@ class AppLegalTexts {
       'assets/manuals/kendo_sync_quickguide.pdf';
 
   /// アプリバージョン表記（フォールバック）
-  static const String appVersion = 'v1.0.0';
+  static const String appVersion = 'v1.1.0';
 
   /// 運営者・開発チーム名
   static const String developerTeamName = 'KendoSync 開発チーム';

@@ -333,6 +333,8 @@ class HomeScreen extends ConsumerWidget {
       builder: (ctx) => HomeScreenQrDialog(
         shareUrl: shareUrl,
         onClose: () => Navigator.pop(ctx),
+        shareDojoId: safeDojo,
+        shareTournamentId: tournamentId,
       ),
     );
   }

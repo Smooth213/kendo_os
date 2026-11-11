@@ -282,6 +282,8 @@ class ViewerMatchScreen extends ConsumerWidget {
           '試合速報リンク: $shareUrl',
       shareButtonLabel: 'LINEやSNSでURLを送る',
       copySuccessMessage: '観戦用URLをクリップボードにコピーしました',
+      shareDojoId: dojoId,
+      shareTournamentId: tournamentId,
     );
   }
 }

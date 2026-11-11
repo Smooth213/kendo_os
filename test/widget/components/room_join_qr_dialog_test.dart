@@ -4,6 +4,8 @@ import '../../helpers/safe_pump_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kendo_os/security/pin_hasher.dart';
+import 'package:kendo_os/shared/widgets/room_join_pin_dialog.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
@@ -43,7 +45,7 @@ void main() {
       );
     }
 
-    testWidgets('新規作成ケースにおいて クラウド上にIDが実在しない場合、正常にコレクションが初期創設され直結すること', (
+    testWidgets('新規作成ケースにおいて クラウド上にIDが実在しない場合、入室PIN設定後にコレクションが初期創設され直結すること', (
       WidgetTester tester,
     ) async {
       final container = ProviderContainer(
@@ -59,28 +61,51 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.safePumpAndSettle();
 
-      // 2. 新規の道場ID「osaka_dojo统计」を入力
+      // 2. 新規の道場ID「osaka_dojo」を入力
       await tester.enterText(find.byType(TextField), 'osaka_dojo');
       await tester.safePumpAndSettle();
 
-      // 🌟 修正核心：Firestoreの多層非同期フューチャーを、リアルタイム非同期スレッド（runAsync）内で
-      // 完全に回しきることで、テスト空間での時間差による「未作成バグ」を根絶します。
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
-        // fake_cloud_firestore の内部パケットループをマイクロタスクで待機
         await Future<void>.delayed(Duration.zero);
       });
-
-      // 3. 通信結果に伴うUI更新の反映
       await tester.safePumpAndSettle();
 
-      // アサーション1：Firestoreの「organizations/osaka_dojo」にデータが正しく自動創設されていること
+      // 3. 新規作成用PIN設定ダイアログが表示されること
+      expect(find.byType(RoomJoinPinDialog), findsOneWidget);
+      expect(find.text('新規道場ルームのPIN設定'), findsOneWidget);
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(RoomJoinPinDialog),
+          matching: find.byType(TextField),
+        ),
+        'osaka2026',
+      );
+      await tester.safePumpAndSettle();
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('PINを設定して作成'));
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.safePumpAndSettle();
+
+      // アサーション1：Firestoreの「organizations/osaka_dojo」およびprivate/securityが創設されていること
       final doc = await fakeFirestore
           .collection('organizations')
           .doc('osaka_dojo')
           .get();
       expect(doc.exists, isTrue);
-      expect(doc.data()?['createdBy'], equals('owner_terminal'));
+      expect(doc.data()?['hasJoinPin'], isTrue);
+
+      final secDoc = await fakeFirestore
+          .collection('organizations')
+          .doc('osaka_dojo')
+          .collection('private')
+          .doc('security')
+          .get();
+      expect(secDoc.exists, isTrue);
+      expect(secDoc.data()?['joinPinHash'], isNotEmpty);
 
       // アサーション2：グローバルProviderの接続先道場IDが「osaka_dojo」に切り替わっていること
       expect(container.read(currentDojoIdProvider), equals('osaka_dojo'));
@@ -91,15 +116,23 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('重複ガードケースにおいて 既に他者が使用中のIDを入力した場合、警告ダイアログが露出し無断上書きをブロックすること', (
+    testWidgets('重複ガードケースにおいて 既にPIN設定済みの部屋を入力した場合、警告後にPIN不一致は拒否・一致時は接続すること', (
       WidgetTester tester,
     ) async {
-      // 事前条件：クラウド上に既に「tokyo_dojo」という部屋が実在している状態を作る
+      // 事前条件：クラウド上に既にPIN保護された「tokyo_dojo」が存在する状態を作る
       await fakeFirestore.collection('organizations').doc('tokyo_dojo').set({
         'createdAt': DateTime.now().toIso8601String(),
         'createdBy': 'someone_else',
+        'hasJoinPin': true,
       });
-
+      await fakeFirestore
+          .collection('organizations')
+          .doc('tokyo_dojo')
+          .collection('private')
+          .doc('security')
+          .set({
+            'joinPinHash': PinHasher.hashJoinPin('tokyo_dojo', 'tokyo2026'),
+          });
       final container = ProviderContainer(
         overrides: [roomFirestoreProvider.overrideWithValue(fakeFirestore)],
       );
@@ -114,29 +147,64 @@ void main() {
       await tester.enterText(find.byType(TextField), 'tokyo_dojo');
       await tester.safePumpAndSettle();
 
-      // 🌟 修正核心：存在チェックの get() 通信パケットを安全に解決させます
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
         await Future<void>.delayed(Duration.zero);
       });
-
-      // 3. 警告ダイアログのポップアップアニメーションを消化
       await tester.safePumpAndSettle();
 
-      // 🚨 アサーション1：無断での上書き接続はされず、画面に重複警告ポップアップが出現していることを証明
+      // 🚨 アサーション1：無断での上書き接続はされず、重複警告ポップアップが出現していること
       expect(find.text('⚠️ ID重複・既存の部屋'), findsOneWidget);
       expect(find.textContaining('はすでに存在しています。'), findsOneWidget);
 
-      // 4. 行動分岐：ユーザーが「このまま接続（既存に参加）」を承認した場合
+      // 3. 「このまま接続」を押すとPIN入力ダイアログへ進むこと
       await tester.runAsync(() async {
         await tester.tap(find.text('このまま接続'));
         await Future<void>.delayed(Duration.zero);
       });
-
-      // 5. 画面が閉じるのを待機
       await tester.safePumpAndSettle();
 
-      // アサーション2：承認を経て、最終的に既存の「tokyo_dojo」空間への直結が執行されたこと
+      expect(find.byType(RoomJoinPinDialog), findsOneWidget);
+      expect(find.text('道場入室PINの入力'), findsOneWidget);
+
+      // 4. 誤ったPINを入力した場合は拒否され接続されないこと
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(RoomJoinPinDialog),
+          matching: find.byType(TextField),
+        ),
+        'wrongpin',
+      );
+      await tester.safePumpAndSettle();
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('認証して接続'));
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.safePumpAndSettle();
+
+      expect(find.text('🔒 道場入室PINが一致しません'), findsOneWidget);
+      expect(
+        container.read(currentDojoIdProvider),
+        isNot(equals('tokyo_dojo')),
+      );
+
+      // 5. 正しいPINを入力した場合は接続完了すること
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(RoomJoinPinDialog),
+          matching: find.byType(TextField),
+        ),
+        'tokyo2026',
+      );
+      await tester.safePumpAndSettle();
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('認証して接続'));
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.safePumpAndSettle();
+
       expect(container.read(currentDojoIdProvider), equals('tokyo_dojo'));
       expect(find.byType(RoomJoinQrDialog), findsNothing);
 
@@ -467,9 +535,23 @@ void main() {
         await tester.safePumpAndSettle();
         expect(find.widgetWithText(TextField, 'chiba_dojo'), findsOneWidget);
 
-        // 4. キーボード出現下の小型画面でも「接続開始」ボタンをタップして正常接続できること
+        // 4. キーボード出現下の小型画面でも「接続開始」→PIN設定で正常接続できること
         await tester.runAsync(() async {
           await tester.tap(find.text('接続開始'));
+          await Future<void>.delayed(Duration.zero);
+        });
+        await tester.safePumpAndSettle();
+
+        await tester.enterText(
+          find.descendant(
+            of: find.byType(RoomJoinPinDialog),
+            matching: find.byType(TextField),
+          ),
+          'chiba2026',
+        );
+        await tester.safePumpAndSettle();
+        await tester.runAsync(() async {
+          await tester.tap(find.text('PINを設定して作成'));
           await Future<void>.delayed(Duration.zero);
         });
         await tester.safePumpAndSettle();
@@ -603,9 +685,23 @@ void main() {
       // 入力欄が「kyoto_dojo」に正しく上書きされていること
       expect(find.widgetWithText(TextField, 'kyoto_dojo'), findsOneWidget);
 
-      // 接続開始を実行
+      // 接続開始→PIN設定を実行
       await tester.runAsync(() async {
         await tester.tap(find.text('接続開始'));
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.safePumpAndSettle();
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(RoomJoinPinDialog),
+          matching: find.byType(TextField),
+        ),
+        'kyoto2026',
+      );
+      await tester.safePumpAndSettle();
+      await tester.runAsync(() async {
+        await tester.tap(find.text('PINを設定して作成'));
         await Future<void>.delayed(Duration.zero);
       });
       await tester.safePumpAndSettle();

@@ -1,7 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kendo_os/features/auth/presentation/widgets/initial_role_pin_prompt_dialog.dart';
+import 'package:kendo_os/security/dojo_join_access_storage.dart';
+import 'package:kendo_os/security/dojo_security_repository.dart';
 import 'package:kendo_os/security/pin_guard.dart';
+import 'package:kendo_os/security/pin_hasher.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -101,11 +107,53 @@ class _PinAuthScreenState extends ConsumerState<PinAuthScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      if (PinGuard.validate(widget.role, pin)) {
+      final dojoId = ref.read(currentDojoIdProvider);
+      final securityRepo = ref.read(dojoSecurityRepositoryProvider);
+      String? uid;
+      if (Firebase.apps.isNotEmpty) {
+        var user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          final cred = await FirebaseAuth.instance.signInAnonymously();
+          user = cred.user;
+        }
+        uid = user?.uid;
+      }
+
+      final joinPinHash = DojoJoinAccessStorage.getJoinPinHash(dojoId);
+      final isValid = await PinGuard.validateForDojo(
+        role: widget.role,
+        input: pin,
+        dojoId: dojoId,
+        joinPinHash: joinPinHash,
+        uid: uid,
+        repository: securityRepo,
+      );
+      if (!mounted) return;
+
+      if (isValid) {
         AppHaptics.success();
+        final rolePinHash = PinHasher.hashRolePin(dojoId, widget.role, pin);
         await ref
             .read(authSessionProvider.notifier)
-            .establishSession(widget.role, ref.read(currentDojoIdProvider));
+            .establishSession(
+              widget.role,
+              dojoId,
+              joinPinHash: joinPinHash,
+              rolePinHash: rolePinHash,
+            );
+        if (!mounted) return;
+
+        // 初回 Admin 入室時のみ、初期ロールPIN変更案内ダイアログを表示
+        if (widget.role == UserRole.admin) {
+          await InitialRolePinPromptDialog.maybePromptAfterAdminLogin(
+            context,
+            dojoId: dojoId,
+            currentAdminPin: pin,
+            repository: securityRepo,
+          );
+          if (!mounted) return;
+        }
+
         if (mounted) {
           context.go('/');
         }

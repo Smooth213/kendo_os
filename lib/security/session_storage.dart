@@ -22,7 +22,8 @@ class SessionStorage {
           jsonDecode(jsonStr) as Map<String, dynamic>;
       final session = UserSession.fromJson(map);
 
-      if (session.sessionVersion != 1 || session.isExpired) {
+      if (session.sessionVersion != UserSession.currentSessionVersion ||
+          session.isExpired) {
         clear();
         return null;
       }

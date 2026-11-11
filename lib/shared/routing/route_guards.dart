@@ -8,6 +8,11 @@ import 'package:kendo_os/features/tournament/presentation/operate/providers/auth
 import 'package:kendo_os/features/tournament/presentation/operate/providers/match_list_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/permission_provider.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/role_provider.dart';
+import 'package:kendo_os/features/viewer/presentation/screens/viewer_share_expired_screen.dart';
+import 'package:kendo_os/security/dojo_join_access_storage.dart';
+import 'package:kendo_os/security/dojo_security_repository.dart';
+import 'package:kendo_os/security/viewer_share_models.dart';
+import 'package:kendo_os/security/viewer_share_repository.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -22,18 +27,32 @@ class AuthGuard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(authSessionProvider);
-    final isSessionValid = session != null && !session.isExpired;
+    final currentDojoId = ref.watch(currentDojoIdProvider);
+    final isFullDojoSession =
+        session != null &&
+        !session.isExpired &&
+        !session.isShareScoped &&
+        (session.dojoId.isEmpty || session.dojoId == currentDojoId);
 
-    // 🌟 セッション先行判定：既にPIN認証またはViewer選択を通過している場合は、
-    // Firebase AuthのStream初期化遅延に関わらず即座にchildを表示し、強制送還ループを防ぐ
-    if (isSessionValid) {
+    // 🌟 セッション先行判定：既に正規の道場入室・ロール認証を通過している場合は即座に表示
+    // （1大会限定の共有リンクセッションは '/' へのアクセスを許可せず RoleSelectScreen へ誘導）
+    if (isFullDojoSession) {
       return child;
+    }
+    if (session != null && session.isShareScoped) {
+      return const RoleSelectScreen();
     }
 
     final authState = ref.watch(authStateProvider);
     return authState.when(
       data: (user) {
         if (user == null) {
+          return const RoleSelectScreen();
+        }
+        if (Firebase.apps.isNotEmpty &&
+            currentDojoId.isNotEmpty &&
+            currentDojoId != 'default_dojo_room' &&
+            !DojoJoinAccessStorage.hasJoinProof(currentDojoId)) {
           return const RoleSelectScreen();
         }
         return child;
@@ -50,6 +69,7 @@ class RoleInjector extends ConsumerWidget {
   final String? roleStr;
   final String? dojoId;
   final String? tournamentId;
+  final String? shareToken;
 
   const RoleInjector({
     super.key,
@@ -57,6 +77,7 @@ class RoleInjector extends ConsumerWidget {
     this.roleStr,
     this.dojoId,
     this.tournamentId,
+    this.shareToken,
   });
 
   @override
@@ -92,7 +113,12 @@ class RoleInjector extends ConsumerWidget {
 
       return ProviderScope(
         overrides: overrides,
-        child: ViewerAuthGate(child: child),
+        child: ViewerAuthGate(
+          dojoId: dojoId ?? currentDojoId,
+          tournamentId: tournamentId,
+          shareToken: shareToken,
+          child: child,
+        ),
       );
     }
 
@@ -101,19 +127,29 @@ class RoleInjector extends ConsumerWidget {
 }
 
 /// 🛡️ ビュアー用認証防壁ゲート
-/// 未認証（request.auth == null）の状態で Firestore クエリが走るのを防ぐため、
-/// 匿名認証または既存認証が確立するまでスピナーを表示して保護する。
-class ViewerAuthGate extends StatefulWidget {
+/// 未認証（request.auth == null）の状態で Firestore クエリが走るのを防ぎ、
+/// 共有リンク（1大会限定・有効期限付き）のトークン検証も同時に執行する。
+class ViewerAuthGate extends ConsumerStatefulWidget {
   final Widget child;
+  final String? dojoId;
+  final String? tournamentId;
+  final String? shareToken;
 
-  const ViewerAuthGate({super.key, required this.child});
+  const ViewerAuthGate({
+    super.key,
+    required this.child,
+    this.dojoId,
+    this.tournamentId,
+    this.shareToken,
+  });
 
   @override
-  State<ViewerAuthGate> createState() => _ViewerAuthGateState();
+  ConsumerState<ViewerAuthGate> createState() => _ViewerAuthGateState();
 }
 
-class _ViewerAuthGateState extends State<ViewerAuthGate> {
-  bool _isAuthenticated = false;
+class _ViewerAuthGateState extends ConsumerState<ViewerAuthGate> {
+  bool _isReady = false;
+  ViewerShareAccessStatus? _blockedStatus;
 
   @override
   void initState() {
@@ -124,44 +160,88 @@ class _ViewerAuthGateState extends State<ViewerAuthGate> {
   Future<void> _checkAndEnsureAuth() async {
     try {
       if (Firebase.apps.isEmpty) {
-        if (mounted) {
-          setState(() => _isAuthenticated = true);
-        }
-        return;
-      }
-
-      // 既に認証済みなら即座に描画許可
-      if (FirebaseAuth.instance.currentUser != null) {
-        if (mounted) {
-          setState(() => _isAuthenticated = true);
-        }
+        if (mounted) setState(() => _isReady = true);
         return;
       }
 
       // 匿名認証を確立（最大4秒待機）
-      await FirebaseAuth.instance.signInAnonymously().timeout(
-        const Duration(seconds: 4),
-      );
+      if (FirebaseAuth.instance.currentUser == null) {
+        await FirebaseAuth.instance.signInAnonymously().timeout(
+          const Duration(seconds: 4),
+        );
+      }
+
+      final dojoId = widget.dojoId ?? '';
+      final tournamentId = widget.tournamentId ?? '';
+      final token = widget.shareToken ?? '';
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+
+      if (dojoId.isNotEmpty &&
+          dojoId != 'default_dojo_room' &&
+          dojoId != 'default_org' &&
+          uid != null) {
+        final session = ref.read(authSessionProvider);
+        final isFullDojoViewer =
+            DojoJoinAccessStorage.hasJoinProof(dojoId) ||
+            (session != null && session.isAuthorizedForDojo(dojoId));
+
+        if (!isFullDojoViewer) {
+          final shareRepo = ref.read(viewerShareRepositoryProvider);
+          final secRepo = ref.read(dojoSecurityRepositoryProvider);
+
+          if (token.isNotEmpty && shareRepo != null) {
+            final res = await shareRepo.verifyAndActivateShareLink(
+              dojoId: dojoId,
+              tournamentId: tournamentId,
+              token: token,
+              uid: uid,
+            );
+            if (!res.isAllowed) {
+              if (mounted) {
+                setState(() {
+                  _blockedStatus = res.status;
+                  _isReady = true;
+                });
+              }
+              return;
+            }
+            ref
+                .read(authSessionProvider.notifier)
+                .establishShareSession(
+                  dojoId: dojoId,
+                  tournamentId: tournamentId,
+                  shareToken: token,
+                );
+          } else if (secRepo != null) {
+            final roomStatus = await secRepo.inspectRoomStatus(dojoId);
+            if (roomStatus == DojoJoinStatus.requiresPin) {
+              if (mounted) {
+                setState(() {
+                  _blockedStatus = ViewerShareAccessStatus.invalid;
+                  _isReady = true;
+                });
+              }
+              return;
+            }
+          }
+        }
+      }
     } catch (e) {
-      debugPrint('[WARN] [ViewerAuthGate] 匿名認証試行エラー/タイムアウト: $e');
+      debugPrint('[WARN] [ViewerAuthGate] 認証・共有トークン検証エラー: $e');
     }
 
-    // タイムアウトやエラーが発生した場合でも、後続のリカバリに委ねるため描画許可
     if (mounted) {
-      setState(() => _isAuthenticated = true);
+      setState(() => _isReady = true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    bool hasUser = false;
-    try {
-      if (Firebase.apps.isNotEmpty) {
-        hasUser = FirebaseAuth.instance.currentUser != null;
-      }
-    } catch (_) {}
+    if (_blockedStatus != null) {
+      return ViewerShareExpiredScreen(status: _blockedStatus!);
+    }
 
-    if (_isAuthenticated || hasUser) {
+    if (_isReady) {
       return widget.child;
     }
 

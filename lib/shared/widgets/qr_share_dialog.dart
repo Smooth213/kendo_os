@@ -1,11 +1,20 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/security/viewer_share_models.dart';
+import 'package:kendo_os/security/viewer_share_repository.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/widgets/app_dialog.dart';
+import 'package:kendo_os/shared/widgets/viewer_share_expiry_selector.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -13,7 +22,7 @@ import 'package:share_plus/share_plus.dart';
 ///
 /// アプリ内のすべてのQRコード表示ダイアログ（大会観戦リンク、部内戦観戦リンク、Webアプリリンク等）で
 /// 一貫したプレミアムなデザインと使い心地を提供します。
-class QrShareDialog extends StatelessWidget {
+class QrShareDialog extends StatefulWidget {
   final String title;
   final IconData titleIcon;
   final Color themeColor;
@@ -25,6 +34,8 @@ class QrShareDialog extends StatelessWidget {
   final String shareButtonLabel;
   final String copySuccessMessage;
   final VoidCallback? onClose;
+  final String? shareDojoId;
+  final String? shareTournamentId;
 
   const QrShareDialog({
     super.key,
@@ -39,6 +50,8 @@ class QrShareDialog extends StatelessWidget {
     this.shareButtonLabel = 'LINEやSNSでURLを送る',
     this.copySuccessMessage = 'URLをクリップボードにコピーしました',
     this.onClose,
+    this.shareDojoId,
+    this.shareTournamentId,
   });
 
   static void show(
@@ -54,6 +67,8 @@ class QrShareDialog extends StatelessWidget {
     String shareButtonLabel = 'LINEやSNSでURLを送る',
     String copySuccessMessage = 'URLをクリップボードにコピーしました',
     VoidCallback? onClose,
+    String? shareDojoId,
+    String? shareTournamentId,
   }) {
     showAppDialog(
       context: context,
@@ -69,8 +84,144 @@ class QrShareDialog extends StatelessWidget {
         shareButtonLabel: shareButtonLabel,
         copySuccessMessage: copySuccessMessage,
         onClose: onClose,
+        shareDojoId: shareDojoId,
+        shareTournamentId: shareTournamentId,
       ),
     );
+  }
+
+  @override
+  State<QrShareDialog> createState() => _QrShareDialogState();
+}
+
+class _QrShareDialogState extends State<QrShareDialog> {
+  bool _initialized = false;
+  bool _showExpiryControls = false;
+  bool _isUpdatingShare = false;
+  ViewerShareExpiryPreset _preset = ViewerShareExpiryPreset.days7;
+  DateTime? _expiresAt;
+  String? _activeToken;
+  ViewerShareRepository? _shareRepo;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    _initShareTokenContext();
+  }
+
+  void _initShareTokenContext() {
+    final dojoId = widget.shareDojoId;
+    final tournamentId = widget.shareTournamentId;
+    if (dojoId == null ||
+        dojoId.isEmpty ||
+        dojoId == 'default_dojo_room' ||
+        dojoId == 'default_org' ||
+        tournamentId == null ||
+        tournamentId.isEmpty) {
+      return;
+    }
+
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final role = container.read(currentUserRoleProvider);
+      final session = container.read(authSessionProvider);
+      final repo = container.read(viewerShareRepositoryProvider);
+
+      if (session != null &&
+          session.isShareScoped &&
+          session.sharedTournamentId == tournamentId &&
+          session.shareToken != null) {
+        _activeToken = session.shareToken;
+        return;
+      }
+
+      if (repo != null && role != UserRole.viewer) {
+        _shareRepo = repo;
+        _showExpiryControls = true;
+        _loadOrIssueShareLink(
+          repo: repo,
+          dojoId: dojoId,
+          tournamentId: tournamentId,
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadOrIssueShareLink({
+    required ViewerShareRepository repo,
+    required String dojoId,
+    required String tournamentId,
+  }) async {
+    setState(() => _isUpdatingShare = true);
+    try {
+      final existing = await repo.getTournamentShareMeta(
+        dojoId: dojoId,
+        tournamentId: tournamentId,
+      );
+      if (!mounted) return;
+      if (existing != null) {
+        setState(() {
+          _activeToken = existing.token;
+          _preset = existing.preset;
+          _expiresAt = existing.expiresAt;
+          _isUpdatingShare = false;
+        });
+        return;
+      }
+      final uid = Firebase.apps.isNotEmpty
+          ? (FirebaseAuth.instance.currentUser?.uid ?? 'staff_terminal')
+          : 'staff_terminal';
+      final created = await repo.saveTournamentShareLink(
+        dojoId: dojoId,
+        tournamentId: tournamentId,
+        preset: ViewerShareExpiryPreset.days7,
+        uid: uid,
+      );
+      if (!mounted) return;
+      setState(() {
+        _activeToken = created.token;
+        _preset = created.preset;
+        _expiresAt = created.expiresAt;
+        _isUpdatingShare = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isUpdatingShare = false);
+    }
+  }
+
+  Future<void> _updatePreset(ViewerShareExpiryPreset nextPreset) async {
+    final repo = _shareRepo;
+    final dojoId = widget.shareDojoId;
+    final tournamentId = widget.shareTournamentId;
+    if (repo == null || dojoId == null || tournamentId == null) return;
+
+    setState(() => _isUpdatingShare = true);
+    try {
+      final uid = Firebase.apps.isNotEmpty
+          ? (FirebaseAuth.instance.currentUser?.uid ?? 'staff_terminal')
+          : 'staff_terminal';
+      final updated = await repo.saveTournamentShareLink(
+        dojoId: dojoId,
+        tournamentId: tournamentId,
+        preset: nextPreset,
+        existingToken: _activeToken,
+        uid: uid,
+      );
+      if (!mounted) return;
+      setState(() {
+        _activeToken = updated.token;
+        _preset = updated.preset;
+        _expiresAt = updated.expiresAt;
+        _isUpdatingShare = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUpdatingShare = false);
+        AppSnackBar.showError(context, '有効期限の更新に失敗しました: $e');
+      }
+    }
   }
 
   @override
@@ -79,11 +230,20 @@ class QrShareDialog extends StatelessWidget {
     final themeColors =
         Theme.of(context).extension<AppThemeColors>() ??
         AppThemeColors.ofMode(isDark: isDark, mode: 'normal');
+    final effectiveShareUrl = ViewerShareUrlHelper.attachToken(
+      widget.shareUrl,
+      _activeToken,
+    );
+    final effectiveShareText = ViewerShareUrlHelper.replaceUrlInText(
+      widget.shareText,
+      widget.shareUrl,
+      effectiveShareUrl,
+    );
 
     return AppDialog(
-      title: title,
-      titleIcon: titleIcon,
-      iconColor: themeColor,
+      title: widget.title,
+      titleIcon: widget.titleIcon,
+      iconColor: widget.themeColor,
       content: SizedBox(
         width: 320,
         child: SingleChildScrollView(
@@ -93,7 +253,7 @@ class QrShareDialog extends StatelessWidget {
             children: [
               // 説明テキスト
               Text(
-                description,
+                widget.description,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: AppFontSize.bodySmall,
@@ -101,6 +261,15 @@ class QrShareDialog extends StatelessWidget {
                   height: 1.4,
                 ),
               ),
+              if (_showExpiryControls) ...[
+                const SizedBox(height: AppSpacing.md),
+                ViewerShareExpirySelector(
+                  selectedPreset: _preset,
+                  expiresAt: _expiresAt,
+                  isUpdating: _isUpdatingShare,
+                  onPresetSelected: _updatePreset,
+                ),
+              ],
               const SizedBox(height: AppSpacing.md),
 
               // QRコードカード
@@ -122,15 +291,15 @@ class QrShareDialog extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       QrImageView(
-                        data: shareUrl,
+                        data: effectiveShareUrl,
                         version: QrVersions.auto,
                         size: 180.0,
                         backgroundColor: AppKendoColors.pureWhite,
                       ),
-                      if (subtitleBadge != null) ...[
+                      if (widget.subtitleBadge != null) ...[
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          subtitleBadge!,
+                          widget.subtitleBadge!,
                           style: const TextStyle(
                             fontSize: AppFontSize.badge,
                             color: AppKendoColors.grey,
@@ -159,11 +328,11 @@ class QrShareDialog extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.link, size: 18, color: themeColor),
+                    Icon(Icons.link, size: 18, color: widget.themeColor),
                     const SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: SelectableText(
-                        shareUrl,
+                        effectiveShareUrl,
                         style: TextStyle(
                           fontSize: AppFontSize.bodySmall,
                           fontWeight: AppFontWeight.semiBold,
@@ -182,9 +351,14 @@ class QrShareDialog extends StatelessWidget {
                       ),
                       onPressed: () async {
                         AppHaptics.success();
-                        await Clipboard.setData(ClipboardData(text: shareUrl));
+                        await Clipboard.setData(
+                          ClipboardData(text: effectiveShareUrl),
+                        );
                         if (context.mounted) {
-                          AppSnackBar.showSuccess(context, copySuccessMessage);
+                          AppSnackBar.showSuccess(
+                            context,
+                            widget.copySuccessMessage,
+                          );
                         }
                       },
                     ),
@@ -198,7 +372,10 @@ class QrShareDialog extends StatelessWidget {
                 onPressed: () {
                   AppHaptics.medium();
                   SharePlus.instance.share(
-                    ShareParams(text: shareText, subject: shareSubject),
+                    ShareParams(
+                      text: effectiveShareText,
+                      subject: widget.shareSubject,
+                    ),
                   );
                 },
                 icon: const Icon(
@@ -207,14 +384,14 @@ class QrShareDialog extends StatelessWidget {
                   color: AppKendoColors.pureWhite,
                 ),
                 label: Text(
-                  shareButtonLabel,
+                  widget.shareButtonLabel,
                   style: const TextStyle(
                     fontWeight: AppFontWeight.bold,
                     color: AppKendoColors.pureWhite,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: themeColor,
+                  backgroundColor: widget.themeColor,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   shape: const StadiumBorder(),
                   elevation: 0,
@@ -226,7 +403,7 @@ class QrShareDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: onClose ?? () => Navigator.pop(context),
+          onPressed: widget.onClose ?? () => Navigator.pop(context),
           child: const Text('閉じる'),
         ),
       ],

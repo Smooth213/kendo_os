@@ -47,11 +47,18 @@ class FakeAuthSessionNotifier extends AuthSessionNotifier {
   FakeAuthSessionNotifier() : super();
 
   @override
-  Future<void> establishSession(UserRole role, String dojoId) async {
+  Future<void> establishSession(
+    UserRole role,
+    String dojoId, {
+    String? joinPinHash,
+    String? rolePinHash,
+  }) async {
     state = UserSession(
       role: role,
       loginAt: DateTime.now(),
       expiresAt: DateTime.now().add(const Duration(hours: 12)),
+      dojoId: dojoId,
+      verifiedJoinPinHash: joinPinHash,
     );
   }
 }

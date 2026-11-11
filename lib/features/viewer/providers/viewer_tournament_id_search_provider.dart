@@ -50,41 +50,6 @@ final webTournamentIdSearchProvider = FutureProvider.family<String?, String>((
       }
     }
 
-    // 2. フォールバック: collectionGroup('matches') での検索（組織跨ぎ・パラメータ完全欠落時のみ）
-    try {
-      final groupSnap = await firestore
-          .collectionGroup('matches')
-          .where('groupName', isEqualTo: groupName)
-          .limit(1)
-          .get();
-      if (groupSnap.docs.isNotEmpty) {
-        final tId = groupSnap.docs.first.data()['tournamentId'] as String?;
-        if (tId != null && tId.isNotEmpty) return tId;
-        final pathSegments = groupSnap.docs.first.reference.path.split('/');
-        final tIndex = pathSegments.indexOf('tournaments');
-        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
-          return pathSegments[tIndex + 1];
-        }
-      }
-
-      final idSnap = await firestore
-          .collectionGroup('matches')
-          .where('id', isEqualTo: groupName)
-          .limit(1)
-          .get();
-      if (idSnap.docs.isNotEmpty) {
-        final tId = idSnap.docs.first.data()['tournamentId'] as String?;
-        if (tId != null && tId.isNotEmpty) return tId;
-        final pathSegments = idSnap.docs.first.reference.path.split('/');
-        final tIndex = pathSegments.indexOf('tournaments');
-        if (tIndex != -1 && tIndex + 1 < pathSegments.length) {
-          return pathSegments[tIndex + 1];
-        }
-      }
-    } catch (e) {
-      debugPrint('[ERROR] [collectionGroup matches Error] $e');
-    }
-
     final fallbackMatches = ref.read(matchListProvider);
     if (fallbackMatches.isNotEmpty) {
       return fallbackMatches.first.tournamentId;

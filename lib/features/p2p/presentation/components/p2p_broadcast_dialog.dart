@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/security/viewer_share_repository.dart';
+import 'package:kendo_os/shared/widgets/viewer_share_expiry_selector.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kendo_os/features/match/domain/match_model.dart';
 import 'package:kendo_os/features/p2p/infrastructure/local_p2p_broadcaster.dart';
@@ -107,6 +111,39 @@ class _P2pBroadcastDialogState extends ConsumerState<P2pBroadcastDialog> {
       _isLocalP2p = false;
       _isLoading = false;
     });
+    _attachCloudShareTokenIfNeeded(
+      baseUrl: cloudUrl,
+      dojoId: dojoId,
+      tournamentId: tournamentId,
+    );
+  }
+
+  Future<void> _attachCloudShareTokenIfNeeded({
+    required String baseUrl,
+    required String dojoId,
+    required String tournamentId,
+  }) async {
+    try {
+      final shareRepo = ref.read(viewerShareRepositoryProvider);
+      if (shareRepo == null ||
+          dojoId == 'default_org' ||
+          dojoId == 'default_dojo_room' ||
+          tournamentId.isEmpty) {
+        return;
+      }
+      final uid = Firebase.apps.isNotEmpty
+          ? (FirebaseAuth.instance.currentUser?.uid ?? 'staff_terminal')
+          : 'staff_terminal';
+      final info = await shareRepo.getOrCreateDefaultShareLink(
+        dojoId: dojoId,
+        tournamentId: tournamentId,
+        uid: uid,
+      );
+      if (!mounted || _isLocalP2p) return;
+      setState(() {
+        _serverUrl = ViewerShareUrlHelper.attachToken(baseUrl, info.token);
+      });
+    } catch (_) {}
   }
 
   @override

@@ -1,16 +1,24 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_bottom_sheet_header.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/dock_draggable_sheet.dart';
 import 'package:kendo_os/features/tournament/presentation/components/program_management/floating_dock_sheet_manager.dart';
+import 'package:kendo_os/security/viewer_share_models.dart';
+import 'package:kendo_os/security/viewer_share_repository.dart';
+import 'package:kendo_os/shared/domain/entities/user_role.dart';
+import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
+import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/utils/app_snack_bar.dart';
+import 'package:kendo_os/shared/widgets/viewer_share_expiry_selector.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -47,6 +55,88 @@ class ViewerQrBottomSheet extends ConsumerStatefulWidget {
 class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
   bool _isCopied = false;
   Timer? _copyResetTimer;
+  bool _isUpdatingShare = false;
+  ViewerShareExpiryPreset _preset = ViewerShareExpiryPreset.days7;
+  DateTime? _expiresAt;
+  String? _activeToken;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_loadOrIssueShareToken);
+  }
+
+  Future<void> _loadOrIssueShareToken() async {
+    final dojoId = ref.read(currentSyncContextProvider).organizationId;
+    if (dojoId.isEmpty ||
+        dojoId == 'default_dojo_room' ||
+        dojoId == 'default_org') {
+      return;
+    }
+    final session = ref.read(authSessionProvider);
+    if (session != null &&
+        session.isShareScoped &&
+        session.sharedTournamentId == widget.tournamentId &&
+        session.shareToken != null) {
+      if (mounted) setState(() => _activeToken = session.shareToken);
+      return;
+    }
+    final repo = ref.read(viewerShareRepositoryProvider);
+    if (repo == null || ref.read(currentUserRoleProvider) == UserRole.viewer) {
+      return;
+    }
+    if (mounted) setState(() => _isUpdatingShare = true);
+    try {
+      final uid = Firebase.apps.isNotEmpty
+          ? (FirebaseAuth.instance.currentUser?.uid ?? 'staff_terminal')
+          : 'staff_terminal';
+      final info = await repo.getOrCreateDefaultShareLink(
+        dojoId: dojoId,
+        tournamentId: widget.tournamentId,
+        uid: uid,
+      );
+      if (!mounted) return;
+      setState(() {
+        _activeToken = info.token;
+        _preset = info.preset;
+        _expiresAt = info.expiresAt;
+        _isUpdatingShare = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isUpdatingShare = false);
+    }
+  }
+
+  Future<void> _updatePreset(ViewerShareExpiryPreset nextPreset) async {
+    final repo = ref.read(viewerShareRepositoryProvider);
+    final dojoId = ref.read(currentSyncContextProvider).organizationId;
+    if (repo == null || dojoId.isEmpty) return;
+    setState(() => _isUpdatingShare = true);
+    try {
+      final uid = Firebase.apps.isNotEmpty
+          ? (FirebaseAuth.instance.currentUser?.uid ?? 'staff_terminal')
+          : 'staff_terminal';
+      final updated = await repo.saveTournamentShareLink(
+        dojoId: dojoId,
+        tournamentId: widget.tournamentId,
+        preset: nextPreset,
+        existingToken: _activeToken,
+        uid: uid,
+      );
+      if (!mounted) return;
+      setState(() {
+        _activeToken = updated.token;
+        _preset = updated.preset;
+        _expiresAt = updated.expiresAt;
+        _isUpdatingShare = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUpdatingShare = false);
+        AppSnackBar.showError(context, '有効期限の更新に失敗しました: $e');
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -84,11 +174,22 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
         : (isDark ? const Color(0xFF2DD4BF) : AppKendoColors.teal);
 
     final path = isBunaiksen ? 'bunaiksen-viewer-home' : 'viewer-home';
-    final shareUrl = Uri.https(
+    final baseShareUrl = Uri.https(
       'kendo-os-beta.web.app',
       '/$path/${widget.tournamentId}',
       {'role': 'viewer', 'dojoId': dojoId},
     ).toString();
+    final shareUrl = ViewerShareUrlHelper.attachToken(
+      baseShareUrl,
+      _activeToken,
+    );
+    final canManageExpiry =
+        !widget.isViewerMode &&
+        ref.watch(currentUserRoleProvider) != UserRole.viewer &&
+        ref.watch(viewerShareRepositoryProvider) != null &&
+        dojoId.isNotEmpty &&
+        dojoId != 'default_dojo_room' &&
+        dojoId != 'default_org';
 
     return DockDraggableSheet(
       initialChildSize: 0.72,
@@ -143,6 +244,15 @@ class _ViewerQrBottomSheetState extends ConsumerState<ViewerQrBottomSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
+            if (canManageExpiry) ...[
+              ViewerShareExpirySelector(
+                selectedPreset: _preset,
+                expiresAt: _expiresAt,
+                isUpdating: _isUpdatingShare,
+                onPresetSelected: _updatePreset,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
 
             // 大画面白地QRコード
             Center(

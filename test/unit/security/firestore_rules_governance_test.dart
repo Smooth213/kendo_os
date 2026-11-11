@@ -42,5 +42,25 @@ void main() {
         isTrue,
       );
     });
+
+    test('秘密情報 (/private/security) のクライアント直接read禁止とPIN・共有トークン検証が定義されていること', () {
+      expect(rulesContent.contains('match /private/security'), isTrue);
+      expect(rulesContent.contains('allow read: if false;'), isTrue);
+      expect(rulesContent.contains('function isFullDojoMember()'), isTrue);
+      expect(rulesContent.contains('function isValidMemberProof()'), isTrue);
+      expect(rulesContent.contains('isValidMemberProof()'), isTrue);
+      expect(rulesContent.contains('isValidPinProof'), isFalse);
+      expect(
+        rulesContent.contains('function isScopedViewerForTournament('),
+        isTrue,
+      );
+      expect(rulesContent.contains('match /share_links/{token}'), isTrue);
+      expect(
+        rulesContent.contains(
+          'match /{path=**}/matches/{matchId} { allow read: if false; }',
+        ),
+        isTrue,
+      );
+    });
   });
 }

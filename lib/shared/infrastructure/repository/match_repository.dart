@@ -172,6 +172,21 @@ class MatchRepository {
         // 保存時にバージョンをインクリメントし、isDirty フラグを管理する
         final cloudMatch = match.copyWith(version: nextVersion);
         transaction.set(docRef, MatchEventCloudCodec.matchData(cloudMatch));
+        if (targetTournamentId.startsWith('bunaiksen_')) {
+          transaction.set(
+            _firestore
+                .collection('organizations')
+                .doc(targetOrgId)
+                .collection('tournaments')
+                .doc(targetTournamentId),
+            {
+              'id': targetTournamentId,
+              'organizationId': targetOrgId,
+              'status': 'active',
+            },
+            SetOptions(merge: true),
+          );
+        }
         for (final archive in MatchEventCloudCodec.archiveData(cloudMatch)) {
           final chunkIndex = archive['chunkIndex'] as int;
           transaction.set(
@@ -193,6 +208,7 @@ class MatchRepository {
 
     WriteBatch batch = _firestore.batch();
     int operationCount = 0;
+    final ensuredBunaiksenKeys = <String>{};
 
     for (final match in matches) {
       final targetOrgId =
@@ -215,12 +231,36 @@ class MatchRepository {
           .doc(match.id);
 
       final archives = MatchEventCloudCodec.archiveData(match);
+      final needsBunaiksenMarker =
+          targetTournamentId.startsWith('bunaiksen_') &&
+          ensuredBunaiksenKeys.add('$targetOrgId/$targetTournamentId');
 
       // Firestoreの1バッチ上限500操作を超えないよう400件上限で自動分割コミット
-      if (operationCount + 1 + archives.length > 400) {
+      if (operationCount +
+              1 +
+              archives.length +
+              (needsBunaiksenMarker ? 1 : 0) >
+          400) {
         await batch.commit();
         batch = _firestore.batch();
         operationCount = 0;
+      }
+
+      if (needsBunaiksenMarker) {
+        batch.set(
+          _firestore
+              .collection('organizations')
+              .doc(targetOrgId)
+              .collection('tournaments')
+              .doc(targetTournamentId),
+          {
+            'id': targetTournamentId,
+            'organizationId': targetOrgId,
+            'status': 'active',
+          },
+          SetOptions(merge: true),
+        );
+        operationCount++;
       }
 
       batch.set(docRef, MatchEventCloudCodec.matchData(match));

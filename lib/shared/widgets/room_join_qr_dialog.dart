@@ -6,15 +6,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
-import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
-import 'package:kendo_os/security/pwa_storage_bridge.dart';
 import 'package:kendo_os/shared/presentation/providers/dojo_room_history_provider.dart';
-import 'package:kendo_os/shared/utils/app_snack_bar.dart';
 import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/widgets/app_bottom_sheet.dart';
+import 'package:kendo_os/shared/widgets/room_join_flow_coordinator.dart';
 import 'package:kendo_os/shared/widgets/room_join_validator.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog_actions.dart';
-import 'package:kendo_os/shared/widgets/room_join_duplicate_warning_dialog.dart';
 
 // ★ テスト時にモック（FakeFirestore）を安全に注入するための専用Provider
 final roomFirestoreProvider = Provider<FirebaseFirestore>(
@@ -95,8 +92,8 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     }
   }
 
-  /// クラウド（Firestore）へパケットを飛ばし、入力されたIDが既に他者に使われているか
-  /// 重複を決定論的に水際検知・ガードする非同期チェックロジック
+  /// クラウド（Firestore）へパケットを飛ばし、入力されたIDのPIN保護状態を照会して
+  /// 新規作成PIN設定／既存PIN認証／未設定レガシーPIN初期化のフローを実行する
   void _handleJoin(String roomCode) async {
     final cleanCode = RoomJoinValidator.normalize(roomCode);
     final validation = RoomJoinValidator.validate(roomCode);
@@ -114,34 +111,22 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
     try {
       // 🛡️ Web/Safari環境での permission-denied を防ぐため、事前に認証確立を保証
       await _ensureAuth();
+      if (!mounted) return;
 
-      // 1. 指定されたIDのフォルダ（組織ドキュメント）がFirestore上に実在するか get 照会
-      final docSnapshot = await ref
-          .read(roomFirestoreProvider)
-          .collection('organizations')
-          .doc(cleanCode)
-          .get();
-
-      // 2. 🌟 重複チェックの執行
-      if (docSnapshot.exists) {
-        // 既にドキュメントが存在する場合 ➔ 現場でデータ汚染を起こさないための警告ダイアログを発火
-        if (mounted) {
-          _showDuplicateWarningDialog(context, cleanCode);
-        }
-        return;
+      final connected = await RoomJoinFlowCoordinator.executeJoinFlow(
+        context: context,
+        ref: ref,
+        firestore: ref.read(roomFirestoreProvider),
+        cleanCode: cleanCode,
+        onInspectionComplete: () {
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+        },
+      );
+      if (connected && mounted) {
+        Navigator.of(context).pop();
       }
-
-      // 3. 重複していなければ、完全新規の綺麗な道場ルームとして安全に初期創設を執行
-      await ref
-          .read(roomFirestoreProvider)
-          .collection('organizations')
-          .doc(cleanCode)
-          .set({
-            'createdAt': FieldValue.serverTimestamp(),
-            'createdBy': 'owner_terminal',
-          });
-
-      _executeFinalConnection(cleanCode);
     } catch (e, stack) {
       debugPrint('[RoomJoin] ルーム接続例外: $e\n$stack');
       if (mounted) {
@@ -162,31 +147,6 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  /// ⚠️ 被りが発生した際に、ユーザーを誤操作から物理救済するエラー警告ポップアップ
-  void _showDuplicateWarningDialog(BuildContext parentContext, String code) {
-    RoomJoinDuplicateWarningDialog.show(
-      context: parentContext,
-      code: code,
-      onConfirm: () => _executeFinalConnection(code),
-    );
-  }
-
-  /// 最終的な接続処理
-  void _executeFinalConnection(String code) {
-    ref.read(currentDojoIdProvider.notifier).state = code;
-    try {
-      PwaStorage.setItem('kendo_os_active_dojo_id', code);
-    } catch (_) {}
-
-    // ★ 接続に成功したIDを履歴に保存
-    ref.read(dojoRoomHistoryProvider.notifier).addHistory(code);
-
-    // ダイアログを閉じる
-    Navigator.of(context).pop();
-
-    AppSnackBar.showSuccess(context, '⚡ 道場空間 [ $code ] にリアルタイム直結しました');
   }
 
   @override

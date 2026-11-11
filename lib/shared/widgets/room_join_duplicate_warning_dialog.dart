@@ -27,6 +27,26 @@ class RoomJoinDuplicateWarningDialog extends StatelessWidget {
     );
   }
 
+  static Future<void> showAndAwait({
+    required BuildContext context,
+    required String code,
+    required Future<void> Function() onConfirm,
+  }) async {
+    var shouldProceed = false;
+    await showAppDialog<void>(
+      context: context,
+      builder: (ctx) => RoomJoinDuplicateWarningDialog(
+        code: code,
+        onConfirm: () {
+          shouldProceed = true;
+        },
+      ),
+    );
+    if (shouldProceed && context.mounted) {
+      await onConfirm();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;

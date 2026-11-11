@@ -27,7 +27,8 @@ class SessionStorage {
       final session = UserSession.fromJson(map);
 
       // 改ざん・バージョン不一致、または期限切れのデータは水際でパージ
-      if (session.sessionVersion != 1 || session.isExpired) {
+      if (session.sessionVersion != UserSession.currentSessionVersion ||
+          session.isExpired) {
         clear();
         return null;
       }

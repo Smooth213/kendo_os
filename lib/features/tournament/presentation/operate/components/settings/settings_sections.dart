@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/features/band/presentation/components/band_settings_section.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_accordion_selector.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/dojo_security_settings_tile.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/settings_ui_tiles.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/web_app_qr_dialog.dart';
 import 'package:kendo_os/shared/application/services/kendo_haptics.dart';
@@ -317,6 +318,11 @@ class SettingsExternalAndProtectionSection extends StatelessWidget {
         ),
         const SettingsSectionFooter(
           text: '記録をロックすると後からスコアを修正できなくなり、ローカル保存されたデータの安全性を高めます。',
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        DojoSecuritySettingsSection(
+          enableLiquidGlass: enableLiquidGlass,
+          themeColors: themeColors,
         ),
         const SizedBox(height: AppSpacing.xl),
         const SettingsSectionHeader(title: 'Webアプリ版（他端末アクセス）'),

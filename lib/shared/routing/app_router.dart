@@ -99,6 +99,7 @@ final appRouter = GoRouter(
         roleStr: state.uri.queryParameters['role'] ?? 'viewer',
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.uri.queryParameters['tournamentId'],
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'normal_viewer',
           child: ViewerMatchScreen(matchId: state.pathParameters['id']!),
@@ -203,6 +204,7 @@ final appRouter = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.pathParameters['tournamentId']!,
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'normal_viewer',
           child: ViewerHomeScreen(
@@ -217,6 +219,7 @@ final appRouter = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.pathParameters['tournamentId']!,
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'normal_viewer',
           child: ViewerOfficialRecordScreen(
@@ -231,6 +234,7 @@ final appRouter = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.uri.queryParameters['tournamentId'],
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'normal_viewer',
           child: ViewerTeamScoreboardScreen(
@@ -245,6 +249,7 @@ final appRouter = GoRouter(
         roleStr: state.uri.queryParameters['role'],
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.uri.queryParameters['tournamentId'],
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'normal_viewer',
           child: ViewerKachinukiScoreboardScreen(
@@ -365,6 +370,7 @@ final appRouter = GoRouter(
         roleStr: 'viewer',
         dojoId: state.uri.queryParameters['dojoId'],
         tournamentId: state.pathParameters['tournamentId']!,
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'bunaiksen_viewer',
           child: ViewerBunaiksenHomeScreen(
@@ -378,6 +384,8 @@ final appRouter = GoRouter(
       builder: (context, state) => RoleInjector(
         roleStr: 'viewer',
         dojoId: state.uri.queryParameters['dojoId'],
+        tournamentId: state.pathParameters['tournamentId']!,
+        shareToken: state.uri.queryParameters['token'],
         child: AppThemeModeWrapper(
           mode: 'bunaiksen_viewer',
           child: ViewerBunaiksenOfficialRecordScreen(

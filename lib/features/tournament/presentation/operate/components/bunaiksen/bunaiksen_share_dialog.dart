@@ -51,6 +51,8 @@ class BunaiksenShareDialog extends StatelessWidget {
       shareSubject: '部内戦リアルタイム速報リンク',
       shareButtonLabel: 'LINEやSNSでURLを送る',
       copySuccessMessage: '観戦用URLをクリップボードにコピーしました',
+      shareDojoId: dojoId,
+      shareTournamentId: tournamentId,
     );
   }
 }

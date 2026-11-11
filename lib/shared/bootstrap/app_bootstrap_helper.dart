@@ -209,11 +209,6 @@ class AppBootstrapHelper {
             const Duration(seconds: 1),
             onTimeout: () {},
           );
-          FirebaseFirestore.instance
-              .collectionGroup('matches')
-              .limit(1)
-              .snapshots()
-              .listen((_) {}, onError: (_) {});
         }
       } catch (_) {}
 

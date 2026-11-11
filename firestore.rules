@@ -1,101 +1,216 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // 道場スペース配下の全セキュリティ統治ルール
+
+    // 道場スペース配下の全セキュリティ統治ルール（テナント完全隔離＋PIN・共有トークン検証）
     match /organizations/{dojoId} {
-      
-      // ★ 現場安全弁要件：ルームIDがすでに誰かに使われているか（被っているか）を
-      // ログインユーザーが水際で安全に存在確認（get）できるように許可します
-      allow read: if request.auth != null; // getだけでなく、where検索(list)も許可
-      // 追加：新しい道場（組織）の新規作成と、管理者による更新を許可します
+
+      // ルーム存在確認・PIN設定有無確認のため単一ドキュメントgetのみ許可（一覧列挙listは禁止）
+      allow get: if request.auth != null;
+      allow list: if false;
       allow create: if request.auth != null;
-      allow update: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
-      
-      // 内部ヘルパー関数：認証されたユーザーのロールを判定する（フェーズ3のメンバーコレクションと連動）
+      allow update: if request.auth != null && (
+        (isFullDojoMember() && getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']) ||
+        (resource.data.get('hasJoinPin', false) == false && request.resource.data.get('hasJoinPin', false) == true) ||
+        (isFullDojoMember() && getUserRole() in ['admin', 'Admin', 'owner', 'Owner'] &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rolePinPromptCompleted']))
+      );
+
+      // 内部ヘルパー関数：認証されたユーザーのロールを判定する
       function getUserRole() {
         let memberPath = /databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid);
         return exists(memberPath) ? get(memberPath).data.get('role', 'none') : 'none';
       }
-      
-      // 0. メンバー管理（既存IDでの入室・権限確認に必須）
+
+      // 道場入室PINを通過した正規メンバーかどうか
+      function isFullDojoMember() {
+        let memberPath = /databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid);
+        return exists(memberPath) && get(memberPath).data.get('accessScope', 'dojo') == 'dojo';
+      }
+
+      // 1大会限定の共有リンク（share_links/{token}）で有効期限内に許可されているか
+      function isScopedViewerForTournament(tournamentId) {
+        let memberPath = /databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid);
+        let m = exists(memberPath) ? get(memberPath).data : {};
+        let token = m.get('shareToken', '');
+        let safeToken = token != '' ? token : '_none_';
+        let sharePath = /databases/$(database)/documents/organizations/$(dojoId)/share_links/$(safeToken);
+        let s = (token != '' && exists(sharePath)) ? get(sharePath).data : {};
+        return m.get('accessScope', '') == 'share_link' &&
+          m.get('sharedTournamentId', '') == tournamentId &&
+          token != '' &&
+          s.get('tournamentId', '') == tournamentId &&
+          s.get('isRevoked', false) == false &&
+          (s.get('expiresAt', null) == null || s.get('expiresAt', null) > request.time);
+      }
+
+      // 共有リンク経由で任意の有効な大会を閲覧中か（custom_team_names / strokes 用）
+      function isAnyActiveScopedViewer() {
+        let memberPath = /databases/$(database)/documents/organizations/$(dojoId)/members/$(request.auth.uid);
+        let m = exists(memberPath) ? get(memberPath).data : {};
+        let token = m.get('shareToken', '');
+        let safeToken = token != '' ? token : '_none_';
+        let sharePath = /databases/$(database)/documents/organizations/$(dojoId)/share_links/$(safeToken);
+        let s = (token != '' && exists(sharePath)) ? get(sharePath).data : {};
+        return m.get('accessScope', '') == 'share_link' &&
+          token != '' &&
+          s.get('isRevoked', false) == false &&
+          (s.get('expiresAt', null) == null || s.get('expiresAt', null) > request.time);
+      }
+
+      // 自身のメンバー登録時に道場入室PIN・ロールPINまたは有効な共有トークンのハッシュ証明を検証
+      function isValidMemberProof() {
+        let secPath = /databases/$(database)/documents/organizations/$(dojoId)/private/security;
+        let role = request.resource.data.get('role', 'viewer');
+        let scope = request.resource.data.get('accessScope', 'dojo');
+        let joinHash = request.resource.data.get('submittedJoinPinHash', '');
+        let roleHash = request.resource.data.get('submittedRolePinHash', '');
+        let token = request.resource.data.get('shareToken', '');
+        let safeToken = token != '' ? token : '_none_';
+        let sharedTId = request.resource.data.get('sharedTournamentId', '');
+        let sharePath = /databases/$(database)/documents/organizations/$(dojoId)/share_links/$(safeToken);
+
+        return (
+          // A. 新規道場創設／レガシー道場初回PIN設定の同一バッチ書き込み
+          (scope == 'dojo' && role == 'viewer' &&
+            getAfter(secPath).data.joinPinHash == joinHash) ||
+          // B. 既存道場への入室PINによるViewer参加
+          (scope == 'dojo' && role == 'viewer' && exists(secPath) &&
+            get(secPath).data.joinPinHash == joinHash) ||
+          // C. 道場入室PIN＋道場別ロールPINによる特権ロール認証
+          (scope == 'dojo' && role in ['admin', 'operator', 'recorder'] &&
+            exists(secPath) &&
+            get(secPath).data.joinPinHash == joinHash &&
+            get(secPath).data.rolePinHashes[role] == roleHash) ||
+          // D. 1大会限定QR/URL共有リンク（有効期限内・未停止）による限定Viewer参加
+          (scope == 'share_link' && role == 'viewer' &&
+            token != '' && sharedTId != '' && exists(sharePath) &&
+            get(sharePath).data.get('tournamentId', '') == sharedTId &&
+            get(sharePath).data.get('isRevoked', false) == false &&
+            (get(sharePath).data.get('expiresAt', null) == null ||
+             get(sharePath).data.get('expiresAt', null) > request.time))
+        );
+      }
+
+      // 秘密情報（PINハッシュ）：クライアントからの直接readは完全禁止（Rules内getでのみ照合）
+      function canCreateSecurityDoc() {
+        let secPath = /databases/$(database)/documents/organizations/$(dojoId)/private/security;
+        let orgPath = /databases/$(database)/documents/organizations/$(dojoId);
+        return request.auth != null && !exists(secPath) &&
+          getAfter(orgPath).data.get('hasJoinPin', false) == true;
+      }
+
+      match /private/security {
+        allow read: if false;
+        allow create: if canCreateSecurityDoc();
+        allow update: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'Admin', 'owner', 'Owner'] &&
+          resource.data.rolePinHashes.admin == request.resource.data.get('submittedCurrentAdminPinHash', '');
+        allow delete: if false;
+      }
+
+      // 0. メンバー管理（PINまたは有効共有トークン証明を伴う自己登録、またはAdmin/Operatorによる管理）
       match /members/{userId} {
-        // クライアントアプリ側で自分がメンバーであるか・どのロールかを確認するために必須
-        allow read: if request.auth != null;
-        // 道場作成時の自身の初期登録、または運営者以上によるメンバー追加・変更を許可
-        allow write: if request.auth != null && (request.auth.uid == userId || getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+        allow read: if request.auth != null && (request.auth.uid == userId || isFullDojoMember());
+        allow create, update: if request.auth != null && (
+          (request.auth.uid == userId && isValidMemberProof()) ||
+          (isFullDojoMember() && getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'])
+        );
+        allow delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'Admin', 'owner', 'Owner'];
+      }
+
+      // 0-1. 1大会限定 観戦共有トークン（ランダムトークンを知っている場合の単一getのみ許可・list禁止）
+      match /share_links/{token} {
+        allow get: if request.auth != null;
+        allow list: if false;
+        allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'recorder', 'owner', 'Admin', 'Operator', 'Recorder', 'Owner'];
+      }
+
+      // 0-2. 観戦共有リンク管理メタ（運営者向け：発行済みトークンと現在プリセット保持）
+      match /share_meta/{tournamentId} {
+        allow read, write: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'recorder', 'owner', 'Admin', 'Operator', 'Recorder', 'Owner'];
       }
 
       // 1. 環境設定・組織定義
       match /settings/{document} {
-        allow read: if request.auth != null; // 全員閲覧可能
-        allow create: if request.auth != null; // 道場作成時の初期化を許可
-        allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+        allow read: if request.auth != null && isFullDojoMember();
+        allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'];
       }
 
       // 2. 選手名簿マスタ
       match /players/{playerId} {
-        allow read: if request.auth != null; // 全員閲覧可能
-        allow create: if request.auth != null;
-        allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+        allow read: if request.auth != null && isFullDojoMember();
+        allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'];
       }
 
       // 2-2. チーム・団体
       match /teams/{teamId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null;
-        allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+        allow read: if request.auth != null && isFullDojoMember();
+        allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'];
       }
 
-      // 2-3. カスタムチーム名
+      // 2-3. カスタムチーム名（共有リンク観戦中の自チーム強調表示でも参照）
       match /custom_team_names/{docId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null;
-        allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+        allow read: if request.auth != null && (isFullDojoMember() || isAnyActiveScopedViewer());
+        allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'];
       }
 
       // 3. 大会・リーグ設定
       match /tournaments/{tournamentId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null;
-        allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+        allow read: if request.auth != null && (isFullDojoMember() || isScopedViewerForTournament(tournamentId));
+        allow create, update: if request.auth != null && isFullDojoMember() && (
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'] ||
+          (tournamentId.matches('^bunaiksen_.*') && getUserRole() in ['recorder', 'Recorder'])
+        );
+        allow delete: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'];
 
         // 3-1. 大会プログラム (PDF/画像メタデータ)
-        // ★ アプリ側の実装（tournaments配下のネスト）に合わせてルールを修正
         match /programs/{programId} {
-          allow read: if request.auth != null;
-          allow create: if request.auth != null;
-          allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner']);
+          allow read: if request.auth != null && (isFullDojoMember() || isScopedViewerForTournament(tournamentId));
+          allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+            getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner'];
         }
 
         // 4. 試合スコア・進行状態
         match /matches/{matchId} {
-          allow read: if request.auth != null;
-          allow create: if request.auth != null;
-          allow update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder']);
+          allow read: if request.auth != null && (isFullDojoMember() || isScopedViewerForTournament(tournamentId));
+          allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+            getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder'];
 
           match /events/{eventChunkId} {
-            allow read: if request.auth != null;
-            allow create, update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder']);
+            allow read: if request.auth != null && (isFullDojoMember() || isScopedViewerForTournament(tournamentId));
+            allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+              getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder'];
           }
         }
 
         // 4-2. コメント（見出し）
         match /comments/{commentId} {
-          allow read: if request.auth != null;
-          allow create, update, delete: if request.auth != null && (getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder']);
+          allow read: if request.auth != null && (isFullDojoMember() || isScopedViewerForTournament(tournamentId));
+          allow create, update, delete: if request.auth != null && isFullDojoMember() &&
+            getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder'];
         }
 
         // 6. 監査ログ
         match /audit_logs/{logId} {
-          allow read: if request.auth != null && (getUserRole() in ['admin', 'Admin', 'owner', 'Owner']); // 監査ログの閲覧は管理者限定
-          allow create: if request.auth != null; // ログの書き込み自体は全操作端末に許可
+          allow read: if request.auth != null && isFullDojoMember() && (getUserRole() in ['admin', 'Admin', 'owner', 'Owner']); // 監査ログの閲覧は管理者限定
+          allow create: if request.auth != null && isFullDojoMember();
         }
       }
 
-      // 5. プログラムへの共有手書き線データ (Strokes) - 観客席含む全端末間でリアルタイム即時同期
+      // 5. プログラムへの共有手書き線データ (Strokes)
       match /strokes/{strokeId} {
-        allow read, write: if request.auth != null;
+        allow read: if request.auth != null && (isFullDojoMember() || isAnyActiveScopedViewer());
+        allow write: if request.auth != null && isFullDojoMember() &&
+          getUserRole() in ['admin', 'operator', 'owner', 'Admin', 'Operator', 'Owner', 'recorder', 'Recorder'];
       }
     }
 
@@ -135,16 +250,11 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow read: if request.auth != null;
     }
-    
-    // =========================================================================
-    // 🚫 絶対防壁: 旧仕様・ルート階層へのアクセスを完全遮断（漏洩・不正アクセス防止）
-    // =========================================================================
 
-    // 🌐 Web版フォールバック用: matches サブコレクションに対する網羅検索（collectionGroup等）を許可
-    match /{path=**}/matches/{matchId} {
-      allow read: if request.auth != null;
-    }
-
+    // =========================================================================
+    // 🚫 絶対防壁: 旧仕様・ルート階層・横断クエリへの無制限アクセスを完全遮断
+    // =========================================================================
+    match /{path=**}/matches/{matchId} { allow read: if false; }
     match /audit_logs/{document=**} { allow read, write: if false; }
     match /auditLogs/{document=**} { allow read, write: if false; }
     match /teams/{document=**} { allow read, write: if false; }

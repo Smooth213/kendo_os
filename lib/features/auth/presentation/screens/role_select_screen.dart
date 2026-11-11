@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:kendo_os/security/dojo_join_access_storage.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/auth_session_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
@@ -12,6 +14,7 @@ import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/utils/app_haptics.dart';
 import 'package:kendo_os/shared/widgets/liquid_background.dart';
+import 'package:kendo_os/shared/widgets/room_join_flow_coordinator.dart';
 import 'package:kendo_os/shared/widgets/room_join_qr_dialog.dart';
 
 class RoleSelectScreen extends ConsumerStatefulWidget {
@@ -308,8 +311,28 @@ class _RoleSelectScreenState extends ConsumerState<RoleSelectScreen> {
           }
           _lastNavigateTime = now;
 
-          if (role == UserRole.viewer) {
+          final currentDojoId = ref.read(currentDojoIdProvider);
+          if (Firebase.apps.isNotEmpty &&
+              currentDojoId.isNotEmpty &&
+              currentDojoId != 'default_dojo_room' &&
+              !DojoJoinAccessStorage.hasJoinProof(currentDojoId)) {
             if (FirebaseAuth.instance.currentUser == null) {
+              await FirebaseAuth.instance.signInAnonymously();
+            }
+            if (!mounted) return;
+            final verified = await RoomJoinFlowCoordinator.executeJoinFlow(
+              context: context,
+              ref: ref,
+              firestore: ref.read(roomFirestoreProvider),
+              cleanCode: currentDojoId,
+              showDuplicateWarning: false,
+            );
+            if (!verified || !mounted) return;
+          }
+
+          if (role == UserRole.viewer) {
+            if (Firebase.apps.isNotEmpty &&
+                FirebaseAuth.instance.currentUser == null) {
               await FirebaseAuth.instance.signInAnonymously();
             }
             await ref

@@ -1,4 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kendo_os/security/dojo_join_access_storage.dart';
+import 'package:kendo_os/security/dojo_security_repository.dart';
+import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/widgets/app_text_field.dart';
 import 'package:kendo_os/shared/theme/app_kendo_colors.dart';
 
@@ -123,12 +129,39 @@ class _CriticalActionGuardDialogState
           style: ElevatedButton.styleFrom(
             backgroundColor: AppKendoColors.orange.withValues(alpha: 0.8),
           ),
-          onPressed: () {
-            // PinGuardへ現在のロールと再入力された値を渡して決定論的に直接検証
-            final isValid = PinGuard.validate(
-              widget.currentRole,
-              pinController.text,
-            );
+          onPressed: () async {
+            bool isValid = false;
+            DojoSecurityRepository? repo;
+            String dojoId = '';
+            try {
+              final container = ProviderScope.containerOf(
+                context,
+                listen: false,
+              );
+              repo = container.read(dojoSecurityRepositoryProvider);
+              dojoId = container.read(currentDojoIdProvider);
+            } catch (_) {}
+
+            if (repo != null &&
+                dojoId.isNotEmpty &&
+                dojoId != 'default_dojo_room' &&
+                Firebase.apps.isNotEmpty) {
+              isValid = await PinGuard.validateForDojo(
+                role: widget.currentRole,
+                input: pinController.text,
+                dojoId: dojoId,
+                joinPinHash: DojoJoinAccessStorage.getJoinPinHash(dojoId),
+                uid: FirebaseAuth.instance.currentUser?.uid,
+                repository: repo,
+              );
+            } else {
+              // テスト環境・オフライン時は従来の決定論的フォールバック照合
+              isValid = PinGuard.validate(
+                widget.currentRole,
+                pinController.text,
+              );
+            }
+            if (!context.mounted) return;
             if (isValid) {
               Navigator.of(context).pop();
               widget.onVerified(); // 認証成功時のみ本番の処理をキック

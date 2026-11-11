@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/providers/auth_provider.dart';
+import 'package:kendo_os/security/dojo_join_access_storage.dart';
+import 'package:kendo_os/security/pin_hasher.dart';
 import 'package:kendo_os/shared/domain/entities/user_session.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/security/session_storage.dart';
@@ -20,7 +23,12 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
   }
 
   /// 認証通過時、または道場ルーム参加時にクラウドと同期したセッションを確立する
-  Future<void> establishSession(UserRole role, String dojoId) async {
+  Future<void> establishSession(
+    UserRole role,
+    String dojoId, {
+    String? joinPinHash,
+    String? rolePinHash,
+  }) async {
     final now = DateTime.now();
     late Duration duration;
 
@@ -38,18 +46,28 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
         break;
     }
 
+    final resolvedJoinPinHash = (joinPinHash != null && joinPinHash.isNotEmpty)
+        ? joinPinHash
+        : DojoJoinAccessStorage.getJoinPinHash(dojoId);
+
+    if (resolvedJoinPinHash != null && resolvedJoinPinHash.isNotEmpty) {
+      DojoJoinAccessStorage.saveJoinPinHash(dojoId, resolvedJoinPinHash);
+    }
+
     final session = UserSession(
       role: role,
       loginAt: now,
       expiresAt: now.add(duration),
+      dojoId: dojoId,
+      verifiedJoinPinHash: resolvedJoinPinHash,
     );
 
     state = session;
     SessionStorage.save(session);
 
-    // ★ 追加: セッション確立直後に、自身のUIDとRoleをFirestoreのmembersに自動登録（Upsert）する
-    // これにより、セキュリティルールの getUserRole() で弾かれてしまう Permission Denied を根本から防ぐ
+    // ★ セッション確立直後に、自身のUIDとRole（およびPINハッシュ証明）をFirestoreのmembersに自動登録
     try {
+      if (Firebase.apps.isEmpty) return;
       var user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         debugPrint(
@@ -59,15 +77,32 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
         user = creds.user;
       }
       if (user != null && dojoId.isNotEmpty) {
+        final effectiveRolePinHash =
+            rolePinHash ??
+            (role == UserRole.viewer
+                ? null
+                : PinHasher.hashRolePin(
+                    dojoId,
+                    role,
+                    PinHasher.defaultRolePin(role),
+                  ));
+        final payload = <String, dynamic>{
+          'role': role.name,
+          'accessScope': 'dojo',
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+        if (resolvedJoinPinHash != null && resolvedJoinPinHash.isNotEmpty) {
+          payload['submittedJoinPinHash'] = resolvedJoinPinHash;
+        }
+        if (effectiveRolePinHash != null && effectiveRolePinHash.isNotEmpty) {
+          payload['submittedRolePinHash'] = effectiveRolePinHash;
+        }
         await FirebaseFirestore.instance
             .collection('organizations')
             .doc(dojoId)
             .collection('members')
             .doc(user.uid)
-            .set({
-              'role': role.name,
-              'updatedAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
+            .set(payload, SetOptions(merge: true));
         debugPrint(
           '[Auth] Firestore members に UID(${user.uid}) の role(${role.name}) を自動登録しました',
         );
@@ -75,6 +110,43 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
     } catch (e) {
       debugPrint('[WARN] [Auth] members へのロール自動登録に失敗: $e');
     }
+  }
+
+  /// QR/URL共有リンク経由の「1大会限定 Viewer」セッションを確立する
+  void establishShareSession({
+    required String dojoId,
+    required String tournamentId,
+    required String shareToken,
+  }) {
+    final now = DateTime.now();
+    final session = UserSession(
+      role: UserRole.viewer,
+      loginAt: now,
+      expiresAt: now.add(const Duration(hours: 12)),
+      dojoId: dojoId,
+      shareToken: shareToken,
+      sharedTournamentId: tournamentId,
+    );
+    state = session;
+    SessionStorage.save(session);
+  }
+
+  /// Admin設定変更時に、新しい道場入室PINハッシュを現在のセッションへ反映する
+  void updateJoinPinHash(String dojoId, String newJoinPinHash) {
+    DojoJoinAccessStorage.saveJoinPinHash(dojoId, newJoinPinHash);
+    if (state == null || state!.dojoId != dojoId) return;
+    final updated = UserSession(
+      role: state!.role,
+      loginAt: state!.loginAt,
+      expiresAt: state!.expiresAt,
+      sessionVersion: state!.sessionVersion,
+      dojoId: state!.dojoId,
+      verifiedJoinPinHash: newJoinPinHash,
+      shareToken: state!.shareToken,
+      sharedTournamentId: state!.sharedTournamentId,
+    );
+    state = updated;
+    SessionStorage.save(updated);
   }
 
   /// クラウド（Firestore）側からリアルタイムに権限剥奪や昇格が降ってきた場合の同期処理
@@ -87,6 +159,10 @@ class AuthSessionNotifier extends StateNotifier<UserSession?> {
       loginAt: state!.loginAt,
       expiresAt: state!.expiresAt,
       sessionVersion: state!.sessionVersion,
+      dojoId: state!.dojoId,
+      verifiedJoinPinHash: state!.verifiedJoinPinHash,
+      shareToken: state!.shareToken,
+      sharedTournamentId: state!.sharedTournamentId,
     );
     state = updatedSession;
     SessionStorage.save(updatedSession);

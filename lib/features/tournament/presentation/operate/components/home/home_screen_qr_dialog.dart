@@ -6,8 +6,16 @@ import 'package:kendo_os/shared/widgets/qr_share_dialog.dart';
 class HomeScreenQrDialog extends StatelessWidget {
   final String shareUrl;
   final VoidCallback? onClose;
+  final String? shareDojoId;
+  final String? shareTournamentId;
 
-  const HomeScreenQrDialog({super.key, required this.shareUrl, this.onClose});
+  const HomeScreenQrDialog({
+    super.key,
+    required this.shareUrl,
+    this.onClose,
+    this.shareDojoId,
+    this.shareTournamentId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +31,8 @@ class HomeScreenQrDialog extends StatelessWidget {
       shareButtonLabel: 'LINEやSNSでURLを送る',
       copySuccessMessage: '観戦用URLをクリップボードにコピーしました',
       onClose: onClose,
+      shareDojoId: shareDojoId,
+      shareTournamentId: shareTournamentId,
     );
   }
 }

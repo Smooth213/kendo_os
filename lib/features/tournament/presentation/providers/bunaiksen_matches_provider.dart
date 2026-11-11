@@ -149,33 +149,86 @@ final bunaiksenAvailableDatesProvider = StreamProvider.autoDispose<Set<String>>(
     }
   }
 
-  // ✅ 【Plan 2 最適化】matches collectionGroupに対して部内戦('bunaiksen_')プレフィックスでFirestore絞り込み。
-  // 通常大会（何千試合）の無差別受信・課金・CPU過大消費を完全遮断し、自テナントのパスから安全に抽出する。
-  return firestore
+  // ✅ テナント境界（organizations/{dojoId}/tournaments）配下の部内戦ドキュメント監視と、
+  // テスト環境・互換データ向けの collectionGroup('matches')（権限エラー時は安全無視）を統合
+  final controller = StreamController<Set<String>>();
+  Set<String> tournamentDates = const {};
+  Set<String> matchGroupDates = const {};
+  var hasTournamentEvent = false;
+  var hasMatchGroupEvent = false;
+
+  void emitIfReady() {
+    if (controller.isClosed) return;
+    if (hasTournamentEvent && hasMatchGroupEvent) {
+      controller.add({...tournamentDates, ...matchGroupDates});
+    }
+  }
+
+  final tournamentSub = firestore
+      .collection('organizations')
+      .doc(safeDojoId)
+      .collection('tournaments')
+      .where(FieldPath.documentId, isGreaterThanOrEqualTo: 'bunaiksen_')
+      .where(FieldPath.documentId, isLessThan: 'bunaiksen_\uf8ff')
+      .snapshots()
+      .listen(
+        (snap) {
+          tournamentDates = snap.docs
+              .map((doc) => doc.id)
+              .where((id) => id.startsWith('bunaiksen_'))
+              .map((id) => id.replaceFirst('bunaiksen_', ''))
+              .toSet();
+          hasTournamentEvent = true;
+          emitIfReady();
+        },
+        onError: (_) {
+          hasTournamentEvent = true;
+          emitIfReady();
+        },
+      );
+
+  final prefix = 'organizations/$safeDojoId/tournaments/';
+  final matchGroupSub = firestore
       .collectionGroup('matches')
       .where('tournamentId', isGreaterThanOrEqualTo: 'bunaiksen_')
       .where('tournamentId', isLessThan: 'bunaiksen_\uf8ff')
       .snapshots()
-      .map((snap) {
-        final prefix = 'organizations/$safeDojoId/tournaments/';
-        return snap.docs
-            .where((doc) => doc.reference.path.startsWith(prefix))
-            .map((doc) {
-              // path: organizations/{dojoId}/tournaments/{tournamentId}/matches/{matchId}
-              final segments = doc.reference.path.split('/');
-              if (segments.length != 6 ||
-                  segments[0] != 'organizations' ||
-                  segments[2] != 'tournaments' ||
-                  segments[4] != 'matches') {
-                return null;
-              }
-              return segments[3];
-            })
-            .whereType<String>()
-            .where((id) => id.startsWith('bunaiksen_'))
-            .map((id) => id.replaceFirst('bunaiksen_', ''))
-            .toSet();
-      });
+      .listen(
+        (snap) {
+          matchGroupDates = snap.docs
+              .where((doc) => doc.reference.path.startsWith(prefix))
+              .map((doc) {
+                // path: organizations/{dojoId}/tournaments/{tournamentId}/matches/{matchId}
+                final segments = doc.reference.path.split('/');
+                if (segments.length != 6 ||
+                    segments[0] != 'organizations' ||
+                    segments[2] != 'tournaments' ||
+                    segments[4] != 'matches') {
+                  return null;
+                }
+                return segments[3];
+              })
+              .whereType<String>()
+              .where((id) => id.startsWith('bunaiksen_'))
+              .map((id) => id.replaceFirst('bunaiksen_', ''))
+              .toSet();
+          hasMatchGroupEvent = true;
+          emitIfReady();
+        },
+        onError: (_) {
+          // 本番の厳格なテナント隔離ルール下では collectionGroup('matches') が拒否されるため安全にフォールバック
+          hasMatchGroupEvent = true;
+          emitIfReady();
+        },
+      );
+
+  ref.onDispose(() {
+    tournamentSub.cancel();
+    matchGroupSub.cancel();
+    if (!controller.isClosed) controller.close();
+  });
+
+  return controller.stream;
 });
 
 final bunaiksenMatchesProvider = Provider.family

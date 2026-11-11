@@ -86,17 +86,7 @@ final webScoreboardMatchProvider = StreamProvider.family
             });
       }
 
-      return FirebaseFirestore.instance
-          .collectionGroup('matches')
-          .where('id', isEqualTo: matchId)
-          .snapshots()
-          .map((snapshot) {
-            if (snapshot.docs.isEmpty) return null;
-            final doc = snapshot.docs.first;
-            final data = doc.data();
-            data['id'] = doc.id;
-            return MatchModel.fromJson(_sanitizeWebFirestoreData(data));
-          });
+      return Stream.value(null);
     });
 
 class MatchScoreboard extends ConsumerWidget {

@@ -15,10 +15,34 @@ class RouteGuard {
   ) {
     final currentRole = ref.read(currentUserRoleProvider);
     final dojoId = ref.read(currentDojoIdProvider);
+    final session = ref.read(authSessionProvider);
 
-    // 🔒 1. Viewer専用URL（/viewer/{id}）へのアクセス時は、権限を安全なViewerへ強制固定
+    // 🔒 1. 共有リンク経由の一時セッションは、一般一覧・設定画面へ進めないよう隔離
+    if (session != null &&
+        session.isShareScoped &&
+        (state.uri.path == '/' ||
+            state.uri.path.startsWith('/tournament-list') ||
+            state.uri.path.startsWith('/settings') ||
+            state.uri.path.startsWith('/operate'))) {
+      return '/role-select';
+    }
+
+    // 🔒 2. Viewer専用URL（/viewer/{id}）へのアクセス時は、権限を安全なViewerへ強制固定
     if (state.uri.path.startsWith('/viewer/')) {
-      if (currentRole != UserRole.viewer) {
+      final shareToken = state.uri.queryParameters['token'];
+      final tId = state.uri.queryParameters['tournamentId'];
+      if (shareToken != null &&
+          shareToken.isNotEmpty &&
+          tId != null &&
+          tId.isNotEmpty) {
+        ref
+            .read(authSessionProvider.notifier)
+            .establishShareSession(
+              dojoId: state.uri.queryParameters['dojoId'] ?? dojoId,
+              tournamentId: tId,
+              shareToken: shareToken,
+            );
+      } else if (currentRole != UserRole.viewer) {
         ref
             .read(authSessionProvider.notifier)
             .establishSession(UserRole.viewer, dojoId);
@@ -26,11 +50,26 @@ class RouteGuard {
       return null;
     }
 
-    // 🔒 2. 不正パラメータ（?role=viewer）による裏口偽装検知時の安全隔離
+    // 🔒 3. 不正パラメータ（?role=viewer）による裏口偽装検知時の安全隔離
     if (state.uri.queryParameters['role'] == 'viewer') {
-      ref
-          .read(authSessionProvider.notifier)
-          .establishSession(UserRole.viewer, dojoId);
+      final shareToken = state.uri.queryParameters['token'];
+      final tId = state.uri.queryParameters['tournamentId'];
+      if (shareToken != null &&
+          shareToken.isNotEmpty &&
+          tId != null &&
+          tId.isNotEmpty) {
+        ref
+            .read(authSessionProvider.notifier)
+            .establishShareSession(
+              dojoId: state.uri.queryParameters['dojoId'] ?? dojoId,
+              tournamentId: tId,
+              shareToken: shareToken,
+            );
+      } else {
+        ref
+            .read(authSessionProvider.notifier)
+            .establishSession(UserRole.viewer, dojoId);
+      }
       return null;
     }
 

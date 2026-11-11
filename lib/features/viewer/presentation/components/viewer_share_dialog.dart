@@ -49,6 +49,8 @@ class ViewerShareDialog extends StatelessWidget {
           'リンク: $shareUrl',
       shareButtonLabel: 'LINEやSNSでURLを送る',
       copySuccessMessage: '観戦用URLをクリップボードにコピーしました',
+      shareDojoId: dojoId,
+      shareTournamentId: tournamentId,
     );
   }
 }
