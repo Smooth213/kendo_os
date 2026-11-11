@@ -6,6 +6,7 @@ import 'package:kendo_os/features/tournament/presentation/operate/components/set
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
 import 'package:kendo_os/shared/presentation/providers/current_sync_context_provider.dart';
 import 'package:kendo_os/shared/presentation/providers/current_user_role_provider.dart';
+import 'package:kendo_os/shared/theme/app_tokens.dart';
 import 'package:kendo_os/shared/theme/theme_color_extensions.dart';
 import 'package:kendo_os/shared/widgets/room_join_pin_dialog.dart';
 import '../../helpers/safe_pump_helper.dart';
@@ -44,6 +45,19 @@ void main() {
 
       await tester.tap(find.text('OpenPin'));
       await tester.safePumpAndSettle();
+
+      // 入力欄・送信ボタンがカプセル型（AppRadius.capsule / StadiumBorder）であることの回帰防止
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      final enabledBorder =
+          textField.decoration?.enabledBorder as OutlineInputBorder?;
+      expect(enabledBorder?.borderRadius, AppRadius.capsule);
+      final submitButton = tester.widget<ElevatedButton>(
+        find.ancestor(
+          of: find.text('PINを設定して作成'),
+          matching: find.byType(ElevatedButton),
+        ),
+      );
+      expect(submitButton.style?.shape?.resolve({}), isA<StadiumBorder>());
 
       // 短すぎる入力はエラー
       await tester.enterText(find.byType(TextField), 'abc');

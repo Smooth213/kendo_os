@@ -292,7 +292,7 @@ class TournamentHeaderCard extends ConsumerWidget {
               backgroundColor: AppKendoColors.red,
               foregroundColor: AppKendoColors.pureWhite,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
+              shape: const StadiumBorder(),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(

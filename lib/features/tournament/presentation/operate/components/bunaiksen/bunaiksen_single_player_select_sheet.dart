@@ -192,7 +192,7 @@ class _BunaiksenSinglePlayerSelectSheetState
                     ? const Color(0xFF2C2C2E)
                     : const Color(0xFFF2F2F7),
                 border: const OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppRadius.capsule,
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(

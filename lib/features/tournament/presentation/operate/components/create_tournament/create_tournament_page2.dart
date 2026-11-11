@@ -106,7 +106,7 @@ class CreateTournamentPage2 extends StatelessWidget {
             ),
             prefixIcon: const Icon(Icons.note_alt, color: AppKendoColors.grey),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.large,
               borderSide: BorderSide(
                 color: isDark
                     ? const Color(0xFF38383A)
@@ -115,7 +115,7 @@ class CreateTournamentPage2 extends StatelessWidget {
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.large,
               borderSide: const BorderSide(
                 color: Color(0xFF3F51B5),
                 width: 2.0,

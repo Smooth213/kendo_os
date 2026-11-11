@@ -99,7 +99,7 @@ class MasterAnnualPromotionHeader extends StatelessWidget {
           decoration: InputDecoration(
             labelText: '組織種別（卒業ライン）',
             prefixIcon: const Icon(Icons.account_balance),
-            border: OutlineInputBorder(borderRadius: AppRadius.medium),
+            border: OutlineInputBorder(borderRadius: AppRadius.capsule),
             filled: true,
             fillColor: context.appColors.inputBackground,
           ),
@@ -125,7 +125,7 @@ class MasterAnnualPromotionHeader extends StatelessWidget {
             decoration: InputDecoration(
               labelText: '記録する卒業年度',
               prefixIcon: const Icon(Icons.history_edu),
-              border: OutlineInputBorder(borderRadius: AppRadius.medium),
+              border: OutlineInputBorder(borderRadius: AppRadius.capsule),
               filled: true,
               fillColor: context.appColors.inputBackground,
             ),

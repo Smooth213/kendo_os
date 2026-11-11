@@ -289,7 +289,7 @@ class MatchCourtSlotPicker extends StatelessWidget {
                       ? themeColors.inputBackground
                       : themeColors.cardBackground,
                   border: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(color: themeColors.primaryAccent),
                   ),
                 ),
@@ -315,7 +315,7 @@ class MatchCourtSlotPicker extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: themeColors.primaryAccent,
                 foregroundColor: AppKendoColors.pureWhite,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
               ),
               onPressed: () {
                 final text = controller.text.trim();

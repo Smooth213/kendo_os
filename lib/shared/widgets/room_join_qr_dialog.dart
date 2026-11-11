@@ -264,11 +264,11 @@ class _RoomJoinQrDialogState extends ConsumerState<RoomJoinQrDialog> {
                   ),
                   prefixIcon: Icon(Icons.meeting_room, color: subTextColor),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(color: borderColor),
                   ),
                   focusedBorder: const OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(color: AppKendoColors.teal),
                   ),
                 ),

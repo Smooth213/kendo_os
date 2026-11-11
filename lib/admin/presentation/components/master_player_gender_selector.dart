@@ -24,36 +24,39 @@ class MasterPlayerGenderSelector extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     final finalColor = isSel ? color : context.appColors.subTextColor;
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: isSel
-            ? color.withValues(alpha: isDark ? 0.2 : 0.1)
-            : (isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF2F2F7)),
-        side: BorderSide(
-          color: isSel
-              ? color
-              : (isDark
-                    ? const Color(0xFFFFFFFF)
-                    : context.appColors.separatorColor),
-          width: isSel ? 2 : 1,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.large),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 28, color: finalColor),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: AppFontSize.body,
-              fontWeight: AppFontWeight.bold,
-              color: finalColor,
-            ),
+    final bgColor = isSel
+        ? color.withValues(alpha: isDark ? 0.2 : 0.1)
+        : (isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF2F2F7));
+    final borderColor = isSel
+        ? color
+        : (isDark ? const Color(0xFFFFFFFF) : context.appColors.separatorColor);
+    return Material(
+      color: bgColor,
+      borderRadius: AppRadius.large,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.large,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.large,
+            border: Border.all(color: borderColor, width: isSel ? 2 : 1),
           ),
-        ],
+          child: Column(
+            children: [
+              Icon(icon, size: 28, color: finalColor),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: AppFontSize.body,
+                  fontWeight: AppFontWeight.bold,
+                  color: finalColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -215,15 +215,15 @@ class _EditParsedMemberDialogState extends State<EditParsedMemberDialog> {
                   ? const Color(0xFF2C2C35)
                   : const Color(0xFFF2F2F7),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.mediumValue),
+                borderRadius: AppRadius.capsule,
                 borderSide: BorderSide(color: borderColor),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.mediumValue),
+                borderRadius: AppRadius.capsule,
                 borderSide: BorderSide(color: borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.mediumValue),
+                borderRadius: AppRadius.capsule,
                 borderSide: BorderSide(color: accentColor, width: 1.5),
               ),
             ),
@@ -347,11 +347,7 @@ class _EditParsedMemberDialogState extends State<EditParsedMemberDialog> {
                         vertical: AppSpacing.md,
                       ),
                       side: BorderSide(color: borderColor),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppRadius.mediumValue,
-                        ),
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                     child: Text('キャンセル', style: TextStyle(color: subTextColor)),
                   ),

@@ -78,9 +78,7 @@ class ManualPdfDownloadCard extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.appColors.primaryAccent,
                     foregroundColor: AppKendoColors.pureWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.large,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   icon: const Icon(Icons.download),
                   label: const Text(

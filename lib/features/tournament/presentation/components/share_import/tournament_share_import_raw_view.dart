@@ -39,9 +39,7 @@ class TournamentShareImportRawView extends StatelessWidget {
           decoration: InputDecoration(
             hintText: '例:\n黒瀬杯争奪剣道大会\n日時: 令和8年9月20日\n場所: ...',
             hintStyle: TextStyle(color: subTextColor.withValues(alpha: 0.6)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.mediumValue),
-            ),
+            border: const OutlineInputBorder(borderRadius: AppRadius.large),
             filled: true,
             fillColor: isDark
                 ? const Color(0xFF1C1C1E)
@@ -57,9 +55,7 @@ class TournamentShareImportRawView extends StatelessWidget {
             backgroundColor: accentColor,
             foregroundColor: AppKendoColors.pureWhite,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.mediumValue),
-            ),
+            shape: const StadiumBorder(),
           ),
         ),
       ],

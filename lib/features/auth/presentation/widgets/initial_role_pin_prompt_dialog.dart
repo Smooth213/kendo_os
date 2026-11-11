@@ -97,7 +97,7 @@ class InitialRolePinPromptDialog extends StatelessWidget {
             backgroundColor: AppKendoColors.purple,
             foregroundColor: AppKendoColors.pureWhite,
             elevation: 0,
-            shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
+            shape: const StadiumBorder(),
           ),
           onPressed: () =>
               Navigator.of(context).pop(InitialRolePinPromptAction.changeNow),

@@ -405,9 +405,7 @@ class _UnifiedAnnounceDialogState extends State<_UnifiedAnnounceDialog> {
                         horizontal: AppSpacing.md,
                         vertical: AppSpacing.sm,
                       ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppRadius.small,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                     onPressed: _onSubmit,
                     icon: Icon(

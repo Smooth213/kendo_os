@@ -182,7 +182,7 @@ class _MasterRegisterOrganizationSheetState
                 decoration: InputDecoration(
                   labelText: '道場名・学校名',
                   prefixIcon: Icon(Icons.account_balance, color: subTextColor),
-                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  border: OutlineInputBorder(borderRadius: AppRadius.capsule),
                   filled: true,
                   fillColor: inputBgColor,
                 ),
@@ -195,7 +195,7 @@ class _MasterRegisterOrganizationSheetState
                 decoration: InputDecoration(
                   labelText: '組織種別（一括進級の卒業ライン）',
                   prefixIcon: Icon(Icons.school, color: subTextColor),
-                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  border: OutlineInputBorder(borderRadius: AppRadius.capsule),
                   filled: true,
                   fillColor: inputBgColor,
                 ),

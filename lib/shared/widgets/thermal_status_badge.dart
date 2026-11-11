@@ -353,9 +353,7 @@ class ThermalStatusBadge extends ConsumerWidget {
                           backgroundColor:
                               sheetContext.appColors.inputBackground,
                           foregroundColor: sheetContext.appColors.textColor,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: AppRadius.compact,
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: const Text(
                           '閉じる',

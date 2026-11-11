@@ -160,7 +160,7 @@ class _MatchPrivateNoteAccordionState extends State<MatchPrivateNoteAccordion> {
                                 ? const Color(0xFF1E1E20)
                                 : AppKendoColors.pureWhite,
                             border: OutlineInputBorder(
-                              borderRadius: AppRadius.small,
+                              borderRadius: AppRadius.capsule,
                               borderSide: BorderSide(
                                 color: themeColors.primaryAccent,
                               ),

@@ -240,9 +240,7 @@ class _RenseikaiAddNextMatchBottomSheetState
                           foregroundColor: AppKendoColors.grey,
                           side: const BorderSide(color: AppKendoColors.grey),
                           minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         onPressed: () => Navigator.pop(context),
                         child: const Text(
@@ -260,9 +258,7 @@ class _RenseikaiAddNextMatchBottomSheetState
                           backgroundColor: const Color(0xFF009688),
                           foregroundColor: const Color(0xFFFFFFFF),
                           minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
+                          shape: const StadiumBorder(),
                           elevation: 2,
                         ),
                         onPressed: () async {

@@ -164,7 +164,7 @@ class _SmartPlayerInputState extends ConsumerState<SmartPlayerInput> {
                         filled: true,
                         fillColor: context.appColors.inputBackground,
                         border: const OutlineInputBorder(
-                          borderRadius: AppRadius.small,
+                          borderRadius: AppRadius.capsule,
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),

@@ -260,11 +260,11 @@ class _DojoSecuritySettingsSheetState
             filled: true,
             fillColor: themeColors.inputBackground,
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.capsule,
               borderSide: BorderSide(color: themeColors.separatorColor),
             ),
             focusedBorder: const OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.capsule,
               borderSide: BorderSide(color: AppKendoColors.purple),
             ),
           ),
@@ -355,9 +355,7 @@ class _DojoSecuritySettingsSheetState
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.md,
                     ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   onPressed: _handleSave,
                   child: const Text(

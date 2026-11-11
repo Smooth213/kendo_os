@@ -196,11 +196,11 @@ class _RoomJoinPinDialogState extends State<RoomJoinPinDialog> {
                   },
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppRadius.capsule,
                   borderSide: BorderSide(color: themeColors.separatorColor),
                 ),
                 focusedBorder: const OutlineInputBorder(
-                  borderRadius: AppRadius.medium,
+                  borderRadius: AppRadius.capsule,
                   borderSide: BorderSide(color: AppKendoColors.teal),
                 ),
               ),
@@ -259,9 +259,7 @@ class _RoomJoinPinDialogState extends State<RoomJoinPinDialog> {
                   backgroundColor: AppKendoColors.teal,
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppRadius.medium,
-                  ),
+                  shape: const StadiumBorder(),
                 ),
                 onPressed: _handleSubmit,
                 child: Text(

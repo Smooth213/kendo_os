@@ -124,7 +124,7 @@ class MatchRenseikaiNextButton extends ConsumerWidget {
                     : const Color(0xFF3F51B5),
                 foregroundColor: const Color(0xFFFFFFFF),
                 minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
                 elevation: 2,
               ),
             ),

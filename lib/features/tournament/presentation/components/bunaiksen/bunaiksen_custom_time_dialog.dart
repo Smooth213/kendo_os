@@ -85,16 +85,16 @@ class _BunaiksenCustomTimeDialogState extends State<BunaiksenCustomTimeDialog> {
       hintStyle: TextStyle(color: widget.hintColor),
       filled: true,
       fillColor: widget.inputBackground,
-      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+      border: OutlineInputBorder(borderRadius: AppRadius.capsule),
       enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppRadius.capsule,
         borderSide: BorderSide(
           color: widget.separatorColor ?? AppKendoColors.grey,
           width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: AppRadius.medium,
+        borderRadius: AppRadius.capsule,
         borderSide: BorderSide(color: widget.primaryAccent, width: 2),
       ),
     );

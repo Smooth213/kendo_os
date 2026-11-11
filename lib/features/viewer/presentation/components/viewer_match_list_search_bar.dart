@@ -150,9 +150,7 @@ class ViewerMatchListSearchBar extends StatelessWidget {
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.small,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
@@ -182,9 +180,7 @@ class ViewerMatchListSearchBar extends StatelessWidget {
                       vertical: 0,
                     ),
                     minimumSize: const Size(0, 30),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.small,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ],

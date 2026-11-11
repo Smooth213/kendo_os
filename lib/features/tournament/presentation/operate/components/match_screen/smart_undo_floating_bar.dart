@@ -178,9 +178,7 @@ class _SmartUndoFloatingBarState extends ConsumerState<SmartUndoFloatingBar>
                           horizontal: AppSpacing.md,
                           vertical: AppSpacing.xs,
                         ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.small,
-                        ),
+                        shape: const StadiumBorder(),
                         elevation: 0,
                       ),
                       onPressed: () async {

@@ -76,7 +76,7 @@ class ManualIndexPane extends StatelessWidget {
                     filled: true,
                     fillColor: context.appColors.inputBackground,
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.small,
+                      borderRadius: AppRadius.capsule,
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),

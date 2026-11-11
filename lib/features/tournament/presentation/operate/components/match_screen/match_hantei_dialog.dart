@@ -50,9 +50,7 @@ class MatchHanteiDialog extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.lg,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                     elevation: 0,
                   ),
                   child: FittedBox(
@@ -81,9 +79,7 @@ class MatchHanteiDialog extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.lg,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                     elevation: 0,
                   ),
                   child: FittedBox(
@@ -112,7 +108,7 @@ class MatchHanteiDialog extends StatelessWidget {
                       ? const Color(0xFFFFFFFF)
                       : const Color(0x8A000000),
                 ),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
               ),
               child: Text(
                 '引き分け',

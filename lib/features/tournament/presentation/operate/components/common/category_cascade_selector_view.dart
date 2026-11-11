@@ -292,9 +292,7 @@ class CategoryCascadeSelectorView extends StatelessWidget {
                     hintText: '例: 小中学生混成、東西対抗、オープン など',
                     prefixIcon: Icon(Icons.edit_note, color: accentColor),
                     border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(AppRadius.mediumValue),
-                      ),
+                      borderRadius: AppRadius.capsule,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,

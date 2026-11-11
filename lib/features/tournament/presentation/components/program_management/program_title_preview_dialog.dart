@@ -183,7 +183,7 @@ class ProgramTitlePreviewDialog {
                                   vertical: AppSpacing.md,
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius: AppRadius.small,
+                                  borderRadius: AppRadius.capsule,
                                   borderSide: BorderSide(
                                     color: isDark
                                         ? const Color(0xFF3A3A6A)
@@ -191,7 +191,7 @@ class ProgramTitlePreviewDialog {
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: AppRadius.small,
+                                  borderRadius: AppRadius.capsule,
                                   borderSide: BorderSide(
                                     color: isDark
                                         ? const Color(0xFF3A3A6A)
@@ -199,7 +199,7 @@ class ProgramTitlePreviewDialog {
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: AppRadius.small,
+                                  borderRadius: AppRadius.capsule,
                                   borderSide: BorderSide(
                                     color: context.appColors.primaryAccent,
                                     width: 1.5,

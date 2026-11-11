@@ -166,11 +166,7 @@ class _TeamRegistrationConfirmStepState
                             horizontal: AppSpacing.md,
                             vertical: AppSpacing.sm,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.smallValue,
-                            ),
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                       ),
                   ],

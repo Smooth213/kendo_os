@@ -392,7 +392,7 @@ class _TeamRegistrationOrderStepState
                 backgroundColor: isDark
                     ? const Color(0xFF1C1C1E)
                     : themeColors.softAccent,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.md,
@@ -430,7 +430,7 @@ class _TeamRegistrationOrderStepState
                 backgroundColor: isDark
                     ? const Color(0xFF1C1C1E)
                     : themeColors.softAccent,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.md,

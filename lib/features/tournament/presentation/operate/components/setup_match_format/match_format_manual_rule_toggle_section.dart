@@ -57,8 +57,7 @@ class MatchFormatManualRuleToggleSection extends StatelessWidget {
                             ? AppKendoColors.white60
                             : const Color(0xFF000000)),
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.medium,
+                  shape: StadiumBorder(
                     side: BorderSide(
                       color: !isAdvancedToggle
                           ? AppKendoColors.transparent
@@ -90,8 +89,7 @@ class MatchFormatManualRuleToggleSection extends StatelessWidget {
                             ? AppKendoColors.white60
                             : const Color(0xFF000000)),
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.medium,
+                  shape: StadiumBorder(
                     side: BorderSide(
                       color: isAdvancedToggle
                           ? AppKendoColors.transparent

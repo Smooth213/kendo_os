@@ -113,9 +113,7 @@ class MatchEditTeamAndPlayersTab extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppKendoColors.blueAccent,
                     foregroundColor: AppKendoColors.pureWhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.round,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   onPressed: onSwapTeamsAndPlayers,
                 ),

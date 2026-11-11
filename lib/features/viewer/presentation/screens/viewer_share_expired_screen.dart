@@ -103,9 +103,7 @@ class ViewerShareExpiredScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.md,
                         ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                       onPressed: () => context.go('/role-select'),
                       icon: const Icon(Icons.meeting_room_outlined),

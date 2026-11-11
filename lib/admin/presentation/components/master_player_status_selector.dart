@@ -110,7 +110,7 @@ class MasterPlayerStatusSelector extends StatelessWidget {
                 Icons.history_edu,
                 color: context.appColors.subTextColor,
               ),
-              border: OutlineInputBorder(borderRadius: AppRadius.medium),
+              border: OutlineInputBorder(borderRadius: AppRadius.capsule),
               filled: true,
               fillColor: context.appColors.inputBackground,
             ),

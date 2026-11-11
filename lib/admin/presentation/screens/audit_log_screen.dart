@@ -67,7 +67,7 @@ class _AuditLogScreenState extends ConsumerState<AuditLogScreen> {
                       ? const Color(0xFF2C2C2E)
                       : const Color(0xFFFFFFFF),
                   border: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide.none,
                   ),
                 ),

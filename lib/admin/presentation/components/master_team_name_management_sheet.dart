@@ -112,7 +112,7 @@ class _MasterTeamNameManagementSheetState
                           ? const Color(0xFF2C2C2E)
                           : const Color(0xFFF2F2F7),
                       border: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
+                        borderRadius: AppRadius.capsule,
                         borderSide: BorderSide.none,
                       ),
                     ),

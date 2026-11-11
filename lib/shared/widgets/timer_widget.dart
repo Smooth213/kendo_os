@@ -68,11 +68,11 @@ class TimerWidget extends ConsumerWidget {
                   filled: true,
                   fillColor: inputBgColor,
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(color: borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(
                       color: const Color(0xFF3F51B5),
                       width: 2,
@@ -108,11 +108,11 @@ class TimerWidget extends ConsumerWidget {
                   filled: true,
                   fillColor: inputBgColor,
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(color: borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
+                    borderRadius: AppRadius.capsule,
                     borderSide: BorderSide(
                       color: const Color(0xFF3F51B5),
                       width: 2,
@@ -145,9 +145,7 @@ class TimerWidget extends ConsumerWidget {
                   ? const Color(0xFF3F51B5)
                   : const Color(0xFF3F51B5),
               foregroundColor: const Color(0xFFFFFFFF),
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppRadius.small,
-              ),
+              shape: const StadiumBorder(),
             ),
             child: const Text(
               '更新',

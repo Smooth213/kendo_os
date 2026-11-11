@@ -327,7 +327,7 @@ class _BunaiksenCalculatorCreateMatchSheetState
         backgroundColor: themeColors.primaryAccent,
         foregroundColor: themeColors.onPrimaryAccent,
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+        shape: const StadiumBorder(),
         elevation: 2,
       ),
       onPressed: _isSaving

@@ -98,7 +98,7 @@ class _TimelineRenameTeamSheetState extends State<TimelineRenameTeamSheet> {
               filled: true,
               fillColor: themeColors.inputBackground,
               border: const OutlineInputBorder(
-                borderRadius: AppRadius.medium,
+                borderRadius: AppRadius.capsule,
                 borderSide: BorderSide.none,
               ),
             ),
@@ -129,9 +129,7 @@ class _TimelineRenameTeamSheetState extends State<TimelineRenameTeamSheet> {
                 backgroundColor: themeColors.primaryAccent,
                 foregroundColor: AppKendoColors.pureWhite,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.medium,
-                ),
+                shape: const StadiumBorder(),
               ),
               child: const Text(
                 '一括修正して統合する',

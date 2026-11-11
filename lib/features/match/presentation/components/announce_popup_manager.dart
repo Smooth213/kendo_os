@@ -104,7 +104,7 @@ void _showAnnounceDialog(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00796B), // 引き締めTealグリーン
                 foregroundColor: AppKendoColors.pureWhite,
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.small),
+                shape: const StadiumBorder(),
                 elevation: 0,
               ),
               onPressed: () {

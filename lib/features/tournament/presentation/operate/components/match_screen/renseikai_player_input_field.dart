@@ -104,11 +104,11 @@ class RenseikaiPlayerInputField extends StatelessWidget {
             ),
             prefixIcon: const Icon(Icons.person_outline, size: 20),
             enabledBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.capsule,
               borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: AppRadius.medium,
+              borderRadius: AppRadius.capsule,
               borderSide: const BorderSide(color: Color(0xFF009688), width: 2),
             ),
           ),

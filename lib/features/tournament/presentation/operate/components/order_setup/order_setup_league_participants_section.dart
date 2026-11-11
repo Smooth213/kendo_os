@@ -96,7 +96,7 @@ class _OrderSetupLeagueParticipantsSectionState
                               ? const Color(0xFF2C2C2E)
                               : context.appColors.cardBackground,
                           border: OutlineInputBorder(
-                            borderRadius: AppRadius.small,
+                            borderRadius: AppRadius.capsule,
                           ),
                         ),
                       ),
@@ -173,7 +173,7 @@ class _OrderSetupLeagueParticipantsSectionState
                     fillColor: isDark
                         ? const Color(0xFF2C2C2E)
                         : const Color(0xFFF2F2F7),
-                    border: OutlineInputBorder(borderRadius: AppRadius.small),
+                    border: OutlineInputBorder(borderRadius: AppRadius.capsule),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),

@@ -114,9 +114,7 @@ class TeamScoreboardDaihyoHandler {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.md,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                       onPressed: () => ctx.pop(),
                       child: Text(
@@ -142,9 +140,7 @@ class TeamScoreboardDaihyoHandler {
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.md,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppRadius.medium,
-                        ),
+                        shape: const StadiumBorder(),
                       ),
                       onPressed: () {
                         ctx.pop();

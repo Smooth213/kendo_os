@@ -212,7 +212,7 @@ class _MatchRepresentativeModalBottomSheetState
                             filled: true,
                             fillColor: inputBg,
                             border: OutlineInputBorder(
-                              borderRadius: AppRadius.medium,
+                              borderRadius: AppRadius.capsule,
                               borderSide: BorderSide.none,
                             ),
                           ),
@@ -297,7 +297,7 @@ class _MatchRepresentativeModalBottomSheetState
                             filled: true,
                             fillColor: inputBg,
                             border: OutlineInputBorder(
-                              borderRadius: AppRadius.medium,
+                              borderRadius: AppRadius.capsule,
                               borderSide: BorderSide.none,
                             ),
                           ),
@@ -321,9 +321,7 @@ class _MatchRepresentativeModalBottomSheetState
                     backgroundColor: const Color(0xFF3F51B5),
                     foregroundColor: AppKendoColors.pureWhite,
                     minimumSize: const Size(double.infinity, 54),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.large,
-                    ),
+                    shape: const StadiumBorder(),
                     elevation: 4,
                   ),
                   onPressed: () async {

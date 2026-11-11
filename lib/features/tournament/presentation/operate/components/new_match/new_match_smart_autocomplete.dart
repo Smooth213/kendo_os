@@ -88,9 +88,9 @@ class _NewMatchSmartAutocompleteState extends State<NewMatchSmartAutocomplete> {
                   Icons.arrow_drop_down,
                   color: AppKendoColors.grey,
                 ),
-                border: OutlineInputBorder(borderRadius: AppRadius.small),
+                border: OutlineInputBorder(borderRadius: AppRadius.capsule),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppRadius.capsule,
                   borderSide: BorderSide(
                     color: widget.isDark
                         ? const Color(0xFF38383A)
@@ -98,7 +98,7 @@ class _NewMatchSmartAutocompleteState extends State<NewMatchSmartAutocomplete> {
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.small,
+                  borderRadius: AppRadius.capsule,
                   borderSide: BorderSide(color: AppKendoColors.redAccent),
                 ),
                 filled: true,

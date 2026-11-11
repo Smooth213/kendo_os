@@ -69,9 +69,7 @@ class ManualFloatingActionBar extends StatelessWidget {
                       vertical: AppSpacing.md,
                       horizontal: AppSpacing.sm,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   icon: Icon(primaryIcon, size: 18),
                   label: Text(
@@ -96,9 +94,7 @@ class ManualFloatingActionBar extends StatelessWidget {
                       vertical: AppSpacing.md,
                       horizontal: AppSpacing.sm,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.medium,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                   icon: Icon(secondaryIcon, size: 18),
                   label: Text(

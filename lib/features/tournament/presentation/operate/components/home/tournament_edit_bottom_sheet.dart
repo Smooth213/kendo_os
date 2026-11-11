@@ -246,9 +246,7 @@ class _TournamentEditBottomSheetState
                               horizontal: AppSpacing.md,
                               vertical: AppSpacing.xs,
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppRadius.small,
-                            ),
+                            shape: const StadiumBorder(),
                           ),
                           child: _isSaving
                               ? const SizedBox(
@@ -387,9 +385,7 @@ class _TournamentEditBottomSheetState
                                 backgroundColor: AppKendoColors.indigo,
                                 foregroundColor: AppKendoColors.pureWhite,
                                 elevation: 0,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: AppRadius.medium,
-                                ),
+                                shape: const StadiumBorder(),
                               ),
                               onPressed: _isSaving ? null : _save,
                             ),

@@ -205,7 +205,7 @@ class _MatchPlayerNameEditBottomSheetState
                         labelText: '名前を直接入力 (助っ人など)',
                         labelStyle: const TextStyle(color: AppKendoColors.grey),
                         border: OutlineInputBorder(
-                          borderRadius: AppRadius.medium,
+                          borderRadius: AppRadius.capsule,
                           borderSide: const BorderSide(
                             color: Color(0xFF3F51B5),
                           ),
@@ -237,9 +237,7 @@ class _MatchPlayerNameEditBottomSheetState
                         horizontal: 20,
                         vertical: AppSpacing.lg,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
+                      shape: const StadiumBorder(),
                       elevation: 0,
                     ),
                     child: const Text(
@@ -268,9 +266,7 @@ class _MatchPlayerNameEditBottomSheetState
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.compact,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.compact,
-                    ),
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ),
@@ -413,9 +409,7 @@ class _MatchPlayerNameEditBottomSheetState
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.md,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
+                      shape: const StadiumBorder(),
                     ),
                   ),
                 ],

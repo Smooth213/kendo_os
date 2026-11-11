@@ -145,7 +145,7 @@ class _EditCommentBottomSheetState extends State<_EditCommentBottomSheet> {
                       ? const Color(0xFF2C2C2E)
                       : context.appColors.inputBackground,
                   border: OutlineInputBorder(
-                    borderRadius: AppRadius.small,
+                    borderRadius: AppRadius.large,
                     borderSide: BorderSide.none,
                   ),
                 ),
@@ -192,9 +192,7 @@ class _EditCommentBottomSheetState extends State<_EditCommentBottomSheet> {
                         horizontal: AppSpacing.lg,
                         vertical: AppSpacing.sm,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.small,
-                      ),
+                      shape: const StadiumBorder(),
                       elevation: 0,
                     ),
                     child: const Text(

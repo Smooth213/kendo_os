@@ -314,7 +314,7 @@ class _QuickRosterSwapDialogState extends ConsumerState<QuickRosterSwapDialog> {
               backgroundColor: AppKendoColors.ipponGold,
               foregroundColor: AppKendoColors.pureWhite,
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+              shape: const StadiumBorder(),
               elevation: 0,
             ),
           ),

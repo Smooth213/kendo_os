@@ -139,15 +139,15 @@ class _TeamEditBasicFieldsState extends State<TeamEditBasicFields> {
                 ? const Color(0xFF2C2C35)
                 : const Color(0xFFF2F2F7),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.mediumValue),
+              borderRadius: AppRadius.capsule,
               borderSide: BorderSide(color: widget.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.mediumValue),
+              borderRadius: AppRadius.capsule,
               borderSide: BorderSide(color: widget.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.mediumValue),
+              borderRadius: AppRadius.capsule,
               borderSide: BorderSide(color: accentColor, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(

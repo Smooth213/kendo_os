@@ -21,6 +21,7 @@ SUB_AUDITS = [
     ("⑤ デザインシステムトークン厳格準拠規約", ["python3", "scripts/check_design_token_strict_compliance.py"]),
     ("⑥ タイムラインスワイプアクション3要素（次戦追加・編集・削除）完全保証規約", ["python3", "scripts/check_timeline_slidable_actions_governance.py"]),
     ("⑦ デザインカタログ 全UIパーツ網羅性保証規約", ["python3", "scripts/check_design_gallery_coverage.py"]),
+    ("⑧ 用途×形状 整合性保証規約 (ボタンカプセル・入力フォーム形状)", ["python3", "scripts/check_shape_language_governance.py"]),
 ]
 
 

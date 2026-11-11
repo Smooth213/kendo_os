@@ -34,7 +34,7 @@ class RoomJoinQrDialogActions extends StatelessWidget {
             side: BorderSide(
               color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
             ),
-            shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
+            shape: const StadiumBorder(),
           ),
           child: const Text(
             'キャンセル',
@@ -48,9 +48,7 @@ class RoomJoinQrDialogActions extends StatelessWidget {
                   backgroundColor: AppKendoColors.teal,
                   foregroundColor: AppKendoColors.pureWhite,
                   elevation: 0,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppRadius.medium,
-                  ),
+                  shape: const StadiumBorder(),
                 ),
                 onPressed: onJoin,
                 child: const Text(

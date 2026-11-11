@@ -257,7 +257,7 @@ class MatchEditCourtAndGroupTab extends StatelessWidget {
                         ? effectiveColors.inputBackground
                         : effectiveColors.cardBackground,
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.medium,
+                      borderRadius: AppRadius.capsule,
                       borderSide: BorderSide(
                         color: effectiveColors.separatorColor,
                       ),

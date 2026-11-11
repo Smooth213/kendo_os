@@ -237,8 +237,7 @@ class _SettingsGoogleAuthTileState
               horizontal: AppSpacing.md,
               vertical: AppSpacing.xs,
             ),
-            shape: RoundedRectangleBorder(
-              borderRadius: AppRadius.medium,
+            shape: StadiumBorder(
               side: BorderSide(
                 color: themeColors.separatorColor.withValues(alpha: 0.8),
                 width: 1.0,
@@ -310,9 +309,7 @@ class _SettingsGoogleAuthTileState
                   horizontal: AppSpacing.sm,
                   vertical: AppSpacing.xs,
                 ),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.round,
-                ),
+                shape: const StadiumBorder(),
               ),
               icon: const Icon(Icons.sync_rounded, size: 16),
               label: const Text(

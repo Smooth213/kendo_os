@@ -191,7 +191,7 @@ class _MasterEditOrganizationBottomSheetState
                     Icons.account_balance,
                     color: AppKendoColors.grey,
                   ),
-                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  border: OutlineInputBorder(borderRadius: AppRadius.capsule),
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF2C2C2E)
@@ -212,7 +212,7 @@ class _MasterEditOrganizationBottomSheetState
                     Icons.school,
                     color: AppKendoColors.grey,
                   ),
-                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  border: OutlineInputBorder(borderRadius: AppRadius.capsule),
                   filled: true,
                   fillColor: isDark
                       ? const Color(0xFF2C2C2E)

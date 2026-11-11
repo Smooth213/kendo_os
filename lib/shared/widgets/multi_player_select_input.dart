@@ -221,7 +221,7 @@ class _MultiPlayerSelectInputState
                             filled: true,
                             fillColor: context.appColors.inputBackground,
                             border: const OutlineInputBorder(
-                              borderRadius: AppRadius.small,
+                              borderRadius: AppRadius.capsule,
                               borderSide: BorderSide.none,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
@@ -403,9 +403,7 @@ class _MultiPlayerSelectInputState
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _accentColor,
                               foregroundColor: AppKendoColors.pureWhite,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: AppRadius.medium,
-                              ),
+                              shape: const StadiumBorder(),
                               elevation: 0,
                             ),
                             icon: const Icon(Icons.check, size: 18),

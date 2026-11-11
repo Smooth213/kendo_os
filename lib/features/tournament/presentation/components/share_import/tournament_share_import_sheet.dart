@@ -298,12 +298,10 @@ class _TournamentShareImportSheetState
                         fontSize: AppFontSize.body,
                         color: textColor,
                       ),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: '集合場所、責任者、注意事項など',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppRadius.smallValue,
-                          ),
+                          borderRadius: AppRadius.large,
                         ),
                         isDense: true,
                       ),
@@ -334,11 +332,7 @@ class _TournamentShareImportSheetState
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.md,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.mediumValue,
-                            ),
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                       ),
                     ),
@@ -359,11 +353,7 @@ class _TournamentShareImportSheetState
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSpacing.md,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.mediumValue,
-                            ),
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                       ),
                     ),

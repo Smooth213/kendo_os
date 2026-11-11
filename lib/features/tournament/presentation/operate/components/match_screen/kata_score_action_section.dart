@@ -224,7 +224,7 @@ class KataScoreActionSection extends ConsumerWidget {
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: accentColor, width: 1.0),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.small),
+          shape: const StadiumBorder(),
         ),
         child: Text(
           label,

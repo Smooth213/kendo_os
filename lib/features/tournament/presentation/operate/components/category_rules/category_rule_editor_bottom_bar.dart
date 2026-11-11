@@ -52,7 +52,7 @@ class CategoryRuleEditorBottomBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                   vertical: AppSpacing.modernValue,
                 ),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+                shape: const StadiumBorder(),
               ),
               child: const Text(
                 'キャンセル',

@@ -104,13 +104,13 @@ class _CriticalActionGuardDialogState
               errorText: errorMessage,
               errorStyle: const TextStyle(color: AppKendoColors.orangeAccent),
               enabledBorder: OutlineInputBorder(
-                borderRadius: AppRadius.medium,
+                borderRadius: AppRadius.capsule,
                 borderSide: BorderSide(
                   color: AppKendoColors.pureWhite.withValues(alpha: 0.3),
                 ),
               ),
               focusedBorder: const OutlineInputBorder(
-                borderRadius: AppRadius.medium,
+                borderRadius: AppRadius.capsule,
                 borderSide: BorderSide(color: AppKendoColors.teal),
               ),
             ),

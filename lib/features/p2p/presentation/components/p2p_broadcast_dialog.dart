@@ -267,7 +267,7 @@ class _P2pBroadcastDialogState extends ConsumerState<P2pBroadcastDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: context.appColors.primaryAccent,
             foregroundColor: AppKendoColors.pureWhite,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.medium),
+            shape: const StadiumBorder(),
           ),
           child: const Text('閉じる'),
         ),
