@@ -7,7 +7,8 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "jest"
+    "test": "jest --testPathIgnorePatterns=firestore_rules\\.emulator\\.test\\.js",
+    "test:rules": "jest firestore_rules.emulator.test.js"
   },
   "engines": {
     "node": "24"
@@ -19,6 +20,8 @@
     "firebase-functions": "^7.0.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0",
     "firebase-functions-test": "^3.4.1",
     "jest": "^29.7.0"
   },
