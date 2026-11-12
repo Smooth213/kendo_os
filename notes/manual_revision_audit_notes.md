@@ -20,14 +20,14 @@
 * **【UI・デザインシステム最新化（v1.1.0 継続反映）】**:
   - 全画面のボタン・入力フォームのカプセル型（Stadium/Pill形状）完全統一、iOSメモ風 浮遊カプセル型スワイプアクション（`AppSlidableAction`）
   - スタート画面の 19.5:9 画面での非スクロール全体表示調整、および大会ホーム・部内戦ホームのAppBar観戦プレビューアイコンを `Icons.preview_rounded` へ変更
-  - 設定画面・スタート画面「サポート・規約・情報」セクション（オフライン規約ダイアログ・お問い合わせQR）、プログラムPDF自動軽量化（3MB以上・検索性維持）、公式記録PDFのルール要約印字（`PdfRuleFormatter`）、検索キーワード黄色ハイライト（`AppHighlightText`）、全画面Pull-to-Refresh耐障害導線を網羅
+  - 設定画面・スタート画面「サポート・規約・情報」セクション（オフライン規約ダイアログ・Googleフォーム外部起動）、プログラムPDF自動軽量化（3MB以上・検索性維持）、公式記録PDFのルール要約印字（`PdfRuleFormatter`）、検索キーワード黄色ハイライト（`AppHighlightText`）、全画面Pull-to-Refresh耐障害導線を網羅
 
 ---
 
 ## 進捗サマリー
 * 対象バージョン: **v1.1.0（`1.1.0+2`）**
-* 全ステップ数: 27ステップ
-* 完了ステップ: **27 / 27 (全8フェーズ・全27ステップ v1.1.0 反映済み 100% 完了 🎉)**
+* 全ステップ数: 27ステップ（うち総合取扱説明書掲載対象: **25ステップ** ※Step 18「監査ログ」・Step 20「監視ダッシュボード」は Stage 2 β 非表示仕様のため総合取扱説明書から除外）
+* 完了ステップ: **27 / 27 (全8フェーズ・全27ステップ v1.1.0 実コード照合・改訂反映済み 100% 完了 🎉)**
 * 達成状況:
   - Phase 0: 基本概念・初期設定・権限 (Step 1/27) 🟢 v1.1.0反映済
   - Phase 1: 事前準備・選手マスタ・大会作成 (Step 2〜5/27) 🟢 v1.1.0反映済
@@ -35,9 +35,26 @@
   - Phase 3: 試合進行・スコア記録・通常ドック (Step 9〜11/27) 🟢 v1.1.0反映済
   - Phase 4: 部内戦・練習試合・部内戦ドック (Step 12〜13/27) 🟢 v1.1.0反映済
   - Phase 5: 結果集計・公式記録・PDF出力 (Step 14〜16/27) 🟢 v1.1.0反映済
-  - Phase 6: システム設定・監視・監査・障害復旧 (Step 17〜20/27) 🟢 v1.1.0反映済
+  - Phase 6: システム設定・障害復旧 (Step 17, 19/27 ※Step 18, 20 は Stage 2 β 非表示につき取説除外) 🟢 v1.1.0反映済
   - Phase 7: 観客・保護者用 Viewer マニュアル (Step 21〜24/27) 🟢 v1.1.0反映済
   - Phase 8: クイックガイド・FAQ・最終総点検 (Step 25〜27/27) 🟢 v1.1.0反映済
+
+---
+
+## 🗺️ 総合取扱説明書（Google スライド）章・ページ再構成マップ（方針B：v1.1.0 準拠）
+既存の Google スライド「Kendo_Sync 総合取扱説明書（全42枚）」をベースに、未掲載ページの追加・Stage 2 β 非表示機能の除外・旧称（`Kendo OS` → `Kendo Sync` / `KendoSync`）および FAQ 参照ページ番号の整合を行う再構成案です。
+
+| 再構成後の章 | 収録内容（対応 Step） | 現行スライドとの対応・改訂方針 |
+| :--- | :--- | :--- |
+| **表紙・目次** | 表紙（`v1.1.0` 明記）、目次 1〜3 | 現行 Slide 1〜4 を新章構成・新ページ番号に合わせて全面更新 |
+| **第1章：基本概念・初期設定・権限** | Kendo Sync とは、二重保存・Pull-to-Refresh、道場ID・入室PIN、4つの権限・PIN復旧（Step 1） | 現行 Slide 5〜8 を更新＋「道場入室PIN」「PIN初期化・復旧」を追加 |
+| **第2章：選手マスタ管理** | 一覧・スワイプ/長押し、選手登録・在籍区分、新年度一括進級シート、卒業・OB/OG名簿、バックアップ（Step 2） | 現行 Slide 9〜12 を更新＋「新年度一括進級シート」「卒業・OB/OG名簿」を追加 |
+| **第3章：通常試合モードの運営準備** | 新規大会作成、チーム登録、部門ルール設定、試合作成・オーダー、一括ルール変更、大会ホーム・観戦QR有効期限（Step 3〜8） | 現行 Slide 13〜21 を更新＋「部門ルール設定」「一括ルール変更」「観戦QR有効期限」を追加 |
+| **第4章：通常試合の進行・ドック・結果出力** | 試合記録・タイマー・Undo・終了、団体戦状況/スコアボード、通常大会ドック、リーグ集計・公式記録・PDF/LINE共有、順位表、プログラム管理・手書き（Step 9〜11, 14〜16） | 現行 Slide 22〜28 を更新＋「団体戦状況/スコアボード」「通常大会ドック」「順位表」「プログラム管理・手書き」を追加 |
+| **第5章：部内戦モードの運営** | カレンダー・4大モード・待機列・無限勝ち抜き、部内戦専用ドック・試合数計算・ジグル並び替え（Step 12〜13） | 現行 Slide 29〜33 を更新＋「部内戦専用ドック・試合数計算・ジグル」を追加 |
+| **第6章：共有・通信復旧・設定・通知** | QR共有・有効期限、オフライン/破損隔離復旧・YES/NO診断、システム設定・道場PIN管理・代表者引き継ぎ、プッシュ通知・アプリ内お知らせ（Step 17, 19 ＋ 現行 Slide 41〜42 編入） | 現行 Slide 34〜37 ＋ Slide 41〜42 を統合更新＋「道場PIN管理・代表者引き継ぎ」「破損データ隔離/診断チャート」を追加（※Step 18 監査ログ・Step 20 監視ダッシュボードは **Stage 2 β 非表示のため除外**） |
+| **第7章：観客・保護者用 Viewer ガイド** | 観客ホーム・1大会限定QR、リアルタイムスコアボード（縦/横）・団体戦、チーム進捗・プログラム個人ペン・検索、公式記録・部内戦・勝ち抜き戦速報（Step 21〜24） | **新規独立章として追加** |
+| **第8章：クイックガイド・FAQ・付録** | 机上クイックガイド、FAQ（新設Q&A＋参照ページ番号是正）、当日運営タイムライン、タイムライン仕様・免責事項・KendoSync 窓口（Step 25〜27） | 現行 Slide 38〜40 を更新＋「机上クイックガイド」を追加し、`Kendo OS` / `dojo-support@kendo-os.org` を現行表記へ統一 |
 
 ---
 
@@ -82,6 +99,7 @@
     - 4桁PIN入力インジケータ（伏字ドット表示、4桁入力完了時に即時自動検証）
     - 独自テンキー（0〜9ボタン、クリア、1文字削除 `⌫` ボタン）
     - **「PINを忘れた場合（代表者Googleで初期化）」ボタン**: タップで `DojoPinRecoverySheet` が起動し、登録済み代表者Googleアカウントで本人確認後にPINを初期化・再設定可能
+    - **初回 Admin ログイン時の初期ロールPIN変更案内 (`InitialRolePinPromptDialog`)**: クラウド接続済み道場で初期PINのまま Admin ログインした場合、道場別カスタムPINへの変更を促す案内ダイアログを表示
 
 * **現行マニュアル（PDF P7〜P8, P13 / v1.0.0）との重大な差分**:
   1. **【最重要】初期PINコードと道場別カスタムPIN**:
@@ -182,7 +200,7 @@
 * **UI全要素リスト**:
   - [x] **スタート画面（入口 / `StartScreen`）**:
     - 19.5:9 標準画面でスクロールなしに全体が収まるレイアウト最適化（v1.1.0）
-    - 「新しい大会を作る」カード（トロフィー＋プラスアイコン、サブタイトル「大会・錬成会」）
+    - 「新しい大会を作る」カード（プラス丸アイコン `Icons.add_circle`、サブタイトル「大会・錬成会」）
     - ※ ViewerやRecorderなど権限のない端末ではカード自体が非表示
     - **フッターエリア（バージョン＆サポート・規約リンク）**:
       - ロゴ＆バージョン表記「`Kendo Sync v1.1.0`」
@@ -418,16 +436,15 @@
     - 大会ホームタイトル ＆ 戻るボタン（`/tournament-list` へ）
     - 🔍 検索アイコン（インクリメンタル検索バー展開、キーワードの蛍光黄色ハイライト連動）
     - **観戦プレビューアイコン (`Icons.preview_rounded`)**: 「観客の画面を確認」ボタン（v1.1.0で視認性・外部出力識別のためアイコン刷新）
-    - 📲 **「大会を共有する」ボタン**: トークン付き1大会限定QRコード・観客用URL共有ダイアログ（`QrShareDialog`）
+    - 📲 **「大会を共有する」ボタン**: `HomeScreenQrDialog` 経由でトークン付き1大会限定QRコード・観客用URL共有ダイアログ（`QrShareDialog`）を表示
       - **観戦リンクの有効期限セレクター (`ViewerShareExpirySelector`)**: 24時間 / 7日間 / 無期限 / 停止（公開即時終了）をワンタップ切替（v1.1.0）
   - [x] **下スワイプ強制同期 (Pull-to-Refresh)**:
     - タイムラインを下スワイプしてローカル・クラウド間の全データを即座に強制再同期
   - [x] **初期準備チェックリストカード (`HomeScreenSetupChecklistCard`)**:
     - 試合未登録時に出現し、「チーム登録」「部門ルール」「試合作成」へのクイックリンクを提供
   - [x] **呼び出しバナーエリア (`HomeScreenCallBanner`)**:
-    - **進行中の試合（赤色バッジ）**: コートで現在戦っている対戦カード
-    - **次の試合・待機（黄色バッジ）**: 次に呼び出す対戦カード
-    - タップで即座に対象の試合記録画面へジャンプ
+    - **進行中の試合（オレンジ文字「進行中」）**: コートで現在戦っている対戦カード
+    - **次の試合・待機（「次試合」／2件目以降「次々試合」白文字）**: 次に呼び出す対戦カード（読み取り専用表示であり、バナー自体のタップ遷移機能はなし）
   - [x] **運営アクションボタンバー (`OperatorActionButtons`)**:
     - 全ボタンがカプセル型（Stadium/Pill形状）に統一
     - 【＋ 試合作成】（対戦カード追加）
@@ -544,7 +561,7 @@
       - **勝者数（勝数）** ＆ **取得総本数（本数）** の自動リアルタイム集計表示（例: 3(5) - 1(2) ※代表戦スコアは団体合計に加算しない）
     - **代表戦ボタン (`TeamScoreboardDaihyoHandler`)**:
       - 勝数・本数が同点（引き分け）かつ代表戦許可設定時、最下部に**「代表戦を追加する」**ボタンが自動出現
-      - タップで赤白の代表選手を選出し、一本勝負の代表戦カードを即時生成
+      - タップで `$redTeam : 代表選手` / `$whiteTeam : 代表選手` の仮名で代表戦カードを即時生成し、試合記録画面への遷移確認ダイアログを表示（選手名は試合側で変更可能、一本勝負設定は `isDaihyoIpponShobu` に準拠）
 
 * **現行マニュアル（PDF P26〜P28）との差分**:
   1. **カードタップ時の遷移先の明確化**:
@@ -690,13 +707,13 @@
   - [x] **部内戦専用ドックボタン (`BunaiksenDockButton`)**:
     - 画面右下常駐のFABボタン
     - 画面端（左右）への**マグネット吸着・自動格納（幅20px）**機能
-  - [x] **部内戦特化の全8大スピードダイヤル項目**:
-    1. **📋 試合一覧 (`matches`)**: 本日の全試合カード・スコア確認
-    2. **🏆 順位・連勝表 (`standings`)**: 個人勝率ランキング・王座連勝記録
+  - [x] **部内戦特化の全8大スピードダイヤル項目（`BunaiksenDockItemTypeExtension.label` 準拠）**:
+    1. **📋 対戦一覧 (`matches`)**: 本日の全試合カード・スコア確認
+    2. **🏆 成績・星取表 (`standings`)**: 個人勝率ランキング・王座連勝記録
     3. **📅 カレンダー (`calendar`)**: 過去の稽古日部内戦の即時ロード
-    4. **🧮 電卓・試合数計算機 (`calculator`)**: 残り稽古時間・人数・コート配分シミュレーション
+    4. **🧮 試合数計算 (`calculator`)**: 残り稽古時間・人数・コート配分シミュレーション
     5. **🖌️ クイックメモ (`quickMemo`)**: 手書き＆テキストメモ
-    6. **⏱️ サブタイマー (`timer`)**: 稽古・合議・休憩用タイマー
+    6. **⏱️ タイマー (`timer`)**: 稽古・合議・休憩用サブタイマー
     7. **📲 観戦QR (`viewerQr`)**: 保護者向け速報QRコード
     8. **⚙️ 設定 (`settings`)**: システム設定
   - [x] **iOS風画面上ジグル（Jiggle）並び替え機能**:
@@ -793,8 +810,8 @@
     2. **勝利数（Wins）**: 勝ち数が多い順
     3. **敗戦数（Losses）**: 負け数が少ない順
     4. **総取得本数（Points Scored）**: 獲得した一本の総数が多い順
-  - [x] **完全同点（Tie）自動検出＆警告アラートバナー**:
-    - 勝ち点・勝敗数・総本数が完全に並んだ場合、画面上部にタイ警告バナーが自動出現し、代表戦や抽選の必要性を案内
+  - [x] **完全同点（Tie）検出ロジック（`tieGroups`）**:
+    - 内部ロジックでは勝ち点・勝敗数・総本数が並んだグループ（`tieGroups`）を算出（※v1.1.0 現行 UI 上には同点アラートバナーは未描画）
   - [x] **日本伝統の勝率表記（三桁形式）**:
     - 全勝: `10割`
     - 勝率例: `8割5分7厘`、`7割5分`、`0割`
@@ -802,18 +819,17 @@
     - 金・銀・銅メダルアイコン（1位〜3位を表彰カラーでハイライト）
     - 所属名接頭辞を除去したクリーンな選手名
     - 「勝率: 〇割〇分〇厘」バッジ
-    - 詳細成績サブタイトル: 「X試合 | Y勝 Z敗 W分 | 取得本数: N本 | 勝ち点: M点」
+    - 詳細成績サブタイトル: 「X試合: Y勝 Z敗 W分 / 取得: N本」（※勝ち点はソート基準として使用し、カード詳細行には未表示）
 
 * **現行マニュアルとの差分**:
   1. **順位決定の4段階優先順位（勝ち点 ➔ 勝利数 ➔ 敗戦数 ➔ 取得本数）の明記**:
      * 剣道公式ルールに即した順位決定の正確なロジックを解説。
-  2. **完全同点アラートバナー & 金銀銅メダルバッジ**:
-     * 3者以上の同点にも対応したタイ検出バナーと、1位〜3位の視覚的ハイライト仕様を追記。
+  2. **金銀銅メダルバッジ ＆ 日本伝統勝率表記（〇割〇分〇厘）**:
+     * 1位〜3位の視覚的ハイライト仕様と三桁勝率表記を追記。
 
-* **PDF・マニュアル用スクショ撮影・差し替え指示リスト（全3枚）**:
-  * `[SS-15-1]` **新規追加**｜**画面**: 順位表画面全体（`StandingsScreen`）｜**撮影状態**: 1位〜3位のメダルバッジ、勝率「〇割〇分〇厘」、詳細行が表示された状態｜**差し替え先**: 配布用PDF 第4〜5章「成績・順位表」／`operator/standings.md`
-  * `[SS-15-2]` **新規追加**｜**画面**: 順位表画面（完全同点タイ警告バナー表示時）｜**撮影状態**: 上部に同点アラートバナーが出ている状態｜**差し替え先**: 配布用PDF 第4〜5章「同点タイ検出」／`operator/standings.md`
-  * `[SS-15-3]` **新規追加**｜**画面**: 順位表ランキングカード詳細｜**撮影状態**: 勝ち点・総取得本数を含むサブタイトルが見えている状態｜**差し替え先**: 配布用PDF 第4〜5章「勝ち点・取得本数集計」／`operator/standings.md`
+* **PDF・マニュアル用スクショ撮影・差し替え指示リスト（全2枚）**:
+  * `[SS-15-1]` **新規追加**｜**画面**: 順位表画面全体（`StandingsScreen`）｜**撮影状態**: 1位〜3位のメダルバッジ、勝率「〇割〇分〇厘」、詳細行が表示された状態｜**差し替え先**: 配布用PDF 第4章「成績・順位表」／`operator/standings.md`
+  * `[SS-15-2]` **新規追加**｜**画面**: 順位表ランキングカード詳細｜**撮影状態**: 「X試合: Y勝 Z敗 W分 / 取得: N本」のサブタイトルが見えている状態｜**差し替え先**: 配布用PDF 第4章「成績・取得本数集計」／`operator/standings.md`
 
 ---
 
@@ -936,14 +952,14 @@
       - PIN初期化・代替わり引き継ぎ用の代表者Googleアカウントを**最大5名**まで登録・削除可能
       - 「現在ログイン中のGoogleを登録」またはメールアドレス直接追加
   - [x] **サポート・規約・情報セクション (`SettingsSupportSection`)**:
-    - **お問い合わせ（Googleフォーム外部連携 ＆ QRコード案内）**:
-      - タップで直接外部ブラウザを起動（`https://forms.gle/rymMtJUyhWNtrD819`）
-      - 取説・机上掲示用に手持ちスマホでカメラ読み取りできる「お問い合わせ用QRコード」を完備
-    - **取扱説明書（マニュアル）**: 画面別・ロール別公式マニュアル一覧起動
-    - **利用規約 (`LegalDocumentDialog`)**: オフライン完全対応・高速スクロールダイアログ
-    - **プライバシーポリシー (`LegalDocumentDialog`)**: 個人情報・戦績データの保護方針
-    - **KendoSync について (`AppAboutDialog`)**: アプリ名称、バージョン表記（`v1.1.0`）、開発理念
+    - **お問い合わせ（Googleフォーム外部連携）**:
+      - タップで直接外部ブラウザを起動（`https://forms.gle/rymMtJUyhWNtrD819`）※アプリ内でのQRコード表示はなし
+    - **操作マニュアル**: 画面別・ロール別公式マニュアル一覧起動
+    - **利用規約 (`LegalDocumentDialog.show`)**: オフライン完全対応・高速スクロールダイアログ
+    - **プライバシーポリシー (`LegalDocumentDialog.show`)**: 個人情報・戦績データの保護方針
+    - **KendoSync について (`LegalDocumentDialog.show`)**: アプリ名称、バージョン表記（`v1.1.0`）、開発理念
     - **オープンソースライセンス (`showLicensePage`)**: Flutterおよび各オープンソースライブラリの権利表記
+    - **デザインシステム・ギャラリー (`/design-gallery`)**: 開発・検証用のUIコンポーネント一覧（同セクション内実装）
   - [x] **ローカル保存と保護**:
     - **記録確定後の修正ロック (`isLocked`)**: 確定スコアの誤操作・改ざん防止
   - [x] **Webアプリ版（他端末アクセス） (`WebAppQrDialog`)**:
@@ -954,8 +970,8 @@
 * **現行マニュアル（PDF P35〜P37 / v1.0.0）との差分**:
   1. **【v1.1.0新機能】管理者限定「道場セキュリティ・PIN管理」＆「代表者Google引き継ぎ」**:
      * 初期PINから道場固有の入室PIN・各ロールPINへ変更する手順、本人確認後のマスク表示仕様、代替わり時の代表者Googleアカウント（最大5名）引き継ぎ運用を明記。
-  2. **サポート・規約・情報セクションとお問い合わせQRコードの追加**:
-     * お問い合わせフォーム（URLリンクおよびスマホ読取用QRコード）、取扱説明書、オフライン閲覧可能な規約・ポリシー・アプリ情報（`v1.1.0`）の仕様を明記。
+  2. **サポート・規約・情報セクションの追加**:
+     * お問い合わせフォーム（GoogleフォームURL外部起動）、操作マニュアル、オフライン閲覧可能な規約・ポリシー・アプリ情報（`v1.1.0`）の仕様を明記。
   3. **文字サイズ（標準・大・特大）設定、BAND設定、記録確定ロック、Web版QRコード、PWA通知要件**:
      * 現場の視認性・運用性・セキュリティを高める全設定項目の仕様を網羅。
 
@@ -963,14 +979,15 @@
   * `[SS-17-1]` **差し替え**｜**画面**: 設定画面（表示と画面セクション）｜**撮影状態**: サンシャインモード、文字サイズ（標準/大/特大）、サーマル冷却バッジが見えている状態｜**差し替え先**: 配布用PDF 第6章 P35「表示・省電力設定」／`operator/settings.md`
   * `[SS-17-2]` **差し替え**｜**画面**: 設定画面（音と振動＆プッシュ通知セクション）｜**撮影状態**: 音声設定アコーディオン、マナーモード強制鳴動、4つの通知スイッチが見えている状態｜**差し替え先**: 配布用PDF 第6章 P36「音声・通知設定」／`operator/settings.md`
   * `[SS-17-3]` **差し替え**｜**画面**: 設定画面（外部連携・保護・Web版QRダイアログ）｜**撮影状態**: BAND設定、記録修正ロック、Web版QRコードが表示された状態｜**差し替え先**: 配布用PDF 第6章 P36〜P37「外部連携・Web版」／`operator/settings.md`
-  * `[SS-17-4]` **差し替え**｜**画面**: 設定画面（サポート・規約セクション＆お問い合わせQR）｜**撮影状態**: お問い合わせリンク・QRコード、利用規約・ポリシー・アプリ情報（`v1.1.0`）が見えている状態｜**差し替え先**: 配布用PDF 第6章 P37「サポート・規約・アプリ情報」／`operator/settings.md`
+  * `[SS-17-4]` **差し替え**｜**画面**: 設定画面（サポート・規約セクション）｜**撮影状態**: お問い合わせリンク、操作マニュアル、利用規約・ポリシー・アプリ情報（`v1.1.0`）が見えている状態｜**差し替え先**: 配布用PDF 第6章 P37「サポート・規約・アプリ情報」／`operator/settings.md`
   * `[SS-17-5]` **新規追加**｜**画面**: 道場セキュリティ・PIN管理シート（`DojoSecuritySettingsSheet`）｜**撮影状態**: Admin本人確認後、現在PINがマスク表示（`••••`＋目アイコン）され、新PIN変更欄が見えている状態｜**差し替え先**: 配布用PDF 第6章「道場PIN・ロールPINの変更（管理者限定）」セクション新設／`operator/settings.md`
   * `[SS-17-6]` **新規追加**｜**画面**: 代表者Googleアカウント管理カード（`DojoOwnerAccountsCard`）｜**撮影状態**: 代表者メールアドレス一覧（最大5名）と「現在ログイン中のGoogleを登録」ボタンが見えている状態｜**差し替え先**: 配布用PDF 第6章「代表者引き継ぎ・PIN復旧準備」セクション新設／`operator/settings.md`
 
 ---
 
-### 【Step 18/27】監査ログ・操作履歴（ゼロトラスト電子署名・改ざん防止・第203条規約）
-* **対象マニュアル**: [`packages/documentation_runtime/manuals/operator/audit_log.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/operator/audit_log.md)
+### 【Step 18/27】監査ログ・操作履歴（ゼロトラスト電子署名・改ざん防止・第203条規約）⚠️ Stage 2 β 非表示（総合取扱説明書から除外）
+> **【総合取扱説明書 除外対象】**: Stage 2 β 版の利用方針により UI 上非表示（遷移導線なし）のため、総合取扱説明書（Google スライド）には掲載しません（内部仕様・`operator/audit_log.md` 向けの記録として保持）。
+* **対象マニュアル**: [`packages/documentation_runtime/manuals/operator/audit_log.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/operator/audit_log.md)（※配布用総合取扱説明書は除外）
 * **コード根拠**:
   * 監査ログ画面: [`lib/admin/presentation/screens/audit_log_screen.dart:L28-L207`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/admin/presentation/screens/audit_log_screen.dart#L28-L207)
   * 監査プロバイダー: [`lib/admin/providers/audit_provider.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/admin/providers/audit_provider.dart)
@@ -1033,7 +1050,7 @@
     - Q1: 画面タップ可能か？（YES ➔ オフライン継続 / NO ➔ リロード復元）
     - Q2: 赤色「破損警告バナー」が出ているか？（二次破壊阻止ロック・生データ救済エクスポート）
     - Q3: 端末物理破損か？（紙記録への一時切り替え ➔ 予備端末で即時復旧）
-  - [x] **黄色「体育館オフライン運営中」バナー (`OfflineBanner`)**:
+  - [x] **「⚠️ 体育館オフライン運営モード」警告バナー（`main.dart` / `home_screen.dart` インライン実装）**:
     - 通信ゼロ時もIsarローカルDBへ即時書き込み継続
     - 電波復帰時にバックグラウンドキュー（`PendingSyncQueue`）から自動一括同期
   - [x] **赤色「データ破損・隔離退避」警告バナー (`CorruptedMatchBanner`)**:
@@ -1063,8 +1080,9 @@
 
 ---
 
-### 【Step 20/27】監視・同期ダッシュボード（Clock Skew・P2P・Isar・第501/502条規約）
-* **対象マニュアル**: [`packages/documentation_runtime/manuals/recovery/observability_dashboard.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/recovery/observability_dashboard.md)
+### 【Step 20/27】監視・同期ダッシュボード（Clock Skew・P2P・Isar・第501/502条規約）⚠️ Stage 2 β 非表示（総合取扱説明書から除外）
+> **【総合取扱説明書 除外対象】**: Stage 2 β 版の利用方針により UI 上非表示（遷移導線なし）のため、総合取扱説明書（Google スライド）には掲載しません（内部仕様・`recovery/observability_dashboard.md` 向けの記録として保持）。なお、`ObservabilityDashboardScreen` 画面上には Clock Skew 補正値や P2P 接続状態の UI 表示はありません（内部サービスとして稼働）。
+* **対象マニュアル**: [`packages/documentation_runtime/manuals/recovery/observability_dashboard.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/recovery/observability_dashboard.md)（※配布用総合取扱説明書は除外）
 * **コード根拠**:
   * 運用ダッシュボード画面: [`lib/admin/dashboard/observability_dashboard_screen.dart:L11-L132`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/admin/dashboard/observability_dashboard_screen.dart#L11-L132)
   * ダッシュボードメトリクス供給: [`lib/admin/providers/metrics_provider.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/admin/providers/metrics_provider.dart)
@@ -1132,9 +1150,9 @@
     - QRコードをスマホのカメラで読み取るだけで1秒アクセス（アカウント登録・PIN入力一切不要）
     - **トークン付き1大会限定リンク（v1.1.0）**: 本部が設定した有効期限（24時間 / 7日間 / 無期限）内のみ閲覧可能。期限切れや本部による「停止」後は閲覧ロック画面を表示
     - 管理画面プレビュー時のみヘッダーに「管理画面に戻る（`exit_to_app`）」脱出ボタン表示
-  - [x] **ヘッダーバー & ナビゲーション**:
+  - [x] **ヘッダーバー & ナビゲーション (`ViewerHomeHeaderActions`)**:
     - タイトル「大会ホーム (観客席)」
-    - 🔍 検索トグルアイコン、📲 共有ダイアログアイコン、⚙️ 観客用設定シートアイコン
+    - 🔔 お知らせベル（`NotificationBellButton`）、📲 共有QRアイコン（`Icons.qr_code_2`）、⋯ その他メニュー（`Icons.more_horiz_rounded`: 大会を共有する / 表示設定 / 観客FAQ）
   - [x] **下スワイプ強制同期 (Pull-to-Refresh)**:
     - 画面を下スワイプして試合進行状況を即座に再同期（通信瞬断時の手動復帰に有効）
   - [x] **招集・呼出バナー (`ViewerCallBanner`)**:
@@ -1142,10 +1160,10 @@
     - 🟡 **待機中 (Next)**: 次、またはその次に控えている試合順
     - タップで当該コートのリアルタイムスコアボード画面へ即時ジャンプ
   - [x] **クイックアクションボタン (`ViewerQuickActionButtons`)**:
-    - 全ボタンがカプセル型（Stadium/Pill形状）に統一
-    - **📄 プログラム**: 大会トーナメント表（個人メモ書き込み・拡大ズーム対応）
-    - **📊 対戦表・スコア**: 大会公式記録・全対戦結果一覧
-    - **🏆 順位表**: 勝率・勝ち点ランキング
+    - 2列横並びの角丸四角形ボタン（`AppSemanticTokens.buttonRadius`）
+    - **📊 試合結果一覧**: 大会公式記録・全対戦結果一覧
+    - **📄 大会プログラム**: 大会トーナメント表（個人メモ書き込み・拡大ズーム対応）
+    - ※「順位表」ボタンは v1.1.0 現行 UI には未実装
   - [x] **大会情報カード (`ViewerTournamentInfoCard`)**:
     - 大会名、開催日、会場名、主催者、現在の進行状況
   - [x] **タイムライン検索・ソートバー (`ViewerMatchListSearchBar`)**:
@@ -1161,11 +1179,11 @@
      * 同じQR/URLでも本部設定の有効期限（24時間 / 7日間 / 無期限 / 停止）に従い、大会終了後は自動で閲覧終了するプライバシー保護仕様を明記。
   2. **完全匿名認証（PIN不要・アカウント不要）＆ 招集・呼出バナー**:
      * QRスキャン1秒接続と、進行中Live・待機中Nextバナーのリアルタイム動態を明記。
-  3. **3大クイックアクションボタン・リアルタイム検索・本部アナウンスポップアップ**:
+  3. **2大クイックアクションボタン（試合結果一覧・大会プログラム）・リアルタイム検索・本部アナウンスポップアップ**:
      * 主要画面への導線と検索ハイライト機能を解説。
 
 * **PDF・マニュアル用スクショ撮影・差し替え指示リスト（全3枚）**:
-  * `[SS-21-1]` **差し替え**｜**画面**: 観客ホーム画面全体（`ViewerHomeScreen`）｜**撮影状態**: 大会名、進行中/待機中バナー、カプセル型クイックボタン（プログラム・対戦表・順位表）が表示された状態｜**差し替え先**: 配布用PDF 第7章 P38「観客ホーム画面」／`viewer/viewer_home.md`
+  * `[SS-21-1]` **差し替え**｜**画面**: 観客ホーム画面全体（`ViewerHomeScreen`）｜**撮影状態**: 大会名、進行中/待機中バナー、2列クイックボタン（試合結果一覧・大会プログラム）が表示された状態｜**差し替え先**: 配布用PDF 第7章「観客ホーム画面」／`viewer/viewer_home.md`
   * `[SS-21-2]` **差し替え**｜**画面**: 観客ホーム画面（部門フィルター＆対戦カード一覧）｜**撮影状態**: 部門チップが選択され、各コートの対戦カードが並んでいる状態｜**差し替え先**: 配布用PDF 第7章 P39「対戦状況の確認」／`viewer/viewer_home.md`
   * `[SS-21-3]` **差し替え**｜**画面**: 観客ホーム画面（本部アナウンスポップアップ表示時）｜**撮影状態**: 画面上部に本部からの招集連絡がポップアップしている状態｜**差し替え先**: 配布用PDF 第7章 P39「本部からの一斉連絡」／`viewer/viewer_home.md`
 
@@ -1176,7 +1194,7 @@
 * **コード根拠**:
   * 観客試合画面: [`lib/features/viewer/presentation/viewer_match_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/viewer/presentation/viewer_match_screen.dart)
   * 大画面観戦スコアボード: [`lib/features/viewer/components/large_viewer_scoreboard.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/viewer/components/large_viewer_scoreboard.dart)
-  * 団体戦スコアボード画面: [`lib/features/tournament/presentation/operate/team_scoreboard_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/team_scoreboard_screen.dart)
+  * 団体戦スコアボード画面（観客専用）: `ViewerTeamScoreboardScreen`（`/viewer-team/:groupName`） / 運営側 [`team_scoreboard_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/team_scoreboard_screen.dart)
   * 団体戦星取表ビルダー: [`team_scoreboard_table_builder.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_table_builder.dart)
   * 代表戦自動判定ハンドラー: [`team_scoreboard_daihyo_handler.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/team_scoreboard/team_scoreboard_daihyo_handler.dart)
   * 公式スコア表示仕様書: [`docs/domain/kendo_score_display_spec.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/docs/domain/kendo_score_display_spec.md)
@@ -1257,14 +1275,15 @@
   * [`packages/documentation_runtime/manuals/viewer/viewer_bunaiksen.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/viewer/viewer_bunaiksen.md)
   * [`packages/documentation_runtime/manuals/viewer/viewer_kachinuki_scoreboard.md`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/packages/documentation_runtime/manuals/viewer/viewer_kachinuki_scoreboard.md)
 * **コード根拠**:
-  * 公式記録画面（観客閲覧モード）: [`lib/features/tournament/presentation/operate/official_record_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/official_record_screen.dart)
-  * 部内戦ホーム画面: [`lib/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart)
+  * 観客用公式記録画面: `ViewerOfficialRecordScreen`（`/viewer-record/:tournamentId`） / 運営側 [`official_record_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/official_record_screen.dart)
+  * 観客用部内戦ホーム画面: `ViewerBunaiksenHomeScreen`（`/bunaiksen-viewer-home/:tournamentId`） / 運営側 [`bunaiksen_home_screen.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/screens/bunaiksen_home_screen.dart)
+  * 勝ち抜き戦スコアボード画面: `ViewerKachinukiScoreboardScreen`（`/viewer-kachinuki/:groupName`）
   * 連勝リーダーボードカード: [`bunaiksen_leaderboard_card.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/tournament/presentation/operate/components/bunaiksen/bunaiksen_leaderboard_card.dart)
   * 勝ち抜き戦スコア計算・連勝判定: [`lib/features/match/domain/services/kendo_rule_engine.dart`](file:///Users/saradafumiaki/Documents/Apps/kendo_os/lib/features/match/domain/services/kendo_rule_engine.dart)
 
 * **UI全要素リスト**:
-  - [x] **観客用公式戦記録 (`OfficialRecordScreen` 閲覧モード)**:
-    - ヘッダータイトル「全試合スコア」、🔍 インクリメンタル検索バー
+  - [x] **観客用公式戦記録 (`ViewerOfficialRecordScreen`)**:
+    - ヘッダータイトル「大会 公式記録」、🔍 インクリメンタル検索バー
     - エクスポートバー（PDF出力 / LINEグリーン画像出力 / 全カテゴリ一括トグル）
     - 全対戦カード一覧（※遠征集計サマリーカードはParity保護規約により自動非表示）
   - [x] **観客用部内戦速報 (`BunaiksenHomeScreen` 観客モード)**:
@@ -1386,7 +1405,7 @@
   * 全日本剣道連盟 試合・審判規則第203条・第502条調停境界
 
 * **UI全要素リスト**:
-  - [x] **タイムライン表示順序決定ロジック (`TimelineCategorySectionList`)**:
+  - [x] **タイムライン表示順序決定ロジック（`timeline_ui_state_provider.dart` / 観客側 `ViewerCategorySectionList`）**:
     - 1. 🔴 進行中（In-Progress / Live）最上位ハイライト配置
     - 2. 🟡 待機中（Waiting / Next）試合順（`order` 昇順）整列
     - 3. ⚪ 終了済（Finished / Approved）対戦サマリー保持
@@ -1398,31 +1417,31 @@
     - 2. **審判員宣告絶対の原則**: 剣連規則に基づき、主審・審判長の宣告が絶対の正
     - 3. **通信障害時の競技継続原則**: Isarローカル保存による記録保護と、電波遮断を理由とした試合中断の禁止
   - [x] **全マニュアル・総合目次（`manual_index.md`）の整合性確認**:
-    - 全39マニュアルファイル、デッドリンク0件、重複なし、ガバナンス全40条項完全準拠
+    - `packages/documentation_runtime/manuals/` 配下 全54マニュアルファイル（v1.1.0 照合済み）
 
 * **現行マニュアルとの差分**:
   1. **タイムライン整列アルゴリズムの明文化**:
      * 進行中・待機中・終了カードの決定論的配置ルールを明記。
   2. **公式免責事項（物理時計・審判宣告の優先）の明確化**:
      * デジタル支援システムとしての責務境界と、競技規則の尊厳を保証する規定を整理。
-  3. **全27ステップの完全制覇と整合性の確立**:
-     * 全ファイルがFlutter最新コードと1対1で整合し、配布用PDF（全40ページ）の制作台帳が100%完成。
+  3. **全27ステップの精査完了と総合取扱説明書（方針B）再構成**:
+     * Flutter v1.1.0 最新コードと照合を完了し、Stage 2 β 非表示機能（Step 18・20）を除外した総合取扱説明書（第1〜8章）の改訂台帳が完成。
 
 * **PDF・マニュアル用スクショ撮影・差し替え指示リスト（全3枚）**:
-  * `[SS-27-1]` **図解（生成/作図）**｜**画面**: タイムライン表示アルゴリズム図解｜**撮影状態**: 進行中/待機中/終了の配置と不可逆遷移フロー（Mermaidフロー紙面版）｜**差し替え先**: 配布用PDF 付録／`operator/timeline_specs.md`
+  * `[SS-27-1]` **図解（生成/作図）**｜**画面**: タイムライン表示アルゴリズム図解｜**撮影状態**: 進行中/待機中/終了の配置と不可逆遷移フロー（Mermaidフロー紙面版）｜**差し替え先**: 配布用PDF 第8章「タイムライン仕様」／`operator/timeline_specs.md`
   * `[SS-27-2]` **差し替え**｜**画面**: 総合マニュアル目次（アプリ内 `EmbeddedManualScreen`）｜**撮影状態**: 最新インデックス体系が表示された状態｜**差し替え先**: 配布用PDF 目次・構成案内／`manual_index.md`
-  * `[SS-27-3]` **図解（生成/作図）**｜**画面**: 公式免責事項・競技規則尊重規定ページ｜**撮影状態**: 3大公式免責事項の紙面レイアウトデザイン｜**差し替え先**: 配布用PDF 最終章／`operator/timeline_specs.md`
+  * `[SS-27-3]` **図解（生成/作図）**｜**画面**: 公式免責事項・競技規則尊重規定ページ｜**撮影状態**: 3大公式免責事項と `KendoSync` 正規窓口・著作権表記の紙面レイアウトデザイン｜**差し替え先**: 配布用PDF 第8章「免責事項」／`operator/timeline_specs.md`
 
 ---
 
 ## 🏆 全27ステップ 改訂台帳（v1.1.0 準拠）総括レポート
 * **対象アプリバージョン**: **v1.1.0（`1.1.0+2`）**
-* **総ステップ数**: 27 / 27 ステップ（100% 反映完了）
-* **配布用PDF・マニュアル向けスクリーンショット指示合計**: **全88枚**
+* **総ステップ数**: 27 / 27 ステップ（v1.1.0 実コード照合完了／総合取扱説明書対象: 25 ステップ ※Step 18 監査ログ・Step 20 監視ダッシュボードは Stage 2 β 非表示のため除外）
+* **配布用PDF・総合取扱説明書向けスクリーンショット指示合計**: **全81枚**（※全27ステップ計 87 枚のうち、Stage 2 β 除外の Step 18・20 分 6 枚を取説対象外とした枚数）
   * **差し替え（既存画像の更新）**: **60枚**
-  * **新規追加（v1.1.0新機能・新設ページ用）**: **25枚**
+  * **新規追加（v1.1.0新機能・新設ページ用）**: **18枚**（全ステップ合計 24 枚 − Stage 2 β 除外 6 枚）
   * **図解（フローチャート・紙面デザイン作図）**: **3枚**
-* **備考**: 本台帳の更新に基づき、`packages/documentation_runtime/manuals/` 本体の原稿改訂およびスクリーンショット差し替え作業を順次実施する。
+* **備考**: 本台帳の更新に基づき、`Kendo_Sync 総合取扱説明書`（Google スライド：方針B・第1〜8章再構成）および `packages/documentation_runtime/manuals/` 本体の原稿改訂・スクリーンショット差し替え作業を順次実施する。
 
 
 
