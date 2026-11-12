@@ -139,12 +139,6 @@ class MatchTimelineList extends ConsumerWidget {
             isDark: isDark,
           ),
 
-          if (timelineResult.isLoading && allMatches.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(AppSpacing.xxl),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-
           ...(() {
             if (timelineResult.entries.isEmpty) return <Widget>[];
             final sortedEntries = timelineResult.entries;
