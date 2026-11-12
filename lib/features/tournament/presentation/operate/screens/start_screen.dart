@@ -54,7 +54,7 @@ class StartScreen extends ConsumerWidget {
             ),
             child: Icon(icon, size: 36, color: color),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -118,8 +118,8 @@ class StartScreen extends ConsumerWidget {
             Container(
               width: double.infinity,
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 32,
-                bottom: 48,
+                top: MediaQuery.of(context).padding.top + AppSpacing.xl,
+                bottom: AppSpacing.giant,
                 left: AppSpacing.xl,
                 right: AppSpacing.xl,
               ),
@@ -255,7 +255,7 @@ class StartScreen extends ConsumerWidget {
 
             Expanded(
               child: Transform.translate(
-                offset: const Offset(0, -24),
+                offset: const Offset(0, -20),
                 child: CustomScrollView(
                   slivers: [
                     SliverPadding(
@@ -296,7 +296,7 @@ class StartScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: AppSpacing.lg),
+                          const SizedBox(height: AppSpacing.roundValue),
                           Row(
                             children: [
                               Expanded(
@@ -334,17 +334,19 @@ class StartScreen extends ConsumerWidget {
                       hasScrollBody: false,
                       fillOverscroll: true,
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: AppSpacing.xxl,
-                          bottom: AppSpacing.giant,
+                        padding: EdgeInsets.only(
+                          top: AppSpacing.md,
+                          bottom:
+                              MediaQuery.of(context).padding.bottom +
+                              AppSpacing.sm,
                         ),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Image.asset(
                               'assets/kendo_icon.png',
-                              width: 72,
-                              height: 72,
+                              width: 56,
+                              height: 56,
                               color: isDark
                                   ? const Color(
                                       0xFFFFFFFF,
@@ -353,7 +355,7 @@ class StartScreen extends ConsumerWidget {
                                       0xFF0F172A,
                                     ).withValues(alpha: 0.35),
                             ),
-                            const SizedBox(height: AppSpacing.md),
+                            const SizedBox(height: AppSpacing.compact),
                             Text(
                               'Kendo Sync ${AppLegalTexts.appVersion}',
                               style: TextStyle(
