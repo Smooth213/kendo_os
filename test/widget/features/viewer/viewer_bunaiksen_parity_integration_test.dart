@@ -166,8 +166,8 @@ void main() {
       await tester.pumpWidget(createTestApp(router: router, isOperator: true));
       await tester.safePumpAndSettle();
 
-      // 1. 本部画面に「👁️（Icons.visibility）」ボタンが存在すること
-      final eyeButtonFinder = find.byIcon(Icons.visibility);
+      // 1. 本部画面に「観戦プレビュー（Icons.preview_rounded）」ボタンが存在すること
+      final eyeButtonFinder = find.byIcon(Icons.preview_rounded);
       expect(eyeButtonFinder, findsOneWidget);
 
       // 2. 本部用UI（クイック対戦・ルール一括変更）が存在すること

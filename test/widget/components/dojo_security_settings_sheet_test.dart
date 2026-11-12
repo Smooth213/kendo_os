@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kendo_os/features/tournament/presentation/operate/components/settings/dojo_security_pin_form_card.dart';
 import 'package:kendo_os/features/tournament/presentation/operate/components/settings/dojo_security_settings_sheet.dart';
 import 'package:kendo_os/security/dojo_security_repository.dart';
 import 'package:kendo_os/shared/domain/entities/user_role.dart';
@@ -91,6 +92,40 @@ void main() {
         expect(find.text('9999'), findsOneWidget);
         expect(find.text('2468'), findsOneWidget);
         expect(find.text('1357'), findsOneWidget);
+
+        // デフォルトでPINがマスク表示され、斜め線入りの目アイコンが表示されること
+        final formCardFinder = find.byType(DojoSecurityPinFormCard);
+        expect(
+          find.descendant(
+            of: formCardFinder,
+            matching: find.byIcon(Icons.visibility_off),
+          ),
+          findsOneWidget,
+        );
+        final maskedFields = tester.widgetList<TextField>(
+          find.descendant(of: formCardFinder, matching: find.byType(TextField)),
+        );
+        expect(maskedFields.every((f) => f.obscureText), isTrue);
+
+        // 目アイコンをタップするとマスク解除され、斜め線なしの目アイコンになること
+        await tester.tap(
+          find.descendant(
+            of: formCardFinder,
+            matching: find.byIcon(Icons.visibility_off),
+          ),
+        );
+        await tester.safePumpAndSettle();
+        expect(
+          find.descendant(
+            of: formCardFinder,
+            matching: find.byIcon(Icons.visibility),
+          ),
+          findsOneWidget,
+        );
+        final revealedFields = tester.widgetList<TextField>(
+          find.descendant(of: formCardFinder, matching: find.byType(TextField)),
+        );
+        expect(revealedFields.every((f) => !f.obscureText), isTrue);
 
         // キーボード出現時にもオーバーフローしないこと
         tester.view.viewInsets = const FakeViewPadding(bottom: 280);

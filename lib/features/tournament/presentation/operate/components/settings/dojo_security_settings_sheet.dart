@@ -56,7 +56,7 @@ class _DojoSecuritySettingsSheetState
   final _newRecorderPinCtrl = TextEditingController();
 
   bool _obscureCurrentAdmin = true;
-  bool _hideUnlockedPins = false;
+  bool _hideUnlockedPins = true;
   bool _isUnlocked = false;
   bool _isLegacyUnmigrated = false;
   bool _isBusy = false;

@@ -110,7 +110,7 @@ class _BunaiksenHomeScreenState extends ConsumerState<BunaiksenHomeScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.visibility),
+                  icon: const Icon(Icons.preview_rounded),
                   tooltip: '観戦プレビュー',
                   onPressed: () {
                     final dojoId = ref.read(currentDojoIdProvider);

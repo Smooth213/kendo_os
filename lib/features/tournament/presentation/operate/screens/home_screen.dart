@@ -386,7 +386,7 @@ class _HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: Icon(
-            Icons.visibility,
+            Icons.preview_rounded,
             color: isDark ? const Color(0xFFFFFFFF) : themeColors.primaryAccent,
           ),
           tooltip: '観客の画面を確認',
