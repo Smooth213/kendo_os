@@ -29,6 +29,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.44.1'
           cache: true
 
       - name: 📦 Flutter 依存パッケージの解決
@@ -70,6 +71,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.44.1'
           cache: true
 
       - name: 📦 依存パッケージの解決
