@@ -17,7 +17,7 @@ const {
   writeBatch,
 } = require("firebase/firestore");
 
-const PROJECT_ID = "kendo-os-rules-test";
+const PROJECT_ID = "kendo-os-beta";
 const RULES_PATH = path.resolve(__dirname, "..", "firestore.rules");
 
 function hashJoinPin(dojoId, rawPin) {
@@ -327,13 +327,19 @@ describe("firestore.rules セキュリティ・PIN・代表者復旧 実ルー�
     );
     await assertSucceeds(resetBatch.commit());
 
-    // 偽ハッシュを混ぜた復旧バッチは getAfter 検証で拒否される
-    const fakeBatch = writeBatch(ownerDb);
-    fakeBatch.update(doc(ownerDb, "organizations/univ_dojo/private/security"), {
+    // 未入室の代表者（coach_recovery_uid）が偽ハッシュを混ぜた復旧バッチは getAfter 検証で拒否される
+    const coachDb = testEnv
+      .authenticatedContext("coach_recovery_uid", {
+        email: "coach@example.com",
+        email_verified: true,
+      })
+      .firestore();
+    const fakeBatch = writeBatch(coachDb);
+    fakeBatch.update(doc(coachDb, "organizations/univ_dojo/private/security"), {
       joinPinHash: resetJoinHash,
     });
     fakeBatch.set(
-      doc(ownerDb, "organizations/univ_dojo/members/recovery_owner_uid"),
+      doc(coachDb, "organizations/univ_dojo/members/coach_recovery_uid"),
       {
         role: "viewer",
         accessScope: "dojo",
