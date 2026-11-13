@@ -53,6 +53,7 @@ void main() {
     required Widget child,
     void Function(WidgetRef)? onRefCaptured,
     bool isGoogleLinked = true,
+    bool Function()? isGoogleLinkedGetter,
   }) {
     final themeColors = AppThemeColors.ofMode(isDark: false, mode: 'normal');
     return ProviderScope(
@@ -60,7 +61,11 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         currentUserRoleProvider.overrideWithValue(UserRole.admin),
         googleAuthServiceProvider.overrideWithValue(mockGoogleAuth),
-        isGoogleLinkedProvider.overrideWithValue(isGoogleLinked),
+        isGoogleLinkedGetter != null
+            ? isGoogleLinkedProvider.overrideWith(
+                (ref) => isGoogleLinkedGetter(),
+              )
+            : isGoogleLinkedProvider.overrideWithValue(isGoogleLinked),
         linkedGoogleEmailProvider.overrideWithValue('kendo.master@example.com'),
         linkedGoogleUidProvider.overrideWithValue('google_uid_998877'),
         bunaiksenMatchesProvider('bunaiksen_test').overrideWithValue([]),
@@ -160,17 +165,21 @@ void main() {
       await tester.safePumpAndSettle();
     });
 
-    testWidgets('部内戦ドックからも同一の設定画面が開き、Google連携中表示・解除ダイアログフローが動作すること', (
+    testWidgets('部内戦ドックからも同一の設定画面が開き、Google連携中表示・解除ダイアログフロー後に即時未連携へ遷移すること', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      when(() => mockGoogleAuth.unlinkGoogle()).thenAnswer((_) async {});
+      bool linked = true;
+      when(() => mockGoogleAuth.unlinkGoogle()).thenAnswer((_) async {
+        linked = false;
+      });
 
       await tester.pumpWidget(
         createTestContainer(
+          isGoogleLinkedGetter: () => linked,
           child: const Stack(
             children: [
               Center(child: Text('部内戦ホーム')),
@@ -221,6 +230,10 @@ void main() {
       await tester.safePumpAndSettle();
 
       verify(() => mockGoogleAuth.unlinkGoogle()).called(1);
+
+      // 🛡️ 解除直後に即座に「連携する」画面に戻り、連携中表示が消えていること
+      expect(find.text('連携する'), findsOneWidget);
+      expect(find.text('Google連携中'), findsNothing);
 
       await FloatingDockSheetManager.close(immediate: true);
       await tester.safePumpAndSettle();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -94,7 +95,12 @@ class _DojoSecuritySettingsSheetState
     try {
       if (Firebase.apps.isNotEmpty) {
         var uid = FirebaseAuth.instance.currentUser?.uid;
-        uid ??= (await FirebaseAuth.instance.signInAnonymously()).user?.uid;
+        if (uid == null || uid.isEmpty) {
+          final cred = await FirebaseAuth.instance.signInAnonymously().timeout(
+            const Duration(seconds: 3),
+          );
+          uid = cred.user?.uid;
+        }
         if (uid != null && uid.isNotEmpty) return uid;
       }
     } catch (_) {}
@@ -299,33 +305,36 @@ class _DojoSecuritySettingsSheetState
     });
     try {
       final uid = await _ensureUid();
-      final res = await recoveryRepo.updateDojoOwners(
-        dojoId: dojoId,
-        owners: nextOwners,
-        currentAdminPin: adminPin,
-        uid: uid,
-      );
+      final res = await recoveryRepo
+          .updateDojoOwners(
+            dojoId: dojoId,
+            owners: nextOwners,
+            currentAdminPin: adminPin,
+            uid: uid,
+          )
+          .timeout(
+            const Duration(seconds: 9),
+            onTimeout: () => (
+              success: false,
+              errorMessage: '代表者更新がタイムアウトしました。電波状況をご確認ください。',
+            ),
+          );
       if (!mounted) return;
       if (!res.success) {
-        setState(() {
-          _isUpdatingOwners = false;
-          _errorMessage = res.errorMessage;
-        });
+        setState(() => _errorMessage = res.errorMessage);
         return;
       }
-      final latest = await recoveryRepo.fetchDojoOwners(dojoId);
-      if (!mounted) return;
-      setState(() {
-        _isUpdatingOwners = false;
-        _owners = latest;
-      });
+      setState(() => _owners = nextOwners);
       AppSnackBar.showSuccess(context, '✓ 代表者Googleアカウントを更新しました');
+      try {
+        final latest = await recoveryRepo.fetchDojoOwners(dojoId);
+        if (mounted && latest.isNotEmpty) setState(() => _owners = latest);
+      } catch (_) {}
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isUpdatingOwners = false;
-        _errorMessage = '代表者の更新に失敗しました: $e';
-      });
+      setState(() => _errorMessage = '代表者の更新に失敗しました: $e');
+    } finally {
+      if (mounted) setState(() => _isUpdatingOwners = false);
     }
   }
 

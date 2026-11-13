@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 class GoogleAuthService {
   final FirebaseAuth? _injectedAuth;
   final GoogleSignIn _googleSignIn;
+  final StreamController<User?> _customUserChangesController =
+      StreamController<User?>.broadcast();
 
   GoogleAuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _injectedAuth = auth,
@@ -25,8 +28,47 @@ class GoogleAuthService {
   /// 現在のFirebaseユーザー
   User? get currentUser => _auth?.currentUser;
 
-  /// ユーザー認証状態のストリーム（プロバイダ連携変更も検知）
-  Stream<User?> get userChanges => _auth?.userChanges() ?? const Stream.empty();
+  /// ユーザー認証状態のストリーム（プロバイダ連携変更も即時検知）
+  Stream<User?> get userChanges {
+    final auth = _auth;
+    late StreamController<User?> controller;
+    StreamSubscription<User?>? authSub;
+    StreamSubscription<User?>? customSub;
+
+    controller = StreamController<User?>.broadcast(
+      onListen: () {
+        // 初期状態を即時通知
+        controller.add(auth?.currentUser);
+        if (auth != null) {
+          authSub = auth.userChanges().listen(
+            (user) => controller.add(user),
+            onError: controller.addError,
+          );
+        }
+        customSub = _customUserChangesController.stream.listen(
+          (user) => controller.add(user),
+          onError: controller.addError,
+        );
+      },
+      onCancel: () {
+        authSub?.cancel();
+        customSub?.cancel();
+      },
+    );
+    return controller.stream;
+  }
+
+  /// 外部または内部イベントから認証状態変更を即時通知
+  void notifyUserChanged([User? overrideUser]) {
+    final user = overrideUser ?? currentUser;
+    if (!_customUserChangesController.isClosed) {
+      _customUserChangesController.add(user);
+    }
+  }
+
+  void dispose() {
+    _customUserChangesController.close();
+  }
 
   /// Googleプロバイダが連携済みかどうか
   bool get isGoogleLinked {
@@ -78,6 +120,10 @@ class GoogleAuthService {
         debugPrint(
           '[GoogleAuthService] Redirect result received: ${cred.user?.email}',
         );
+        try {
+          await cred.user?.reload();
+        } catch (_) {}
+        notifyUserChanged(auth.currentUser);
         return cred;
       }
       return null;
@@ -95,6 +141,7 @@ class GoogleAuthService {
     }
     try {
       final user = auth.currentUser;
+      UserCredential? credential;
 
       if (kIsWeb) {
         final provider = GoogleAuthProvider();
@@ -105,23 +152,23 @@ class GoogleAuthService {
           // 1. 匿名ユーザーがいる場合はリンク（昇格）を試行
           if (user != null && user.isAnonymous) {
             try {
-              final result = await user.linkWithPopup(provider);
+              credential = await user.linkWithPopup(provider);
               debugPrint(
                 '[GoogleAuthService] Web: Anonymous user linked to Google successfully',
               );
-              return result;
             } catch (linkErr) {
               if (_isCredentialInUse(linkErr)) {
                 debugPrint(
                   '[INFO] [GoogleAuthService] Web: Credential in use, falling back to signInWithPopup',
                 );
-                return await auth.signInWithPopup(provider);
+                credential = await auth.signInWithPopup(provider);
+              } else {
+                rethrow;
               }
-              rethrow;
             }
           } else {
             // 通常のサインイン
-            return await auth.signInWithPopup(provider);
+            credential = await auth.signInWithPopup(provider);
           }
         } catch (popupErr) {
           if (_isPopupBlocked(popupErr)) {
@@ -139,25 +186,35 @@ class GoogleAuthService {
 
         final GoogleSignInAuthentication googleAuth =
             await googleUser.authentication;
-        final AuthCredential credential = GoogleAuthProvider.credential(
+        final AuthCredential cred = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
 
         if (user != null && user.isAnonymous) {
           try {
-            return await user.linkWithCredential(credential);
+            credential = await user.linkWithCredential(cred);
           } on FirebaseAuthException catch (e) {
             if (e.code == 'credential-already-in-use' ||
                 e.code == 'email-already-in-use') {
-              return await auth.signInWithCredential(credential);
+              credential = await auth.signInWithCredential(cred);
+            } else {
+              rethrow;
             }
-            rethrow;
           }
         } else {
-          return await auth.signInWithCredential(credential);
+          credential = await auth.signInWithCredential(cred);
         }
       }
+
+      final credUser = credential.user;
+      if (credUser != null) {
+        try {
+          await credUser.reload();
+        } catch (_) {}
+        notifyUserChanged(auth.currentUser);
+      }
+      return credential;
     } catch (e) {
       debugPrint('[WARN] [GoogleAuthService] linkOrSignIn error: $e');
       rethrow;
@@ -174,12 +231,32 @@ class GoogleAuthService {
         (p) => p.providerId == 'google.com',
       );
       if (isLinked) {
-        await user.unlink('google.com');
-        debugPrint('[GoogleAuthService] Unlinked Google provider');
+        try {
+          await user.unlink('google.com');
+          debugPrint('[GoogleAuthService] Unlinked Google provider');
+        } catch (unlinkErr) {
+          debugPrint(
+            '[WARN] [GoogleAuthService] unlink provider error: $unlinkErr',
+          );
+          // 唯一の認証プロバイダなどでアンリンクが拒否された場合はサインアウトして初期状態に戻す
+          await _auth?.signOut();
+        }
       }
       if (!kIsWeb) {
-        await _googleSignIn.signOut();
+        try {
+          await _googleSignIn.signOut();
+        } catch (_) {}
       }
+
+      // 🛡️ キャッシュを強制リロード
+      try {
+        await _auth?.currentUser?.reload();
+      } catch (reloadErr) {
+        debugPrint('[GoogleAuthService] reload user error: $reloadErr');
+      }
+
+      // 📢 連携解除を直ちにストリームへ通知
+      notifyUserChanged(_auth?.currentUser);
     } catch (e) {
       debugPrint('[WARN] [GoogleAuthService] unlink error: $e');
       rethrow;
@@ -189,7 +266,9 @@ class GoogleAuthService {
 
 /// 🥋 GoogleAuthService プロバイダ
 final googleAuthServiceProvider = Provider<GoogleAuthService>((ref) {
-  return GoogleAuthService();
+  final service = GoogleAuthService();
+  ref.onDispose(() => service.dispose());
+  return service;
 });
 
 /// 🥋 認証状態（プロバイダ変更含む）を購読するプロバイダ

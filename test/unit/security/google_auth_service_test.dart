@@ -17,9 +17,28 @@ void main() {
 
     test('GoogleAuthService インスタンスが正常に生成され null-safeこと', () {
       final service = GoogleAuthService();
+      addTearDown(service.dispose);
       expect(service.currentUser, isNull);
       expect(service.isGoogleLinked, isFalse);
       expect(service.userEmail, isNull);
+    });
+
+    test('notifyUserChangedによりuserChangesストリームへ即座に更新イベントが流れること', () async {
+      final service = GoogleAuthService();
+      addTearDown(service.dispose);
+
+      final events = <dynamic>[];
+      final sub = service.userChanges.listen(events.add);
+      addTearDown(sub.cancel);
+
+      // 初回購読イベント（null）
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(events, contains(null));
+
+      // 明示的な通知
+      service.notifyUserChanged(null);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(events.length, greaterThanOrEqualTo(2));
     });
   });
 }

@@ -55,6 +55,12 @@ class _SettingsGoogleAuthTileState
           '認証画面が開かないか、タイムアウトしました。ブラウザのポップアップブロックを解除するか、再度お試しください。',
         ),
       );
+      if (result != null) {
+        ref.invalidate(authUserChangesProvider);
+        ref.invalidate(isGoogleLinkedProvider);
+        ref.invalidate(linkedGoogleEmailProvider);
+        ref.invalidate(linkedGoogleUidProvider);
+      }
       if (result != null && mounted) {
         AppSnackBar.showSuccess(
           context,
@@ -121,14 +127,23 @@ class _SettingsGoogleAuthTileState
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
+              setState(() => _isLoading = true);
               try {
                 await ref.read(googleAuthServiceProvider).unlinkGoogle();
+                ref.invalidate(authUserChangesProvider);
+                ref.invalidate(isGoogleLinkedProvider);
+                ref.invalidate(linkedGoogleEmailProvider);
+                ref.invalidate(linkedGoogleUidProvider);
                 if (context.mounted) {
                   AppSnackBar.show(context, 'Googleアカウントの連携を解除しました');
                 }
               } catch (e) {
                 if (context.mounted) {
                   AppSnackBar.showError(context, '連携解除エラー: $e');
+                }
+              } finally {
+                if (mounted) {
+                  setState(() => _isLoading = false);
                 }
               }
             },
@@ -228,31 +243,37 @@ class _SettingsGoogleAuthTileState
             ),
           ],
         ),
-        trailing: TextButton(
-          onPressed: () => _showUnlinkConfirmation(context),
-          style: TextButton.styleFrom(
-            minimumSize: const Size(60, 40),
-            tapTargetSize: MaterialTapTargetSize.padded,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.xs,
-            ),
-            shape: StadiumBorder(
-              side: BorderSide(
-                color: themeColors.separatorColor.withValues(alpha: 0.8),
-                width: 1.0,
+        trailing: _isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : TextButton(
+                onPressed: () => _showUnlinkConfirmation(context),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(60, 40),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.xs,
+                  ),
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: themeColors.separatorColor.withValues(alpha: 0.8),
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  '解除',
+                  style: TextStyle(
+                    fontSize: AppFontSize.caption,
+                    fontWeight: AppFontWeight.semiBold,
+                    color: themeColors.subTextColor,
+                  ),
+                ),
               ),
-            ),
-          ),
-          child: Text(
-            '解除',
-            style: TextStyle(
-              fontSize: AppFontSize.caption,
-              fontWeight: AppFontWeight.semiBold,
-              color: themeColors.subTextColor,
-            ),
-          ),
-        ),
       );
     }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kendo_os/security/dojo_security_repository.dart';
@@ -47,12 +48,14 @@ class DojoOwnerRecoveryRepository {
   /// 登録済み代表者Googleアカウント一覧を取得する
   Future<List<DojoOwnerAccount>> fetchDojoOwners(String dojoId) async {
     try {
-      final doc = await _ownersDoc(dojoId).get();
+      final doc = await _ownersDoc(dojoId).get().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw TimeoutException('fetch timeout'),
+      );
       if (!doc.exists) return const [];
       return _parseOwnersData(doc.data());
-    } on FirebaseException catch (e) {
-      if (e.code == 'permission-denied') return const [];
-      rethrow;
+    } catch (_) {
+      return const [];
     }
   }
 
@@ -121,7 +124,12 @@ class DojoOwnerRecoveryRepository {
     }
 
     try {
-      await _ownersDoc(dojoId).set(payload);
+      await _ownersDoc(dojoId)
+          .set(payload)
+          .timeout(
+            const Duration(seconds: 8),
+            onTimeout: () => throw TimeoutException('サーバー接続タイムアウト'),
+          );
       return (success: true, errorMessage: null);
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
@@ -130,7 +138,14 @@ class DojoOwnerRecoveryRepository {
           errorMessage: '代表者アカウントの更新権限がありません（Admin PINまたは登録済み代表者ログインが必要です）',
         );
       }
-      rethrow;
+      return (
+        success: false,
+        errorMessage: '代表者アカウントの更新に失敗しました: ${e.message ?? e.code}',
+      );
+    } on TimeoutException {
+      return (success: false, errorMessage: '代表者の更新がタイムアウトしました。通信環境をご確認ください。');
+    } catch (e) {
+      return (success: false, errorMessage: '代表者アカウントの更新エラー: $e');
     }
   }
 
